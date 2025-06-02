@@ -28,7 +28,7 @@ The project is currently (2nd of June, 2025) in its infancy.
 TODD: Define architecture of the project.
 
 ## Contributing
-TODO: Make Contributing guide.
 
+For information about contributing to the Splice Wallet Kernel, please refer to the [Contributing Guide](Documents/CONTRIBUTING.md).
 ## Testing
 TODO: Make Testing guide.
