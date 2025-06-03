@@ -1,6 +1,6 @@
 node_modules
 build
-generated
+client
 npm-debug.log
 .env
 .DS_Store

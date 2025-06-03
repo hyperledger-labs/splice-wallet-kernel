@@ -31,3 +31,11 @@ Use Postman (or similar) to submit a request agains this endpoint with applicati
   "params": []
 }
 ```
+
+## Generator
+
+Generate the client and server code:
+
+```sh
+npm run generate
+```
