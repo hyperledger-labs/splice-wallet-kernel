@@ -33,4 +33,20 @@ it is also recommended (but not required) to add a gpg key: https://docs.github.
 
 ### repo tooling
 
-The easiest way to setup the repo for development is to install direnv and nix. If set up correctly, then `cd`-ing into the repo root will automatically install all build tooling dependencies.
+The easiest way to setup the repo for development is to install [direnv](https://direnv.net/) and the [nix package manager](https://nixos.org/). This guarantees that all contributors have identical dev environments on their machine. If set up correctly, then `cd`-ing into the repo root will automatically install all build tooling dependencies. To check that you've done this successfully, run
+
+```sh
+$ which node
+/nix/store/gxr9abzyqmva25p3k142qs1djj9q5fqw-nodejs-22.14.0/bin/node
+```
+
+you should see an output similar to the above.
+
+#### manual setup
+
+If you'd rather avoid installing and using Nix, then ensure you've installed the following packages and their respective versions on your machine.
+
+| Package | Version |
+| ------- | ------- |
+| NodeJS  | 22.14.0 |
+| NPM     | 10.9.2  |

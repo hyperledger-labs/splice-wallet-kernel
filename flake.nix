@@ -10,11 +10,10 @@
     flake-utils.lib.eachDefaultSystem
       (system:
         let
-          pkgs = import nixpkgs { inherit system; overlays = import ./nix/overlays.nix; config = { allowUnfree = true; }; };
+          pkgs = import nixpkgs { inherit system; config = { allowUnfree = true; }; };
         in
         {
-          devShells.default = import ./nix/shell.nix { inherit pkgs; ci = false; };
-          devShells.ci = import ./nix/shell.nix { inherit pkgs; ci = true; };
+          devShells.default = import ./nix/shell.nix { inherit pkgs; };
         }
       );
 }
