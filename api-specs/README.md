@@ -12,9 +12,10 @@ You can contribute to the API specs using the following steps.
 
 ## Mock Server
 
-This project comes with an OpenRPC Mock Server to test against the Wallet Kernel API. 
+This project comes with an OpenRPC Mock Server to test against the Wallet Kernel API.
 
 Start server:
+
 ```sh
 npm run mock-server
 ```
@@ -25,10 +26,10 @@ Use Postman (or similar) to submit a request agains this endpoint with applicati
 
 ```json
 {
-  "id": 1,
-  "jsonrpc": "2.0",
-  "method": "connect",
-  "params": []
+    "id": 1,
+    "jsonrpc": "2.0",
+    "method": "connect",
+    "params": []
 }
 ```
 

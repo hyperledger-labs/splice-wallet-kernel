@@ -2,7 +2,8 @@
     "name": "splice-wallet-kernel",
     "scripts": {
         "format": "prettier . --check",
-        "format:fix": "prettier . --write"
+        "format:fix": "prettier . --write",
+        "update-hooks": "simple-git-hooks"
     },
     "workspaces": [
         "clients/extension",

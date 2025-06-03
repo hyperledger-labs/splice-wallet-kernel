@@ -1,17 +1,17 @@
 {
-  "name": "canton-wallet-sdk",
-  "version": "1.0.0",
-  "description": "Connects your Canton dApp to Wallet Client users",
-  "main": "index.js",
-  "scripts": {
-    "build": "npm run generate",
-    "clean": "rm -rf client",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "generate": "open-rpc-generator generate -c ./open-rpc-generator-config.json"
-  },
-  "author": "Marc Juchli <marc.juchli@digitalasset.com>",
-  "license": "Apache-2.0",
-  "dependencies": {
-    "@open-rpc/generator": "^2.0.0"
-  }
+    "name": "canton-wallet-sdk",
+    "version": "1.0.0",
+    "description": "Connects your Canton dApp to Wallet Client users",
+    "main": "index.js",
+    "scripts": {
+        "build": "npm run generate",
+        "clean": "rm -rf client",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "generate": "open-rpc-generator generate -c ./open-rpc-generator-config.json"
+    },
+    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "@open-rpc/generator": "^2.0.0"
+    }
 }

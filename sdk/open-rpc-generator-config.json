@@ -1,11 +1,11 @@
 {
-  "openrpcDocument": "../../api-specs/openrpc.json",
-  "outDir": "./",
-  "components": [
-    {
-      "type": "client",
-      "name": "canton-wallet-client",
-      "language": "typescript"
-    }
-  ]
+    "openrpcDocument": "../../api-specs/openrpc.json",
+    "outDir": "./",
+    "components": [
+        {
+            "type": "client",
+            "name": "canton-wallet-client",
+            "language": "typescript"
+        }
+    ]
 }
