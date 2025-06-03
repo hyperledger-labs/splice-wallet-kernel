@@ -9,6 +9,7 @@
         "clients/extension",
         "clients/remote",
         "core",
+        "example",
         "sdk"
     ],
     "devDependencies": {

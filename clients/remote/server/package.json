@@ -2,7 +2,7 @@
     "name": "server",
     "version": "1.0.0",
     "description": "",
-    "main": "src/index.ts",
+    "main": "index/index.js",
     "scripts": {
         "build": "tsc",
         "dev": "tsx src/index.ts",
