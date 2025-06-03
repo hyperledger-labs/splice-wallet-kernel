@@ -1,0 +1,12 @@
+        {
+          "compilerOptions": {
+            "target": "es2022",
+            "module": "es2022",
+            "outDir": "dist",
+            "strict": true,
+            "esModuleInterop": true,
+            "skipLibCheck": true
+          },
+          "include": ["src/index.ts"],
+          "exclude": ["node_modules"]
+        }
