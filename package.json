@@ -3,7 +3,7 @@
     "scripts": {
         "format": "prettier . --check",
         "format:fix": "prettier . --write",
-        "update-hooks": "simple-git-hooks"
+        "prepare": "husky"
     },
     "workspaces": [
         "clients/extension",
@@ -13,11 +13,7 @@
     ],
     "devDependencies": {
         "eslint": "^9.28.0",
-        "prettier": "^3.5.3",
-        "simple-git-hooks": "^2.13.0"
-    },
-    "simple-git-hooks": {
-        "pre-commit": "npm run format",
-        "pre-push": "npm run format"
+        "husky": "^9.1.7",
+        "prettier": "^3.5.3"
     }
 }
