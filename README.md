@@ -25,10 +25,12 @@ Spice Wallet Kernel aims to:
 The project is currently (2nd of June, 2025) in its infancy.
 
 # Architecture
+
+For a quick overview look at the [Wallet Kernel Problem Statement](docs/WalletKernelProblemStatement.pdf).
 TODD: Define architecture of the project.
 
 ## Contributing
 
-For information about contributing to the Splice Wallet Kernel, please refer to the [Contributing Guide](Documents/CONTRIBUTING.md).
+For information about contributing to the Splice Wallet Kernel, please refer to the [Contributing Guide](docs/CONTRIBUTING.md).
 ## Testing
 TODO: Make Testing guide.
