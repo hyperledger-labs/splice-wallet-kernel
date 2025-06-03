@@ -1,0 +1,211 @@
+{
+  "openrpc": "1.2.6",
+  "info": {
+    "title": "Canton JSON-RPC Wallet API",
+    "version": "1.0.0",
+    "description": "An OpenRPC specification for interacting with a Canton wallet over JSON-RPC."
+  },
+  "methods": [
+    {
+      "name": "connect",
+      "params": [],
+      "result": {
+        "name": "result",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "chainId": { "type": "string", "description": "CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'" }
+          },
+          "required": ["chainId"]
+        }
+      },
+      "description": "Ensures ledger connectivity. Returns the current chainId."
+    },
+    {
+      "name": "addNetwork",
+      "params": [
+        {
+          "name": "network",
+          "schema": { "type": "object" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "type": "null" }
+      },
+      "description": "Adds a new network configuration (similar to EIP-3085)."
+    },
+    {
+      "name": "allocateParty",
+      "params": [
+        {
+          "name": "params",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "hint": { "type": "string" }
+            },
+            "required": ["hint"]
+          }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "type": "object" }
+      },
+      "description": "Allocates a new party with the given hint."
+    },
+    {
+      "name": "removeParty",
+      "params": [
+        {
+          "name": "params",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "hint": { "type": "string" }
+            },
+            "required": ["hint"]
+          }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "type": "object" }
+      },
+      "description": "Removes a party with the given hint."
+    },
+    {
+      "name": "sign",
+      "params": [
+        {
+          "name": "params",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "data": { "type": "string" },
+              "party": { "type": "string" }
+            },
+            "required": ["data"]
+          }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "signature": { "type": "string" },
+            "party": { "type": "string" },
+            "signedBy": { "type": "string" }
+          },
+          "required": ["signature", "party", "signedBy"]
+        }
+      },
+      "description": "Signs the provided data with the private key of the specified or active party."
+    },
+    {
+      "name": "prepareReturn",
+      "params": [
+        {
+          "name": "params",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "commands": { "$ref": "#/components/schemas/JsCommands" }
+            },
+            "required": ["commands"]
+          }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": {
+          "$ref": "#/components/schemas/JsPrepareSubmissionResponse"
+        }
+      },
+      "description": "Processes the prepare step and returns submission data."
+    },
+    {
+      "name": "prepareExecute",
+      "params": [
+        {
+          "name": "params",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "commands": { "$ref": "#/components/schemas/JsCommands" }
+            },
+            "required": ["commands"]
+          }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": {
+          "type": "null"
+        }
+      },
+      "description": "Prepares, signs, and executes a transaction."
+    },
+    {
+      "name": "ledgerApi",
+      "params": [
+        {
+          "name": "params",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "requestMethod": { "type": "string", "enum": ["GET", "POST", "PUT", "DELETE"] },
+              "resource": { "type": "string" },
+              "body": { "type": "string" }
+            },
+            "required": ["requestMethod", "resource"]
+          }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "response": { "type": "string" }
+          },
+          "required": ["response"]
+        }
+      },
+      "description": "Proxy for the JSON-API endpoints. Injects authorization headers automatically."
+    },
+    {
+      "name": "darsAvailable",
+      "params": [],
+      "result": {
+        "name": "result",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "dars": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "required": ["dars"]
+        }
+      },
+      "description": "Lists DARs currently available on the connected Canton node."
+    }
+  ],
+  "components": {
+    "schemas": {
+      "JsCommands": {
+        "type": "object",
+        "description": "Structure representing JS commands for transaction execution"
+      },
+      "JsPrepareSubmissionResponse": {
+        "type": "object",
+        "description": "Structure representing the result of a prepareReturn call"
+      }
+    }
+  }
+}
+

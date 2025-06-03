@@ -1,0 +1,15 @@
+{
+  "name": "api-specs",
+  "version": "1.0.0",
+  "description": "Canton Wallet Kernel API specification",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test",
+    "mock-server": "open-rpc-mock-server"
+  },
+  "author": "Marc Juchli <marc.juchli@digitalasset.com>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@open-rpc/mock-server": "^1.7.8"
+  }
+}
