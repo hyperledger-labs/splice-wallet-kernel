@@ -2,12 +2,12 @@
 
 The RPC-based (server-side) Wallet Client.
 
-
 # How to run
 
 This project comes with an express js server.
 
 Start server:
+
 ```sh
 npm install
 npm run build

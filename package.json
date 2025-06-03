@@ -1,0 +1,19 @@
+{
+    "name": "splice-wallet-kernel",
+    "scripts": {
+        "format": "prettier . --check",
+        "format:fix": "prettier . --write",
+        "prepare": "husky"
+    },
+    "workspaces": [
+        "clients/extension",
+        "clients/remote",
+        "core",
+        "sdk"
+    ],
+    "devDependencies": {
+        "eslint": "^9.28.0",
+        "husky": "^9.1.7",
+        "prettier": "^3.5.3"
+    }
+}

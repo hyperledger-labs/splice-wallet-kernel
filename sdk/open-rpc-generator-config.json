@@ -1,5 +1,5 @@
 {
-    "openrpcDocument": "../api-specs/openrpc.json",
+    "openrpcDocument": "../../api-specs/openrpc.json",
     "outDir": "./",
     "components": [
         {
