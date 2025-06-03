@@ -7,6 +7,7 @@
 As a requirement under the hyperledger foundation, all commits must be signed off. This can be done by adding the `-s` flag every time you commit.
 
 An alternative is to add the follow git hook (at `.git/hooks/prepare-commit-msg`):
+
 ```
 #!/bin/sh
 
@@ -29,5 +30,3 @@ git interpret-trailers --if-exists doNothing --trailer \
 ```
 
 it is also recommended (but not required) to add a gpg key: https://docs.github.com/en/authentication/managing-commit-signature-verification/adding-a-gpg-key-to-your-github-account
-
-

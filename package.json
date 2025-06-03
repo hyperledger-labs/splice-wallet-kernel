@@ -1,0 +1,32 @@
+{
+    "name": "splice-wallet-kernel",
+    "scripts": {
+        "format": "prettier . --check",
+        "format:fix": "prettier . --write",
+    },
+    "workspaces": [
+        "clients/extension",
+        "clients/remote",
+        "core",
+        "sdk"
+    ],
+    "devDependencies": {
+        "eslint": "^9.28.0",
+        "prettier": "^3.5.3",
+        "simple-git-hooks": "^2.13.0"
+    },
+      "simple-git-hooks": {
+    "pre-commit": "npm run format",
+    "pre-push": "npm run format",
+
+    // All unused hooks will be removed automatically by default
+    // but you can use the `preserveUnused` option like following to prevent this behavior
+
+    // if you'd prefer preserve all unused hooks
+    "preserveUnused": true,
+
+    // if you'd prefer preserve specific unused hooks
+    "preserveUnused": ["commit-msg"]
+      }
+
+}
