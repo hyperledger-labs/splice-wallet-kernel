@@ -19,5 +19,10 @@
         "prettier": "^3.5.3",
         "typescript": "^5.8.3"
     },
-    "packageManager": "yarn@4.9.2"
+    "packageManager": "yarn@4.9.2",
+    "dependenciesMeta": {
+        "@open-rpc/generator@2.0.0": {
+            "unplugged": true
+        }
+    }
 }
