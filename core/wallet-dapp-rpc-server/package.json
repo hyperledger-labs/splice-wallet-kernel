@@ -6,9 +6,9 @@
         "type": "git",
         "url": "https://github.com/open-rpc/generator-client.git"
     },
-    "main": "./build/index.js",
+    "main": "./dist/index.js",
     "files": [
-        "build/**/*",
+        "dist/**/*",
         ".node-version"
     ],
     "scripts": {
