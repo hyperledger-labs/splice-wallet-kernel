@@ -1,0 +1,26 @@
+{
+    "openrpcDocument": "./api-specs/openrpc.json",
+    "outDir": "./",
+    "components": [
+        {
+            "type": "client",
+            "outPath": "./core/wallet-dapp-rpc-client",
+            "name": "wallet-dapp-rpc-client",
+            "language": "typescript"
+        },
+        {
+            "type": "server",
+            "outPath": "./core/wallet-dapp-rpc-server",
+            "name": "wallet-dapp-rpc-server",
+            "language": "typescript"
+        },
+        {
+            "type": "custom",
+            "outPath": "./core/wallet-dapp-rpc-custom",
+            "name": "awesome-custom-client",
+            "language": "typescript",
+            "customComponent": "./api-specs/custom-test-component.js",
+            "customType": "client"
+        }
+    ]
+}

@@ -1,4 +1,5 @@
 import express from 'express'
+import 'wallet-dapp-rpc-server'
 
 const app = express()
 const port = 3000
