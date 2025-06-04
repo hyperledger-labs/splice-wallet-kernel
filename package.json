@@ -6,6 +6,7 @@
         "postinstall": "husky"
     },
     "workspaces": [
+        "api-specs",
         "clients/extension",
         "clients/remote",
         "core",

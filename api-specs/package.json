@@ -4,7 +4,6 @@
     "description": "Canton Wallet Kernel API specification",
     "main": "index.js",
     "scripts": {
-        "test": "npm test",
         "mock-server": "open-rpc-mock-server",
         "generate": "open-rpc-generator generate -c ./open-rpc-generator-config.json"
     },
