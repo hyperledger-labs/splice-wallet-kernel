@@ -6,5 +6,19 @@
   "action": {
     "default_popup": "wallet_kernel.html",
     "default_icon": "images/wallet_kernel.png"
-  }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["file://*/*", "http://*/*", "https://*/*"],
+      "js": ["contentScript.js"]
+    }
+  ],
+  "permissions": [
+    "storage",
+    "activeTab",
+    "identity"
+  ]
 }
