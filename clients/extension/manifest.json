@@ -1,24 +1,20 @@
 {
-  "name": "Wallet Kernel Extensions",
-  "description": "Base Level Extension",
-  "version": "1.0",
-  "manifest_version": 3,
-  "action": {
-    "default_popup": "wallet_kernel.html",
-    "default_icon": "images/wallet_kernel.png"
-  },
-  "background": {
-    "service_worker": "background.js"
-  },
-  "content_scripts": [
-    {
-      "matches": ["file://*/*", "http://*/*", "https://*/*"],
-      "js": ["contentScript.js"]
-    }
-  ],
-  "permissions": [
-    "storage",
-    "activeTab",
-    "identity"
-  ]
+    "name": "Wallet Kernel Extensions",
+    "description": "Base Level Extension",
+    "version": "1.0",
+    "manifest_version": 3,
+    "action": {
+        "default_popup": "wallet_kernel.html",
+        "default_icon": "images/wallet_kernel.png"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": ["file://*/*", "http://*/*", "https://*/*"],
+            "js": ["contentScript.js"]
+        }
+    ],
+    "permissions": ["storage", "activeTab", "identity"]
 }
