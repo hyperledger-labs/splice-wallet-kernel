@@ -12,7 +12,6 @@
     },
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
-    "dependencies": {},
     "devDependencies": {
         "@open-rpc/generator": "^2.0.0",
         "typescript": "^5.8.3"
