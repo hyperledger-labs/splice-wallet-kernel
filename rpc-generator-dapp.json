@@ -13,14 +13,6 @@
             "outPath": "./core/wallet-dapp-rpc-server",
             "name": "wallet-dapp-rpc-server",
             "language": "typescript"
-        },
-        {
-            "type": "custom",
-            "outPath": "./core/wallet-dapp-rpc-custom",
-            "name": "awesome-custom-client",
-            "language": "typescript",
-            "customComponent": "./api-specs/custom-test-component.js",
-            "customType": "client"
         }
     ]
 }
