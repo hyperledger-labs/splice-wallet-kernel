@@ -21,7 +21,7 @@ function App() {
                     />
                 </a>
             </div>
-            <h1>Example dApp 2</h1>
+            <h1>Example dApp</h1>
             <div className="card">{sdk.helloWorld()}</div>
             <div className="card">
                 <button onClick={() => setCount((count) => count + 1)}>
