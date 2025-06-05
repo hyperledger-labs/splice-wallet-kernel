@@ -1,20 +1,8 @@
 import * as path from 'path'
-import { ensureDir, remove } from 'fs-extra'
 import * as openrpcgen from '@open-rpc/generator'
 import * as fs from 'fs'
-import { promisify } from 'util'
 import lodash from 'lodash'
 const { template } = lodash
-
-import {
-    ContentDescriptorObject,
-    ExamplePairingObject,
-    ExampleObject,
-    MethodObject,
-} from '@open-rpc/meta-schema'
-const writeFile = promisify(fs.writeFile)
-const readFile = promisify(fs.readFile)
-const access = promisify(fs.access)
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const onlyHandleTS = ({ language }: any) => {
@@ -55,42 +43,6 @@ const hooks: openrpcgen.components.IHooks = {
     afterCopyStatic: [
         async (dest, frm, component, openrpcDocument): Promise<void> => {
             onlyHandleTS(component)
-            // const destPath = path.join(dest, 'package.json')
-            // const tmplPath = path.join(dest, '_package.json')
-
-            // const tmplPkgStr = await readFile(tmplPath, 'utf8')
-            // let tmplPkg = JSON.parse(tmplPkgStr)
-
-            // tmplPkg.name = component.name || openrpcDocument.info.title
-            // tmplPkg.version = openrpcDocument.info.version
-
-            // let currPkgStr
-            // try {
-            //     currPkgStr = await readFile(destPath, 'utf8')
-            //     const currPkg = JSON.parse(currPkgStr)
-            //     tmplPkg = {
-            //         ...currPkg,
-            //         ...tmplPkg,
-            //         scripts: {
-            //             ...currPkg.scripts,
-            //             ...tmplPkg.scripts,
-            //         },
-            //         dependencies: {
-            //             ...currPkg.dependencies,
-            //             ...tmplPkg.dependencies,
-            //         },
-            //         devDependencies: {
-            //             ...currPkg.devDependencies,
-            //             ...tmplPkg.devDependencies,
-            //         },
-            //     }
-            //     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            // } catch (e) {
-            //     // do nothing
-            // }
-
-            // await writeFile(destPath, JSON.stringify(tmplPkg, undefined, '  '))
-            // await remove(tmplPath)
         },
     ],
     afterCompileTemplate: [
