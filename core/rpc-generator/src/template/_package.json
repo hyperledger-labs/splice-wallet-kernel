@@ -10,8 +10,8 @@
     "main": "./build/index.js",
     "files": ["build/**/*", ".node-version"],
     "scripts": {
-        "start": "npm run build && node ./build/index.js",
-        "test": "npm run test:lint && npm run test:unit",
+        "start": "yarn build && node ./build/index.js",
+        "test": "yarn test:lint && yarn test:unit",
         "test:unit": "jest --coverage",
         "lint": "eslint 'src/**/*.{ts,tsx}'",
         "build": "tsc",

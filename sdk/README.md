@@ -7,5 +7,5 @@ Connects your Canton dApp to Wallet Client users.
 Generate the client code and build the SDK:
 
 ```sh
-npm run build
+yarn build
 ```
