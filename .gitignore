@@ -7,6 +7,8 @@ npm-debug.log
 .DS_Store
 *.tsbuildinfo
 
+generated/
+
 # yarn
 .pnp.*
 .yarn/*
