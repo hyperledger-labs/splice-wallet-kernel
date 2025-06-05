@@ -17,3 +17,12 @@ As a requirement under the hyperledger foundation, all commits must be signed of
 In this repo, we use Husky to automatically configure a git hook to do this for you.
 
 It is also recommended (but not required) to add a gpg key: https://docs.github.com/en/authentication/managing-commit-signature-verification/adding-a-gpg-key-to-your-github-account
+
+## Running
+
+### API generation
+
+Run `yarn generate:<api>` from the root to regen RPC clients/servers for a particular Wallet Kernel API. For example:
+
+- `yarn generate:dapp`: dApp API
+- ...

@@ -3,17 +3,18 @@
     "scripts": {
         "format": "prettier . --check",
         "format:fix": "prettier . --write",
+        "generate:dapp": "open-rpc-generator generate -c ./dapp-rpc-generator-config.json",
         "postinstall": "husky"
     },
     "workspaces": [
         "api-specs",
-        "clients/extension",
-        "clients/remote",
-        "core",
+        "clients/*",
+        "core/*",
         "example",
         "sdk"
     ],
     "devDependencies": {
+        "@open-rpc/generator": "^2.0.0",
         "eslint": "^9.28.0",
         "husky": "^9.1.7",
         "prettier": "^3.5.3",
