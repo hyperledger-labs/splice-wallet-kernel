@@ -26,6 +26,7 @@
         "@json-schema-tools/meta-schema": "^1.7.5",
         "@open-rpc/schema-utils-js": "2.1.2",
         "@open-rpc/server-js": "1.9.5",
+        "chalk": "^5.4.1",
         "cors": "^2.8.5"
     },
     "devDependencies": {
@@ -45,5 +46,6 @@
         "prettier": "^3.5.2",
         "ts-jest": "^29.1.2",
         "typescript": "^5.0.0"
-    }
+    },
+    "private": false
 }
