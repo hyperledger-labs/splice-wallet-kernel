@@ -1,10 +1,10 @@
 {
-    "name": "wallet-api-specs",
+    "name": "canton-wallet-api-specs",
     "version": "1.0.0",
     "description": "Splice Wallet Kernel API specifications",
     "main": "index.js",
     "scripts": {
-        "mock-server": "open-rpc-mock-server"
+        "mock-server": "open-rpc-mock-server -d dapp-api-openrpc.json"
     },
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
