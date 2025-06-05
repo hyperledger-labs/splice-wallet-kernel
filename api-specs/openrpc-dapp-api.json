@@ -17,109 +17,37 @@
                     "properties": {
                         "chainId": {
                             "type": "string",
-                            "description": "CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'"
+                            "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
+                        },
+                        "userUrl": {
+                            "$ref": "#/components/schemas/UserUrl"
                         }
                     },
-                    "required": ["chainId"]
+                    "required": ["userUrl"]
                 }
             },
-            "description": "Ensures ledger connectivity. Returns the current chainId."
+            "description": "Ensures ledger connectivity. Returns the current chainId if connected, or the user url if disconnected."
         },
         {
-            "name": "addNetwork",
-            "params": [
-                {
-                    "name": "network",
-                    "schema": {
-                        "title": "AddNetworkParams",
-                        "type": "object"
-                    }
-                }
-            ],
-            "result": {
-                "name": "result",
-                "schema": { "$ref": "#/components/schemas/Null" }
-            },
-            "description": "Adds a new network configuration (similar to EIP-3085)."
-        },
-        {
-            "name": "allocateParty",
-            "params": [
-                {
-                    "name": "params",
-                    "schema": {
-                        "title": "AllocatePartyParams",
-                        "type": "object",
-                        "properties": {
-                            "hint": { "type": "string" }
-                        },
-                        "required": ["hint"]
-                    }
-                }
-            ],
+            "name": "darsAvailable",
+            "params": [],
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "AllocatePartyResult",
-                    "type": "object"
-                }
-            },
-            "description": "Allocates a new party with the given hint."
-        },
-        {
-            "name": "removeParty",
-            "params": [
-                {
-                    "name": "params",
-                    "schema": {
-                        "title": "RemovePartyParams",
-                        "type": "object",
-                        "properties": {
-                            "hint": { "type": "string" }
-                        },
-                        "required": ["hint"]
-                    }
-                }
-            ],
-            "result": {
-                "name": "result",
-                "schema": {
-                    "title": "RemovePartyResult",
-                    "type": "object"
-                }
-            },
-            "description": "Removes a party with the given hint."
-        },
-        {
-            "name": "sign",
-            "params": [
-                {
-                    "name": "params",
-                    "schema": {
-                        "title": "SignParams",
-                        "type": "object",
-                        "properties": {
-                            "data": { "type": "string" },
-                            "party": { "type": "string" }
-                        },
-                        "required": ["data"]
-                    }
-                }
-            ],
-            "result": {
-                "name": "result",
-                "schema": {
-                    "title": "SignResult",
+                    "title": "darsAvailableResult",
                     "type": "object",
                     "properties": {
-                        "signature": { "type": "string" },
-                        "party": { "type": "string" },
-                        "signedBy": { "type": "string" }
+                        "dars": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     },
-                    "required": ["signature", "party", "signedBy"]
+                    "required": ["dars"]
                 }
             },
-            "description": "Signs the provided data with the private key of the specified or active party."
+            "description": "Lists DARs currently available on the connected Canton node."
         },
         {
             "name": "prepareReturn",
@@ -141,10 +69,16 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "$ref": "#/components/schemas/JsPrepareSubmissionResponse"
+                    "title": "prepareReturnResult",
+                    "properties": {
+                        "response": {
+                            "$ref": "#/components/schemas/JsPrepareSubmissionResponse"
+                        }
+                    },
+                    "required": ["response"]
                 }
             },
-            "description": "Processes the prepare step and returns submission data."
+            "description": "Processes the prepare step and returns the data to sign."
         },
         {
             "name": "prepareExecute",
@@ -165,7 +99,15 @@
             ],
             "result": {
                 "name": "result",
-                "schema": { "$ref": "#/components/schemas/Null" }
+                "schema": {
+                    "title": "prepareExecuteResult",
+                    "properties": {
+                        "userUrl": {
+                            "$ref": "#/components/schemas/UserUrl"
+                        }
+                    },
+                    "required": ["userUrl"]
+                }
             },
             "description": "Prepares, signs, and executes a transaction."
         },
@@ -182,8 +124,12 @@
                                 "type": "string",
                                 "enum": ["GET", "POST", "PUT", "DELETE"]
                             },
-                            "resource": { "type": "string" },
-                            "body": { "type": "string" }
+                            "resource": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "string"
+                            }
                         },
                         "required": ["requestMethod", "resource"]
                     }
@@ -195,31 +141,14 @@
                     "title": "ledgerApiResult",
                     "type": "object",
                     "properties": {
-                        "response": { "type": "string" }
+                        "response": {
+                            "type": "string"
+                        }
                     },
                     "required": ["response"]
                 }
             },
             "description": "Proxy for the JSON-API endpoints. Injects authorization headers automatically."
-        },
-        {
-            "name": "darsAvailable",
-            "params": [],
-            "result": {
-                "name": "result",
-                "schema": {
-                    "title": "darsAvailableResult",
-                    "type": "object",
-                    "properties": {
-                        "dars": {
-                            "type": "array",
-                            "items": { "type": "string" }
-                        }
-                    },
-                    "required": ["dars"]
-                }
-            },
-            "description": "Lists DARs currently available on the connected Canton node."
         }
     ],
     "components": {
@@ -229,6 +158,12 @@
                 "type": "null",
                 "description": "Represents a null value, used in responses where no data is returned."
             },
+            "UserUrl": {
+                "title": "UserUrl",
+                "type": "string",
+                "format": "uri",
+                "description": "A URL that points to a user interface."
+            },
             "JsCommands": {
                 "title": "JsCommands",
                 "type": "object",
@@ -237,7 +172,17 @@
             "JsPrepareSubmissionResponse": {
                 "title": "JsPrepareSubmissionResponse",
                 "type": "object",
-                "description": "Structure representing the result of a prepareReturn call"
+                "description": "Structure representing the result of a prepareReturn call",
+                "properties": {
+                    "preparedTransaction": {
+                        "type": "string",
+                        "description": "The prepared transaction data."
+                    },
+                    "preparedTransactionHash": {
+                        "type": "string",
+                        "description": "The hash of the prepared transaction."
+                    }
+                }
             }
         }
     }
