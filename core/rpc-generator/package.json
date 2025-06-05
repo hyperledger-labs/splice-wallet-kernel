@@ -1,0 +1,21 @@
+{
+    "name": "rpc-generator",
+    "private": true,
+    "packageManager": "yarn@4.9.2",
+    "scripts": {
+        "build": "mkdir -p ./dist && cp -r src/template ./dist/ && tsc -b",
+        "clean": "tsc -b --clean && rm -rf ./dist"
+    },
+    "dependencies": {
+        "@open-rpc/generator": "^2.0.0",
+        "@open-rpc/meta-schema": "^1.14.9",
+        "fs-extra": "^11.3.0",
+        "lodash": "^4.17.21"
+    },
+    "devDependencies": {
+        "@types/fs-extra": "^11",
+        "@types/lodash": "^4.17.17",
+        "@types/node": "^22.15.29",
+        "typescript": "^5.8.3"
+    }
+}
