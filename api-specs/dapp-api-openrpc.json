@@ -1,9 +1,9 @@
 {
     "openrpc": "1.2.6",
     "info": {
-        "title": "Canton JSON-RPC Wallet API",
+        "title": "Wallet JSON-RPC dApp API",
         "version": "1.0.0",
-        "description": "An OpenRPC specification for interacting with a Canton wallet over JSON-RPC."
+        "description": "An OpenRPC specification for dApp clients interacting with a wallet kernel over JSON-RPC."
     },
     "methods": [
         {
@@ -12,6 +12,7 @@
             "result": {
                 "name": "result",
                 "schema": {
+                    "title": "ConnectResult",
                     "type": "object",
                     "properties": {
                         "chainId": {
@@ -29,12 +30,15 @@
             "params": [
                 {
                     "name": "network",
-                    "schema": { "type": "object" }
+                    "schema": {
+                        "title": "AddNetworkParams",
+                        "type": "object"
+                    }
                 }
             ],
             "result": {
                 "name": "result",
-                "schema": { "type": "null" }
+                "schema": { "$ref": "#/components/schemas/Null" }
             },
             "description": "Adds a new network configuration (similar to EIP-3085)."
         },
@@ -44,6 +48,7 @@
                 {
                     "name": "params",
                     "schema": {
+                        "title": "AllocatePartyParams",
                         "type": "object",
                         "properties": {
                             "hint": { "type": "string" }
@@ -54,7 +59,10 @@
             ],
             "result": {
                 "name": "result",
-                "schema": { "type": "object" }
+                "schema": {
+                    "title": "AllocatePartyResult",
+                    "type": "object"
+                }
             },
             "description": "Allocates a new party with the given hint."
         },
@@ -64,6 +72,7 @@
                 {
                     "name": "params",
                     "schema": {
+                        "title": "RemovePartyParams",
                         "type": "object",
                         "properties": {
                             "hint": { "type": "string" }
@@ -74,7 +83,10 @@
             ],
             "result": {
                 "name": "result",
-                "schema": { "type": "object" }
+                "schema": {
+                    "title": "RemovePartyResult",
+                    "type": "object"
+                }
             },
             "description": "Removes a party with the given hint."
         },
@@ -84,6 +96,7 @@
                 {
                     "name": "params",
                     "schema": {
+                        "title": "SignParams",
                         "type": "object",
                         "properties": {
                             "data": { "type": "string" },
@@ -96,6 +109,7 @@
             "result": {
                 "name": "result",
                 "schema": {
+                    "title": "SignResult",
                     "type": "object",
                     "properties": {
                         "signature": { "type": "string" },
@@ -113,6 +127,7 @@
                 {
                     "name": "params",
                     "schema": {
+                        "title": "prepareReturnParams",
                         "type": "object",
                         "properties": {
                             "commands": {
@@ -137,6 +152,7 @@
                 {
                     "name": "params",
                     "schema": {
+                        "title": "prepareExecuteParams",
                         "type": "object",
                         "properties": {
                             "commands": {
@@ -149,9 +165,7 @@
             ],
             "result": {
                 "name": "result",
-                "schema": {
-                    "type": "null"
-                }
+                "schema": { "$ref": "#/components/schemas/Null" }
             },
             "description": "Prepares, signs, and executes a transaction."
         },
@@ -161,6 +175,7 @@
                 {
                     "name": "params",
                     "schema": {
+                        "title": "ledgerApiParams",
                         "type": "object",
                         "properties": {
                             "requestMethod": {
@@ -177,6 +192,7 @@
             "result": {
                 "name": "result",
                 "schema": {
+                    "title": "ledgerApiResult",
                     "type": "object",
                     "properties": {
                         "response": { "type": "string" }
@@ -192,6 +208,7 @@
             "result": {
                 "name": "result",
                 "schema": {
+                    "title": "darsAvailableResult",
                     "type": "object",
                     "properties": {
                         "dars": {
@@ -207,11 +224,18 @@
     ],
     "components": {
         "schemas": {
+            "Null": {
+                "title": "Null",
+                "type": "null",
+                "description": "Represents a null value, used in responses where no data is returned."
+            },
             "JsCommands": {
+                "title": "JsCommands",
                 "type": "object",
                 "description": "Structure representing JS commands for transaction execution"
             },
             "JsPrepareSubmissionResponse": {
+                "title": "JsPrepareSubmissionResponse",
                 "type": "object",
                 "description": "Structure representing the result of a prepareReturn call"
             }

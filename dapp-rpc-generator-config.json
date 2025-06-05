@@ -1,0 +1,18 @@
+{
+    "openrpcDocument": "./api-specs/dapp-api-openrpc.json",
+    "outDir": ".",
+    "components": [
+        {
+            "type": "client",
+            "outPath": "./core/wallet-dapp-rpc-client",
+            "name": "wallet-dapp-rpc-client",
+            "language": "typescript"
+        },
+        {
+            "type": "server",
+            "outPath": "./core/wallet-dapp-rpc-server",
+            "name": "wallet-dapp-rpc-server",
+            "language": "typescript"
+        }
+    ]
+}
