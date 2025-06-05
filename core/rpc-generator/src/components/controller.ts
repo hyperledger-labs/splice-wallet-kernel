@@ -2,6 +2,7 @@ import * as path from 'path'
 import * as openrpcgen from '@open-rpc/generator'
 import * as fs from 'fs'
 import lodash from 'lodash'
+import { execSync } from 'child_process'
 const { template } = lodash
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,11 +41,6 @@ const generatedTypingsTemplate = template(
 )
 
 const hooks: openrpcgen.components.IHooks = {
-    afterCopyStatic: [
-        async (dest, frm, component, openrpcDocument): Promise<void> => {
-            onlyHandleTS(component)
-        },
-    ],
     afterCompileTemplate: [
         async (
             dest,
@@ -61,6 +57,8 @@ const hooks: openrpcgen.components.IHooks = {
                     force: true,
                 })
             }
+
+            execSync(`yarn prettier --write ${dest}/**/*`)
         },
     ],
     templateFiles: {
