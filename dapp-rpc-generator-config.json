@@ -9,9 +9,11 @@
             "language": "typescript"
         },
         {
-            "type": "server",
+            "type": "custom",
             "outPath": "./core/wallet-dapp-rpc-server",
             "name": "wallet-dapp-rpc-server",
+            "customComponent": "./core/rpc-generator/dist/components/server.js",
+            "customType": "server",
             "language": "typescript"
         }
     ]

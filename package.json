@@ -1,8 +1,6 @@
 {
     "name": "splice-wallet-kernel",
     "scripts": {
-        "format": "prettier . --check",
-        "format:fix": "prettier . --write",
         "generate:dapp": "open-rpc-generator generate -c ./dapp-rpc-generator-config.json",
         "postinstall": "husky"
     },
@@ -17,8 +15,12 @@
         "@open-rpc/generator": "^2.0.0",
         "eslint": "^9.28.0",
         "husky": "^9.1.7",
+        "lint-staged": "^16.1.0",
         "prettier": "^3.5.3",
         "typescript": "^5.8.3"
+    },
+    "lint-staged": {
+        "*": "prettier --write --ignore-unknown"
     },
     "packageManager": "yarn@4.9.2"
 }

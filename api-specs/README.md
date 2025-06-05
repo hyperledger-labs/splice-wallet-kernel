@@ -7,7 +7,7 @@ This folder contains the OpenRPC specification for the Wallet Kernel JSON-RPC AP
 You can contribute to the API specs using the following steps.
 
 1. Edit the API specs in the `openrpc.json` file. (See the [OpenRPC](https://open-rpc.org/) docs for more information on how to format the specs).
-2. `npm install` if you haven't previously set up the repository.
+2. `yarn install` if you haven't previously set up the repository.
 3. To view the result, paste the spec file's contents into the [OpenRPC playground](https://playground.open-rpc.org/) or use the [VSCode extension](https://marketplace.visualstudio.com/items?itemName=OPEN-RPC.OPEN-RPC).
 
 ## Mock Server
@@ -31,12 +31,4 @@ Use Postman (or similar) to submit a request agains this endpoint with applicati
     "method": "connect",
     "params": []
 }
-```
-
-## Generator
-
-Generate the client and server code:
-
-```sh
-npm run generate
 ```

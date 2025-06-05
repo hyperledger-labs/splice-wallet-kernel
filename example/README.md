@@ -4,5 +4,5 @@ A example dApp that imports the wallet kernel SDK and uses it. This is a minimal
 
 ## running
 
-- `npm install`
-- `npm run dev`
+- `yarn install`
+- `yarn dev`

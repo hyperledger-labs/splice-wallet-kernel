@@ -5,7 +5,7 @@
     "description": "Connects your Canton dApp to Wallet Client users",
     "main": "dist/index.js",
     "scripts": {
-        "build": "npm run generate && tsc -b",
+        "build": "yarn generate && tsc -b",
         "clean": "rm -rf client",
         "test": "echo \"Error: no test specified\" && exit 1",
         "generate": "open-rpc-generator generate -c ./open-rpc-generator-config.json"

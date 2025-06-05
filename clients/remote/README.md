@@ -9,9 +9,9 @@ This project comes with an express js server.
 Start server:
 
 ```sh
-npm install
-npm run build
-npm run dev
+yarn install
+yarn build
+yarn dev
 ```
 
 The server now runs on [localhost:3000](http://localhost:3000/).
