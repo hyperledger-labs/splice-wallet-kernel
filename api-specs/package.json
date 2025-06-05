@@ -4,7 +4,9 @@
     "description": "Splice Wallet Kernel API specifications",
     "main": "index.js",
     "scripts": {
-        "mock-server": "open-rpc-mock-server -d dapp-api-openrpc.json"
+        "dapp-mock-server": "open-rpc-mock-server -d openrpc-dapp-api.json",
+        "user-mock-server": "open-rpc-mock-server -d openrpc-user-api.json",
+        "keystore-connector-mock-server": "open-rpc-mock-server -d openrpc-keystore-connector-api.json"
     },
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
