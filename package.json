@@ -1,8 +1,6 @@
 {
     "name": "splice-wallet-kernel",
     "scripts": {
-        "format": "prettier . --check",
-        "format:fix": "prettier . --write",
         "generate:dapp": "open-rpc-generator generate -c ./dapp-rpc-generator-config.json",
         "postinstall": "husky"
     },
