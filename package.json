@@ -1,7 +1,7 @@
 {
     "name": "splice-wallet-kernel",
     "scripts": {
-        "generate:dapp": "open-rpc-generator generate -c ./dapp-rpc-generator-config.json",
+        "generate:dapp": "yarn workspace rpc-generator build && open-rpc-generator generate -c ./dapp-rpc-generator-config.json",
         "postinstall": "husky"
     },
     "workspaces": [
