@@ -21,3 +21,5 @@ app.get('/api/hello', (req, res) => {
 app.listen(port, () => {
     logger.info(`Server running at http://localhost:${port}`)
 })
+
+export default app

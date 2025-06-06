@@ -3,7 +3,8 @@
     "compilerOptions": {
         "rootDir": "./src",
         "outDir": "./dist",
-        "module": "nodenext"
+        "module": "nodenext",
+        "isolatedModules": true
     },
     "include": ["src"],
     "exclude": ["node_modules"]

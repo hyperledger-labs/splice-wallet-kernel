@@ -14,7 +14,7 @@ export type Methods = {
     ledgerApi: LedgerApi
 }
 
-function buildController(methods: Methods): Methods {
+function buildController(methods: Methods) {
     return {
         connect: methods.connect,
         darsAvailable: methods.darsAvailable,
