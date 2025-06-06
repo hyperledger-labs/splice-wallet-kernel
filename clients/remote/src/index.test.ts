@@ -1,13 +1,15 @@
-import { expect, test } from '@jest/globals'
+import { afterAll, expect, test } from '@jest/globals'
 
 import request from 'supertest'
-import app from './index.js'
+import server from './index.js'
 
 test('hello world', async () => {
-    request(app)
-        .get('/api/hello')
-        .expect(200)
-        .then((response) => {
-            expect(response.body).toEqual({ message: 'Hello, world!' })
-        })
+    const response = await request(server).get('/api/hello')
+
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toEqual({ message: 'Hello, world!' })
+})
+
+afterAll(() => {
+    server.close()
 })
