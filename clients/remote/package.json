@@ -4,9 +4,9 @@
     "description": "",
     "main": "dist/index.js",
     "scripts": {
-        "build": "tsc",
-        "clean": "tsc -b --clean",
-        "dev": "tsx src/index.ts",
+        "build": "tsc -b",
+        "clean": "tsc -b --clean && rm -rf ./dist",
+        "dev": "tsx watch src/index.ts | pino-pretty",
         "test": "echo \"Error: no test specified\" && exit 1",
         "start": "node dist/index.js"
     },
@@ -15,12 +15,16 @@
     "license": "ISC",
     "type": "module",
     "dependencies": {
+        "@metamask/rpc-errors": "^7.0.2",
+        "arktype": "^2.1.20",
         "express": "^5.1.0",
+        "pino": "^9.7.0",
         "ws": "^8.18.2"
     },
     "devDependencies": {
         "@types/express": "^5.0.2",
         "@types/ws": "^8.18.1",
+        "pino-pretty": "^13.0.0",
         "tsx": "^4.19.4",
         "typescript": "^5.8.3"
     }

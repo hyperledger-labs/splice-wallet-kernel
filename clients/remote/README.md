@@ -29,3 +29,7 @@ Content-Type: application/json; charset=utf-8
 Content-Length: 27
 {"message":"Hello, world!"}%
 ```
+
+# Codegen
+
+The JSON-RPC API specs from `api-specs/` are generated into strongly-typed method builders for the remote RPC server. To update the codegen, run `yarn generate:dapp`.
