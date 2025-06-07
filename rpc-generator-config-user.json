@@ -1,0 +1,15 @@
+{
+    "openrpcDocument": "./api-specs/openrpc-user-api.json",
+    "outDir": ".",
+    "components": [
+        {
+            "type": "custom",
+            "name": "wallet-user-rpc-server",
+            "language": "typescript",
+            "openRPCPath": null,
+            "outPath": "./clients/remote/src/user-api/rpc-gen",
+            "customComponent": "./core/rpc-generator/dist/components/controller.js",
+            "customType": "controller"
+        }
+    ]
+}
