@@ -55,6 +55,9 @@ const toRpcResponse = (
     }
 }
 
+type Params = Parameters<Methods[keyof Methods]>[0]
+type Returns = ReturnType<Methods[keyof Methods]>
+
 export const jsonRpcHttpMiddleware = ({
     controller,
     logger: _logger,
@@ -84,7 +87,9 @@ export const jsonRpcHttpMiddleware = ({
                 `Received RPC request: method=${body.method}, params=${JSON.stringify(body.params)}`
             )
 
-            const methodFn = controller[method as keyof Methods]
+            const methodFn = controller[method as keyof Methods] as (
+                params?: Params
+            ) => Returns
             if (!methodFn) {
                 logger.error(`Method ${method} not found`)
                 res.status(404).json(
@@ -97,7 +102,7 @@ export const jsonRpcHttpMiddleware = ({
             }
 
             // TODO: validate params match the expected schema for the method
-            methodFn(params as any)
+            methodFn(params as Params)
                 .then((result) => {
                     res.json(toRpcResponse(id, { result }))
                 })

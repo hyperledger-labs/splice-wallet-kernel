@@ -12,15 +12,20 @@
         "sdk"
     ],
     "devDependencies": {
+        "@eslint/compat": "^1.2.9",
+        "@eslint/js": "^9.28.0",
         "@open-rpc/generator": "^2.0.0",
         "eslint": "^9.28.0",
+        "globals": "^16.2.0",
         "husky": "^9.1.7",
         "lint-staged": "^16.1.0",
         "prettier": "^3.5.3",
-        "typescript": "^5.8.3"
+        "typescript": "^5.8.3",
+        "typescript-eslint": "^8.33.1"
     },
     "lint-staged": {
-        "*": "prettier --write --ignore-unknown"
+        "*": "prettier --write --ignore-unknown",
+        "*.ts": "eslint"
     },
     "packageManager": "yarn@4.9.2"
 }

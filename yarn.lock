@@ -624,6 +624,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@eslint/compat@npm:^1.2.9":
+  version: 1.2.9
+  resolution: "@eslint/compat@npm:1.2.9"
+  peerDependencies:
+    eslint: ^9.10.0
+  peerDependenciesMeta:
+    eslint:
+      optional: true
+  checksum: 10c0/e912058f1e3847a1eec654c0c040467b676bd48171e915c730c7215f57cf5f4db8508c4a431ccb470f4a000d94559b41c4fe8de3d71f23eb8ae7acf4959e1c06
+  languageName: node
+  linkType: hard
+
 "@eslint/config-array@npm:^0.20.0":
   version: 0.20.0
   resolution: "@eslint/config-array@npm:0.20.0"
@@ -668,7 +680,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:9.28.0, @eslint/js@npm:^9.25.0":
+"@eslint/js@npm:9.28.0, @eslint/js@npm:^9.25.0, @eslint/js@npm:^9.28.0":
   version: 9.28.0
   resolution: "@eslint/js@npm:9.28.0"
   checksum: 10c0/5a6759542490dd9f778993edfbc8d2f55168fd0f7336ceed20fe3870c65499d72fc0bca8d1ae00ea246b0923ea4cba2e0758a8a5507a3506ddcf41c92282abb8
@@ -4575,7 +4587,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:^16.0.0":
+"globals@npm:^16.0.0, globals@npm:^16.2.0":
   version: 16.2.0
   resolution: "globals@npm:16.2.0"
   checksum: 10c0/c2b3ea163faa6f8a38076b471b12f4bda891f7df7f7d2e8294fb4801d735a51a73431bf4c1696c5bf5dbca5e0a0db894698acfcbd3068730c6b12eef185dea25
@@ -7280,12 +7292,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "splice-wallet-kernel@workspace:."
   dependencies:
+    "@eslint/compat": "npm:^1.2.9"
+    "@eslint/js": "npm:^9.28.0"
     "@open-rpc/generator": "npm:^2.0.0"
     eslint: "npm:^9.28.0"
+    globals: "npm:^16.2.0"
     husky: "npm:^9.1.7"
     lint-staged: "npm:^16.1.0"
     prettier: "npm:^3.5.3"
     typescript: "npm:^5.8.3"
+    typescript-eslint: "npm:^8.33.1"
   languageName: unknown
   linkType: soft
 
@@ -7689,7 +7705,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript-eslint@npm:^8.30.1":
+"typescript-eslint@npm:^8.30.1, typescript-eslint@npm:^8.33.1":
   version: 8.33.1
   resolution: "typescript-eslint@npm:8.33.1"
   dependencies:

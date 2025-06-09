@@ -1,4 +1,11 @@
+// Disabled unused vars rule to allow for future implementations
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import buildController from './rpc-gen/index.js'
+import {
+    LedgerApiParams,
+    PrepareExecuteParams,
+    PrepareReturnParams,
+} from './rpc-gen/typings.js'
 
 export const dappController = buildController({
     connect: async () =>
@@ -7,8 +14,8 @@ export const dappController = buildController({
             userUrl: 'http://default-user-url.com',
         }),
     darsAvailable: async () => Promise.resolve({ dars: ['default-dar'] }),
-    ledgerApi: async (params) =>
+    ledgerApi: async (params: LedgerApiParams) =>
         Promise.resolve({ response: 'default-response' }),
-    prepareExecute: async (params) => null,
-    prepareReturn: async (params) => Promise.resolve({}),
+    prepareExecute: async (params: PrepareExecuteParams) => null,
+    prepareReturn: async (params: PrepareReturnParams) => Promise.resolve({}),
 })

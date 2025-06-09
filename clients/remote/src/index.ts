@@ -9,10 +9,7 @@ const port = 3000
 const logger = pino({ name: 'main', level: 'debug' })
 
 app.use(express.json())
-app.use(
-    '/rpc',
-    jsonRpcHttpMiddleware({ controller: dappController as any, logger })
-)
+app.use('/rpc', jsonRpcHttpMiddleware({ controller: dappController, logger }))
 
 app.get('/api/hello', (req, res) => {
     res.json({ message: 'Hello, world!' })
