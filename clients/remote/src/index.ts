@@ -18,6 +18,8 @@ app.get('/api/hello', (req, res) => {
     res.json({ message: 'Hello, world!' })
 })
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     logger.info(`Server running at http://localhost:${port}`)
 })
+
+export default server
