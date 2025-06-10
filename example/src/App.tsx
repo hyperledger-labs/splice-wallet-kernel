@@ -1,40 +1,40 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import * as sdk from 'canton-wallet-sdk'
 
 function App() {
-    const [count, setCount] = useState(0)
+    const [loading, setLoading] = useState(false)
+    const [status, setStatus] = useState('disconnected')
 
     return (
-        <>
-            <div>
-                <a href="https://vite.dev" target="_blank">
-                    <img src={viteLogo} className="logo" alt="Vite logo" />
-                </a>
-                <a href="https://react.dev" target="_blank">
-                    <img
-                        src={reactLogo}
-                        className="logo react"
-                        alt="React logo"
-                    />
-                </a>
-            </div>
+        <div>
             <h1>Example dApp</h1>
-            <div className="card">{sdk.helloWorld()}</div>
             <div className="card">
-                <button onClick={() => setCount((count) => count + 1)}>
-                    count is {count}
+                <button
+                    disabled={loading}
+                    onClick={() => {
+                        console.log('Connecting to Wallet Kernel...')
+                        setLoading(true)
+                        sdk.discoverWallets()
+                            .then((wallets) => {
+                                console.log('Discovered wallets:', wallets)
+                                setLoading(false)
+                                setStatus(
+                                    `connected on ${wallets.map((w) => w.url).join(', ')}`
+                                )
+                            })
+                            .catch((err) => {
+                                console.error('Error setting status:', err)
+                                setStatus('error')
+                            })
+                    }}
+                >
+                    connect to wallet kernel
                 </button>
-                <p>
-                    Edit <code>src/App.tsx</code> and save to test HMR
-                </p>
+                {loading && <p>Loading...</p>}
+                <p>status: {status}</p>
             </div>
-            <p className="read-the-docs">
-                Click on the Vite and React logos to learn more
-            </p>
-        </>
+        </div>
     )
 }
 

@@ -6,6 +6,7 @@
     "main": "dist/index.js",
     "scripts": {
         "build": "yarn generate && tsc -b",
+        "dev": "tsc -b --watch",
         "clean": "rm -rf client",
         "test": "echo \"Error: no test specified\" && exit 1",
         "generate": "open-rpc-generator generate -c ./open-rpc-generator-config.json"
