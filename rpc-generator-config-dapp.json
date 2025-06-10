@@ -4,11 +4,6 @@
     "components": [
         {
             "type": "client",
-            "name": "wallet-dapp-rpc-client",
-            "language": "typescript"
-        },
-        {
-            "type": "client",
             "name": "core-wallet-dapp-rpc-client",
             "language": "typescript",
             "outPath": "./core/wallet-dapp-rpc-client"
