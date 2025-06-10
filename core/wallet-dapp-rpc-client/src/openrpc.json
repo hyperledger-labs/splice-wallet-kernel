@@ -1,0 +1,189 @@
+{
+    "openrpc": "1.2.6",
+    "info": {
+        "title": "Wallet JSON-RPC dApp API",
+        "version": "1.0.0",
+        "description": "An OpenRPC specification for dApp clients interacting with a wallet kernel over JSON-RPC."
+    },
+    "methods": [
+        {
+            "name": "connect",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "ConnectResult",
+                    "type": "object",
+                    "properties": {
+                        "chainId": {
+                            "type": "string",
+                            "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
+                        },
+                        "userUrl": {
+                            "$ref": "#/components/schemas/UserUrl"
+                        }
+                    },
+                    "required": ["userUrl"]
+                }
+            },
+            "description": "Ensures ledger connectivity. Returns the current chainId if connected, or the user url if disconnected."
+        },
+        {
+            "name": "darsAvailable",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "darsAvailableResult",
+                    "type": "object",
+                    "properties": {
+                        "dars": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "required": ["dars"]
+                }
+            },
+            "description": "Lists DARs currently available on the connected Canton node."
+        },
+        {
+            "name": "prepareReturn",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "prepareReturnParams",
+                        "type": "object",
+                        "properties": {
+                            "commands": {
+                                "$ref": "#/components/schemas/JsCommands"
+                            }
+                        },
+                        "required": ["commands"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "prepareReturnResult",
+                    "properties": {
+                        "response": {
+                            "$ref": "#/components/schemas/JsPrepareSubmissionResponse"
+                        }
+                    },
+                    "required": ["response"]
+                }
+            },
+            "description": "Processes the prepare step and returns the data to sign."
+        },
+        {
+            "name": "prepareExecute",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "prepareExecuteParams",
+                        "type": "object",
+                        "properties": {
+                            "commands": {
+                                "$ref": "#/components/schemas/JsCommands"
+                            }
+                        },
+                        "required": ["commands"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "prepareExecuteResult",
+                    "properties": {
+                        "userUrl": {
+                            "$ref": "#/components/schemas/UserUrl"
+                        }
+                    },
+                    "required": ["userUrl"]
+                }
+            },
+            "description": "Prepares, signs, and executes a transaction."
+        },
+        {
+            "name": "ledgerApi",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "ledgerApiParams",
+                        "type": "object",
+                        "properties": {
+                            "requestMethod": {
+                                "type": "string",
+                                "enum": ["GET", "POST", "PUT", "DELETE"]
+                            },
+                            "resource": {
+                                "type": "string"
+                            },
+                            "body": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["requestMethod", "resource"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "ledgerApiResult",
+                    "type": "object",
+                    "properties": {
+                        "response": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["response"]
+                }
+            },
+            "description": "Proxy for the JSON-API endpoints. Injects authorization headers automatically."
+        }
+    ],
+    "components": {
+        "schemas": {
+            "Null": {
+                "title": "Null",
+                "type": "null",
+                "description": "Represents a null value, used in responses where no data is returned."
+            },
+            "UserUrl": {
+                "title": "UserUrl",
+                "type": "string",
+                "format": "uri",
+                "description": "A URL that points to a user interface."
+            },
+            "JsCommands": {
+                "title": "JsCommands",
+                "type": "object",
+                "description": "Structure representing JS commands for transaction execution"
+            },
+            "JsPrepareSubmissionResponse": {
+                "title": "JsPrepareSubmissionResponse",
+                "type": "object",
+                "description": "Structure representing the result of a prepareReturn call",
+                "properties": {
+                    "preparedTransaction": {
+                        "type": "string",
+                        "description": "The prepared transaction data."
+                    },
+                    "preparedTransactionHash": {
+                        "type": "string",
+                        "description": "The hash of the prepared transaction."
+                    }
+                }
+            }
+        }
+    }
+}
