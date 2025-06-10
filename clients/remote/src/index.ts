@@ -9,6 +9,7 @@ const userPort = 3001
 
 const logger = pino({ name: 'main', level: 'debug' })
 
+// TODO: refactor to use a single controller per middleware, e.g. make middleware generic
 const controllers = {
     ...dappController,
     ...userController,
