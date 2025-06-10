@@ -6,6 +6,7 @@ npm-debug.log
 .env
 .DS_Store
 *.tsbuildinfo
+**/build
 
 generated/
 
