@@ -2522,7 +2522,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*":
+"@types/node@npm:*, @types/node@npm:^24.0.0":
   version: 24.0.0
   resolution: "@types/node@npm:24.0.0"
   dependencies:
@@ -3539,6 +3539,7 @@ __metadata:
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
     "@types/lodash": "npm:^4.14.149"
+    "@types/node": "npm:^24.0.0"
     "@types/ws": "npm:^6.0.1"
     "@typescript-eslint/eslint-plugin": "npm:^8.25.0"
     eslint-config-prettier: "npm:^10.0.1"
