@@ -1547,7 +1547,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@json-schema-tools/meta-schema@npm:^1.7.5":
+"@json-schema-tools/meta-schema@npm:*, @json-schema-tools/meta-schema@npm:^1.7.5":
   version: 1.7.5
   resolution: "@json-schema-tools/meta-schema@npm:1.7.5"
   checksum: 10c0/20326fea5d5342f14a7f34922298a8dc1c12b5c7ac78abc5b6ee5de035a9836a69edb404366cbe4cd352c31a894f5e761a5786f24a865ea72ea46312b2ca4ee5
@@ -2420,7 +2420,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/isomorphic-fetch@npm:^0.0.39":
+"@types/isomorphic-fetch@npm:*, @types/isomorphic-fetch@npm:^0.0.39":
   version: 0.0.39
   resolution: "@types/isomorphic-fetch@npm:0.0.39"
   checksum: 10c0/7adc0880a4a575ccd2c2066c00942a03d69eff02acd371da764e9258f18ca96367075fc87656993ed24a66f9de1ffe2fea4900cae7c4ee04e84b2358637d3f80
@@ -2522,7 +2522,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^24.0.0":
+"@types/node@npm:*":
   version: 24.0.0
   resolution: "@types/node@npm:24.0.0"
   dependencies:
@@ -2645,21 +2645,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/ws@npm:*, @types/ws@npm:^8.18.1":
+  version: 8.18.1
+  resolution: "@types/ws@npm:8.18.1"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/61aff1129143fcc4312f083bc9e9e168aa3026b7dd6e70796276dcfb2c8211c4292603f9c4864fae702f2ed86e4abd4d38aa421831c2fd7f856c931a481afbab
+  languageName: node
+  linkType: hard
+
 "@types/ws@npm:^6.0.1":
   version: 6.0.4
   resolution: "@types/ws@npm:6.0.4"
   dependencies:
     "@types/node": "npm:*"
   checksum: 10c0/fa958e64596ca9487c3ed6012834de70b47f25d971f1950cfb8e6a99cb77ff340ae82ac7627744e01b58010674ef8ede07d5a2ac29ca9ad0d67a430fcc69ae14
-  languageName: node
-  linkType: hard
-
-"@types/ws@npm:^8.18.1":
-  version: 8.18.1
-  resolution: "@types/ws@npm:8.18.1"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10c0/61aff1129143fcc4312f083bc9e9e168aa3026b7dd6e70796276dcfb2c8211c4292603f9c4864fae702f2ed86e4abd4d38aa421831c2fd7f856c931a481afbab
   languageName: node
   linkType: hard
 
@@ -2700,7 +2700,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/parser@npm:8.34.0":
+"@typescript-eslint/parser@npm:*, @typescript-eslint/parser@npm:8.34.0":
   version: 8.34.0
   resolution: "@typescript-eslint/parser@npm:8.34.0"
   dependencies:
@@ -3539,7 +3539,6 @@ __metadata:
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
     "@types/lodash": "npm:^4.14.149"
-    "@types/node": "npm:^24.0.0"
     "@types/ws": "npm:^6.0.1"
     "@typescript-eslint/eslint-plugin": "npm:^8.25.0"
     eslint-config-prettier: "npm:^10.0.1"
@@ -4091,7 +4090,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^9.25.0, eslint@npm:^9.28.0":
+"eslint@npm:*, eslint@npm:^9.25.0, eslint@npm:^9.28.0":
   version: 9.28.0
   resolution: "eslint@npm:9.28.0"
   dependencies:
