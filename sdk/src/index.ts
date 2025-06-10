@@ -1,1 +1,1 @@
-export * from './discovery'
+export * from './connect/index'

@@ -4,6 +4,6 @@
         "rootDir": "./src",
         "outDir": "./dist"
     },
-    "include": ["src", "src/discovery.ts"],
+    "include": ["src"],
     "exclude": ["node_modules"]
 }

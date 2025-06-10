@@ -4,8 +4,8 @@ const winHtml = `<!DOCTYPE html>
             <title>Wallet Kernel</title>
         </head>
         <body>
-            <h1>Connect to a Wallet Kernel</h1>
-            <input autofocus id="wkurl" type="text" placeholder="Wallet Kernel RPC URL" />
+            <h1>Add Remote Wallet Kernel</h1>
+            <input autofocus id="wkurl" type="text" placeholder="RPC URL" />
             <button id="connect">Connect</button>
         </body>
 
@@ -22,37 +22,31 @@ const winHtml = `<!DOCTYPE html>
 
 const winUrl = URL.createObjectURL(new Blob([winHtml], { type: 'text/html' }))
 
-type WalletDiscoveryResult = {
-    type: 'rpc'
+interface DiscoverResult {
     url: string
 }
 
-interface Data {
-    url: string
-}
-
-export async function discoverWallets(): Promise<WalletDiscoveryResult[]> {
+export async function discover(): Promise<DiscoverResult> {
     return new Promise((resolve, reject) => {
-        let response: Data | undefined = undefined
+        let response: DiscoverResult | undefined = undefined
 
         const win = window.open(
             winUrl,
-            'win',
+            'discovery',
             `width=400,height=500,screenX=200,screenY=200`
         )
 
-        // win?.addEventListener('unload', () => {
-        //     if (response === undefined) {
-        //         console.log('Wallet discovery window closed by user')
-        //         reject('User closed the wallet discovery window')
-        //     }
-        // })
+        win?.addEventListener('beforeunload', () => {
+            if (response === undefined) {
+                console.log('Wallet discovery window closed by user')
+                reject('User closed the wallet discovery window')
+            }
+        })
 
         const handler = (event: MessageEvent) => {
-            console.log('Received message from wallet kernel:', event)
             if (event.origin === window.location.origin) {
                 response = event.data
-                resolve([{ type: 'rpc', url: event.data.url }])
+                resolve({ url: event.data.url })
                 window.removeEventListener('message', handler)
                 win?.close()
             }

@@ -5,6 +5,7 @@ import * as sdk from 'canton-wallet-sdk'
 function App() {
     const [loading, setLoading] = useState(false)
     const [status, setStatus] = useState('disconnected')
+    const [error, setError] = useState('')
 
     return (
         <div>
@@ -15,17 +16,17 @@ function App() {
                     onClick={() => {
                         console.log('Connecting to Wallet Kernel...')
                         setLoading(true)
-                        sdk.discoverWallets()
-                            .then((wallets) => {
-                                console.log('Discovered wallets:', wallets)
+                        sdk.connect()
+                            .then(({ url }) => {
                                 setLoading(false)
-                                setStatus(
-                                    `connected on ${wallets.map((w) => w.url).join(', ')}`
-                                )
+                                setStatus(`connected on ${url}`)
+                                setError('')
                             })
                             .catch((err) => {
                                 console.error('Error setting status:', err)
+                                setLoading(false)
                                 setStatus('error')
+                                setError(err.details)
                             })
                     }}
                 >
@@ -33,6 +34,7 @@ function App() {
                 </button>
                 {loading && <p>Loading...</p>}
                 <p>status: {status}</p>
+                {error && <p className="error">Error: {error}</p>}
             </div>
         </div>
     )
