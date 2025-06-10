@@ -8,6 +8,12 @@
             "language": "typescript"
         },
         {
+            "type": "client",
+            "name": "core-wallet-dapp-rpc-client",
+            "language": "typescript",
+            "outPath": "./core/wallet-dapp-rpc-client"
+        },
+        {
             "type": "custom",
             "name": "wallet-dapp-rpc-server",
             "language": "typescript",

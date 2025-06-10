@@ -6,9 +6,13 @@ import { includeIgnoreFile } from '@eslint/compat'
 import { fileURLToPath } from 'node:url'
 
 const gitignorePath = fileURLToPath(new URL('.gitignore', import.meta.url))
+const eslintIgnorePath = fileURLToPath(
+    new URL('.eslintignore', import.meta.url)
+)
 
 export default defineConfig([
     includeIgnoreFile(gitignorePath),
+    includeIgnoreFile(eslintIgnorePath),
     globalIgnores(['.yarn/', '**/dist/', '**/build/', '.pnp.*']),
     {
         files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
