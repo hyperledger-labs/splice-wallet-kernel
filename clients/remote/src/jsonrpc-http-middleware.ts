@@ -1,8 +1,11 @@
 import { NextFunction, Request, Response } from 'express'
 import { Logger } from 'pino'
-import { Methods } from './dapp-api/rpc-gen/index.js'
+import { Methods as DappMethods } from './dapp-api/rpc-gen/index.js'
+import { Methods as UserMethods } from './user-api/rpc-gen/index.js'
 import { type } from 'arktype'
 import { rpcErrors } from '@metamask/rpc-errors'
+
+type Methods = DappMethods & UserMethods
 
 interface JsonRpcHttpOptions {
     logger: Logger
