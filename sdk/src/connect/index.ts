@@ -46,7 +46,7 @@ export class DAppClient {
         const url = new URL(config.baseUrl || 'http://localhost:3333')
         this.client = new dappAPI.SpliceWalletJSONRPCDAppAPI({
             transport: {
-                type: 'http',
+                type: url.protocol === 'https:' ? 'https' : 'http',
                 host: url.hostname,
                 port: parseInt(url.port),
                 path: url.pathname && url.pathname !== '/' ? url.pathname : '',
