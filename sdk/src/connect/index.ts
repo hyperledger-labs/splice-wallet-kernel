@@ -40,15 +40,11 @@ export interface DAppRpcClientOptions {
 }
 
 export class DAppClient {
-    private client: dappAPI.WalletJSONRPCDAppAPI
+    private client: dappAPI.SpliceWalletJSONRPCDAppAPI
 
     constructor(config: DAppRpcClientOptions = {}) {
-        // const transport = new HTTPTransport(
-        //     config.baseUrl || 'http://localhost:3333'
-        // );
-
         const url = new URL(config.baseUrl || 'http://localhost:3333')
-        this.client = new dappAPI.WalletJSONRPCDAppAPI({
+        this.client = new dappAPI.SpliceWalletJSONRPCDAppAPI({
             transport: {
                 type: 'http',
                 host: url.hostname,
