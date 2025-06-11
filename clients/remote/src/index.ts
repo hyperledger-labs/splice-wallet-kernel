@@ -3,21 +3,20 @@ import { dappController } from './dapp-api/controller.js'
 import { userController } from './user-api/controller.js'
 import { jsonRpcHttpMiddleware } from './jsonrpc-http-middleware.js'
 import { pino } from 'pino'
+import { Methods as DappMethods } from './dapp-api/rpc-gen/index.js'
+import { Methods as UserMethods } from './user-api/rpc-gen/index.js'
 
 const dAppPort = 3000
 const userPort = 3001
 
 const logger = pino({ name: 'main', level: 'debug' })
 
-// TODO: refactor to use a single controller per middleware, e.g. make middleware generic
-const controllers = {
-    ...dappController,
-    ...userController,
-}
-
 const dapp = express()
 dapp.use(express.json())
-dapp.use('/rpc', jsonRpcHttpMiddleware({ controller: controllers, logger }))
+dapp.use(
+    '/rpc',
+    jsonRpcHttpMiddleware<DappMethods>({ controller: dappController, logger })
+)
 dapp.get('/api/hello', (req, res) => {
     res.json({ message: 'Hello, world!' })
 })
@@ -28,7 +27,10 @@ export const dAppServer = dapp.listen(dAppPort, () => {
 
 const user = express()
 user.use(express.json())
-user.use('/rpc', jsonRpcHttpMiddleware({ controller: controllers, logger }))
+user.use(
+    '/rpc',
+    jsonRpcHttpMiddleware<UserMethods>({ controller: userController, logger })
+)
 user.get('/api/hello', (req, res) => {
     res.json({ message: 'Hello, world!' })
 })
