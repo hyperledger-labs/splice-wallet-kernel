@@ -39,7 +39,7 @@ export interface DAppRpcClientOptions {
     headers?: Record<string, string>
 }
 
-export class DAppClient {
+export class DAppProvider {
     private client: dappAPI.SpliceWalletJSONRPCDAppAPI
 
     constructor(config: DAppRpcClientOptions = {}) {
