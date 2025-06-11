@@ -1,3 +1,3 @@
 # Wallet Kernel Clients
 
-This folder contains the various Canton Wallet implementations.
+This folder contains the various Splice Wallet implementations.

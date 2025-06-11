@@ -4,7 +4,7 @@
     "components": [
         {
             "type": "client",
-            "name": "canton-wallet-client",
+            "name": "splice-wallet-client",
             "language": "typescript"
         }
     ]

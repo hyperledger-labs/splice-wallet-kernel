@@ -10,9 +10,9 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "canton-wallet-sdk": "workspace:^",
         "react": "^19.1.0",
-        "react-dom": "^19.1.0"
+        "react-dom": "^19.1.0",
+        "splice-wallet-sdk": "workspace:^"
     },
     "devDependencies": {
         "@eslint/js": "^9.25.0",

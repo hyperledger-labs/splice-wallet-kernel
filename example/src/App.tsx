@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import './App.css'
-import * as sdk from 'canton-wallet-sdk'
+import * as sdk from 'splice-wallet-sdk'
 
 function App() {
     const [loading, setLoading] = useState(false)
