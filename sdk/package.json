@@ -1,8 +1,8 @@
 {
-    "name": "canton-wallet-sdk",
+    "name": "splice-wallet-sdk",
     "type": "module",
     "version": "0.0.1",
-    "description": "Connects your Canton dApp to Wallet Client users",
+    "description": "Connects your splice dApp to Wallet Client users",
     "main": "dist/index.js",
     "scripts": {
         "build": "yarn generate && tsc -b",

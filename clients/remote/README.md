@@ -1,4 +1,4 @@
-# Canton Remote Wallet
+# Splice Remote Wallet
 
 The RPC-based (server-side) Wallet Client.
 

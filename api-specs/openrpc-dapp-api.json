@@ -1,9 +1,9 @@
 {
     "openrpc": "1.2.6",
     "info": {
-        "title": "Wallet JSON-RPC dApp API",
+        "title": "Splice Wallet JSON-RPC dApp API",
         "version": "1.0.0",
-        "description": "An OpenRPC specification for dApp clients interacting with a wallet kernel over JSON-RPC."
+        "description": "An OpenRPC specification for the dapp to interact with a wallet kernel."
     },
     "methods": [
         {
@@ -47,7 +47,7 @@
                     "required": ["dars"]
                 }
             },
-            "description": "Lists DARs currently available on the connected Canton node."
+            "description": "Lists DARs currently available on the connected Validator node."
         },
         {
             "name": "prepareReturn",

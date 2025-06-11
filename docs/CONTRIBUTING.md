@@ -20,9 +20,14 @@ It is also recommended (but not required) to add a gpg key: https://docs.github.
 
 ## Running
 
+### building
+
+you can build each repo seperately by going into the repo and running `yarn build`. Alternatively you can run `yarn build:all` to build all workspaces from root.
+
 ### API generation
 
 Run `yarn generate:<api>` from the root to regen RPC clients/servers for a particular Wallet Kernel API. For example:
 
 - `yarn generate:dapp`: dApp API
-- ...
+- `yarn generate:user`: User API
+- `yarn generate:all` : Generate all of the above API specs

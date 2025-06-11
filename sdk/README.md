@@ -1,6 +1,6 @@
 # SDK
 
-Connects your Canton dApp to Wallet Client users.
+Connects your Splice dApp to Wallet Client users.
 
 ## Build
 

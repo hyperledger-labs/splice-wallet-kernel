@@ -1,5 +1,5 @@
 {
-    "name": "canton-wallet-api-specs",
+    "name": "splice-wallet-api-specs",
     "version": "1.0.0",
     "description": "Splice Wallet Kernel API specifications",
     "main": "index.js",

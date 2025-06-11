@@ -130,15 +130,15 @@ export interface Options {
     }
 }
 
-export class WalletJSONRPCDAppAPI {
+export class SpliceWalletJSONRPCDAppAPI {
     public rpc: Client
     public static openrpcDocument: OpenRPC = {
         openrpc: '1.2.6',
         info: {
-            title: 'Wallet JSON-RPC dApp API',
+            title: 'Splice Wallet JSON-RPC dApp API',
             version: '1.0.0',
             description:
-                'An OpenRPC specification for dApp clients interacting with a wallet kernel over JSON-RPC.',
+                'An OpenRPC specification for the dapp to interact with a wallet kernel.',
         },
         methods: [
             {
@@ -178,7 +178,7 @@ export class WalletJSONRPCDAppAPI {
                     },
                 },
                 description:
-                    'Lists DARs currently available on the connected Canton node.',
+                    'Lists DARs currently available on the connected Validator node.',
             },
             {
                 name: 'prepareReturn',
@@ -373,7 +373,7 @@ export class WalletJSONRPCDAppAPI {
             return
         }
         this.dereffedDocument = await parseOpenRPCDocument(
-            WalletJSONRPCDAppAPI.openrpcDocument
+            SpliceWalletJSONRPCDAppAPI.openrpcDocument
         )
         this.validator = new MethodCallValidator(this.dereffedDocument)
     }
@@ -409,10 +409,10 @@ export class WalletJSONRPCDAppAPI {
     }
 
     /**
-     * Initiates [[WalletJSONRPCDAppAPI.startBatch]] in order to build a batch call.
+     * Initiates [[SpliceWalletJSONRPCDAppAPI.startBatch]] in order to build a batch call.
      *
-     * Subsequent calls to [[WalletJSONRPCDAppAPI.request]] will be added to the batch.
-     * Once [[WalletJSONRPCDAppAPI.stopBatch]] is called, the promises for the [[WalletJSONRPCDAppAPI.request]]
+     * Subsequent calls to [[SpliceWalletJSONRPCDAppAPI.request]] will be added to the batch.
+     * Once [[SpliceWalletJSONRPCDAppAPI.stopBatch]] is called, the promises for the [[SpliceWalletJSONRPCDAppAPI.request]]
      * will then be resolved.  If there is already a batch in progress this method is a noop.
      *
      * @example
@@ -428,8 +428,8 @@ export class WalletJSONRPCDAppAPI {
     /**
      * Initiates [[Client.stopBatch]] in order to finalize and send the batch to the underlying transport.
      *
-     * stopBatch will send the [[WalletJSONRPCDAppAPI]] calls made since the last [[WalletJSONRPCDAppAPI.startBatch]] call. For
-     * that reason, [[WalletJSONRPCDAppAPI.startBatch]] MUST be called before [[WalletJSONRPCDAppAPI.stopBatch]].
+     * stopBatch will send the [[SpliceWalletJSONRPCDAppAPI]] calls made since the last [[SpliceWalletJSONRPCDAppAPI.startBatch]] call. For
+     * that reason, [[SpliceWalletJSONRPCDAppAPI.startBatch]] MUST be called before [[SpliceWalletJSONRPCDAppAPI.stopBatch]].
      *
      * @example
      * myClient.startBatch();
@@ -447,7 +447,8 @@ export class WalletJSONRPCDAppAPI {
             throw new Error('internal error')
         }
         const methodObject = _.find(
-            WalletJSONRPCDAppAPI.openrpcDocument.methods as MethodObject[],
+            SpliceWalletJSONRPCDAppAPI.openrpcDocument
+                .methods as MethodObject[],
             ({ name }) => name === methodName
         ) as MethodObject
         const notification = methodObject.result ? false : true
@@ -520,4 +521,4 @@ export class WalletJSONRPCDAppAPI {
         return this.request('ledgerApi', params)
     }
 }
-export default WalletJSONRPCDAppAPI
+export default SpliceWalletJSONRPCDAppAPI
