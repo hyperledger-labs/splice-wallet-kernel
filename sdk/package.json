@@ -14,11 +14,12 @@
     },
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
-    "devDependencies": {
-        "@open-rpc/generator": "^2.0.0",
-        "typescript": "^5.8.3"
-    },
     "dependencies": {
         "splice-provider": "workspace:^"
+    },
+    "devDependencies": {
+        "@open-rpc/client-js": "^1.8.1",
+        "@open-rpc/generator": "^2.0.0",
+        "typescript": "^5.8.3"
     }
 }

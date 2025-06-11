@@ -1710,7 +1710,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@open-rpc/client-js@npm:1.8.1":
+"@open-rpc/client-js@npm:1.8.1, @open-rpc/client-js@npm:^1.8.1":
   version: 1.8.1
   resolution: "@open-rpc/client-js@npm:1.8.1"
   dependencies:
@@ -7560,6 +7560,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "splice-wallet-sdk@workspace:sdk"
   dependencies:
+    "@open-rpc/client-js": "npm:^1.8.1"
     "@open-rpc/generator": "npm:^2.0.0"
     splice-provider: "workspace:^"
     typescript: "npm:^5.8.3"
