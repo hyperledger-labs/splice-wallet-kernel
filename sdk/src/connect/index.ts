@@ -1,4 +1,5 @@
 import { discover } from './discovery'
+import * as dappAPI from 'core-wallet-dapp-rpc-client'
 
 export enum ErrorCode {
     UserCancelled,
@@ -31,4 +32,34 @@ export async function connect(): Promise<ConnectResult> {
                 details: err instanceof Error ? err.message : String(err),
             } as ConnectError
         })
+}
+
+export interface DAppRpcClientOptions {
+    baseUrl?: string
+    headers?: Record<string, string>
+}
+
+export class DAppClient {
+    private client: dappAPI.WalletJSONRPCDAppAPI
+
+    constructor(config: DAppRpcClientOptions = {}) {
+        // const transport = new HTTPTransport(
+        //     config.baseUrl || 'http://localhost:3333'
+        // );
+
+        const url = new URL(config.baseUrl || 'http://localhost:3333')
+        this.client = new dappAPI.WalletJSONRPCDAppAPI({
+            transport: {
+                type: 'http',
+                host: url.hostname,
+                port: parseInt(url.port),
+                path: url.pathname && url.pathname !== '/' ? url.pathname : '',
+                protocol: '2.0',
+            },
+        })
+    }
+
+    public async connect() {
+        return this.client.connect()
+    }
 }

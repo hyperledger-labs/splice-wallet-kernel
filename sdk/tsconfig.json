@@ -2,8 +2,16 @@
     "extends": "../tsconfig.base.json",
     "compilerOptions": {
         "rootDir": "./src",
-        "outDir": "./dist"
+        "outDir": "./dist",
+        "moduleResolution": "node",
+        "baseUrl": ".",
+        "paths": {
+            "core-wallet-dapp-rpc-client": [
+                "../core/wallet-dapp-rpc-client/src"
+            ]
+        }
     },
     "include": ["src"],
-    "exclude": ["node_modules"]
+    "exclude": ["node_modules"],
+    "references": [{ "path": "../core/wallet-dapp-rpc-client" }]
 }

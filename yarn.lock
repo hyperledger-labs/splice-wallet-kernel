@@ -1710,7 +1710,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@open-rpc/client-js@npm:1.8.1":
+"@open-rpc/client-js@npm:1.8.1, @open-rpc/client-js@npm:^1.8.1":
   version: 1.8.1
   resolution: "@open-rpc/client-js@npm:1.8.1"
   dependencies:
@@ -3276,6 +3276,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"canton-wallet-api-specs@workspace:api-specs":
+  version: 0.0.0-use.local
+  resolution: "canton-wallet-api-specs@workspace:api-specs"
+  dependencies:
+    "@open-rpc/generator": "npm:^2.0.0"
+    "@open-rpc/mock-server": "npm:^1.7.8"
+  languageName: unknown
+  linkType: soft
+
+"canton-wallet-sdk@workspace:^, canton-wallet-sdk@workspace:sdk":
+  version: 0.0.0-use.local
+  resolution: "canton-wallet-sdk@workspace:sdk"
+  dependencies:
+    "@open-rpc/client-js": "npm:^1.8.1"
+    "@open-rpc/generator": "npm:^2.0.0"
+    core-wallet-dapp-rpc-client: "workspace:^"
+    typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
+
 "chalk@npm:^4.0.0, chalk@npm:^4.1.2":
   version: 4.1.2
   resolution: "chalk@npm:4.1.2"
@@ -3509,7 +3529,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client":
+"core-wallet-dapp-rpc-client@workspace:^, core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client":
   version: 0.0.0-use.local
   resolution: "core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client"
   dependencies:
@@ -4216,6 +4236,7 @@ __metadata:
     "@types/react": "npm:^19.1.2"
     "@types/react-dom": "npm:^19.1.2"
     "@vitejs/plugin-react": "npm:^4.4.1"
+    canton-wallet-sdk: "workspace:^"
     eslint: "npm:^9.25.0"
     eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-react-refresh: "npm:^0.4.19"
