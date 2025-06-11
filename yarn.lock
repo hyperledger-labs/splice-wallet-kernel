@@ -7522,7 +7522,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"splice-provider@workspace:core/splice-provider":
+"splice-provider@workspace:^, splice-provider@workspace:core/splice-provider":
   version: 0.0.0-use.local
   resolution: "splice-provider@workspace:core/splice-provider"
   dependencies:
@@ -7561,6 +7561,7 @@ __metadata:
   resolution: "splice-wallet-sdk@workspace:sdk"
   dependencies:
     "@open-rpc/generator": "npm:^2.0.0"
+    splice-provider: "workspace:^"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
