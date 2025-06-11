@@ -1,15 +1,11 @@
 import { NextFunction, Request, Response } from 'express'
 import { Logger } from 'pino'
-import { Methods as DappMethods } from './dapp-api/rpc-gen/index.js'
-import { Methods as UserMethods } from './user-api/rpc-gen/index.js'
 import { type } from 'arktype'
 import { rpcErrors } from '@metamask/rpc-errors'
 
-type Methods = DappMethods & UserMethods
-
-interface JsonRpcHttpOptions {
+interface JsonRpcHttpOptions<T> {
     logger: Logger
-    controller: Methods
+    controller: T
 }
 
 const JsonRpcMeta = type({
@@ -58,67 +54,71 @@ const toRpcResponse = (
     }
 }
 
-type Params = Parameters<Methods[keyof Methods]>[0]
-type Returns = ReturnType<Methods[keyof Methods]>
+export const jsonRpcHttpMiddleware =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    <T extends Record<string, (...args: any[]) => any>>({
+        controller,
+        logger: _logger,
+    }: JsonRpcHttpOptions<T>) => {
+        const logger = _logger.child({ component: 'json-rpc-http' })
 
-export const jsonRpcHttpMiddleware = ({
-    controller,
-    logger: _logger,
-}: JsonRpcHttpOptions) => {
-    const logger = _logger.child({ component: 'json-rpc-http' })
+        type Params = Parameters<T[keyof T]>[0]
+        type Returns = ReturnType<T[keyof T]>
 
-    return (req: Request, res: Response, next: NextFunction) => {
-        if (req.method !== 'POST') {
-            next()
-        }
+        return (req: Request, res: Response, next: NextFunction) => {
+            if (req.method !== 'POST') {
+                next()
+            }
 
-        // validate request body schema
-        const body = JsonRpcRequest(req.body)
+            // validate request body schema
+            const body = JsonRpcRequest(req.body)
 
-        if (body instanceof type.errors) {
-            res.status(400).json(
-                toRpcResponse(null, {
-                    error: rpcErrors.invalidRequest({
-                        message: 'Invalid JSON-RPC request format',
-                    }),
-                })
-            )
-        } else {
-            const { method, params, id } = body
-
-            logger.debug(
-                `Received RPC request: method=${body.method}, params=${JSON.stringify(body.params)}`
-            )
-
-            const methodFn = controller[method as keyof Methods] as (
-                params?: Params
-            ) => Returns
-            if (!methodFn) {
-                logger.error(`Method ${method} not found`)
-                res.status(404).json(
+            if (body instanceof type.errors) {
+                res.status(400).json(
                     toRpcResponse(null, {
-                        error: rpcErrors.methodNotFound({
-                            message: `Method ${method} not found`,
+                        error: rpcErrors.invalidRequest({
+                            message: 'Invalid JSON-RPC request format',
                         }),
                     })
                 )
-            }
+            } else {
+                const { method, params, id } = body
 
-            // TODO: validate params match the expected schema for the method
-            methodFn(params as Params)
-                .then((result) => {
-                    res.json(toRpcResponse(id, { result }))
-                })
-                .catch((error) => {
-                    logger.error(`Error in method ${method}:`, error)
-                    res.status(500).json(
+                logger.debug(
+                    `Received RPC request: method=${body.method}, params=${JSON.stringify(body.params)}`
+                )
+
+                const methodFn = controller[method as keyof T] as (
+                    params?: Params
+                ) => Returns
+                if (!methodFn) {
+                    logger.error(`Method ${method} not found`)
+                    res.status(404).json(
                         toRpcResponse(null, {
-                            error: rpcErrors.internal({
-                                message: `Error in method ${method}: ${error.message}`,
+                            error: rpcErrors.methodNotFound({
+                                message: `Method ${method} not found`,
                             }),
                         })
                     )
-                })
+                }
+
+                // TODO: validate params match the expected schema for the method
+                methodFn(params as Params)
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    .then((result: any) => {
+                        res.json(toRpcResponse(id, { result }))
+                    })
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    .catch((error: any) => {
+                        logger.error(`Error in method ${method}:`, error)
+                        res.status(500).json(
+                            toRpcResponse(null, {
+                                error: rpcErrors.internal({
+                                    message: `Error in method ${method}: ${error.message}`,
+                                }),
+                            })
+                        )
+                    })
+            }
         }
     }
-}
