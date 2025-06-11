@@ -1,0 +1,11 @@
+{
+    "name": "splice-provider",
+    "version": "1.0.0",
+    "description": "A JavaScript Splice Provider API (EIP-1193 compliant).",
+    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
+    "license": "Apache-2.0",
+    "packageManager": "yarn@4.9.2",
+    "devDependencies": {
+        "typescript": "^5.8.3"
+    }
+}
