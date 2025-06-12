@@ -6,8 +6,8 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "build": "tsc -b",
-        "dev": "tsc -b --watch",
+        "build": "tsc -b && vite build",
+        "dev": "vite build --watch",
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
@@ -15,12 +15,19 @@
     "license": "Apache-2.0",
     "dependencies": {
         "core-wallet-dapp-rpc-client": "workspace:^",
-        "splice-provider": "workspace:^",
-        "wallet-ui-discovery": "workspace:^"
+        "splice-provider": "workspace:^"
     },
     "devDependencies": {
         "@open-rpc/client-js": "^1.8.1",
         "@open-rpc/generator": "^2.0.0",
-        "typescript": "^5.8.3"
+        "@types/node": "^24.0.1",
+        "@types/react": "^19.1.2",
+        "@types/react-dom": "^19.1.2",
+        "@vitejs/plugin-react": "^4.5.2",
+        "react": "^19.1.0",
+        "react-dom": "^19.1.0",
+        "typescript": "^5.8.3",
+        "vite": "^6.3.5",
+        "vite-plugin-dts": "^4.5.4"
     }
 }
