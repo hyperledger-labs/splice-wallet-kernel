@@ -3533,6 +3533,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"core-wallet-store@workspace:core/wallet-store":
+  version: 0.0.0-use.local
+  resolution: "core-wallet-store@workspace:core/wallet-store"
+  dependencies:
+    typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
+
 "cors@npm:^2.8.5":
   version: 2.8.5
   resolution: "cors@npm:2.8.5"
