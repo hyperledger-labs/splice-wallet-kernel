@@ -7196,8 +7196,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "rpc-generator@workspace:core/rpc-generator"
   dependencies:
+    "@iarna/toml": "npm:^2.2.5"
     "@open-rpc/generator": "npm:^2.0.0"
     "@open-rpc/meta-schema": "npm:^1.14.9"
+    "@open-rpc/typings": "npm:^1.12.4"
     "@types/fs-extra": "npm:^11"
     "@types/lodash": "npm:^4.17.17"
     "@types/node": "npm:^22.15.29"
