@@ -8,9 +8,13 @@
         "paths": {
             "core-wallet-dapp-rpc-client": [
                 "../core/wallet-dapp-rpc-client/src"
-            ]
+            ],
+            "splice-provider": ["../core/splice-provider/src"]
         }
     },
     "include": ["src"],
-    "references": [{ "path": "../core/wallet-dapp-rpc-client" }]
+    "references": [
+        { "path": "../core/wallet-dapp-rpc-client" },
+        { "path": "../core/splice-provider" }
+    ]
 }
