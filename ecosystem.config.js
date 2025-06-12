@@ -8,7 +8,11 @@ export const apps = [
         script: 'yarn workspace example dev',
     },
     {
-        name: 'sdk',
+        name: 'splice-wallet-sdk',
         script: 'yarn workspace splice-wallet-sdk dev',
+    },
+    {
+        name: 'splice-provider',
+        script: 'yarn workspace splice-provider dev',
     },
 ]
