@@ -1,5 +1,8 @@
 import { discover } from './discovery'
+import { injectSpliceProvider } from 'splice-provider'
 import * as dappAPI from 'core-wallet-dapp-rpc-client'
+
+export * from 'splice-provider'
 
 export enum ErrorCode {
     UserCancelled,
@@ -20,6 +23,17 @@ export type ConnectError = {
 export async function connect(): Promise<ConnectResult> {
     return discover()
         .then((result) => {
+            if (result.walletType === 'remote') {
+                const provider = injectSpliceProvider()
+
+                // TODO: Replace with actual connection logic
+                setTimeout(() => {
+                    provider.emit('connect', {
+                        chainId: 'TODO: replace with hex chain ID?',
+                    })
+                }, 1000)
+            }
+
             return {
                 status: 'success',
                 url: result.url,

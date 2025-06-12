@@ -4,6 +4,7 @@
     "version": "0.0.1",
     "description": "Connects your splice dApp to Wallet Client users",
     "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "scripts": {
         "build": "yarn generate && tsc -b",
         "dev": "tsc -b --watch",
@@ -14,7 +15,7 @@
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
     "dependencies": {
-        "core-wallet-dapp-rpc-client": "workspace:^"
+        "splice-provider": "workspace:^"
     },
     "devDependencies": {
         "@open-rpc/client-js": "^1.8.1",

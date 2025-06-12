@@ -15,7 +15,7 @@ const winHtml = `<!DOCTYPE html>
                 const url = document.getElementById('wkurl').value
 
                 console.log('Connecting to Wallet Kernel...' + url)
-                window.opener.postMessage({ url }, '*')
+                window.opener.postMessage({ url, walletType: 'remote' }, '*')
             })
         </script>
     </html>`
@@ -23,6 +23,7 @@ const winHtml = `<!DOCTYPE html>
 const winUrl = URL.createObjectURL(new Blob([winHtml], { type: 'text/html' }))
 
 interface DiscoverResult {
+    walletType: 'extension' | 'remote'
     url: string
 }
 
@@ -46,7 +47,10 @@ export async function discover(): Promise<DiscoverResult> {
         const handler = (event: MessageEvent) => {
             if (event.origin === window.location.origin) {
                 response = event.data
-                resolve({ url: event.data.url })
+                resolve({
+                    url: event.data.url,
+                    walletType: event.data.walletType,
+                })
                 window.removeEventListener('message', handler)
                 win?.close()
             }

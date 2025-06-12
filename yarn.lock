@@ -3509,7 +3509,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-wallet-dapp-rpc-client@workspace:^, core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client":
+"core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client":
   version: 0.0.0-use.local
   resolution: "core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client"
   dependencies:
@@ -7522,7 +7522,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"splice-provider@workspace:core/splice-provider":
+"splice-provider@workspace:^, splice-provider@workspace:core/splice-provider":
   version: 0.0.0-use.local
   resolution: "splice-provider@workspace:core/splice-provider"
   dependencies:
@@ -7562,7 +7562,7 @@ __metadata:
   dependencies:
     "@open-rpc/client-js": "npm:^1.8.1"
     "@open-rpc/generator": "npm:^2.0.0"
-    core-wallet-dapp-rpc-client: "workspace:^"
+    splice-provider: "workspace:^"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft

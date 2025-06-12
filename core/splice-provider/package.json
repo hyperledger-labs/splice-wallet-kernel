@@ -5,6 +5,14 @@
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
     "packageManager": "yarn@4.9.2",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b",
+        "dev": "tsc -b --watch",
+        "clean": "tsc -b --clean; rm -rf dist"
+    },
     "devDependencies": {
         "typescript": "^5.8.3"
     }
