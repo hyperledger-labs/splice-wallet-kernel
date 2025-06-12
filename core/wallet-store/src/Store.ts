@@ -1,4 +1,11 @@
-// Wallet types
+// Account
+
+export interface Account {
+    id: string
+    name: string
+}
+
+// Party / Wallet
 
 export interface PaperAddress {
     publicKey: string
@@ -66,8 +73,7 @@ export interface Store {
     getWallets(): Promise<Array<Wallet>>
     getPrimaryWallet(): Promise<Wallet | undefined>
     setPrimaryWallet(partyId: PartyId): Promise<void>
-    saveWallet(wallet: Wallet): Promise<void>
-    updateWallets(wallets: Array<Wallet>): Promise<void>
+    addWallet(wallet: Wallet): Promise<void>
 
     // Session methods
     getSession(): Promise<Session | undefined>
@@ -79,4 +85,10 @@ export interface Store {
     getCurrentNetwork(): Promise<NetworkConfig>
     updateNetwork(network: NetworkConfig): Promise<void>
     removeNetwork(name: string): Promise<void>
+}
+
+export interface AccountStore {
+    getStore(account: Account): Promise<Store>
+    setStore(account: Account, store: Store): Promise<void>
+    removeStore(account: Account): Promise<void>
 }
