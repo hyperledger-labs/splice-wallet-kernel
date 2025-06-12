@@ -3,7 +3,7 @@
     "private": true,
     "packageManager": "yarn@4.9.2",
     "scripts": {
-        "build": "mkdir -p ./dist && cp -r src/template ./dist/ && tsc -b",
+        "build": "mkdir -p ./dist && tsc -b",
         "clean": "tsc -b --clean && rm -rf ./dist"
     },
     "dependencies": {
