@@ -6,14 +6,16 @@ import { includeIgnoreFile } from '@eslint/compat'
 import { fileURLToPath } from 'node:url'
 
 const gitignorePath = fileURLToPath(new URL('.gitignore', import.meta.url))
-const eslintIgnorePath = fileURLToPath(
-    new URL('.eslintignore', import.meta.url)
-)
 
 export default defineConfig([
     includeIgnoreFile(gitignorePath),
-    includeIgnoreFile(eslintIgnorePath),
-    globalIgnores(['.yarn/', '**/dist/', '**/build/', '.pnp.*']),
+    globalIgnores([
+        '.yarn/',
+        '**/dist/',
+        '**/build/',
+        '.pnp.*',
+        'core/wallet-dapp-rpc-client',
+    ]),
     {
         files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
         plugins: { js },

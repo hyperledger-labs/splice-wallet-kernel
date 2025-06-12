@@ -3,13 +3,32 @@ import { hydrateRoot } from 'react-dom/client'
 import { renderToString } from 'react-dom/server'
 
 export function Popup() {
-    const [count, setCount] = useState(0)
+    const [rpcUrl, setRpcUrl] = useState('')
 
     return (
         <div id="root" style={{ backgroundColor: 'lightblue' }}>
-            <h1>From inside SDK with hydrate! nuclear!</h1>
-            <button onClick={() => setCount((count) => count + 1)}>
-                count is {count}
+            <h1>Select a Wallet Kernel</h1>
+            <input
+                type="text"
+                placeholder="Enter wallet URL"
+                value={rpcUrl}
+                onChange={(e) => setRpcUrl(e.target.value)}
+            />
+            <button
+                type="submit"
+                onClick={() => {
+                    console.log('Submitting RPC URL:', rpcUrl, window.opener)
+                    window.postMessage(
+                        {
+                            kind: 'discoveryMessage',
+                            url: rpcUrl,
+                            walletType: 'remote',
+                        },
+                        '*'
+                    )
+                }}
+            >
+                submit
             </button>
         </div>
     )
@@ -23,7 +42,11 @@ interface PopupOptions {
     screenY?: number
 }
 
-export function createPopup(title: string, options?: PopupOptions) {
+export function createPopup(
+    title: string,
+    onClose: () => void,
+    options?: PopupOptions
+) {
     const {
         target = '',
         width = 400,
@@ -55,6 +78,7 @@ export function createPopup(title: string, options?: PopupOptions) {
 
     if (popupWindow) {
         popupWindow.onbeforeunload = () => {
+            onClose()
             URL.revokeObjectURL(url)
         }
 
@@ -63,4 +87,6 @@ export function createPopup(title: string, options?: PopupOptions) {
             hydrateRoot(popupRoot!, <Popup />)
         }
     }
+
+    return popupWindow
 }
