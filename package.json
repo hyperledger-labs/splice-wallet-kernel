@@ -1,6 +1,9 @@
 {
     "name": "splice-wallet-kernel",
     "scripts": {
+        "start": "pm2 start ecosystem.config.js",
+        "restart": "pm2 restart",
+        "stop": "pm2 kill",
         "generate:dapp": "yarn workspace rpc-generator build && open-rpc-generator generate -c ./rpc-generator-config-dapp.json",
         "generate:user": "yarn workspace rpc-generator build && open-rpc-generator generate -c ./rpc-generator-config-user.json",
         "generate:all": "yarn generate:dapp && yarn generate:user",
@@ -23,6 +26,7 @@
         "globals": "^16.2.0",
         "husky": "^9.1.7",
         "lint-staged": "^16.1.0",
+        "pm2": "^6.0.8",
         "prettier": "^3.5.3",
         "typescript": "^5.8.3",
         "typescript-eslint": "^8.33.1"
