@@ -21,8 +21,11 @@ jobs:
             - name: Install dependencies
               run: yarn install --frozen-lockfile
 
-            - name: Lint code
+            - name: prettier code
               run: yarn run prettier . --check
+
+            - name: eslint code
+              run: yarn workspaces foreach -A run eslint
 
             - name: run codegen
               run: yarn generate:all
