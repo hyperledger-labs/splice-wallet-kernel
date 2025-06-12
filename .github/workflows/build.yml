@@ -24,5 +24,8 @@ jobs:
             - name: Lint code
               run: yarn run prettier . --check
 
+            - name: run codegen
+              run: yarn generate:all
+
             - name: Build project
-              run: yarn build
+              run: yarn build:all
