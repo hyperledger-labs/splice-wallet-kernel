@@ -7,10 +7,12 @@
         "strict": true,
         "sourceMap": true,
         "outDir": "build",
+        "rootDir": "src",
         "declarationDir": "build",
         "declaration": true,
         "resolveJsonModule": true,
-        "moduleResolution": "bundler"
+        "moduleResolution": "bundler",
+        "composite": true
     },
     "typedocOptions": {
         "name": "generated client",

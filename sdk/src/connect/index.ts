@@ -1,4 +1,8 @@
 import { discover } from './discovery'
+import { injectSpliceProvider } from 'splice-provider'
+import * as dappAPI from 'core-wallet-dapp-rpc-client'
+
+export * from 'splice-provider'
 
 export enum ErrorCode {
     UserCancelled,
@@ -19,6 +23,17 @@ export type ConnectError = {
 export async function connect(): Promise<ConnectResult> {
     return discover()
         .then((result) => {
+            if (result.walletType === 'remote') {
+                const provider = injectSpliceProvider()
+
+                // TODO: Replace with actual connection logic
+                setTimeout(() => {
+                    provider.emit('connect', {
+                        chainId: 'TODO: replace with hex chain ID?',
+                    })
+                }, 1000)
+            }
+
             return {
                 status: 'success',
                 url: result.url,
@@ -31,4 +46,30 @@ export async function connect(): Promise<ConnectResult> {
                 details: err instanceof Error ? err.message : String(err),
             } as ConnectError
         })
+}
+
+export interface DAppRpcClientOptions {
+    baseUrl?: string
+    headers?: Record<string, string>
+}
+
+export class DAppProvider {
+    private client: dappAPI.SpliceWalletJSONRPCDAppAPI
+
+    constructor(config: DAppRpcClientOptions = {}) {
+        const url = new URL(config.baseUrl || 'http://localhost:3333')
+        this.client = new dappAPI.SpliceWalletJSONRPCDAppAPI({
+            transport: {
+                type: url.protocol === 'https:' ? 'https' : 'http',
+                host: url.hostname,
+                port: parseInt(url.port),
+                path: url.pathname && url.pathname !== '/' ? url.pathname : '',
+                protocol: '2.0',
+            },
+        })
+    }
+
+    public async connect() {
+        return this.client.connect()
+    }
 }

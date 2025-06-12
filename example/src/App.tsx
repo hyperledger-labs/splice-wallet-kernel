@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import * as sdk from 'splice-wallet-sdk'
 
@@ -6,6 +6,25 @@ function App() {
     const [loading, setLoading] = useState(false)
     const [status, setStatus] = useState('disconnected')
     const [error, setError] = useState('')
+    const [messages, setMessages] = useState<string[]>([])
+
+    useEffect(() => {
+        const provider = window.splice
+
+        const messageListener = (event: unknown) => {
+            setMessages((prev) => [...prev, JSON.stringify(event)])
+        }
+
+        if (provider) {
+            provider.on('message', messageListener)
+            provider.on('connect', messageListener)
+        }
+
+        return () => {
+            provider?.removeListener('message', messageListener)
+            provider?.removeListener('connect', messageListener)
+        }
+    }, [status])
 
     return (
         <div>
@@ -35,6 +54,15 @@ function App() {
                 {loading && <p>Loading...</p>}
                 <p>status: {status}</p>
                 {error && <p className="error">Error: {error}</p>}
+            </div>
+
+            <div className="card">
+                <h2>Events</h2>
+                <pre>
+                    {messages.map((msg) => (
+                        <p key={msg}>{msg}</p>
+                    ))}
+                </pre>
             </div>
         </div>
     )
