@@ -22,6 +22,8 @@ const winHtml = `<!DOCTYPE html>
 
 const winUrl = URL.createObjectURL(new Blob([winHtml], { type: 'text/html' }))
 
+import { createPopup } from 'wallet-ui-discovery'
+
 interface DiscoverResult {
     walletType: 'extension' | 'remote'
     url: string
@@ -31,9 +33,11 @@ export async function discover(): Promise<DiscoverResult> {
     return new Promise((resolve, reject) => {
         let response: DiscoverResult | undefined = undefined
 
+        createPopup('external popup')
+
         const win = window.open(
             winUrl,
-            'discovery',
+            'discovery2',
             `width=400,height=500,screenX=200,screenY=200`
         )
 

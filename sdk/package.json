@@ -6,17 +6,17 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "build": "yarn generate && tsc -b",
+        "build": "tsc -b",
         "dev": "tsc -b --watch",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "generate": "open-rpc-generator generate -c ./open-rpc-generator-config.json"
+        "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
     "dependencies": {
         "core-wallet-dapp-rpc-client": "workspace:^",
-        "splice-provider": "workspace:^"
+        "splice-provider": "workspace:^",
+        "wallet-ui-discovery": "workspace:^"
     },
     "devDependencies": {
         "@open-rpc/client-js": "^1.8.1",

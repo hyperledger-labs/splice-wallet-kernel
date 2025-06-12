@@ -3,7 +3,7 @@
     "compilerOptions": {
         "rootDir": "./src",
         "outDir": "./dist",
-        "moduleResolution": "node",
+        // "moduleResolution": "node",
         "baseUrl": ".",
         "paths": {
             "core-wallet-dapp-rpc-client": [
@@ -15,6 +15,7 @@
     "include": ["src"],
     "references": [
         { "path": "../core/wallet-dapp-rpc-client" },
+        // { "path": "../core/wallet-ui-components/tsconfig.app.json" },
         { "path": "../core/splice-provider" }
     ]
 }
