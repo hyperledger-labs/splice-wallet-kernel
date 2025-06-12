@@ -1,0 +1,25 @@
+name: CI on PRs (Splice Contributors)
+run-name: ${{ github.actor }} is perfoming a Pull Request
+on: push
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 'v22.16.0'
+                  cache: 'yarn'
+
+            - name: Install dependencies
+              run: yarn install --frozen-lockfile
+
+            - name: Lint code
+              run: yarn lint
+
+            - name: Build project
+              run: yarn build
