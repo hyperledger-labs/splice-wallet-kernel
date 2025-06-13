@@ -1,0 +1,21 @@
+{
+    "name": "internal-keystore-driver",
+    "private": true,
+    "packageManager": "yarn@4.9.2",
+    "scripts": {
+        "build": "tsc -b",
+        "clean": "tsc -b --clean && rm -rf ./dist"
+    },
+    "dependencies": {
+        "fs-extra": "^11.3.0",
+        "lodash": "^4.17.21",
+        "tweetnacl": "^1.0.3",
+        "tweetnacl-util": "^0.15.1"
+    },
+    "devDependencies": {
+        "@types/fs-extra": "^11",
+        "@types/lodash": "^4.17.17",
+        "@types/node": "^22.15.29",
+        "typescript": "^5.8.3"
+    }
+}
