@@ -13,6 +13,7 @@
         "api-specs",
         "clients/*",
         "core/*",
+        "core/keystore/*",
         "example",
         "sdk"
     ],
