@@ -3,8 +3,8 @@
     "compilerOptions": {
         "rootDir": "./src",
         "outDir": "./dist",
-        "moduleResolution": "node",
         "baseUrl": ".",
+        "jsx": "react-jsx",
         "paths": {
             "core-wallet-dapp-rpc-client": [
                 "../core/wallet-dapp-rpc-client/src"
