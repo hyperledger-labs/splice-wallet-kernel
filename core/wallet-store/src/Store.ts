@@ -15,6 +15,7 @@ export interface PaperAddress {
 export interface CCSPAddress {
     provider: string
     id: string
+    publicKey: string
 }
 
 export type Address = PaperAddress | CCSPAddress
@@ -23,7 +24,7 @@ export type PartyId = string
 
 export interface Wallet {
     primary: boolean
-    partyId: string
+    partyId: PartyId
     hint: string
     fingerprint: string
     address: Address
@@ -83,12 +84,7 @@ export interface Store {
     // Network methods
     getNetwork(name: string): Promise<NetworkConfig>
     getCurrentNetwork(): Promise<NetworkConfig>
+    listNetworks(): Promise<Array<NetworkConfig>>
     updateNetwork(network: NetworkConfig): Promise<void>
     removeNetwork(name: string): Promise<void>
-}
-
-export interface AccountStore {
-    getStore(account: Account): Promise<Store>
-    setStore(account: Account, store: Store): Promise<void>
-    removeStore(account: Account): Promise<void>
 }
