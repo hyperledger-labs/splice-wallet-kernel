@@ -3,10 +3,11 @@
     "outDir": ".",
     "components": [
         {
-            "type": "client",
+            "type": "custom",
             "name": "core-wallet-dapp-rpc-client",
             "language": "typescript",
-            "outPath": "./core/wallet-dapp-rpc-client"
+            "outPath": "./core/wallet-dapp-rpc-client",
+            "customComponent": "./core/rpc-generator/dist/components/client.js"
         },
         {
             "type": "custom",

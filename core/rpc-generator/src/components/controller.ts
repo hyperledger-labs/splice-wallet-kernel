@@ -52,7 +52,9 @@ const hooks: openrpcgen.components.IHooks = {
                 })
             }
 
-            execSync(`yarn prettier --write ${dest}/**/*`)
+            execSync(
+                `yarn prettier --write --no-error-on-unmatched-pattern ${dest}/**/*`
+            )
         },
     ],
     templateFiles: {
@@ -72,6 +74,6 @@ const hooks: openrpcgen.components.IHooks = {
 // note: cant use ESM export because the generator CLI uses commonjs
 module.exports = {
     hooks,
-    staticPath: () => path.join(__dirname, '../template'),
+    staticPath: () => path.join(__dirname, '../../templates/controller/'),
     openRPCPath: undefined,
 }

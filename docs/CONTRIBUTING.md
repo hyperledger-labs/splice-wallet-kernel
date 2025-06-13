@@ -31,3 +31,23 @@ Run `yarn generate:<api>` from the root to regen RPC clients/servers for a parti
 - `yarn generate:dapp`: dApp API
 - `yarn generate:user`: User API
 - `yarn generate:all` : Generate all of the above API specs
+
+### live reloading
+
+To support fast iteration loops for developers, most workspaces have `dev` scripts that watch their respective src directories for changes, and rebuild. You could start everything one at a time, by running `yarn dev` in each respective directory, or start up a common subset with
+
+```
+yarn start:all
+```
+
+This uses `pm2` to run each dev server in parallel. See the `pm2` [cheatsheet](https://pm2.keymetrics.io/docs/usage/quick-start/#cheatsheet) for more commands (remember to preface them with `yarn pm2` when invoking).
+
+> Note that the codegenned artifacts are not automatically watched, use `yarn generate:all` if updating the API specs.
+
+After running `yarn start:all`, you'll have services exposed on the following ports:
+
+| Service          | Url            |
+| ---------------- | -------------- |
+| example dApp UI  | localhost:5137 |
+| HTTP WK dapp RPC | localhost:3000 |
+| HTTP WK user RPC | localhost:3001 |
