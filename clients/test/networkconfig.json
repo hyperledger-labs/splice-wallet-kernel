@@ -1,0 +1,13 @@
+{
+    "name": "xyz",
+    "description": "name1",
+    "ledgerApi": {
+        "baseUrl": "https://test"
+    },
+    "authType": {
+        "tokenUrl": "tokenUrl",
+        "grantType": "password",
+        "scope": "openid",
+        "clientId": "wk-service-account"
+    }
+}

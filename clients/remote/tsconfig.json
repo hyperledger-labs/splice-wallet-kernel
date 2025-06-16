@@ -2,7 +2,13 @@
     "extends": "../../tsconfig.node.json",
     "compilerOptions": {
         "rootDir": "./src",
-        "outDir": "./dist"
+        "outDir": "./dist",
+        "baseUrl": ".",
+        "moduleResolution": "nodenext",
+        "paths": {
+            "core-wallet-store": ["../../core/wallet-store/src"]
+        }
     },
-    "include": ["src"]
+    "include": ["src"],
+    "references": [{ "path": "../../core/wallet-store" }]
 }

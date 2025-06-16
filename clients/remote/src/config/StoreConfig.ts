@@ -1,11 +1,14 @@
-import * as store from './Store'
+import * as store from '../../../../core/wallet-store/dist/Store.js'
+// import * as store from 'core-wallet-store'
 import { z, ZodType, ZodObject } from 'zod'
+
+//TODO: fix the core-wallet-store import
 
 type SchemaFromInterface<T> = ZodObject<{
     [K in keyof Partial<T>]: K extends keyof T ? ZodType<T[K]> : never
 }>
 
-const accountSchema = z.object({
+export const accountSchema = z.object({
     id: z.string(),
     name: z.string(),
 }) satisfies SchemaFromInterface<store.Account>
@@ -38,11 +41,11 @@ const ccspAddressSchema = z.object({
     publicKey: z.string(),
 }) satisfies SchemaFromInterface<store.CCSPAddress>
 
-const ledgerApiSchema = z.object({
+export const ledgerApiSchema = z.object({
     baseUrl: z.string(),
 }) satisfies SchemaFromInterface<store.LedgerApi>
 
-const passwordAuthSchema = z.object({
+export const passwordAuthSchema = z.object({
     tokenUrl: z.string(),
     grantType: z.string(),
     scope: z.string(),
@@ -57,9 +60,11 @@ const implicitAuthSchema = z.object({
 }) satisfies SchemaFromInterface<store.ImplicitAuth>
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-const networkConfigSchema = z.object({
+export const networkConfigSchema = z.object({
     name: z.string(),
     description: z.string(),
     ledgerApi: ledgerApiSchema,
     authType: passwordAuthSchema || implicitAuthSchema,
 }) satisfies SchemaFromInterface<store.NetworkConfig>
+
+export const networkConfigSchemas = z.array(networkConfigSchema)

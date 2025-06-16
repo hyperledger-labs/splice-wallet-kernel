@@ -1,0 +1,28 @@
+[
+    {
+        "name": "xyz",
+        "description": "name1",
+        "ledgerApi": {
+            "baseUrl": "https://test"
+        },
+        "authType": {
+            "tokenUrl": "tokenUrl",
+            "grantType": "password",
+            "scope": "openid",
+            "clientId": "wk-service-account"
+        }
+    },
+    {
+        "name": "abc",
+        "description": "dex idp",
+        "ledgerApi": {
+            "baseUrl": "https://test"
+        },
+        "authType": {
+            "domain": "dex.com",
+            "audience": "https://daml.com/jwt/aud/participant/wk-app",
+            "scope": "openid",
+            "clientId": "wk-service--2"
+        }
+    }
+]

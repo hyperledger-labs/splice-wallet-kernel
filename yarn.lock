@@ -4190,13 +4190,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"core-wallet-store@workspace:core/wallet-store":
+"core-wallet-store@workspace:^, core-wallet-store@workspace:core/wallet-store":
   version: 0.0.0-use.local
   resolution: "core-wallet-store@workspace:core/wallet-store"
   dependencies:
     typescript: "npm:^5.8.3"
-    zod: "npm:^3.25.64"
-    zod-config: "npm:^1.0.2"
   languageName: unknown
   linkType: soft
 
@@ -8987,6 +8985,7 @@ __metadata:
     "@types/supertest": "npm:^6.0.3"
     "@types/ws": "npm:^8.18.1"
     arktype: "npm:^2.1.20"
+    core-wallet-store: "workspace:^"
     express: "npm:^5.1.0"
     jest: "npm:^29.7.0"
     pino: "npm:^9.7.0"
@@ -8996,6 +8995,8 @@ __metadata:
     tsx: "npm:^4.19.4"
     typescript: "npm:^5.8.3"
     ws: "npm:^8.18.2"
+    zod: "npm:^3.25.64"
+    zod-config: "npm:^1.0.2"
   languageName: unknown
   linkType: soft
 
