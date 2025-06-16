@@ -5,7 +5,6 @@ interface PopupOptions {
     height?: number
     screenX?: number
     screenY?: number
-    onBeforeUnload?: () => void
 }
 
 export function popup(
@@ -19,7 +18,6 @@ export function popup(
         height = 500,
         screenX = 200,
         screenY = 200,
-        onBeforeUnload,
     } = options || {}
 
     const html = `<!DOCTYPE html>
@@ -51,7 +49,6 @@ export function popup(
         if (win) {
             win.addEventListener('beforeunload', () => {
                 URL.revokeObjectURL(url) // clean up the URL object to prevent memory leaks
-                onBeforeUnload?.()
             })
             resolve(win)
         } else {
