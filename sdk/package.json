@@ -16,7 +16,8 @@
     "license": "Apache-2.0",
     "dependencies": {
         "core-wallet-dapp-rpc-client": "workspace:^",
-        "splice-provider": "workspace:^"
+        "splice-provider": "workspace:^",
+        "wallet-ui-components": "workspace:^"
     },
     "devDependencies": {
         "@open-rpc/client-js": "^1.8.1",

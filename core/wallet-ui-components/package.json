@@ -1,0 +1,21 @@
+{
+    "name": "wallet-ui-components",
+    "version": "1.0.0",
+    "description": "Reusable UI components for the Splice wallet",
+    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
+    "license": "Apache-2.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsc -b",
+        "build:watch": "tsc -b --watch",
+        "dev": "tsc -p tsconfig.dev.json --watch & wds --root-dir public --open --watch",
+        "clean": "tsc -b --clean; rm -rf dist"
+    },
+    "devDependencies": {
+        "@web/dev-server": "^0.4.6",
+        "typescript": "^5.8.3"
+    },
+    "packageManager": "yarn@4.9.2"
+}

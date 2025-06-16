@@ -1,4 +1,4 @@
-import { discover } from './discovery'
+import { discover } from 'wallet-ui-components'
 import { injectSpliceProvider } from 'splice-provider'
 import * as dappAPI from 'core-wallet-dapp-rpc-client'
 
