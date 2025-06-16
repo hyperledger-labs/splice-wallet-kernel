@@ -22,7 +22,7 @@
             "domain": "dex.com",
             "audience": "https://daml.com/jwt/aud/participant/wk-app",
             "scope": "openid",
-            "clientId": "wk-service--2"
+            "clientId": "wk-service-account2"
         }
     }
 ]

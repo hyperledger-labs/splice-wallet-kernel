@@ -59,12 +59,13 @@ const implicitAuthSchema = z.object({
     clientId: z.string(),
 }) satisfies SchemaFromInterface<store.ImplicitAuth>
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
 export const networkConfigSchema = z.object({
     name: z.string(),
     description: z.string(),
     ledgerApi: ledgerApiSchema,
-    authType: passwordAuthSchema || implicitAuthSchema,
+    authType: z.union([passwordAuthSchema, implicitAuthSchema]),
 }) satisfies SchemaFromInterface<store.NetworkConfig>
 
-export const networkConfigSchemas = z.array(networkConfigSchema)
+export const networks = z.array(networkConfigSchema)
+
+export const accounts = z.array(accountSchema)
