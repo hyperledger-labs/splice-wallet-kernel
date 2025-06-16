@@ -23,21 +23,21 @@ import {
 } from './rpc-gen/typings.js'
 import { randomUUID } from 'node:crypto'
 
-interface IInternalKey {
+interface InternalKey {
     id: string
     name: string
     publicKey: string
     privateKey: string
 }
 
-interface IInternalTransaction {
+interface InternalTransaction {
     id: string
     hash: string
     signature: string
     publicKey: string
     createdAt: Date
 }
-const convertInternalTransaction = (tx: IInternalTransaction): Transaction => {
+const convertInternalTransaction = (tx: InternalTransaction): Transaction => {
     return {
         txId: tx.id,
         status: 'signed',
@@ -46,15 +46,15 @@ const convertInternalTransaction = (tx: IInternalTransaction): Transaction => {
 }
 
 export class InternalKeystore {
-    private keystore: Map<string, IInternalKey> = new Map()
-    private keystoreByPublicKey: Map<string, IInternalKey> = new Map()
-    private transactions: Map<string, IInternalTransaction> = new Map()
+    private keystore: Map<string, InternalKey> = new Map()
+    private keystoreByPublicKey: Map<string, InternalKey> = new Map()
+    private transactions: Map<string, InternalTransaction> = new Map()
 
     public keystoreController = buildController({
         signTransaction: async (
             params: SignTransactionParams
         ): Promise<SignTransactionResult> => {
-            // validate the transaction here
+            // TODO: validate transaction here
 
             const key = this.keystoreByPublicKey.get(params.publicKey)
             if (key) {
@@ -67,7 +67,7 @@ export class InternalKeystore {
                     )
                 )
 
-                const internalTransaction: IInternalTransaction = {
+                const internalTransaction: InternalTransaction = {
                     id: txId,
                     hash: params.txHash,
                     signature,
@@ -149,7 +149,7 @@ export class InternalKeystore {
             const id = randomUUID()
             const publicKey = naclUtil.encodeBase64(key.publicKey)
             const privateKey = naclUtil.encodeBase64(key.secretKey)
-            const internalKey: IInternalKey = {
+            const internalKey: InternalKey = {
                 id,
                 name: params.name,
                 publicKey,
@@ -172,6 +172,9 @@ export class InternalKeystore {
             params: SetConfigurationParams
         ): Promise<SetConfigurationResult> =>
             Promise.resolve({} as SetConfigurationResult),
+
+        // TODO: implement subscribeTransactions - we will need to figure out how to handle subscriptions
+        // when the controller is not running in a server context
         subscribeTransactions: async (
             params: SubscribeTransactionsParams
         ): Promise<SubscribeTransactionsResult> =>
