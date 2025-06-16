@@ -46,7 +46,7 @@ export interface LedgerApi {
 
 export interface PasswordAuth {
     tokenUrl: string
-    grantType: 'password'
+    grantType: string
     clientId: string
     scope: string
 }
