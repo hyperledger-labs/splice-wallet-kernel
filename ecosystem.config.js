@@ -15,4 +15,8 @@ export const apps = [
         name: 'splice-provider',
         script: 'yarn workspace splice-provider dev',
     },
+    {
+        name: 'wallet-ui-components',
+        script: 'yarn workspace wallet-ui-components build:watch',
+    },
 ]
