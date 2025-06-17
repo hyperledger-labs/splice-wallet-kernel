@@ -46,6 +46,7 @@ export const ledgerApiSchema = z.object({
 }) satisfies SchemaFromInterface<store.LedgerApi>
 
 export const passwordAuthSchema = z.object({
+    type: z.literal('password'),
     tokenUrl: z.string(),
     grantType: z.string(),
     scope: z.string(),
@@ -53,6 +54,7 @@ export const passwordAuthSchema = z.object({
 }) satisfies SchemaFromInterface<store.PasswordAuth>
 
 const implicitAuthSchema = z.object({
+    type: z.literal('implicit'),
     domain: z.string(),
     audience: z.string(),
     scope: z.string(),
@@ -63,7 +65,10 @@ export const networkConfigSchema = z.object({
     name: z.string(),
     description: z.string(),
     ledgerApi: ledgerApiSchema,
-    authType: z.union([passwordAuthSchema, implicitAuthSchema]),
+    authType: z.discriminatedUnion('type', [
+        passwordAuthSchema,
+        implicitAuthSchema,
+    ]),
 }) satisfies SchemaFromInterface<store.NetworkConfig>
 
 export const networks = z.array(networkConfigSchema)

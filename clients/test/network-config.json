@@ -5,6 +5,7 @@
         "baseUrl": "https://test"
     },
     "authType": {
+        "type": "password",
         "tokenUrl": "tokenUrl",
         "grantType": "password",
         "scope": "openid",

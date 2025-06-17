@@ -6,6 +6,7 @@
             "baseUrl": "https://test"
         },
         "authType": {
+            "type": "password",
             "tokenUrl": "tokenUrl",
             "grantType": "password",
             "scope": "openid",
@@ -19,6 +20,7 @@
             "baseUrl": "https://test"
         },
         "authType": {
+            "type": "implicit",
             "domain": "dex.com",
             "audience": "https://daml.com/jwt/aud/participant/wk-app",
             "scope": "openid",
