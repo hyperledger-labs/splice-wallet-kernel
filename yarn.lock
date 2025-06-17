@@ -8996,7 +8996,6 @@ __metadata:
     typescript: "npm:^5.8.3"
     ws: "npm:^8.18.2"
     zod: "npm:^3.25.64"
-    zod-config: "npm:^1.0.2"
   languageName: unknown
   linkType: soft
 
@@ -10273,25 +10272,6 @@ __metadata:
   version: 2.1.2
   resolution: "yoctocolors-cjs@npm:2.1.2"
   checksum: 10c0/a0e36eb88fea2c7981eab22d1ba45e15d8d268626e6c4143305e2c1628fa17ebfaa40cd306161a8ce04c0a60ee0262058eab12567493d5eb1409780853454c6f
-  languageName: node
-  linkType: hard
-
-"zod-config@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "zod-config@npm:1.0.2"
-  peerDependencies:
-    dotenv: ">=15"
-    smol-toml: ^1.x
-    yaml: ^2.x
-    zod: ^3.25.0
-  peerDependenciesMeta:
-    dotenv:
-      optional: true
-    smol-toml:
-      optional: true
-    yaml:
-      optional: true
-  checksum: 10c0/85f559bbe71081631675c7aa8af4b8af42f52ed116eab65b03949fd1f80abc080beb433b62f849f77142e3f042c20dfbfc9772151294322628522307dfa3405b
   languageName: node
   linkType: hard
 

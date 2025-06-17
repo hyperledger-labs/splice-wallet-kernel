@@ -1,21 +1,15 @@
 import { expect, test } from '@jest/globals'
 import * as s from './StoreConfig.js'
 import * as path from 'path'
-import { loadConfig } from 'zod-config'
-import { jsonAdapter } from 'zod-config/json-adapter'
 import { readFileSync } from 'fs'
 
 test('account config from json file', async () => {
     const __dirname = path.resolve()
 
     const filePath = path.join(__dirname, '../test/account-config.json')
-    const resp = await loadConfig({
-        schema: s.accountSchema,
-        adapters: jsonAdapter({
-            path: filePath,
-        }),
-    })
 
+    const jsonData = JSON.parse(readFileSync(filePath, 'utf-8'))
+    const resp = s.accountSchema.parse(jsonData)
     expect(resp.id).toBe('xyz')
     expect(resp.name).toBe('name1')
 })
@@ -24,12 +18,9 @@ test('network config from json file', async () => {
     const __dirname = path.resolve()
 
     const filePath = path.join(__dirname, '../test/network-config.json')
-    const resp = await loadConfig({
-        schema: s.networkConfigSchema,
-        adapters: jsonAdapter({
-            path: filePath,
-        }),
-    })
+
+    const jsonData = JSON.parse(readFileSync(filePath, 'utf-8'))
+    const resp = s.networkConfigSchema.parse(jsonData)
     expect(resp.name).toBe('xyz')
     expect(resp.ledgerApi.baseUrl).toBe('https://test')
     expect(resp.authType.clientId).toBe('wk-service-account')
