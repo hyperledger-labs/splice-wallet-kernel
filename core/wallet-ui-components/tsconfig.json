@@ -1,8 +1,11 @@
 {
-    "extends": "../../tsconfig.base.json",
+    "extends": "../../tsconfig.web.json",
     "compilerOptions": {
         "rootDir": "./src",
         "outDir": "./dist",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "useDefineForClassFields": false,
         "module": "nodenext",
         "moduleResolution": "nodenext"
     },

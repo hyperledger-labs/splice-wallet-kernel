@@ -10,12 +10,15 @@
     "scripts": {
         "build": "tsc -b",
         "build:watch": "tsc -b --watch",
-        "dev": "tsc -p tsconfig.dev.json --watch & wds --root-dir public --open --watch",
-        "clean": "tsc -b --clean; rm -rf dist"
+        "clean": "tsc -b --clean; tsc -b tsconfig.dev.json --clean; rm -rf dist; rm -rf public/js/*",
+        "dev": "vite --port 8000"
     },
     "devDependencies": {
-        "@web/dev-server": "^0.4.6",
-        "typescript": "^5.8.3"
+        "typescript": "^5.8.3",
+        "vite": "^6.3.5"
     },
-    "packageManager": "yarn@4.9.2"
+    "packageManager": "yarn@4.9.2",
+    "dependencies": {
+        "lit": "^3.3.0"
+    }
 }
