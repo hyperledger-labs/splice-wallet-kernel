@@ -1,3 +1,5 @@
+import styles from '../../themes/default.css?inline'
+
 interface PopupOptions {
     title?: string
     target?: string
@@ -24,16 +26,32 @@ export function popup(
     <html>
         <head>
             <title>${title}</title>
+            <style>
+                html, body {
+                    margin: 0;
+                    padding: 0;
+                    width: 100%;
+                    height: 100%;
+                }
+
+                body {
+                    display: flex;
+                }
+            </style>
+            <style>${styles}</style>
         </head>
         <body>
-            <div id="pop-root"></div>
         </body>
 
         <script>
             customElements.define('popup-content', ${component})
 
-            const root = document.getElementById('pop-root')
-            root.appendChild(document.createElement('popup-content'))
+            const root = document.getElementsByTagName('body')[0]
+
+            const content = document.createElement('popup-content')
+            content.setAttribute('style', 'width: 100%; height: 100%;')
+
+            root.appendChild(content)
         </script>
     </html>`
 
