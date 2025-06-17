@@ -1,6 +1,6 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { buildController } from 'keystore-driver-library'
+import { buildController, KeystoreInterface } from 'keystore-driver-library'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
 
@@ -45,7 +45,7 @@ const convertInternalTransaction = (tx: InternalTransaction): Transaction => {
     }
 }
 
-export class InternalKeystore {
+export class InternalKeystore implements KeystoreInterface {
     private keystore: Map<string, InternalKey> = new Map()
     private keystoreByPublicKey: Map<string, InternalKey> = new Map()
     private transactions: Map<string, InternalTransaction> = new Map()

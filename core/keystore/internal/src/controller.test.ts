@@ -2,7 +2,7 @@ import { expect, test } from '@jest/globals'
 
 // import request from 'supertest'
 import { InternalKeystore } from './controller.js'
-import { CreateKeyResult, Error as RpcError } from './rpc-gen/typings.js'
+import { CreateKeyResult, isRpcError } from 'keystore-driver-library'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
 
@@ -10,10 +10,6 @@ const TEST_KEY_NAME = 'test-key-name'
 const TEST_TRANSACTION = 'test-tx'
 const TEST_TRANSACTION_HASH =
     '88beb0783e394f6128699bad42906374ab64197d260db05bb0cfeeb518ba3ac2'
-
-function isError<T>(value: T | RpcError): value is RpcError {
-    return (value as RpcError).error_description !== undefined
-}
 
 interface TestValues {
     keystore: InternalKeystore
@@ -45,7 +41,7 @@ test('transaction signature', async () => {
         publicKey: key.publicKey,
     })
 
-    if (isError(tx)) {
+    if (isRpcError(tx)) {
         throw new Error(
             `Expected a valid transaction, but got an error: ${tx.error_description}`
         )
@@ -64,7 +60,7 @@ test('transaction signature', async () => {
     const transactionsByKey = await keystore.keystoreController.getTransactions(
         { publicKeys: [key.publicKey] }
     )
-    if (isError(transactionsByKey)) {
+    if (isRpcError(transactionsByKey)) {
         throw new Error(
             `Expected valid transactions, but got an error: ${transactionsByKey.error_description}`
         )
@@ -76,7 +72,7 @@ test('transaction signature', async () => {
     const transactionsById = await keystore.keystoreController.getTransactions({
         txIds: [tx.txId],
     })
-    if (isError(transactionsById)) {
+    if (isRpcError(transactionsById)) {
         throw new Error(
             `Expected valid transactions, but got an error: ${transactionsById.error_description}`
         )
