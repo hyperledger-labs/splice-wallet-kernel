@@ -45,13 +45,15 @@ export interface LedgerApi {
 }
 
 export interface PasswordAuth {
+    type: 'password'
     tokenUrl: string
-    grantType: 'password'
+    grantType: string
     clientId: string
     scope: string
 }
 
 export interface ImplicitAuth {
+    type: 'implicit'
     domain: string
     clientId: string
     scope: string

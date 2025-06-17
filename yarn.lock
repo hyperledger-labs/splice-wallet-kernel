@@ -4190,7 +4190,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"core-wallet-store@workspace:core/wallet-store":
+"core-wallet-store@workspace:^, core-wallet-store@workspace:core/wallet-store":
   version: 0.0.0-use.local
   resolution: "core-wallet-store@workspace:core/wallet-store"
   dependencies:
@@ -8985,6 +8985,7 @@ __metadata:
     "@types/supertest": "npm:^6.0.3"
     "@types/ws": "npm:^8.18.1"
     arktype: "npm:^2.1.20"
+    core-wallet-store: "workspace:^"
     express: "npm:^5.1.0"
     jest: "npm:^29.7.0"
     pino: "npm:^9.7.0"
@@ -8994,6 +8995,7 @@ __metadata:
     tsx: "npm:^4.19.4"
     typescript: "npm:^5.8.3"
     ws: "npm:^8.18.2"
+    zod: "npm:^3.25.64"
   languageName: unknown
   linkType: soft
 
@@ -10270,5 +10272,12 @@ __metadata:
   version: 2.1.2
   resolution: "yoctocolors-cjs@npm:2.1.2"
   checksum: 10c0/a0e36eb88fea2c7981eab22d1ba45e15d8d268626e6c4143305e2c1628fa17ebfaa40cd306161a8ce04c0a60ee0262058eab12567493d5eb1409780853454c6f
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.25.64":
+  version: 3.25.64
+  resolution: "zod@npm:3.25.64"
+  checksum: 10c0/00d76093a999e377e4ffd037fa7185e861c35917e8c4272f514115c206a0654995168f57fb71708b11e0a9243206d988b7f63b543404e1796402e50d346a6bd7
   languageName: node
   linkType: hard
