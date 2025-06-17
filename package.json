@@ -8,6 +8,7 @@
         "generate:all": "yarn generate:dapp && yarn generate:user && yarn generate:keystore",
         "build:all": "yarn workspaces foreach -A -t run build",
         "clean:all": "yarn workspaces foreach -A run clean",
+        "test:all": "yarn workspaces foreach -A run test",
         "postinstall": "husky"
     },
     "workspaces": [

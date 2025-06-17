@@ -7,7 +7,7 @@
         "build": "tsc -b",
         "clean": "tsc -b --clean && rm -rf ./dist",
         "dev": "tsx watch src/index.ts | pino-pretty",
-        "test": "yarn node --experimental-vm-modules $(yarn bin jest) --watch",
+        "test": "yarn node --experimental-vm-modules $(yarn bin jest) --detectOpenHandles --runInBand --forceExit",
         "start": "yarn node dist/index.js"
     },
     "keywords": [],

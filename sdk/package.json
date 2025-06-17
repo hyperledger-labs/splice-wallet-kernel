@@ -9,7 +9,7 @@
         "build": "yarn generate && tsc -b",
         "dev": "tsc -b --watch",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "test": "echo \"Warning: no test specified\"",
         "generate": "open-rpc-generator generate -c ./open-rpc-generator-config.json"
     },
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
