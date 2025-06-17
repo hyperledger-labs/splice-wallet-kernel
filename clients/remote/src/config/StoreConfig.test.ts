@@ -56,7 +56,6 @@ test('multiple account config from json file', async () => {
     const jsonData = JSON.parse(readFileSync(filePath, 'utf-8'))
     const resp = s.accounts.parse(jsonData)
 
-    console.log(resp[0])
     expect(resp.length).toBe(2)
     expect(resp[0].id).toBe('xyz')
     expect(resp[0].name).toBe('name1')
