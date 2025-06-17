@@ -1,0 +1,22 @@
+{
+    "name": "keystore-driver-library",
+    "version": "0.0.1",
+    "private": true,
+    "packageManager": "yarn@4.9.2",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsc -b",
+        "clean": "tsc -b --clean && rm -rf ./dist"
+    },
+    "dependencies": {
+        "fs-extra": "^11.3.0",
+        "lodash": "^4.17.21"
+    },
+    "devDependencies": {
+        "@types/fs-extra": "^11",
+        "@types/lodash": "^4.17.17",
+        "@types/node": "^22.15.29",
+        "typescript": "^5.8.3"
+    }
+}
