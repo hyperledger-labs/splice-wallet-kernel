@@ -1,4 +1,4 @@
-import * as store from 'core-wallet-store'
+import { store } from 'core-wallet-store'
 import { z, ZodType, ZodObject } from 'zod'
 
 type SchemaFromInterface<T> = ZodObject<{

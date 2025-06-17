@@ -1,1 +1,1 @@
-export * from './Store'
+export * as store from './Store'
