@@ -28,6 +28,37 @@ The project is currently (2nd of June, 2025) in its infancy.
 # Architecture
 
 For a quick overview look at the [Wallet Kernel Problem Statement](docs/WalletKernelProblemStatement.pdf).
+
+Folder Structure and usage
+
+```
+|-- api-specs               # Contains API Spec used for code generation
+|-- clients                 # Contains the different clients of the wallet kernel
+|   |-- extension               # Browser extension client
+|   `-- remote                  # Remote RPC client
+|-- core                    # Core components used for wallet kernel
+|   |-- keystore                # Contains keystore integrations
+|   |   |-- internal                # An implementation of an internal keystore
+|   |   `-- lib                     # Generated code for the keystore API
+|   |-- rpc-generator           # Custom code for generation based on files in api-specs folder
+|   |-- wallet-dapp-rpc-client  # Generated code for the dApp RPC client
+|   |-- wallet-store            # Interface and implementation for the wallet store
+|   `-- wallet-ui-components    # Various UI components stored for reusability between different clients
+|-- docs                    # Documentations and readme files for the repo
+|-- example                 # Example implementations
+|-- scripts                 # Various scripts used for CI and development
+`-- sdk                     # SDK bundling for the wallet kernel
+```
+
+The Above folder structure is a overview of where different independent components are located. Combined several of these components results in varius final release versions of the Wallet Kernel.
+
+here is an overview of how the different components above would be packaged:
+![Component and packages](docs/images/Component%20and%20packages.svg)
+_(certain parts are not packaged like docs,examples and scripts)_
+
+When a server is running any of the clients (remote, extension or desktop) it is running a single nodeJS with all the components, however listening on multiple webservers.
+![Hosted Service](docs/images/Hosted%20Service.svg)
+
 TODD: Define architecture of the project.
 
 ## Contributing
