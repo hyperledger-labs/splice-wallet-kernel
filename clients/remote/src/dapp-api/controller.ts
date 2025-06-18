@@ -21,5 +21,6 @@ export const dappController = (store: Store) =>
         prepareExecute: async (params: PrepareExecuteParams) => null,
         prepareReturn: async (params: PrepareReturnParams) =>
             Promise.resolve({}),
-        listNetworks: async () => Promise.resolve({ networks: [] }),
+        listNetworks: async () =>
+            Promise.resolve({ networks: await store.listNetworks() }),
     })
