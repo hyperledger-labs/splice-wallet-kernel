@@ -4,6 +4,8 @@ check_package_name() {
   local package_json_path="$1"
   local folder_path
   local package_name
+  local main_file
+  local types_file
 
   folder_path=$(realpath --relative-to="$(pwd)" "$(dirname "$package_json_path")")
   #we replace slashes with dashes to match nested naming like "foo/bar/baz" to package name "foo-bar-baz"
@@ -27,6 +29,20 @@ check_package_name() {
 
   if [[ "$package_name" != "$folder_path" ]]; then
     echo "Mismatch: Folder path '$folder_path' does not match package name '$package_name' in $package_json_path"
+    mismatch_found=1
+  fi
+
+  # Check if "main" points to an existing file
+  main_file=$(jq -r '.main' "$package_json_path")
+  if [[ "$main_file" != "null" && ! -f "$(dirname "$package_json_path")/$main_file" ]]; then
+    echo "Error: 'main' field points to a non-existing file '$main_file' in $package_json_path"
+    mismatch_found=1
+  fi
+
+  # Check if "types" points to an existing file
+  types_file=$(jq -r '.types' "$package_json_path")
+  if [[ "$types_file" != "null" && ! -f "$(dirname "$package_json_path")/$types_file" ]]; then
+    echo "Error: 'types' field points to a non-existing file '$types_file' in $package_json_path"
     mismatch_found=1
   fi
 }
