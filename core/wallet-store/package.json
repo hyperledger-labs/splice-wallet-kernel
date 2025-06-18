@@ -12,13 +12,16 @@
         "build": "tsc -b",
         "dev": "tsc -b --watch",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "jest"
+        "test": "yarn node --experimental-vm-modules $(yarn bin jest) --watch"
     },
     "devDependencies": {
         "@jest/globals": "^29.0.0",
+        "@swc/core": "^1.11.31",
+        "@swc/jest": "^0.2.38",
         "@types/jest": "^30.0.0",
         "jest": "^30.0.0",
         "ts-jest": "^29.4.0",
+        "ts-jest-resolver": "^2.0.1",
         "typescript": "^5.8.3"
     }
 }
