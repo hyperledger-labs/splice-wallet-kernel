@@ -1,11 +1,5 @@
 import { Store, Wallet, PartyId, Session, NetworkConfig } from './Store.js'
-
-type UserId = string
-
-interface UserService {
-    connected(): boolean
-    getUserId(): UserId
-}
+import { UserId, AuthService } from 'core-wallet-auth'
 
 interface UserStorage {
     wallets: Array<Wallet>
@@ -19,11 +13,11 @@ export interface StoreInternalConfig {
 export class StoreInternal implements Store {
     private systemStorage: StoreInternalConfig
     private userStorage: Map<UserId, UserStorage> = new Map()
-    private userService: UserService
+    private authService: AuthService
 
-    constructor(config: StoreInternalConfig, userService: UserService) {
+    constructor(config: StoreInternalConfig, authService: AuthService) {
         this.systemStorage = config
-        this.userService = userService
+        this.authService = authService
     }
 
     static createStorage(): UserStorage {
@@ -34,14 +28,14 @@ export class StoreInternal implements Store {
     }
 
     private assertConnected(): void {
-        if (!this.userService.connected()) {
+        if (!this.authService.connected()) {
             throw new Error('User is not connected')
         }
     }
 
     private getStorage(): UserStorage {
         this.assertConnected()
-        const userId = this.userService.getUserId()
+        const userId = this.authService.getUserId()
         if (!this.userStorage.has(userId)) {
             this.userStorage.set(userId, StoreInternal.createStorage())
         }
@@ -50,7 +44,7 @@ export class StoreInternal implements Store {
 
     private updateStorage(storage: UserStorage): void {
         this.assertConnected()
-        const userId = this.userService.getUserId()
+        const userId = this.authService.getUserId()
         this.userStorage.set(userId, storage)
     }
 

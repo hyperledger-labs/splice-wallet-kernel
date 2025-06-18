@@ -1,1 +1,2 @@
-export * as store from './Store'
+export * from './Store.js'
+export * from './StoreInternal.js'
