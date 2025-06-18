@@ -5,6 +5,7 @@ import { DarsAvailable } from './typings.js'
 import { PrepareReturn } from './typings.js'
 import { PrepareExecute } from './typings.js'
 import { LedgerApi } from './typings.js'
+import { ListNetworks } from './typings.js'
 
 export type Methods = {
     connect: Connect
@@ -12,6 +13,7 @@ export type Methods = {
     prepareReturn: PrepareReturn
     prepareExecute: PrepareExecute
     ledgerApi: LedgerApi
+    listNetworks: ListNetworks
 }
 
 function buildController(methods: Methods) {
@@ -21,6 +23,7 @@ function buildController(methods: Methods) {
         prepareReturn: methods.prepareReturn,
         prepareExecute: methods.prepareExecute,
         ledgerApi: methods.ledgerApi,
+        listNetworks: methods.listNetworks,
     }
 }
 
