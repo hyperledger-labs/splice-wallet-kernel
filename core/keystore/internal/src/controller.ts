@@ -1,6 +1,6 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import buildController from './rpc-gen/index.js'
+import { buildController, KeystoreInterface } from 'keystore-driver-library'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
 
@@ -20,7 +20,7 @@ import {
     SubscribeTransactionsResult,
     SetConfigurationResult,
     Transaction,
-} from './rpc-gen/typings.js'
+} from 'keystore-driver-library'
 import { randomUUID } from 'node:crypto'
 
 interface InternalKey {
@@ -45,7 +45,7 @@ const convertInternalTransaction = (tx: InternalTransaction): Transaction => {
     }
 }
 
-export class InternalKeystore {
+export class InternalKeystore implements KeystoreInterface {
     private keystore: Map<string, InternalKey> = new Map()
     private keystoreByPublicKey: Map<string, InternalKey> = new Map()
     private transactions: Map<string, InternalTransaction> = new Map()

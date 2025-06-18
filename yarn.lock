@@ -5404,6 +5404,7 @@ __metadata:
     "@types/node": "npm:^22.15.29"
     fs-extra: "npm:^11.3.0"
     jest: "npm:^29.7.0"
+    keystore-driver-library: "npm:0.0.1"
     lodash: "npm:^4.17.21"
     ts-jest-resolver: "npm:^2.0.1"
     tweetnacl: "npm:^1.0.3"
@@ -6266,6 +6267,19 @@ __metadata:
   checksum: 10c0/f5ff53078ecab98e8afd1dcdb4488e528653fa5a03a32d671f52db1ae9c3236e6e072d75e1949a80929fd21b07603924a586f829b40ad35993fa0247fa4f7506
   languageName: node
   linkType: hard
+
+"keystore-driver-library@npm:0.0.1, keystore-driver-library@workspace:core/keystore/lib":
+  version: 0.0.0-use.local
+  resolution: "keystore-driver-library@workspace:core/keystore/lib"
+  dependencies:
+    "@types/fs-extra": "npm:^11"
+    "@types/lodash": "npm:^4.17.17"
+    "@types/node": "npm:^22.15.29"
+    fs-extra: "npm:^11.3.0"
+    lodash: "npm:^4.17.21"
+    typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
 
 "keyv@npm:^4.5.4":
   version: 4.5.4

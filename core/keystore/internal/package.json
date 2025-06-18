@@ -9,6 +9,7 @@
     },
     "dependencies": {
         "fs-extra": "^11.3.0",
+        "keystore-driver-library": "0.0.1",
         "lodash": "^4.17.21",
         "tweetnacl": "^1.0.3",
         "tweetnacl-util": "^0.15.1"
