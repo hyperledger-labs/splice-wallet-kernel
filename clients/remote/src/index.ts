@@ -2,6 +2,7 @@ import { dapp } from './dapp-api/server.js'
 import { user } from './user-api/server.js'
 import { web } from './web/server.js'
 import { pino } from 'pino'
+import ViteExpress from 'vite-express'
 import { AuthService } from 'core-wallet-auth'
 import { StoreInternal, StoreInternalConfig } from 'core-wallet-store'
 
@@ -29,6 +30,6 @@ export const userServer = user(store).listen(userPort, () => {
     logger.info(`User Server running at http://localhost:${userPort}`)
 })
 
-export const webServer = web.listen(webPort, () => {
+export const webServer = ViteExpress.listen(web, webPort, () =>
     logger.info(`Web server running at http://localhost:${webPort}`)
-})
+)

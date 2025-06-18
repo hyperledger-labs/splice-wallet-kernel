@@ -4,10 +4,10 @@
     "description": "",
     "main": "dist/index.js",
     "scripts": {
-        "build": "tsc -b",
+        "build": "tsc -b; tsc -b tsconfig.frontend.json",
         "clean": "tsc -b --clean && rm -rf ./dist",
         "dev": "tsx watch src/index.ts | pino-pretty",
-        "test": "yarn node --experimental-vm-modules $(yarn bin jest) --detectOpenHandles --runInBand --forceExit",
+        "test": "yarn node --experimental-vm-modules $(yarn bin jest)",
         "start": "yarn node dist/index.js"
     },
     "keywords": [],
@@ -21,6 +21,7 @@
         "core-wallet-store": "workspace:^",
         "express": "^5.1.0",
         "pino": "^9.7.0",
+        "vite-express": "^0.21.1",
         "ws": "^8.18.2",
         "zod": "^3.25.64"
     },
@@ -38,6 +39,7 @@
         "supertest": "^7.1.1",
         "ts-jest-resolver": "^2.0.1",
         "tsx": "^4.19.4",
-        "typescript": "^5.8.3"
+        "typescript": "^5.8.3",
+        "vite": "^6.3.5"
     }
 }
