@@ -1,10 +1,10 @@
-import { afterAll, expect, test } from '@jest/globals'
+import { expect, test } from '@jest/globals'
 
 import request from 'supertest'
-import { dAppServer } from './index.js'
+import { dapp } from './server.js'
 
 test('call connect rpc', async () => {
-    const response = await request(dAppServer)
+    const response = await request(dapp)
         .post('/rpc')
         .send({ jsonrpc: '2.0', id: 0, method: 'connect', params: [] })
         .set('Accept', 'application/json')
@@ -18,13 +18,4 @@ test('call connect rpc', async () => {
             userUrl: 'http://default-user-url.com',
         },
     })
-})
-
-beforeAll((done) => {
-    done()
-})
-
-afterAll((done) => {
-    dAppServer.close()
-    done()
 })
