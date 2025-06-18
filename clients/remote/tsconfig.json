@@ -2,7 +2,9 @@
     "extends": "../../tsconfig.node.json",
     "compilerOptions": {
         "rootDir": "./src",
-        "outDir": "./dist"
+        "outDir": "./dist",
+        "experimentalDecorators": true,
+        "useDefineForClassFields": false
     },
     "include": ["src"],
     "exclude": ["src/web/frontend"]

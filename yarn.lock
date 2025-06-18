@@ -2040,7 +2040,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@open-rpc/client-js@npm:1.8.1, @open-rpc/client-js@npm:^1.8.1":
+"@open-rpc/client-js@npm:1.8.1":
   version: 1.8.1
   resolution: "@open-rpc/client-js@npm:1.8.1"
   dependencies:
@@ -9315,6 +9315,7 @@ __metadata:
     core-wallet-store: "workspace:^"
     express: "npm:^5.1.0"
     jest: "npm:^29.7.0"
+    lit: "npm:^3.3.0"
     pino: "npm:^9.7.0"
     pino-pretty: "npm:^13.0.0"
     supertest: "npm:^7.1.1"
@@ -9323,6 +9324,7 @@ __metadata:
     typescript: "npm:^5.8.3"
     vite: "npm:^6.3.5"
     vite-express: "npm:^0.21.1"
+    wallet-ui-components: "workspace:^"
     ws: "npm:^8.18.2"
     zod: "npm:^3.25.64"
   languageName: unknown
@@ -9564,8 +9566,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "splice-wallet-sdk@workspace:sdk"
   dependencies:
-    "@open-rpc/client-js": "npm:^1.8.1"
-    "@open-rpc/generator": "npm:^2.0.0"
     core-wallet-dapp-rpc-client: "workspace:^"
     splice-provider: "workspace:^"
     typescript: "npm:^5.8.3"

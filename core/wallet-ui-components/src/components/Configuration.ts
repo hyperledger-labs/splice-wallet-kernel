@@ -7,7 +7,7 @@ export class Configuration extends LitElement {
         div {
             background-color: var(--splice-wk-background-color, none);
             color: var(--splice-wk-text-color, black);
-            font-family: var(--splice-wk-font-family, Arial, sans-serif);
+            font-family: var(--splice-wk-font-family);
         }
     `
 

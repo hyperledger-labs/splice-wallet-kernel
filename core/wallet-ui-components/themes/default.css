@@ -1,5 +1,15 @@
 :root {
-    --splice-wk-background-color: snow;
-    --splice-wk-text-color: steelblue;
+    --splice-wk-background-color: linen;
+    --splice-wk-text-color: dodgerblue;
     --splice-wk-font-family: sans-serif;
 }
+
+/* body {
+    background-color: var(--splice-wk-background-color);
+    color: var(--splice-wk-text-color);
+    font-family: var(--splice-wk-font-family);
+}
+
+div {
+    background-color: var(--splice-wk-background-color);
+} */
