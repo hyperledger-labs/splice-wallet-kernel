@@ -27,9 +27,16 @@ check_package_name() {
 
   if [[ "$package_name" != "$folder_path" ]]; then
     echo "Mismatch: Folder path '$folder_path' does not match package name '$package_name' in $package_json_path"
+    mismatch_found=1
   fi
 }
+
+mismatch_found=0
 
 find -name "package.json" | while read -r package_json; do
   check_package_name "$package_json"
 done
+
+if [[ $mismatch_found -eq 1 ]]; then
+  exit 1
+fi

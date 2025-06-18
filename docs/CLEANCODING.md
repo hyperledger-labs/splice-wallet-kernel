@@ -10,5 +10,5 @@ These guidelines are decided within the Hyperledger Wallet Kernel team, and are 
 
 - Use a clear and consistent folder structure that reflects the functionality of the code.
 - For web components keep the folder as flat as possible, with each component in its own folder.
-- The name used in the `package.json` should match the folder name and structure.
+- The name used in the `package.json` should match the folder name and structure. _(this is enforced with [script](../scripts/check-package-json-name.sh))_
     - it may be prefixed with `splice-wallet` or `splice-wallet-kernel` in cases where it would be to generic or ambiguous.
