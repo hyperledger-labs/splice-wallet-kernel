@@ -7,7 +7,7 @@ interface UserService {
     getUserId(): UserId
 }
 
-interface Memory {
+interface UserStorage {
     wallets: Array<Wallet>
     session: Session | undefined
 }
@@ -17,16 +17,16 @@ export interface StoreInternalConfig {
 }
 
 export class StoreInternal implements Store {
+    private systemStorage: StoreInternalConfig
+    private userStorage: Map<UserId, UserStorage> = new Map()
     private userService: UserService
-    private defaults: StoreInternalConfig
-    private userMemory: Map<UserId, Memory> = new Map()
 
     constructor(config: StoreInternalConfig, userService: UserService) {
-        this.defaults = config
+        this.systemStorage = config
         this.userService = userService
     }
 
-    static createMemory(): Memory {
+    static createStorage(): UserStorage {
         return {
             wallets: [],
             session: undefined,
@@ -39,24 +39,24 @@ export class StoreInternal implements Store {
         }
     }
 
-    private getMemory(): Memory {
+    private getStorage(): UserStorage {
         this.assertConnected()
         const userId = this.userService.getUserId()
-        if (!this.userMemory.has(userId)) {
-            this.userMemory.set(userId, StoreInternal.createMemory())
+        if (!this.userStorage.has(userId)) {
+            this.userStorage.set(userId, StoreInternal.createStorage())
         }
-        return this.userMemory.get(userId)!
+        return this.userStorage.get(userId)!
     }
 
-    private updateMemory(memory: Memory): void {
+    private updateStorage(storage: UserStorage): void {
         this.assertConnected()
         const userId = this.userService.getUserId()
-        this.userMemory.set(userId, memory)
+        this.userStorage.set(userId, storage)
     }
 
     // Wallet methods
     async getWallets(): Promise<Array<Wallet>> {
-        return this.getMemory().wallets
+        return this.getStorage().wallets
     }
 
     async getPrimaryWallet(): Promise<Wallet | undefined> {
@@ -65,11 +65,11 @@ export class StoreInternal implements Store {
     }
 
     async setPrimaryWallet(partyId: PartyId): Promise<void> {
-        const memory = this.getMemory()
-        if (!memory.wallets.some((w) => w.partyId === partyId)) {
+        const storage = this.getStorage()
+        if (!storage.wallets.some((w) => w.partyId === partyId)) {
             throw new Error(`Wallet with partyId "${partyId}" not found`)
         }
-        const wallets = memory.wallets.map((w) => {
+        const wallets = storage.wallets.map((w) => {
             if (w.partyId === partyId) {
                 w.primary = true
             } else {
@@ -77,13 +77,13 @@ export class StoreInternal implements Store {
             }
             return w
         })
-        memory.wallets = wallets
-        this.updateMemory(memory)
+        storage.wallets = wallets
+        this.updateStorage(storage)
     }
 
     async addWallet(wallet: Wallet): Promise<void> {
-        const memory = this.getMemory()
-        if (memory.wallets.some((w) => w.partyId === wallet.partyId)) {
+        const storage = this.getStorage()
+        if (storage.wallets.some((w) => w.partyId === wallet.partyId)) {
             throw new Error(
                 `Wallet with partyId "${wallet.partyId}" already exists`
             )
@@ -91,28 +91,28 @@ export class StoreInternal implements Store {
         const wallets = await this.getWallets()
         if (wallet.primary) {
             // If the new wallet is primary, set all others to non-primary
-            memory.wallets.map((w) => (w.primary = false))
+            storage.wallets.map((w) => (w.primary = false))
         }
         wallets.push(wallet)
-        memory.wallets = wallets
-        this.updateMemory(memory)
+        storage.wallets = wallets
+        this.updateStorage(storage)
     }
 
     // Session methods
     async getSession(): Promise<Session | undefined> {
-        return this.getMemory().session
+        return this.getStorage().session
     }
 
     async setSession(session: Session): Promise<void> {
-        const memory = this.getMemory()
-        memory.session = session
-        this.updateMemory(memory)
+        const storage = this.getStorage()
+        storage.session = session
+        this.updateStorage(storage)
     }
 
     async removeSession(): Promise<void> {
-        const memory = this.getMemory()
-        memory.session = undefined
-        this.updateMemory(memory)
+        const storage = this.getStorage()
+        storage.session = undefined
+        this.updateStorage(storage)
     }
 
     // Network methods
@@ -128,7 +128,7 @@ export class StoreInternal implements Store {
     }
 
     async getCurrentNetwork(): Promise<NetworkConfig> {
-        const networkName = this.getMemory().session?.network
+        const networkName = this.getStorage().session?.network
         if (!networkName) {
             throw new Error('No current network set in session')
         }
@@ -142,16 +142,16 @@ export class StoreInternal implements Store {
     }
 
     async listNetworks(): Promise<Array<NetworkConfig>> {
-        return this.defaults.networks
+        return this.systemStorage.networks
     }
 
     async updateNetwork(network: NetworkConfig): Promise<void> {
         this.removeNetwork(network.name) // Ensure no duplicates
-        this.defaults.networks.push(network)
+        this.systemStorage.networks.push(network)
     }
 
     async removeNetwork(name: string): Promise<void> {
-        this.defaults.networks = this.defaults.networks.filter(
+        this.systemStorage.networks = this.systemStorage.networks.filter(
             (n) => n.name !== name
         )
     }

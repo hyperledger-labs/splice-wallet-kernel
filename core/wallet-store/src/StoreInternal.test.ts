@@ -94,12 +94,12 @@ describe('StoreInternal', () => {
         expect(listed).toHaveLength(1)
         expect(listed[0].name).toBe('testnet')
 
-        // const fetched = await store.getNetwork('testnet');
-        // expect(fetched.description).toBe('Test Network');
+        const fetched = await store.getNetwork('testnet')
+        expect(fetched.description).toBe('Test Network')
 
-        // await store.removeNetwork('testnet');
-        // const afterRemove = await store.listNetworks();
-        // expect(afterRemove).toHaveLength(0);
+        await store.removeNetwork('testnet')
+        const afterRemove = await store.listNetworks()
+        expect(afterRemove).toHaveLength(0)
     })
 
     test('should throw when getting a non-existent network', async () => {
