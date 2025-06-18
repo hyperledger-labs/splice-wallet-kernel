@@ -61,7 +61,11 @@ export class FireblocksHandler {
                         algorithm: 'MPC_EDDSA_ED25519',
                         derivationPath,
                     })
-                    if (key.data.publicKey && key.data.algorithm && key.data.derivationPath) {
+                    if (
+                        key.data.publicKey &&
+                        key.data.algorithm &&
+                        key.data.derivationPath
+                    ) {
                         const storedKey = {
                             id: key.data.derivationPath?.join('-'),
                             derivationPath: key.data.derivationPath || [],
@@ -71,7 +75,10 @@ export class FireblocksHandler {
                         }
                         keys.push(storedKey)
                         this.keyCache.set(storedKey.publicKey, storedKey)
-                        this.keyCacheByDerivationPath.set(key.data.derivationPath, storedKey)
+                        this.keyCacheByDerivationPath.set(
+                            key.data.derivationPath,
+                            storedKey
+                        )
                     }
                 }
             }
@@ -85,10 +92,12 @@ export class FireblocksHandler {
     public async getTransactions(): Promise<Transaction[]> {
         const allTransactions: Transaction[] = []
         try {
-            const transactions = await this.client.transactions.getTransactions({
-                sourceType: 'VAULT_ACCOUNT',
-                limit: 500,
-            })
+            const transactions = await this.client.transactions.getTransactions(
+                {
+                    sourceType: 'VAULT_ACCOUNT',
+                    limit: 500,
+                }
+            )
 
             for (const tx of transactions.data) {
                 if (
@@ -102,8 +111,14 @@ export class FireblocksHandler {
 
                 if (tx.signedMessages && tx.signedMessages.length > 0) {
                     const signedMessage = tx.signedMessages[0]
-                    if (!signedMessage.publicKey || !signedMessage.content || !signedMessage.signature) {
-                        throw new Error(`Transaction ${tx.id} has no public key or content in signed message`)
+                    if (
+                        !signedMessage.publicKey ||
+                        !signedMessage.content ||
+                        !signedMessage.signature
+                    ) {
+                        throw new Error(
+                            `Transaction ${tx.id} has no public key or content in signed message`
+                        )
                     }
                     allTransactions.push({
                         txId: tx.id,
@@ -114,16 +129,25 @@ export class FireblocksHandler {
                         metadata: {},
                     })
                 } else {
-                    const rawMessageData = RawMessageExtraParametersSchema.safeParse(tx.extraParameters)
+                    const rawMessageData =
+                        RawMessageExtraParametersSchema.safeParse(
+                            tx.extraParameters
+                        )
                     if (!rawMessageData.success) {
-                        console.error(`Transaction ${tx.id} has invalid rawMessageData:`, rawMessageData.error)
+                        console.error(
+                            `Transaction ${tx.id} has invalid rawMessageData:`,
+                            rawMessageData.error
+                        )
                         continue // Skip transactions with invalid rawMessageData
                     }
-                    const derivationPath = rawMessageData.data.rawMessageData.messages[0].derivationPath
+                    const derivationPath =
+                        rawMessageData.data.rawMessageData.messages[0]
+                            .derivationPath
                     if (!this.keyCacheByDerivationPath.has(derivationPath)) {
                         await this.getPublicKeys() // Refresh the key cache
                     }
-                    const publicKey = this.keyCacheByDerivationPath.get(derivationPath)
+                    const publicKey =
+                        this.keyCacheByDerivationPath.get(derivationPath)
                     if (!publicKey) {
                         continue
                     }
