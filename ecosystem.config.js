@@ -1,7 +1,7 @@
 export const apps = [
     {
         name: 'remote',
-        script: 'yarn workspace server dev',
+        script: 'yarn workspace client-remote dev',
     },
     {
         name: 'example dApp',
@@ -12,11 +12,11 @@ export const apps = [
         script: 'yarn workspace splice-wallet-sdk dev',
     },
     {
-        name: 'splice-provider',
-        script: 'yarn workspace splice-provider dev',
+        name: 'core-splice-provider',
+        script: 'yarn workspace core-splice-provider dev',
     },
     {
-        name: 'wallet-ui-components',
-        script: 'yarn workspace wallet-ui-components build:watch',
+        name: 'core-wallet-ui-components',
+        script: 'yarn workspace core-wallet-ui-components build:watch',
     },
 ]

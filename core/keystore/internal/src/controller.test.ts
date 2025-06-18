@@ -2,7 +2,7 @@ import { expect, test } from '@jest/globals'
 
 // import request from 'supertest'
 import { InternalKeystore } from './controller.js'
-import { CreateKeyResult, isRpcError } from 'keystore-driver-library'
+import { CreateKeyResult, isRpcError } from 'core-keystore-lib'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
 

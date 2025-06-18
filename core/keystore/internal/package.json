@@ -1,5 +1,5 @@
 {
-    "name": "internal-keystore-driver",
+    "name": "core-keystore-internal",
     "private": true,
     "packageManager": "yarn@4.9.2",
     "scripts": {
@@ -8,8 +8,8 @@
         "test": "jest"
     },
     "dependencies": {
+        "core-keystore-lib": "0.0.1",
         "fs-extra": "^11.3.0",
-        "keystore-driver-library": "0.0.1",
         "lodash": "^4.17.21",
         "tweetnacl": "^1.0.3",
         "tweetnacl-util": "^0.15.1"
