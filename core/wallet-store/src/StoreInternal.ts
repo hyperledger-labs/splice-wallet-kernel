@@ -10,7 +10,6 @@ interface UserService {
 interface Memory {
     wallets: Array<Wallet>
     session: Session | undefined
-    networks: Array<NetworkConfig>
 }
 
 export interface StoreInternalConfig {
@@ -31,7 +30,6 @@ export class StoreInternal implements Store {
         return {
             wallets: [],
             session: undefined,
-            networks: [],
         }
     }
 
@@ -144,22 +142,17 @@ export class StoreInternal implements Store {
     }
 
     async listNetworks(): Promise<Array<NetworkConfig>> {
-        const networks = this.defaults.networks
-        if (this.userService.connected()) {
-            networks.push(...this.getMemory().networks)
-        }
-        return networks
+        return this.defaults.networks
     }
 
     async updateNetwork(network: NetworkConfig): Promise<void> {
-        const memory = this.getMemory()
-        memory.networks.filter((n) => n.name !== network.name).push(network)
-        this.updateMemory(memory)
+        this.removeNetwork(network.name) // Ensure no duplicates
+        this.defaults.networks.push(network)
     }
 
     async removeNetwork(name: string): Promise<void> {
-        const memory = this.getMemory()
-        memory.networks = memory.networks.filter((n) => n.name !== name)
-        this.updateMemory(memory)
+        this.defaults.networks = this.defaults.networks.filter(
+            (n) => n.name !== name
+        )
     }
 }

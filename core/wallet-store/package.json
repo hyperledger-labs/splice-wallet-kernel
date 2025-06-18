@@ -11,9 +11,14 @@
     "scripts": {
         "build": "tsc -b",
         "dev": "tsc -b --watch",
-        "clean": "tsc -b --clean; rm -rf dist"
+        "clean": "tsc -b --clean; rm -rf dist",
+        "test": "yarn node --experimental-vm-modules $(yarn bin jest) --detectOpenHandles --runInBand --forceExit"
     },
     "devDependencies": {
+        "@jest/globals": "^29.0.0",
+        "@types/jest": "^30.0.0",
+        "jest": "^30.0.0",
+        "ts-jest": "^29.4.0",
         "typescript": "^5.8.3"
     }
 }
