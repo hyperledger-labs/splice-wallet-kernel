@@ -36,5 +36,5 @@ jobs:
             - name: Run tests
               run: yarn test:all
 
-            - name: check package.json naming
-              run: . scripts/check-package-json-naming.sh
+            - name: check package.json names
+              run: . scripts/check-package-json-name.sh
