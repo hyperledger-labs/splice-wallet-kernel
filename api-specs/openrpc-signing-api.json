@@ -184,7 +184,14 @@
                 "name": "result",
                 "schema": {
                     "title": "createKeyResult",
-                    "$ref": "#/components/schemas/Key"
+                    "oneOf": [
+                        {
+                            "$ref": "#/components/schemas/Error"
+                        },
+                        {
+                            "$ref": "#/components/schemas/Key"
+                        }
+                    ]
                 }
             }
         },
@@ -293,8 +300,9 @@
                 "required": ["error", "error_description"]
             },
             "SigningStatus": {
+                "title": "SigningStatusEnum",
                 "type": "string",
-                "enum": ["pending", "signed", "rejected"],
+                "enum": ["pending", "signed", "rejected", "failed"],
                 "description": "Status of the transaction signing process"
             },
             "Transaction": {
@@ -312,6 +320,10 @@
                     "signature": {
                         "type": "string",
                         "description": "Signature of the transaction if it was signed."
+                    },
+                    "publicKey": {
+                        "type": "string",
+                        "description": "Public key used to sign the transaction."
                     },
                     "metadata": {
                         "type": "object",

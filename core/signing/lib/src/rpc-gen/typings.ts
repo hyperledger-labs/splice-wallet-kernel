@@ -84,13 +84,19 @@ export type StringWl2Vj63L = string
  * Status of the transaction signing process.
  *
  */
-export type StringKpZSFUbB = 'pending' | 'signed' | 'rejected'
+export type SigningStatusEnum = 'pending' | 'signed' | 'rejected' | 'failed'
 /**
  *
  * Signature of the transaction if it was signed.
  *
  */
 export type StringAqnQ2CGz = string
+/**
+ *
+ * Public key used to sign the transaction.
+ *
+ */
+export type StringLE4EvXxW = string
 /**
  *
  * Additional metadata about the transaction.
@@ -100,9 +106,19 @@ export interface ObjectTcbHGNLS {
     [key: string]: any
 }
 export interface Transaction {
+<<<<<<< HEAD:core/signing/lib/src/rpc-gen/typings.ts
     txId: StringWl2Vj63L
     status: StringKpZSFUbB
+=======
+    txId: StringN3DHV8SD
+<<<<<<< HEAD:core/signing/lib/src/rpc-gen/typings.ts
+    status: String2AIdaIoY
+>>>>>>> a57dda8 (continue firefox api):core/keystore/lib/src/rpc-gen/typings.ts
+=======
+    status: SigningStatusEnum
+>>>>>>> de396f6 (update returns):core/keystore/lib/src/rpc-gen/typings.ts
     signature?: StringAqnQ2CGz
+    publicKey?: StringLE4EvXxW
     metadata?: ObjectTcbHGNLS
     [k: string]: any
 }
@@ -111,9 +127,21 @@ export interface Transaction {
  * List of transactions matching the provided filters
  *
  */
+<<<<<<< HEAD:core/signing/lib/src/rpc-gen/typings.ts
+<<<<<<< HEAD:core/signing/lib/src/rpc-gen/typings.ts
 export type UnorderedSetOfTransaction0OZETHXh = Transaction[]
 export interface ObjectOfUnorderedSetOfTransaction0OZETHXhNmSKQwE6 {
     transactions?: UnorderedSetOfTransaction0OZETHXh
+=======
+export type UnorderedSetOfTransactionCrFmQvIW = Transaction[]
+export interface ObjectOfUnorderedSetOfTransactionCrFmQvIWDEWJ3Q5X {
+    transactions?: UnorderedSetOfTransactionCrFmQvIW
+>>>>>>> a57dda8 (continue firefox api):core/keystore/lib/src/rpc-gen/typings.ts
+=======
+export type UnorderedSetOfTransactionp9WyBq8N = Transaction[]
+export interface ObjectOfUnorderedSetOfTransactionp9WyBq8NXBkeipMX {
+    transactions?: UnorderedSetOfTransactionp9WyBq8N
+>>>>>>> de396f6 (update returns):core/keystore/lib/src/rpc-gen/typings.ts
     [k: string]: any
 }
 /**
@@ -182,17 +210,20 @@ export type SignTransactionResult = Error | Transaction
 export type GetTransactionResult = Error | Transaction
 export type GetTransactionsResult =
     | Error
+<<<<<<< HEAD:core/signing/lib/src/rpc-gen/typings.ts
+<<<<<<< HEAD:core/signing/lib/src/rpc-gen/typings.ts
     | ObjectOfUnorderedSetOfTransaction0OZETHXhNmSKQwE6
+=======
+    | ObjectOfUnorderedSetOfTransactionCrFmQvIWDEWJ3Q5X
+>>>>>>> a57dda8 (continue firefox api):core/keystore/lib/src/rpc-gen/typings.ts
+=======
+    | ObjectOfUnorderedSetOfTransactionp9WyBq8NXBkeipMX
+>>>>>>> de396f6 (update returns):core/keystore/lib/src/rpc-gen/typings.ts
 export interface GetKeysResult {
     keys?: UnorderedSetOfKeyU58FG0Db
     [k: string]: any
 }
-export interface CreateKeyResult {
-    id: StringSeicKbSk
-    name: StringLI0CTZ6I
-    publicKey: StringFrHbj8VQ
-    [k: string]: any
-}
+export type CreateKeyResult = Error | Key
 export interface GetConfigurationResult {
     [key: string]: any
 }
@@ -200,9 +231,19 @@ export interface SetConfigurationResult {
     [key: string]: any
 }
 export interface SubscribeTransactionsResult {
+<<<<<<< HEAD:core/signing/lib/src/rpc-gen/typings.ts
     txId: StringWl2Vj63L
     status: StringKpZSFUbB
+=======
+    txId: StringN3DHV8SD
+<<<<<<< HEAD:core/signing/lib/src/rpc-gen/typings.ts
+    status: String2AIdaIoY
+>>>>>>> a57dda8 (continue firefox api):core/keystore/lib/src/rpc-gen/typings.ts
+=======
+    status: SigningStatusEnum
+>>>>>>> de396f6 (update returns):core/keystore/lib/src/rpc-gen/typings.ts
     signature?: StringAqnQ2CGz
+    publicKey?: StringLE4EvXxW
     metadata?: ObjectTcbHGNLS
     [k: string]: any
 }
