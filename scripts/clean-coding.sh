@@ -53,7 +53,7 @@ check_package_json() {
     type_position=$(jq -c 'to_entries | map(select(.key == "type")) | .[0]' "$package_json_path")
     line=$(echo "$type_position" | jq -r '.line // 1')
     column=$(echo "$type_position" | jq -r '.column // 1')
-    echo "::warning file$package_json_path,line=$line,col=$column::type should be set to 'module'"
+    echo "::warning file=${package_json_path:2},line=$line,col=$column::type should be set to 'module'"
   fi
 }
 
@@ -71,7 +71,7 @@ check_tsconfig_json() {
     type_position=$(jq -c 'to_entries | map(select(.key == "extends")) | .[0]' "$tsconfig_json_path")
     line=$(echo "$type_position" | jq -r '.line // 1')
     column=$(echo "$type_position" | jq -r '.column // 1')
-    echo "::warning file=$tsconfig_json_path,line=$line,col=$column::typescript config 'extends' should reference 'tsconfig.web.json', 'tsconfig.node.json', or 'tsconfig.base.json'"
+    echo "::warning file=${tsconfig_json_path:2},line=$line,col=$column::typescript config 'extends' should reference 'tsconfig.web.json', 'tsconfig.node.json', or 'tsconfig.base.json'"
   fi
 }
 
