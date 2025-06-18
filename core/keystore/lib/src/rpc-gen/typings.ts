@@ -84,13 +84,19 @@ export type StringN3DHV8SD = string
  * Status of the transaction signing process.
  *
  */
-export type StringKpZSFUbB = 'pending' | 'signed' | 'rejected'
+export type String2AIdaIoY = 'pending' | 'signed' | 'rejected' | 'failed'
 /**
  *
  * Signature of the transaction if it was signed.
  *
  */
 export type StringAqnQ2CGz = string
+/**
+ *
+ * Public key used to sign the transaction.
+ *
+ */
+export type StringLE4EvXxW = string
 /**
  *
  * Additional metadata about the transaction.
@@ -101,8 +107,9 @@ export interface ObjectTcbHGNLS {
 }
 export interface Transaction {
     txId: StringN3DHV8SD
-    status: StringKpZSFUbB
+    status: String2AIdaIoY
     signature?: StringAqnQ2CGz
+    publicKey?: StringLE4EvXxW
     metadata?: ObjectTcbHGNLS
     [k: string]: any
 }
@@ -111,9 +118,9 @@ export interface Transaction {
  * List of transactions matching the provided filters
  *
  */
-export type UnorderedSetOfTransactionz0RiugNJ = Transaction[]
-export interface ObjectOfUnorderedSetOfTransactionz0RiugNJWrckAchU {
-    transactions?: UnorderedSetOfTransactionz0RiugNJ
+export type UnorderedSetOfTransactionCrFmQvIW = Transaction[]
+export interface ObjectOfUnorderedSetOfTransactionCrFmQvIWDEWJ3Q5X {
+    transactions?: UnorderedSetOfTransactionCrFmQvIW
     [k: string]: any
 }
 /**
@@ -182,7 +189,7 @@ export type SignTransactionResult = Error | Transaction
 export type GetTransactionResult = Error | Transaction
 export type GetTransactionsResult =
     | Error
-    | ObjectOfUnorderedSetOfTransactionz0RiugNJWrckAchU
+    | ObjectOfUnorderedSetOfTransactionCrFmQvIWDEWJ3Q5X
 export interface GetKeysResult {
     keys?: UnorderedSetOfKey2PA3CoDx
     [k: string]: any
@@ -201,8 +208,9 @@ export interface SetConfigurationResult {
 }
 export interface SubscribeTransactionsResult {
     txId: StringN3DHV8SD
-    status: StringKpZSFUbB
+    status: String2AIdaIoY
     signature?: StringAqnQ2CGz
+    publicKey?: StringLE4EvXxW
     metadata?: ObjectTcbHGNLS
     [k: string]: any
 }

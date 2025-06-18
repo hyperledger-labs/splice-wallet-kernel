@@ -42,7 +42,6 @@ const convertInternalTransaction = (tx: InternalTransaction): Transaction => {
         txId: tx.id,
         status: 'signed',
         signature: tx.signature,
-        publicKey: tx.publicKey,
     }
 }
 
