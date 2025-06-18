@@ -7,21 +7,23 @@ import {
     ExecuteParams,
     SignParams,
 } from './rpc-gen/typings.js'
+import { Store } from 'core-wallet-store'
 
-export const userController = buildController({
-    addNetwork: async (params: AddNetworkParams) =>
-        Promise.resolve({} as AddNetwork),
-    allocateParty: async (params: { hint: string }) => Promise.resolve({}),
-    removeParty: async (params: { hint: string }) => Promise.resolve({}),
-    sign: async (params: SignParams) =>
-        Promise.resolve({
-            signature: 'default-signature',
-            signedBy: 'default-signed-by',
-            party: 'default-party',
-        }),
-    execute: async (params: ExecuteParams) =>
-        Promise.resolve({
-            correlationId: 'default-correlation-id',
-            traceId: 'default-trace-id',
-        }),
-})
+export const userController = (store: Store) =>
+    buildController({
+        addNetwork: async (params: AddNetworkParams) =>
+            Promise.resolve({} as AddNetwork),
+        allocateParty: async (params: { hint: string }) => Promise.resolve({}),
+        removeParty: async (params: { hint: string }) => Promise.resolve({}),
+        sign: async (params: SignParams) =>
+            Promise.resolve({
+                signature: 'default-signature',
+                signedBy: 'default-signed-by',
+                party: 'default-party',
+            }),
+        execute: async (params: ExecuteParams) =>
+            Promise.resolve({
+                correlationId: 'default-correlation-id',
+                traceId: 'default-trace-id',
+            }),
+    })

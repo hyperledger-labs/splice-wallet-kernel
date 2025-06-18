@@ -4301,6 +4301,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"core-wallet-auth@workspace:^, core-wallet-auth@workspace:core/wallet-auth":
+  version: 0.0.0-use.local
+  resolution: "core-wallet-auth@workspace:core/wallet-auth"
+  dependencies:
+    "@jest/globals": "npm:^29.0.0"
+    "@swc/core": "npm:^1.11.31"
+    "@swc/jest": "npm:^0.2.38"
+    "@types/jest": "npm:^30.0.0"
+    jest: "npm:^30.0.0"
+    ts-jest: "npm:^29.4.0"
+    ts-jest-resolver: "npm:^2.0.1"
+    typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
+
 "core-wallet-dapp-rpc-client@workspace:^, core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client":
   version: 0.0.0-use.local
   resolution: "core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client"
@@ -4333,6 +4348,7 @@ __metadata:
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"
     "@types/jest": "npm:^30.0.0"
+    core-wallet-auth: "workspace:^"
     jest: "npm:^30.0.0"
     ts-jest: "npm:^29.4.0"
     ts-jest-resolver: "npm:^2.0.1"
@@ -9236,6 +9252,7 @@ __metadata:
     "@types/supertest": "npm:^6.0.3"
     "@types/ws": "npm:^8.18.1"
     arktype: "npm:^2.1.20"
+    core-wallet-auth: "workspace:^"
     core-wallet-store: "workspace:^"
     express: "npm:^5.1.0"
     jest: "npm:^29.7.0"
