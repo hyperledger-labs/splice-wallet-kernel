@@ -78,6 +78,7 @@ describe('StoreInternal', () => {
     test('should add, list, get, update, and remove networks', async () => {
         const ledgerApi: LedgerApi = { baseUrl: 'http://api' }
         const auth: PasswordAuth = {
+            type: 'password',
             tokenUrl: 'http://auth',
             grantType: 'password',
             clientId: 'cid',
