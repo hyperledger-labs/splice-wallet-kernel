@@ -22,7 +22,6 @@ const authService: AuthService = {
 const networkConfigPath =
     process.env.NETWORK_CONFIG_PATH || '../test/multi-network-config.json'
 const networks = ConfigUtils.loadConfigFile(networkConfigPath)
-schemas.networksSchema.parse(networks)
 
 const config: StoreInternalConfig = {
     networks: schemas.networksSchema.parse(networks),
