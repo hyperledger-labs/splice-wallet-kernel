@@ -4,3 +4,4 @@ package-lock.json
 .idea
 .husky
 .git
+.core/ledger-client/generated-clients/*
