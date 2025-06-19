@@ -6,7 +6,7 @@ export default defineConfig({
     root: 'src/web/frontend',
     resolve: {
         alias: {
-            'wallet-ui-components': resolve(
+            'core-wallet-ui-components': resolve(
                 import.meta.dirname,
                 '../../core/wallet-ui-components'
             ),

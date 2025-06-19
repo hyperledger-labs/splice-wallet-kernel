@@ -1,5 +1,5 @@
 {
-    "name": "keystore-driver-library",
+    "name": "core-keystore-lib",
     "version": "0.0.1",
     "private": true,
     "packageManager": "yarn@4.9.2",

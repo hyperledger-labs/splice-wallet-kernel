@@ -1,8 +1,8 @@
-import { discover } from 'wallet-ui-components'
-import { injectSpliceProvider } from 'splice-provider'
+import { discover } from 'core-wallet-ui-components'
+import { injectSpliceProvider } from 'core-splice-provider'
 import * as dappAPI from 'core-wallet-dapp-rpc-client'
 
-export * from 'splice-provider'
+export * from 'core-splice-provider'
 
 export enum ErrorCode {
     UserCancelled,

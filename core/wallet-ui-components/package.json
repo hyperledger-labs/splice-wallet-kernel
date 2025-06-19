@@ -1,5 +1,5 @@
 {
-    "name": "wallet-ui-components",
+    "name": "core-wallet-ui-components",
     "version": "1.0.0",
     "description": "Reusable UI components for the Splice wallet",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",

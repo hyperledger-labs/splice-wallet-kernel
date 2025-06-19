@@ -1,8 +1,8 @@
 import { css, html, LitElement } from 'lit'
 import { customElement } from 'lit/decorators.js'
 
-import 'wallet-ui-components'
-import 'wallet-ui-components/themes/default.css'
+import 'core-wallet-ui-components'
+import 'core-wallet-ui-components/themes/default.css'
 
 @customElement('user-ui')
 export class UserUI extends LitElement {

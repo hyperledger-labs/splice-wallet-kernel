@@ -1,6 +1,6 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { buildController, KeystoreInterface } from 'keystore-driver-library'
+import { buildController, KeystoreInterface } from 'core-keystore-lib'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
 
@@ -20,7 +20,7 @@ import {
     SubscribeTransactionsResult,
     SetConfigurationResult,
     Transaction,
-} from 'keystore-driver-library'
+} from 'core-keystore-lib'
 import { randomUUID } from 'node:crypto'
 
 interface InternalKey {

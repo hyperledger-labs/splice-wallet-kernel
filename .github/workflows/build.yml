@@ -35,3 +35,6 @@ jobs:
 
             - name: Run tests
               run: yarn test:all
+
+            - name: check package.json names
+              run: . scripts/clean-coding.sh
