@@ -1,7 +1,7 @@
 {
-    "name": "core-wallet-store",
+    "name": "core-wallet-auth",
     "version": "1.0.0",
-    "description": "The Store API provides persistency for the wallet kernel.",
+    "description": "Provides authentcation middleware and user management for the wallet kernel.",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
     "packageManager": "yarn@4.9.2",
@@ -12,10 +12,7 @@
         "build": "tsc -b",
         "dev": "tsc -b --watch",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
-    },
-    "dependencies": {
-        "core-wallet-auth": "workspace:^"
+        "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
     },
     "devDependencies": {
         "@jest/globals": "^29.0.0",

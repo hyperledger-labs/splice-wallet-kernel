@@ -9,8 +9,6 @@ import './components/Discovery.js'
 import './components/Configuration.js'
 import { html as htmlStatic, literal } from 'lit/static-html.js'
 
-import '../themes/default.css'
-
 @customElement('app-ui')
 export class AppUi extends LitElement {
     static styles = css`

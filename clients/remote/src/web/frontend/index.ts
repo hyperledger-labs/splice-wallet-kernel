@@ -1,8 +1,11 @@
 import { css, html, LitElement } from 'lit'
 import { customElement } from 'lit/decorators.js'
 
-@customElement('swk-configuration')
-export class Configuration extends LitElement {
+import 'core-wallet-ui-components'
+import 'core-wallet-ui-components/themes/default.css'
+
+@customElement('user-ui')
+export class UserUI extends LitElement {
     static styles = css`
         div {
             background-color: var(--splice-wk-background-color, none);
@@ -12,11 +15,9 @@ export class Configuration extends LitElement {
     `
 
     protected render() {
-        return html`
-            <div>
-                <h1>Configuration</h1>
-                <p>Wallet Kernel configuration page.</p>
-            </div>
-        `
+        return html`<div>
+            <h1>User UI</h1>
+            <swk-configuration></swk-configuration>
+        </div>`
     }
 }

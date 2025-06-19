@@ -1,10 +1,22 @@
-import { afterAll, expect, test } from '@jest/globals'
+import { expect, test } from '@jest/globals'
 
 import request from 'supertest'
-import { dAppServer } from './index.js'
+import { dapp } from './server.js'
+import { StoreInternal, StoreInternalConfig } from 'core-wallet-store'
+import { AuthService } from 'core-wallet-auth'
+
+const authService: AuthService = {
+    connected: () => true,
+    getUserId: () => 'test-user-id',
+}
+
+const config: StoreInternalConfig = {
+    networks: [],
+}
+const store = new StoreInternal(config, authService)
 
 test('call connect rpc', async () => {
-    const response = await request(dAppServer)
+    const response = await request(dapp(store))
         .post('/rpc')
         .send({ jsonrpc: '2.0', id: 0, method: 'connect', params: [] })
         .set('Accept', 'application/json')
@@ -18,13 +30,4 @@ test('call connect rpc', async () => {
             userUrl: 'http://default-user-url.com',
         },
     })
-})
-
-beforeAll((done) => {
-    done()
-})
-
-afterAll((done) => {
-    dAppServer.close()
-    done()
 })
