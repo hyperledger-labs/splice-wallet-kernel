@@ -1,0 +1,27 @@
+{
+    "name": "core-ledger-client",
+    "version": "1.0.0",
+    "description": "Provides ledger client for the wallet kernel.",
+    "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
+    "license": "Apache-2.0",
+    "packageManager": "yarn@4.9.2",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b",
+        "dev": "tsc -b --watch",
+        "clean": "tsc -b --clean; rm -rf dist",
+        "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
+    },
+    "devDependencies": {
+        "@jest/globals": "^29.0.0",
+        "@swc/core": "^1.11.31",
+        "@swc/jest": "^0.2.38",
+        "@types/jest": "^30.0.0",
+        "jest": "^30.0.0",
+        "ts-jest": "^29.4.0",
+        "ts-jest-resolver": "^2.0.1",
+        "typescript": "^5.8.3"
+    }
+}

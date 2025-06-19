@@ -7,6 +7,7 @@ npm-debug.log
 .DS_Store
 *.tsbuildinfo
 **/build
+.temp/
 
 generated/
 
