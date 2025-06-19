@@ -33,6 +33,7 @@ Folder Structure and usage
 
 ```
 |-- api-specs               # Contains API Spec used for code generation
+|   `-- ledger-api          # Contains API and websocket specs for all support ledger API versions
 |-- clients                 # Contains the different clients of the wallet kernel
 |   |-- extension               # Browser extension client
 |   `-- remote                  # Remote RPC client
