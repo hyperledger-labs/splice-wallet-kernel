@@ -9,9 +9,8 @@ import {
     LedgerApi,
 } from '../../../core/wallet-store/src/Store'
 
-const userServiceMock = {
-    connected: () => true,
-    getUserId: () => 'test-user-id',
+const authContextMock = {
+    userId: 'test-user-id',
 }
 
 const storeConfig = {
@@ -22,7 +21,7 @@ describe('StoreInternal', () => {
     let store: StoreInternal
 
     beforeEach(() => {
-        store = new StoreInternal(storeConfig, userServiceMock)
+        store = new StoreInternal(storeConfig, authContextMock)
     })
 
     test('should add and retrieve wallets', async () => {

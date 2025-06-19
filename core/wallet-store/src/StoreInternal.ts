@@ -1,5 +1,5 @@
+import { AuthContext, UserId, AuthAware } from 'core-wallet-auth'
 import { Store, Wallet, PartyId, Session, NetworkConfig } from './Store.js'
-import { UserId, AuthService } from 'core-wallet-auth'
 
 interface UserStorage {
     wallets: Array<Wallet>
@@ -10,14 +10,27 @@ export interface StoreInternalConfig {
     networks: Array<NetworkConfig>
 }
 
-export class StoreInternal implements Store {
-    private systemStorage: StoreInternalConfig
-    private userStorage: Map<UserId, UserStorage> = new Map()
-    private authService: AuthService
+type Memory = Map<UserId, UserStorage>
 
-    constructor(config: StoreInternalConfig, authService: AuthService) {
+// TODO: remove AuthAware and instead provide wrapper in clients
+export class StoreInternal implements Store, AuthAware<StoreInternal> {
+    private systemStorage: StoreInternalConfig
+    private userStorage: Memory
+
+    authContext: AuthContext | undefined
+
+    constructor(
+        config: StoreInternalConfig,
+        authContext?: AuthContext,
+        userStorage?: Memory
+    ) {
         this.systemStorage = config
-        this.authService = authService
+        this.authContext = authContext
+        this.userStorage = userStorage || new Map()
+    }
+
+    withAuthContext(context?: AuthContext): StoreInternal {
+        return new StoreInternal(this.systemStorage, context, this.userStorage)
     }
 
     static createStorage(): UserStorage {
@@ -27,15 +40,15 @@ export class StoreInternal implements Store {
         }
     }
 
-    private assertConnected(): void {
-        if (!this.authService.connected()) {
+    private assertConnected(): UserId {
+        if (!this.authContext) {
             throw new Error('User is not connected')
         }
+        return this.authContext.userId
     }
 
     private getStorage(): UserStorage {
-        this.assertConnected()
-        const userId = this.authService.getUserId()
+        const userId = this.assertConnected()
         if (!this.userStorage.has(userId)) {
             this.userStorage.set(userId, StoreInternal.createStorage())
         }
@@ -43,8 +56,7 @@ export class StoreInternal implements Store {
     }
 
     private updateStorage(storage: UserStorage): void {
-        this.assertConnected()
-        const userId = this.authService.getUserId()
+        const userId = this.assertConnected()
         this.userStorage.set(userId, storage)
     }
 
