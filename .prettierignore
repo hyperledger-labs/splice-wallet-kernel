@@ -5,3 +5,4 @@ package-lock.json
 .husky
 .git
 .core/ledger-client/generated-clients/*
+.api-specs/ledger-api/*
