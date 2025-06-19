@@ -6,6 +6,6 @@
         "experimentalDecorators": true,
         "useDefineForClassFields": false
     },
-    "include": ["src"],
+    "include": ["src", "types/express.d.ts"],
     "exclude": ["src/web/frontend"]
 }
