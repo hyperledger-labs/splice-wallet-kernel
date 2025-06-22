@@ -10,6 +10,10 @@ export default defineConfig({
                 import.meta.dirname,
                 '../../core/wallet-ui-components'
             ),
+            'core-wallet-user-rpc-client': resolve(
+                import.meta.dirname,
+                '../../core/wallet-user-rpc-client'
+            ),
         },
     },
 })

@@ -1,0 +1,176 @@
+{
+    "openrpc": "1.2.6",
+    "info": {
+        "title": "Splice Wallet JSON-RPC User API",
+        "version": "1.0.0",
+        "description": "An OpenRPC specification for the user to interact with the wallet kernel."
+    },
+    "methods": [
+        {
+            "name": "addNetwork",
+            "params": [
+                {
+                    "name": "network",
+                    "schema": {
+                        "title": "AddNetworkParams",
+                        "type": "object"
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "Null",
+                    "schema": {
+                        "$ref": "#/components/schemas/Null"
+                    },
+                    "description": "Represents a null value, used in responses where no data is returned."
+                }
+            },
+            "description": "Adds a new network configuration (similar to EIP-3085)."
+        },
+        {
+            "name": "allocateParty",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "AllocatePartyParams",
+                        "type": "object",
+                        "properties": {
+                            "hint": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["hint"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "AllocatePartyResult",
+                    "type": "object"
+                }
+            },
+            "description": "Allocates a new party with the given hint."
+        },
+        {
+            "name": "removeParty",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "RemovePartyParams",
+                        "type": "object",
+                        "properties": {
+                            "hint": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["hint"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "RemovePartyResult",
+                    "type": "object"
+                }
+            },
+            "description": "Removes a party with the given hint."
+        },
+        {
+            "name": "sign",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "SignParams",
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "type": "string"
+                            },
+                            "party": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["data"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "SignResult",
+                    "type": "object",
+                    "properties": {
+                        "signature": {
+                            "type": "string"
+                        },
+                        "party": {
+                            "type": "string"
+                        },
+                        "signedBy": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["signature", "party", "signedBy"]
+                }
+            },
+            "description": "Signs the provided data with the private key of the specified or active party."
+        },
+        {
+            "name": "execute",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "ExecuteParams",
+                        "type": "object",
+                        "properties": {
+                            "signature": {
+                                "type": "string"
+                            },
+                            "party": {
+                                "type": "string"
+                            },
+                            "signedBy": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["signature", "party", "signedBy"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "ExecuteResult",
+                    "type": "object",
+                    "properties": {
+                        "correlationId": {
+                            "type": "string"
+                        },
+                        "traceId": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["correlationId", "traceId"]
+                }
+            },
+            "description": "Executes a signed transaction."
+        }
+    ],
+    "components": {
+        "schemas": {
+            "Null": {
+                "title": "Null",
+                "type": "null",
+                "description": "Represents a null value, used in responses where no data is returned."
+            }
+        }
+    }
+}

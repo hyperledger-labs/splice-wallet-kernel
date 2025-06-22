@@ -43,6 +43,7 @@ Folder Structure and usage
 |   |   `-- lib                     # Generated code for the keystore API
 |   |-- rpc-generator           # Custom code for generation based on files in api-specs folder
 |   |-- wallet-dapp-rpc-client  # Generated code for the dApp RPC client
+|   |-- wallet-user-rpc-client  # Generated code for the user RPC client
 |   |-- wallet-store            # Interface and implementation for the wallet store
 |   `-- wallet-ui-components    # Various UI components stored for reusability between different clients
 |-- docs                    # Documentations and readme files for the repo
