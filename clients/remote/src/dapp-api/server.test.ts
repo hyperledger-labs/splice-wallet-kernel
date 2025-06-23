@@ -79,6 +79,5 @@ test('call connect rpc', async () => {
             ],
         },
     })
-    // console.log(JSON.stringify(response.body))
     expect(response.statusCode).toBe(200)
 })
