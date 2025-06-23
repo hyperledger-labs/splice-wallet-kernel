@@ -1,7 +1,7 @@
 export const apps = [
     {
         name: 'remote',
-        script: 'yarn workspace client-remote dev',
+        script: 'yarn workspace clients-remote dev',
     },
     {
         name: 'example dApp',
