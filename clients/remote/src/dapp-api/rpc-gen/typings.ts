@@ -46,6 +46,24 @@ export interface JsPrepareSubmissionResponse {
     preparedTransactionHash?: StringZK0Xb1WV
     [k: string]: any
 }
+/**
+ *
+ * Name of network
+ *
+ */
+export type StringWupREggx = string
+/**
+ *
+ * Description of network
+ *
+ */
+export type StringM72S2Xxb = string
+/**
+ *
+ * Structure representing the connected Networks
+ *
+ */
+export type Network = any[]
 export interface PrepareReturnParams {
     commands: JsCommands
     [k: string]: any
@@ -71,8 +89,17 @@ export interface DarsAvailableResult {
 }
 export type PrepareReturnResult = any
 export type PrepareExecuteResult = any
+/**
+ *
+ * Ledger Api configuration options
+ *
+ */
 export interface LedgerApiResult {
     response: StringDoaGddGA
+    [k: string]: any
+}
+export interface ListNetworksResult {
+    networks: Network
     [k: string]: any
 }
 /**
@@ -80,7 +107,7 @@ export interface LedgerApiResult {
  * Generated! Represents an alias to any of the provided schemas
  *
  */
-export type AnyOfPrepareReturnParamsPrepareExecuteParamsLedgerApiParamsConnectResultDarsAvailableResultPrepareReturnResultPrepareExecuteResultLedgerApiResult =
+export type AnyOfPrepareReturnParamsPrepareExecuteParamsLedgerApiParamsConnectResultDarsAvailableResultPrepareReturnResultPrepareExecuteResultLedgerApiResultListNetworksResult =
 
         | PrepareReturnParams
         | PrepareExecuteParams
@@ -90,6 +117,7 @@ export type AnyOfPrepareReturnParamsPrepareExecuteParamsLedgerApiParamsConnectRe
         | PrepareReturnResult
         | PrepareExecuteResult
         | LedgerApiResult
+        | ListNetworksResult
 export type Connect = () => Promise<ConnectResult>
 export type DarsAvailable = () => Promise<DarsAvailableResult>
 export type PrepareReturn = (
@@ -99,3 +127,4 @@ export type PrepareExecute = (
     params: PrepareExecuteParams
 ) => Promise<PrepareExecuteResult>
 export type LedgerApi = (params: LedgerApiParams) => Promise<LedgerApiResult>
+export type ListNetworks = () => Promise<ListNetworksResult>

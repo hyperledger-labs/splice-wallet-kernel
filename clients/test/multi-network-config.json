@@ -5,7 +5,7 @@
         "ledgerApi": {
             "baseUrl": "https://test"
         },
-        "authType": {
+        "auth": {
             "type": "password",
             "tokenUrl": "tokenUrl",
             "grantType": "password",
@@ -19,7 +19,7 @@
         "ledgerApi": {
             "baseUrl": "https://test"
         },
-        "authType": {
+        "auth": {
             "type": "implicit",
             "domain": "dex.com",
             "audience": "https://daml.com/jwt/aud/participant/wk-app",

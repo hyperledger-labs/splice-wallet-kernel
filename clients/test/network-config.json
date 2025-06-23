@@ -4,7 +4,7 @@
     "ledgerApi": {
         "baseUrl": "https://test"
     },
-    "authType": {
+    "auth": {
         "type": "password",
         "tokenUrl": "tokenUrl",
         "grantType": "password",
