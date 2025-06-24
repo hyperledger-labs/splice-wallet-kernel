@@ -1,5 +1,5 @@
 {
-    "name": "core-wallet-dapp-rpc-client",
+    "name": "core-wallet-user-rpc-client",
     "version": "1.0.0",
     "description": "",
     "type": "module",

@@ -15,6 +15,7 @@ export default defineConfig([
         '**/build/',
         '.pnp.*',
         'core/wallet-dapp-rpc-client',
+        'core/wallet-user-rpc-client',
         'core/ledger-client/generated-clients',
     ]),
     {
