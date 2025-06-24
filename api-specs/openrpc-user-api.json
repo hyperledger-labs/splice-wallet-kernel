@@ -162,6 +162,24 @@
                 }
             },
             "description": "Executes a signed transaction."
+        },
+        {
+            "name": "listNetworks",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "ListNetworksResult",
+                    "type": "object",
+                    "properties": {
+                        "networks": {
+                            "type": "array",
+                            "$ref": "#/components/schemas/Network"
+                        }
+                    },
+                    "required": ["networks"]
+                }
+            }
         }
     ],
     "components": {
@@ -170,6 +188,46 @@
                 "title": "Null",
                 "type": "null",
                 "description": "Represents a null value, used in responses where no data is returned."
+            },
+            "Network": {
+                "title": "Network",
+                "type": "object",
+                "description": "Structure representing the connected Networks",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of network"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Description of network"
+                    }
+                }
+            },
+            "Auth": {
+                "title": "type",
+                "type": "object",
+                "description": "Represents the type of auth (implicit or password) for a specified network",
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    },
+                    "tokenUrl": {
+                        "type": "string"
+                    },
+                    "scope": {
+                        "type": "string"
+                    },
+                    "clientId": {
+                        "type": "string"
+                    },
+                    "domain": {
+                        "type": "string"
+                    },
+                    "audience": {
+                        "type": "string"
+                    }
+                }
             }
         }
     }

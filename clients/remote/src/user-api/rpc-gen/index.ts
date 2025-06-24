@@ -5,6 +5,7 @@ import { AllocateParty } from './typings.js'
 import { RemoveParty } from './typings.js'
 import { Sign } from './typings.js'
 import { Execute } from './typings.js'
+import { ListNetworks } from './typings.js'
 
 export type Methods = {
     addNetwork: AddNetwork
@@ -12,6 +13,7 @@ export type Methods = {
     removeParty: RemoveParty
     sign: Sign
     execute: Execute
+    listNetworks: ListNetworks
 }
 
 function buildController(methods: Methods) {
@@ -21,6 +23,7 @@ function buildController(methods: Methods) {
         removeParty: methods.removeParty,
         sign: methods.sign,
         execute: methods.execute,
+        listNetworks: methods.listNetworks,
     }
 }
 

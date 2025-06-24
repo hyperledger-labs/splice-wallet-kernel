@@ -61,24 +61,6 @@ export interface JsPrepareSubmissionResponse {
     preparedTransactionHash?: StringZK0Xb1WV
     [k: string]: any
 }
-/**
- *
- * Name of network
- *
- */
-export type StringWupREggx = string
-/**
- *
- * Description of network
- *
- */
-export type StringM72S2Xxb = string
-/**
- *
- * Structure representing the connected Networks
- *
- */
-export type Network = any[]
 export interface PrepareReturnParams {
     commands: JsCommands
     [k: string]: any
@@ -113,16 +95,12 @@ export interface LedgerApiResult {
     response: StringDoaGddGA
     [k: string]: any
 }
-export interface ListNetworksResult {
-    networks: Network
-    [k: string]: any
-}
 /**
  *
  * Generated! Represents an alias to any of the provided schemas
  *
  */
-export type AnyOfPrepareReturnParamsPrepareExecuteParamsLedgerApiParamsConnectResultDarsAvailableResultPrepareReturnResultPrepareExecuteResultLedgerApiResultListNetworksResult =
+export type AnyOfPrepareReturnParamsPrepareExecuteParamsLedgerApiParamsConnectResultDarsAvailableResultPrepareReturnResultPrepareExecuteResultLedgerApiResult =
 
         | PrepareReturnParams
         | PrepareExecuteParams
@@ -132,7 +110,6 @@ export type AnyOfPrepareReturnParamsPrepareExecuteParamsLedgerApiParamsConnectRe
         | PrepareReturnResult
         | PrepareExecuteResult
         | LedgerApiResult
-        | ListNetworksResult
 export type Connect = () => Promise<ConnectResult>
 export type DarsAvailable = () => Promise<DarsAvailableResult>
 export type PrepareReturn = (
@@ -142,7 +119,6 @@ export type PrepareExecute = (
     params: PrepareExecuteParams
 ) => Promise<PrepareExecuteResult>
 export type LedgerApi = (params: LedgerApiParams) => Promise<LedgerApiResult>
-export type ListNetworks = () => Promise<ListNetworksResult>
 
 export interface Options {
     transport: {
@@ -297,24 +273,6 @@ export class SpliceWalletJSONRPCDAppAPI {
                 description:
                     'Proxy for the JSON-API endpoints. Injects authorization headers automatically.',
             },
-            {
-                name: 'listNetworks',
-                params: [],
-                result: {
-                    name: 'result',
-                    schema: {
-                        title: 'ListNetworksResult',
-                        type: 'object',
-                        properties: {
-                            networks: {
-                                type: 'array',
-                                $ref: '#/components/schemas/Network',
-                            },
-                        },
-                        required: ['networks'],
-                    },
-                },
-            },
         ],
         components: {
             schemas: {
@@ -330,36 +288,6 @@ export class SpliceWalletJSONRPCDAppAPI {
                     description: 'Ledger Api configuration options',
                     properties: { response: { type: 'string' } },
                     required: ['response'],
-                },
-                Network: {
-                    title: 'Network',
-                    type: 'object',
-                    description:
-                        'Structure representing the connected Networks',
-                    properties: {
-                        name: {
-                            type: 'string',
-                            description: 'Name of network',
-                        },
-                        description: {
-                            type: 'string',
-                            description: 'Description of network',
-                        },
-                    },
-                },
-                Auth: {
-                    title: 'type',
-                    type: 'object',
-                    description:
-                        'Represents the type of auth (implicit or password) for a specified network',
-                    properties: {
-                        type: { type: 'string' },
-                        tokenUrl: { type: 'string' },
-                        scope: { type: 'string' },
-                        clientId: { type: 'string' },
-                        domain: { type: 'string' },
-                        audience: { type: 'string' },
-                    },
                 },
                 UserUrl: {
                     title: 'UserUrl',
@@ -598,14 +526,6 @@ export class SpliceWalletJSONRPCDAppAPI {
     // tslint:disable-next-line:max-line-length
     public ledgerApi: LedgerApi = (...params) => {
         return this.request('ledgerApi', params)
-    }
-
-    /**
-     *
-     */
-    // tslint:disable-next-line:max-line-length
-    public listNetworks: ListNetworks = (...params) => {
-        return this.request('listNetworks', params)
     }
 }
 export default SpliceWalletJSONRPCDAppAPI
