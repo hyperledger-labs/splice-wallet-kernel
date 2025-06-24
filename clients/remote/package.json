@@ -18,6 +18,7 @@
         "@metamask/rpc-errors": "^7.0.2",
         "arktype": "^2.1.20",
         "core-wallet-auth": "workspace:^",
+        "core-wallet-dapp-rpc-client": "workspace:^",
         "core-wallet-store": "workspace:^",
         "core-wallet-ui-components": "workspace:^",
         "express": "^5.1.0",

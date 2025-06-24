@@ -5,6 +5,8 @@ import { pino } from 'pino'
 import ViteExpress from 'vite-express'
 import { AuthService } from 'core-wallet-auth'
 import { StoreInternal, StoreInternalConfig } from 'core-wallet-store'
+import { ConfigUtils } from './config/ConfigUtils.js'
+import * as schemas from './config/StoreConfig.js'
 
 const dAppPort = 3000
 const userPort = 3001
@@ -18,8 +20,12 @@ const authService: AuthService = {
     },
 }
 
+const networkConfigPath =
+    process.env.NETWORK_CONFIG_PATH || '../test/multi-network-config.json'
+const networks = ConfigUtils.loadConfigFile(networkConfigPath)
+
 const config: StoreInternalConfig = {
-    networks: [],
+    networks: schemas.networksSchema.parse(networks),
 }
 const store = new StoreInternal(config)
 

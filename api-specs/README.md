@@ -19,7 +19,7 @@ Start either of the servers (from the repository root):
 ```sh
 yarn workspace splice-wallet-api-specs dapp-mock-server
 yarn workspace splice-wallet-api-specs user-mock-server
-yarn workspace splice-wallet-api-specs keystore-connector-mock-server
+yarn workspace splice-wallet-api-specs signing-mock-server
 ```
 
 The server now runs on [localhost:3333](http://localhost:3333/).
@@ -33,4 +33,21 @@ Use Postman (or similar) to submit a request agains this endpoint with applicati
     "method": "connect",
     "params": []
 }
+```
+
+## Ledger API specs
+
+To get a new version of the Ledger API specs, run the following command:
+
+```sh
+. ../scripts/update-ledger-from-splice.sh
+```
+
+It will download the latest ledger API specs used in the splice repo, if splice is not using the desired version then a manual copy is required.
+You can change the target branch in the script if needed to generate for an older version.
+
+If new generation of clients are needed then run the following command:
+
+```sh
+. ../scripts/generate-ledger-client.sh
 ```

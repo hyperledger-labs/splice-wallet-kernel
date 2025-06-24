@@ -9,10 +9,10 @@
 export type StringQ5XJO2Da = string
 /**
  *
- * Hash of the prepared transaction that the KeyStore will sign.
+ * Hash of the prepared transaction that= will sign.
  *
  */
-export type StringX1AtUghP = string
+export type StringLBCd7I83 = string
 /**
  *
  * Public key to use to sign the transaction.
@@ -75,10 +75,10 @@ export interface Error {
 }
 /**
  *
- * Unique identifier of the signed transaction given by the KeyStore Provider. This may not be the same as the internal txId given by the Wallet Kernel.
+ * Unique identifier of the signed transaction given by the Wallet Provider. This may not be the same as the internal txId given by the Wallet Kernel.
  *
  */
-export type StringN3DHV8SD = string
+export type StringWl2Vj63L = string
 /**
  *
  * Status of the transaction signing process.
@@ -100,7 +100,7 @@ export interface ObjectTcbHGNLS {
     [key: string]: any
 }
 export interface Transaction {
-    txId: StringN3DHV8SD
+    txId: StringWl2Vj63L
     status: StringKpZSFUbB
     signature?: StringAqnQ2CGz
     metadata?: ObjectTcbHGNLS
@@ -111,9 +111,9 @@ export interface Transaction {
  * List of transactions matching the provided filters
  *
  */
-export type UnorderedSetOfTransactionz0RiugNJ = Transaction[]
-export interface ObjectOfUnorderedSetOfTransactionz0RiugNJWrckAchU {
-    transactions?: UnorderedSetOfTransactionz0RiugNJ
+export type UnorderedSetOfTransaction0OZETHXh = Transaction[]
+export interface ObjectOfUnorderedSetOfTransaction0OZETHXhNmSKQwE6 {
+    transactions?: UnorderedSetOfTransaction0OZETHXh
     [k: string]: any
 }
 /**
@@ -142,13 +142,13 @@ export interface Key {
 }
 /**
  *
- * List of keys availabile in the KeyStore
+ * List of keys availabile at the Wallet Provider
  *
  */
-export type UnorderedSetOfKey2PA3CoDx = Key[]
+export type UnorderedSetOfKeyU58FG0Db = Key[]
 export interface SignTransactionParams {
     tx: StringQ5XJO2Da
-    txHash: StringX1AtUghP
+    txHash: StringLBCd7I83
     publicKey: StringYbbTuhoe
     internalTxId?: StringRqVz1Pmx
     [k: string]: any
@@ -182,9 +182,9 @@ export type SignTransactionResult = Error | Transaction
 export type GetTransactionResult = Error | Transaction
 export type GetTransactionsResult =
     | Error
-    | ObjectOfUnorderedSetOfTransactionz0RiugNJWrckAchU
+    | ObjectOfUnorderedSetOfTransaction0OZETHXhNmSKQwE6
 export interface GetKeysResult {
-    keys?: UnorderedSetOfKey2PA3CoDx
+    keys?: UnorderedSetOfKeyU58FG0Db
     [k: string]: any
 }
 export interface CreateKeyResult {
@@ -200,7 +200,7 @@ export interface SetConfigurationResult {
     [key: string]: any
 }
 export interface SubscribeTransactionsResult {
-    txId: StringN3DHV8SD
+    txId: StringWl2Vj63L
     status: StringKpZSFUbB
     signature?: StringAqnQ2CGz
     metadata?: ObjectTcbHGNLS
