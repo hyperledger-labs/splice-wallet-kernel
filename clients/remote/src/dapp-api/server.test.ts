@@ -43,7 +43,7 @@ test('call connect rpc', async () => {
 })
 
 test('call connect rpc', async () => {
-    const response = await request(dapp(store))
+    const response = await request(dapp(authService, store))
         .post('/rpc')
         .send({ jsonrpc: '2.0', id: 0, method: 'listNetworks', params: [] })
         .set('Accept', 'application/json')
