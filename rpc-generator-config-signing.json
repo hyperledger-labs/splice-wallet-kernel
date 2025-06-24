@@ -1,13 +1,13 @@
 {
-    "openrpcDocument": "./api-specs/openrpc-keystore-connector-api.json",
+    "openrpcDocument": "./api-specs/openrpc-signing-api.json",
     "outDir": ".",
     "components": [
         {
             "type": "custom",
-            "name": "wallet-keystore-library",
+            "name": "wallet-signing-library",
             "language": "typescript",
             "openRPCPath": null,
-            "outPath": "./core/keystore/lib/src/rpc-gen",
+            "outPath": "./core/signing/lib/src/rpc-gen",
             "customComponent": "./core/rpc-generator/dist/components/controller.js",
             "customType": "controller"
         }

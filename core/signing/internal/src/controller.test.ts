@@ -1,8 +1,8 @@
 import { expect, test } from '@jest/globals'
 
 // import request from 'supertest'
-import { InternalKeystore } from './controller.js'
-import { CreateKeyResult, isRpcError } from 'core-keystore-lib'
+import { InternalSigner } from './controller.js'
+import { CreateKeyResult, isRpcError } from 'core-signing-lib'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
 
@@ -12,30 +12,30 @@ const TEST_TRANSACTION_HASH =
     '88beb0783e394f6128699bad42906374ab64197d260db05bb0cfeeb518ba3ac2'
 
 interface TestValues {
-    keystore: InternalKeystore
+    signer: InternalSigner
     key: CreateKeyResult
 }
 
 async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
-    const keystore = new InternalKeystore()
-    const key = await keystore.keystoreController.createKey({ name: keyName })
+    const signer = new InternalSigner()
+    const key = await signer.signerController.createKey({ name: keyName })
     return {
-        keystore,
+        signer,
         key,
     }
 }
 
 test('key creation', async () => {
-    const { keystore, key } = await setupTest()
-    const keys = await keystore.keystoreController.getKeys()
+    const { signer, key } = await setupTest()
+    const keys = await signer.signerController.getKeys()
     expect(
         keys.keys?.find((k) => k.id === key.id && k.publicKey === key.publicKey)
     ).toBeDefined()
 })
 
 test('transaction signature', async () => {
-    const { keystore, key } = await setupTest()
-    const tx = await keystore.keystoreController.signTransaction({
+    const { signer, key } = await setupTest()
+    const tx = await signer.signerController.signTransaction({
         tx: TEST_TRANSACTION,
         txHash: TEST_TRANSACTION_HASH,
         publicKey: key.publicKey,
@@ -57,9 +57,9 @@ test('transaction signature', async () => {
         )
     ).toBe(true)
 
-    const transactionsByKey = await keystore.keystoreController.getTransactions(
-        { publicKeys: [key.publicKey] }
-    )
+    const transactionsByKey = await signer.signerController.getTransactions({
+        publicKeys: [key.publicKey],
+    })
     if (isRpcError(transactionsByKey)) {
         throw new Error(
             `Expected valid transactions, but got an error: ${transactionsByKey.error_description}`
@@ -69,7 +69,7 @@ test('transaction signature', async () => {
         transactionsByKey.transactions?.find((t) => t.txId === tx.txId)
     ).toBeDefined()
 
-    const transactionsById = await keystore.keystoreController.getTransactions({
+    const transactionsById = await signer.signerController.getTransactions({
         txIds: [tx.txId],
     })
     if (isRpcError(transactionsById)) {
