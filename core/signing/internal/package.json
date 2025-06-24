@@ -1,5 +1,5 @@
 {
-    "name": "core-keystore-internal",
+    "name": "core-signing-internal",
     "private": true,
     "packageManager": "yarn@4.9.2",
     "scripts": {
@@ -8,7 +8,7 @@
         "test": "jest"
     },
     "dependencies": {
-        "core-keystore-lib": "0.0.1",
+        "core-signing-lib": "0.0.1",
         "fs-extra": "^11.3.0",
         "lodash": "^4.17.21",
         "tweetnacl": "^1.0.3",

@@ -1,6 +1,6 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { buildController, KeystoreInterface } from 'core-keystore-lib'
+import { buildController, SignerInterface } from 'core-signing-lib'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
 
@@ -20,7 +20,7 @@ import {
     SubscribeTransactionsResult,
     SetConfigurationResult,
     Transaction,
-} from 'core-keystore-lib'
+} from 'core-signing-lib'
 import { randomUUID } from 'node:crypto'
 
 interface InternalKey {
@@ -45,18 +45,18 @@ const convertInternalTransaction = (tx: InternalTransaction): Transaction => {
     }
 }
 
-export class InternalKeystore implements KeystoreInterface {
-    private keystore: Map<string, InternalKey> = new Map()
-    private keystoreByPublicKey: Map<string, InternalKey> = new Map()
+export class InternalSigner implements SignerInterface {
+    private signer: Map<string, InternalKey> = new Map()
+    private signerByPublicKey: Map<string, InternalKey> = new Map()
     private transactions: Map<string, InternalTransaction> = new Map()
 
-    public keystoreController = buildController({
+    public signerController = buildController({
         signTransaction: async (
             params: SignTransactionParams
         ): Promise<SignTransactionResult> => {
             // TODO: validate transaction here
 
-            const key = this.keystoreByPublicKey.get(params.publicKey)
+            const key = this.signingByPublicKey.get(params.publicKey)
             if (key) {
                 const txId = randomUUID()
                 const decodedKey = naclUtil.decodeBase64(key.privateKey)
@@ -86,7 +86,7 @@ export class InternalKeystore implements KeystoreInterface {
                 return Promise.resolve({
                     error: 'key_not_found',
                     error_description:
-                        'The provided public key does not exist in the keystore.',
+                        'The provided public key does not exist in the signing.',
                 })
             }
         },
@@ -135,7 +135,7 @@ export class InternalKeystore implements KeystoreInterface {
 
         getKeys: async (): Promise<GetKeysResult> =>
             Promise.resolve({
-                keys: Array.from(this.keystore.values()).map((key) => ({
+                keys: Array.from(this.signing.values()).map((key) => ({
                     id: key.id,
                     name: key.name,
                     publicKey: key.publicKey,
@@ -156,8 +156,8 @@ export class InternalKeystore implements KeystoreInterface {
                 privateKey,
             }
 
-            this.keystore.set(id, internalKey)
-            this.keystoreByPublicKey.set(publicKey, internalKey)
+            this.signing.set(id, internalKey)
+            this.signingByPublicKey.set(publicKey, internalKey)
 
             return Promise.resolve({
                 id,
