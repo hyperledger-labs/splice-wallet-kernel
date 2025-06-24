@@ -4,6 +4,10 @@ export const apps = [
         script: 'yarn workspace clients-remote dev',
     },
     {
+        name: 'extension',
+        script: 'yarn workspace clients-extension dev',
+    },
+    {
         name: 'example dApp',
         script: 'yarn workspace example dev',
     },
