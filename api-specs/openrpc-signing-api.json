@@ -1,9 +1,9 @@
 {
     "openrpc": "1.2.6",
     "info": {
-        "title": "Wallet JSON-RPC Keystore API",
+        "title": "Wallet JSON-RPC Signing API",
         "version": "1.0.0",
-        "description": "An OpenRPC specification for the KeyStore connector which allows the wallet kernel to interact with a KeyStore."
+        "description": "An OpenRPC specification for the Signing API which allows the wallet kernel to interact with a Wallet Providers."
     },
     "methods": [
         {
@@ -21,7 +21,7 @@
                             },
                             "txHash": {
                                 "type": "string",
-                                "description": "Hash of the prepared transaction that the KeyStore will sign."
+                                "description": "Hash of the prepared transaction that= will sign."
                             },
                             "publicKey": {
                                 "type": "string",
@@ -38,7 +38,7 @@
             ],
             "result": {
                 "name": "result",
-                "description": "The resulting transaction entry in the KeyStore. This will include the signature if the transaction was immediately signed.",
+                "description": "The resulting transaction entry at the Wallet Provider. This will include the signature if the transaction was immediately signed.",
                 "schema": {
                     "title": "signTransactionResult",
                     "oneOf": [
@@ -51,7 +51,7 @@
                     ]
                 }
             },
-            "description": "Uses the KeyStore to sign a transaction. This will likely be an asynchronous operation."
+            "description": "Uses the Wallet Provider to sign a transaction. This will likely be an asynchronous operation."
         },
         {
             "name": "getTransaction",
@@ -142,7 +142,7 @@
         },
         {
             "name": "getKeys",
-            "description": "Get a list of keys availabile for use in the KeyStore.",
+            "description": "Get a list of public keys availabile for signing.",
             "params": [],
             "result": {
                 "name": "result",
@@ -152,7 +152,7 @@
                     "properties": {
                         "keys": {
                             "type": "array",
-                            "description": "List of keys availabile in the KeyStore",
+                            "description": "List of keys availabile at the Wallet Provider",
                             "items": {
                                 "$ref": "#/components/schemas/Key"
                             }
@@ -163,7 +163,7 @@
         },
         {
             "name": "createKey",
-            "description": "Create a new key in the KeyStore.",
+            "description": "Create a new key at the Wallet Provider.",
             "params": [
                 {
                     "name": "params",
@@ -201,7 +201,7 @@
         },
         {
             "name": "setConfiguration",
-            "description": "Set configuration parameters for the KeyStore. The paramaters will change depending on the KeyStore implementation",
+            "description": "Set configuration parameters for the Wallet Provider. The paramaters will change depending on the Wallet Provider implementation",
             "params": [
                 {
                     "name": "params",
@@ -303,7 +303,7 @@
                 "properties": {
                     "txId": {
                         "type": "string",
-                        "description": "Unique identifier of the signed transaction given by the KeyStore Provider. This may not be the same as the internal txId given by the Wallet Kernel."
+                        "description": "Unique identifier of the signed transaction given by the Wallet Provider. This may not be the same as the internal txId given by the Wallet Kernel."
                     },
                     "status": {
                         "$ref": "#/components/schemas/SigningStatus",

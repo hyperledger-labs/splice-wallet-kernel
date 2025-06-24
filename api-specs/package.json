@@ -6,7 +6,7 @@
     "scripts": {
         "dapp-mock-server": "open-rpc-mock-server -d openrpc-dapp-api.json",
         "user-mock-server": "open-rpc-mock-server -d openrpc-user-api.json",
-        "keystore-connector-mock-server": "open-rpc-mock-server -d openrpc-keystore-connector-api.json"
+        "signing-mock-server": "open-rpc-mock-server -d openrpc-signing-api.json"
     },
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",

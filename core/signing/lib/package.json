@@ -1,5 +1,5 @@
 {
-    "name": "core-keystore-lib",
+    "name": "core-signing-lib",
     "version": "0.0.1",
     "private": true,
     "packageManager": "yarn@4.9.2",
