@@ -1,0 +1,12 @@
+{
+    "extends": "../../tsconfig.web.json",
+    "compilerOptions": {
+        "rootDir": ".",
+        "outDir": "./dist",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "useDefineForClassFields": false,
+        "noEmit": true
+    },
+    "include": ["src", "esbuild.mts"]
+}
