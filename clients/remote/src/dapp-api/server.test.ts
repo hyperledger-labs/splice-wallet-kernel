@@ -8,8 +8,9 @@ import { ConfigUtils } from '../config/ConfigUtils.js'
 import * as schemas from '../config/StoreConfig.js'
 
 const authService: AuthService = {
-    connected: () => true,
-    getUserId: () => 'test-user-id',
+    verifyToken: async () => {
+        return new Promise((resolve) => resolve({ userId: 'user123' }))
+    },
 }
 
 const networkConfigPath =
@@ -22,10 +23,10 @@ const network = schemas.networksSchema.parse(
 const config: StoreInternalConfig = {
     networks: network,
 }
-const store = new StoreInternal(config, authService)
+const store = new StoreInternal(config)
 
 test('call connect rpc', async () => {
-    const response = await request(dapp(store))
+    const response = await request(dapp(authService, store))
         .post('/rpc')
         .send({ jsonrpc: '2.0', id: 0, method: 'connect', params: [] })
         .set('Accept', 'application/json')
@@ -42,7 +43,7 @@ test('call connect rpc', async () => {
 })
 
 test('call connect rpc', async () => {
-    const response = await request(dapp(store))
+    const response = await request(dapp(authService, store))
         .post('/rpc')
         .send({ jsonrpc: '2.0', id: 0, method: 'listNetworks', params: [] })
         .set('Accept', 'application/json')
