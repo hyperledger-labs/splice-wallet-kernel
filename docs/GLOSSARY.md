@@ -23,8 +23,8 @@ Example:
 
 ## Terms
 
-- **Wallet Provider** / Keystore / Wallet: A service or application that securely stores and manages cryptographic keys, allowing users to sign transactions.
+- **Wallet Provider** / Wallet / ~~Keystore~~: A service or application that securely stores and manages cryptographic keys, allowing users to sign transactions.
     - **CCSP**: A Crypto Custody Service Provider: A business that offers secure storage and management of digital assets.
 - **dApp** / Decentralized Application: An application that runs on a decentralized network, often smart contracts to facilitate transactions and interactions.
 - **Wallet Kernel** / Wallet Connector: The software component of this repo that acts as a mediator between a dApp, Validator Node, and Wallet Provider.
-- **Signer** / Keystore Driver: An implementation that integrates the Wallet Kernel with a specific Wallet Provider.
+- **Signer** / ~~Keystore Driver~~: An implementation that integrates the Wallet Kernel with a specific Wallet Provider.

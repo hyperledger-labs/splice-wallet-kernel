@@ -21,7 +21,7 @@
                             },
                             "txHash": {
                                 "type": "string",
-                                "description": "Hash of the prepared transaction that= will sign."
+                                "description": "Hash of the prepared transaction that will be signed."
                             },
                             "publicKey": {
                                 "type": "string",
