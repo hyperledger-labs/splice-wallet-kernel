@@ -17,6 +17,24 @@ import {
 } from '@open-rpc/schema-utils-js'
 
 export type StringDoaGddGA = string
+/**
+ *
+ * Name of network
+ *
+ */
+export type StringWupREggx = string
+/**
+ *
+ * Description of network
+ *
+ */
+export type StringM72S2Xxb = string
+/**
+ *
+ * Structure representing the connected Networks
+ *
+ */
+export type Network = any[]
 export interface AddNetworkParams {
     [key: string]: any
 }
@@ -62,12 +80,16 @@ export interface ExecuteResult {
     traceId: StringDoaGddGA
     [k: string]: any
 }
+export interface ListNetworksResult {
+    networks: Network
+    [k: string]: any
+}
 /**
  *
  * Generated! Represents an alias to any of the provided schemas
  *
  */
-export type AnyOfAddNetworkParamsAllocatePartyParamsRemovePartyParamsSignParamsExecuteParamsNullAllocatePartyResultRemovePartyResultSignResultExecuteResult =
+export type AnyOfAddNetworkParamsAllocatePartyParamsRemovePartyParamsSignParamsExecuteParamsNullAllocatePartyResultRemovePartyResultSignResultExecuteResultListNetworksResult =
 
         | AddNetworkParams
         | AllocatePartyParams
@@ -79,6 +101,7 @@ export type AnyOfAddNetworkParamsAllocatePartyParamsRemovePartyParamsSignParamsE
         | RemovePartyResult
         | SignResult
         | ExecuteResult
+        | ListNetworksResult
 export type AddNetwork = (network: AddNetworkParams) => Promise<Null>
 export type AllocateParty = (
     params: AllocatePartyParams
@@ -88,6 +111,7 @@ export type RemoveParty = (
 ) => Promise<RemovePartyResult>
 export type Sign = (params: SignParams) => Promise<SignResult>
 export type Execute = (params: ExecuteParams) => Promise<ExecuteResult>
+export type ListNetworks = () => Promise<ListNetworksResult>
 
 export interface Options {
     transport: {
@@ -236,6 +260,24 @@ export class SpliceWalletJSONRPCUserAPI {
                 },
                 description: 'Executes a signed transaction.',
             },
+            {
+                name: 'listNetworks',
+                params: [],
+                result: {
+                    name: 'result',
+                    schema: {
+                        title: 'ListNetworksResult',
+                        type: 'object',
+                        properties: {
+                            networks: {
+                                type: 'array',
+                                $ref: '#/components/schemas/Network',
+                            },
+                        },
+                        required: ['networks'],
+                    },
+                },
+            },
         ],
         components: {
             schemas: {
@@ -244,6 +286,36 @@ export class SpliceWalletJSONRPCUserAPI {
                     type: 'null',
                     description:
                         'Represents a null value, used in responses where no data is returned.',
+                },
+                Network: {
+                    title: 'Network',
+                    type: 'object',
+                    description:
+                        'Structure representing the connected Networks',
+                    properties: {
+                        name: {
+                            type: 'string',
+                            description: 'Name of network',
+                        },
+                        description: {
+                            type: 'string',
+                            description: 'Description of network',
+                        },
+                    },
+                },
+                Auth: {
+                    title: 'type',
+                    type: 'object',
+                    description:
+                        'Represents the type of auth (implicit or password) for a specified network',
+                    properties: {
+                        type: { type: 'string' },
+                        tokenUrl: { type: 'string' },
+                        scope: { type: 'string' },
+                        clientId: { type: 'string' },
+                        domain: { type: 'string' },
+                        audience: { type: 'string' },
+                    },
                 },
             },
         },
@@ -453,6 +525,14 @@ export class SpliceWalletJSONRPCUserAPI {
     // tslint:disable-next-line:max-line-length
     public execute: Execute = (...params) => {
         return this.request('execute', params)
+    }
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public listNetworks: ListNetworks = (...params) => {
+        return this.request('listNetworks', params)
     }
 }
 export default SpliceWalletJSONRPCUserAPI

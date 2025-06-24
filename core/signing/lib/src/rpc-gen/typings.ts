@@ -9,10 +9,10 @@
 export type StringQ5XJO2Da = string
 /**
  *
- * Hash of the prepared transaction that= will sign.
+ * Hash of the prepared transaction that will be signed.
  *
  */
-export type StringLBCd7I83 = string
+export type StringPy3PzHzD = string
 /**
  *
  * Public key to use to sign the transaction.
@@ -148,7 +148,7 @@ export interface Key {
 export type UnorderedSetOfKeyU58FG0Db = Key[]
 export interface SignTransactionParams {
     tx: StringQ5XJO2Da
-    txHash: StringLBCd7I83
+    txHash: StringPy3PzHzD
     publicKey: StringYbbTuhoe
     internalTxId?: StringRqVz1Pmx
     [k: string]: any

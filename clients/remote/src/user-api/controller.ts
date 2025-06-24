@@ -26,4 +26,6 @@ export const userController = (store: Store) =>
                 correlationId: 'default-correlation-id',
                 traceId: 'default-trace-id',
             }),
+        listNetworks: async () =>
+            Promise.resolve({ networks: await store.listNetworks() }),
     })
