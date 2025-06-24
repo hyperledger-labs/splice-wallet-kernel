@@ -4,6 +4,7 @@ import { customElement } from 'lit/decorators.js'
 
 export * from './components/Discovery.js'
 export * from './windows/discovery.js'
+export * from './windows/popup.js'
 
 import './components/Discovery.js'
 import './components/Configuration.js'

@@ -1,5 +1,5 @@
-import { discover } from 'core-wallet-ui-components'
-import { injectSpliceProvider } from 'core-splice-provider'
+import { discover, popupHref } from 'core-wallet-ui-components'
+import { EventTypes, injectSpliceProvider } from 'core-splice-provider'
 import * as dappAPI from 'core-wallet-dapp-rpc-client'
 
 export * from 'core-splice-provider'
@@ -21,27 +21,17 @@ export type ConnectError = {
 }
 
 export async function connect(): Promise<ConnectResult> {
-    const walletKernelWindow = window.open('', '_blank')
-
-    if (!walletKernelWindow)
-        throw {
-            status: 'error',
-            error: ErrorCode.Other,
-            details: 'Popup blocked',
-        }
-
     return discover()
-        .then((result) => {
+        .then(async (result) => {
             if (result.walletType === 'remote' && result.url) {
-                const provider = injectSpliceProvider()
-                walletKernelWindow.location.href = result.url
-                // TODO: Replace with actual connection logic
-                setTimeout(() => {
-                    provider.emit('connect', {
-                        chainId: 'TODO: replace with hex chain ID?',
-                    })
-                }, 1000)
+                const baseUrl = new URL(result.url)
+                window.addEventListener('message', (event) =>
+                    remoteHandler(baseUrl, event)
+                )
             }
+
+            const provider = injectSpliceProvider()
+            provider.request({ method: 'connect' })
 
             return {
                 status: 'success',
@@ -49,7 +39,6 @@ export async function connect(): Promise<ConnectResult> {
             } as ConnectResult
         })
         .catch((err) => {
-            walletKernelWindow.close()
             throw {
                 status: 'error',
                 error: ErrorCode.Other,
@@ -58,8 +47,34 @@ export async function connect(): Promise<ConnectResult> {
         })
 }
 
+async function remoteHandler(baseUrl: URL, event: MessageEvent) {
+    console.log(baseUrl, event)
+    if (
+        event.source !== window ||
+        event.data.type !== EventTypes.SPLICE_WALLET_REQUEST
+    )
+        return
+
+    if (event.data.error) {
+        console.error('Error in remote request:', event.data.error)
+        return
+    }
+
+    const dApp = new DAppProvider({
+        baseUrl: baseUrl,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+
+    if (event.data.method === 'connect') {
+        const result = await dApp.connect()
+        await popupHref(result.userUrl)
+    }
+}
+
 export interface DAppRpcClientOptions {
-    baseUrl?: string
+    baseUrl?: URL
     headers?: Record<string, string>
 }
 
@@ -67,11 +82,11 @@ export class DAppProvider {
     private client: dappAPI.SpliceWalletJSONRPCDAppAPI
 
     constructor(config: DAppRpcClientOptions = {}) {
-        const url = new URL(config.baseUrl || 'http://localhost:3333')
+        const url = config.baseUrl || new URL('http://localhost:3333')
         this.client = new dappAPI.SpliceWalletJSONRPCDAppAPI({
             transport: {
                 type: url.protocol === 'https:' ? 'https' : 'http',
-                host: url.hostname,
+                host: url.host,
                 port: parseInt(url.port),
                 path: url.pathname && url.pathname !== '/' ? url.pathname : '',
                 protocol: '2.0',
