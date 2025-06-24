@@ -21,11 +21,20 @@ export type ConnectError = {
 }
 
 export async function connect(): Promise<ConnectResult> {
+    const walletKernelWindow = window.open('', '_blank')
+
+    if (!walletKernelWindow)
+        throw {
+            status: 'error',
+            error: ErrorCode.Other,
+            details: 'Popup blocked',
+        }
+
     return discover()
         .then((result) => {
-            if (result.walletType === 'remote') {
+            if (result.walletType === 'remote' && result.url) {
                 const provider = injectSpliceProvider()
-
+                walletKernelWindow.location.href = result.url
                 // TODO: Replace with actual connection logic
                 setTimeout(() => {
                     provider.emit('connect', {
@@ -40,6 +49,7 @@ export async function connect(): Promise<ConnectResult> {
             } as ConnectResult
         })
         .catch((err) => {
+            walletKernelWindow.close()
             throw {
                 status: 'error',
                 error: ErrorCode.Other,
