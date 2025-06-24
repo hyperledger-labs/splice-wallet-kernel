@@ -4165,6 +4165,7 @@ __metadata:
     core-wallet-store: "workspace:^"
     core-wallet-ui-components: "workspace:^"
     express: "npm:^5.1.0"
+    express-rate-limit: "npm:^7.5.1"
     jest: "npm:^29.7.0"
     lit: "npm:^3.3.0"
     pino: "npm:^9.7.0"
@@ -5341,6 +5342,15 @@ __metadata:
   version: 3.1.2
   resolution: "exponential-backoff@npm:3.1.2"
   checksum: 10c0/d9d3e1eafa21b78464297df91f1776f7fbaa3d5e3f7f0995648ca5b89c069d17055033817348d9f4a43d1c20b0eab84f75af6991751e839df53e4dfd6f22e844
+  languageName: node
+  linkType: hard
+
+"express-rate-limit@npm:^7.5.1":
+  version: 7.5.1
+  resolution: "express-rate-limit@npm:7.5.1"
+  peerDependencies:
+    express: ">= 4.11"
+  checksum: 10c0/b07de84d700a2c07c4bf2f040e7558ed5a1f660f03ed5f30bf8ff7b51e98ba7a85215640e70fc48cbbb9151066ea51239d9a1b41febc9b84d98c7915b0186161
   languageName: node
   linkType: hard
 
