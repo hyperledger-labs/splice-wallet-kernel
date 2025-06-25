@@ -14,7 +14,7 @@
     "content_scripts": [
         {
             "matches": ["file://*/*", "http://*/*", "https://*/*"],
-            "js": ["dist/content-script.js", "dist/splice-provider.js"]
+            "js": ["dist/content-script.js"]
         }
     ]
 }
