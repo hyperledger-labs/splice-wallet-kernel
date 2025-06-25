@@ -7,8 +7,6 @@
     "type": "module",
     "packageManager": "yarn@4.9.2",
     "scripts": {
-        "manifest:firefox": "cp manifest.firefox.json manifest.json",
-        "manifest:chrome": "cp manifest.chrome.json manifest.json",
         "build": "tsx esbuild.mts",
         "dev": "WATCH=1 && tsx esbuild.mts",
         "test": "tsc -b --noEmit",
