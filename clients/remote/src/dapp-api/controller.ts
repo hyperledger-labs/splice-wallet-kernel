@@ -13,7 +13,7 @@ export const dappController = (store: Store) =>
         connect: async () =>
             Promise.resolve({
                 chainId: 'default-chain-id',
-                userUrl: 'http://default-user-url.com',
+                userUrl: 'http://localhost:3002/login',
             }),
         darsAvailable: async () => Promise.resolve({ dars: ['default-dar'] }),
         ledgerApi: async (params: LedgerApiParams) =>

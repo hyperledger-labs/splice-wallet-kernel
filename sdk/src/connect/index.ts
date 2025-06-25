@@ -48,7 +48,6 @@ export async function connect(): Promise<ConnectResult> {
 }
 
 async function remoteHandler(baseUrl: URL, event: MessageEvent) {
-    console.log(baseUrl, event)
     if (
         event.source !== window ||
         event.data.type !== EventTypes.SPLICE_WALLET_REQUEST
@@ -60,17 +59,46 @@ async function remoteHandler(baseUrl: URL, event: MessageEvent) {
         return
     }
 
-    const dApp = new DAppProvider({
-        baseUrl: baseUrl,
+    // const dApp = new DAppProvider({
+    //     baseUrl: baseUrl,
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //     },
+    // })
+    // if (event.data.method === 'connect') {
+    //     const result = await dApp.connect()
+    //     await popupHref(result.userUrl)
+    // }
+
+    const result = await jsonRpcRequest<dappAPI.ConnectResult>(
+        baseUrl.href,
+        event.data.method,
+        event.data.params
+    )
+    await popupHref(new URL(result.userUrl))
+}
+
+async function jsonRpcRequest<T>(
+    url: string,
+    method: string,
+    params: unknown
+): Promise<T> {
+    const res = await fetch(url, {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: Date.now(),
+            method,
+            params,
+        }),
     })
 
-    if (event.data.method === 'connect') {
-        const result = await dApp.connect()
-        await popupHref(result.userUrl)
-    }
+    const body = await res.json()
+    if (body.error) throw new Error(body.error.message)
+    return body.result
 }
 
 export interface DAppRpcClientOptions {

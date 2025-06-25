@@ -7,6 +7,7 @@ import { Store } from 'core-wallet-store'
 import { jwtAuth } from '../middleware/jwtAuth.js'
 import { AuthService, AuthAware } from 'core-wallet-auth'
 import { rpcRateLimit } from '../middleware/rateLimit.js'
+import cors from 'cors'
 
 const logger = pino({ name: 'main', level: 'debug' })
 
@@ -15,7 +16,7 @@ export const dapp = (
     store: Store & AuthAware<Store>
 ) => {
     const app = express()
-
+    app.use(cors())
     app.use(express.json())
     app.use(
         '/rpc',
