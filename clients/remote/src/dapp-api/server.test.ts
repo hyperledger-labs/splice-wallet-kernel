@@ -37,7 +37,7 @@ test('call connect rpc', async () => {
         jsonrpc: '2.0',
         result: {
             chainId: 'default-chain-id',
-            userUrl: 'http://default-user-url.com',
+            userUrl: 'http://localhost:3002/login',
         },
     })
 })
