@@ -10,7 +10,7 @@
         "build": "tsx esbuild.mts",
         "dev": "WATCH=1 && tsx esbuild.mts",
         "test": "tsc -b --noEmit",
-        "start": "web-ext run",
+        "start": "yarn manifest:firefox; web-ext run --url http://localhost:8080 --devtools",
         "clean": "tsc -b --clean; rm -rf ./dist"
     },
     "devDependencies": {
@@ -22,6 +22,7 @@
         "web-ext": "^8.8.0"
     },
     "dependencies": {
+        "core-wallet-store": "workspace:^",
         "core-wallet-ui-components": "workspace:^",
         "lit": "^3.3.0",
         "webextension-polyfill": "^0.12.0"
