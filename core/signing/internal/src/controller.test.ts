@@ -29,7 +29,7 @@ test('key creation', async () => {
     const { signer, key } = await setupTest()
     const keys = await signer.signerController.getKeys()
     expect(
-        keys.keys.find(
+        keys.keys?.find(
             (k: Key) => k.id === key.id && k.publicKey === key.publicKey
         )
     ).toBeDefined()
