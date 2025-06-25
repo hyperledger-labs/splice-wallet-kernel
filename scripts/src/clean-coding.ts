@@ -29,8 +29,13 @@ function checkPackageJson(packageJsonPath: string): number {
         return 0
     }
 
-    // Ignore imported package names and names starting with '_'
-    if (packageName.startsWith('@') || packageName.startsWith('_')) {
+    // Ignore if package.json start with an underscore
+    if (relativePath.split('/').pop()?.startsWith('_')) {
+        return 0
+    }
+
+    // Ignore imported package names
+    if (packageName.startsWith('@')) {
         return 0
     }
 
