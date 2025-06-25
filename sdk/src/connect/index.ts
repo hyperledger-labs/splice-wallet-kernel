@@ -1,8 +1,30 @@
-import { discover, popupHref } from 'core-wallet-ui-components'
-import { EventTypes, injectSpliceProvider } from 'core-splice-provider'
+import { discover, DiscoverResult, popupHref } from 'core-wallet-ui-components'
+import {
+    injectSpliceProvider,
+    ProviderType,
+    SpliceProvider,
+} from 'core-splice-provider'
 import * as dappAPI from 'core-wallet-dapp-rpc-client'
-
+import { SDK } from '../enums.js'
 export * from 'core-splice-provider'
+
+const injectProvider = ({ url, walletType }: DiscoverResult) => {
+    if (walletType === 'remote') {
+        return injectSpliceProvider(ProviderType.HTTP, new URL(url))
+    } else {
+        return injectSpliceProvider(ProviderType.WINDOW)
+    }
+}
+
+// On page load, restore and re-register the listener if needed
+const stored = localStorage.getItem(SDK.LOCAL_STORAGE_KEY_CONNECTION)
+if (stored) {
+    try {
+        injectProvider(JSON.parse(stored) as DiscoverResult)
+    } catch (e) {
+        console.error('Failed to parse stored wallet connection:', e)
+    }
+}
 
 export enum ErrorCode {
     UserCancelled,
@@ -23,15 +45,20 @@ export type ConnectError = {
 export async function connect(): Promise<ConnectResult> {
     return discover()
         .then(async (result) => {
-            if (result.walletType === 'remote' && result.url) {
-                const baseUrl = new URL(result.url)
-                window.addEventListener('message', (event) =>
-                    remoteHandler(baseUrl, event)
-                )
-            }
+            let provider: SpliceProvider
 
-            const provider = injectSpliceProvider()
-            provider.request({ method: 'connect' })
+            if (result) {
+                localStorage.setItem(
+                    SDK.LOCAL_STORAGE_KEY_CONNECTION,
+                    JSON.stringify(result)
+                )
+                provider = injectProvider(result)
+
+                const response = await provider.request<dappAPI.ConnectResult>({
+                    method: 'connect',
+                })
+                await popupHref(new URL(response.userUrl))
+            }
 
             return {
                 status: 'success',
@@ -45,84 +72,4 @@ export async function connect(): Promise<ConnectResult> {
                 details: err instanceof Error ? err.message : String(err),
             } as ConnectError
         })
-}
-
-async function remoteHandler(baseUrl: URL, event: MessageEvent) {
-    if (
-        event.source !== window ||
-        event.data.type !== EventTypes.SPLICE_WALLET_REQUEST
-    )
-        return
-
-    if (event.data.error) {
-        console.error('Error in remote request:', event.data.error)
-        return
-    }
-
-    // const dApp = new DAppProvider({
-    //     baseUrl: baseUrl,
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     },
-    // })
-    // if (event.data.method === 'connect') {
-    //     const result = await dApp.connect()
-    //     await popupHref(result.userUrl)
-    // }
-
-    const result = await jsonRpcRequest<dappAPI.ConnectResult>(
-        baseUrl.href,
-        event.data.method,
-        event.data.params
-    )
-    await popupHref(new URL(result.userUrl))
-}
-
-async function jsonRpcRequest<T>(
-    url: string,
-    method: string,
-    params: unknown
-): Promise<T> {
-    const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            jsonrpc: '2.0',
-            id: Date.now(),
-            method,
-            params,
-        }),
-    })
-
-    const body = await res.json()
-    if (body.error) throw new Error(body.error.message)
-    return body.result
-}
-
-export interface DAppRpcClientOptions {
-    baseUrl?: URL
-    headers?: Record<string, string>
-}
-
-export class DAppProvider {
-    private client: dappAPI.SpliceWalletJSONRPCDAppAPI
-
-    constructor(config: DAppRpcClientOptions = {}) {
-        const url = config.baseUrl || new URL('http://localhost:3333')
-        this.client = new dappAPI.SpliceWalletJSONRPCDAppAPI({
-            transport: {
-                type: url.protocol === 'https:' ? 'https' : 'http',
-                host: url.host,
-                port: parseInt(url.port),
-                path: url.pathname && url.pathname !== '/' ? url.pathname : '',
-                protocol: '2.0',
-            },
-        })
-    }
-
-    public async connect() {
-        return this.client.connect()
-    }
 }

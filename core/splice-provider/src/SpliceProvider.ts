@@ -1,6 +1,6 @@
-type EventListener = (...args: unknown[]) => void
+export type EventListener = (...args: unknown[]) => void
 
-interface RequestArguments {
+export interface RequestArguments {
     readonly method: string
     readonly params?: readonly unknown[] | object
 }
@@ -10,42 +10,24 @@ export enum EventTypes {
     SPLICE_WALLET_RESPONSE = 'SPLICE_WALLET_RESPONSE',
 }
 
-export class SpliceProvider {
+export interface SpliceProvider {
+    request<T>(args: RequestArguments): Promise<T>
+    on(event: string, listener: EventListener): SpliceProvider
+    emit(event: string, ...args: unknown[]): boolean
+    removeListener(
+        event: string,
+        listenerToRemove: EventListener
+    ): SpliceProvider
+}
+
+export abstract class SpliceProviderBase implements SpliceProvider {
     listeners: { [event: string]: EventListener[] }
 
     constructor() {
         this.listeners = {} // Event listeners
     }
 
-    public async request({
-        method,
-        params,
-    }: RequestArguments): Promise<unknown> {
-        return new Promise((resolve, reject) => {
-            window.postMessage(
-                { type: EventTypes.SPLICE_WALLET_REQUEST, method, params },
-                '*'
-            )
-
-            const listener = (event: MessageEvent) => {
-                if (
-                    event.source !== window ||
-                    event.data.type !== EventTypes.SPLICE_WALLET_RESPONSE
-                )
-                    return
-
-                window.removeEventListener('message', listener)
-
-                if (event.data.error) {
-                    reject(event.data.error)
-                } else {
-                    resolve(event.data.result)
-                }
-            }
-
-            window.addEventListener('message', listener)
-        })
-    }
+    abstract request<T>(args: RequestArguments): Promise<T>
 
     // Event handling
     public on(event: string, listener: EventListener): SpliceProvider {
