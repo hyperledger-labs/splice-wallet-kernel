@@ -4,6 +4,10 @@ export class Discovery extends HTMLElement {
         super()
     }
 
+    verifiedKernels() {
+        return [{ url: 'http://localhost:3000/rpc', walletType: 'remote' }]
+    }
+
     connectedCallback() {
         const shadow = this.attachShadow({ mode: 'open' })
 
@@ -52,6 +56,19 @@ export class Discovery extends HTMLElement {
         shadow.appendChild(styles)
 
         root.appendChild(header)
+
+        for (const kernel of this.verifiedKernels()) {
+            const span = document.createElement('span')
+            span.innerText = `${kernel.walletType} - ${kernel.url}`
+            const button = document.createElement('button')
+            button.innerText = `Connect`
+            button.addEventListener('click', () => {
+                window.opener.postMessage(kernel, '*')
+            })
+            root.appendChild(span)
+            root.appendChild(button)
+        }
+
         root.appendChild(input)
         root.appendChild(button)
 

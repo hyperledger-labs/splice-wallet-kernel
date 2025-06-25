@@ -74,3 +74,30 @@ export function popup(
         }
     })
 }
+
+export function popupHref(url: URL, options?: PopupOptions): Promise<Window> {
+    const {
+        target = 'wallet-popup',
+        width = 400,
+        height = 500,
+        screenX = 200,
+        screenY = 200,
+    } = options || {}
+
+    return new Promise((resolve, reject) => {
+        const win = window.open(
+            url,
+            target,
+            `width=${width},height=${height},screenX=${screenX},screenY=${screenY}`
+        )
+
+        if (win) {
+            win.addEventListener('beforeunload', () => {
+                URL.revokeObjectURL(url.href) // clean up the URL object to prevent memory leaks
+            })
+            resolve(win)
+        } else {
+            reject(new Error('Failed to open popup window.'))
+        }
+    })
+}

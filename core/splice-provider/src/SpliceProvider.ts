@@ -5,7 +5,7 @@ interface RequestArguments {
     readonly params?: readonly unknown[] | object
 }
 
-enum EventTypes {
+export enum EventTypes {
     SPLICE_WALLET_REQUEST = 'SPLICE_WALLET_REQUEST',
     SPLICE_WALLET_RESPONSE = 'SPLICE_WALLET_RESPONSE',
 }
