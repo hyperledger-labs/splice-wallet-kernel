@@ -19,7 +19,7 @@
     "workspaces": [
         "api-specs",
         "clients/*",
-        "core/*",
+        "core/**",
         "example",
         "sdk",
         "scripts"
