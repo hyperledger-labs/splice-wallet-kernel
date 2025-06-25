@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as process from 'process'
-import { findJsonKeyPosition, traverseDirectory } from './script-utils.js'
+import { markFile, traverseDirectory } from './script-utils.js'
 
 function checkPackageJson(packageJsonPath: string): number {
     const rootPath = path.dirname(process.cwd())
@@ -38,8 +38,12 @@ function checkPackageJson(packageJsonPath: string): number {
 
     // Check if the folder path matches the package name
     if (packageName !== folderPath) {
-        console.error(
-            `Mismatch: Folder path '${folderPath}' does not match package name '${packageName}' in workspace '${folderPath}'`
+        markFile(
+            relativePath,
+            packageJsonContent,
+            '',
+            `Folder path '${folderPath}' does not match package name '${packageName}' in workspace '${folderPath}'`,
+            `error`
         )
         mismatchCount = +1
     }
@@ -49,8 +53,12 @@ function checkPackageJson(packageJsonPath: string): number {
         mainFile &&
         !fs.existsSync(path.join(path.dirname(packageJsonPath), mainFile))
     ) {
-        console.error(
-            `Error: 'main' field points to a non-existing file '${mainFile}' in workspace '${folderPath}'`
+        markFile(
+            relativePath,
+            packageJsonContent,
+            'main',
+            `'main' field points to a non-existing file '${mainFile}' in workspace '${folderPath}'`,
+            `error`
         )
         mismatchCount = +1
     }
@@ -60,19 +68,24 @@ function checkPackageJson(packageJsonPath: string): number {
         typesFile &&
         !fs.existsSync(path.join(path.dirname(packageJsonPath), typesFile))
     ) {
-        console.error(
-            `Error: 'types' field points to a non-existing file '${typesFile}' in workspace '${folderPath}'`
+        markFile(
+            relativePath,
+            packageJsonContent,
+            'types',
+            `'types' field points to a non-existing file '${typesFile}' in workspace '${folderPath}'`,
+            `error`
         )
         mismatchCount = +1
     }
 
     // Check if "type" is set to "module"
     if (packageType !== 'module') {
-        const typePosition = findJsonKeyPosition(packageJsonContent, 'type')
-        const line = typePosition.line || 1
-        const column = typePosition.column || 1
-        console.warn(
-            `::warning file=${relativePath},line=${line},col=${column}::type should be set to 'module'`
+        markFile(
+            relativePath,
+            packageJsonContent,
+            'type',
+            `type should be set to 'module'`,
+            `warn`
         )
     }
 
@@ -93,11 +106,12 @@ function checkTsconfigJson(tsconfigJsonPath: string): number {
             !extendsFile.includes('tsconfig.node.json') &&
             !extendsFile.includes('tsconfig.base.json'))
     ) {
-        const typePosition = findJsonKeyPosition(tsconfigContent, 'extends')
-        const line = typePosition.line || 1
-        const column = typePosition.column || 1
-        console.warn(
-            `::warning file=${relativePath},line=${line},col=${column}::typescript config 'extends' should reference 'tsconfig.web.json', 'tsconfig.node.json', or 'tsconfig.base.json'`
+        markFile(
+            relativePath,
+            tsconfigContent,
+            'extends',
+            `typescript config 'extends' should reference 'tsconfig.web.json', 'tsconfig.node.json', or 'tsconfig.base.json'`,
+            `warn`
         )
     }
 

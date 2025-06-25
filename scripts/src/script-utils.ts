@@ -29,3 +29,29 @@ export function traverseDirectory(
         }
     }
 }
+
+export type markingLevel = 'info' | 'warn' | 'error'
+export function markFile(
+    relativePath: string,
+    fileContent: string,
+    key: string,
+    warning: string,
+    markingLevel: markingLevel
+): void {
+    const typePosition = findJsonKeyPosition(fileContent, key)
+    const line = typePosition.line || 1
+    const column = typePosition.column || 1
+    if (markingLevel === 'error') {
+        console.error(
+            `::error file=${relativePath},line=${line},col=${column}::${warning}`
+        )
+    } else if (markingLevel === 'warn') {
+        console.warn(
+            `::warning file=${relativePath},line=${line},col=${column}::${warning}`
+        )
+    } else if (markingLevel === 'info') {
+        console.info(
+            `::info file=${relativePath},line=${line},col=${column}::${warning}`
+        )
+    }
+}
