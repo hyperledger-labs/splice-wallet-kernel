@@ -9,10 +9,14 @@
     "scripts": {
         "build": "tsc -b",
         "clean": "tsc -b --clean; rm -rf dist",
-        "clean-coding": "node dist/clean-coding.js"
+        "clean-coding": "node dist/clean-coding.js",
+        "generate-ledger-client": "node dist/generate-ledger-client.js",
+        "update-ledger-from-splice": "node dist/update-ledger-from-splice.js"
     },
     "devDependencies": {
         "@types/node": "^24.0.4",
+        "axios": "^1.5.0",
+        "openapi-typescript": "^6.0.0",
         "typescript": "^5.8.3"
     }
 }
