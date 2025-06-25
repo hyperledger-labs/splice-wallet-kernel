@@ -29,8 +29,8 @@ function checkPackageJson(packageJsonPath: string): number {
         return 0
     }
 
-    // Ignore imported package names
-    if (packageName.startsWith('@')) {
+    // Ignore imported package names and names starting with '_'
+    if (packageName.startsWith('@') || packageName.startsWith('_')) {
         return 0
     }
 
