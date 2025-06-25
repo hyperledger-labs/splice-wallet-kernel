@@ -10693,6 +10693,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"scripts@workspace:scripts":
+  version: 0.0.0-use.local
+  resolution: "scripts@workspace:scripts"
+  dependencies:
+    "@types/node": "npm:^24.0.4"
+    typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
+
 "secure-json-parse@npm:^2.4.0":
   version: 2.7.0
   resolution: "secure-json-parse@npm:2.7.0"
