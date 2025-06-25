@@ -4,7 +4,6 @@
     "description": "Web extension for the wallet kernel",
     "author": "Alex Matson <alex.matson@digitalasset.com>",
     "license": "Apache-2.0",
-    "main": "dist/index.js",
     "type": "module",
     "packageManager": "yarn@4.9.2",
     "scripts": {
