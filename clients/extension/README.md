@@ -10,6 +10,8 @@ Run `yarn build` to run the build once, or `yarn dev` to keep esbuild watching f
 
 # Developing
 
+Run either `yarn manifest:chrome` or `yarn manifest:firefox` respectively to set the correct manifest.json for the browser you intend to test with.
+
 ## Chrome
 
 - See the tutorial on [loading an unpacked extension](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked) for Google Chrome
