@@ -10,7 +10,7 @@ These guidelines are decided within the Hyperledger Wallet Kernel team, and are 
 
 - Use a clear and consistent folder structure that reflects the functionality of the code.
 - For workspaces keep the folder hierarchy as flat as possible, with each package in its own folder.
-- The name used in the `package.json` should match the folder name and structure. _(this is enforced with [script](../scripts/clean-coding.sh))_
+- The name used in the `package.json` should match the folder name and structure. _(this is enforced with [script](../scripts/src/clean-coding.ts))_
     - it may be prefixed with `splice-wallet` or `splice-wallet-kernel` in cases where it would be to generic or ambiguous.
 - All `package.json` should aim to use ES Modules (`"type": "module"`)
 - All `package.json` should be written in typescript and inherit one of (`tsconfig.web.json` , `tsconfig.node.json` , or `tsconfig.base.json`)

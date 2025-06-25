@@ -56,7 +56,7 @@ export class InternalSigner implements SignerInterface {
         ): Promise<SignTransactionResult> => {
             // TODO: validate transaction here
 
-            const key = this.signingByPublicKey.get(params.publicKey)
+            const key = this.signerByPublicKey.get(params.publicKey)
             if (key) {
                 const txId = randomUUID()
                 const decodedKey = naclUtil.decodeBase64(key.privateKey)
@@ -135,7 +135,7 @@ export class InternalSigner implements SignerInterface {
 
         getKeys: async (): Promise<GetKeysResult> =>
             Promise.resolve({
-                keys: Array.from(this.signing.values()).map((key) => ({
+                keys: Array.from(this.signer.values()).map((key) => ({
                     id: key.id,
                     name: key.name,
                     publicKey: key.publicKey,
@@ -156,8 +156,8 @@ export class InternalSigner implements SignerInterface {
                 privateKey,
             }
 
-            this.signing.set(id, internalKey)
-            this.signingByPublicKey.set(publicKey, internalKey)
+            this.signer.set(id, internalKey)
+            this.signerByPublicKey.set(publicKey, internalKey)
 
             return Promise.resolve({
                 id,

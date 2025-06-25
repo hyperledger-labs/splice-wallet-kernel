@@ -2,7 +2,7 @@ import { expect, test } from '@jest/globals'
 
 // import request from 'supertest'
 import { InternalSigner } from './controller.js'
-import { CreateKeyResult, isRpcError } from 'core-signing-lib'
+import { CreateKeyResult, isRpcError, Key, Transaction } from 'core-signing-lib'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
 
@@ -29,7 +29,9 @@ test('key creation', async () => {
     const { signer, key } = await setupTest()
     const keys = await signer.signerController.getKeys()
     expect(
-        keys.keys?.find((k) => k.id === key.id && k.publicKey === key.publicKey)
+        keys.keys?.find(
+            (k: Key) => k.id === key.id && k.publicKey === key.publicKey
+        )
     ).toBeDefined()
 })
 
@@ -66,7 +68,9 @@ test('transaction signature', async () => {
         )
     }
     expect(
-        transactionsByKey.transactions?.find((t) => t.txId === tx.txId)
+        transactionsByKey.transactions?.find(
+            (t: Transaction) => t.txId === tx.txId
+        )
     ).toBeDefined()
 
     const transactionsById = await signer.signerController.getTransactions({
@@ -78,6 +82,8 @@ test('transaction signature', async () => {
         )
     }
     expect(
-        transactionsById.transactions?.find((t) => t.txId === tx.txId)
+        transactionsById.transactions?.find(
+            (t: Transaction) => t.txId === tx.txId
+        )
     ).toBeDefined()
 })

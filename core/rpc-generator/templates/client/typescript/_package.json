@@ -1,5 +1,5 @@
 {
-  "name": "template-client",
+  "name": "core-rpc-generator-templates-client-typescript",
   "version": "1.0.0",
   "description": "",
   "type": "module",

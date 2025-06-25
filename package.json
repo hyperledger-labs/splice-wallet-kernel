@@ -1,7 +1,8 @@
 {
     "name": "splice-wallet-kernel",
     "scripts": {
-        "start:all": "./scripts/start-dev-all.sh",
+        "start:all": "yarn pm2 start ecosystem.config.js --env development",
+        "stop:all": "yarn pm2 stop ecosystem.config.js --env development",
         "generate:dapp": "yarn workspace core-rpc-generator build && open-rpc-generator generate -c ./rpc-generator-config-dapp.json",
         "generate:user": "yarn workspace core-rpc-generator build && open-rpc-generator generate -c ./rpc-generator-config-user.json",
         "generate:signing": "yarn workspace core-rpc-generator build && open-rpc-generator generate -c ./rpc-generator-config-signing.json",
@@ -9,14 +10,19 @@
         "build:all": "yarn workspaces foreach -A -t run build",
         "clean:all": "yarn workspaces foreach -A run clean",
         "test:all": "yarn workspaces foreach -A run test",
-        "postinstall": "husky"
+        "postinstall": "husky",
+        "script:cleancoding": "yarn workspace scripts clean-coding",
+        "script:generate:ledger": "yarn workspace scripts generate-ledger-client",
+        "script:fetch:ledger": "yarn workspace scripts update-ledger-from-splice",
+        "full:rebuild": "yarn clean:all && yarn generate:all && yarn build:all"
     },
     "workspaces": [
         "api-specs",
         "clients/*",
-        "core/*",
+        "core/**",
         "example",
-        "sdk"
+        "sdk",
+        "scripts"
     ],
     "devDependencies": {
         "@eslint/compat": "^1.2.9",
