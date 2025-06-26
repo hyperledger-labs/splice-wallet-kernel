@@ -13,7 +13,14 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 'sessionToken' in args &&
                 typeof args.sessionToken === 'string'
             ) {
+                console.log(
+                    `SpliceProviderHttp: setting sessionToken to ${args.sessionToken}`
+                )
                 this.sessionToken = args.sessionToken
+            } else {
+                console.log(
+                    `SpliceProviderHttp: onConnected event did not contain a valid sessionToken`
+                )
             }
         })
     }

@@ -36,6 +36,11 @@ test('call connect rpc', async () => {
         id: 0,
         jsonrpc: '2.0',
         result: {
+            kernel: {
+                id: 'remote-da',
+                clientType: 'remote',
+                url: 'http://localhost:3000/rpc',
+            },
             isConnected: false,
             chainId: 'default-chain-id',
             userUrl: 'http://localhost:3002/login',

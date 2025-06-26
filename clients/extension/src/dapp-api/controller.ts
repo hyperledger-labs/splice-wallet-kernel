@@ -4,19 +4,23 @@
 import buildController from './rpc-gen'
 import {
     LedgerApiParams,
-    OnConnectedEvent,
     PrepareExecuteParams,
     PrepareReturnParams,
-    StatusResult,
 } from './rpc-gen/typings.js'
 
 import { Store } from 'core-wallet-store'
+
+const kernelInfo = {
+    id: 'default-kernel-id',
+    clientType: 'browser',
+}
 
 // TODO: Make store required
 export const dappController = (store?: Store) =>
     buildController({
         connect: async () =>
             Promise.resolve({
+                kernel: kernelInfo,
                 isConnected: false,
                 chainId: 'default-chain-id',
                 userUrl: 'http://default-user-url.com',

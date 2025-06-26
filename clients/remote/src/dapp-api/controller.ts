@@ -9,10 +9,17 @@ import {
 } from './rpc-gen/typings.js'
 import { Store } from 'core-wallet-store'
 
+const kernelInfo = {
+    id: 'remote-da',
+    clientType: 'remote',
+    url: 'http://localhost:3000/rpc',
+}
+
 export const dappController = (store: Store, context?: AuthContext) =>
     buildController({
         connect: async () =>
             Promise.resolve({
+                kernel: kernelInfo,
                 isConnected: false,
                 chainId: 'default-chain-id',
                 userUrl: 'http://localhost:3002/login',
@@ -25,9 +32,13 @@ export const dappController = (store: Store, context?: AuthContext) =>
             Promise.resolve({}),
         status: async () => {
             if (context === null) {
-                return Promise.resolve({ isConnected: false })
+                return Promise.resolve({
+                    kernel: kernelInfo,
+                    isConnected: false,
+                })
             } else {
                 return Promise.resolve({
+                    kernel: kernelInfo,
                     isConnected: true,
                     chainId: (await store.getCurrentNetwork()).name,
                 })

@@ -15,6 +15,9 @@
                     "title": "StatusResult",
                     "type": "object",
                     "properties": {
+                        "kernel": {
+                            "$ref": "#/components/schemas/Kernel"
+                        },
                         "isConnected": {
                             "type": "boolean",
                             "description": "Whether or not a connection to a network is esablished."
@@ -24,7 +27,7 @@
                             "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
                         }
                     },
-                    "required": ["isConnected"]
+                    "required": ["kernel", "isConnected"]
                 }
             },
             "description": "Returns the current chainId if connected."
@@ -38,6 +41,9 @@
                     "title": "ConnectResult",
                     "type": "object",
                     "properties": {
+                        "kernel": {
+                            "$ref": "#/components/schemas/Kernel"
+                        },
                         "isConnected": {
                             "type": "boolean",
                             "description": "Whether or not a connection to a network is esablished."
@@ -50,7 +56,7 @@
                             "$ref": "#/components/schemas/UserUrl"
                         }
                     },
-                    "required": ["isConnected"]
+                    "required": ["kernel", "isConnected"]
                 }
             },
             "description": "Ensures ledger connectivity. Returns the current chainId if connected, or the user url if disconnected."
@@ -179,6 +185,9 @@
                     "title": "OnConnectedEvent",
                     "type": "object",
                     "properties": {
+                        "kernel": {
+                            "$ref": "#/components/schemas/Kernel"
+                        },
                         "chainId": {
                             "type": "string",
                             "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
@@ -188,7 +197,7 @@
                             "description": "JWT authentication token (if applicable)."
                         }
                     },
-                    "required": ["chainId"]
+                    "required": ["kernel", "chainId"]
                 }
             },
             "description": "Informs when the user connects to a network."
@@ -200,6 +209,26 @@
                 "title": "Null",
                 "type": "null",
                 "description": "Represents a null value, used in responses where no data is returned."
+            },
+            "Kernel": {
+                "title": "Kernel",
+                "type": "object",
+                "description": "Represents a wallet kernel.",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "The unique identifier of the wallet kernel."
+                    },
+                    "clientType": {
+                        "type": "string",
+                        "description": "browser|desktop|mobile|remote"
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "The URL of the wallet kernel."
+                    }
+                },
+                "required": ["id", "clientType"]
             },
             "LedgerApiResult": {
                 "title": "LedgerApiResult",

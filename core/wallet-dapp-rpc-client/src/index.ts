@@ -28,6 +28,35 @@ export type StringMo3KZIJp = 'GET' | 'POST' | 'PUT' | 'DELETE'
 export type StringDoaGddGA = string
 /**
  *
+ * The unique identifier of the wallet kernel.
+ *
+ */
+export type StringFRWQxn2U = string
+/**
+ *
+ * browser|desktop|mobile|remote
+ *
+ */
+export type StringGFIfvhK0 = string
+/**
+ *
+ * The URL of the wallet kernel.
+ *
+ */
+export type String3T7JhIFf = string
+/**
+ *
+ * Represents a wallet kernel.
+ *
+ */
+export interface Kernel {
+    id: StringFRWQxn2U
+    clientType: StringGFIfvhK0
+    url?: String3T7JhIFf
+    [k: string]: any
+}
+/**
+ *
  * Whether or not a connection to a network is esablished.
  *
  */
@@ -88,11 +117,13 @@ export interface LedgerApiParams {
     [k: string]: any
 }
 export interface StatusResult {
+    kernel: Kernel
     isConnected: BooleanIJuPLvlB
     chainId?: StringIUsSEQ9O
     [k: string]: any
 }
 export interface ConnectResult {
+    kernel: Kernel
     isConnected: BooleanIJuPLvlB
     chainId?: StringIUsSEQ9O
     userUrl?: UserUrl
@@ -114,6 +145,7 @@ export interface LedgerApiResult {
     [k: string]: any
 }
 export interface OnConnectedEvent {
+    kernel: Kernel
     chainId: StringIUsSEQ9O
     sessionToken?: String8FT98W8N
     [k: string]: any
@@ -182,6 +214,7 @@ export class SpliceWalletJSONRPCDAppAPI {
                         title: 'StatusResult',
                         type: 'object',
                         properties: {
+                            kernel: { $ref: '#/components/schemas/Kernel' },
                             isConnected: {
                                 type: 'boolean',
                                 description:
@@ -193,7 +226,7 @@ export class SpliceWalletJSONRPCDAppAPI {
                                     "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'.",
                             },
                         },
-                        required: ['isConnected'],
+                        required: ['kernel', 'isConnected'],
                     },
                 },
                 description: 'Returns the current chainId if connected.',
@@ -207,6 +240,7 @@ export class SpliceWalletJSONRPCDAppAPI {
                         title: 'ConnectResult',
                         type: 'object',
                         properties: {
+                            kernel: { $ref: '#/components/schemas/Kernel' },
                             isConnected: {
                                 type: 'boolean',
                                 description:
@@ -219,7 +253,7 @@ export class SpliceWalletJSONRPCDAppAPI {
                             },
                             userUrl: { $ref: '#/components/schemas/UserUrl' },
                         },
-                        required: ['isConnected'],
+                        required: ['kernel', 'isConnected'],
                     },
                 },
                 description:
@@ -339,6 +373,7 @@ export class SpliceWalletJSONRPCDAppAPI {
                         title: 'OnConnectedEvent',
                         type: 'object',
                         properties: {
+                            kernel: { $ref: '#/components/schemas/Kernel' },
                             chainId: {
                                 type: 'string',
                                 description:
@@ -350,7 +385,7 @@ export class SpliceWalletJSONRPCDAppAPI {
                                     'JWT authentication token (if applicable).',
                             },
                         },
-                        required: ['chainId'],
+                        required: ['kernel', 'chainId'],
                     },
                 },
                 description: 'Informs when the user connects to a network.',
@@ -363,6 +398,27 @@ export class SpliceWalletJSONRPCDAppAPI {
                     type: 'null',
                     description:
                         'Represents a null value, used in responses where no data is returned.',
+                },
+                Kernel: {
+                    title: 'Kernel',
+                    type: 'object',
+                    description: 'Represents a wallet kernel.',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            description:
+                                'The unique identifier of the wallet kernel.',
+                        },
+                        clientType: {
+                            type: 'string',
+                            description: 'browser|desktop|mobile|remote',
+                        },
+                        url: {
+                            type: 'string',
+                            description: 'The URL of the wallet kernel.',
+                        },
+                    },
+                    required: ['id', 'clientType'],
                 },
                 LedgerApiResult: {
                     title: 'LedgerApiResult',

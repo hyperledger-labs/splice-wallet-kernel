@@ -13,6 +13,35 @@ export type StringMo3KZIJp = 'GET' | 'POST' | 'PUT' | 'DELETE'
 export type StringDoaGddGA = string
 /**
  *
+ * The unique identifier of the wallet kernel.
+ *
+ */
+export type StringFRWQxn2U = string
+/**
+ *
+ * browser|desktop|mobile|remote
+ *
+ */
+export type StringGFIfvhK0 = string
+/**
+ *
+ * The URL of the wallet kernel.
+ *
+ */
+export type String3T7JhIFf = string
+/**
+ *
+ * Represents a wallet kernel.
+ *
+ */
+export interface Kernel {
+    id: StringFRWQxn2U
+    clientType: StringGFIfvhK0
+    url?: String3T7JhIFf
+    [k: string]: any
+}
+/**
+ *
  * Whether or not a connection to a network is esablished.
  *
  */
@@ -73,11 +102,13 @@ export interface LedgerApiParams {
     [k: string]: any
 }
 export interface StatusResult {
+    kernel: Kernel
     isConnected: BooleanIJuPLvlB
     chainId?: StringIUsSEQ9O
     [k: string]: any
 }
 export interface ConnectResult {
+    kernel: Kernel
     isConnected: BooleanIJuPLvlB
     chainId?: StringIUsSEQ9O
     userUrl?: UserUrl
@@ -99,6 +130,7 @@ export interface LedgerApiResult {
     [k: string]: any
 }
 export interface OnConnectedEvent {
+    kernel: Kernel
     chainId: StringIUsSEQ9O
     sessionToken?: String8FT98W8N
     [k: string]: any
