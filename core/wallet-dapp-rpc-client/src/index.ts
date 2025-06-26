@@ -34,10 +34,10 @@ export type StringDoaGddGA = string
 export type StringFRWQxn2U = string
 /**
  *
- * browser|desktop|mobile|remote
+ * The type of client that implements the wallet kernel.
  *
  */
-export type StringGFIfvhK0 = string
+export type String1W6CJDXN = 'browser' | 'desktop' | 'mobile' | 'remote'
 /**
  *
  * The URL of the wallet kernel.
@@ -49,9 +49,9 @@ export type String3T7JhIFf = string
  * Represents a wallet kernel.
  *
  */
-export interface Kernel {
+export interface KernelInfo {
     id: StringFRWQxn2U
-    clientType: StringGFIfvhK0
+    clientType: String1W6CJDXN
     url?: String3T7JhIFf
     [k: string]: any
 }
@@ -117,13 +117,13 @@ export interface LedgerApiParams {
     [k: string]: any
 }
 export interface StatusResult {
-    kernel: Kernel
+    kernel: KernelInfo
     isConnected: BooleanIJuPLvlB
     chainId?: StringIUsSEQ9O
     [k: string]: any
 }
 export interface ConnectResult {
-    kernel: Kernel
+    kernel: KernelInfo
     isConnected: BooleanIJuPLvlB
     chainId?: StringIUsSEQ9O
     userUrl?: UserUrl
@@ -145,7 +145,7 @@ export interface LedgerApiResult {
     [k: string]: any
 }
 export interface OnConnectedEvent {
-    kernel: Kernel
+    kernel: KernelInfo
     chainId: StringIUsSEQ9O
     sessionToken?: String8FT98W8N
     [k: string]: any
@@ -214,7 +214,7 @@ export class SpliceWalletJSONRPCDAppAPI {
                         title: 'StatusResult',
                         type: 'object',
                         properties: {
-                            kernel: { $ref: '#/components/schemas/Kernel' },
+                            kernel: { $ref: '#/components/schemas/KernelInfo' },
                             isConnected: {
                                 type: 'boolean',
                                 description:
@@ -240,7 +240,7 @@ export class SpliceWalletJSONRPCDAppAPI {
                         title: 'ConnectResult',
                         type: 'object',
                         properties: {
-                            kernel: { $ref: '#/components/schemas/Kernel' },
+                            kernel: { $ref: '#/components/schemas/KernelInfo' },
                             isConnected: {
                                 type: 'boolean',
                                 description:
@@ -373,7 +373,7 @@ export class SpliceWalletJSONRPCDAppAPI {
                         title: 'OnConnectedEvent',
                         type: 'object',
                         properties: {
-                            kernel: { $ref: '#/components/schemas/Kernel' },
+                            kernel: { $ref: '#/components/schemas/KernelInfo' },
                             chainId: {
                                 type: 'string',
                                 description:
@@ -399,8 +399,8 @@ export class SpliceWalletJSONRPCDAppAPI {
                     description:
                         'Represents a null value, used in responses where no data is returned.',
                 },
-                Kernel: {
-                    title: 'Kernel',
+                KernelInfo: {
+                    title: 'KernelInfo',
                     type: 'object',
                     description: 'Represents a wallet kernel.',
                     properties: {
@@ -411,7 +411,9 @@ export class SpliceWalletJSONRPCDAppAPI {
                         },
                         clientType: {
                             type: 'string',
-                            description: 'browser|desktop|mobile|remote',
+                            enum: ['browser', 'desktop', 'mobile', 'remote'],
+                            description:
+                                'The type of client that implements the wallet kernel.',
                         },
                         url: {
                             type: 'string',
