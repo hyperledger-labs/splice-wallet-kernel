@@ -51,10 +51,10 @@ export class LoginUI extends LitElement {
             },
             auth: {
                 type: 'implicit',
-                domain: 'canton-registry-app-dev-1.eu.auth0.com/',
+                domain: 'canton-registry-app-dev-1.eu.auth0.com',
                 audience: 'https://daml.com/jwt/aud/participant/wk-app',
                 scope: 'openid',
-                clientId: 'wk-service-account2',
+                clientId: 'UQO77YceeZBKEQRHnqRxfn6g7ioqmycL',
             },
         },
     ]
