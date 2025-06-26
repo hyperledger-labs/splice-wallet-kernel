@@ -1,4 +1,6 @@
-// Discovery implements the view of the Wallet Kernel selection window. It is implemented directly as a Web Component without using LitElement, so to avoid having external dependencies.
+/**
+ * Discovery implements the view of the Wallet Kernel selection window. It is implemented directly as a Web Component without using LitElement, so to avoid having external dependencies.
+ */
 export class Discovery extends HTMLElement {
     constructor() {
         super()

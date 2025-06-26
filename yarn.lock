@@ -4675,6 +4675,7 @@ __metadata:
   dependencies:
     "@types/node": "npm:^24.0.4"
     "@types/webextension-polyfill": "npm:^0.12.0"
+    core-wallet-store: "workspace:^"
     core-wallet-ui-components: "workspace:^"
     esbuild: "npm:^0.25.5"
     lit: "npm:^3.3.0"
