@@ -28,6 +28,12 @@ export type StringMo3KZIJp = 'GET' | 'POST' | 'PUT' | 'DELETE'
 export type StringDoaGddGA = string
 /**
  *
+ * Whether or not a connection to a network is esablished.
+ *
+ */
+export type BooleanIJuPLvlB = boolean
+/**
+ *
  * A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'.
  *
  */
@@ -61,6 +67,12 @@ export interface JsPrepareSubmissionResponse {
     preparedTransactionHash?: StringZK0Xb1WV
     [k: string]: any
 }
+/**
+ *
+ * JWT authentication token (if applicable).
+ *
+ */
+export type String8FT98W8N = string
 export interface PrepareReturnParams {
     commands: JsCommands
     [k: string]: any
@@ -75,9 +87,15 @@ export interface LedgerApiParams {
     body?: StringDoaGddGA
     [k: string]: any
 }
-export interface ConnectResult {
+export interface StatusResult {
+    isConnected: BooleanIJuPLvlB
     chainId?: StringIUsSEQ9O
-    userUrl: UserUrl
+    [k: string]: any
+}
+export interface ConnectResult {
+    isConnected: BooleanIJuPLvlB
+    chainId?: StringIUsSEQ9O
+    userUrl?: UserUrl
     [k: string]: any
 }
 export interface DarsAvailableResult {
@@ -95,21 +113,29 @@ export interface LedgerApiResult {
     response: StringDoaGddGA
     [k: string]: any
 }
+export interface OnConnectedEvent {
+    chainId: StringIUsSEQ9O
+    sessionToken?: String8FT98W8N
+    [k: string]: any
+}
 /**
  *
  * Generated! Represents an alias to any of the provided schemas
  *
  */
-export type AnyOfPrepareReturnParamsPrepareExecuteParamsLedgerApiParamsConnectResultDarsAvailableResultPrepareReturnResultPrepareExecuteResultLedgerApiResult =
+export type AnyOfPrepareReturnParamsPrepareExecuteParamsLedgerApiParamsStatusResultConnectResultDarsAvailableResultPrepareReturnResultPrepareExecuteResultLedgerApiResultOnConnectedEvent =
 
         | PrepareReturnParams
         | PrepareExecuteParams
         | LedgerApiParams
+        | StatusResult
         | ConnectResult
         | DarsAvailableResult
         | PrepareReturnResult
         | PrepareExecuteResult
         | LedgerApiResult
+        | OnConnectedEvent
+export type Status = () => Promise<StatusResult>
 export type Connect = () => Promise<ConnectResult>
 export type DarsAvailable = () => Promise<DarsAvailableResult>
 export type PrepareReturn = (
@@ -119,6 +145,7 @@ export type PrepareExecute = (
     params: PrepareExecuteParams
 ) => Promise<PrepareExecuteResult>
 export type LedgerApi = (params: LedgerApiParams) => Promise<LedgerApiResult>
+export type OnConnected = () => Promise<OnConnectedEvent>
 
 export interface Options {
     transport: {
@@ -147,6 +174,31 @@ export class SpliceWalletJSONRPCDAppAPI {
         },
         methods: [
             {
+                name: 'status',
+                params: [],
+                result: {
+                    name: 'result',
+                    schema: {
+                        title: 'StatusResult',
+                        type: 'object',
+                        properties: {
+                            isConnected: {
+                                type: 'boolean',
+                                description:
+                                    'Whether or not a connection to a network is esablished.',
+                            },
+                            chainId: {
+                                type: 'string',
+                                description:
+                                    "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'.",
+                            },
+                        },
+                        required: ['isConnected'],
+                    },
+                },
+                description: 'Returns the current chainId if connected.',
+            },
+            {
                 name: 'connect',
                 params: [],
                 result: {
@@ -155,6 +207,11 @@ export class SpliceWalletJSONRPCDAppAPI {
                         title: 'ConnectResult',
                         type: 'object',
                         properties: {
+                            isConnected: {
+                                type: 'boolean',
+                                description:
+                                    'Whether or not a connection to a network is esablished.',
+                            },
                             chainId: {
                                 type: 'string',
                                 description:
@@ -162,7 +219,7 @@ export class SpliceWalletJSONRPCDAppAPI {
                             },
                             userUrl: { $ref: '#/components/schemas/UserUrl' },
                         },
-                        required: ['userUrl'],
+                        required: ['isConnected'],
                     },
                 },
                 description:
@@ -272,6 +329,31 @@ export class SpliceWalletJSONRPCDAppAPI {
                 },
                 description:
                     'Proxy for the JSON-API endpoints. Injects authorization headers automatically.',
+            },
+            {
+                name: 'onConnected',
+                params: [],
+                result: {
+                    name: 'result',
+                    schema: {
+                        title: 'OnConnectedEvent',
+                        type: 'object',
+                        properties: {
+                            chainId: {
+                                type: 'string',
+                                description:
+                                    "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'.",
+                            },
+                            sessionToken: {
+                                type: 'string',
+                                description:
+                                    'JWT authentication token (if applicable).',
+                            },
+                        },
+                        required: ['chainId'],
+                    },
+                },
+                description: 'Informs when the user connects to a network.',
             },
         ],
         components: {
@@ -492,6 +574,14 @@ export class SpliceWalletJSONRPCDAppAPI {
      *
      */
     // tslint:disable-next-line:max-line-length
+    public status: Status = (...params) => {
+        return this.request('status', params)
+    }
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
     public connect: Connect = (...params) => {
         return this.request('connect', params)
     }
@@ -526,6 +616,14 @@ export class SpliceWalletJSONRPCDAppAPI {
     // tslint:disable-next-line:max-line-length
     public ledgerApi: LedgerApi = (...params) => {
         return this.request('ledgerApi', params)
+    }
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public onConnected: OnConnected = (...params) => {
+        return this.request('onConnected', params)
     }
 }
 export default SpliceWalletJSONRPCDAppAPI

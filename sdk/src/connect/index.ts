@@ -57,7 +57,7 @@ export async function connect(): Promise<ConnectResult> {
                 const response = await provider.request<dappAPI.ConnectResult>({
                     method: 'connect',
                 })
-                await popupHref(new URL(response.userUrl))
+                await popupHref(new URL(response.userUrl!))
             }
 
             return {
