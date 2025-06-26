@@ -1,60 +1,25 @@
 import { NextFunction, Request, Response } from 'express'
 import { Logger } from 'pino'
-import { type } from 'arktype'
 import { rpcErrors } from '@metamask/rpc-errors'
+import { JsonRpcRequest, JsonRpcResponse, ResponsePayload } from 'core-types'
 
 interface JsonRpcHttpOptions<T> {
     logger: Logger
     controller: T
 }
 
-const JsonRpcMeta = type({
-    jsonrpc: "'2.0'", // only support JSON-RPC 2.0
-    id: 'string | number | null',
-})
-
-const JsonRpcRequest = type({
-    '...': JsonRpcMeta,
-    method: 'string',
-    'params?': 'object',
-})
-
-const JsonRpcPayload = type({ result: 'object' }).or({
-    error: {
-        code: 'number',
-        message: 'string',
-        'data?': 'object | string | number | false | true | undefined | null',
-    },
-})
-type JsonRpcPayload = typeof JsonRpcPayload.infer
-
-const JsonRpcResponse = type([JsonRpcMeta, '&', JsonRpcPayload])
-type JsonRpcResponse = typeof JsonRpcResponse.infer
-
 const toRpcResponse = (
     id: string | number | null,
-    payload: JsonRpcPayload
+    payload: ResponsePayload
 ): JsonRpcResponse => {
-    if ('result' in payload) {
-        return {
-            jsonrpc: '2.0',
-            id, // id should be set based on the request context
-            result: payload.result,
-        }
-    } else {
-        return {
-            jsonrpc: '2.0',
-            id, // id should be set based on the request context
-            error: {
-                code: payload.error.code,
-                message: payload.error.message,
-                data: payload.error.data,
-            },
-        }
+    return {
+        ...payload,
+        jsonrpc: '2.0',
+        id, // id should be set based on the request context
     }
 }
 
-export const jsonRpcHttpMiddleware =
+export const jsonRpcHandler =
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     <T extends Record<string, (...args: any[]) => any>>({
         controller,
@@ -70,10 +35,9 @@ export const jsonRpcHttpMiddleware =
                 next()
             }
 
-            // validate request body schema
-            const body = JsonRpcRequest(req.body)
+            const parsed = JsonRpcRequest.safeParse(req.body)
 
-            if (body instanceof type.errors) {
+            if (!parsed.success) {
                 res.status(400).json(
                     toRpcResponse(null, {
                         error: rpcErrors.invalidRequest({
@@ -82,10 +46,10 @@ export const jsonRpcHttpMiddleware =
                     })
                 )
             } else {
-                const { method, params, id } = body
+                const { method, params, id = null } = parsed.data
 
                 logger.debug(
-                    `Received RPC request: method=${body.method}, params=${JSON.stringify(body.params)}`
+                    `Received RPC request: method=${method}, params=${JSON.stringify(params)}`
                 )
 
                 const methodFn = controller[method as keyof T] as (

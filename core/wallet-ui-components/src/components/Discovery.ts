@@ -1,3 +1,5 @@
+import { DiscoverResult } from 'core-types'
+
 /**
  * Discovery implements the view of the Wallet Kernel selection window. It is implemented directly as a Web Component without using LitElement, so to avoid having external dependencies.
  */
@@ -6,8 +8,12 @@ export class Discovery extends HTMLElement {
         super()
     }
 
-    verifiedKernels() {
-        return [{ url: 'http://localhost:3000/rpc', walletType: 'remote' }]
+    verifiedKernels(): DiscoverResult[] {
+        return [
+            // TODO: make this dynamic depending on if the extension is loaded & ready, otherwise omit it
+            { url: 'splice-wallet-browser-ext', walletType: 'extension' },
+            { url: 'http://localhost:3000/rpc', walletType: 'remote' },
+        ]
     }
 
     connectedCallback() {
@@ -28,6 +34,15 @@ export class Discovery extends HTMLElement {
             background-color: var(--splice-wk-background-color, none);
             width: 100%;
             height: 100%;
+        }
+
+        .kernel {
+            height: auto;
+            margin-bottom: 8px;
+        }
+
+        .kernel button {
+            margin-left: 8px;
         }
 
         input {
@@ -60,15 +75,22 @@ export class Discovery extends HTMLElement {
         root.appendChild(header)
 
         for (const kernel of this.verifiedKernels()) {
+            const div = document.createElement('div')
+            div.setAttribute('class', 'kernel')
+
             const span = document.createElement('span')
             span.innerText = `${kernel.walletType} - ${kernel.url}`
+
             const button = document.createElement('button')
             button.innerText = `Connect`
             button.addEventListener('click', () => {
                 window.opener.postMessage(kernel, '*')
             })
-            root.appendChild(span)
-            root.appendChild(button)
+
+            div.appendChild(span)
+            div.appendChild(button)
+
+            root.appendChild(div)
         }
 
         root.appendChild(input)

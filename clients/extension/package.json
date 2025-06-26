@@ -10,7 +10,7 @@
         "build": "tsx esbuild.mts",
         "dev": "WATCH=1 && tsx esbuild.mts",
         "test": "tsc -b --noEmit",
-        "start": "yarn manifest:firefox; web-ext run --url http://localhost:8080 --devtools",
+        "start": "web-ext run --url http://localhost:8080 --devtools",
         "clean": "tsc -b --clean; rm -rf ./dist"
     },
     "devDependencies": {
@@ -22,6 +22,8 @@
         "web-ext": "^8.8.0"
     },
     "dependencies": {
+        "@metamask/rpc-errors": "^7.0.2",
+        "core-types": "workspace:^",
         "core-wallet-store": "workspace:^",
         "core-wallet-ui-components": "workspace:^",
         "lit": "^3.3.0",

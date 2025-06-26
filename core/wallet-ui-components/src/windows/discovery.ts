@@ -1,10 +1,6 @@
+import { DiscoverResult } from 'core-types'
 import { Discovery } from '../components/Discovery.js'
 import { popup } from './popup.js'
-
-export interface DiscoverResult {
-    walletType: 'extension' | 'remote'
-    url: string
-}
 
 export async function discover(): Promise<DiscoverResult> {
     const win = await popup(Discovery, {

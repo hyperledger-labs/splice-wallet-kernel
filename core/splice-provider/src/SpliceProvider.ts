@@ -1,17 +1,9 @@
+import { RequestPayload } from 'core-types'
+
 export type EventListener = (...args: unknown[]) => void
 
-export interface RequestArguments {
-    readonly method: string
-    readonly params?: readonly unknown[] | object
-}
-
-export enum EventTypes {
-    SPLICE_WALLET_REQUEST = 'SPLICE_WALLET_REQUEST',
-    SPLICE_WALLET_RESPONSE = 'SPLICE_WALLET_RESPONSE',
-}
-
 export interface SpliceProvider {
-    request<T>(args: RequestArguments): Promise<T>
+    request<T>(args: RequestPayload): Promise<T>
     on(event: string, listener: EventListener): SpliceProvider
     emit(event: string, ...args: unknown[]): boolean
     removeListener(
@@ -27,7 +19,7 @@ export abstract class SpliceProviderBase implements SpliceProvider {
         this.listeners = {} // Event listeners
     }
 
-    abstract request<T>(args: RequestArguments): Promise<T>
+    abstract request<T>(args: RequestPayload): Promise<T>
 
     // Event handling
     public on(event: string, listener: EventListener): SpliceProvider {

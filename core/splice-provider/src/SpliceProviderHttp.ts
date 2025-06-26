@@ -1,4 +1,5 @@
-import { SpliceProviderBase, RequestArguments } from './SpliceProvider'
+import { RequestPayload } from 'core-types'
+import { SpliceProviderBase } from './SpliceProvider'
 
 export class SpliceProviderHttp extends SpliceProviderBase {
     constructor(
@@ -25,7 +26,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
         })
     }
 
-    public async request<T>({ method, params }: RequestArguments): Promise<T> {
+    public async request<T>({ method, params }: RequestPayload): Promise<T> {
         return await this.jsonRpcRequest(this.url, method, params)
     }
 

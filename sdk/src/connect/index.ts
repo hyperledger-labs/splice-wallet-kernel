@@ -1,7 +1,8 @@
-import { discover, DiscoverResult, popupHref } from 'core-wallet-ui-components'
+import { discover, popupHref } from 'core-wallet-ui-components'
 import { injectSpliceProvider, ProviderType } from 'core-splice-provider'
 import * as dappAPI from 'core-wallet-dapp-rpc-client'
 import { SDK } from '../enums.js'
+import { DiscoverResult } from 'core-types'
 export * from 'core-splice-provider'
 
 const injectProvider = ({ url, walletType }: DiscoverResult) => {
@@ -16,7 +17,7 @@ const injectProvider = ({ url, walletType }: DiscoverResult) => {
 const stored = localStorage.getItem(SDK.LOCAL_STORAGE_KEY_CONNECTION)
 if (stored) {
     try {
-        injectProvider(JSON.parse(stored) as DiscoverResult)
+        injectProvider(DiscoverResult.parse(JSON.parse(stored)))
     } catch (e) {
         console.error('Failed to parse stored wallet connection:', e)
     }
