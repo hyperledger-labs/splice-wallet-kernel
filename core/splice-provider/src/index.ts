@@ -17,7 +17,8 @@ export enum ProviderType {
 
 export function injectSpliceProvider(
     providerType: ProviderType,
-    url?: URL
+    url?: URL,
+    sessionToken?: string
 ): SpliceProvider {
     // Check if the provider is already injected
     const existing = window.splice || window.canton || window.ethereum
@@ -32,7 +33,7 @@ export function injectSpliceProvider(
                 'Invalid URL for HTTP provider. Please provide a valid URL instance.'
             )
         }
-        window.splice = new SpliceProviderHttp(url)
+        window.splice = new SpliceProviderHttp(url, sessionToken)
     } else {
         throw new Error(
             'Invalid provider type. Use ProviderType.WINDOW or ProviderType.HTTP.'

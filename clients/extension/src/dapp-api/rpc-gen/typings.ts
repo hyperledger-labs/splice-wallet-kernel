@@ -13,6 +13,41 @@ export type StringMo3KZIJp = 'GET' | 'POST' | 'PUT' | 'DELETE'
 export type StringDoaGddGA = string
 /**
  *
+ * The unique identifier of the wallet kernel.
+ *
+ */
+export type StringFRWQxn2U = string
+/**
+ *
+ * browser|desktop|mobile|remote
+ *
+ */
+export type StringGFIfvhK0 = string
+/**
+ *
+ * The URL of the wallet kernel.
+ *
+ */
+export type String3T7JhIFf = string
+/**
+ *
+ * Represents a wallet kernel.
+ *
+ */
+export interface Kernel {
+    id: StringFRWQxn2U
+    clientType: StringGFIfvhK0
+    url?: String3T7JhIFf
+    [k: string]: any
+}
+/**
+ *
+ * Whether or not a connection to a network is esablished.
+ *
+ */
+export type BooleanIJuPLvlB = boolean
+/**
+ *
  * A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'.
  *
  */
@@ -46,6 +81,12 @@ export interface JsPrepareSubmissionResponse {
     preparedTransactionHash?: StringZK0Xb1WV
     [k: string]: any
 }
+/**
+ *
+ * JWT authentication token (if applicable).
+ *
+ */
+export type String8FT98W8N = string
 export interface PrepareReturnParams {
     commands: JsCommands
     [k: string]: any
@@ -60,9 +101,17 @@ export interface LedgerApiParams {
     body?: StringDoaGddGA
     [k: string]: any
 }
-export interface ConnectResult {
+export interface StatusResult {
+    kernel: Kernel
+    isConnected: BooleanIJuPLvlB
     chainId?: StringIUsSEQ9O
-    userUrl: UserUrl
+    [k: string]: any
+}
+export interface ConnectResult {
+    kernel: Kernel
+    isConnected: BooleanIJuPLvlB
+    chainId?: StringIUsSEQ9O
+    userUrl?: UserUrl
     [k: string]: any
 }
 export interface DarsAvailableResult {
@@ -80,21 +129,30 @@ export interface LedgerApiResult {
     response: StringDoaGddGA
     [k: string]: any
 }
+export interface OnConnectedEvent {
+    kernel: Kernel
+    chainId: StringIUsSEQ9O
+    sessionToken?: String8FT98W8N
+    [k: string]: any
+}
 /**
  *
  * Generated! Represents an alias to any of the provided schemas
  *
  */
-export type AnyOfPrepareReturnParamsPrepareExecuteParamsLedgerApiParamsConnectResultDarsAvailableResultPrepareReturnResultPrepareExecuteResultLedgerApiResult =
+export type AnyOfPrepareReturnParamsPrepareExecuteParamsLedgerApiParamsStatusResultConnectResultDarsAvailableResultPrepareReturnResultPrepareExecuteResultLedgerApiResultOnConnectedEvent =
 
         | PrepareReturnParams
         | PrepareExecuteParams
         | LedgerApiParams
+        | StatusResult
         | ConnectResult
         | DarsAvailableResult
         | PrepareReturnResult
         | PrepareExecuteResult
         | LedgerApiResult
+        | OnConnectedEvent
+export type Status = () => Promise<StatusResult>
 export type Connect = () => Promise<ConnectResult>
 export type DarsAvailable = () => Promise<DarsAvailableResult>
 export type PrepareReturn = (
@@ -104,3 +162,4 @@ export type PrepareExecute = (
     params: PrepareExecuteParams
 ) => Promise<PrepareExecuteResult>
 export type LedgerApi = (params: LedgerApiParams) => Promise<LedgerApiResult>
+export type OnConnected = () => Promise<OnConnectedEvent>

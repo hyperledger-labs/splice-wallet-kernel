@@ -1,9 +1,5 @@
 import { discover, DiscoverResult, popupHref } from 'core-wallet-ui-components'
-import {
-    injectSpliceProvider,
-    ProviderType,
-    SpliceProvider,
-} from 'core-splice-provider'
+import { injectSpliceProvider, ProviderType } from 'core-splice-provider'
 import * as dappAPI from 'core-wallet-dapp-rpc-client'
 import { SDK } from '../enums.js'
 export * from 'core-splice-provider'
@@ -31,39 +27,26 @@ export enum ErrorCode {
     Other,
 }
 
-type ConnectResult = {
-    status: 'success'
-    url: string
-}
-
 export type ConnectError = {
     status: 'error'
     error: ErrorCode
     details: string
 }
 
-export async function connect(): Promise<ConnectResult> {
+export async function connect(): Promise<dappAPI.ConnectResult> {
     return discover()
         .then(async (result) => {
-            let provider: SpliceProvider
+            localStorage.setItem(
+                SDK.LOCAL_STORAGE_KEY_CONNECTION,
+                JSON.stringify(result)
+            )
+            const provider = injectProvider(result)
+            const response = await provider.request<dappAPI.ConnectResult>({
+                method: 'connect',
+            })
 
-            if (result) {
-                localStorage.setItem(
-                    SDK.LOCAL_STORAGE_KEY_CONNECTION,
-                    JSON.stringify(result)
-                )
-                provider = injectProvider(result)
-
-                const response = await provider.request<dappAPI.ConnectResult>({
-                    method: 'connect',
-                })
-                await popupHref(new URL(response.userUrl))
-            }
-
-            return {
-                status: 'success',
-                url: result.url,
-            } as ConnectResult
+            if (!response.isConnected) popupHref(new URL(response.userUrl!))
+            return response
         })
         .catch((err) => {
             throw {

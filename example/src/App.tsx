@@ -36,9 +36,11 @@ function App() {
                         console.log('Connecting to Wallet Kernel...')
                         setLoading(true)
                         sdk.connect()
-                            .then(({ url }) => {
+                            .then(({ kernel, isConnected, chainId }) => {
                                 setLoading(false)
-                                setStatus(`connected on ${url}`)
+                                setStatus(
+                                    `Wallet Kernel: ${kernel.id}, status: ${isConnected ? 'connected' : 'disconnected'}, chain: ${chainId}`
+                                )
                                 setError('')
                             })
                             .catch((err) => {
@@ -52,7 +54,7 @@ function App() {
                     connect to wallet kernel
                 </button>
                 {loading && <p>Loading...</p>}
-                <p>status: {status}</p>
+                <p>{status}</p>
                 {error && <p className="error">Error: {error}</p>}
             </div>
 
