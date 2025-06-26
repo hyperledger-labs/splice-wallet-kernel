@@ -49,6 +49,7 @@ export class LoginUI extends LitElement {
     accessor selectedNetwork: store.NetworkConfig | null = null
 
     private handleChange(e: Event) {
+        console.log('test')
         const index = parseInt((e.target as HTMLSelectElement).value)
         this.selectedNetwork = this.test[index] ?? null
     }
@@ -68,7 +69,6 @@ export class LoginUI extends LitElement {
             const config = await fetch(configUrl).then((res) => res.json())
             const scope = this.selectedNetwork.auth.scope
             const audience = this.selectedNetwork.auth.audience
-            console.log('client id is ' + this.selectedNetwork.auth.clientId)
             const params = new URLSearchParams({
                 response_type: 'token id_token',
                 response_mode: 'fragment',
