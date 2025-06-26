@@ -4,8 +4,10 @@
 import buildController from './rpc-gen'
 import {
     LedgerApiParams,
+    OnConnectedEvent,
     PrepareExecuteParams,
     PrepareReturnParams,
+    StatusResult,
 } from './rpc-gen/typings.js'
 
 import { Store } from 'core-wallet-store'
@@ -15,6 +17,7 @@ export const dappController = (store?: Store) =>
     buildController({
         connect: async () =>
             Promise.resolve({
+                isConnected: false,
                 chainId: 'default-chain-id',
                 userUrl: 'http://default-user-url.com',
             }),
@@ -24,4 +27,10 @@ export const dappController = (store?: Store) =>
         prepareExecute: async (params: PrepareExecuteParams) => null,
         prepareReturn: async (params: PrepareReturnParams) =>
             Promise.resolve({}),
+        status: async () => {
+            throw new Error('Function not implemented.')
+        },
+        onConnected: async () => {
+            throw new Error('Function not implemented.')
+        },
     })
