@@ -8,10 +8,10 @@ import { SpliceProviderBase } from './SpliceProvider.js'
 
 export class SpliceProviderWindow extends SpliceProviderBase {
     public async request<T>({ method, params }: RequestPayload): Promise<T> {
-        return await SpliceProviderWindow.jsonRpcRequest(method, params)
+        return await this.jsonRpcRequest(method, params)
     }
 
-    static async jsonRpcRequest<T>(
+    async jsonRpcRequest<T>(
         method: string,
         params?: RequestPayload['params']
     ): Promise<T> {

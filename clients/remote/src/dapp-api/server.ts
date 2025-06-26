@@ -25,7 +25,8 @@ export const dapp = (
         (req, res, next) =>
             jsonRpcHandler<Methods>({
                 controller: dappController(
-                    store.withAuthContext(req.authContext)
+                    store.withAuthContext(req.authContext),
+                    req.authContext
                 ),
                 logger,
             })(req, res, next)
