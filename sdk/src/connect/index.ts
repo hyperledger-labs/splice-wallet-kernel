@@ -2,7 +2,7 @@ import { discover, popupHref } from 'core-wallet-ui-components'
 import { injectSpliceProvider, ProviderType } from 'core-splice-provider'
 import * as dappAPI from 'core-wallet-dapp-rpc-client'
 import { SDK } from '../enums.js'
-import { DiscoverResult } from 'core-types'
+import { DiscoverResult, SpliceMessage, WalletEvent } from 'core-types'
 export * from 'core-splice-provider'
 
 const injectProvider = ({ url, walletType }: DiscoverResult) => {
@@ -10,6 +10,25 @@ const injectProvider = ({ url, walletType }: DiscoverResult) => {
         return injectSpliceProvider(ProviderType.HTTP, new URL(url))
     } else {
         return injectSpliceProvider(ProviderType.WINDOW)
+    }
+}
+
+const openKernelUserUI = (
+    walletType: DiscoverResult['walletType'],
+    userUrl: string
+) => {
+    switch (walletType) {
+        case 'remote':
+            popupHref(new URL(userUrl))
+            break
+        case 'extension': {
+            const msg: SpliceMessage = {
+                type: WalletEvent.SPLICE_WALLET_EXT_OPEN,
+                url: userUrl,
+            }
+            window.postMessage(msg, '*')
+            break
+        }
     }
 }
 
@@ -46,7 +65,9 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
                 method: 'connect',
             })
 
-            if (!response.isConnected) popupHref(new URL(response.userUrl!))
+            if (!response.isConnected)
+                openKernelUserUI(result.walletType, response.userUrl)
+
             return response
         })
         .catch((err) => {

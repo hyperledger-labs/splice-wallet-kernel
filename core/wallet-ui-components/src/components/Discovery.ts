@@ -1,23 +1,28 @@
-import { DiscoverResult } from 'core-types'
+import { DiscoverResult, SpliceMessageEvent } from 'core-types'
 
 /**
  * Discovery implements the view of the Wallet Kernel selection window. It is implemented directly as a Web Component without using LitElement, so to avoid having external dependencies.
  */
 export class Discovery extends HTMLElement {
+    static observedAttributes = ['wallet-extension-loaded']
+
+    get walletExtensionLoaded() {
+        return this.hasAttribute('wallet-extension-loaded')
+    }
+
+    set walletExtensionLoaded(val) {
+        if (val) {
+            this.setAttribute('wallet-extension-loaded', '')
+        } else {
+            this.removeAttribute('wallet-extension-loaded')
+        }
+    }
+
+    private root: HTMLElement
+
     constructor() {
         super()
-    }
-
-    verifiedKernels(): DiscoverResult[] {
-        return [
-            // TODO: make this dynamic depending on if the extension is loaded & ready, otherwise omit it
-            { url: 'splice-wallet-browser-ext', walletType: 'extension' },
-            { url: 'http://localhost:3000/rpc', walletType: 'remote' },
-        ]
-    }
-
-    connectedCallback() {
-        const shadow = this.attachShadow({ mode: 'open' })
+        this.attachShadow({ mode: 'open' })
 
         const styles = document.createElement('style')
         styles.textContent = `
@@ -50,6 +55,68 @@ export class Discovery extends HTMLElement {
         }
         `
 
+        this.root = document.createElement('div')
+        this.root.id = 'discovery-root'
+
+        if (this.shadowRoot) {
+            this.shadowRoot.appendChild(styles)
+            this.shadowRoot.appendChild(this.root)
+        }
+
+        if (window.opener) {
+            // uses the string literal instead of the WalletEvent enum to avoid bundling issues
+            window.opener.postMessage({ type: 'SPLICE_WALLET_EXT_READY' }, '*')
+            window.opener.addEventListener(
+                'message',
+                (event: SpliceMessageEvent) => {
+                    if (event.data.type === 'SPLICE_WALLET_EXT_ACK') {
+                        this.setAttribute('wallet-extension-loaded', '')
+                    }
+                }
+            )
+        }
+    }
+
+    verifiedKernels(): DiscoverResult[] {
+        return [{ url: 'http://localhost:3000/rpc', walletType: 'remote' }]
+    }
+
+    private renderKernelOption(kernel: DiscoverResult) {
+        const div = document.createElement('div')
+        div.setAttribute('class', 'kernel')
+
+        const span = document.createElement('span')
+
+        switch (kernel.walletType) {
+            case 'extension':
+                span.innerText = 'Browser Extension'
+                break
+            case 'remote':
+                span.innerText = `${kernel.walletType} - ${kernel.url}`
+                break
+        }
+
+        const button = document.createElement('button')
+        button.innerText = `Connect`
+        button.addEventListener('click', () => {
+            this.selectKernel(kernel)
+        })
+
+        div.appendChild(span)
+        div.appendChild(button)
+
+        return div
+    }
+
+    private selectKernel(kernel: DiscoverResult) {
+        if (window.opener) {
+            window.opener.postMessage(kernel, '*')
+        } else {
+            console.warn('no window opener...')
+        }
+    }
+
+    render() {
         const root = document.createElement('div')
 
         const header = document.createElement('h1')
@@ -67,36 +134,43 @@ export class Discovery extends HTMLElement {
         button.addEventListener('click', () => {
             const url = input.value
             console.log('Connecting to Wallet Kernel...' + url)
-            window.opener.postMessage({ url, walletType: 'remote' }, '*')
+            this.selectKernel({ url, walletType: 'remote' })
         })
-
-        shadow.appendChild(styles)
 
         root.appendChild(header)
 
-        for (const kernel of this.verifiedKernels()) {
-            const div = document.createElement('div')
-            div.setAttribute('class', 'kernel')
-
-            const span = document.createElement('span')
-            span.innerText = `${kernel.walletType} - ${kernel.url}`
-
-            const button = document.createElement('button')
-            button.innerText = `Connect`
-            button.addEventListener('click', () => {
-                window.opener.postMessage(kernel, '*')
+        if (this.walletExtensionLoaded) {
+            const k = this.renderKernelOption({
+                walletType: 'extension',
             })
+            root.appendChild(k)
+        }
 
-            div.appendChild(span)
-            div.appendChild(button)
-
-            root.appendChild(div)
+        for (const kernel of this.verifiedKernels()) {
+            const k = this.renderKernelOption(kernel)
+            root.appendChild(k)
         }
 
         root.appendChild(input)
         root.appendChild(button)
 
-        shadow.appendChild(root)
+        // Replace the whole root (except styles), don't append
+        if (this.shadowRoot) {
+            Array.from(this.shadowRoot.childNodes).forEach((node) => {
+                if (!(node instanceof HTMLStyleElement)) {
+                    this.shadowRoot!.removeChild(node)
+                }
+            })
+            this.shadowRoot.appendChild(root)
+        }
+    }
+
+    connectedCallback() {
+        this.render()
+    }
+
+    attributeChangedCallback() {
+        this.render()
     }
 }
 
