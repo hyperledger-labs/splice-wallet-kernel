@@ -3,6 +3,7 @@
 
 import buildController from './rpc-gen'
 import {
+    KernelInfo,
     LedgerApiParams,
     PrepareExecuteParams,
     PrepareReturnParams,
@@ -10,7 +11,7 @@ import {
 
 import { Store } from 'core-wallet-store'
 
-const kernelInfo = {
+const kernelInfo: KernelInfo = {
     id: 'default-kernel-id',
     clientType: 'browser',
 }

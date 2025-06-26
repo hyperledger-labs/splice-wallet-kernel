@@ -16,7 +16,7 @@
                     "type": "object",
                     "properties": {
                         "kernel": {
-                            "$ref": "#/components/schemas/Kernel"
+                            "$ref": "#/components/schemas/KernelInfo"
                         },
                         "isConnected": {
                             "type": "boolean",
@@ -42,7 +42,7 @@
                     "type": "object",
                     "properties": {
                         "kernel": {
-                            "$ref": "#/components/schemas/Kernel"
+                            "$ref": "#/components/schemas/KernelInfo"
                         },
                         "isConnected": {
                             "type": "boolean",
@@ -186,7 +186,7 @@
                     "type": "object",
                     "properties": {
                         "kernel": {
-                            "$ref": "#/components/schemas/Kernel"
+                            "$ref": "#/components/schemas/KernelInfo"
                         },
                         "chainId": {
                             "type": "string",
@@ -210,8 +210,8 @@
                 "type": "null",
                 "description": "Represents a null value, used in responses where no data is returned."
             },
-            "Kernel": {
-                "title": "Kernel",
+            "KernelInfo": {
+                "title": "KernelInfo",
                 "type": "object",
                 "description": "Represents a wallet kernel.",
                 "properties": {
@@ -221,7 +221,8 @@
                     },
                     "clientType": {
                         "type": "string",
-                        "description": "browser|desktop|mobile|remote"
+                        "enum": ["browser", "desktop", "mobile", "remote"],
+                        "description": "The type of client that implements the wallet kernel."
                     },
                     "url": {
                         "type": "string",

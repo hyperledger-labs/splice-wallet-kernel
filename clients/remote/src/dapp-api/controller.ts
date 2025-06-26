@@ -3,13 +3,14 @@
 import { AuthContext } from 'core-wallet-auth'
 import buildController from './rpc-gen/index.js'
 import {
+    KernelInfo,
     LedgerApiParams,
     PrepareExecuteParams,
     PrepareReturnParams,
 } from './rpc-gen/typings.js'
 import { Store } from 'core-wallet-store'
 
-const kernelInfo = {
+const kernelInfo: KernelInfo = {
     id: 'remote-da',
     clientType: 'remote',
     url: 'http://localhost:3000/rpc',
