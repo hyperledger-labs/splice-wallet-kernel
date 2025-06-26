@@ -3,7 +3,7 @@ import {
     PublicKeyInformationAlgorithmEnum,
     VaultAccount,
 } from '@fireblocks/ts-sdk'
-import { SigningStatusEnum } from 'keystore-driver-library'
+import { SigningStatusEnum } from 'core-signing-lib'
 import { z } from 'zod'
 import { readFileSync } from 'fs-extra'
 import path from 'path'

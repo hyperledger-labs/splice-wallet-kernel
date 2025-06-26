@@ -6472,9 +6472,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fireblocks-driver@workspace:core/keystore/fireblocks":
+"fireblocks-driver@workspace:core/signing/fireblocks":
   version: 0.0.0-use.local
-  resolution: "fireblocks-driver@workspace:core/keystore/fireblocks"
+  resolution: "fireblocks-driver@workspace:core/signing/fireblocks"
   dependencies:
     "@fireblocks/ts-sdk": "npm:^10.2.0"
     "@jest/globals": "npm:^29.0.0"
