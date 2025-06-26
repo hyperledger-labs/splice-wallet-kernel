@@ -1,0 +1,21 @@
+{
+    "name": "core-types",
+    "version": "0.0.1",
+    "description": "Types and transport-agnostic parsers for data sent across Wallet components.",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "packageManager": "yarn@4.9.2",
+    "scripts": {
+        "build": "tsc -b; esbuild src/index.ts --bundle --format=esm --outdir=dist",
+        "dev": "tsc -b --watch; esbuild src/index.ts --bundle --format=esm --outdir=dist --watch",
+        "clean": "tsc -b --clean; rm -rf dist"
+    },
+    "dependencies": {
+        "zod": "^3.25.67"
+    },
+    "devDependencies": {
+        "esbuild": "^0.25.5",
+        "typescript": "^5.8.3"
+    }
+}

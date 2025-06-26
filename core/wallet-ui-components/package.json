@@ -23,6 +23,7 @@
     },
     "packageManager": "yarn@4.9.2",
     "dependencies": {
+        "core-types": "workspace:^",
         "lit": "^3.3.0"
     }
 }

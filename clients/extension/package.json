@@ -22,6 +22,8 @@
         "web-ext": "^8.8.0"
     },
     "dependencies": {
+        "@metamask/rpc-errors": "^7.0.2",
+        "core-types": "workspace:^",
         "core-wallet-store": "workspace:^",
         "core-wallet-ui-components": "workspace:^",
         "lit": "^3.3.0",

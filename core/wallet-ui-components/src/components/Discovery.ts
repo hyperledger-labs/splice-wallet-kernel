@@ -1,3 +1,5 @@
+import { DiscoverResult } from 'core-types'
+
 /**
  * Discovery implements the view of the Wallet Kernel selection window. It is implemented directly as a Web Component without using LitElement, so to avoid having external dependencies.
  */
@@ -6,8 +8,12 @@ export class Discovery extends HTMLElement {
         super()
     }
 
-    verifiedKernels() {
-        return [{ url: 'http://localhost:3000/rpc', walletType: 'remote' }]
+    verifiedKernels(): DiscoverResult[] {
+        return [
+            // TODO: make this dynamic depending on if the extension is loaded & ready, otherwise omit it
+            { url: 'splice-wallet-browser-ext', walletType: 'extension' },
+            { url: 'http://localhost:3000/rpc', walletType: 'remote' },
+        ]
     }
 
     connectedCallback() {

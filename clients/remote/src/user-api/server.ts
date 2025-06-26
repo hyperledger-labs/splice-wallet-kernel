@@ -1,7 +1,7 @@
 import express from 'express'
 import { userController } from './controller.js'
 import { pino } from 'pino'
-import { jsonRpcHttpMiddleware } from '../jsonrpc-http-middleware.js'
+import { jsonRpcHandler } from '../middleware/jsonRpcHandler.js'
 import { Methods } from './rpc-gen/index.js'
 import { Store } from 'core-wallet-store'
 import { AuthService, AuthAware } from 'core-wallet-auth'
@@ -22,7 +22,7 @@ export const user = (
         rpcRateLimit,
         jwtAuth(authService, logger),
         (req, res, next) =>
-            jsonRpcHttpMiddleware<Methods>({
+            jsonRpcHandler<Methods>({
                 controller: userController(
                     store.withAuthContext(req.authContext)
                 ),

@@ -23,4 +23,8 @@ export const apps = [
         name: 'core-wallet-ui-components',
         script: 'yarn workspace core-wallet-ui-components build:watch',
     },
+    {
+        name: 'core-types',
+        script: 'yarn workspace core-types dev',
+    },
 ]
