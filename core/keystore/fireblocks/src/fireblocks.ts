@@ -1,16 +1,15 @@
-import { Fireblocks, VaultAccount } from '@fireblocks/ts-sdk'
-import { Key, Transaction } from 'keystore-driver-library'
+import {
+    Fireblocks,
+    PublicKeyInformationAlgorithmEnum,
+    VaultAccount,
+} from '@fireblocks/ts-sdk'
+import { SigningStatusEnum } from 'keystore-driver-library'
 import { z } from 'zod'
+import { readFileSync } from 'fs-extra'
+import path from 'path'
 
 const CC_COIN_TYPE = 6767
 
-// interface PublicKey {
-//     derivationPath: number[]
-//     publicKey: string
-//     name: string
-//     algorithm: string
-// }
-//
 const RawMessageSchema = z.object({
     content: z.string(),
     derivationPath: z.array(z.number()),
@@ -25,38 +24,60 @@ const RawMessageExtraParametersSchema = z.object({
     rawMessageData: RawMessageDataSchema,
 })
 
-export class FireblocksHandler {
-    private apiKey: string
-    private apiSecret: string
-    private client: Fireblocks
-    private keyCache: Map<string, Key> = new Map() // key cache by publicKey
-    private keyCacheByDerivationPath: Map<number[], Key> = new Map()
+interface FireblocksKey {
+    name: string
+    publicKey: string
+    derivationPath: number[]
+    algorithm: PublicKeyInformationAlgorithmEnum
+}
 
-    constructor(apiKey: string, apiSecret: string) {
-        this.apiKey = apiKey
-        this.apiSecret = apiSecret
-        this.client = new Fireblocks()
+interface FireblocksTransaction {
+    txId: string
+    status: SigningStatusEnum
+    signature?: string | undefined
+    publicKey?: string | undefined
+    derivationPath: number[]
+}
+
+export class FireblocksHandler {
+    private client: Fireblocks
+    private keyCache: Map<string, FireblocksKey> = new Map() // key cache by publicKey
+    private keyCacheByDerivationPath: Map<string, FireblocksKey> = new Map()
+    private allTransactions: FireblocksTransaction[] = []
+
+    constructor(
+        apiKey: string,
+        secretLocation: string,
+        apiPath: string = 'https://api.fireblocks.io/v1'
+    ) {
+        const secretPath = path.resolve(process.cwd(), secretLocation)
+        const secret = readFileSync(secretPath, 'utf8')
+        this.client = new Fireblocks({
+            apiKey: apiKey,
+            basePath: apiPath,
+            secretKey: secret,
+        })
     }
 
     // Get public keys from Fireblocks vault accounts.
     // This will also refresh the key cache.
-    public async getPublicKeys(): Promise<Key[]> {
-        const keys: Key[] = []
+    public async getPublicKeys(): Promise<FireblocksKey[]> {
+        const keys: FireblocksKey[] = []
         try {
             const vaultAccounts: VaultAccount[] = []
             let after: string | undefined = undefined
 
-            while (after !== undefined) {
-                const resp = await this.client.vaults.getPagedVaultAccounts({
-                    after,
-                })
+            do {
+                const resp = await this.client.vaults.getPagedVaultAccounts(
+                    after ? { after } : {}
+                )
                 after = resp.data.paging?.after
                 vaultAccounts.push(...(resp.data.accounts || []))
-            }
+            } while (after !== undefined)
 
             for (const vault of vaultAccounts) {
                 if (vault.id) {
-                    const derivationPath = `[44, ${CC_COIN_TYPE}, {vault.id}, 0, 0]`
+                    const derivationPath = `[44, ${CC_COIN_TYPE}, ${vault.id}, 0, 0]`
                     const key = await this.client.vaults.getPublicKeyInfo({
                         algorithm: 'MPC_EDDSA_ED25519',
                         derivationPath,
@@ -67,7 +88,6 @@ export class FireblocksHandler {
                         key.data.derivationPath
                     ) {
                         const storedKey = {
-                            id: key.data.derivationPath?.join('-'),
                             derivationPath: key.data.derivationPath || [],
                             publicKey: key.data.publicKey,
                             name: vault.name || vault.id,
@@ -76,7 +96,7 @@ export class FireblocksHandler {
                         keys.push(storedKey)
                         this.keyCache.set(storedKey.publicKey, storedKey)
                         this.keyCacheByDerivationPath.set(
-                            key.data.derivationPath,
+                            JSON.stringify(key.data.derivationPath),
                             storedKey
                         )
                     }
@@ -89,8 +109,8 @@ export class FireblocksHandler {
         return keys
     }
 
-    public async getTransactions(): Promise<Transaction[]> {
-        const allTransactions: Transaction[] = []
+    public async getTransactions(): Promise<FireblocksTransaction[]> {
+        let refreshedCache = false
         try {
             const transactions = await this.client.transactions.getTransactions(
                 {
@@ -98,7 +118,6 @@ export class FireblocksHandler {
                     limit: 500,
                 }
             )
-
             for (const tx of transactions.data) {
                 if (
                     !tx.id ||
@@ -106,7 +125,7 @@ export class FireblocksHandler {
                     !tx.extraParameters ||
                     !('rawMessageData' in tx.extraParameters)
                 ) {
-                    continue // Skip transactions without signed messages since they are not raw transactions
+                    continue // Skip transactions that are not RAW or do not conform to expected structure
                 }
 
                 if (tx.signedMessages && tx.signedMessages.length > 0) {
@@ -120,13 +139,13 @@ export class FireblocksHandler {
                             `Transaction ${tx.id} has no public key or content in signed message`
                         )
                     }
-                    allTransactions.push({
+                    this.allTransactions.push({
                         txId: tx.id,
                         status: 'signed',
                         publicKey: signedMessage.publicKey,
                         // TODO: will this ever be v/s?
                         signature: signedMessage.signature.fullSig,
-                        metadata: {},
+                        derivationPath: signedMessage.derivationPath!,
                     })
                 } else {
                     const rawMessageData =
@@ -134,23 +153,30 @@ export class FireblocksHandler {
                             tx.extraParameters
                         )
                     if (!rawMessageData.success) {
-                        console.error(
-                            `Transaction ${tx.id} has invalid rawMessageData:`,
-                            rawMessageData.error
-                        )
                         continue // Skip transactions with invalid rawMessageData
                     }
-                    const derivationPath =
+                    const message =
                         rawMessageData.data.rawMessageData.messages[0]
-                            .derivationPath
-                    if (!this.keyCacheByDerivationPath.has(derivationPath)) {
-                        await this.getPublicKeys() // Refresh the key cache
+                    const derivationPath = JSON.stringify(
+                        message.derivationPath
+                    )
+
+                    if (
+                        !this.keyCacheByDerivationPath.has(derivationPath) &&
+                        !refreshedCache
+                    ) {
+                        // Refresh the key cache only once in case the cache has not been populated
+                        // since the transaction was created - however do not repeatedly refresh
+                        // in case of derivation paths that definitely do not exist
+                        console.log(
+                            'Refreshing key cache for derivation path:',
+                            derivationPath
+                        )
+                        await this.getPublicKeys()
+                        refreshedCache = true
                     }
                     const publicKey =
                         this.keyCacheByDerivationPath.get(derivationPath)
-                    if (!publicKey) {
-                        continue
-                    }
 
                     const status =
                         tx.status === 'REJECTED' || tx.status === 'BLOCKED'
@@ -158,11 +184,11 @@ export class FireblocksHandler {
                             : tx.status === 'FAILED'
                               ? 'failed'
                               : 'pending'
-                    allTransactions.push({
+                    this.allTransactions.push({
                         txId: tx.id,
                         status: status,
-                        publcicKey: publicKey.publicKey,
-                        metadata: {},
+                        publicKey: publicKey?.publicKey,
+                        derivationPath: message.derivationPath,
                     })
                 }
             }
@@ -170,6 +196,49 @@ export class FireblocksHandler {
             console.error('Error fetching signatures', error)
             throw error
         }
-        return allTransactions
+        return this.allTransactions
+    }
+    public async signTransaction(
+        tx: string,
+        publicKey: string
+    ): Promise<FireblocksTransaction> {
+        try {
+            if (!this.keyCache.has(publicKey)) {
+                await this.getPublicKeys() // Refresh the key cache
+            }
+            const key = this.keyCache.get(publicKey)
+            if (!key) {
+                throw new Error(`Public key ${publicKey} not found in cache`)
+            }
+
+            const transaction =
+                await this.client.transactions.createTransaction({
+                    transactionRequest: {
+                        operation: 'RAW',
+                        note: `Signing transaction with public key ${publicKey}`,
+                        extraParameters: {
+                            rawMessageData: {
+                                messages: [
+                                    {
+                                        content: tx,
+                                        derivationPath: key.derivationPath,
+                                    },
+                                ],
+                                algorithm: key.algorithm,
+                            },
+                        },
+                    },
+                })
+
+            return {
+                txId: transaction.data.id!,
+                status: 'pending',
+                publicKey: key.publicKey,
+                derivationPath: key.derivationPath,
+            }
+        } catch (error) {
+            console.error('Error refreshing key cache:', error)
+            throw error
+        }
     }
 }
