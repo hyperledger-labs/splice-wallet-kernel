@@ -36,6 +36,15 @@ export class Discovery extends HTMLElement {
             height: 100%;
         }
 
+        .kernel {
+            height: auto;
+            margin-bottom: 8px;
+        }
+
+        .kernel button {
+            margin-left: 8px;
+        }
+
         input {
             margin-left: 8px;
         }
@@ -66,15 +75,22 @@ export class Discovery extends HTMLElement {
         root.appendChild(header)
 
         for (const kernel of this.verifiedKernels()) {
+            const div = document.createElement('div')
+            div.setAttribute('class', 'kernel')
+
             const span = document.createElement('span')
             span.innerText = `${kernel.walletType} - ${kernel.url}`
+
             const button = document.createElement('button')
             button.innerText = `Connect`
             button.addEventListener('click', () => {
                 window.opener.postMessage(kernel, '*')
             })
-            root.appendChild(span)
-            root.appendChild(button)
+
+            div.appendChild(span)
+            div.appendChild(button)
+
+            root.appendChild(div)
         }
 
         root.appendChild(input)

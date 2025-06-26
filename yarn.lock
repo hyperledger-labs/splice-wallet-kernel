@@ -5008,7 +5008,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "core-types@workspace:core/types"
   dependencies:
-    esbuild: "npm:^0.25.5"
     typescript: "npm:^5.8.3"
     zod: "npm:^3.25.67"
   languageName: unknown
