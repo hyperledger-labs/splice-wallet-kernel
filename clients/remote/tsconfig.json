@@ -3,7 +3,7 @@
     "compilerOptions": {
         "rootDir": "./src",
         "outDir": "./dist",
-        "experimentalDecorators": true,
+        "experimentalDecorators": false,
         "useDefineForClassFields": false
     },
     "include": ["src", "types/express.d.ts"],
