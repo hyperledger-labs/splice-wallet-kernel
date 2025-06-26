@@ -31,13 +31,11 @@ export class LoginCallback extends LitElement {
 
         localStorage.setItem('access_token', accessToken)
         localStorage.setItem('id_token', idToken)
+
+        window.location.replace('/')
     }
 
     render() {
-        return html`
-            <h2>Logged in!</h2>
-            <p>Access Token: ${this.accessToken}</p>
-            <p>ID Token: ${this.idToken}</p>
-        `
+        return html` <h2>Logged in!</h2> `
     }
 }
