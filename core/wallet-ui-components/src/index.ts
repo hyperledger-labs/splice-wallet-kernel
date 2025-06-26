@@ -4,12 +4,11 @@ import { customElement } from 'lit/decorators.js'
 
 export * from './components/Discovery.js'
 export * from './windows/discovery.js'
+export * from './windows/popup.js'
 
 import './components/Discovery.js'
 import './components/Configuration.js'
 import { html as htmlStatic, literal } from 'lit/static-html.js'
-
-import '../themes/default.css'
 
 @customElement('app-ui')
 export class AppUi extends LitElement {

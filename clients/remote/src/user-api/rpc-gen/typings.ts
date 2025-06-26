@@ -2,6 +2,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export type StringDoaGddGA = string
+/**
+ *
+ * Name of network
+ *
+ */
+export type StringWupREggx = string
+/**
+ *
+ * Description of network
+ *
+ */
+export type StringM72S2Xxb = string
+/**
+ *
+ * Structure representing the connected Networks
+ *
+ */
+export type Network = any[]
 export interface AddNetworkParams {
     [key: string]: any
 }
@@ -47,12 +65,16 @@ export interface ExecuteResult {
     traceId: StringDoaGddGA
     [k: string]: any
 }
+export interface ListNetworksResult {
+    networks: Network
+    [k: string]: any
+}
 /**
  *
  * Generated! Represents an alias to any of the provided schemas
  *
  */
-export type AnyOfAddNetworkParamsAllocatePartyParamsRemovePartyParamsSignParamsExecuteParamsNullAllocatePartyResultRemovePartyResultSignResultExecuteResult =
+export type AnyOfAddNetworkParamsAllocatePartyParamsRemovePartyParamsSignParamsExecuteParamsNullAllocatePartyResultRemovePartyResultSignResultExecuteResultListNetworksResult =
 
         | AddNetworkParams
         | AllocatePartyParams
@@ -64,6 +86,7 @@ export type AnyOfAddNetworkParamsAllocatePartyParamsRemovePartyParamsSignParamsE
         | RemovePartyResult
         | SignResult
         | ExecuteResult
+        | ListNetworksResult
 export type AddNetwork = (network: AddNetworkParams) => Promise<Null>
 export type AllocateParty = (
     params: AllocatePartyParams
@@ -73,3 +96,4 @@ export type RemoveParty = (
 ) => Promise<RemovePartyResult>
 export type Sign = (params: SignParams) => Promise<SignResult>
 export type Execute = (params: ExecuteParams) => Promise<ExecuteResult>
+export type ListNetworks = () => Promise<ListNetworksResult>

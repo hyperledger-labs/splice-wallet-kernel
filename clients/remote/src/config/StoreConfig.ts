@@ -1,4 +1,4 @@
-import { store } from 'core-wallet-store'
+import * as store from 'core-wallet-store'
 import { z, ZodType, ZodObject } from 'zod'
 
 type SchemaFromInterface<T> = ZodObject<{
@@ -62,12 +62,12 @@ export const networkConfigSchema = z.object({
     name: z.string(),
     description: z.string(),
     ledgerApi: ledgerApiSchema,
-    authType: z.discriminatedUnion('type', [
+    auth: z.discriminatedUnion('type', [
         passwordAuthSchema,
         implicitAuthSchema,
     ]),
 }) satisfies SchemaFromInterface<store.NetworkConfig>
 
-export const networks = z.array(networkConfigSchema)
+export const networksSchema = z.array(networkConfigSchema)
 
 export const accounts = z.array(accountSchema)

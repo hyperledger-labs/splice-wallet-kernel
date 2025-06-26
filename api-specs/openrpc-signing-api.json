@@ -1,0 +1,330 @@
+{
+    "openrpc": "1.2.6",
+    "info": {
+        "title": "Wallet JSON-RPC Signing API",
+        "version": "1.0.0",
+        "description": "An OpenRPC specification for the Signing API which allows the wallet kernel to interact with a Wallet Providers."
+    },
+    "methods": [
+        {
+            "name": "signTransaction",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "type": "object",
+                        "title": "SignTransactionParams",
+                        "properties": {
+                            "tx": {
+                                "type": "string",
+                                "description": "Bytestring of the prepared transaction for verification purposes."
+                            },
+                            "txHash": {
+                                "type": "string",
+                                "description": "Hash of the prepared transaction that will be signed."
+                            },
+                            "publicKey": {
+                                "type": "string",
+                                "description": "Public key to use to sign the transaction."
+                            },
+                            "internalTxId": {
+                                "type": "string",
+                                "description": "Internal txId used by the Wallet Kernel to store the transaction."
+                            }
+                        },
+                        "required": ["tx", "txHash", "publicKey"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "description": "The resulting transaction entry at the Wallet Provider. This will include the signature if the transaction was immediately signed.",
+                "schema": {
+                    "title": "signTransactionResult",
+                    "oneOf": [
+                        {
+                            "$ref": "#/components/schemas/Error"
+                        },
+                        {
+                            "$ref": "#/components/schemas/Transaction"
+                        }
+                    ]
+                }
+            },
+            "description": "Uses the Wallet Provider to sign a transaction. This will likely be an asynchronous operation."
+        },
+        {
+            "name": "getTransaction",
+            "description": "Get the status of a single transaction by its ID.",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "getTransactionParams",
+                        "type": "object",
+                        "properties": {
+                            "txId": {
+                                "type": "string",
+                                "description": "Unique identifier of the transaction to retrieve."
+                            }
+                        },
+                        "required": ["txId"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "getTransactionResult",
+                    "oneOf": [
+                        {
+                            "$ref": "#/components/schemas/Error"
+                        },
+                        {
+                            "$ref": "#/components/schemas/Transaction"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "getTransactions",
+            "description": "Get the status of multiple transactions, filtering by txIds or publicKeys. Either publicKeys or txIds must be provided.",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "GetTransactionsParams",
+                        "type": "object",
+                        "properties": {
+                            "txIds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "List of transaction IDs to retrieve"
+                            },
+                            "publicKeys": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "List of public keys to filter transactions by"
+                            }
+                        },
+                        "required": []
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "getTransactionsResult",
+                    "oneOf": [
+                        {
+                            "$ref": "#/components/schemas/Error"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "transactions": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Transaction"
+                                    },
+                                    "description": "List of transactions matching the provided filters"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "getKeys",
+            "description": "Get a list of public keys availabile for signing.",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "getKeysResult",
+                    "type": "object",
+                    "properties": {
+                        "keys": {
+                            "type": "array",
+                            "description": "List of keys availabile at the Wallet Provider",
+                            "items": {
+                                "$ref": "#/components/schemas/Key"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "createKey",
+            "description": "Create a new key at the Wallet Provider.",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "createKeyParams",
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "A human readable name for the key."
+                            }
+                        },
+                        "required": ["name"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "createKeyResult",
+                    "$ref": "#/components/schemas/Key"
+                }
+            }
+        },
+        {
+            "name": "getConfiguration",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "getConfigurationResult",
+                    "type": "object"
+                }
+            }
+        },
+        {
+            "name": "setConfiguration",
+            "description": "Set configuration parameters for the Wallet Provider. The paramaters will change depending on the Wallet Provider implementation",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "setConfigurationParams",
+                        "type": "object",
+                        "description": "Configuration parameters to set"
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "SetConfigurationResult",
+                    "type": "object"
+                }
+            }
+        },
+        {
+            "name": "subscribeTransactions",
+            "description": "Subscribe to updates for specific transactions. The server will emit updates when the status of the specified transactions have changed. On initial subscription, the server will emit the current status of all subscribed transactions.",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "subscribeTransactionsParams",
+                        "type": "object",
+                        "properties": {
+                            "txIds": {
+                                "type": "array",
+                                "description": "Unique identifiers of the transactions to subscribe to",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["txIds"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "subscribeTransactionsResult",
+                    "$ref": "#/components/schemas/Transaction"
+                }
+            }
+        }
+    ],
+    "components": {
+        "schemas": {
+            "Null": {
+                "title": "Null",
+                "type": "null",
+                "description": "Represents a null value, used in responses where no data is returned."
+            },
+            "Key": {
+                "type": "object",
+                "title": "Key",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the key"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "A human readable name for the key"
+                    },
+                    "publicKey": {
+                        "type": "string",
+                        "description": "Public key associated with the key"
+                    }
+                },
+                "required": ["id", "name", "publicKey"]
+            },
+            "Error": {
+                "type": "object",
+                "title": "Error",
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "description": "error code"
+                    },
+                    "error_description": {
+                        "type": "string",
+                        "description": "A human readable error description"
+                    }
+                },
+                "required": ["error", "error_description"]
+            },
+            "SigningStatus": {
+                "title": "SigningStatusEnum",
+                "type": "string",
+                "enum": ["pending", "signed", "rejected", "failed"],
+                "description": "Status of the transaction signing process"
+            },
+            "Transaction": {
+                "type": "object",
+                "title": "Transaction",
+                "properties": {
+                    "txId": {
+                        "type": "string",
+                        "description": "Unique identifier of the signed transaction given by the Wallet Provider. This may not be the same as the internal txId given by the Wallet Kernel."
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/SigningStatus",
+                        "description": "Status of the transaction signing process."
+                    },
+                    "signature": {
+                        "type": "string",
+                        "description": "Signature of the transaction if it was signed."
+                    },
+                    "publicKey": {
+                        "type": "string",
+                        "description": "Public key used to sign the transaction."
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "description": "Additional metadata about the transaction."
+                    }
+                },
+                "required": ["txId", "status"]
+            }
+        }
+    }
+}

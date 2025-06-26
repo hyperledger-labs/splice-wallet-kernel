@@ -4,6 +4,13 @@
     "components": [
         {
             "type": "custom",
+            "name": "core-wallet-user-rpc-client",
+            "language": "typescript",
+            "outPath": "./core/wallet-user-rpc-client",
+            "customComponent": "./core/rpc-generator/dist/components/client.js"
+        },
+        {
+            "type": "custom",
             "name": "wallet-user-rpc-server",
             "language": "typescript",
             "openRPCPath": null,

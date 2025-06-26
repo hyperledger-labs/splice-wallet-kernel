@@ -86,6 +86,11 @@ export interface DarsAvailableResult {
 }
 export type PrepareReturnResult = any
 export type PrepareExecuteResult = any
+/**
+ *
+ * Ledger Api configuration options
+ *
+ */
 export interface LedgerApiResult {
     response: StringDoaGddGA
     [k: string]: any
@@ -263,12 +268,7 @@ export class SpliceWalletJSONRPCDAppAPI {
                 ],
                 result: {
                     name: 'result',
-                    schema: {
-                        title: 'ledgerApiResult',
-                        type: 'object',
-                        properties: { response: { type: 'string' } },
-                        required: ['response'],
-                    },
+                    schema: { $ref: '#/components/schemas/LedgerApiResult' },
                 },
                 description:
                     'Proxy for the JSON-API endpoints. Injects authorization headers automatically.',
@@ -281,6 +281,13 @@ export class SpliceWalletJSONRPCDAppAPI {
                     type: 'null',
                     description:
                         'Represents a null value, used in responses where no data is returned.',
+                },
+                LedgerApiResult: {
+                    title: 'LedgerApiResult',
+                    type: 'object',
+                    description: 'Ledger Api configuration options',
+                    properties: { response: { type: 'string' } },
+                    required: ['response'],
                 },
                 UserUrl: {
                     title: 'UserUrl',

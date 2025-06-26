@@ -9,7 +9,7 @@
             "core-wallet-dapp-rpc-client": [
                 "../core/wallet-dapp-rpc-client/src"
             ],
-            "splice-provider": ["../core/splice-provider/src"]
+            "core-splice-provider": ["../core/splice-provider/src"]
         }
     },
     "include": ["src"],

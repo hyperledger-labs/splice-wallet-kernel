@@ -17,6 +17,15 @@
             "outPath": "./clients/remote/src/dapp-api/rpc-gen",
             "customComponent": "./core/rpc-generator/dist/components/controller.js",
             "customType": "controller"
+        },
+        {
+            "type": "custom",
+            "name": "wallet-dapp-rpc-extension",
+            "language": "typescript",
+            "openRPCPath": null,
+            "outPath": "./clients/extension/src/dapp-api/rpc-gen",
+            "customComponent": "./core/rpc-generator/dist/components/controller.js",
+            "customType": "controller"
         }
     ]
 }

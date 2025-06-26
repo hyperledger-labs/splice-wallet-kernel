@@ -1,5 +1,5 @@
 {
-    "name": "rpc-generator",
+    "name": "core-rpc-generator",
     "private": true,
     "packageManager": "yarn@4.9.2",
     "scripts": {

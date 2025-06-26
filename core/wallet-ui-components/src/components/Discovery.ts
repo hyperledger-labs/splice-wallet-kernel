@@ -1,7 +1,13 @@
-// Discovery implements the view of the Wallet Kernel selection window. It is implemented directly as a Web Component without using LitElement, so to avoid having external dependencies.
+/**
+ * Discovery implements the view of the Wallet Kernel selection window. It is implemented directly as a Web Component without using LitElement, so to avoid having external dependencies.
+ */
 export class Discovery extends HTMLElement {
     constructor() {
         super()
+    }
+
+    verifiedKernels() {
+        return [{ url: 'http://localhost:3000/rpc', walletType: 'remote' }]
     }
 
     connectedCallback() {
@@ -52,6 +58,19 @@ export class Discovery extends HTMLElement {
         shadow.appendChild(styles)
 
         root.appendChild(header)
+
+        for (const kernel of this.verifiedKernels()) {
+            const span = document.createElement('span')
+            span.innerText = `${kernel.walletType} - ${kernel.url}`
+            const button = document.createElement('button')
+            button.innerText = `Connect`
+            button.addEventListener('click', () => {
+                window.opener.postMessage(kernel, '*')
+            })
+            root.appendChild(span)
+            root.appendChild(button)
+        }
+
         root.appendChild(input)
         root.appendChild(button)
 
