@@ -4,6 +4,10 @@ import { resolve } from 'path'
 
 export default defineConfig({
     root: 'src/web/frontend',
+    build: {
+        outDir: resolve(__dirname, '../../dist/frontend'),
+        emptyOutDir: true,
+    },
     resolve: {
         alias: {
             'core-wallet-ui-components': resolve(
