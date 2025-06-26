@@ -126,7 +126,7 @@ export interface ConnectResult {
     kernel: KernelInfo
     isConnected: BooleanIJuPLvlB
     chainId?: StringIUsSEQ9O
-    userUrl?: UserUrl
+    userUrl: UserUrl
     [k: string]: any
 }
 export interface DarsAvailableResult {
@@ -253,7 +253,7 @@ export class SpliceWalletJSONRPCDAppAPI {
                             },
                             userUrl: { $ref: '#/components/schemas/UserUrl' },
                         },
-                        required: ['kernel', 'isConnected'],
+                        required: ['kernel', 'isConnected', 'userUrl'],
                     },
                 },
                 description:

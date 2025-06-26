@@ -76,23 +76,40 @@ async function handleRpcRequest(message: unknown): Promise<SpliceMessage> {
 Browser.runtime.onMessage.addListener((message, _, sendResponse) => {
     console.log('Received message in background script:', message)
 
-    handleRpcRequest(message)
-        .then(sendResponse)
-        .catch((error: unknown) => {
-            if (isSpliceMessage(error) && 'error' in error) {
-                sendResponse(error)
-            } else {
-                console.error('No response generated for the request')
-                sendResponse(
-                    jsonRpcResponse(null, {
-                        error: rpcErrors.internal({
-                            message: 'Internal error',
-                            data: 'No response generated for the request',
-                        }),
-                    })
-                )
-            }
-        })
+    if (isSpliceMessage(message)) {
+        if (message.type === WalletEvent.SPLICE_WALLET_REQUEST) {
+            handleRpcRequest(message)
+                .then(sendResponse)
+                .catch((error: unknown) => {
+                    if (isSpliceMessage(error) && 'error' in error) {
+                        sendResponse(error)
+                    } else {
+                        console.error('No response generated for the request')
+                        sendResponse(
+                            jsonRpcResponse(null, {
+                                error: rpcErrors.internal({
+                                    message: 'Internal error',
+                                    data: 'No response generated for the request',
+                                }),
+                            })
+                        )
+                    }
+                })
+        } else if (message.type === WalletEvent.SPLICE_WALLET_EXT_OPEN) {
+            // Handle the request to open the wallet UI
+            Browser.windows.create({
+                url: message.url,
+                type: 'popup',
+                width: 400,
+                height: 600,
+            })
+            sendResponse(null)
+        } else {
+            sendResponse(null)
+        }
+    } else {
+        sendResponse(null)
+    }
 
     return true // Indicates that the response will be sent asynchronously
 })

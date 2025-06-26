@@ -111,7 +111,7 @@ export interface ConnectResult {
     kernel: KernelInfo
     isConnected: BooleanIJuPLvlB
     chainId?: StringIUsSEQ9O
-    userUrl?: UserUrl
+    userUrl: UserUrl
     [k: string]: any
 }
 export interface DarsAvailableResult {
