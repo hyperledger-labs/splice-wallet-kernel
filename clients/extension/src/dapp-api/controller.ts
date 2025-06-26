@@ -1,6 +1,7 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+import Browser from 'webextension-polyfill'
 import buildController from './rpc-gen'
 import {
     KernelInfo,
@@ -24,7 +25,7 @@ export const dappController = (store?: Store) =>
                 kernel: kernelInfo,
                 isConnected: false,
                 chainId: 'default-chain-id',
-                userUrl: 'http://default-user-url.com',
+                userUrl: Browser.runtime.getURL('pages/user.html'),
             }),
         darsAvailable: async () => Promise.resolve({ dars: ['default-dar'] }),
         ledgerApi: async (params: LedgerApiParams) =>
