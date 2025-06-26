@@ -37,24 +37,10 @@ export class LoginUI extends LitElement {
             },
             auth: {
                 type: 'implicit',
-                domain: 'dex.com',
-                audience: 'https://daml.com/jwt/aud/participant/wk-app',
-                scope: 'openid',
-                clientId: 'wk-service-account2',
-            },
-        },
-        {
-            name: 'abc2',
-            description: 'oauth',
-            ledgerApi: {
-                baseUrl: 'https://test',
-            },
-            auth: {
-                type: 'implicit',
-                domain: 'canton-registry-app-dev-1.eu.auth0.com',
-                audience: 'https://daml.com/jwt/aud/participant/wk-app',
-                scope: 'openid',
-                clientId: 'UQO77YceeZBKEQRHnqRxfn6g7ioqmycL',
+                domain: 'http://localhost:5556/dex',
+                audience: '',
+                scope: 'openid email profile',
+                clientId: 'test-client',
             },
         },
     ]
@@ -78,20 +64,23 @@ export class LoginUI extends LitElement {
         const redirectUri = 'http://localhost:3002/callback' //should probably be config driven?
         if (this.selectedNetwork.auth.type === 'implicit') {
             const domain = this.selectedNetwork.auth.domain
-            const configUrl = `https://${domain}/.well-known/openid-configuration`
+            const configUrl = `${domain}/.well-known/openid-configuration`
             const config = await fetch(configUrl).then((res) => res.json())
             const scope = this.selectedNetwork.auth.scope
             const audience = this.selectedNetwork.auth.audience
+            console.log('client id is ' + this.selectedNetwork.auth.clientId)
             const params = new URLSearchParams({
-                response_type: 'token',
+                response_type: 'token id_token',
+                response_mode: 'fragment',
                 client_id: this.selectedNetwork.auth.clientId,
                 redirect_uri: redirectUri,
+                nonce: crypto.randomUUID(),
                 scope,
                 audience,
                 state: domain,
             })
 
-            window.location.href = `${config.authorization_endpoint}?${params.toString}`
+            window.location.href = `${config.authorization_endpoint}?${params.toString()}`
         } else {
             alert('Other auth type not implemented yet')
         }
