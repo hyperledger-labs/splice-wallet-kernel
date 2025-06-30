@@ -1,8 +1,6 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { buildController, KeystoreInterface } from 'keystore-driver-library'
-import nacl from 'tweetnacl'
-import naclUtil from 'tweetnacl-util'
+import { buildController, SignerInterface } from 'core-signing-lib'
 
 import {
     SignTransactionParams,
@@ -20,73 +18,47 @@ import {
     SubscribeTransactionsResult,
     SetConfigurationResult,
     Transaction,
-} from 'keystore-driver-library'
-import { randomUUID } from 'node:crypto'
+} from 'core-signing-lib'
+import { FireblocksHandler } from './fireblocks'
 
-interface InternalKey {
-    id: string
-    name: string
-    publicKey: string
-    privateKey: string
+interface FireblocksConfig {
+    apiKey: string
+    secretLocation: string
+    apiPath?: string
 }
 
-interface InternalTransaction {
-    id: string
-    hash: string
-    signature: string
-    publicKey: string
-    createdAt: Date
-}
-const convertInternalTransaction = (tx: InternalTransaction): Transaction => {
-    return {
-        txId: tx.id,
-        status: 'signed',
-        signature: tx.signature,
+export class FireblocksDriver implements SignerInterface {
+    private fireblocks: FireblocksHandler
+
+    constructor(config: FireblocksConfig) {
+        this.fireblocks = new FireblocksHandler(
+            config.apiKey,
+            config.secretLocation,
+            config.apiPath || 'https://api.fireblocks.io/v1'
+        )
     }
-}
 
-export class InternalKeystore implements KeystoreInterface {
-    private keystore: Map<string, InternalKey> = new Map()
-    private keystoreByPublicKey: Map<string, InternalKey> = new Map()
-    private transactions: Map<string, InternalTransaction> = new Map()
-
-    public keystoreController = buildController({
+    public signerController = buildController({
         signTransaction: async (
             params: SignTransactionParams
         ): Promise<SignTransactionResult> => {
             // TODO: validate transaction here
 
-            const key = this.keystoreByPublicKey.get(params.publicKey)
-            if (key) {
-                const txId = randomUUID()
-                const decodedKey = naclUtil.decodeBase64(key.privateKey)
-                const signature = naclUtil.encodeBase64(
-                    nacl.sign.detached(
-                        naclUtil.decodeBase64(params.txHash),
-                        decodedKey
-                    )
+            try {
+                const tx = await this.fireblocks.signTransaction(
+                    params.txHash,
+                    params.publicKey
                 )
-
-                const internalTransaction: InternalTransaction = {
-                    id: txId,
-                    hash: params.txHash,
-                    signature,
-                    publicKey: params.publicKey,
-                    createdAt: new Date(),
+                return {
+                    txId: tx.txId,
+                    status: tx.status,
+                    signature: tx.signature,
+                    publicKey: tx.publicKey,
                 }
-
-                this.transactions.set(txId, internalTransaction)
-
+            } catch (error) {
                 return Promise.resolve({
-                    txId,
-                    status: 'signed',
-                    signature,
-                } as SignTransactionResult)
-            } else {
-                return Promise.resolve({
-                    error: 'key_not_found',
-                    error_description:
-                        'The provided public key does not exist in the keystore.',
+                    error: 'signing_error',
+                    error_description: (error as Error).message,
                 })
             }
         },
@@ -94,36 +66,43 @@ export class InternalKeystore implements KeystoreInterface {
         getTransaction: async (
             params: GetTransactionParams
         ): Promise<GetTransactionResult> => {
-            const tx = this.transactions.get(params.txId)
-            if (tx) {
-                return Promise.resolve({
-                    txId: tx.id,
-                    status: 'signed',
-                    signature: tx.signature,
-                })
-            } else {
-                return Promise.resolve({
-                    error: 'transaction_not_found',
-                    error_description:
-                        'The requested transaction does not exist.',
-                })
+            for await (const tx of this.fireblocks.getTransactions()) {
+                if (tx.txId === params.txId) {
+                    return Promise.resolve({
+                        txId: tx.txId,
+                        status: tx.status,
+                        signature: tx.signature,
+                        publicKey: tx.publicKey,
+                    } as GetTransactionResult)
+                }
             }
+            return Promise.resolve({
+                error: 'transaction_not_found',
+                error_description: 'The requested transaction does not exist.',
+            })
         },
 
         getTransactions: async (
             params: GetTransactionsParams
         ): Promise<GetTransactionsResult> => {
+            const transactions: Transaction[] = []
             if (params.publicKeys || params.txIds) {
-                const transactions = Array.from(
-                    this.transactions.values()
-                ).filter(
-                    (tx) =>
-                        params.txIds?.includes(tx.id) ||
-                        params.publicKeys?.includes(tx.publicKey)
-                )
-                return Promise.resolve({
-                    transactions: transactions.map(convertInternalTransaction),
-                })
+                for await (const tx of this.fireblocks.getTransactions()) {
+                    if (
+                        tx.txId === params.txId ||
+                        tx.publicKey === params.publicKeys
+                    ) {
+                        transactions.push({
+                            txId: tx.txId,
+                            status: tx.status,
+                            signature: tx.signature,
+                            publicKey: tx.publicKey,
+                        })
+                    }
+                }
+                return {
+                    transactions: transactions,
+                }
             } else {
                 return Promise.resolve({
                     error: 'bad_arguments',
@@ -133,37 +112,25 @@ export class InternalKeystore implements KeystoreInterface {
             }
         },
 
-        getKeys: async (): Promise<GetKeysResult> =>
-            Promise.resolve({
-                keys: Array.from(this.keystore.values()).map((key) => ({
-                    id: key.id,
-                    name: key.name,
-                    publicKey: key.publicKey,
+        getKeys: async (): Promise<GetKeysResult> => {
+            const keys = await this.fireblocks.getPublicKeys()
+            return {
+                keys: keys.map((k) => ({
+                    id: k.derivationPath.join('-'),
+                    name: k.name,
+                    publicKey: k.publicKey,
                 })),
-            } as GetKeysResult),
+            }
+        },
 
         createKey: async (
-            params: CreateKeyParams
+            _params: CreateKeyParams
         ): Promise<CreateKeyResult> => {
-            const key = nacl.sign.keyPair()
-            const id = randomUUID()
-            const publicKey = naclUtil.encodeBase64(key.publicKey)
-            const privateKey = naclUtil.encodeBase64(key.secretKey)
-            const internalKey: InternalKey = {
-                id,
-                name: params.name,
-                publicKey,
-                privateKey,
+            return {
+                error: 'not_implemented',
+                error_description:
+                    'Create key is not implemented in Fireblocks driver.',
             }
-
-            this.keystore.set(id, internalKey)
-            this.keystoreByPublicKey.set(publicKey, internalKey)
-
-            return Promise.resolve({
-                id,
-                name: params.name,
-                publicKey: naclUtil.encodeBase64(key.publicKey),
-            } as CreateKeyResult)
         },
 
         getConfiguration: async (): Promise<GetConfigurationResult> =>

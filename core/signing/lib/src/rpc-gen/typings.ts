@@ -194,12 +194,7 @@ export interface GetKeysResult {
     keys?: UnorderedSetOfKeyU58FG0Db
     [k: string]: any
 }
-export interface CreateKeyResult {
-    id: StringSeicKbSk
-    name: StringLI0CTZ6I
-    publicKey: StringFrHbj8VQ
-    [k: string]: any
-}
+export type CreateKeyResult = Error | Key
 export interface GetConfigurationResult {
     [key: string]: any
 }

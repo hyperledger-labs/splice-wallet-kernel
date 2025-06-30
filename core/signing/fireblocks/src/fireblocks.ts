@@ -31,7 +31,7 @@ interface FireblocksKey {
     algorithm: PublicKeyInformationAlgorithmEnum
 }
 
-interface FireblocksTransaction {
+export interface FireblocksTransaction {
     txId: string
     status: SigningStatusEnum
     signature?: string | undefined
@@ -109,8 +109,8 @@ export class FireblocksHandler {
         return keys
     }
 
-    public async getTransactions(): Promise<FireblocksTransaction[]> {
-        let refreshedCache = false
+    public async *getTransactions(): AsyncGenerator<FireblocksTransaction> {
+        const refreshedCache = false
         try {
             const transactions = await this.client.transactions.getTransactions(
                 {
@@ -139,14 +139,14 @@ export class FireblocksHandler {
                             `Transaction ${tx.id} has no public key or content in signed message`
                         )
                     }
-                    this.allTransactions.push({
+                    yield {
                         txId: tx.id,
                         status: 'signed',
                         publicKey: signedMessage.publicKey,
                         // TODO: will this ever be v/s?
                         signature: signedMessage.signature.fullSig,
                         derivationPath: signedMessage.derivationPath!,
-                    })
+                    }
                 } else {
                     const rawMessageData =
                         RawMessageExtraParametersSchema.safeParse(
@@ -184,19 +184,19 @@ export class FireblocksHandler {
                             : tx.status === 'FAILED'
                               ? 'failed'
                               : 'pending'
-                    this.allTransactions.push({
+                    yield {
                         txId: tx.id,
                         status: status,
                         publicKey: publicKey?.publicKey,
                         derivationPath: message.derivationPath,
-                    })
+                    }
                 }
             }
         } catch (error) {
             console.error('Error fetching signatures', error)
             throw error
         }
-        return this.allTransactions
+        // return this.allTransactions
     }
     public async signTransaction(
         tx: string,

@@ -184,7 +184,14 @@
                 "name": "result",
                 "schema": {
                     "title": "createKeyResult",
-                    "$ref": "#/components/schemas/Key"
+                    "oneOf": [
+                        {
+                            "$ref": "#/components/schemas/Error"
+                        },
+                        {
+                            "$ref": "#/components/schemas/Key"
+                        }
+                    ]
                 }
             }
         },

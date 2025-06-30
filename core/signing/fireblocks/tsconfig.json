@@ -4,7 +4,8 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "module": "nodenext",
-        "strict": true
+        "strict": true,
+        "exactOptionalPropertyTypes": false
     },
     "include": ["src"],
     "exclude": ["src/template"]
