@@ -1,6 +1,6 @@
 import { css, html, LitElement } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
-import * as store from 'core-wallet-store'
+import { NetworkConfig } from 'core-wallet-store'
 import 'core-wallet-ui-components'
 import 'core-wallet-ui-components/themes/default.css'
 
@@ -14,7 +14,7 @@ export class LoginUI extends LitElement {
         }
     `
     @state()
-    accessor test: store.NetworkConfig[] = [
+    accessor idps: NetworkConfig[] = [
         {
             name: 'xyz',
             description: 'name1',
@@ -46,17 +46,14 @@ export class LoginUI extends LitElement {
     ]
 
     @state()
-    accessor selectedNetwork: store.NetworkConfig | null = null
+    accessor selectedNetwork: NetworkConfig | null = null
 
     private handleChange(e: Event) {
-        console.log('test')
         const index = parseInt((e.target as HTMLSelectElement).value)
-        this.selectedNetwork = this.test[index] ?? null
+        this.selectedNetwork = this.idps[index] ?? null
     }
 
     private async handleConnectToIDP() {
-        console.log('oauth flow implement here!')
-
         if (!this.selectedNetwork) {
             alert('Please select a network before connecting')
             return
@@ -91,7 +88,7 @@ export class LoginUI extends LitElement {
             <h1>User Login Page</h1>
             <select id="network" @change=${this.handleChange}>
                 <option value="">--Network--</option>
-                ${this.test.map(
+                ${this.idps.map(
                     (net, index) =>
                         html`<option value=${index}>${net.name}</option>`
                 )}
