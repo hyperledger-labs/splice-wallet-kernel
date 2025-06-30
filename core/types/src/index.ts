@@ -48,6 +48,7 @@ export enum WalletEvent {
     SPLICE_WALLET_REQUEST = 'SPLICE_WALLET_REQUEST',
     SPLICE_WALLET_RESPONSE = 'SPLICE_WALLET_RESPONSE',
     SPLICE_WALLET_EXTENSION_READY = 'SPLICE_WALLET_EXTENSION_READY',
+    SPLICE_WALLET_IDP_AUTH_SUCCESS = 'SPLICE_WALLET_IDP_AUTH_SUCCESS',
 }
 
 export interface SpliceMessageEvent extends MessageEvent {
@@ -63,6 +64,9 @@ export const SpliceMessage = z.discriminatedUnion('type', [
     z.object({
         type: z.literal(WalletEvent.SPLICE_WALLET_RESPONSE),
         response: JsonRpcResponse,
+    }),
+    z.object({
+        type: z.literal(WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS),
     }),
 ])
 export type SpliceMessage = z.infer<typeof SpliceMessage>
