@@ -1,5 +1,11 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import * as process from 'process'
+
+// Get the root of the current repository
+export function getRepoRoot(): string {
+    return process.cwd()
+}
 
 export function findJsonKeyPosition(
     jsonContent: string,

@@ -7,11 +7,8 @@
     "packageManager": "yarn@4.9.2",
     "type": "module",
     "scripts": {
-        "build": "tsc -b",
-        "clean": "tsc -b --clean; rm -rf dist",
-        "clean-coding": "node dist/clean-coding.js",
-        "generate-ledger-client": "node dist/generate-ledger-client.js",
-        "update-ledger-from-splice": "node dist/update-ledger-from-splice.js"
+        "test": "tsc -b",
+        "clean": "tsc -b --clean"
     },
     "devDependencies": {
         "@types/node": "^24.0.4",

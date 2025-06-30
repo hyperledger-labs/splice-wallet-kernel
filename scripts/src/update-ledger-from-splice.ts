@@ -1,9 +1,9 @@
 import axios from 'axios'
 import fs from 'fs'
 import path from 'path'
-import * as process from 'process'
+import { getRepoRoot } from './script-utils.js'
 
-const rootPath = path.dirname(process.cwd())
+const rootPath = getRepoRoot()
 // Variables
 const REPO_OWNER = 'hyperledger-labs'
 const REPO_NAME = 'splice'

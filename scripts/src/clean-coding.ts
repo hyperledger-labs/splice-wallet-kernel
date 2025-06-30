@@ -1,10 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as process from 'process'
-import { markFile, traverseDirectory } from './script-utils.js'
+import { getRepoRoot, markFile, traverseDirectory } from './script-utils.js'
 
 function checkPackageJson(packageJsonPath: string): number {
-    const rootPath = path.dirname(process.cwd())
+    const rootPath = getRepoRoot()
     const folderPath = path
         .relative(rootPath, path.dirname(packageJsonPath))
         .replace(/\//g, '-')
@@ -98,11 +98,10 @@ function checkPackageJson(packageJsonPath: string): number {
 }
 
 function checkTsconfigJson(tsconfigJsonPath: string): number {
-    const rootPath = path.dirname(process.cwd())
     const tsconfigContent = fs.readFileSync(tsconfigJsonPath, 'utf-8')
     const tsconfig = JSON.parse(tsconfigContent)
     const extendsFile = tsconfig.extends
-    const relativePath = path.relative(rootPath, tsconfigJsonPath)
+    const relativePath = path.relative(getRepoRoot(), tsconfigJsonPath)
 
     // Check if "extends" contains the correct tsconfig.json variation
     if (
@@ -124,7 +123,7 @@ function checkTsconfigJson(tsconfigJsonPath: string): number {
 }
 
 function main(): void {
-    const rootDir = path.dirname(process.cwd())
+    const rootDir = getRepoRoot()
     let errorCount = 0
     traverseDirectory(rootDir, (filePath) => {
         if (filePath.endsWith('package.json')) {
