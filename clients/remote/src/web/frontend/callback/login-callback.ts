@@ -1,3 +1,4 @@
+import { WalletEvent } from 'core-types'
 import { LitElement, html } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 
@@ -34,7 +35,10 @@ export class LoginCallback extends LitElement {
 
         if (window.opener && !window.opener.closed) {
             window.opener.postMessage(
-                { type: 'auth-success', token: accessToken },
+                {
+                    type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
+                    token: accessToken,
+                },
                 '*'
             )
         }
