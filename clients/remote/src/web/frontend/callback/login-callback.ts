@@ -32,6 +32,13 @@ export class LoginCallback extends LitElement {
         localStorage.setItem('access_token', accessToken)
         localStorage.setItem('id_token', idToken)
 
+        if (window.opener && !window.opener.closed) {
+            window.opener.postMessage(
+                { type: 'auth-success', token: accessToken },
+                '*'
+            )
+        }
+
         window.location.replace('/')
     }
 
