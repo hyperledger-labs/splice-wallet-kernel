@@ -51,3 +51,14 @@ After running `yarn start:all`, you'll have services exposed on the following po
 | example dApp UI  | localhost:5137 |
 | HTTP WK dapp RPC | localhost:3000 |
 | HTTP WK user RPC | localhost:3001 |
+
+### canton
+
+To run a Canton instance locally:
+
+1. Ensure you have Java installed. A convenient tool to manage Java SDK versions (similar to `nvm` for Node) is [sdkman](https://sdkman.io/install)
+2. Run `yarn scripts:fetch:canton` to download and install Canton 3.4 to a local `.canton/` directory in the repo (if you haven't already)
+3. Run `yarn start:canton` to start a participant using the root-level `canton.conf` configuration
+    - (alternatively) start canton directly to access the interactive console: `.canton/bin/canton -c canton.conf`
+
+Canton is _not_ started automatically through the `start:all` script, as it requires extra dependencies and has a higher resource footprint.

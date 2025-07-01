@@ -1,7 +1,7 @@
 import { readdirSync, writeFileSync, mkdirSync } from 'fs'
 import * as path from 'path'
 import generateSchema from 'openapi-typescript'
-import { getRepoRoot } from './script-utils.js'
+import { getRepoRoot } from './utils.js'
 
 // Directories
 const OUTPUT_DIR = `${getRepoRoot()}/core/ledger-client/generated-clients`

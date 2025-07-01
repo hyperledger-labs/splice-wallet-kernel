@@ -9,6 +9,9 @@ npm-debug.log
 **/build
 .temp/
 
+.canton/
+log/
+
 generated/
 
 # yarn

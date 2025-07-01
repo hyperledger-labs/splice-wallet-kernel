@@ -1,15 +1,15 @@
 import axios from 'axios'
 import fs from 'fs'
 import path from 'path'
-import { getRepoRoot } from './script-utils.js'
+import { DAML_RELEASE_VERSION, getRepoRoot } from './utils.js'
 
 const rootPath = getRepoRoot()
+
 // Variables
-const REPO_OWNER = 'hyperledger-labs'
-const REPO_NAME = 'splice'
-const BRANCH = 'main'
+const REPO_OWNER = 'digital-asset'
+const REPO_NAME = 'daml'
 const JSON_API_DOCS =
-    'canton/community/ledger/ledger-json-api/src/test/resources/json-api-docs'
+    'sdk/canton/community/ledger/ledger-json-api/src/test/resources/json-api-docs'
 const OUTPUT_DIR = `${rootPath}/temp`
 const FINAL_DIR = `${rootPath}/api-specs/ledger-api`
 
@@ -26,7 +26,7 @@ async function fetchApiSpecs() {
 
         // Get the list of files in the folder using GitHub API
         const response = await axios.get<GitHubFile[]>(
-            `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${JSON_API_DOCS}?ref=${BRANCH}`
+            `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${JSON_API_DOCS}?ref=v${DAML_RELEASE_VERSION}`
         )
 
         const files = response.data
