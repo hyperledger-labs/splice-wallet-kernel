@@ -16,6 +16,10 @@ export const apps = [
         script: 'yarn workspace splice-wallet-sdk dev',
     },
     {
+        name: 'core-ledger-client',
+        script: 'yarn workspace core-ledger-client dev',
+    },
+    {
         name: 'core-splice-provider',
         script: 'yarn workspace core-splice-provider dev',
     },

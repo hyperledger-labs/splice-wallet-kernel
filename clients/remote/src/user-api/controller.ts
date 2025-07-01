@@ -1,5 +1,6 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { LedgerClient } from 'core-ledger-client'
 import buildController from './rpc-gen/index.js'
 import {
     AddNetwork,
@@ -8,12 +9,24 @@ import {
     SignParams,
 } from './rpc-gen/typings.js'
 import { Store } from 'core-wallet-store'
+import pino from 'pino'
 
-export const userController = (store: Store) =>
+export const userController = (store: Store, ledgerClient: LedgerClient) =>
     buildController({
         addNetwork: async (params: AddNetworkParams) =>
             Promise.resolve({} as AddNetwork),
-        allocateParty: async (params: { hint: string }) => Promise.resolve({}),
+        allocateParty: async (params: { hint: string }) => {
+            pino.pino().info('Allocating party with params:', params)
+            try {
+                const res = await ledgerClient.allocateParty({
+                    partyIdHint: params.hint,
+                })
+                return res
+            } catch (error) {
+                pino.pino().error('Error allocating party:', error)
+            }
+            pino.pino().info('Allocating party with params:', params)
+        },
         removeParty: async (params: { hint: string }) => Promise.resolve({}),
         sign: async (params: SignParams) =>
             Promise.resolve({
