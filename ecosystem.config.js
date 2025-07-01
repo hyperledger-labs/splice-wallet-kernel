@@ -5,7 +5,7 @@ export const apps = [
     },
     {
         name: 'mock-oauth2-server',
-        script: 'yarn workspace mock-oauth2-server start',
+        script: 'yarn start:oauth2-mock-server',
     },
     {
         name: 'extension',

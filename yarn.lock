@@ -9412,14 +9412,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mock-oauth2-server@workspace:mock-oauth2-server":
-  version: 0.0.0-use.local
-  resolution: "mock-oauth2-server@workspace:mock-oauth2-server"
-  dependencies:
-    oauth2-mock-server: "npm:^8.1.0"
-  languageName: unknown
-  linkType: soft
-
 "module-details-from-path@npm:^1.0.3":
   version: 1.0.4
   resolution: "module-details-from-path@npm:1.0.4"
@@ -11354,6 +11346,7 @@ __metadata:
     globals: "npm:^16.2.0"
     husky: "npm:^9.1.7"
     lint-staged: "npm:^16.1.0"
+    oauth2-mock-server: "npm:^8.1.0"
     pm2: "npm:^6.0.8"
     prettier: "npm:^3.5.3"
     tsx: "npm:^4.20.3"
