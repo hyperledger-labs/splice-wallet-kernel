@@ -3,8 +3,7 @@ import { customElement, query, state } from 'lit/decorators.js'
 
 import 'core-wallet-ui-components'
 import 'core-wallet-ui-components/themes/default.css'
-import { JsonRpcRequest, RequestPayload } from 'core-types'
-import { v4 as uuidv4 } from 'uuid'
+import { jsonRpcFetch } from './rpc-client'
 
 @customElement('user-ui')
 export class UserUI extends LitElement {
@@ -43,33 +42,10 @@ export class UserUI extends LitElement {
         </div>`
     }
 
-    private async jsonRpcFetch(url: string, payload: RequestPayload) {
-        const request: JsonRpcRequest = {
-            jsonrpc: '2.0',
-            method: payload.method,
-            params: payload.params,
-            id: uuidv4(),
-        }
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(request),
-        })
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        return response.json()
-    }
-
     private async allocateParty() {
         this.loading = true
 
-        const response = await this.jsonRpcFetch('http://localhost:3001/rpc', {
+        const response = await jsonRpcFetch('http://localhost:3001/rpc', {
             method: 'allocateParty',
             params: {
                 hint: this._input?.value || '',

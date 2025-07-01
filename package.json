@@ -2,6 +2,7 @@
     "name": "splice-wallet-kernel",
     "scripts": {
         "start:all": "yarn pm2 start ecosystem.config.js --env development",
+        "start:oauth2-mock-server": "oauth2-mock-server -a localhost -p 8082",
         "start:canton": "tsx ./scripts/src/start-canton.ts",
         "stop:all": "yarn pm2 stop ecosystem.config.js --env development",
         "generate:dapp": "yarn workspace core-rpc-generator build && open-rpc-generator generate -c ./rpc-generator-config-dapp.json",
@@ -34,6 +35,7 @@
         "globals": "^16.2.0",
         "husky": "^9.1.7",
         "lint-staged": "^16.1.0",
+        "oauth2-mock-server": "^8.1.0",
         "pm2": "^6.0.8",
         "prettier": "^3.5.3",
         "tsx": "^4.20.3",

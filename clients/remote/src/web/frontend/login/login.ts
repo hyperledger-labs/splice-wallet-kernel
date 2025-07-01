@@ -16,7 +16,7 @@ export class LoginUI extends LitElement {
     @state()
     accessor idps: NetworkConfig[] = [
         {
-            name: 'xyz',
+            name: 'password auth',
             description: 'name1',
             ledgerApi: {
                 baseUrl: 'https://test',
@@ -30,17 +30,17 @@ export class LoginUI extends LitElement {
             },
         },
         {
-            name: 'abc',
+            name: 'Mock OAuth Server',
             description: 'dex idp',
             ledgerApi: {
                 baseUrl: 'https://test',
             },
             auth: {
                 type: 'implicit',
-                domain: 'http://localhost:5556/dex',
-                audience: '',
-                scope: 'openid email profile',
-                clientId: 'test-client',
+                domain: 'http://localhost:8082',
+                audience: 'test-audience',
+                scope: 'openid',
+                clientId: 'mock-oauth2-clientId',
             },
         },
     ]
@@ -59,7 +59,7 @@ export class LoginUI extends LitElement {
             return
         }
 
-        const redirectUri = 'http://localhost:3002/callback' //should probably be config driven?
+        const redirectUri = 'http://localhost:3002/callback/' //should probably be config driven?
         if (this.selectedNetwork.auth.type === 'implicit') {
             const domain = this.selectedNetwork.auth.domain
             const configUrl = `${domain}/.well-known/openid-configuration`
@@ -67,7 +67,7 @@ export class LoginUI extends LitElement {
             const scope = this.selectedNetwork.auth.scope
             const audience = this.selectedNetwork.auth.audience
             const params = new URLSearchParams({
-                response_type: 'token id_token',
+                response_type: 'code',
                 response_mode: 'fragment',
                 client_id: this.selectedNetwork.auth.clientId,
                 redirect_uri: redirectUri,
