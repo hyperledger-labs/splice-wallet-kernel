@@ -32,6 +32,23 @@ export class AppUi extends LitElement {
         },
     ]
 
+    private addWalletExtensionLoaded() {
+        const { shadowRoot } = document.getElementsByTagName('app-ui')[0]
+        const discovery = shadowRoot?.querySelector('swk-discovery')
+
+        if (discovery) {
+            const existing = discovery.hasAttribute('wallet-extension-loaded')
+
+            if (existing) {
+                discovery.removeAttribute('wallet-extension-loaded')
+            } else {
+                discovery.setAttribute('wallet-extension-loaded', '')
+            }
+        } else {
+            console.error('Discovery component not found.')
+        }
+    }
+
     protected render() {
         return html`
             <div>
@@ -50,6 +67,12 @@ export class AppUi extends LitElement {
                         <hr/>
                     `
                 })}
+
+                <h2>Helpers</h2>
+
+                <button @click=${this.addWalletExtensionLoaded}>
+                    Toggle attribute 'wallet-extension-loaded' to discovery
+                </button>
             </div>
         `
     }

@@ -56,7 +56,7 @@
                             "$ref": "#/components/schemas/UserUrl"
                         }
                     },
-                    "required": ["kernel", "isConnected"]
+                    "required": ["kernel", "isConnected", "userUrl"]
                 }
             },
             "description": "Ensures ledger connectivity. Returns the current chainId if connected, or the user url if disconnected."
