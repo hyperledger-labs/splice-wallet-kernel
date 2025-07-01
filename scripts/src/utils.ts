@@ -10,6 +10,8 @@ export const CANTON_CONF = path.join(getRepoRoot(), 'canton.conf')
 // Canton versions
 export const DAML_RELEASE_VERSION = '3.4.0-snapshot.20250625.0'
 export const CANTON_VERSION = '3.4.0-snapshot.20250617.16217.0.vbdf62919'
+export const CANTON_ARCHIVE_HASH =
+    '5f1bf64d5d3bf50c4dd379bca44d46069e6ece43377177a6e09b4ff0979f640d'
 
 // Get the root of the current repository
 export function getRepoRoot(): string {

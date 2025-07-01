@@ -4,6 +4,7 @@
  */
 
 import {
+    CANTON_ARCHIVE_HASH,
     CANTON_PATH,
     CANTON_VERSION,
     DAML_RELEASE_VERSION,
@@ -18,9 +19,6 @@ import zlib from 'zlib'
 import tar from 'tar-fs'
 import { pipeline } from 'stream/promises'
 
-const SHA256 =
-    '5f1bf64d5d3bf50c4dd379bca44d46069e6ece43377177a6e09b4ff0979f640d'
-
 async function downloadCantonTarGz(tarfile: string): Promise<void> {
     console.log(info(`Downloading Canton ${CANTON_VERSION} to ${tarfile}...`))
 
@@ -30,7 +28,7 @@ async function downloadCantonTarGz(tarfile: string): Promise<void> {
 
     if (res.body) {
         await pipeline(res.body, fs.createWriteStream(tarfile))
-        verifyFileIntegrity(tarfile)
+        await verifyFileIntegrity(tarfile)
     }
 }
 
@@ -40,10 +38,10 @@ async function verifyFileIntegrity(tarfile: string): Promise<void> {
         .update(fs.readFileSync(tarfile))
         .digest('hex')
 
-    if (downloadedHash !== SHA256) {
+    if (downloadedHash !== CANTON_ARCHIVE_HASH) {
         console.log(
             error(
-                `SHA256 checksum mismatch for downloaded Canton binary.\n\tExpected: ${SHA256}\n\tReceived: ${downloadedHash}`
+                `SHA256 checksum mismatch for downloaded Canton binary.\n\tExpected: ${CANTON_ARCHIVE_HASH}\n\tReceived: ${downloadedHash}`
             )
         )
         process.exit(1)
@@ -60,7 +58,7 @@ async function main() {
         console.log(
             info('Canton binary already downloaded... verifying checksum')
         )
-        verifyFileIntegrity(tarfile)
+        await verifyFileIntegrity(tarfile)
     } else {
         await downloadCantonTarGz(tarfile)
     }
