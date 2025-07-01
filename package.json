@@ -24,7 +24,8 @@
         "core/**",
         "example",
         "sdk",
-        "scripts"
+        "scripts",
+        "mock-oauth2-server"
     ],
     "devDependencies": {
         "@eslint/compat": "^1.2.9",
