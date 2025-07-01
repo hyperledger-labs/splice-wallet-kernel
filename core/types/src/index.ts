@@ -45,9 +45,14 @@ export type JsonRpcResponse = z.infer<typeof JsonRpcResponse>
  * Window / message events
  */
 export enum WalletEvent {
+    // JSON-RPC related events
     SPLICE_WALLET_REQUEST = 'SPLICE_WALLET_REQUEST',
     SPLICE_WALLET_RESPONSE = 'SPLICE_WALLET_RESPONSE',
-    SPLICE_WALLET_EXTENSION_READY = 'SPLICE_WALLET_EXTENSION_READY',
+    // Browser extension related events
+    SPLICE_WALLET_EXT_READY = 'SPLICE_WALLET_EXT_READY', // A request from the dApp to the browser extension to see if its loaded
+    SPLICE_WALLET_EXT_ACK = 'SPLICE_WALLET_EXT_ACK', // A response from the extension back to the dapp to acknowledge readiness
+    SPLICE_WALLET_EXT_OPEN = 'SPLICE_WALLET_EXT_OPEN', // A request from the dApp to the browser extension to open the wallet UI
+    // Auth events
     SPLICE_WALLET_IDP_AUTH_SUCCESS = 'SPLICE_WALLET_IDP_AUTH_SUCCESS',
 }
 
@@ -56,7 +61,6 @@ export interface SpliceMessageEvent extends MessageEvent {
 }
 
 export const SpliceMessage = z.discriminatedUnion('type', [
-    z.object({ type: z.literal(WalletEvent.SPLICE_WALLET_EXTENSION_READY) }),
     z.object({
         type: z.literal(WalletEvent.SPLICE_WALLET_REQUEST),
         request: JsonRpcRequest,
@@ -65,8 +69,15 @@ export const SpliceMessage = z.discriminatedUnion('type', [
         type: z.literal(WalletEvent.SPLICE_WALLET_RESPONSE),
         response: JsonRpcResponse,
     }),
+    z.object({ type: z.literal(WalletEvent.SPLICE_WALLET_EXT_READY) }),
+    z.object({ type: z.literal(WalletEvent.SPLICE_WALLET_EXT_ACK) }),
+    z.object({
+        type: z.literal(WalletEvent.SPLICE_WALLET_EXT_OPEN),
+        url: z.string().url(),
+    }),
     z.object({
         type: z.literal(WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS),
+        token: z.string(),
     }),
 ])
 export type SpliceMessage = z.infer<typeof SpliceMessage>
@@ -88,8 +99,15 @@ export const isSpliceMessage = (message: unknown): message is SpliceMessage => {
 /**
  * SDK types
  */
-export const DiscoverResult = z.object({
-    walletType: z.enum(['extension', 'remote']),
-    url: z.string().url(),
-})
+export const DiscoverResult = z.discriminatedUnion('walletType', [
+    z.object({
+        walletType: z.literal('extension'),
+        url: z.optional(z.never()),
+    }),
+    z.object({
+        walletType: z.literal('remote'),
+        url: z.string().url(),
+    }),
+])
+
 export type DiscoverResult = z.infer<typeof DiscoverResult>
