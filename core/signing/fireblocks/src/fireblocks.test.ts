@@ -9,11 +9,6 @@ const TEST_TRANSACTION_HASH =
 
 const SECRET_KEY_LOCATION = 'fireblocks_secret.key'
 
-const TEST_API_KEY = process.env.FIREBLOCKS_API_KEY
-if (!TEST_API_KEY) {
-    throw new Error('FIREBLOCKS_API_KEY environment variable must be set.')
-}
-
 describe.skip('fireblocks handler (skip due to API secret requirement)', () => {
     test('key creation', async () => {
         const apiKey = process.env.FIREBLOCKS_API_KEY

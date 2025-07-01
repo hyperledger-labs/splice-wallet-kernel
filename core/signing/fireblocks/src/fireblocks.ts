@@ -39,7 +39,7 @@ export interface FireblocksTransaction {
 
 export class FireblocksHandler {
     private client: Fireblocks
-    private keyCache: Map<string, FireblocksKey> = new Map() // key cache by publicKey
+    private keyCacheByPublicKey: Map<string, FireblocksKey> = new Map()
     private keyCacheByDerivationPath: Map<string, FireblocksKey> = new Map()
 
     constructor(
@@ -92,7 +92,10 @@ export class FireblocksHandler {
                             algorithm: key.data.algorithm,
                         }
                         keys.push(storedKey)
-                        this.keyCache.set(storedKey.publicKey, storedKey)
+                        this.keyCacheByPublicKey.set(
+                            storedKey.publicKey,
+                            storedKey
+                        )
                         this.keyCacheByDerivationPath.set(
                             JSON.stringify(key.data.derivationPath),
                             storedKey
@@ -129,7 +132,8 @@ export class FireblocksHandler {
                     !tx.extraParameters ||
                     !('rawMessageData' in tx.extraParameters)
                 ) {
-                    continue // Skip transactions that are not RAW or do not conform to expected structure
+                    // Skip transactions that are not RAW or do not conform to expected structure
+                    continue
                 }
 
                 if (tx.signedMessages && tx.signedMessages.length > 0) {
@@ -147,7 +151,6 @@ export class FireblocksHandler {
                         txId: tx.id,
                         status: 'signed',
                         publicKey: signedMessage.publicKey,
-                        // TODO: will this ever be v/s?
                         signature: signedMessage.signature.fullSig,
                         derivationPath: signedMessage.derivationPath!,
                     }
@@ -157,7 +160,8 @@ export class FireblocksHandler {
                             tx.extraParameters
                         )
                     if (!rawMessageData.success) {
-                        continue // Skip transactions with invalid rawMessageData
+                        // Skip transactions with invalid rawMessageData
+                        continue
                     }
                     const message =
                         rawMessageData.data.rawMessageData.messages[0]
@@ -198,7 +202,7 @@ export class FireblocksHandler {
         }
     }
     /**
-     * Sign a transaction using a public ke
+     * Sign a transaction using a public key
      * @param tx - The transaction to sign, as a string
      * @param publicKey - The public key to use for signing
      * @return The transaction object from Fireblocks
@@ -208,10 +212,11 @@ export class FireblocksHandler {
         publicKey: string
     ): Promise<FireblocksTransaction> {
         try {
-            if (!this.keyCache.has(publicKey)) {
-                await this.getPublicKeys() // Refresh the key cache
+            if (!this.keyCacheByPublicKey.has(publicKey)) {
+                // refresh the keycache
+                await this.getPublicKeys()
             }
-            const key = this.keyCache.get(publicKey)
+            const key = this.keyCacheByPublicKey.get(publicKey)
             if (!key) {
                 throw new Error(`Public key ${publicKey} not found in cache`)
             }
