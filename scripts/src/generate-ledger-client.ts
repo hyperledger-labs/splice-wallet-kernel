@@ -1,12 +1,11 @@
 import { readdirSync, writeFileSync, mkdirSync } from 'fs'
 import * as path from 'path'
 import generateSchema from 'openapi-typescript'
-import * as process from 'process'
+import { getRepoRoot } from './script-utils.js'
 
-const rootPath = path.dirname(process.cwd())
 // Directories
-const OUTPUT_DIR = `${rootPath}/core/ledger-client/generated-clients`
-const SPECS_DIR = `${rootPath}/api-specs/ledger-api`
+const OUTPUT_DIR = `${getRepoRoot()}/core/ledger-client/generated-clients`
+const SPECS_DIR = `${getRepoRoot()}/api-specs/ledger-api`
 
 // Read all files in the specs directory
 const files = readdirSync(SPECS_DIR)

@@ -11,9 +11,9 @@
         "clean:all": "yarn workspaces foreach -A run clean",
         "test:all": "yarn workspaces foreach -A run test",
         "postinstall": "husky",
-        "script:cleancoding": "yarn workspace scripts clean-coding",
-        "script:generate:ledger": "yarn workspace scripts generate-ledger-client",
-        "script:fetch:ledger": "yarn workspace scripts update-ledger-from-splice",
+        "script:cleancoding": "tsx ./scripts/src/clean-coding.ts",
+        "script:generate:ledger": "tsx ./scripts/src/generate-ledger-client.ts",
+        "script:fetch:ledger": "tsx ./scripts/src/update-ledger-from-splice.ts",
         "full:rebuild": "yarn clean:all && yarn generate:all && yarn build:all"
     },
     "workspaces": [
@@ -34,6 +34,7 @@
         "lint-staged": "^16.1.0",
         "pm2": "^6.0.8",
         "prettier": "^3.5.3",
+        "tsx": "^4.20.3",
         "typescript": "^5.8.3",
         "typescript-eslint": "^8.33.1"
     },

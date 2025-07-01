@@ -2,8 +2,8 @@
     "extends": "../tsconfig.base.json",
     "compilerOptions": {
         "rootDir": "./src",
-        "outDir": "./dist",
         "module": "nodenext",
+        "noEmit": true,
         "types": ["node"]
     },
     "include": ["src"]

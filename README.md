@@ -27,8 +27,6 @@ The project is currently (2nd of June, 2025) in its infancy.
 
 # Architecture
 
-For a quick overview look at the [Wallet Kernel Problem Statement](docs/WalletKernelProblemStatement.pdf).
-
 Folder Structure and usage
 
 ```
