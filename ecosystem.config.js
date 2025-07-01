@@ -4,6 +4,10 @@ export const apps = [
         script: 'yarn workspace clients-remote dev',
     },
     {
+        name: 'mock-oauth2-server',
+        script: 'yarn workspace mock-oauth2-server start',
+    },
+    {
         name: 'extension',
         script: 'yarn workspace clients-extension dev',
     },
