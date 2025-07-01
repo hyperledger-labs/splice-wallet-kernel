@@ -16,9 +16,15 @@ if (!TEST_API_KEY) {
 
 describe.skip('fireblocks handler (skip due to API secret requirement)', () => {
     test('key creation', async () => {
+        const apiKey = process.env.FIREBLOCKS_API_KEY
+        if (!apiKey) {
+            throw new Error(
+                'FIREBLOCKS_API_KEY environment variable must be set.'
+            )
+        }
         const secretPath = path.resolve(process.cwd(), SECRET_KEY_LOCATION)
         const apiSecret = readFileSync(secretPath, 'utf8')
-        const handler = new FireblocksHandler(TEST_API_KEY, apiSecret)
+        const handler = new FireblocksHandler(apiKey, apiSecret)
 
         const keys = await handler.getPublicKeys()
         expect(keys.length).toBeGreaterThan(0)
