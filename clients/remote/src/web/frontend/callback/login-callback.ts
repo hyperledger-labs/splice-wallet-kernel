@@ -7,43 +7,61 @@ export class LoginCallback extends LitElement {
     @state()
     accessor accessToken = ''
 
-    @state()
-    accessor idToken = ''
-
     connectedCallback(): void {
         super.connectedCallback()
         this.handleRedirect()
     }
 
-    handleRedirect() {
-        const hash = window.location.hash.substring(1)
-        const params = new URLSearchParams(hash)
+    async handleRedirect() {
+        console.log('entered handle redirect')
+        const url = new URL(window.location.href)
+        const code = url.searchParams.get('code')
+        const state = url.searchParams.get('state')
 
-        const accessToken = params.get('access_token')
-        const idToken = params.get('id_token')
-
-        if (!accessToken || !idToken) {
-            console.error('Missing tokens in URL fragment')
+        if (!code && !state) {
+            console.error('missing state and code')
             return
         }
 
-        this.accessToken = accessToken
-        this.idToken = idToken
-
-        localStorage.setItem('access_token', accessToken)
-        localStorage.setItem('id_token', idToken)
-
-        if (window.opener && !window.opener.closed) {
-            window.opener.postMessage(
-                {
-                    type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
-                    token: accessToken,
-                },
-                '*'
+        if (code && state) {
+            const fetchConfig = await fetch(
+                `${state}/.well-known/openid-configuration`
             )
-        }
+            const config = await fetchConfig.json()
+            const tokenEndpoint = config.token_endpoint
 
-        window.location.replace('/')
+            const res = await fetch(tokenEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    grant_type: 'authorization_code',
+                    code,
+                    redirect_uri: 'http://localhost:3002/callback/',
+                    client_id: 'my-client',
+                }),
+            })
+
+            const tokenResponse = await res.json()
+
+            if (tokenResponse.access_token) {
+                this.accessToken = tokenResponse.access_token
+                localStorage.setItem('access_token', this.accessToken)
+
+                if (window.opener && !window.opener.closed) {
+                    window.opener.postMessage(
+                        {
+                            type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
+                            token: this.accessToken,
+                        },
+                        '*'
+                    )
+                }
+
+                window.location.replace('/')
+            }
+        }
     }
 
     render() {
