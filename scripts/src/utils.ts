@@ -3,6 +3,11 @@ import * as path from 'path'
 import * as process from 'process'
 import { blue, green, italic, red, yellow } from 'yoctocolors'
 
+export const info = (message: string): string => italic(blue(message))
+export const warn = (message: string): string => yellow(message)
+export const error = (message: string): string => red(message)
+export const success = (message: string): string => green(message)
+
 export const CANTON_PATH = path.join(getRepoRoot(), '.canton')
 export const CANTON_BIN = path.join(CANTON_PATH, 'bin/canton')
 export const CANTON_CONF = path.join(getRepoRoot(), 'canton.conf')
@@ -14,22 +19,23 @@ export const CANTON_ARCHIVE_HASH =
     '5f1bf64d5d3bf50c4dd379bca44d46069e6ece43377177a6e09b4ff0979f640d'
 
 // Get the root of the current repository
+// Assumption: the root of the repository is the closest
+//     ancestor directory of the CWD that contains a .git directory
 export function getRepoRoot(): string {
     const cwd = process.cwd()
+    const segments = cwd.split('/')
 
-    // Assuming the repo directory was not renamed
-    const repoName = 'splice-wallet-kernel'
-    const repoIndex = cwd.indexOf(repoName)
-
-    if (repoIndex !== -1) {
-        return cwd.substring(0, repoIndex + repoName.length)
-    } else {
-        console.log(
-            warn('Warning: ') +
-                `Current working directory ${cwd} does not seem to be inside the splice-wallet-kernel repository.`
-        )
-        return cwd
+    for (let i = segments.length; i > 0; i--) {
+        const potentialRoot = segments.slice(0, i).join('/')
+        if (fs.existsSync(path.join(potentialRoot, '.git'))) {
+            return potentialRoot
+        }
     }
+
+    console.error(
+        error(`${cwd} does not seem to be inside a valid git repository.`)
+    )
+    process.exit(1)
 }
 
 export function findJsonKeyPosition(
@@ -86,8 +92,3 @@ export function markFile(
         )
     }
 }
-
-export const info = (message: string): string => italic(blue(message))
-export const warn = (message: string): string => yellow(message)
-export const error = (message: string): string => red(message)
-export const success = (message: string): string => green(message)

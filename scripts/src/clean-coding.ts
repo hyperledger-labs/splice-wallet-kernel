@@ -2,13 +2,9 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as process from 'process'
 import { getRepoRoot, markFile, traverseDirectory } from './utils.js'
-import { info } from 'console'
 
 function checkPackageJson(packageJsonPath: string): number {
     const rootPath = getRepoRoot()
-    console.log(info(`cwd: ${process.cwd()}`))
-    console.log(info(`Root path: ${rootPath}`))
-    console.log(info(`Checking package.json at: ${packageJsonPath}`))
     const folderPath = path
         .relative(rootPath, path.dirname(packageJsonPath))
         .replace(/\//g, '-')
