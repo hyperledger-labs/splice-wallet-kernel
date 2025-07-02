@@ -31,9 +31,7 @@ test('multiple network config from json file', async () => {
     }
     expect(resp[1].auth.type).toBe('implicit')
     if (resp[1].auth.type === 'implicit') {
-        expect(resp[1].auth.audience).toBe(
-            'https://daml.com/jwt/aud/participant/wk-app'
-        )
+        expect(resp[1].auth.audience).toBe('test-audience')
     }
 })
 

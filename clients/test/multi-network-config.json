@@ -1,7 +1,7 @@
 [
     {
         "name": "Password Auth",
-        "description": "Unimplemented Password Auth Server",
+        "description": "Unimplemented Password Auth",
         "ledgerApi": {
             "baseUrl": "https://test"
         },
