@@ -39,18 +39,22 @@
                         "type": "object",
                         "properties": {
                             "primary": {
+                                "title": "primary",
                                 "type": "boolean",
                                 "description": "Set as primary wallet for dApp usage."
                             },
                             "partyHint": {
+                                "title": "partyHint",
                                 "type": "string",
                                 "description": "The party hint and name of the wallet."
                             },
                             "networkId": {
+                                "title": "networkId",
                                 "type": "string",
                                 "description": "The network ID the wallet corresponds to."
                             },
                             "signingProviderId": {
+                                "title": "signingProviderId",
                                 "type": "string",
                                 "description": "The signing provider ID the wallet corresponds to."
                             }
@@ -90,6 +94,7 @@
                         "type": "object",
                         "properties": {
                             "partyId": {
+                                "title": "partyId",
                                 "type": "string",
                                 "description": "The party id of the wallet to be removed."
                             }
@@ -117,6 +122,7 @@
                         "type": "object",
                         "properties": {
                             "filter": {
+                                "title": "WalletFilter",
                                 "type": "object",
                                 "description": "Filter for the wallets to be returned.",
                                 "$ref": "#/components/schemas/WalletFilter"
@@ -293,26 +299,32 @@
                 "description": "Structure representing a wallet",
                 "properties": {
                     "primary": {
+                        "title": "primary",
                         "type": "boolean",
                         "description": "Set as primary wallet for dApp usage."
                     },
                     "partyHint": {
+                        "title": "partyHint",
                         "type": "string",
                         "description": "The party hint and name of the wallet."
                     },
                     "publicKey": {
+                        "title": "publicKey",
                         "type": "string",
                         "description": "The public key of the party."
                     },
                     "namespace": {
+                        "title": "namespace",
                         "type": "string",
                         "description": "The namespace of the party."
                     },
                     "networkId": {
+                        "title": "networkId",
                         "type": "string",
                         "description": "The network ID the wallet corresponds to."
                     },
                     "signingProviderId": {
+                        "title": "signingProviderId",
                         "type": "string",
                         "description": "The signing provider ID the wallet corresponds to."
                     }

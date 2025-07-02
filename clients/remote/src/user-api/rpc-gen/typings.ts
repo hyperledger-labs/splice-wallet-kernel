@@ -6,31 +6,31 @@
  * Set as primary wallet for dApp usage.
  *
  */
-export type BooleanGDf5EJ8R = boolean
+export type Primary = boolean
 /**
  *
  * The party hint and name of the wallet.
  *
  */
-export type StringASjtq2Bv = string
+export type PartyHint = string
 /**
  *
  * The network ID the wallet corresponds to.
  *
  */
-export type StringF9ZP6NRB = string
+export type NetworkId = string
 /**
  *
  * The signing provider ID the wallet corresponds to.
  *
  */
-export type String6W4AoRfo = string
+export type SigningProviderId = string
 /**
  *
  * The party id of the wallet to be removed.
  *
  */
-export type StringKZmR09KL = string
+export type PartyId = string
 export type StringDoaGddGA = string
 /**
  *
@@ -59,25 +59,25 @@ export interface WalletFilter {
  * The public key of the party.
  *
  */
-export type StringUa0P2Ddj = string
+export type PublicKey = string
 /**
  *
  * The namespace of the party.
  *
  */
-export type StringLt5XH5IG = string
+export type Namespace = string
 /**
  *
  * Structure representing a wallet
  *
  */
 export interface Wallet {
-    primary: BooleanGDf5EJ8R
-    partyHint: StringASjtq2Bv
-    publicKey: StringUa0P2Ddj
-    namespace: StringLt5XH5IG
-    networkId: StringF9ZP6NRB
-    signingProviderId: String6W4AoRfo
+    primary: Primary
+    partyHint: PartyHint
+    publicKey: PublicKey
+    namespace: Namespace
+    networkId: NetworkId
+    signingProviderId: SigningProviderId
     [k: string]: any
 }
 /**
@@ -102,14 +102,14 @@ export interface AddNetworkParams {
     [key: string]: any
 }
 export interface CreateWalletParams {
-    primary?: BooleanGDf5EJ8R
-    partyHint: StringASjtq2Bv
-    networkId: StringF9ZP6NRB
-    signingProviderId: String6W4AoRfo
+    primary?: Primary
+    partyHint: PartyHint
+    networkId: NetworkId
+    signingProviderId: SigningProviderId
     [k: string]: any
 }
 export interface RemovePartyParams {
-    partyId: StringKZmR09KL
+    partyId: PartyId
     [k: string]: any
 }
 export interface ListWalletsParams {
