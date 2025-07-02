@@ -48,10 +48,16 @@ export class LoginUI extends LitElement {
         const redirectUri = 'http://localhost:3002/callback/' //should probably be config driven?
         if (this.selectedNetwork.auth.type === 'implicit') {
             const domain = this.selectedNetwork.auth.domain
+
             const configUrl = `${domain}/.well-known/openid-configuration`
             const config = await fetch(configUrl).then((res) => res.json())
             const scope = this.selectedNetwork.auth.scope
             const audience = this.selectedNetwork.auth.audience
+            const statePayload = {
+                domain: domain,
+                clientId: this.selectedNetwork.auth.clientId,
+            }
+
             const params = new URLSearchParams({
                 response_type: 'code',
                 response_mode: 'fragment',
@@ -60,7 +66,7 @@ export class LoginUI extends LitElement {
                 nonce: crypto.randomUUID(),
                 scope,
                 audience,
-                state: domain,
+                state: btoa(JSON.stringify(statePayload)),
             })
 
             window.location.href = `${config.authorization_endpoint}?${params.toString()}`

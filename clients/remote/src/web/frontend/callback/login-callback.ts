@@ -16,16 +16,17 @@ export class LoginCallback extends LitElement {
         console.log('entered handle redirect')
         const url = new URL(window.location.href)
         const code = url.searchParams.get('code')
-        const state = url.searchParams.get('state')
+        const encodedState = url.searchParams.get('state')
 
-        if (!code && !state) {
+        if (!code && !encodedState) {
             console.error('missing state and code')
             return
         }
 
-        if (code && state) {
+        if (code && encodedState) {
+            const state = JSON.parse(atob(encodedState))
             const fetchConfig = await fetch(
-                `${state}/.well-known/openid-configuration`
+                `${state.domain}/.well-known/openid-configuration`
             )
             const config = await fetchConfig.json()
             const tokenEndpoint = config.token_endpoint
@@ -39,7 +40,7 @@ export class LoginCallback extends LitElement {
                     grant_type: 'authorization_code',
                     code,
                     redirect_uri: 'http://localhost:3002/callback/',
-                    client_id: 'my-client',
+                    client_id: state.clientId,
                 }),
             })
 
