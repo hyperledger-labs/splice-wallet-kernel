@@ -15,11 +15,16 @@ export const userController = (store: Store, ledgerClient: LedgerClient) =>
     buildController({
         addNetwork: async (params: AddNetworkParams) =>
             Promise.resolve({} as AddNetwork),
-        allocateParty: async (params: { hint: string }) => {
+        createWallet: async (params: {
+            primary?: boolean
+            partyHint: string
+            networkId: string
+            signingProviderId: string
+        }) => {
             pino.pino().info('Allocating party with params:', params)
             try {
                 const res = await ledgerClient.allocateParty({
-                    partyIdHint: params.hint,
+                    partyIdHint: params.partyHint,
                 })
                 return res
             } catch (error) {
@@ -27,7 +32,11 @@ export const userController = (store: Store, ledgerClient: LedgerClient) =>
             }
             pino.pino().info('Allocating party with params:', params)
         },
-        removeParty: async (params: { hint: string }) => Promise.resolve({}),
+        removeWallet: async (params: { partyId: string }) =>
+            Promise.resolve({}),
+        listWallets: async (params: {
+            filter?: { networkIds?: string[]; signingProviderIds?: string[] }
+        }) => Promise.resolve([]),
         sign: async (params: SignParams) =>
             Promise.resolve({
                 signature: 'default-signature',

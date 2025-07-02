@@ -30,33 +30,58 @@
             "description": "Adds a new network configuration (similar to EIP-3085)."
         },
         {
-            "name": "allocateParty",
+            "name": "createWallet",
             "params": [
                 {
                     "name": "params",
                     "schema": {
-                        "title": "AllocatePartyParams",
+                        "title": "CreateWalletParams",
                         "type": "object",
                         "properties": {
-                            "hint": {
-                                "type": "string"
+                            "primary": {
+                                "type": "boolean",
+                                "description": "Set as primary wallet for dApp usage."
+                            },
+                            "partyHint": {
+                                "type": "string",
+                                "description": "The party hint and name of the wallet."
+                            },
+                            "networkId": {
+                                "type": "string",
+                                "description": "The network ID the wallet corresponds to."
+                            },
+                            "signingProviderId": {
+                                "type": "string",
+                                "description": "The signing provider ID the wallet corresponds to."
                             }
                         },
-                        "required": ["hint"]
+                        "required": [
+                            "partyHint",
+                            "networkId",
+                            "signingProviderId"
+                        ]
                     }
                 }
             ],
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "AllocatePartyResult",
-                    "type": "object"
+                    "title": "CreateWalletResult",
+                    "type": "object",
+                    "properties": {
+                        "wallet": {
+                            "type": "object",
+                            "description": "The newly created wallet.",
+                            "$ref": "#/components/schemas/Wallet"
+                        }
+                    },
+                    "required": ["wallet"]
                 }
             },
-            "description": "Allocates a new party with the given hint."
+            "description": "Allocates a new wallet and party with the given hint."
         },
         {
-            "name": "removeParty",
+            "name": "removeWallet",
             "params": [
                 {
                     "name": "params",
@@ -64,11 +89,12 @@
                         "title": "RemovePartyParams",
                         "type": "object",
                         "properties": {
-                            "hint": {
-                                "type": "string"
+                            "partyId": {
+                                "type": "string",
+                                "description": "The party id of the wallet to be removed."
                             }
                         },
-                        "required": ["hint"]
+                        "required": ["partyId"]
                     }
                 }
             ],
@@ -80,6 +106,38 @@
                 }
             },
             "description": "Removes a party with the given hint."
+        },
+        {
+            "name": "listWallets",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "ListWalletsParams",
+                        "type": "object",
+                        "properties": {
+                            "filter": {
+                                "type": "object",
+                                "description": "Filter for the wallets to be returned.",
+                                "$ref": "#/components/schemas/WalletFilter"
+                            }
+                        },
+                        "required": []
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "ListWalletsResult",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/components/schemas/Wallet"
+                    },
+                    "description": "An array of wallets that match the filter criteria."
+                }
+            },
+            "description": "Lists wallets."
         },
         {
             "name": "sign",
@@ -228,6 +286,67 @@
                         "type": "string"
                     }
                 }
+            },
+            "Wallet": {
+                "title": "Wallet",
+                "type": "object",
+                "description": "Structure representing a wallet",
+                "properties": {
+                    "primary": {
+                        "type": "boolean",
+                        "description": "Set as primary wallet for dApp usage."
+                    },
+                    "partyHint": {
+                        "type": "string",
+                        "description": "The party hint and name of the wallet."
+                    },
+                    "publicKey": {
+                        "type": "string",
+                        "description": "The public key of the party."
+                    },
+                    "namespace": {
+                        "type": "string",
+                        "description": "The namespace of the party."
+                    },
+                    "networkId": {
+                        "type": "string",
+                        "description": "The network ID the wallet corresponds to."
+                    },
+                    "signingProviderId": {
+                        "type": "string",
+                        "description": "The signing provider ID the wallet corresponds to."
+                    }
+                },
+                "required": [
+                    "primary",
+                    "partyHint",
+                    "publicKey",
+                    "namespace",
+                    "networkId",
+                    "signingProviderId"
+                ]
+            },
+            "WalletFilter": {
+                "title": "WalletFilter",
+                "type": "object",
+                "description": "Filter for wallets",
+                "properties": {
+                    "networkIds": {
+                        "type": "array",
+                        "description": "Filter wallets by network IDs.",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "signingProviderIds": {
+                        "type": "array",
+                        "description": "Filter wallets by signing provider IDs.",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": []
             }
         }
     }
