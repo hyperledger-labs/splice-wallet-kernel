@@ -35,9 +35,7 @@ export class LoginUI extends LitElement {
 
     async connectedCallback() {
         super.connectedCallback()
-        console.log(this.idps)
         this.idps = await this.loadNetworks()
-        console.log(this.idps)
     }
 
     private async handleConnectToIDP() {
