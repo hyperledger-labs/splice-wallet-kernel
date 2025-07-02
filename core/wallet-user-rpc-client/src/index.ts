@@ -40,11 +40,6 @@ export type NetworkId = string
  *
  */
 export type SigningProviderId = string
-/**
- *
- * The party id of the wallet to be removed.
- *
- */
 export type PartyId = string
 export type StringDoaGddGA = string
 /**
@@ -52,23 +47,26 @@ export type StringDoaGddGA = string
  * Filter wallets by network IDs.
  *
  */
-export type UnorderedSetOfStringDoaGddGAfeCfclIX = StringDoaGddGA[]
+export type NetworkIds = StringDoaGddGA[]
 /**
  *
  * Filter wallets by signing provider IDs.
  *
  */
-export type UnorderedSetOfStringDoaGddGAbA7Suovp = StringDoaGddGA[]
+export type SigningProviderIds = StringDoaGddGA[]
 /**
  *
  * Filter for the wallets to be returned.
  *
  */
 export interface WalletFilter {
-    networkIds?: UnorderedSetOfStringDoaGddGAfeCfclIX
-    signingProviderIds?: UnorderedSetOfStringDoaGddGAbA7Suovp
+    networkIds?: NetworkIds
+    signingProviderIds?: SigningProviderIds
     [k: string]: any
 }
+export type Data = string
+export type Signature = string
+export type SignedBy = string
 /**
  *
  * The public key of the party.
@@ -95,24 +93,26 @@ export interface Wallet {
     signingProviderId: SigningProviderId
     [k: string]: any
 }
+export type CorrelationId = string
+export type TraceId = string
 /**
  *
  * Name of network
  *
  */
-export type StringWupREggx = string
+export type Name = string
 /**
  *
  * Description of network
  *
  */
-export type StringM72S2Xxb = string
+export type Description = string
 /**
  *
  * Structure representing the connected Networks
  *
  */
-export type Network = any[]
+export type Networks = any[]
 export interface AddNetworkParams {
     [key: string]: any
 }
@@ -132,14 +132,14 @@ export interface ListWalletsParams {
     [k: string]: any
 }
 export interface SignParams {
-    data: StringDoaGddGA
-    party?: StringDoaGddGA
+    data: Data
+    partyId?: PartyId
     [k: string]: any
 }
 export interface ExecuteParams {
-    signature: StringDoaGddGA
-    party: StringDoaGddGA
-    signedBy: StringDoaGddGA
+    signature: Signature
+    partyId: PartyId
+    signedBy: SignedBy
     [k: string]: any
 }
 /**
@@ -162,18 +162,18 @@ export interface RemovePartyResult {
  */
 export type ListWalletsResult = Wallet[]
 export interface SignResult {
-    signature: StringDoaGddGA
-    party: StringDoaGddGA
-    signedBy: StringDoaGddGA
+    signature: Signature
+    partyId: PartyId
+    signedBy: SignedBy
     [k: string]: any
 }
 export interface ExecuteResult {
-    correlationId: StringDoaGddGA
-    traceId: StringDoaGddGA
+    correlationId: CorrelationId
+    traceId: TraceId
     [k: string]: any
 }
 export interface ListNetworksResult {
-    networks: Network
+    networks: Networks
     [k: string]: any
 }
 /**
@@ -384,8 +384,8 @@ export class SpliceWalletJSONRPCUserAPI {
                             title: 'SignParams',
                             type: 'object',
                             properties: {
-                                data: { type: 'string' },
-                                party: { type: 'string' },
+                                data: { title: 'data', type: 'string' },
+                                partyId: { title: 'partyId', type: 'string' },
                             },
                             required: ['data'],
                         },
@@ -397,11 +397,11 @@ export class SpliceWalletJSONRPCUserAPI {
                         title: 'SignResult',
                         type: 'object',
                         properties: {
-                            signature: { type: 'string' },
-                            party: { type: 'string' },
-                            signedBy: { type: 'string' },
+                            signature: { title: 'signature', type: 'string' },
+                            partyId: { title: 'partyId', type: 'string' },
+                            signedBy: { title: 'signedBy', type: 'string' },
                         },
-                        required: ['signature', 'party', 'signedBy'],
+                        required: ['signature', 'partyId', 'signedBy'],
                     },
                 },
                 description:
@@ -416,11 +416,14 @@ export class SpliceWalletJSONRPCUserAPI {
                             title: 'ExecuteParams',
                             type: 'object',
                             properties: {
-                                signature: { type: 'string' },
-                                party: { type: 'string' },
-                                signedBy: { type: 'string' },
+                                signature: {
+                                    title: 'signature',
+                                    type: 'string',
+                                },
+                                partyId: { title: 'partyId', type: 'string' },
+                                signedBy: { title: 'signedBy', type: 'string' },
                             },
-                            required: ['signature', 'party', 'signedBy'],
+                            required: ['signature', 'partyId', 'signedBy'],
                         },
                     },
                 ],
@@ -430,8 +433,11 @@ export class SpliceWalletJSONRPCUserAPI {
                         title: 'ExecuteResult',
                         type: 'object',
                         properties: {
-                            correlationId: { type: 'string' },
-                            traceId: { type: 'string' },
+                            correlationId: {
+                                title: 'correlationId',
+                                type: 'string',
+                            },
+                            traceId: { title: 'traceId', type: 'string' },
                         },
                         required: ['correlationId', 'traceId'],
                     },
@@ -448,6 +454,7 @@ export class SpliceWalletJSONRPCUserAPI {
                         type: 'object',
                         properties: {
                             networks: {
+                                title: 'networks',
                                 type: 'array',
                                 $ref: '#/components/schemas/Network',
                             },
@@ -472,10 +479,12 @@ export class SpliceWalletJSONRPCUserAPI {
                         'Structure representing the connected Networks',
                     properties: {
                         name: {
+                            title: 'name',
                             type: 'string',
                             description: 'Name of network',
                         },
                         description: {
+                            title: 'description',
                             type: 'string',
                             description: 'Description of network',
                         },
@@ -487,12 +496,12 @@ export class SpliceWalletJSONRPCUserAPI {
                     description:
                         'Represents the type of auth (implicit or password) for a specified network',
                     properties: {
-                        type: { type: 'string' },
-                        tokenUrl: { type: 'string' },
-                        scope: { type: 'string' },
-                        clientId: { type: 'string' },
-                        domain: { type: 'string' },
-                        audience: { type: 'string' },
+                        type: { title: 'type', type: 'string' },
+                        tokenUrl: { title: 'tokenUrl', type: 'string' },
+                        scope: { title: 'scope', type: 'string' },
+                        clientId: { title: 'clientId', type: 'string' },
+                        domain: { title: 'domain', type: 'string' },
+                        audience: { title: 'audience', type: 'string' },
                     },
                 },
                 Wallet: {
@@ -550,11 +559,13 @@ export class SpliceWalletJSONRPCUserAPI {
                     description: 'Filter for wallets',
                     properties: {
                         networkIds: {
+                            title: 'networkIds',
                             type: 'array',
                             description: 'Filter wallets by network IDs.',
                             items: { type: 'string' },
                         },
                         signingProviderIds: {
+                            title: 'signingProviderIds',
                             type: 'array',
                             description:
                                 'Filter wallets by signing provider IDs.',

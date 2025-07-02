@@ -25,11 +25,6 @@ export type NetworkId = string
  *
  */
 export type SigningProviderId = string
-/**
- *
- * The party id of the wallet to be removed.
- *
- */
 export type PartyId = string
 export type StringDoaGddGA = string
 /**
@@ -37,23 +32,26 @@ export type StringDoaGddGA = string
  * Filter wallets by network IDs.
  *
  */
-export type UnorderedSetOfStringDoaGddGAfeCfclIX = StringDoaGddGA[]
+export type NetworkIds = StringDoaGddGA[]
 /**
  *
  * Filter wallets by signing provider IDs.
  *
  */
-export type UnorderedSetOfStringDoaGddGAbA7Suovp = StringDoaGddGA[]
+export type SigningProviderIds = StringDoaGddGA[]
 /**
  *
  * Filter for the wallets to be returned.
  *
  */
 export interface WalletFilter {
-    networkIds?: UnorderedSetOfStringDoaGddGAfeCfclIX
-    signingProviderIds?: UnorderedSetOfStringDoaGddGAbA7Suovp
+    networkIds?: NetworkIds
+    signingProviderIds?: SigningProviderIds
     [k: string]: any
 }
+export type Data = string
+export type Signature = string
+export type SignedBy = string
 /**
  *
  * The public key of the party.
@@ -80,24 +78,26 @@ export interface Wallet {
     signingProviderId: SigningProviderId
     [k: string]: any
 }
+export type CorrelationId = string
+export type TraceId = string
 /**
  *
  * Name of network
  *
  */
-export type StringWupREggx = string
+export type Name = string
 /**
  *
  * Description of network
  *
  */
-export type StringM72S2Xxb = string
+export type Description = string
 /**
  *
  * Structure representing the connected Networks
  *
  */
-export type Network = any[]
+export type Networks = any[]
 export interface AddNetworkParams {
     [key: string]: any
 }
@@ -117,14 +117,14 @@ export interface ListWalletsParams {
     [k: string]: any
 }
 export interface SignParams {
-    data: StringDoaGddGA
-    party?: StringDoaGddGA
+    data: Data
+    partyId?: PartyId
     [k: string]: any
 }
 export interface ExecuteParams {
-    signature: StringDoaGddGA
-    party: StringDoaGddGA
-    signedBy: StringDoaGddGA
+    signature: Signature
+    partyId: PartyId
+    signedBy: SignedBy
     [k: string]: any
 }
 /**
@@ -147,18 +147,18 @@ export interface RemovePartyResult {
  */
 export type ListWalletsResult = Wallet[]
 export interface SignResult {
-    signature: StringDoaGddGA
-    party: StringDoaGddGA
-    signedBy: StringDoaGddGA
+    signature: Signature
+    partyId: PartyId
+    signedBy: SignedBy
     [k: string]: any
 }
 export interface ExecuteResult {
-    correlationId: StringDoaGddGA
-    traceId: StringDoaGddGA
+    correlationId: CorrelationId
+    traceId: TraceId
     [k: string]: any
 }
 export interface ListNetworksResult {
-    networks: Network
+    networks: Networks
     [k: string]: any
 }
 /**

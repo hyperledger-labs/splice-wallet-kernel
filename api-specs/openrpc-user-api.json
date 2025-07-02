@@ -155,9 +155,11 @@
                         "type": "object",
                         "properties": {
                             "data": {
+                                "title": "data",
                                 "type": "string"
                             },
-                            "party": {
+                            "partyId": {
+                                "title": "partyId",
                                 "type": "string"
                             }
                         },
@@ -172,16 +174,19 @@
                     "type": "object",
                     "properties": {
                         "signature": {
+                            "title": "signature",
                             "type": "string"
                         },
-                        "party": {
+                        "partyId": {
+                            "title": "partyId",
                             "type": "string"
                         },
                         "signedBy": {
+                            "title": "signedBy",
                             "type": "string"
                         }
                     },
-                    "required": ["signature", "party", "signedBy"]
+                    "required": ["signature", "partyId", "signedBy"]
                 }
             },
             "description": "Signs the provided data with the private key of the specified or active party."
@@ -196,16 +201,19 @@
                         "type": "object",
                         "properties": {
                             "signature": {
+                                "title": "signature",
                                 "type": "string"
                             },
-                            "party": {
+                            "partyId": {
+                                "title": "partyId",
                                 "type": "string"
                             },
                             "signedBy": {
+                                "title": "signedBy",
                                 "type": "string"
                             }
                         },
-                        "required": ["signature", "party", "signedBy"]
+                        "required": ["signature", "partyId", "signedBy"]
                     }
                 }
             ],
@@ -216,9 +224,11 @@
                     "type": "object",
                     "properties": {
                         "correlationId": {
+                            "title": "correlationId",
                             "type": "string"
                         },
                         "traceId": {
+                            "title": "traceId",
                             "type": "string"
                         }
                     },
@@ -237,6 +247,7 @@
                     "type": "object",
                     "properties": {
                         "networks": {
+                            "title": "networks",
                             "type": "array",
                             "$ref": "#/components/schemas/Network"
                         }
@@ -259,10 +270,12 @@
                 "description": "Structure representing the connected Networks",
                 "properties": {
                     "name": {
+                        "title": "name",
                         "type": "string",
                         "description": "Name of network"
                     },
                     "description": {
+                        "title": "description",
                         "type": "string",
                         "description": "Description of network"
                     }
@@ -274,21 +287,27 @@
                 "description": "Represents the type of auth (implicit or password) for a specified network",
                 "properties": {
                     "type": {
+                        "title": "type",
                         "type": "string"
                     },
                     "tokenUrl": {
+                        "title": "tokenUrl",
                         "type": "string"
                     },
                     "scope": {
+                        "title": "scope",
                         "type": "string"
                     },
                     "clientId": {
+                        "title": "clientId",
                         "type": "string"
                     },
                     "domain": {
+                        "title": "domain",
                         "type": "string"
                     },
                     "audience": {
+                        "title": "audience",
                         "type": "string"
                     }
                 }
@@ -344,6 +363,7 @@
                 "description": "Filter for wallets",
                 "properties": {
                     "networkIds": {
+                        "title": "networkIds",
                         "type": "array",
                         "description": "Filter wallets by network IDs.",
                         "items": {
@@ -351,6 +371,7 @@
                         }
                     },
                     "signingProviderIds": {
+                        "title": "signingProviderIds",
                         "type": "array",
                         "description": "Filter wallets by signing provider IDs.",
                         "items": {

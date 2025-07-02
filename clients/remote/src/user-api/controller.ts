@@ -41,7 +41,7 @@ export const userController = (store: Store, ledgerClient: LedgerClient) =>
             Promise.resolve({
                 signature: 'default-signature',
                 signedBy: 'default-signed-by',
-                party: 'default-party',
+                partyId: 'default-party',
             }),
         execute: async (params: ExecuteParams) =>
             Promise.resolve({
