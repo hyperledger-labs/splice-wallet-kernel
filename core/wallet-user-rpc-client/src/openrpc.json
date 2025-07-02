@@ -90,7 +90,7 @@
                 {
                     "name": "params",
                     "schema": {
-                        "title": "RemovePartyParams",
+                        "title": "RemoveWalletParams",
                         "type": "object",
                         "properties": {
                             "partyId": {

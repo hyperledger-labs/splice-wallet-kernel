@@ -123,7 +123,7 @@ export interface CreateWalletParams {
     signingProviderId: SigningProviderId
     [k: string]: any
 }
-export interface RemovePartyParams {
+export interface RemoveWalletParams {
     partyId: PartyId
     [k: string]: any
 }
@@ -181,11 +181,11 @@ export interface ListNetworksResult {
  * Generated! Represents an alias to any of the provided schemas
  *
  */
-export type AnyOfAddNetworkParamsCreateWalletParamsRemovePartyParamsListWalletsParamsSignParamsExecuteParamsNullCreateWalletResultRemovePartyResultListWalletsResultSignResultExecuteResultListNetworksResult =
+export type AnyOfAddNetworkParamsCreateWalletParamsRemoveWalletParamsListWalletsParamsSignParamsExecuteParamsNullCreateWalletResultRemovePartyResultListWalletsResultSignResultExecuteResultListNetworksResult =
 
         | AddNetworkParams
         | CreateWalletParams
-        | RemovePartyParams
+        | RemoveWalletParams
         | ListWalletsParams
         | SignParams
         | ExecuteParams
@@ -201,7 +201,7 @@ export type CreateWallet = (
     params: CreateWalletParams
 ) => Promise<CreateWalletResult>
 export type RemoveWallet = (
-    params: RemovePartyParams
+    params: RemoveWalletParams
 ) => Promise<RemovePartyResult>
 export type ListWallets = (
     params: ListWalletsParams
@@ -322,7 +322,7 @@ export class SpliceWalletJSONRPCUserAPI {
                     {
                         name: 'params',
                         schema: {
-                            title: 'RemovePartyParams',
+                            title: 'RemoveWalletParams',
                             type: 'object',
                             properties: {
                                 partyId: {
