@@ -4,6 +4,7 @@ import { NetworkConfig } from 'core-wallet-store'
 import 'core-wallet-ui-components'
 import 'core-wallet-ui-components/themes/default.css'
 import { jsonRpcFetch } from '../rpc-client'
+import { config } from '../config'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
@@ -27,7 +28,7 @@ export class LoginUI extends LitElement {
     }
 
     private async loadNetworks() {
-        const response = await jsonRpcFetch('http://localhost:3001/rpc', {
+        const response = await jsonRpcFetch(config.userRpcUri, {
             method: 'listNetworks',
         })
         return response.result.networks as NetworkConfig[]
