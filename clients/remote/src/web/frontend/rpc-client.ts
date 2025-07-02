@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import { RpcTransport } from 'core-types'
 import UserApiClient from 'core-wallet-user-rpc-client'
+import { config } from './config'
 
 // TODO(#131) - move this to rpc-transport package
 class HttpTransport implements RpcTransport {
@@ -33,5 +34,5 @@ class HttpTransport implements RpcTransport {
 }
 
 export const userClient = new UserApiClient(
-    new HttpTransport('http://localhost:3001/rpc')
+    new HttpTransport(config.userRpcUri)
 )
