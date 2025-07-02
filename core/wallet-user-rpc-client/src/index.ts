@@ -69,6 +69,12 @@ export type Signature = string
 export type SignedBy = string
 /**
  *
+ * A hint or description for the wallet.
+ *
+ */
+export type Hint = string
+/**
+ *
  * The public key of the party.
  *
  */
@@ -86,7 +92,8 @@ export type Namespace = string
  */
 export interface Wallet {
     primary: Primary
-    partyHint: PartyHint
+    partyId: PartyId
+    hint: Hint
     publicKey: PublicKey
     namespace: Namespace
     networkId: NetworkId
@@ -515,11 +522,17 @@ export class SpliceWalletJSONRPCUserAPI {
                             description:
                                 'Set as primary wallet for dApp usage.',
                         },
-                        partyHint: {
-                            title: 'partyHint',
+                        partyId: {
+                            title: 'partyId',
                             type: 'string',
                             description:
-                                'The party hint and name of the wallet.',
+                                'The party ID corresponding to the wallet.',
+                        },
+                        hint: {
+                            title: 'hint',
+                            type: 'string',
+                            description:
+                                'A hint or description for the wallet.',
                         },
                         publicKey: {
                             title: 'publicKey',
@@ -546,7 +559,8 @@ export class SpliceWalletJSONRPCUserAPI {
                     },
                     required: [
                         'primary',
-                        'partyHint',
+                        'partyId',
+                        'hint',
                         'publicKey',
                         'namespace',
                         'networkId',

@@ -9,9 +9,12 @@ export async function jsonRpcFetch(url: string, payload: RequestPayload) {
         id: uuidv4(),
     }
 
+    const authToken = 'not-a-real-token'
+
     const response = await fetch(url, {
         method: 'POST',
         headers: {
+            Authorization: `Bearer ${authToken}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(request),
