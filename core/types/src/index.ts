@@ -111,3 +111,7 @@ export const DiscoverResult = z.discriminatedUnion('walletType', [
 ])
 
 export type DiscoverResult = z.infer<typeof DiscoverResult>
+
+export interface RpcTransport {
+    submit: (payload: RequestPayload) => Promise<ResponsePayload>
+}
