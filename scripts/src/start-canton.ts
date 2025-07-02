@@ -2,7 +2,13 @@
  * Start a local Canton participant using the config file in the canton/ directory.
  */
 
-import { CANTON_BIN, CANTON_CONF, error, info } from './utils.js'
+import {
+    CANTON_BIN,
+    CANTON_BOOTSTRAP,
+    CANTON_CONF,
+    error,
+    info,
+} from './utils.js'
 import { existsSync } from 'fs'
 import pm2 from 'pm2'
 
@@ -22,7 +28,7 @@ async function main() {
                     name: 'canton',
                     interpreter: '/bin/bash',
                     script: CANTON_BIN,
-                    args: '--no-tty --config ' + CANTON_CONF,
+                    args: `daemon --no-tty --config ${CANTON_CONF} --bootstrap ${CANTON_BOOTSTRAP}`,
                 },
                 function (err) {
                     if (err) {

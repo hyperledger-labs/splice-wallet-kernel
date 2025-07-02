@@ -8,16 +8,6 @@ export const warn = (message: string): string => yellow(message)
 export const error = (message: string): string => red(message)
 export const success = (message: string): string => green(message)
 
-export const CANTON_PATH = path.join(getRepoRoot(), '.canton')
-export const CANTON_BIN = path.join(CANTON_PATH, 'bin/canton')
-export const CANTON_CONF = path.join(getRepoRoot(), 'canton.conf')
-
-// Canton versions
-export const DAML_RELEASE_VERSION = '3.4.0-snapshot.20250625.0'
-export const CANTON_VERSION = '3.4.0-snapshot.20250617.16217.0.vbdf62919'
-export const CANTON_ARCHIVE_HASH =
-    '5f1bf64d5d3bf50c4dd379bca44d46069e6ece43377177a6e09b4ff0979f640d'
-
 // Get the root of the current repository
 // Assumption: the root of the repository is the closest
 //     ancestor directory of the CWD that contains a .git directory
@@ -37,6 +27,18 @@ export function getRepoRoot(): string {
     )
     process.exit(1)
 }
+
+const repoRoot = getRepoRoot()
+export const CANTON_PATH = path.join(repoRoot, '.canton')
+export const CANTON_BIN = path.join(CANTON_PATH, 'bin/canton')
+export const CANTON_CONF = path.join(repoRoot, 'canton.conf')
+export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton-bootstrap.canton')
+
+// Canton versions
+export const DAML_RELEASE_VERSION = '3.4.0-snapshot.20250625.0'
+export const CANTON_VERSION = '3.4.0-snapshot.20250617.16217.0.vbdf62919'
+export const CANTON_ARCHIVE_HASH =
+    '5f1bf64d5d3bf50c4dd379bca44d46069e6ece43377177a6e09b4ff0979f640d'
 
 export function findJsonKeyPosition(
     jsonContent: string,
