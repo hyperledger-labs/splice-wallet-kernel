@@ -4,6 +4,7 @@ import { customElement, query, state } from 'lit/decorators.js'
 import 'core-wallet-ui-components'
 import 'core-wallet-ui-components/themes/default.css'
 import { jsonRpcFetch } from './rpc-client'
+import { config } from './config'
 
 @customElement('user-ui')
 export class UserUI extends LitElement {
@@ -45,7 +46,7 @@ export class UserUI extends LitElement {
     private async allocateParty() {
         this.loading = true
 
-        const response = await jsonRpcFetch('http://localhost:3001/rpc', {
+        const response = await jsonRpcFetch(config.userRpcUri, {
             method: 'allocateParty',
             params: {
                 hint: this._input?.value || '',

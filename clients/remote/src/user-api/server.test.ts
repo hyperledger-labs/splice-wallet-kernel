@@ -41,8 +41,8 @@ test('call connect rpc', async () => {
         result: {
             networks: [
                 {
-                    name: 'xyz',
-                    description: 'name1',
+                    name: 'Password Auth',
+                    description: 'Unimplemented Password Auth',
                     ledgerApi: { baseUrl: 'https://test' },
                     auth: {
                         type: 'password',
@@ -53,15 +53,15 @@ test('call connect rpc', async () => {
                     },
                 },
                 {
-                    name: 'abc',
-                    description: 'dex idp',
+                    name: 'Mock OAuth Server',
+                    description: 'Mock OAuth IDP',
                     ledgerApi: { baseUrl: 'https://test' },
                     auth: {
                         type: 'implicit',
-                        domain: 'dex.com',
-                        audience: 'https://daml.com/jwt/aud/participant/wk-app',
+                        domain: 'http://localhost:8082',
+                        audience: 'test-audience',
                         scope: 'openid',
-                        clientId: 'wk-service-account2',
+                        clientId: 'mock-oauth2-clientId',
                     },
                 },
             ],

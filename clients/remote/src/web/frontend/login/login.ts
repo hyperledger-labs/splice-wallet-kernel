@@ -3,6 +3,8 @@ import { customElement, state } from 'lit/decorators.js'
 import { NetworkConfig } from 'core-wallet-store'
 import 'core-wallet-ui-components'
 import 'core-wallet-ui-components/themes/default.css'
+import { jsonRpcFetch } from '../rpc-client'
+import { config } from '../config'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
@@ -13,37 +15,9 @@ export class LoginUI extends LitElement {
             font-family: var(--splice-wk-font-family);
         }
     `
+
     @state()
-    accessor idps: NetworkConfig[] = [
-        {
-            name: 'password auth',
-            description: 'name1',
-            ledgerApi: {
-                baseUrl: 'https://test',
-            },
-            auth: {
-                type: 'password',
-                tokenUrl: 'tokenUrl',
-                grantType: 'password',
-                scope: 'openid',
-                clientId: 'wk-service-account',
-            },
-        },
-        {
-            name: 'Mock OAuth Server',
-            description: 'dex idp',
-            ledgerApi: {
-                baseUrl: 'https://test',
-            },
-            auth: {
-                type: 'implicit',
-                domain: 'http://localhost:8082',
-                audience: 'test-audience',
-                scope: 'openid',
-                clientId: 'mock-oauth2-clientId',
-            },
-        },
-    ]
+    accessor idps: NetworkConfig[] = []
 
     @state()
     accessor selectedNetwork: NetworkConfig | null = null
@@ -51,6 +25,18 @@ export class LoginUI extends LitElement {
     private handleChange(e: Event) {
         const index = parseInt((e.target as HTMLSelectElement).value)
         this.selectedNetwork = this.idps[index] ?? null
+    }
+
+    private async loadNetworks() {
+        const response = await jsonRpcFetch(config.userRpcUri, {
+            method: 'listNetworks',
+        })
+        return response.result.networks as NetworkConfig[]
+    }
+
+    async connectedCallback() {
+        super.connectedCallback()
+        this.idps = await this.loadNetworks()
     }
 
     private async handleConnectToIDP() {
