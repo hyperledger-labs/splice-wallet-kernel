@@ -18,7 +18,10 @@ export interface CCSPAddress {
     publicKey: string
 }
 
-export type Address = PaperAddress | CCSPAddress
+export enum AddressType {
+    PaperAddress = 'PaperAddress',
+    CCSPAddress = 'CCSPAddress',
+}
 
 export type PartyId = string
 
@@ -28,6 +31,13 @@ export interface SigningDriver {
 
 export interface SigningProvider {
     signingProviderId: string
+    privateKey: string | null
+    addressType: AddressType
+}
+
+export interface WalletFilter {
+    networkIds?: string[]
+    signingProviderIds?: string[]
 }
 
 export interface Wallet {

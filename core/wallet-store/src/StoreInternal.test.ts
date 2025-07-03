@@ -39,6 +39,55 @@ describe('StoreInternal', () => {
         expect(wallets).toHaveLength(1)
     })
 
+    test('should filter wallets', async () => {
+        const wallet1: Wallet = {
+            primary: false,
+            partyId: 'party1',
+            hint: 'hint1',
+            signingProviderId: 'internal1',
+            publicKey: 'publicKey',
+            namespace: 'namespace',
+            networkId: 'network1',
+        }
+        const wallet2: Wallet = {
+            primary: false,
+            partyId: 'party2',
+            hint: 'hint2',
+            signingProviderId: 'internal2',
+            publicKey: 'publicKey',
+            namespace: 'namespace',
+            networkId: 'network1',
+        }
+        const wallet3: Wallet = {
+            primary: false,
+            partyId: 'party3',
+            hint: 'hint3',
+            signingProviderId: 'internal2',
+            publicKey: 'publicKey',
+            namespace: 'namespace',
+            networkId: 'network2',
+        }
+        await store.addWallet(wallet1)
+        await store.addWallet(wallet2)
+        await store.addWallet(wallet3)
+        const getAllWallets = await store.getWallets()
+        const getWalletsByNetworkId = await store.getWallets({
+            networkIds: ['network1'],
+        })
+        const getWalletsBySigningProviderId = await store.getWallets({
+            signingProviderIds: ['internal2'],
+        })
+        const getWalletsByNetworkIdAndSigningProviderId =
+            await store.getWallets({
+                networkIds: ['network1'],
+                signingProviderIds: ['internal2'],
+            })
+        expect(getAllWallets).toHaveLength(3)
+        expect(getWalletsByNetworkId).toHaveLength(2)
+        expect(getWalletsBySigningProviderId).toHaveLength(2)
+        expect(getWalletsByNetworkIdAndSigningProviderId).toHaveLength(1)
+    })
+
     test('should set and get primary wallet', async () => {
         const wallet1: Wallet = {
             primary: false,
