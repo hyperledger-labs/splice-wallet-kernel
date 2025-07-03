@@ -1,6 +1,8 @@
 name: CI on PRs (Splice Contributors)
 run-name: ${{ github.actor }} is perfoming a Pull Request
 on: push
+permissions:
+    contents: read
 
 jobs:
     build:
