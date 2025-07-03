@@ -22,6 +22,14 @@ export type Address = PaperAddress | CCSPAddress
 
 export type PartyId = string
 
+export interface SigningDriver {
+    signingDriverId: string
+}
+
+export interface SigningProvider {
+    signingProviderId: string
+}
+
 export interface Wallet {
     primary: boolean
     partyId: PartyId
@@ -30,7 +38,6 @@ export interface Wallet {
     namespace: string
     networkId: string
     signingProviderId: string
-    // address: Address
 }
 
 // Session management
@@ -66,6 +73,7 @@ export type Auth = PasswordAuth | ImplicitAuth
 
 export interface NetworkConfig {
     name: string
+    networkId: string
     description: string
     ledgerApi: LedgerApi
     auth: Auth
