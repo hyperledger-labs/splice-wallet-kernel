@@ -120,7 +120,10 @@ export class UserUiWallets extends LitElement {
 
     connectedCallback(): void {
         super.connectedCallback()
+        this.updateWallets()
+    }
 
+    private async updateWallets() {
         userClient.request('listWallets', []).then((wallets) => {
             this.wallets = wallets || []
         })
@@ -141,12 +144,13 @@ export class UserUiWallets extends LitElement {
             signingProviderId,
         }
 
-        const response = await userClient.request('createWallet', body)
+        await userClient.request('createWallet', body)
 
         this.loading = false
         if (this._partyHintInput) {
             this._partyHintInput.value = ''
         }
-        this.wallets.push(response.result.wallet)
+
+        this.updateWallets()
     }
 }

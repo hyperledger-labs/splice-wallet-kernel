@@ -32,7 +32,8 @@ class HttpTransport implements RpcTransport {
             throw new Error(`HTTP error! status: ${response.status}`)
         }
 
-        return response.json()
+        const json = await response.json()
+        return ResponsePayload.parse(json)
     }
 }
 

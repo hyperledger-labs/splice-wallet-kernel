@@ -95,6 +95,12 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             )
         }
         const wallets = await this.getWallets()
+
+        if (wallets.length === 0) {
+            // If this is the first wallet, set it as primary automatically
+            wallet.primary = true
+        }
+
         if (wallet.primary) {
             // If the new wallet is primary, set all others to non-primary
             storage.wallets.map((w) => (w.primary = false))
