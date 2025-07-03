@@ -60,6 +60,7 @@ const implicitAuthSchema = z.object({
 
 export const networkConfigSchema = z.object({
     name: z.string(),
+    networkId: z.string(),
     description: z.string(),
     ledgerApi: ledgerApiSchema,
     auth: z.discriminatedUnion('type', [

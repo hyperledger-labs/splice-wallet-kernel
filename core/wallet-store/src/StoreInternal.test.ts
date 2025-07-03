@@ -33,14 +33,10 @@ describe('StoreInternal', () => {
             publicKey: 'publicKey',
             namespace: 'namespace',
             networkId: 'network1',
-            // fingerprint: 'fp',
-            // address: { publicKey: 'pk', privateKey: 'sk' },
-            // chainId: 'chain1',
         }
         await store.addWallet(wallet)
         const wallets = await store.getWallets()
         expect(wallets).toHaveLength(1)
-        // expect(wallets[0].partyId).toBe('party1');
     })
 
     test('should set and get primary wallet', async () => {
@@ -52,9 +48,6 @@ describe('StoreInternal', () => {
             publicKey: 'publicKey',
             namespace: 'namespace',
             networkId: 'network1',
-            // fingerprint: 'fp1',
-            // address: { publicKey: 'pk1', privateKey: 'sk1' },
-            // chainId: 'chain1',
         }
         const wallet2: Wallet = {
             primary: false,
@@ -64,9 +57,6 @@ describe('StoreInternal', () => {
             publicKey: 'publicKey',
             namespace: 'namespace',
             networkId: 'network1',
-            // fingerprint: 'fp2',
-            // address: { publicKey: 'pk2', privateKey: 'sk2' },
-            // chainId: 'chain2',
         }
         await store.addWallet(wallet1)
         await store.addWallet(wallet2)
