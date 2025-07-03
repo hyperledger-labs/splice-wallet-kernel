@@ -1,5 +1,12 @@
 import { AuthContext, UserId, AuthAware } from 'core-wallet-auth'
-import { Store, Wallet, PartyId, Session, NetworkConfig } from './Store.js'
+import {
+    Store,
+    Wallet,
+    PartyId,
+    Session,
+    NetworkConfig,
+    WalletFilter,
+} from './Store.js'
 
 interface UserStorage {
     wallets: Array<Wallet>
@@ -61,8 +68,39 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     // Wallet methods
-    async getWallets(): Promise<Array<Wallet>> {
-        return this.getStorage().wallets
+    // async getWallets(): Promise<Array<Wallet>> {
+    //     return this.getStorage().wallets
+    // }
+
+    // async getWallets2(
+    //     networkIds?: string[],
+    //     signingProviderIds?: string[]
+    // ): Promise<Array<Wallet>> {
+    //     const networkIdSet = new Set(networkIds)
+    //     const signingProviderIdsSet = new Set(signingProviderIds)
+    //     return this.getStorage().wallets.filter(
+    //         (wallet) =>
+    //             networkIdSet.has(wallet.networkId) &&
+    //             signingProviderIdsSet.has(wallet.signingProviderId)
+    //     )
+    // }
+
+    async getWallets(filter: WalletFilter = {}): Promise<Array<Wallet>> {
+        const { networkIds, signingProviderIds } = filter
+        const networkIdSet = networkIds ? new Set(networkIds) : null
+        const signingProviderIdSet = signingProviderIds
+            ? new Set(signingProviderIds)
+            : null
+
+        return this.getStorage().wallets.filter((wallet) => {
+            const matchedNetworkIds = networkIdSet
+                ? networkIdSet.has(wallet.networkId)
+                : true
+            const matchedStorageProviderIdS = signingProviderIdSet
+                ? signingProviderIdSet.has(wallet.signingProviderId)
+                : true
+            return matchedNetworkIds && matchedStorageProviderIdS
+        })
     }
 
     async getPrimaryWallet(): Promise<Wallet | undefined> {

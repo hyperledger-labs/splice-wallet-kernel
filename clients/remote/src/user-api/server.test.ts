@@ -42,6 +42,7 @@ test('call connect rpc', async () => {
             networks: [
                 {
                     name: 'Password Auth',
+                    networkId: 'canton:local',
                     description: 'Unimplemented Password Auth',
                     ledgerApi: { baseUrl: 'https://test' },
                     auth: {
@@ -54,6 +55,7 @@ test('call connect rpc', async () => {
                 },
                 {
                     name: 'Mock OAuth Server',
+                    networkId: 'canton:local',
                     description: 'Mock OAuth IDP',
                     ledgerApi: { baseUrl: 'https://test' },
                     auth: {

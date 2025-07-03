@@ -18,9 +18,27 @@ export interface CCSPAddress {
     publicKey: string
 }
 
-export type Address = PaperAddress | CCSPAddress
+export enum AddressType {
+    PaperAddress = 'PaperAddress',
+    CCSPAddress = 'CCSPAddress',
+}
 
 export type PartyId = string
+
+export interface SigningDriver {
+    signingDriverId: string
+}
+
+export interface SigningProvider {
+    signingProviderId: string
+    privateKey?: string
+    addressType: AddressType
+}
+
+export interface WalletFilter {
+    networkIds?: string[]
+    signingProviderIds?: string[]
+}
 
 export interface Wallet {
     primary: boolean
@@ -30,7 +48,6 @@ export interface Wallet {
     namespace: string
     networkId: string
     signingProviderId: string
-    // address: Address
 }
 
 // Session management
@@ -66,6 +83,7 @@ export type Auth = PasswordAuth | ImplicitAuth
 
 export interface NetworkConfig {
     name: string
+    networkId: string
     description: string
     ledgerApi: LedgerApi
     auth: Auth
