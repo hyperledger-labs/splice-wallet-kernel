@@ -8,10 +8,12 @@ import { jwtAuth } from '../middleware/jwtAuth.js'
 import { AuthService, AuthAware } from 'core-wallet-auth'
 import { rpcRateLimit } from '../middleware/rateLimit.js'
 import cors from 'cors'
+import { LedgerClient } from 'core-ledger-client'
 
 const logger = pino({ name: 'main', level: 'debug' })
 
 export const dapp = (
+    ledgerClient: LedgerClient,
     authService: AuthService,
     store: Store & AuthAware<Store>
 ) => {
@@ -26,6 +28,7 @@ export const dapp = (
             jsonRpcHandler<Methods>({
                 controller: dappController(
                     store.withAuthContext(req.authContext),
+                    ledgerClient,
                     req.authContext
                 ),
                 logger,

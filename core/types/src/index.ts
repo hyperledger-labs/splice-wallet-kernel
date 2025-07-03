@@ -9,19 +9,26 @@ export const RequestPayload = z.object({
 })
 export type RequestPayload = z.infer<typeof RequestPayload>
 
-const SuccessResponse = z.object({
+export const SuccessResponse = z.object({
     result: z.optional(z.unknown()),
 })
+export type SuccessResponse = z.infer<typeof SuccessResponse>
 
-const ErrorResponse = z.object({
+export const ErrorResponse = z.object({
     error: z.object({
         code: z.number(),
         message: z.string(),
         data: z.optional(
-            z.string().or(z.number()).or(z.boolean()).or(z.null())
+            z
+                .string()
+                .or(z.number())
+                .or(z.boolean())
+                .or(z.null())
+                .or(z.unknown())
         ),
     }),
 })
+export type ErrorResponse = z.infer<typeof ErrorResponse>
 
 export const ResponsePayload = z.union([SuccessResponse, ErrorResponse])
 export type ResponsePayload = z.infer<typeof ResponsePayload>

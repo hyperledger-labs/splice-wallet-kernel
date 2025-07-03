@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import * as sdk from 'splice-wallet-sdk'
+import { createPingCommand } from './commands/createPingCommand'
 
 function App() {
     const [loading, setLoading] = useState(false)
@@ -26,33 +27,66 @@ function App() {
         }
     }, [status])
 
+    function createPingContract() {
+        setError('')
+        setLoading(true)
+        const provider = window.splice
+
+        if (provider !== undefined) {
+            provider
+                .request({
+                    method: 'prepareReturn',
+                    params: createPingCommand,
+                })
+                .then(() => {
+                    setLoading(false)
+                })
+                .catch((err) => {
+                    console.error('Error creating ping contract:', err)
+                    setLoading(false)
+                    setError(err instanceof Error ? err.message : String(err))
+                })
+        }
+    }
+
     return (
         <div>
             <h1>Example dApp</h1>
             <div className="card">
-                <button
-                    disabled={loading}
-                    onClick={() => {
-                        console.log('Connecting to Wallet Kernel...')
-                        setLoading(true)
-                        sdk.connect()
-                            .then(({ kernel, isConnected, chainId }) => {
-                                setLoading(false)
-                                setStatus(
-                                    `Wallet Kernel: ${kernel.id}, status: ${isConnected ? 'connected' : 'disconnected'}, chain: ${chainId}`
-                                )
-                                setError('')
-                            })
-                            .catch((err) => {
-                                console.error('Error setting status:', err)
-                                setLoading(false)
-                                setStatus('error')
-                                setError(err.details)
-                            })
+                <div
+                    style={{
+                        display: 'flex',
+                        gap: '10px',
+                        justifyContent: 'center',
                     }}
                 >
-                    connect to wallet kernel
-                </button>
+                    <button
+                        disabled={loading}
+                        onClick={() => {
+                            console.log('Connecting to Wallet Kernel...')
+                            setLoading(true)
+                            sdk.connect()
+                                .then(({ kernel, isConnected, chainId }) => {
+                                    setLoading(false)
+                                    setStatus(
+                                        `Wallet Kernel: ${kernel.id}, status: ${isConnected ? 'connected' : 'disconnected'}, chain: ${chainId}`
+                                    )
+                                    setError('')
+                                })
+                                .catch((err) => {
+                                    console.error('Error setting status:', err)
+                                    setLoading(false)
+                                    setStatus('error')
+                                    setError(err.details)
+                                })
+                        }}
+                    >
+                        connect to wallet kernel
+                    </button>
+                    <button onClick={createPingContract}>
+                        create Ping contract
+                    </button>
+                </div>
                 {loading && <p>Loading...</p>}
                 <p>{status}</p>
                 {error && <p className="error">Error: {error}</p>}

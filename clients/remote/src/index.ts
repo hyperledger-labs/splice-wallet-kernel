@@ -32,9 +32,12 @@ const store = new StoreInternal(config)
 
 const ledgerClient = new LedgerClient('http://localhost:5003')
 
-export const dAppServer = dapp(authService, store).listen(dAppPort, () => {
-    logger.info(`dApp Server running at http://localhost:${dAppPort}`)
-})
+export const dAppServer = dapp(ledgerClient, authService, store).listen(
+    dAppPort,
+    () => {
+        logger.info(`dApp Server running at http://localhost:${dAppPort}`)
+    }
+)
 
 export const userServer = user(ledgerClient, authService, store).listen(
     userPort,

@@ -1,4 +1,4 @@
-import { expect, test } from '@jest/globals'
+import { expect, test, jest } from '@jest/globals'
 
 import request from 'supertest'
 import { dapp } from './server.js'
@@ -6,6 +6,9 @@ import { StoreInternal, StoreInternalConfig } from 'core-wallet-store'
 import { AuthService } from 'core-wallet-auth'
 import { ConfigUtils } from '../config/ConfigUtils.js'
 import * as schemas from '../config/StoreConfig.js'
+import { LedgerClient } from 'core-ledger-client'
+
+jest.mock('core-ledger-client')
 
 const authService: AuthService = {
     verifyToken: async () => {
@@ -24,9 +27,10 @@ const config: StoreInternalConfig = {
     networks: network,
 }
 const store = new StoreInternal(config)
+const ledgerClient = new LedgerClient('http://localhost:5003')
 
 test('call connect rpc', async () => {
-    const response = await request(dapp(authService, store))
+    const response = await request(dapp(ledgerClient, authService, store))
         .post('/rpc')
         .send({ jsonrpc: '2.0', id: 0, method: 'connect', params: [] })
         .set('Accept', 'application/json')

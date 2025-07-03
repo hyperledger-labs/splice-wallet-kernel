@@ -9,6 +9,9 @@ import {
     PrepareReturnParams,
 } from './rpc-gen/typings.js'
 import { Store } from 'core-wallet-store'
+import { LedgerClient } from 'core-ledger-client'
+import { v4 } from 'uuid'
+import { ErrorResponse } from 'core-types'
 
 const kernelInfo: KernelInfo = {
     id: 'remote-da',
@@ -16,7 +19,11 @@ const kernelInfo: KernelInfo = {
     url: 'http://localhost:3000/rpc',
 }
 
-export const dappController = (store: Store, context?: AuthContext) =>
+export const dappController = (
+    store: Store,
+    ledgerClient: LedgerClient,
+    context?: AuthContext
+) =>
     buildController({
         connect: async () =>
             Promise.resolve({
@@ -29,8 +36,27 @@ export const dappController = (store: Store, context?: AuthContext) =>
         ledgerApi: async (params: LedgerApiParams) =>
             Promise.resolve({ response: 'default-response' }),
         prepareExecute: async (params: PrepareExecuteParams) => null,
-        prepareReturn: async (params: PrepareReturnParams) =>
-            Promise.resolve({}),
+        prepareReturn: async (params: PrepareReturnParams) => {
+            const wallet = await store.getPrimaryWallet()
+
+            if (wallet === undefined) {
+                throw new Error('No primary wallet found')
+            }
+
+            const prepareParams = {
+                commandId: v4(),
+                userId: 'some-user-id',
+                actAs: [wallet.partyId],
+                readAs: [],
+                disclosedContracts: [],
+                synchronizerId: '',
+                verboseHashing: false,
+                packageIdSelectionPreference: [],
+                commands: params.commands,
+            }
+
+            return await ledgerClient.interactivePreparePost(prepareParams)
+        },
         status: async () => {
             if (context === null) {
                 return Promise.resolve({
