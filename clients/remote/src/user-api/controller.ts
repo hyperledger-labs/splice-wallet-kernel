@@ -21,13 +21,13 @@ async function signingDriverCreate(
 ): Promise<CreateWalletResult> {
     switch (signingProviderId) {
         case 'participant': {
-            const res = await ledgerClient.allocateParty({
+            const res = await ledgerClient.partiesPost({
                 partyIdHint: partyHint,
             })
 
             const wallet: Wallet = {
                 primary: primary ?? false,
-                partyId: res.partyDetails?.party,
+                partyId: res.partyDetails.party,
                 hint: partyHint,
                 publicKey: 'placeholder-public-key',
                 namespace: 'placeholder-namespace',

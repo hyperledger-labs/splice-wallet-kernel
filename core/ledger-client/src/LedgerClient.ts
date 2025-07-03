@@ -1,5 +1,15 @@
-import { components, paths } from '../generated-clients/openapi-3.4.0-SNAPSHOT'
+import { paths } from '../generated-clients/openapi-3.4.0-SNAPSHOT'
 import createClient, { Client } from 'openapi-fetch'
+
+export type PartiesPostReq =
+    paths['/v2/parties']['post']['requestBody']['content']['application/json']
+export type PartiesPostRes =
+    paths['/v2/parties']['post']['responses']['200']['content']['application/json']
+
+export type InteractivePreparePostReq =
+    paths['/v2/interactive-submission/prepare']['post']['requestBody']['content']['application/json']
+export type InteractivePreparePostRes =
+    paths['/v2/interactive-submission/prepare']['post']['responses']['200']['content']['application/json']
 
 export class LedgerClient {
     private readonly client: Client<paths>
@@ -8,37 +18,32 @@ export class LedgerClient {
         this.client = createClient<paths>({ baseUrl })
     }
 
-    public async getParties(): Promise<string[]> {
-        const response = await this.client.GET('/v2/parties')
-
-        if (!response.data) {
-            throw new Error(
-                response?.error.toString() ||
-                    'No data returned from the ledger API'
-            )
-        }
-
-        const parties =
-            response.data.partyDetails?.map(
-                (partyDetail) => partyDetail.party
-            ) || []
-
-        return parties
-    }
-
-    public async allocateParty(
-        body: paths['/v2/parties']['post']['requestBody']['content']['application/json']
-    ): Promise<{ partyDetails?: components['schemas']['PartyDetails'] }> {
-        const { data, error } = await this.client.POST('/v2/parties', {
+    public async partiesPost(body: PartiesPostReq): Promise<PartiesPostRes> {
+        const resp = await this.client.POST('/v2/parties', {
             body,
         })
+        return this.valueOrError(resp)
+    }
 
-        if (!data) {
-            throw new Error(
-                error?.toString() || 'No data returned from the ledger API'
-            )
+    public async interactivePreparePost(
+        body: InteractivePreparePostReq
+    ): Promise<InteractivePreparePostRes> {
+        const resp = await this.client.POST(
+            '/v2/interactive-submission/prepare',
+            { body }
+        )
+
+        return this.valueOrError(resp)
+    }
+
+    private async valueOrError<T>(response: {
+        data?: T
+        error?: unknown
+    }): Promise<T> {
+        if (response.data === undefined) {
+            return Promise.reject(response.error)
+        } else {
+            return Promise.resolve(response.data)
         }
-
-        return data
     }
 }
