@@ -97,6 +97,7 @@ describe('StoreInternal', () => {
         }
         const network: NetworkConfig = {
             name: 'testnet',
+            networkId: 'network1',
             description: 'Test Network',
             ledgerApi,
             auth,
