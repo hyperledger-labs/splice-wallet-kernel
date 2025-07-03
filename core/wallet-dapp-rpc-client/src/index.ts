@@ -240,7 +240,18 @@ export class SpliceWalletJSONRPCDAppAPI {
         method: string,
         params?: RequestPayload['params']
     ): Promise<unknown> {
-        return this.transport.submit({ method, params })
+        const response = await this.transport.submit({ method, params })
+
+        if ('error' in response) {
+            throw new Error(
+                'RPC error: ' +
+                    response.error.code +
+                    ' - ' +
+                    response.error.message
+            )
+        } else {
+            return response.result
+        }
     }
 }
 export default SpliceWalletJSONRPCDAppAPI

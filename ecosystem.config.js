@@ -32,6 +32,10 @@ export const apps = [
         script: 'yarn workspace core-wallet-ui-components build:watch',
     },
     {
+        name: 'core-wallet-store',
+        script: 'yarn workspace core-wallet-store dev',
+    },
+    {
         name: 'core-wallet-user-rpc-client',
         script: 'yarn workspace core-wallet-user-rpc-client dev',
     },

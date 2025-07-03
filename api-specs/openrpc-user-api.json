@@ -322,8 +322,13 @@
                         "type": "boolean",
                         "description": "Set as primary wallet for dApp usage."
                     },
-                    "partyHint": {
-                        "title": "partyHint",
+                    "partyId": {
+                        "title": "partyId",
+                        "type": "string",
+                        "description": "The party ID corresponding to the wallet."
+                    },
+                    "hint": {
+                        "title": "hint",
                         "type": "string",
                         "description": "The party hint and name of the wallet."
                     },
@@ -350,7 +355,8 @@
                 },
                 "required": [
                     "primary",
-                    "partyHint",
+                    "partyId",
+                    "hint",
                     "publicKey",
                     "namespace",
                     "networkId",

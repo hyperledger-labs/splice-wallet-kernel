@@ -26,9 +26,11 @@ export interface Wallet {
     primary: boolean
     partyId: PartyId
     hint: string
-    fingerprint: string
-    address: Address
-    chainId: string
+    publicKey: string
+    namespace: string
+    networkId: string
+    signingProviderId: string
+    // address: Address
 }
 
 // Session management

@@ -1,4 +1,4 @@
-import { paths } from '../generated-clients/openapi-3.4.0-SNAPSHOT'
+import { components, paths } from '../generated-clients/openapi-3.4.0-SNAPSHOT'
 import createClient, { Client } from 'openapi-fetch'
 
 export class LedgerClient {
@@ -28,9 +28,7 @@ export class LedgerClient {
 
     public async allocateParty(
         body: paths['/v2/parties']['post']['requestBody']['content']['application/json']
-    ): Promise<
-        paths['/v2/parties']['post']['responses']['200']['content']['application/json']
-    > {
+    ): Promise<{ partyDetails?: components['schemas']['PartyDetails'] }> {
         const { data, error } = await this.client.POST('/v2/parties', {
             body,
         })

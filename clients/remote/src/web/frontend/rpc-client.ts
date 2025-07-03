@@ -17,9 +17,12 @@ class HttpTransport implements RpcTransport {
             id: uuidv4(),
         }
 
+        const authToken = 'not-a-real-token'
+
         const response = await fetch(this.url, {
             method: 'POST',
             headers: {
+                Authorization: `Bearer ${authToken}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(request),
@@ -29,7 +32,8 @@ class HttpTransport implements RpcTransport {
             throw new Error(`HTTP error! status: ${response.status}`)
         }
 
-        return response.json()
+        const json = await response.json()
+        return ResponsePayload.parse(json)
     }
 }
 

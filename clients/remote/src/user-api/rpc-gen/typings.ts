@@ -54,6 +54,12 @@ export type Signature = string
 export type SignedBy = string
 /**
  *
+ * The party hint and name of the wallet.
+ *
+ */
+export type Hint = string
+/**
+ *
  * The public key of the party.
  *
  */
@@ -71,7 +77,8 @@ export type Namespace = string
  */
 export interface Wallet {
     primary: Primary
-    partyHint: PartyHint
+    partyId: PartyId
+    hint: Hint
     publicKey: PublicKey
     namespace: Namespace
     networkId: NetworkId

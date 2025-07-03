@@ -56,6 +56,12 @@ export type Signature = string
 export type SignedBy = string
 /**
  *
+ * The party hint and name of the wallet.
+ *
+ */
+export type Hint = string
+/**
+ *
  * The public key of the party.
  *
  */
@@ -73,7 +79,8 @@ export type Namespace = string
  */
 export interface Wallet {
     primary: Primary
-    partyHint: PartyHint
+    partyId: PartyId
+    hint: Hint
     publicKey: PublicKey
     namespace: Namespace
     networkId: NetworkId
@@ -271,7 +278,18 @@ export class SpliceWalletJSONRPCUserAPI {
         method: string,
         params?: RequestPayload['params']
     ): Promise<unknown> {
-        return this.transport.submit({ method, params })
+        const response = await this.transport.submit({ method, params })
+
+        if ('error' in response) {
+            throw new Error(
+                'RPC error: ' +
+                    response.error.code +
+                    ' - ' +
+                    response.error.message
+            )
+        } else {
+            return response.result
+        }
     }
 }
 export default SpliceWalletJSONRPCUserAPI
