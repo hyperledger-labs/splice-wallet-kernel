@@ -3,8 +3,7 @@ import { customElement, state } from 'lit/decorators.js'
 import { NetworkConfig } from 'core-wallet-store'
 import 'core-wallet-ui-components'
 import 'core-wallet-ui-components/themes/default.css'
-import { jsonRpcFetch } from '../rpc-client'
-import { config } from '../config'
+import { userClient } from '../rpc-client'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
@@ -28,9 +27,7 @@ export class LoginUI extends LitElement {
     }
 
     private async loadNetworks() {
-        const response = await jsonRpcFetch(config.userRpcUri, {
-            method: 'listNetworks',
-        })
+        const response = await userClient.request('listNetworks')
         return response.result.networks as NetworkConfig[]
     }
 
@@ -48,10 +45,16 @@ export class LoginUI extends LitElement {
         const redirectUri = 'http://localhost:3002/callback/' //should probably be config driven?
         if (this.selectedNetwork.auth.type === 'implicit') {
             const domain = this.selectedNetwork.auth.domain
+
             const configUrl = `${domain}/.well-known/openid-configuration`
             const config = await fetch(configUrl).then((res) => res.json())
             const scope = this.selectedNetwork.auth.scope
             const audience = this.selectedNetwork.auth.audience
+            const statePayload = {
+                domain: domain,
+                clientId: this.selectedNetwork.auth.clientId,
+            }
+
             const params = new URLSearchParams({
                 response_type: 'code',
                 response_mode: 'fragment',
@@ -60,7 +63,7 @@ export class LoginUI extends LitElement {
                 nonce: crypto.randomUUID(),
                 scope,
                 audience,
-                state: domain,
+                state: btoa(JSON.stringify(statePayload)),
             })
 
             window.location.href = `${config.authorization_endpoint}?${params.toString()}`

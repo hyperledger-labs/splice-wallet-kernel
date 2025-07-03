@@ -3,10 +3,9 @@ import { customElement, query, state } from 'lit/decorators.js'
 
 import 'core-wallet-ui-components'
 import 'core-wallet-ui-components/themes/default.css'
-import { jsonRpcFetch } from '../rpc-client'
-import { config } from '../config'
 import { Wallet } from 'core-wallet-store'
-import { CreateWalletParams } from '../../../user-api/rpc-gen/typings'
+import { userClient } from '../rpc-client'
+import { CreateWalletParams } from 'core-wallet-user-rpc-client'
 
 @customElement('user-ui-wallets')
 export class UserUiWallets extends LitElement {
@@ -122,10 +121,8 @@ export class UserUiWallets extends LitElement {
     connectedCallback(): void {
         super.connectedCallback()
 
-        jsonRpcFetch(config.userRpcUri, {
-            method: 'listWallets',
-        }).then((wallets) => {
-            this.wallets = wallets.result || []
+        userClient.request('listWallets', []).then((wallets) => {
+            this.wallets = wallets || []
         })
     }
 
@@ -144,10 +141,7 @@ export class UserUiWallets extends LitElement {
             signingProviderId,
         }
 
-        const response = await jsonRpcFetch(config.userRpcUri, {
-            method: 'createWallet',
-            params: body,
-        })
+        const response = await userClient.request('createWallet', body)
 
         this.loading = false
         if (this._partyHintInput) {

@@ -54,7 +54,7 @@ export type Signature = string
 export type SignedBy = string
 /**
  *
- * A hint or description for the wallet.
+ * The party hint and name of the wallet.
  *
  */
 export type Hint = string

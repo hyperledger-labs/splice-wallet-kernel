@@ -2132,18 +2132,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@open-rpc/client-js@npm:1.8.1":
-  version: 1.8.1
-  resolution: "@open-rpc/client-js@npm:1.8.1"
-  dependencies:
-    isomorphic-fetch: "npm:^3.0.0"
-    isomorphic-ws: "npm:^5.0.0"
-    strict-event-emitter-types: "npm:^2.0.0"
-    ws: "npm:^7.0.0"
-  checksum: 10c0/6f1d788a8b4735870a8a8f939badc42806d5810c3a926d76e6e5e8ff3090ad74083b94cf4187dc390a045a6d1314b7aec2548a2e3949e5930e7c90983d732501
-  languageName: node
-  linkType: hard
-
 "@open-rpc/examples@npm:^1.7.2":
   version: 1.7.2
   resolution: "@open-rpc/examples@npm:1.7.2"
@@ -2167,7 +2155,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@open-rpc/meta-schema@npm:1.14.9, @open-rpc/meta-schema@npm:^1.14.9":
+"@open-rpc/meta-schema@npm:^1.14.9":
   version: 1.14.9
   resolution: "@open-rpc/meta-schema@npm:1.14.9"
   checksum: 10c0/1604f1e698376ddc6e1be820339c4d0bc16cce072373205ad4142e3969f891d6c7d8c2f6da0e1758833d00ea89df70dfb15338906c41e12caac9a53c5502a25f
@@ -2207,7 +2195,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@open-rpc/schema-utils-js@npm:2.1.2, @open-rpc/schema-utils-js@npm:^2.0.2":
+"@open-rpc/schema-utils-js@npm:^2.0.2":
   version: 2.1.2
   resolution: "@open-rpc/schema-utils-js@npm:2.1.2"
   dependencies:
@@ -3004,7 +2992,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/isomorphic-fetch@npm:*, @types/isomorphic-fetch@npm:^0.0.39":
+"@types/isomorphic-fetch@npm:^0.0.39":
   version: 0.0.39
   resolution: "@types/isomorphic-fetch@npm:0.0.39"
   checksum: 10c0/7adc0880a4a575ccd2c2066c00942a03d69eff02acd371da764e9258f18ca96367075fc87656993ed24a66f9de1ffe2fea4900cae7c4ee04e84b2358637d3f80
@@ -3288,21 +3276,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ws@npm:*, @types/ws@npm:^8.18.1":
-  version: 8.18.1
-  resolution: "@types/ws@npm:8.18.1"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10c0/61aff1129143fcc4312f083bc9e9e168aa3026b7dd6e70796276dcfb2c8211c4292603f9c4864fae702f2ed86e4abd4d38aa421831c2fd7f856c931a481afbab
-  languageName: node
-  linkType: hard
-
 "@types/ws@npm:^6.0.1":
   version: 6.0.4
   resolution: "@types/ws@npm:6.0.4"
   dependencies:
     "@types/node": "npm:*"
   checksum: 10c0/fa958e64596ca9487c3ed6012834de70b47f25d971f1950cfb8e6a99cb77ff340ae82ac7627744e01b58010674ef8ede07d5a2ac29ca9ad0d67a430fcc69ae14
+  languageName: node
+  linkType: hard
+
+"@types/ws@npm:^8.18.1":
+  version: 8.18.1
+  resolution: "@types/ws@npm:8.18.1"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/61aff1129143fcc4312f083bc9e9e168aa3026b7dd6e70796276dcfb2c8211c4292603f9c4864fae702f2ed86e4abd4d38aa421831c2fd7f856c931a481afbab
   languageName: node
   linkType: hard
 
@@ -4816,6 +4804,7 @@ __metadata:
     core-wallet-dapp-rpc-client: "workspace:^"
     core-wallet-store: "workspace:^"
     core-wallet-ui-components: "workspace:^"
+    core-wallet-user-rpc-client: "workspace:^"
     cors: "npm:^2.8.5"
     express: "npm:^5.1.0"
     express-rate-limit: "npm:^7.5.1"
@@ -5185,15 +5174,13 @@ __metadata:
   resolution: "core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client"
   dependencies:
     "@eslint/js": "npm:9.21.0"
-    "@open-rpc/client-js": "npm:1.8.1"
-    "@open-rpc/meta-schema": "npm:1.14.9"
-    "@open-rpc/schema-utils-js": "npm:2.1.2"
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
     "@types/lodash": "npm:^4.14.149"
     "@types/ws": "npm:^6.0.1"
     "@typescript-eslint/eslint-plugin": "npm:^8.25.0"
+    core-types: "workspace:^"
     eslint-config-prettier: "npm:^10.0.1"
     eslint-plugin-prettier: "npm:^5.2.3"
     globals: "npm:^16.0.0"
@@ -5231,20 +5218,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"core-wallet-user-rpc-client@workspace:core/wallet-user-rpc-client":
+"core-wallet-user-rpc-client@workspace:^, core-wallet-user-rpc-client@workspace:core/wallet-user-rpc-client":
   version: 0.0.0-use.local
   resolution: "core-wallet-user-rpc-client@workspace:core/wallet-user-rpc-client"
   dependencies:
     "@eslint/js": "npm:9.21.0"
-    "@open-rpc/client-js": "npm:1.8.1"
-    "@open-rpc/meta-schema": "npm:1.14.9"
-    "@open-rpc/schema-utils-js": "npm:2.1.2"
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
     "@types/lodash": "npm:^4.14.149"
     "@types/ws": "npm:^6.0.1"
     "@typescript-eslint/eslint-plugin": "npm:^8.25.0"
+    core-types: "workspace:^"
     eslint-config-prettier: "npm:^10.0.1"
     eslint-plugin-prettier: "npm:^5.2.3"
     globals: "npm:^16.0.0"
@@ -7641,15 +7626,6 @@ __metadata:
     node-fetch: "npm:^2.6.1"
     whatwg-fetch: "npm:^3.4.1"
   checksum: 10c0/511b1135c6d18125a07de661091f5e7403b7640060355d2d704ce081e019bc1862da849482d079ce5e2559b8976d3de7709566063aec1b908369c0b98a2b075b
-  languageName: node
-  linkType: hard
-
-"isomorphic-ws@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "isomorphic-ws@npm:5.0.0"
-  peerDependencies:
-    ws: "*"
-  checksum: 10c0/a058ac8b5e6efe9e46252cb0bc67fd325005d7216451d1a51238bc62d7da8486f828ef017df54ddf742e0fffcbe4b1bcc2a66cc115b027ed0180334cd18df252
   languageName: node
   linkType: hard
 
@@ -11574,13 +11550,6 @@ __metadata:
     bare-events:
       optional: true
   checksum: 10c0/b5e489cca78ff23b910e7d58c3e0059e692f93ec401a5974689f2c50c33c9d94f64246a305566ad52cdb818ee583e02e4257b9066fd654cb9f576a9692fdb976
-  languageName: node
-  linkType: hard
-
-"strict-event-emitter-types@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "strict-event-emitter-types@npm:2.0.0"
-  checksum: 10c0/7a2985b81908c2a7d1de10afe3be1de3423b8ce6188dc32aeb3dbaf66d4ac3f11029d6931c67d972a3bb976bbd04d27ee090eeed1cbd089c5ba3e899a04ed1b7
   languageName: node
   linkType: hard
 

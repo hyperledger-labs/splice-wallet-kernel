@@ -330,7 +330,7 @@
                     "hint": {
                         "title": "hint",
                         "type": "string",
-                        "description": "A hint or description for the wallet."
+                        "description": "The party hint and name of the wallet."
                     },
                     "publicKey": {
                         "title": "publicKey",
