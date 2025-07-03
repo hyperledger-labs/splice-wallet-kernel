@@ -31,7 +31,7 @@ export interface SigningDriver {
 
 export interface SigningProvider {
     signingProviderId: string
-    privateKey: string | null
+    privateKey?: string
     addressType: AddressType
 }
 
