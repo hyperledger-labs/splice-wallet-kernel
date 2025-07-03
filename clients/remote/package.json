@@ -22,6 +22,7 @@
         "core-wallet-dapp-rpc-client": "workspace:^",
         "core-wallet-store": "workspace:^",
         "core-wallet-ui-components": "workspace:^",
+        "core-wallet-user-rpc-client": "workspace:^",
         "cors": "^2.8.5",
         "express": "^5.1.0",
         "lit": "^3.3.0",

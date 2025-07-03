@@ -3,8 +3,7 @@ import { customElement, state } from 'lit/decorators.js'
 import { NetworkConfig } from 'core-wallet-store'
 import 'core-wallet-ui-components'
 import 'core-wallet-ui-components/themes/default.css'
-import { jsonRpcFetch } from '../rpc-client'
-import { config } from '../config'
+import { userClient } from '../rpc-client'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
@@ -28,9 +27,7 @@ export class LoginUI extends LitElement {
     }
 
     private async loadNetworks() {
-        const response = await jsonRpcFetch(config.userRpcUri, {
-            method: 'listNetworks',
-        })
+        const response = await userClient.request('listNetworks')
         return response.result.networks as NetworkConfig[]
     }
 

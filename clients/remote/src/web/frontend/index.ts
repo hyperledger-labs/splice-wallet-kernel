@@ -3,8 +3,8 @@ import { customElement, query, state } from 'lit/decorators.js'
 
 import 'core-wallet-ui-components'
 import 'core-wallet-ui-components/themes/default.css'
-import { jsonRpcFetch } from './rpc-client'
-import { config } from './config'
+import { userClient } from './rpc-client'
+import { CreateWalletParams } from 'core-wallet-user-rpc-client'
 
 @customElement('user-ui')
 export class UserUI extends LitElement {
@@ -46,12 +46,12 @@ export class UserUI extends LitElement {
     private async allocateParty() {
         this.loading = true
 
-        const response = await jsonRpcFetch(config.userRpcUri, {
-            method: 'allocateParty',
-            params: {
-                hint: this._input?.value || '',
-            },
-        })
+        const body: CreateWalletParams = {
+            partyHint: this._input?.value || '',
+            networkId: 'default',
+            signingProviderId: 'default',
+        }
+        const response = await userClient.request('createWallet', body)
 
         this.loading = false
         if (this._input) {
