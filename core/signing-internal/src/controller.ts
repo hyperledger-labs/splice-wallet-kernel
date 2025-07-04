@@ -1,6 +1,6 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { buildController, SignerInterface } from 'core-signing-lib'
+import { buildController, SigningDriverInterface } from 'core-signing-lib'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
 
@@ -42,15 +42,16 @@ const convertInternalTransaction = (tx: InternalTransaction): Transaction => {
         txId: tx.id,
         status: 'signed',
         signature: tx.signature,
+        publicKey: tx.publicKey,
     }
 }
 
-export class InternalSigner implements SignerInterface {
+export class InternalSigningDriver implements SigningDriverInterface {
     private signer: Map<string, InternalKey> = new Map()
     private signerByPublicKey: Map<string, InternalKey> = new Map()
     private transactions: Map<string, InternalTransaction> = new Map()
 
-    public signerController = buildController({
+    public controller = buildController({
         signTransaction: async (
             params: SignTransactionParams
         ): Promise<SignTransactionResult> => {

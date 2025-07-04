@@ -1,0 +1,33 @@
+{
+    "name": "core-signing-fireblocks",
+    "private": true,
+    "packageManager": "yarn@4.9.2",
+    "scripts": {
+        "build": "tsc -b",
+        "clean": "tsc -b --clean && rm -rf ./dist",
+        "test": "jest"
+    },
+    "dependencies": {
+        "@fireblocks/ts-sdk": "^10.2.0",
+        "async-mutex": "^0.5.0",
+        "core-signing-lib": "0.0.1",
+        "fs-extra": "^11.3.0",
+        "lodash": "^4.17.21",
+        "pino": "^9.7.0",
+        "tweetnacl": "^1.0.3",
+        "tweetnacl-util": "^0.15.1",
+        "zod": "^3.25.67"
+    },
+    "devDependencies": {
+        "@jest/globals": "^29.0.0",
+        "@swc/core": "^1.11.31",
+        "@swc/jest": "^0.2.38",
+        "@types/fs-extra": "^11",
+        "@types/jest": "^29.5.14",
+        "@types/lodash": "^4.17.17",
+        "@types/node": "^22.15.29",
+        "jest": "^29.7.0",
+        "ts-jest-resolver": "^2.0.1",
+        "typescript": "^5.8.3"
+    }
+}
