@@ -24,7 +24,7 @@ const TEST_FIREBLOCKS_PUBLIC_KEY =
 const SECRET_KEY_LOCATION = 'fireblocks_secret.key'
 
 interface TestValues {
-    signer: FireblocksDriver
+    signingDriver: FireblocksDriver
     key: CreateKeyResult
 }
 
@@ -45,7 +45,7 @@ async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
         throw new Error('FIREBLOCKS_API_KEY environment variable must be set.')
     }
 
-    const signer = new FireblocksDriver({
+    const signingDriver = new FireblocksDriver({
         apiKey,
         apiSecret,
     })
@@ -55,21 +55,21 @@ async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
         publicKey: TEST_FIREBLOCKS_PUBLIC_KEY,
     }
     return {
-        signer,
+        signingDriver,
         key,
     }
 }
 
 describe.skip('fireblocks controller (skip due to API secret requirement)', () => {
     test('key creation', async () => {
-        const { signer } = await setupTest()
-        const err = await signer.signerController.createKey({ name: 'test' })
+        const { signingDriver } = await setupTest()
+        const err = await signingDriver.controller.createKey({ name: 'test' })
         expect(isRpcError(err)).toBe(true)
     })
 
     test('transaction signature', async () => {
-        const { signer, key } = await setupTest()
-        const tx = await signer.signerController.signTransaction({
+        const { signingDriver, key } = await setupTest()
+        const tx = await signingDriver.controller.signTransaction({
             tx: TEST_TRANSACTION,
             txHash: TEST_TRANSACTION_HASH,
             publicKey: key.publicKey,
@@ -80,11 +80,10 @@ describe.skip('fireblocks controller (skip due to API secret requirement)', () =
         // this hash has already been signed so Fireblocks won't bother getting it signed again
         expect(tx.status).toBe('signed')
 
-        const transactionsByKey = await signer.signerController.getTransactions(
-            {
+        const transactionsByKey =
+            await signingDriver.controller.getTransactions({
                 publicKeys: [key.publicKey],
-            }
-        )
+            })
 
         throwWhenRpcError(transactionsByKey)
         expect(
@@ -93,9 +92,11 @@ describe.skip('fireblocks controller (skip due to API secret requirement)', () =
             )
         ).toBeDefined()
 
-        const transactionsById = await signer.signerController.getTransactions({
-            txIds: [tx.txId],
-        })
+        const transactionsById = await signingDriver.controller.getTransactions(
+            {
+                txIds: [tx.txId],
+            }
+        )
 
         throwWhenRpcError(transactionsById)
         expect(
@@ -104,7 +105,7 @@ describe.skip('fireblocks controller (skip due to API secret requirement)', () =
             )
         ).toBeDefined()
 
-        const foundTx = await signer.signerController.getTransaction({
+        const foundTx = await signingDriver.controller.getTransaction({
             txId: tx.txId,
         })
         throwWhenRpcError(foundTx)
