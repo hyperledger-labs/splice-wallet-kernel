@@ -1,5 +1,5 @@
 {
-    "name": "fireblocks-driver",
+    "name": "core-signing-fireblocks",
     "private": true,
     "packageManager": "yarn@4.9.2",
     "scripts": {
