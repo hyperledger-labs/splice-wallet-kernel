@@ -4988,9 +4988,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"core-signing-internal@workspace:core/signing/internal":
+"core-signing-internal@workspace:core/signing-internal":
   version: 0.0.0-use.local
-  resolution: "core-signing-internal@workspace:core/signing/internal"
+  resolution: "core-signing-internal@workspace:core/signing-internal"
   dependencies:
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.11.31"
@@ -5010,9 +5010,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"core-signing-lib@npm:0.0.1, core-signing-lib@workspace:core/signing/lib":
+"core-signing-lib@npm:0.0.1, core-signing-lib@workspace:core/signing-lib":
   version: 0.0.0-use.local
-  resolution: "core-signing-lib@workspace:core/signing/lib"
+  resolution: "core-signing-lib@workspace:core/signing-lib"
   dependencies:
     "@types/fs-extra": "npm:^11"
     "@types/lodash": "npm:^4.17.17"
@@ -6560,9 +6560,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fireblocks-driver@workspace:core/signing/fireblocks":
+"fireblocks-driver@workspace:core/signing-fireblocks":
   version: 0.0.0-use.local
-  resolution: "fireblocks-driver@workspace:core/signing/fireblocks"
+  resolution: "fireblocks-driver@workspace:core/signing-fireblocks"
   dependencies:
     "@fireblocks/ts-sdk": "npm:^10.2.0"
     "@jest/globals": "npm:^29.0.0"
