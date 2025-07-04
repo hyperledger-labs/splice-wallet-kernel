@@ -4,10 +4,8 @@ import {
     VaultAccount,
 } from '@fireblocks/ts-sdk'
 import { pino } from 'pino'
-import { SigningStatusEnum } from 'core-signing-lib'
+import { SigningStatusEnum, CC_COIN_TYPE } from 'core-signing-lib'
 import { z } from 'zod'
-
-export const CC_COIN_TYPE = 6767
 
 const RawMessageSchema = z.object({
     content: z.string(),
@@ -122,6 +120,7 @@ export class FireblocksHandler {
     public async *getTransactions(): AsyncGenerator<FireblocksTransaction> {
         let refreshedCache = false
         try {
+            // TODO: use `before` or `after` parameters to implement pagination
             const transactions = await this.client.transactions.getTransactions(
                 {
                     sourceType: 'VAULT_ACCOUNT',
@@ -264,7 +263,7 @@ export class FireblocksHandler {
                 derivationPath: key.derivationPath,
             }
         } catch (error) {
-            logger.error('Error refreshing key cache:', error)
+            logger.error('Error signing transaction:', error)
             throw error
         }
     }

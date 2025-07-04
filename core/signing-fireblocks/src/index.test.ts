@@ -9,8 +9,8 @@ import {
     isRpcError,
     Transaction,
     Error as RpcError,
+    CC_COIN_TYPE,
 } from 'core-signing-lib'
-import { CC_COIN_TYPE } from './fireblocks.js'
 import { PublicKeyInformationAlgorithmEnum } from '@fireblocks/ts-sdk'
 
 const TEST_KEY_NAME = 'test-key-name'
