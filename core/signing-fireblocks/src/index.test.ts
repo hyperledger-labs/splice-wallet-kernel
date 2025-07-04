@@ -43,8 +43,8 @@ jest.mock('./fireblocks', () => {
                                 PublicKeyInformationAlgorithmEnum.EddsaEd25519,
                         },
                     ]),
-                    getTransactions: jest.fn(() => ({
-                        async *[Symbol.asyncIterator]() {
+                    getTransactions: jest.fn(() => {
+                        async function* generator() {
                             yield {
                                 txId: TEST_TRANSACTION_HASH,
                                 status: 'signed',
@@ -52,8 +52,9 @@ jest.mock('./fireblocks', () => {
                                 publicKey: TEST_FIREBLOCKS_PUBLIC_KEY,
                                 derivationPath: TEST_FIREBLOCKS_DERIVATION_PATH,
                             }
-                        },
-                    })),
+                        }
+                        return generator
+                    }),
                     signTransaction: jest.fn().mockResolvedValue({
                         txId: TEST_TRANSACTION_HASH,
                         status: 'signed',
