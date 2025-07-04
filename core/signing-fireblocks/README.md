@@ -1,3 +1,3 @@
-# rpc-generator
+# Fireblocks Signing Driver
 
-A custom OpenRPC generator plugin for Wallet Kernel RPC server.
+A driver for signing and retrieving transactions using the Fireblocks API implementing the `SigningDriverInterface` `core-signing-lib`.

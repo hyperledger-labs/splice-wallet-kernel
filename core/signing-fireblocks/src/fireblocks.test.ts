@@ -9,27 +9,31 @@ const TEST_TRANSACTION_HASH =
 
 const SECRET_KEY_LOCATION = 'fireblocks_secret.key'
 
-describe.skip('fireblocks handler (skip due to API secret requirement)', () => {
-    test('key creation', async () => {
-        const apiKey = process.env.FIREBLOCKS_API_KEY
-        if (!apiKey) {
-            throw new Error(
-                'FIREBLOCKS_API_KEY environment variable must be set.'
+describe('fireblocks handler', () => {
+    const apiKey = process.env.FIREBLOCKS_API_KEY
+    if (!apiKey) {
+        // skip this test suite if FIREBLOCKS_API_KEY is not set - there's really nothing to test for this class
+        // if the API Key is not set. Mocked functionality of this class is tested in context of the controller
+        // in index.test.ts
+        test.skip('FIREBLOCKS_API_KEY environment variable is not set, skipping test.', () => {})
+    } else {
+        test('key creation', async () => {
+            const secretPath = path.resolve(process.cwd(), SECRET_KEY_LOCATION)
+            const apiSecret = readFileSync(secretPath, 'utf8')
+            const handler = new FireblocksHandler(apiKey, apiSecret)
+
+            const keys = await handler.getPublicKeys()
+            expect(keys.length).toBeGreaterThan(0)
+            const transactions = await Array.fromAsync(
+                handler.getTransactions()
             )
-        }
-        const secretPath = path.resolve(process.cwd(), SECRET_KEY_LOCATION)
-        const apiSecret = readFileSync(secretPath, 'utf8')
-        const handler = new FireblocksHandler(apiKey, apiSecret)
+            expect(transactions.length).toBeGreaterThan(0)
 
-        const keys = await handler.getPublicKeys()
-        expect(keys.length).toBeGreaterThan(0)
-        const transactions = await Array.fromAsync(handler.getTransactions())
-        expect(transactions.length).toBeGreaterThan(0)
-
-        const transaction = await handler.signTransaction(
-            TEST_TRANSACTION_HASH,
-            '02fefbcc9aebc8a479f211167a9f564df53aefd603a8662d9449a98c1ead2eba'
-        )
-        expect(transaction).toBeDefined()
-    }, 25000)
+            const transaction = await handler.signTransaction(
+                TEST_TRANSACTION_HASH,
+                '02fefbcc9aebc8a479f211167a9f564df53aefd603a8662d9449a98c1ead2eba'
+            )
+            expect(transaction).toBeDefined()
+        }, 25000)
+    }
 })

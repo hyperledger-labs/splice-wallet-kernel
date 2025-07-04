@@ -23,8 +23,6 @@ const TEST_FIREBLOCKS_VAULT_ID = TEST_FIREBLOCKS_DERIVATION_PATH.join('-')
 const TEST_FIREBLOCKS_PUBLIC_KEY =
     '02fefbcc9aebc8a479f211167a9f564df53aefd603a8662d9449a98c1ead2eba'
 
-const SECRET_KEY_LOCATION = 'fireblocks_secret.key'
-
 jest.mock('./fireblocks', () => {
     const actual = jest.requireActual('./fireblocks')
     if (process.env.FIREBLOCKS_API_KEY) {
@@ -53,7 +51,7 @@ jest.mock('./fireblocks', () => {
                                 derivationPath: TEST_FIREBLOCKS_DERIVATION_PATH,
                             }
                         }
-                        return generator
+                        return generator()
                     }),
                     signTransaction: jest.fn().mockResolvedValue({
                         txId: TEST_TRANSACTION_HASH,
@@ -79,14 +77,23 @@ export function throwWhenRpcError<T>(value: T | RpcError): void {
 }
 
 async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
-    const secretPath = path.resolve(process.cwd(), SECRET_KEY_LOCATION)
-    const apiSecret = readFileSync(secretPath, 'utf8')
-    const apiKey = process.env.FIREBLOCKS_API_KEY || 'mocked'
-
-    const signingDriver = new FireblocksSigningDriver({
-        apiKey,
-        apiSecret,
-    })
+    let signingDriver: FireblocksSigningDriver
+    const apiKey = process.env.FIREBLOCKS_API_KEY
+    const secretLocation =
+        process.env.SECRET_KEY_LOCATION || 'fireblocks_secret.key'
+    if (!apiKey) {
+        signingDriver = new FireblocksSigningDriver({
+            apiKey: 'mocked',
+            apiSecret: 'mocked',
+        })
+    } else {
+        const secretPath = path.resolve(process.cwd(), secretLocation)
+        const apiSecret = readFileSync(secretPath, 'utf8')
+        signingDriver = new FireblocksSigningDriver({
+            apiKey,
+            apiSecret,
+        })
+    }
     const key = {
         id: TEST_FIREBLOCKS_VAULT_ID,
         name: keyName,
