@@ -5005,6 +5005,7 @@ __metadata:
     fs-extra: "npm:^11.3.0"
     jest: "npm:^29.7.0"
     lodash: "npm:^4.17.21"
+    pino: "npm:^9.7.0"
     ts-jest-resolver: "npm:^2.0.1"
     tweetnacl: "npm:^1.0.3"
     tweetnacl-util: "npm:^0.15.1"

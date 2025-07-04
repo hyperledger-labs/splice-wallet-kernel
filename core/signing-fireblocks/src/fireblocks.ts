@@ -3,6 +3,7 @@ import {
     PublicKeyInformationAlgorithmEnum,
     VaultAccount,
 } from '@fireblocks/ts-sdk'
+import { pino } from 'pino'
 import { SigningStatusEnum } from 'core-signing-lib'
 import { z } from 'zod'
 
@@ -36,6 +37,8 @@ export interface FireblocksTransaction {
     publicKey?: string | undefined
     derivationPath: number[]
 }
+
+const logger = pino({ name: 'main', level: 'debug' })
 
 export class FireblocksHandler {
     private client: Fireblocks
@@ -104,7 +107,7 @@ export class FireblocksHandler {
                 }
             }
         } catch (error) {
-            console.error('Error fetching vault accounts:', error)
+            logger.error('Error fetching vault accounts:', error)
             throw error
         }
         return keys
@@ -197,7 +200,7 @@ export class FireblocksHandler {
                 }
             }
         } catch (error) {
-            console.error('Error fetching signatures', error)
+            logger.error('Error fetching signatures', error)
             throw error
         }
     }
@@ -261,7 +264,7 @@ export class FireblocksHandler {
                 derivationPath: key.derivationPath,
             }
         } catch (error) {
-            console.error('Error refreshing key cache:', error)
+            logger.error('Error refreshing key cache:', error)
             throw error
         }
     }
