@@ -6,6 +6,8 @@
     "main": "build/index.js",
     "scripts": {
         "build": "tsc && typedoc src/index.ts --out docs --excludeExternals --excludePrivate --hideGenerator --readme none",
+        "dev": "tsc -b --watch",
+        "clean": "tsc -b --clean; rm -rf dist",
         "lint": "eslint src/**/*.ts"
     },
     "files": [
@@ -14,9 +16,7 @@
     "author": "",
     "license": "Apache-2.0",
     "dependencies": {
-        "@open-rpc/client-js": "1.8.1",
-        "@open-rpc/meta-schema": "1.14.9",
-        "@open-rpc/schema-utils-js": "2.1.2",
+        "core-types": "workspace:^",
         "lodash": "^4.17.15"
     },
     "devDependencies": {

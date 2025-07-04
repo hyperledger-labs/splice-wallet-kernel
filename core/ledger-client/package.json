@@ -20,8 +20,12 @@
         "@swc/jest": "^0.2.38",
         "@types/jest": "^30.0.0",
         "jest": "^30.0.0",
+        "openapi-typescript": "^7.8.0",
         "ts-jest": "^29.4.0",
         "ts-jest-resolver": "^2.0.1",
         "typescript": "^5.8.3"
+    },
+    "dependencies": {
+        "openapi-fetch": "^0.14.0"
     }
 }

@@ -7,6 +7,7 @@ import { AuthService } from 'core-wallet-auth'
 import { StoreInternal, StoreInternalConfig } from 'core-wallet-store'
 import { ConfigUtils } from './config/ConfigUtils.js'
 import * as schemas from './config/StoreConfig.js'
+import { LedgerClient } from 'core-ledger-client'
 
 const dAppPort = 3000
 const userPort = 3001
@@ -29,13 +30,18 @@ const config: StoreInternalConfig = {
 }
 const store = new StoreInternal(config)
 
+const ledgerClient = new LedgerClient('http://localhost:5003')
+
 export const dAppServer = dapp(authService, store).listen(dAppPort, () => {
     logger.info(`dApp Server running at http://localhost:${dAppPort}`)
 })
 
-export const userServer = user(authService, store).listen(userPort, () => {
-    logger.info(`User Server running at http://localhost:${userPort}`)
-})
+export const userServer = user(ledgerClient, authService, store).listen(
+    userPort,
+    () => {
+        logger.info(`User Server running at http://localhost:${userPort}`)
+    }
+)
 
 export const webServer = ViteExpress.listen(web, webPort, () =>
     logger.info(`Web server running at http://localhost:${webPort}`)

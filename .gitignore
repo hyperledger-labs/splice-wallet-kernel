@@ -1,13 +1,15 @@
 .idea/
 node_modules/
 dist
-client
 npm-debug.log
 .env
 .DS_Store
 *.tsbuildinfo
 **/build
 .temp/
+
+.canton/
+log/
 
 generated/
 

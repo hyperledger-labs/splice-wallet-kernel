@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as process from 'process'
-import { getRepoRoot, markFile, traverseDirectory } from './script-utils.js'
+import { getRepoRoot, markFile, traverseDirectory } from './utils.js'
 
 function checkPackageJson(packageJsonPath: string): number {
     const rootPath = getRepoRoot()
@@ -24,6 +24,7 @@ function checkPackageJson(packageJsonPath: string): number {
     if (
         folderPath.includes('.yarn') ||
         folderPath.includes('.vite') ||
+        folderPath.includes('.canton') ||
         folderPath == ''
     ) {
         return 0

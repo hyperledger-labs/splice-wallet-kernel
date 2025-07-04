@@ -29,9 +29,13 @@ describe('StoreInternal', () => {
             primary: false,
             partyId: 'party1',
             hint: 'hint',
-            fingerprint: 'fp',
-            address: { publicKey: 'pk', privateKey: 'sk' },
-            chainId: 'chain1',
+            signingProviderId: 'internal',
+            publicKey: 'publicKey',
+            namespace: 'namespace',
+            networkId: 'network1',
+            // fingerprint: 'fp',
+            // address: { publicKey: 'pk', privateKey: 'sk' },
+            // chainId: 'chain1',
         }
         await store.addWallet(wallet)
         const wallets = await store.getWallets()
@@ -44,17 +48,25 @@ describe('StoreInternal', () => {
             primary: false,
             partyId: 'party1',
             hint: 'hint1',
-            fingerprint: 'fp1',
-            address: { publicKey: 'pk1', privateKey: 'sk1' },
-            chainId: 'chain1',
+            signingProviderId: 'internal',
+            publicKey: 'publicKey',
+            namespace: 'namespace',
+            networkId: 'network1',
+            // fingerprint: 'fp1',
+            // address: { publicKey: 'pk1', privateKey: 'sk1' },
+            // chainId: 'chain1',
         }
         const wallet2: Wallet = {
             primary: false,
             partyId: 'party2',
             hint: 'hint2',
-            fingerprint: 'fp2',
-            address: { publicKey: 'pk2', privateKey: 'sk2' },
-            chainId: 'chain2',
+            signingProviderId: 'internal',
+            publicKey: 'publicKey',
+            namespace: 'namespace',
+            networkId: 'network1',
+            // fingerprint: 'fp2',
+            // address: { publicKey: 'pk2', privateKey: 'sk2' },
+            // chainId: 'chain2',
         }
         await store.addWallet(wallet1)
         await store.addWallet(wallet2)

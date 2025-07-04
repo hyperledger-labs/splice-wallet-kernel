@@ -3,6 +3,7 @@ import { customElement, state } from 'lit/decorators.js'
 import { NetworkConfig } from 'core-wallet-store'
 import 'core-wallet-ui-components'
 import 'core-wallet-ui-components/themes/default.css'
+import { userClient } from '../rpc-client'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
@@ -13,37 +14,9 @@ export class LoginUI extends LitElement {
             font-family: var(--splice-wk-font-family);
         }
     `
+
     @state()
-    accessor idps: NetworkConfig[] = [
-        {
-            name: 'xyz',
-            description: 'name1',
-            ledgerApi: {
-                baseUrl: 'https://test',
-            },
-            auth: {
-                type: 'password',
-                tokenUrl: 'tokenUrl',
-                grantType: 'password',
-                scope: 'openid',
-                clientId: 'wk-service-account',
-            },
-        },
-        {
-            name: 'abc',
-            description: 'dex idp',
-            ledgerApi: {
-                baseUrl: 'https://test',
-            },
-            auth: {
-                type: 'implicit',
-                domain: 'http://localhost:5556/dex',
-                audience: '',
-                scope: 'openid email profile',
-                clientId: 'test-client',
-            },
-        },
-    ]
+    accessor idps: NetworkConfig[] = []
 
     @state()
     accessor selectedNetwork: NetworkConfig | null = null
@@ -53,28 +26,44 @@ export class LoginUI extends LitElement {
         this.selectedNetwork = this.idps[index] ?? null
     }
 
+    private async loadNetworks() {
+        const response = await userClient.request('listNetworks')
+        return response.result.networks as NetworkConfig[]
+    }
+
+    async connectedCallback() {
+        super.connectedCallback()
+        this.idps = await this.loadNetworks()
+    }
+
     private async handleConnectToIDP() {
         if (!this.selectedNetwork) {
             alert('Please select a network before connecting')
             return
         }
 
-        const redirectUri = 'http://localhost:3002/callback' //should probably be config driven?
+        const redirectUri = 'http://localhost:3002/callback/' //should probably be config driven?
         if (this.selectedNetwork.auth.type === 'implicit') {
             const domain = this.selectedNetwork.auth.domain
+
             const configUrl = `${domain}/.well-known/openid-configuration`
             const config = await fetch(configUrl).then((res) => res.json())
             const scope = this.selectedNetwork.auth.scope
             const audience = this.selectedNetwork.auth.audience
+            const statePayload = {
+                domain: domain,
+                clientId: this.selectedNetwork.auth.clientId,
+            }
+
             const params = new URLSearchParams({
-                response_type: 'token id_token',
+                response_type: 'code',
                 response_mode: 'fragment',
                 client_id: this.selectedNetwork.auth.clientId,
                 redirect_uri: redirectUri,
                 nonce: crypto.randomUUID(),
                 scope,
                 audience,
-                state: domain,
+                state: btoa(JSON.stringify(statePayload)),
             })
 
             window.location.href = `${config.authorization_endpoint}?${params.toString()}`
