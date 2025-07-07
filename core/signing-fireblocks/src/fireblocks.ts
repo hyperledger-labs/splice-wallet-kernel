@@ -138,9 +138,6 @@ export class FireblocksHandler {
                             : {}),
                     })
                 fetchedLength = transactions.data.length
-                console.log(
-                    `Fetched ${fetchedLength} transactions before ${beforeQuery}`
-                )
                 for (const tx of transactions.data) {
                     // set next before to createdAt - 1 as before is inclusive of any transaction exactly at that
                     // timestamp
