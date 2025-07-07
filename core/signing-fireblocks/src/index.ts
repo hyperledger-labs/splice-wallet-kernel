@@ -101,6 +101,14 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
                             publicKey: tx.publicKey,
                         })
                     }
+                    if (
+                        params.txIds &&
+                        !params.publicKeys &&
+                        transactions.length == txIds.size
+                    ) {
+                        // stop if we are filtering by only txIds and have found all requested transactions
+                        break
+                    }
                 }
                 return {
                     transactions: transactions,
