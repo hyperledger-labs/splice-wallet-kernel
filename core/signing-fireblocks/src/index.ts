@@ -126,13 +126,20 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
         },
 
         getKeys: async (): Promise<GetKeysResult> => {
-            const keys = await this.fireblocks.getPublicKeys()
-            return {
-                keys: keys.map((k) => ({
-                    id: k.derivationPath.join('-'),
-                    name: k.name,
-                    publicKey: k.publicKey,
-                })),
+            try {
+                const keys = await this.fireblocks.getPublicKeys()
+                return {
+                    keys: keys.map((k) => ({
+                        id: k.derivationPath.join('-'),
+                        name: k.name,
+                        publicKey: k.publicKey,
+                    })),
+                }
+            } catch (error) {
+                return {
+                    error: 'fetch_error',
+                    error_description: (error as Error).message,
+                }
             }
         },
 
@@ -146,10 +153,10 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
             }
         },
 
-        // TODO: implement dynamic reconfiguration of the Fireblocks client
         getConfiguration: async (): Promise<GetConfigurationResult> => {
             return this.config
         },
+
         setConfiguration: async (
             params: SetConfigurationParams
         ): Promise<SetConfigurationResult> => {
