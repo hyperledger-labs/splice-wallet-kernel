@@ -117,87 +117,109 @@ export class FireblocksHandler {
      * refresh the key cache.
      * @returns AsyncGenerator of FireblocksTransactions
      */
-    public async *getTransactions(): AsyncGenerator<FireblocksTransaction> {
+    public async *getTransactions({
+        limit = 200,
+        before,
+    }: {
+        limit?: number
+        before?: number
+    } = {}): AsyncGenerator<FireblocksTransaction> {
         let refreshedCache = false
+        let fetchedLength = 0
+        let beforeQuery: number | undefined = before
         try {
-            // TODO: use `before` or `after` parameters to implement pagination
-            const transactions = await this.client.transactions.getTransactions(
-                {
-                    sourceType: 'VAULT_ACCOUNT',
-                    limit: 500,
-                }
-            )
-            for (const tx of transactions.data) {
-                if (
-                    !tx.id ||
-                    tx.operation !== 'RAW' ||
-                    !tx.extraParameters ||
-                    !('rawMessageData' in tx.extraParameters)
-                ) {
-                    // Skip transactions that are not RAW or do not conform to expected structure
-                    continue
-                }
-
-                if (tx.signedMessages && tx.signedMessages.length > 0) {
-                    const signedMessage = tx.signedMessages[0]
+            do {
+                const transactions =
+                    await this.client.transactions.getTransactions({
+                        sourceType: 'VAULT_ACCOUNT',
+                        limit,
+                        ...(beforeQuery
+                            ? { before: beforeQuery.toString() }
+                            : {}),
+                    })
+                fetchedLength = transactions.data.length
+                console.log(
+                    `Fetched ${fetchedLength} transactions before ${beforeQuery}`
+                )
+                for (const tx of transactions.data) {
+                    // set next before to createdAt - 1 as before is inclusive of any transaction exactly at that
+                    // timestamp
+                    beforeQuery = tx.createdAt! - 1
                     if (
-                        !signedMessage.publicKey ||
-                        !signedMessage.content ||
-                        !signedMessage.signature
+                        !tx.id ||
+                        tx.operation !== 'RAW' ||
+                        !tx.extraParameters ||
+                        !('rawMessageData' in tx.extraParameters)
                     ) {
-                        throw new Error(
-                            `Transaction ${tx.id} has no public key or content in signed message`
-                        )
-                    }
-                    yield {
-                        txId: tx.id,
-                        status: 'signed',
-                        publicKey: signedMessage.publicKey,
-                        signature: signedMessage.signature.fullSig,
-                        derivationPath: signedMessage.derivationPath!,
-                    }
-                } else {
-                    const rawMessageData =
-                        RawMessageExtraParametersSchema.safeParse(
-                            tx.extraParameters
-                        )
-                    if (!rawMessageData.success) {
-                        // Skip transactions with invalid rawMessageData
+                        // Skip transactions that are not RAW or do not conform to expected structure
                         continue
                     }
-                    const message =
-                        rawMessageData.data.rawMessageData.messages[0]
-                    const derivationPath = JSON.stringify(
-                        message.derivationPath
-                    )
 
-                    if (
-                        !this.keyCacheByDerivationPath.has(derivationPath) &&
-                        !refreshedCache
-                    ) {
-                        // Refresh the key cache only once in case the cache has not been populated
-                        // since the transaction was created - however do not repeatedly refresh
-                        // in case of derivation paths that definitely do not exist
-                        await this.getPublicKeys()
-                        refreshedCache = true
-                    }
-                    const publicKey =
-                        this.keyCacheByDerivationPath.get(derivationPath)
+                    if (tx.signedMessages && tx.signedMessages.length > 0) {
+                        const signedMessage = tx.signedMessages[0]
+                        if (
+                            !signedMessage.publicKey ||
+                            !signedMessage.content ||
+                            !signedMessage.signature
+                        ) {
+                            throw new Error(
+                                `Transaction ${tx.id} has no public key or content in signed message`
+                            )
+                        }
+                        yield {
+                            txId: tx.id,
+                            status: 'signed',
+                            publicKey: signedMessage.publicKey,
+                            signature: signedMessage.signature.fullSig,
+                            derivationPath: signedMessage.derivationPath!,
+                        }
+                    } else {
+                        const rawMessageData =
+                            RawMessageExtraParametersSchema.safeParse(
+                                tx.extraParameters
+                            )
+                        if (!rawMessageData.success) {
+                            // Skip transactions with invalid rawMessageData
+                            continue
+                        }
+                        const message =
+                            rawMessageData.data.rawMessageData.messages[0]
+                        const derivationPath = JSON.stringify(
+                            message.derivationPath
+                        )
 
-                    const status =
-                        tx.status === 'REJECTED' || tx.status === 'BLOCKED'
-                            ? 'rejected'
-                            : tx.status === 'FAILED'
-                              ? 'failed'
-                              : 'pending'
-                    yield {
-                        txId: tx.id,
-                        status: status,
-                        publicKey: publicKey?.publicKey,
-                        derivationPath: message.derivationPath,
+                        if (
+                            !this.keyCacheByDerivationPath.has(
+                                derivationPath
+                            ) &&
+                            !refreshedCache
+                        ) {
+                            // Refresh the key cache only once in case the cache has not been populated
+                            // since the transaction was created - however do not repeatedly refresh
+                            // in case of derivation paths that definitely do not exist
+                            await this.getPublicKeys()
+                            refreshedCache = true
+                        }
+                        const publicKey =
+                            this.keyCacheByDerivationPath.get(derivationPath)
+
+                        const status =
+                            tx.status === 'REJECTED' || tx.status === 'BLOCKED'
+                                ? 'rejected'
+                                : tx.status === 'FAILED'
+                                  ? 'failed'
+                                  : 'pending'
+                        yield {
+                            txId: tx.id,
+                            status: status,
+                            publicKey: publicKey?.publicKey,
+                            derivationPath: message.derivationPath,
+                        }
                     }
                 }
-            }
+                // once the fetched length is 0 before our last createdAt tx,
+                // there will be no transactions to fetch
+            } while (fetchedLength > 0)
         } catch (error) {
             logger.error('Error fetching signatures', error)
             throw error
