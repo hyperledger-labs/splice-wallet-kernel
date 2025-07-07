@@ -154,13 +154,16 @@
                         "type": "object",
                         "properties": {
                             "requestMethod": {
+                                "title": "requestMethod",
                                 "type": "string",
                                 "enum": ["GET", "POST", "PUT", "DELETE"]
                             },
                             "resource": {
+                                "title": "resource",
                                 "type": "string"
                             },
                             "body": {
+                                "title": "body",
                                 "type": "string"
                             }
                         },

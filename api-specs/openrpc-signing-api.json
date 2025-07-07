@@ -20,14 +20,17 @@
                                 "description": "Bytestring of the prepared transaction for verification purposes."
                             },
                             "txHash": {
+                                "title": "txHash",
                                 "type": "string",
                                 "description": "Hash of the prepared transaction that will be signed."
                             },
                             "publicKey": {
+                                "title": "publicKey",
                                 "type": "string",
                                 "description": "Public key to use to sign the transaction."
                             },
                             "internalTxId": {
+                                "title": "internalTxId",
                                 "type": "string",
                                 "description": "Internal txId used by the Wallet Kernel to store the transaction."
                             }
@@ -267,7 +270,6 @@
             },
             "Key": {
                 "type": "object",
-                "title": "Key",
                 "properties": {
                     "id": {
                         "type": "string",
@@ -300,9 +302,9 @@
                 "required": ["error", "error_description"]
             },
             "SigningStatus": {
-                "title": "SigningStatusEnum",
                 "type": "string",
-                "enum": ["pending", "signed", "rejected", "failed"],
+                "title": "SigningStatus",
+                "enum": ["pending", "signed", "rejected"],
                 "description": "Status of the transaction signing process"
             },
             "Transaction": {

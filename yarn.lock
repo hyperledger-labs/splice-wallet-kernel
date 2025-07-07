@@ -11231,6 +11231,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "scripts@workspace:scripts"
   dependencies:
+    "@open-rpc/meta-schema": "npm:^1.14.9"
     "@types/node": "npm:^24.0.4"
     "@types/tar-fs": "npm:^2.0.4"
     axios: "npm:^1.5.0"

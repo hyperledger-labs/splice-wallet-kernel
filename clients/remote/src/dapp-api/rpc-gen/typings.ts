@@ -9,8 +9,9 @@
 export interface JsCommands {
     [key: string]: any
 }
-export type StringMo3KZIJp = 'GET' | 'POST' | 'PUT' | 'DELETE'
-export type StringDoaGddGA = string
+export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
+export type Resource = string
+export type Body = string
 /**
  *
  * The unique identifier of the wallet kernel.
@@ -58,6 +59,7 @@ export type StringIUsSEQ9O = string
  *
  */
 export type UserUrl = string
+export type StringDoaGddGA = string
 export type UnorderedSetOfStringDoaGddGADvj0XlFa = StringDoaGddGA[]
 /**
  *
@@ -96,9 +98,9 @@ export interface PrepareExecuteParams {
     [k: string]: any
 }
 export interface LedgerApiParams {
-    requestMethod: StringMo3KZIJp
-    resource: StringDoaGddGA
-    body?: StringDoaGddGA
+    requestMethod: RequestMethod
+    resource: Resource
+    body?: Body
     [k: string]: any
 }
 export interface StatusResult {

@@ -33,6 +33,7 @@ export const CANTON_PATH = path.join(repoRoot, '.canton')
 export const CANTON_BIN = path.join(CANTON_PATH, 'bin/canton')
 export const CANTON_CONF = path.join(repoRoot, 'canton.conf')
 export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton-bootstrap.canton')
+export const API_SPECS_PATH = path.join(repoRoot, 'api-specs')
 
 // Canton versions
 export const DAML_RELEASE_VERSION = '3.4.0-snapshot.20250625.0'
