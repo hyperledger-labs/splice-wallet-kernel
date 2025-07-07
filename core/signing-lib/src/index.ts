@@ -10,6 +10,12 @@ export function isRpcError<T>(value: T | RpcError): value is RpcError {
     return (value as RpcError).error_description !== undefined
 }
 
+export enum PartyMode {
+    INTERNAL,
+    EXTERNAL,
+}
+
 export interface SigningDriverInterface {
+    partyMode: PartyMode
     controller: Methods
 }

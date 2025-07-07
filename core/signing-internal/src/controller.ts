@@ -1,6 +1,10 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { buildController, SigningDriverInterface } from 'core-signing-lib'
+import {
+    buildController,
+    PartyMode,
+    SigningDriverInterface,
+} from 'core-signing-lib'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
 
@@ -51,6 +55,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
     private signerByPublicKey: Map<string, InternalKey> = new Map()
     private transactions: Map<string, InternalTransaction> = new Map()
 
+    public partyMode = PartyMode.EXTERNAL
     public controller = buildController({
         signTransaction: async (
             params: SignTransactionParams
