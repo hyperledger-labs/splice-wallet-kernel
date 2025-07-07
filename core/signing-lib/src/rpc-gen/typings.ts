@@ -84,13 +84,19 @@ export type StringWl2Vj63L = string
  * Status of the transaction signing process.
  *
  */
-export type StringKpZSFUbB = 'pending' | 'signed' | 'rejected'
+export type SigningStatusEnum = 'pending' | 'signed' | 'rejected' | 'failed'
 /**
  *
  * Signature of the transaction if it was signed.
  *
  */
 export type StringAqnQ2CGz = string
+/**
+ *
+ * Public key used to sign the transaction.
+ *
+ */
+export type StringLE4EvXxW = string
 /**
  *
  * Additional metadata about the transaction.
@@ -101,8 +107,9 @@ export interface ObjectTcbHGNLS {
 }
 export interface Transaction {
     txId: StringWl2Vj63L
-    status: StringKpZSFUbB
+    status: SigningStatusEnum
     signature?: StringAqnQ2CGz
+    publicKey?: StringLE4EvXxW
     metadata?: ObjectTcbHGNLS
     [k: string]: any
 }
@@ -111,9 +118,9 @@ export interface Transaction {
  * List of transactions matching the provided filters
  *
  */
-export type UnorderedSetOfTransaction0OZETHXh = Transaction[]
-export interface ObjectOfUnorderedSetOfTransaction0OZETHXhNmSKQwE6 {
-    transactions?: UnorderedSetOfTransaction0OZETHXh
+export type UnorderedSetOfTransactioniBjiped3 = Transaction[]
+export interface ObjectOfUnorderedSetOfTransactioniBjiped3NTBdjiqM {
+    transactions?: UnorderedSetOfTransactioniBjiped3
     [k: string]: any
 }
 /**
@@ -182,17 +189,12 @@ export type SignTransactionResult = Error | Transaction
 export type GetTransactionResult = Error | Transaction
 export type GetTransactionsResult =
     | Error
-    | ObjectOfUnorderedSetOfTransaction0OZETHXhNmSKQwE6
+    | ObjectOfUnorderedSetOfTransactioniBjiped3NTBdjiqM
 export interface GetKeysResult {
     keys?: UnorderedSetOfKeyU58FG0Db
     [k: string]: any
 }
-export interface CreateKeyResult {
-    id: StringSeicKbSk
-    name: StringLI0CTZ6I
-    publicKey: StringFrHbj8VQ
-    [k: string]: any
-}
+export type CreateKeyResult = Error | Key
 export interface GetConfigurationResult {
     [key: string]: any
 }
@@ -201,8 +203,9 @@ export interface SetConfigurationResult {
 }
 export interface SubscribeTransactionsResult {
     txId: StringWl2Vj63L
-    status: StringKpZSFUbB
+    status: SigningStatusEnum
     signature?: StringAqnQ2CGz
+    publicKey?: StringLE4EvXxW
     metadata?: ObjectTcbHGNLS
     [k: string]: any
 }
