@@ -22,9 +22,8 @@ import {
 import { FireblocksHandler } from './fireblocks'
 import _ from 'lodash'
 import { z } from 'zod'
-import { Fireblocks } from '@fireblocks/ts-sdk'
 
-interface FireblocksConfig {
+export interface FireblocksConfig {
     apiKey: string
     apiSecret: string
     apiPath?: string

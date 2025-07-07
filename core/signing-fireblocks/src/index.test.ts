@@ -23,8 +23,6 @@ const TEST_FIREBLOCKS_VAULT_ID = TEST_FIREBLOCKS_DERIVATION_PATH.join('-')
 const TEST_FIREBLOCKS_PUBLIC_KEY =
     '02fefbcc9aebc8a479f211167a9f564df53aefd603a8662d9449a98c1ead2eba'
 
-const FIREBLOCKS_API_PATH = 'https://api.fireblocks.io/v1'
-
 jest.mock('./fireblocks', () => {
     const actual = jest.requireActual('./fireblocks')
     if (process.env.FIREBLOCKS_API_KEY) {
@@ -78,10 +76,7 @@ export function throwWhenRpcError<T>(value: T | RpcError): void {
     }
 }
 
-async function setupTest(
-    keyName: string = TEST_KEY_NAME,
-    apiPath: string | undefined = undefined
-): Promise<TestValues> {
+async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     let signingDriver: FireblocksSigningDriver
     const apiKey = process.env.FIREBLOCKS_API_KEY
     const secretLocation =
@@ -90,7 +85,6 @@ async function setupTest(
         signingDriver = new FireblocksSigningDriver({
             apiKey: 'mocked',
             apiSecret: 'mocked',
-            apiPath,
         })
     } else {
         const secretPath = path.resolve(process.cwd(), secretLocation)
@@ -98,7 +92,6 @@ async function setupTest(
         signingDriver = new FireblocksSigningDriver({
             apiKey,
             apiSecret,
-            apiPath,
         })
     }
     const key = {
@@ -160,21 +153,16 @@ test('transaction signature', async () => {
 }, 60000)
 
 test('test config change', async () => {
-    const { signingDriver } = await setupTest(
-        'any-key-name',
-        'https://not.fireblocks.test'
-    )
-
-    const err = await signingDriver.controller.getKeys()
-    expect(isRpcError(err)).toBe(true)
+    const { signingDriver } = await setupTest()
+    const newPath = 'new-path'
 
     const config = await signingDriver.controller.getConfiguration()
     signingDriver.controller.setConfiguration({
         apiKey: config.apiKey,
         apiSecret: config.apiSecret,
-        apiPath: FIREBLOCKS_API_PATH,
+        apiPath: newPath,
     })
 
-    const keys = await signingDriver.controller.getKeys()
-    expect(isRpcError(keys)).toBe(false)
+    const newConfig = await signingDriver.controller.getConfiguration()
+    expect(newConfig.apiPath).toBe(newPath)
 })
