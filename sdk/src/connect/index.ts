@@ -7,11 +7,7 @@ export * from 'core-splice-provider'
 
 const injectProvider = ({ url, walletType }: DiscoverResult) => {
     if (walletType === 'remote') {
-        return injectSpliceProvider(
-            ProviderType.HTTP,
-            new URL(url),
-            'not-a-token'
-        )
+        return injectSpliceProvider(ProviderType.HTTP, new URL(url))
     } else {
         return injectSpliceProvider(ProviderType.WINDOW)
     }

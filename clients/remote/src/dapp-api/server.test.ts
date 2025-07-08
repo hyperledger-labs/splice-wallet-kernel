@@ -47,7 +47,7 @@ test('call connect rpc', async () => {
             },
             isConnected: false,
             chainId: 'default-chain-id',
-            userUrl: 'http://localhost:3002/login',
+            userUrl: 'http://localhost:3002/login/',
         },
     })
 })

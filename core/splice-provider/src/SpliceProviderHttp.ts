@@ -1,12 +1,26 @@
-import { RequestPayload } from 'core-types'
+import { isSpliceMessageEvent, RequestPayload, WalletEvent } from 'core-types'
 import { SpliceProviderBase } from './SpliceProvider'
 
 export class SpliceProviderHttp extends SpliceProviderBase {
-    constructor(
-        private url: URL,
-        private sessionToken?: string
-    ) {
+    private sessionToken?: string
+
+    constructor(private url: URL) {
         super()
+
+        // Listen for the auth success event sent from the WK UI popup to the SDK running in the parent window.
+        window.addEventListener('message', (event) => {
+            if (!isSpliceMessageEvent(event)) return
+
+            if (
+                event.data.type === WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS
+            ) {
+                this.sessionToken = event.data.token
+                console.log(
+                    `SpliceProviderHttp: setting sessionToken to ${this.sessionToken}`
+                )
+            }
+        })
+
         this.on('onConnected', (args) => {
             if (
                 args &&
