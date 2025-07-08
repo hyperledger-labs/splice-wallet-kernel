@@ -78,7 +78,7 @@
                     "description": "Represents a null value, used in responses where no data is returned."
                 }
             },
-            "description": "Adds a new network configuration (similar to EIP-3085)."
+            "description": "Removes a new network configuration (similar to EIP-3085)."
         },
         {
             "name": "createWallet",

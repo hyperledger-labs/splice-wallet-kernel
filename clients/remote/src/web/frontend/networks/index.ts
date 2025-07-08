@@ -134,11 +134,11 @@ export class UserUiNetworks extends LitElement {
         this.listNetworks()
     }
 
-    private async handleDelete(e: CustomEvent<NetworkConfig>) {
-        const n = e.detail
+    private async handleDelete(net: NetworkConfig) {
+        if (!confirm(`delete network "${net.name}"?`)) return
 
         const params: RemoveNetworkParams = {
-            networkName: n.name,
+            networkName: net.name,
         }
         await userClient.request('removeNetwork', params)
 
