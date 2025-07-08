@@ -1,6 +1,11 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { buildController, SigningDriverInterface } from 'core-signing-lib'
+import {
+    buildController,
+    PartyMode,
+    SigningDriverInterface,
+    SigningProvider,
+} from 'core-signing-lib'
 
 import {
     SignTransactionParams,
@@ -37,7 +42,8 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
             config.apiPath || 'https://api.fireblocks.io/v1'
         )
     }
-
+    public partyMode = PartyMode.EXTERNAL
+    public signingProvider = SigningProvider.FIREBLOCKS
     public controller = buildController({
         signTransaction: async (
             params: SignTransactionParams
