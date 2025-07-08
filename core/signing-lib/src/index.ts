@@ -15,7 +15,14 @@ export enum PartyMode {
     EXTERNAL,
 }
 
+export enum SigningProvider {
+    WALLET_KERNEL = 'wallet-kernel',
+    PARTICIPANT = 'participant',
+    FIREBLOCKS = 'fireblocks',
+}
+
 export interface SigningDriverInterface {
     partyMode: PartyMode
+    signingProvider: SigningProvider
     controller: Methods
 }

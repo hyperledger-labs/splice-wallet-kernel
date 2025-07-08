@@ -4,6 +4,7 @@ import {
     buildController,
     PartyMode,
     SigningDriverInterface,
+    SigningProvider,
 } from 'core-signing-lib'
 
 import {
@@ -42,6 +43,7 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
         )
     }
     public partyMode = PartyMode.EXTERNAL
+    public signingProvider = SigningProvider.FIREBLOCKS
     public controller = buildController({
         signTransaction: async (
             params: SignTransactionParams

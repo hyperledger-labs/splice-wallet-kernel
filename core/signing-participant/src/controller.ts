@@ -8,6 +8,7 @@ import {
     PartyMode,
     SetConfigurationResult,
     SigningDriverInterface,
+    SigningProvider,
     SignTransactionParams,
     SignTransactionResult,
     SubscribeTransactionsResult,
@@ -16,6 +17,7 @@ import { randomUUID } from 'node:crypto'
 
 export class ParticipantSigningDriver implements SigningDriverInterface {
     public partyMode = PartyMode.INTERNAL
+    public signingProvider = SigningProvider.PARTICIPANT
     public controller = buildController({
         signTransaction: async (
             params: SignTransactionParams

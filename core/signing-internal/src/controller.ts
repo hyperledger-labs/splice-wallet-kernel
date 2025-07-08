@@ -4,6 +4,7 @@ import {
     buildController,
     PartyMode,
     SigningDriverInterface,
+    SigningProvider,
 } from 'core-signing-lib'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
@@ -56,6 +57,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
     private transactions: Map<string, InternalTransaction> = new Map()
 
     public partyMode = PartyMode.EXTERNAL
+    public signingProvider = SigningProvider.WALLET_KERNEL
     public controller = buildController({
         signTransaction: async (
             params: SignTransactionParams
