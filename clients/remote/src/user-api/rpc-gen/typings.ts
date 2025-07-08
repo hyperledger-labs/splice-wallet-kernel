@@ -26,19 +26,18 @@ export type NetworkId = string
  */
 export type SigningProviderId = string
 export type PartyId = string
-export type StringDoaGddGA = string
 /**
  *
  * Filter wallets by network IDs.
  *
  */
-export type NetworkIds = StringDoaGddGA[]
+export type NetworkIds = NetworkId[]
 /**
  *
  * Filter wallets by signing provider IDs.
  *
  */
-export type SigningProviderIds = StringDoaGddGA[]
+export type SigningProviderIds = SigningProviderId[]
 /**
  *
  * Filter for the wallets to be returned.

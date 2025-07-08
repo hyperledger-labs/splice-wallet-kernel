@@ -8859,7 +8859,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonc-parser@npm:^3.2.0":
+"jsonc-parser@npm:^3.2.0, jsonc-parser@npm:^3.3.1":
   version: 3.3.1
   resolution: "jsonc-parser@npm:3.3.1"
   checksum: 10c0/269c3ae0a0e4f907a914bf334306c384aabb9929bd8c99f909275ebd5c2d3bc70b9bcd119ad794f339dec9f24b6a4ee9cd5a8ab2e6435e730ad4075388fc2ab6
@@ -11231,9 +11231,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "scripts@workspace:scripts"
   dependencies:
+    "@open-rpc/meta-schema": "npm:^1.14.9"
     "@types/node": "npm:^24.0.4"
     "@types/tar-fs": "npm:^2.0.4"
     axios: "npm:^1.5.0"
+    jsonc-parser: "npm:^3.3.1"
     openapi-typescript: "npm:^6.0.0"
     pm2: "npm:^6.0.8"
     tar-fs: "npm:^3.1.0"

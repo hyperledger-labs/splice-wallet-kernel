@@ -40,3 +40,6 @@ jobs:
 
             - name: check package.json names
               run: yarn script:cleancoding
+
+            - name: check open-rpc specs titles
+              run: yarn script:openrpc:titles

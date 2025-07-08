@@ -11,35 +11,36 @@ import { RequestPayload, RpcTransport } from 'core-types'
 export interface JsCommands {
     [key: string]: any
 }
-export type StringMo3KZIJp = 'GET' | 'POST' | 'PUT' | 'DELETE'
-export type StringDoaGddGA = string
+export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
+export type Resource = string
+export type Body = string
 /**
  *
  * The unique identifier of the wallet kernel.
  *
  */
-export type StringFRWQxn2U = string
+export type Id = string
 /**
  *
  * The type of client that implements the wallet kernel.
  *
  */
-export type String1W6CJDXN = 'browser' | 'desktop' | 'mobile' | 'remote'
+export type ClientType = 'browser' | 'desktop' | 'mobile' | 'remote'
 /**
  *
  * The URL of the wallet kernel.
  *
  */
-export type String3T7JhIFf = string
+export type Url = string
 /**
  *
  * Represents a wallet kernel.
  *
  */
 export interface KernelInfo {
-    id: StringFRWQxn2U
-    clientType: String1W6CJDXN
-    url?: String3T7JhIFf
+    id: Id
+    clientType: ClientType
+    url?: Url
     [k: string]: any
 }
 /**
@@ -47,48 +48,50 @@ export interface KernelInfo {
  * Whether or not a connection to a network is esablished.
  *
  */
-export type BooleanIJuPLvlB = boolean
+export type IsConnected = boolean
 /**
  *
  * A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'.
  *
  */
-export type StringIUsSEQ9O = string
+export type ChainId = string
 /**
  *
  * A URL that points to a user interface.
  *
  */
 export type UserUrl = string
-export type UnorderedSetOfStringDoaGddGADvj0XlFa = StringDoaGddGA[]
+export type Dar = string
+export type Dars = Dar[]
 /**
  *
  * The prepared transaction data.
  *
  */
-export type StringVxX3QAKl = string
+export type PreparedTransaction = string
 /**
  *
  * The hash of the prepared transaction.
  *
  */
-export type StringZK0Xb1WV = string
+export type PreparedTransactionHash = string
 /**
  *
  * Structure representing the result of a prepareReturn call
  *
  */
 export interface JsPrepareSubmissionResponse {
-    preparedTransaction?: StringVxX3QAKl
-    preparedTransactionHash?: StringZK0Xb1WV
+    preparedTransaction?: PreparedTransaction
+    preparedTransactionHash?: PreparedTransactionHash
     [k: string]: any
 }
+export type Response = string
 /**
  *
  * JWT authentication token (if applicable).
  *
  */
-export type String8FT98W8N = string
+export type SessionToken = string
 export interface PrepareReturnParams {
     commands: JsCommands
     [k: string]: any
@@ -98,43 +101,46 @@ export interface PrepareExecuteParams {
     [k: string]: any
 }
 export interface LedgerApiParams {
-    requestMethod: StringMo3KZIJp
-    resource: StringDoaGddGA
-    body?: StringDoaGddGA
+    requestMethod: RequestMethod
+    resource: Resource
+    body?: Body
     [k: string]: any
 }
 export interface StatusResult {
     kernel: KernelInfo
-    isConnected: BooleanIJuPLvlB
-    chainId?: StringIUsSEQ9O
+    isConnected: IsConnected
+    chainId?: ChainId
     [k: string]: any
 }
 export interface ConnectResult {
     kernel: KernelInfo
-    isConnected: BooleanIJuPLvlB
-    chainId?: StringIUsSEQ9O
+    isConnected: IsConnected
+    chainId?: ChainId
     userUrl: UserUrl
     [k: string]: any
 }
 export interface DarsAvailableResult {
-    dars: UnorderedSetOfStringDoaGddGADvj0XlFa
+    dars: Dars
     [k: string]: any
 }
 export type PrepareReturnResult = any
-export type PrepareExecuteResult = any
+export interface PrepareExecuteResult {
+    userUrl: UserUrl
+    [k: string]: any
+}
 /**
  *
  * Ledger Api configuration options
  *
  */
 export interface LedgerApiResult {
-    response: StringDoaGddGA
+    response: Response
     [k: string]: any
 }
 export interface OnConnectedEvent {
     kernel: KernelInfo
-    chainId: StringIUsSEQ9O
-    sessionToken?: String8FT98W8N
+    chainId: ChainId
+    sessionToken?: SessionToken
     [k: string]: any
 }
 /**

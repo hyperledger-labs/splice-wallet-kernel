@@ -4,7 +4,7 @@ import {
     VaultAccount,
 } from '@fireblocks/ts-sdk'
 import { pino } from 'pino'
-import { SigningStatusEnum, CC_COIN_TYPE } from 'core-signing-lib'
+import { SigningStatus, CC_COIN_TYPE } from 'core-signing-lib'
 import { z } from 'zod'
 
 const RawMessageSchema = z.object({
@@ -30,7 +30,7 @@ interface FireblocksKey {
 
 export interface FireblocksTransaction {
     txId: string
-    status: SigningStatusEnum
+    status: SigningStatus
     signature?: string | undefined
     publicKey?: string | undefined
     derivationPath: number[]
@@ -241,7 +241,7 @@ export class FireblocksHandler {
                         },
                     },
                 })
-            let status: SigningStatusEnum = 'pending'
+            let status: SigningStatus = 'pending'
             switch (transaction.data.status) {
                 case 'REJECTED':
                     status = 'rejected'
