@@ -5,7 +5,7 @@
     "scripts": {
         "build": "tsc -b",
         "clean": "tsc -b --clean && rm -rf ./dist",
-        "test": "jest"
+        "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
     },
     "dependencies": {
         "core-ledger-client": "workspace:^",

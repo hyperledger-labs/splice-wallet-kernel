@@ -23,7 +23,7 @@ export const dappController = (store: Store, context?: AuthContext) =>
                 kernel: kernelInfo,
                 isConnected: false,
                 chainId: 'default-chain-id',
-                userUrl: 'http://localhost:3002/login/',
+                userUrl: 'http://localhost:3002/login',
             }),
         darsAvailable: async () => Promise.resolve({ dars: ['default-dar'] }),
         ledgerApi: async (params: LedgerApiParams) =>
