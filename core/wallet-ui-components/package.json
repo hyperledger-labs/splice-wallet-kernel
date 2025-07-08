@@ -18,11 +18,13 @@
         "dev": "vite --port 8000"
     },
     "devDependencies": {
+        "@types/bootstrap": "^5",
         "typescript": "^5.8.3",
         "vite": "^6.3.5"
     },
     "packageManager": "yarn@4.9.2",
     "dependencies": {
+        "bootstrap": "^5.3.7",
         "core-types": "workspace:^",
         "lit": "^3.3.0"
     }

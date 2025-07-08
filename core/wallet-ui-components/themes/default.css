@@ -3,3 +3,37 @@
     --splice-wk-text-color: dodgerblue;
     --splice-wk-font-family: sans-serif;
 }
+
+.hidden {
+    display: none;
+}
+.header {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+.header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+}
+.header img {
+    margin-right: 10px;
+}
+.container {
+    padding: 20px;
+}
+.btn-primary,
+.btn-success {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+.btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: #fff;
+}

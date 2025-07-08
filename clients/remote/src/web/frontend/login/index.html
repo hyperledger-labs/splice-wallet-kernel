@@ -3,9 +3,15 @@
     <head>
         <meta charset="UTF-8" />
         <title>Wallet Kernel Login</title>
+        <script type="module" src="/index.ts"></script>
         <script type="module" src="/login/login.ts"></script>
     </head>
+
     <body>
-        <user-ui-login></user-ui-login>
+        <app-header iconSrc="../images/icon.png"></app-header>
+
+        <div class="container" id="mainContent">
+            <user-ui-login></user-ui-login>
+        </div>
     </body>
 </html>
