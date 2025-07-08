@@ -2,7 +2,11 @@ import { Auth, NetworkConfig } from 'core-wallet-store'
 import { LitElement, html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { userClient } from '../rpc-client'
-import { AddNetworkParams, Network } from 'core-wallet-user-rpc-client'
+import {
+    AddNetworkParams,
+    Network,
+    RemoveNetworkParams,
+} from 'core-wallet-user-rpc-client'
 
 @customElement('user-ui-networks')
 export class UserUiNetworks extends LitElement {
@@ -130,6 +134,17 @@ export class UserUiNetworks extends LitElement {
         this.listNetworks()
     }
 
+    private async handleDelete(e: CustomEvent<NetworkConfig>) {
+        const n = e.detail
+
+        const params: RemoveNetworkParams = {
+            networkName: n.name,
+        }
+        await userClient.request('removeNetwork', params)
+
+        await this.listNetworks()
+    }
+
     handleSubmit = async (e: SubmitEvent) => {
         e.preventDefault()
 
@@ -224,7 +239,12 @@ export class UserUiNetworks extends LitElement {
                                     <td>${net.auth.type}</td>
                                     <td class="actions">
                                         <button>Update</button>
-                                        <button>Delete</button>
+                                        <button
+                                            @click=${() =>
+                                                this.handleDelete(net)}
+                                        >
+                                            Delete
+                                        </button>
                                     </td>
                                 </tr>
                             `

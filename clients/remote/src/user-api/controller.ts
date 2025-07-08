@@ -5,6 +5,7 @@ import buildController from './rpc-gen/index.js'
 import {
     AddNetwork,
     AddNetworkParams,
+    RemoveNetworkParams,
     CreateWalletParams,
     CreateWalletResult,
     ExecuteParams,
@@ -81,9 +82,10 @@ export const userController = (store: Store, ledgerClient: LedgerClient) =>
                 ledgerApi,
             }
 
-            console.log(JSON.stringify(newNetwork))
-
             Promise.resolve(store.addNetwork(newNetwork))
+        },
+        removeNetwork: async (params: RemoveNetworkParams) => {
+            Promise.resolve(store.removeNetwork(params.networkName))
         },
         createWallet: async (params: {
             primary?: boolean

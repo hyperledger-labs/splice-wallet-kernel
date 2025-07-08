@@ -60,6 +60,12 @@ export interface Auth {
 export type LedgerApiUrl = string
 /**
  *
+ * Ledger api url
+ *
+ */
+export type NetworkName = string
+/**
+ *
  * Set as primary wallet for dApp usage.
  *
  */
@@ -149,6 +155,10 @@ export interface AddNetworkParams {
     ledgerApiUrl: LedgerApiUrl
     [k: string]: any
 }
+export interface RemoveNetworkParams {
+    networkName: NetworkName
+    [k: string]: any
+}
 export interface CreateWalletParams {
     primary?: Primary
     partyHint: PartyHint
@@ -214,9 +224,10 @@ export interface ListNetworksResult {
  * Generated! Represents an alias to any of the provided schemas
  *
  */
-export type AnyOfAddNetworkParamsCreateWalletParamsRemoveWalletParamsListWalletsParamsSignParamsExecuteParamsNullCreateWalletResultRemovePartyResultListWalletsResultSignResultExecuteResultListNetworksResult =
+export type AnyOfAddNetworkParamsRemoveNetworkParamsCreateWalletParamsRemoveWalletParamsListWalletsParamsSignParamsExecuteParamsNullNullCreateWalletResultRemovePartyResultListWalletsResultSignResultExecuteResultListNetworksResult =
 
         | AddNetworkParams
+        | RemoveNetworkParams
         | CreateWalletParams
         | RemoveWalletParams
         | ListWalletsParams
@@ -230,6 +241,7 @@ export type AnyOfAddNetworkParamsCreateWalletParamsRemoveWalletParamsListWallets
         | ExecuteResult
         | ListNetworksResult
 export type AddNetwork = (params: AddNetworkParams) => Promise<Null>
+export type RemoveNetwork = (params: RemoveNetworkParams) => Promise<Null>
 export type CreateWallet = (
     params: CreateWalletParams
 ) => Promise<CreateWalletResult>

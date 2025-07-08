@@ -50,6 +50,37 @@
             "description": "Adds a new network configuration (similar to EIP-3085)."
         },
         {
+            "name": "removeNetwork",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "RemoveNetworkParams",
+                        "type": "object",
+                        "properties": {
+                            "networkName": {
+                                "title": "networkName",
+                                "type": "string",
+                                "description": "Ledger api url"
+                            }
+                        },
+                        "required": ["networkName"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "Null",
+                    "schema": {
+                        "$ref": "#/components/schemas/Null"
+                    },
+                    "description": "Represents a null value, used in responses where no data is returned."
+                }
+            },
+            "description": "Adds a new network configuration (similar to EIP-3085)."
+        },
+        {
             "name": "createWallet",
             "params": [
                 {
