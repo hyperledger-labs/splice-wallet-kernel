@@ -7,6 +7,7 @@ import { AuthService } from 'core-wallet-auth'
 import { ConfigUtils } from '../config/ConfigUtils.js'
 import * as schemas from '../config/StoreConfig.js'
 import { LedgerClient } from 'core-ledger-client'
+import EventEmitter from 'events'
 
 jest.mock('core-ledger-client')
 
@@ -26,7 +27,7 @@ const network = schemas.networksSchema.parse(
 const config: StoreInternalConfig = {
     networks: network,
 }
-const store = new StoreInternal(config)
+const store = new StoreInternal(config, new EventEmitter())
 const ledgerClient = new LedgerClient('http://localhost:5003')
 
 test('call connect rpc', async () => {

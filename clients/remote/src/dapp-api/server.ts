@@ -10,6 +10,9 @@ import { rpcRateLimit } from '../middleware/rateLimit.js'
 import cors from 'cors'
 import { LedgerClient } from 'core-ledger-client'
 
+import { createServer } from 'http'
+import { Server } from 'socket.io'
+
 const logger = pino({ name: 'main', level: 'debug' })
 
 export const dapp = (
@@ -35,5 +38,18 @@ export const dapp = (
             })(req, res, next)
     )
 
-    return app
+    const server = createServer(app)
+    const io = new Server(server, {
+        cors: {
+            origin: '*',
+            methods: ['GET', 'POST'],
+        },
+    })
+
+    store.getNotifier().on('accountsChanged', (data) => {
+        logger.info('Accounts changed, emitting event')
+        io.emit('accountsChanged', data)
+    })
+
+    return server
 }

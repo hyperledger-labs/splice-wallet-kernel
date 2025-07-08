@@ -8,6 +8,7 @@ import { StoreInternal, StoreInternalConfig } from 'core-wallet-store'
 import { ConfigUtils } from './config/ConfigUtils.js'
 import * as schemas from './config/StoreConfig.js'
 import { LedgerClient } from 'core-ledger-client'
+import EventEmitter from 'events'
 
 const dAppPort = 3000
 const userPort = 3001
@@ -28,7 +29,7 @@ const networks = ConfigUtils.loadConfigFile(networkConfigPath)
 const config: StoreInternalConfig = {
     networks: schemas.networksSchema.parse(networks),
 }
-const store = new StoreInternal(config)
+const store = new StoreInternal(config, new EventEmitter())
 
 const ledgerClient = new LedgerClient('http://localhost:5003')
 

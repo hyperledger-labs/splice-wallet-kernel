@@ -17,6 +17,7 @@
         "typescript": "^5.8.3"
     },
     "dependencies": {
-        "core-types": "workspace:^"
+        "core-types": "workspace:^",
+        "socket.io-client": "^4.8.1"
     }
 }

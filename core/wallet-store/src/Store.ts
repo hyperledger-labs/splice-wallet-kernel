@@ -89,6 +89,14 @@ export interface NetworkConfig {
     auth: Auth
 }
 
+// Support notifications from the store. We represent a notifier with a generic interface to support node and browser implementations.
+type EventListener = (...args: unknown[]) => void
+export interface Notifier {
+    on(event: string, listener: EventListener): void
+    emit(event: string, ...args: unknown[]): boolean
+    removeListener(event: string, listenerToRemove: EventListener): void
+}
+
 // Store interface for managing wallets, sessions, and networks
 
 export interface Store {
@@ -109,4 +117,7 @@ export interface Store {
     listNetworks(): Promise<Array<NetworkConfig>>
     updateNetwork(network: NetworkConfig): Promise<void>
     removeNetwork(name: string): Promise<void>
+
+    // Event methods
+    getNotifier(): Notifier
 }

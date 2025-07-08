@@ -8,6 +8,7 @@ function App() {
     const [status, setStatus] = useState('disconnected')
     const [error, setError] = useState('')
     const [messages, setMessages] = useState<string[]>([])
+    const [primaryParty, setPrimaryParty] = useState<string>()
 
     useEffect(() => {
         const provider = window.splice
@@ -16,14 +17,29 @@ function App() {
             setMessages((prev) => [...prev, JSON.stringify(event)])
         }
 
+        const onAccountsChanged = (event: unknown) => {
+            const wallets = event as { primary: boolean; partyId: string }[]
+
+            setMessages((prev) => [...prev, JSON.stringify(event)])
+
+            if (wallets.length > 0) {
+                const primaryWallet = wallets.find((w) => w.primary)
+                setPrimaryParty(primaryWallet?.partyId)
+            } else {
+                setPrimaryParty(undefined)
+            }
+        }
+
         if (provider) {
             provider.on('message', messageListener)
             provider.on('connect', messageListener)
+            provider.on('accountsChanged', onAccountsChanged)
         }
 
         return () => {
             provider?.removeListener('message', messageListener)
             provider?.removeListener('connect', messageListener)
+            provider?.removeListener('accountsChanged', onAccountsChanged)
         }
     }, [status])
 
@@ -36,7 +52,7 @@ function App() {
             provider
                 .request({
                     method: 'prepareReturn',
-                    params: createPingCommand,
+                    params: createPingCommand(primaryParty!),
                 })
                 .then(() => {
                     setLoading(false)
@@ -83,21 +99,27 @@ function App() {
                     >
                         connect to wallet kernel
                     </button>
-                    <button onClick={createPingContract}>
+                    <button
+                        disabled={!primaryParty}
+                        onClick={createPingContract}
+                    >
                         create Ping contract
                     </button>
                 </div>
                 {loading && <p>Loading...</p>}
                 <p>{status}</p>
+                <p>primary party: {primaryParty}</p>
                 {error && <p className="error">Error: {error}</p>}
             </div>
 
             <div className="card">
                 <h2>Events</h2>
                 <pre>
-                    {messages.map((msg) => (
-                        <p key={msg}>{msg}</p>
-                    ))}
+                    {messages
+                        .filter((msg) => !!msg)
+                        .map((msg) => (
+                            <p key={msg}>{msg}</p>
+                        ))}
                 </pre>
             </div>
         </div>

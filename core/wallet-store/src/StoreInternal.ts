@@ -6,6 +6,7 @@ import {
     Session,
     NetworkConfig,
     WalletFilter,
+    Notifier,
 } from './Store.js'
 
 interface UserStorage {
@@ -23,21 +24,29 @@ type Memory = Map<UserId, UserStorage>
 export class StoreInternal implements Store, AuthAware<StoreInternal> {
     private systemStorage: StoreInternalConfig
     private userStorage: Memory
+    private notifier: Notifier | undefined
 
     authContext: AuthContext | undefined
 
     constructor(
         config: StoreInternalConfig,
+        notifier?: Notifier,
         authContext?: AuthContext,
         userStorage?: Memory
     ) {
         this.systemStorage = config
         this.authContext = authContext
+        this.notifier = notifier
         this.userStorage = userStorage || new Map()
     }
 
     withAuthContext(context?: AuthContext): StoreInternal {
-        return new StoreInternal(this.systemStorage, context, this.userStorage)
+        return new StoreInternal(
+            this.systemStorage,
+            this.notifier,
+            context,
+            this.userStorage
+        )
     }
 
     static createStorage(): UserStorage {
@@ -122,6 +131,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             return w
         })
         storage.wallets = wallets
+        this.notifier?.emit('accountsChanged', wallets)
         this.updateStorage(storage)
     }
 
@@ -145,6 +155,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         }
         wallets.push(wallet)
         storage.wallets = wallets
+        this.notifier?.emit('accountsChanged', wallets)
         this.updateStorage(storage)
     }
 
@@ -204,5 +215,14 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         this.systemStorage.networks = this.systemStorage.networks.filter(
             (n) => n.name !== name
         )
+    }
+
+    // Event methods
+    getNotifier(): Notifier {
+        if (!this.notifier) {
+            throw new Error('Notifier is not initialized')
+        }
+
+        return this.notifier
     }
 }
