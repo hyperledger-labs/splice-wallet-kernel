@@ -306,12 +306,12 @@
                 "title": "Error",
                 "properties": {
                     "error": {
-                        "title": "error",
+                        "title": "errorCode",
                         "type": "string",
                         "description": "error code"
                     },
                     "error_description": {
-                        "title": "error_description",
+                        "title": "errorDescription",
                         "type": "string",
                         "description": "A human readable error description"
                     }
@@ -321,7 +321,7 @@
             "SigningStatus": {
                 "type": "string",
                 "title": "SigningStatus",
-                "enum": ["pending", "signed", "rejected"],
+                "enum": ["pending", "signed", "rejected", "failed"],
                 "description": "Status of the transaction signing process"
             },
             "Transaction": {

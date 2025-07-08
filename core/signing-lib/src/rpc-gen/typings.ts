@@ -54,7 +54,7 @@ export type Name = string
  * error code
  *
  */
-export type Error = string
+export type ErrorCode = string
 /**
  *
  * A human readable error description
@@ -62,7 +62,7 @@ export type Error = string
  */
 export type ErrorDescription = string
 export interface Error {
-    error: Error
+    error: ErrorCode
     error_description: ErrorDescription
     [k: string]: any
 }
@@ -71,7 +71,7 @@ export interface Error {
  * Status of the transaction signing process.
  *
  */
-export type SigningStatus = 'pending' | 'signed' | 'rejected'
+export type SigningStatus = 'pending' | 'signed' | 'rejected' | 'failed'
 /**
  *
  * Signature of the transaction if it was signed.
@@ -100,7 +100,7 @@ export interface Transaction {
  *
  */
 export type Transactions = Transaction[]
-export interface ObjectOfTransactionsXtt6Z26T {
+export interface ObjectOfTransactionsVFXklMGk {
     transactions?: Transactions
     [k: string]: any
 }
@@ -156,7 +156,7 @@ export interface SubscribeTransactionsParams {
 }
 export type SignTransactionResult = Error | Transaction
 export type GetTransactionResult = Error | Transaction
-export type GetTransactionsResult = Error | ObjectOfTransactionsXtt6Z26T
+export type GetTransactionsResult = Error | ObjectOfTransactionsVFXklMGk
 export interface GetKeysResult {
     keys?: Keys
     [k: string]: any
