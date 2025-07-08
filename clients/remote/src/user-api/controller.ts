@@ -8,9 +8,10 @@ import {
     CreateWalletParams,
     CreateWalletResult,
     ExecuteParams,
+    Network,
     SignParams,
 } from './rpc-gen/typings.js'
-import { Store, Wallet } from 'core-wallet-store'
+import { Store, Wallet, NetworkConfig, Auth } from 'core-wallet-store'
 import pino from 'pino'
 
 // Placeholder function -- replace with a real Signing API call
@@ -47,8 +48,43 @@ async function signingDriverCreate(
 
 export const userController = (store: Store, ledgerClient: LedgerClient) =>
     buildController({
-        addNetwork: async (params: AddNetworkParams) =>
-            Promise.resolve({} as AddNetwork),
+        addNetwork: async (network: AddNetworkParams) => {
+            const ledgerApi = {
+                baseUrl: network.ledgerApiUrl ?? '',
+            }
+            const authType = network.auth.type
+
+            let auth: Auth
+            if (network.auth.type === 'implicit') {
+                auth = {
+                    type: 'implicit',
+                    domain: network.auth.domain ?? '',
+                    audience: network.auth.audience ?? '',
+                    scope: network.auth.scope ?? '',
+                    clientId: network.auth.clientId ?? '',
+                }
+            } else {
+                auth = {
+                    type: 'password',
+                    tokenUrl: network.auth.tokenUrl ?? '',
+                    grantType: network.auth.grantType ?? '',
+                    scope: network.auth.scope ?? '',
+                    clientId: network.auth.clientId ?? '',
+                }
+            }
+
+            const newNetwork = {
+                name: network.network.name,
+                networkId: network.network.networkId,
+                description: network.network.description,
+                auth,
+                ledgerApi,
+            }
+
+            console.log(JSON.stringify(newNetwork))
+
+            Promise.resolve(store.addNetwork(newNetwork))
+        },
         createWallet: async (params: {
             primary?: boolean
             partyHint: string

@@ -10,10 +10,30 @@
             "name": "addNetwork",
             "params": [
                 {
-                    "name": "network",
+                    "name": "params",
                     "schema": {
                         "title": "AddNetworkParams",
-                        "type": "object"
+                        "type": "object",
+                        "properties": {
+                            "network": {
+                                "title": "network",
+                                "type": "object",
+                                "description": "network",
+                                "$ref": "#/components/schemas/Network"
+                            },
+                            "auth": {
+                                "title": "auth",
+                                "type": "object",
+                                "description": "auth",
+                                "$ref": "#/components/schemas/Auth"
+                            },
+                            "ledgerApiUrl": {
+                                "title": "ledgerApiUrl",
+                                "type": "string",
+                                "description": "Ledger api url"
+                            }
+                        },
+                        "required": ["network", "auth", "ledgerApiUrl"]
                     }
                 }
             ],
@@ -278,8 +298,14 @@
                         "title": "description",
                         "type": "string",
                         "description": "Description of network"
+                    },
+                    "networkId": {
+                        "title": "networkId",
+                        "type": "string",
+                        "description": "Network Id"
                     }
-                }
+                },
+                "required": ["name", "description", "networkId"]
             },
             "Auth": {
                 "title": "type",
@@ -292,6 +318,10 @@
                     },
                     "tokenUrl": {
                         "title": "tokenUrl",
+                        "type": "string"
+                    },
+                    "grantType": {
+                        "title": "grantType",
                         "type": "string"
                     },
                     "scope": {
@@ -310,7 +340,8 @@
                         "title": "audience",
                         "type": "string"
                     }
-                }
+                },
+                "required": ["type"]
             },
             "Wallet": {
                 "title": "Wallet",

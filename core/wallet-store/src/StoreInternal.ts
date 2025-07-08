@@ -68,22 +68,6 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     // Wallet methods
-    // async getWallets(): Promise<Array<Wallet>> {
-    //     return this.getStorage().wallets
-    // }
-
-    // async getWallets2(
-    //     networkIds?: string[],
-    //     signingProviderIds?: string[]
-    // ): Promise<Array<Wallet>> {
-    //     const networkIdSet = new Set(networkIds)
-    //     const signingProviderIdsSet = new Set(signingProviderIds)
-    //     return this.getStorage().wallets.filter(
-    //         (wallet) =>
-    //             networkIdSet.has(wallet.networkId) &&
-    //             signingProviderIdsSet.has(wallet.signingProviderId)
-    //     )
-    // }
 
     async getWallets(filter: WalletFilter = {}): Promise<Array<Wallet>> {
         const { networkIds, signingProviderIds } = filter
@@ -198,6 +182,17 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     async updateNetwork(network: NetworkConfig): Promise<void> {
         this.removeNetwork(network.name) // Ensure no duplicates
         this.systemStorage.networks.push(network)
+    }
+
+    async addNetwork(network: NetworkConfig): Promise<void> {
+        const networkAlreadyExists = this.systemStorage.networks.find(
+            (n) => n.name === network.name
+        )
+        if (networkAlreadyExists) {
+            throw new Error(`Network ${network.name} already exists`)
+        } else {
+            this.systemStorage.networks.push(network)
+        }
     }
 
     async removeNetwork(name: string): Promise<void> {

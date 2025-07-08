@@ -108,5 +108,6 @@ export interface Store {
     getCurrentNetwork(): Promise<NetworkConfig>
     listNetworks(): Promise<Array<NetworkConfig>>
     updateNetwork(network: NetworkConfig): Promise<void>
+    addNetwork(network: NetworkConfig): Promise<void>
     removeNetwork(name: string): Promise<void>
 }
