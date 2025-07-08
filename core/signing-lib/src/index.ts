@@ -1,8 +1,8 @@
-import { Methods } from './rpc-gen'
-import { Error as RpcError } from './rpc-gen/typings'
+import { Methods } from './rpc-gen/index.js'
+import { Error as RpcError } from './rpc-gen/typings.js'
 
-export { default as buildController } from './rpc-gen'
-export * from './rpc-gen/typings'
+export { default as buildController } from './rpc-gen/index.js'
+export * from './rpc-gen/typings.js'
 
 export const CC_COIN_TYPE = 6767
 
@@ -11,8 +11,8 @@ export function isRpcError<T>(value: T | RpcError): value is RpcError {
 }
 
 export enum PartyMode {
-    INTERNAL,
-    EXTERNAL,
+    INTERNAL = 'internal',
+    EXTERNAL = 'external',
 }
 
 export enum SigningProvider {

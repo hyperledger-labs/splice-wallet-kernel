@@ -9,7 +9,7 @@
     },
     "dependencies": {
         "core-ledger-client": "workspace:^",
-        "core-signing-lib": "0.0.1"
+        "core-signing-lib": "workspace:^"
     },
     "devDependencies": {
         "@jest/globals": "^29.0.0",

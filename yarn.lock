@@ -5170,7 +5170,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"core-signing-lib@npm:0.0.1, core-signing-lib@workspace:core/signing-lib":
+"core-signing-lib@npm:0.0.1, core-signing-lib@workspace:^, core-signing-lib@workspace:core/signing-lib":
   version: 0.0.0-use.local
   resolution: "core-signing-lib@workspace:core/signing-lib"
   dependencies:
@@ -5195,7 +5195,7 @@ __metadata:
     "@types/lodash": "npm:^4.17.17"
     "@types/node": "npm:^22.15.29"
     core-ledger-client: "workspace:^"
-    core-signing-lib: "npm:0.0.1"
+    core-signing-lib: "workspace:^"
     jest: "npm:^29.7.0"
     ts-jest-resolver: "npm:^2.0.1"
     typescript: "npm:^5.8.3"
