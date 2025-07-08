@@ -11,7 +11,6 @@ import {
 import { Store } from 'core-wallet-store'
 import { LedgerClient } from 'core-ledger-client'
 import { v4 } from 'uuid'
-import { ErrorResponse } from 'core-types'
 
 const kernelInfo: KernelInfo = {
     id: 'remote-da',
@@ -35,7 +34,8 @@ export const dappController = (
         darsAvailable: async () => Promise.resolve({ dars: ['default-dar'] }),
         ledgerApi: async (params: LedgerApiParams) =>
             Promise.resolve({ response: 'default-response' }),
-        prepareExecute: async (params: PrepareExecuteParams) => null,
+        prepareExecute: async (params: PrepareExecuteParams) =>
+            Promise.resolve({ userUrl: 'default-url' }),
         prepareReturn: async (params: PrepareReturnParams) => {
             const wallet = await store.getPrimaryWallet()
 

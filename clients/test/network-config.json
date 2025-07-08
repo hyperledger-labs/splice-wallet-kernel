@@ -1,5 +1,6 @@
 {
     "name": "xyz",
+    "networkId": "canton:local",
     "description": "name1",
     "ledgerApi": {
         "baseUrl": "https://test"
