@@ -39,17 +39,21 @@ export const dappController = (
         prepareReturn: async (params: PrepareReturnParams) => {
             const wallet = await store.getPrimaryWallet()
 
+            if (context === undefined) {
+                throw new Error('Unauthenticated context')
+            }
+
             if (wallet === undefined) {
                 throw new Error('No primary wallet found')
             }
 
             const prepareParams = {
                 commandId: v4(),
-                userId: 'some-user-id',
+                userId: context.userId,
                 actAs: [wallet.partyId],
                 readAs: [],
                 disclosedContracts: [],
-                synchronizerId: '',
+                synchronizerId: '', // (get from network store config)
                 verboseHashing: false,
                 packageIdSelectionPreference: [],
                 commands: params.commands,
