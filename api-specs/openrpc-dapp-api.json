@@ -19,10 +19,12 @@
                             "$ref": "#/components/schemas/KernelInfo"
                         },
                         "isConnected": {
+                            "title": "isConnected",
                             "type": "boolean",
-                            "description": "Whether or not a connection to a network is esablished."
+                            "description": "Whether or not a connection to a network is established."
                         },
                         "chainId": {
+                            "title": "chainId",
                             "type": "string",
                             "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
                         }
@@ -45,10 +47,12 @@
                             "$ref": "#/components/schemas/KernelInfo"
                         },
                         "isConnected": {
+                            "title": "isConnected",
                             "type": "boolean",
                             "description": "Whether or not a connection to a network is esablished."
                         },
                         "chainId": {
+                            "title": "chainId",
                             "type": "string",
                             "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
                         },
@@ -71,8 +75,10 @@
                     "type": "object",
                     "properties": {
                         "dars": {
+                            "title": "dars",
                             "type": "array",
                             "items": {
+                                "title": "dar",
                                 "type": "string"
                             }
                         }
@@ -134,6 +140,7 @@
                 "name": "result",
                 "schema": {
                     "title": "prepareExecuteResult",
+                    "type": "object",
                     "properties": {
                         "userUrl": {
                             "$ref": "#/components/schemas/UserUrl"
@@ -154,13 +161,16 @@
                         "type": "object",
                         "properties": {
                             "requestMethod": {
+                                "title": "requestMethod",
                                 "type": "string",
                                 "enum": ["GET", "POST", "PUT", "DELETE"]
                             },
                             "resource": {
+                                "title": "resource",
                                 "type": "string"
                             },
                             "body": {
+                                "title": "body",
                                 "type": "string"
                             }
                         },
@@ -189,10 +199,12 @@
                             "$ref": "#/components/schemas/KernelInfo"
                         },
                         "chainId": {
+                            "title": "chainId",
                             "type": "string",
                             "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
                         },
                         "sessionToken": {
+                            "title": "sessionToken",
                             "type": "string",
                             "description": "JWT authentication token (if applicable)."
                         }
@@ -216,15 +228,18 @@
                 "description": "Represents a wallet kernel.",
                 "properties": {
                     "id": {
+                        "title": "id",
                         "type": "string",
                         "description": "The unique identifier of the wallet kernel."
                     },
                     "clientType": {
+                        "title": "clientType",
                         "type": "string",
                         "enum": ["browser", "desktop", "mobile", "remote"],
                         "description": "The type of client that implements the wallet kernel."
                     },
                     "url": {
+                        "title": "url",
                         "type": "string",
                         "description": "The URL of the wallet kernel."
                     }
@@ -237,6 +252,7 @@
                 "description": "Ledger Api configuration options",
                 "properties": {
                     "response": {
+                        "title": "response",
                         "type": "string"
                     }
                 },
@@ -259,10 +275,12 @@
                 "description": "Structure representing the result of a prepareReturn call",
                 "properties": {
                     "preparedTransaction": {
+                        "title": "preparedTransaction",
                         "type": "string",
                         "description": "The prepared transaction data."
                     },
                     "preparedTransactionHash": {
+                        "title": "preparedTransactionHash",
                         "type": "string",
                         "description": "The hash of the prepared transaction."
                     }

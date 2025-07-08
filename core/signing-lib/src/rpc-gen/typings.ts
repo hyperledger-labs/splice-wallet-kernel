@@ -6,111 +6,92 @@
  * Bytestring of the prepared transaction for verification purposes.
  *
  */
-export type StringQ5XJO2Da = string
+export type Tx = string
 /**
  *
  * Hash of the prepared transaction that will be signed.
  *
  */
-export type StringPy3PzHzD = string
-/**
- *
- * Public key to use to sign the transaction.
- *
- */
-export type StringYbbTuhoe = string
-/**
- *
- * Internal txId used by the Wallet Kernel to store the transaction.
- *
- */
-export type StringRqVz1Pmx = string
-/**
- *
- * Unique identifier of the transaction to retrieve.
- *
- */
-export type StringOGxjiOSa = string
-export type StringDoaGddGA = string
-/**
- *
- * List of transaction IDs to retrieve
- *
- */
-export type UnorderedSetOfStringDoaGddGAKQfdHD6C = StringDoaGddGA[]
-/**
- *
- * List of public keys to filter transactions by
- *
- */
-export type UnorderedSetOfStringDoaGddGApgyvBfbG = StringDoaGddGA[]
-/**
- *
- * A human readable name for the key.
- *
- */
-export type StringFkQopgLV = string
-/**
- *
- * Unique identifiers of the transactions to subscribe to
- *
- */
-export type UnorderedSetOfStringDoaGddGAWHFGy71V = StringDoaGddGA[]
-/**
- *
- * error code
- *
- */
-export type StringH0LE8Qn8 = string
-/**
- *
- * A human readable error description
- *
- */
-export type StringCEYibvSC = string
-export interface Error {
-    error: StringH0LE8Qn8
-    error_description: StringCEYibvSC
-    [k: string]: any
-}
-/**
- *
- * Unique identifier of the signed transaction given by the Wallet Provider. This may not be the same as the internal txId given by the Wallet Kernel.
- *
- */
-export type StringWl2Vj63L = string
-/**
- *
- * Status of the transaction signing process.
- *
- */
-export type SigningStatusEnum = 'pending' | 'signed' | 'rejected' | 'failed'
-/**
- *
- * Signature of the transaction if it was signed.
- *
- */
-export type StringAqnQ2CGz = string
+export type TxHash = string
 /**
  *
  * Public key used to sign the transaction.
  *
  */
-export type StringLE4EvXxW = string
+export type PublicKey = string
+/**
+ *
+ * Internal txId used by the Wallet Kernel to store the transaction.
+ *
+ */
+export type InternalTxId = string
+/**
+ *
+ * Unique identifier of the signed transaction given by the Wallet Provider. This may not be the same as the internal txId given by the Wallet Kernel.
+ *
+ */
+export type TxId = string
+/**
+ *
+ * Unique identifiers of the transactions to subscribe to
+ *
+ */
+export type TxIds = TxId[]
+/**
+ *
+ * List of public keys to filter transactions by
+ *
+ */
+export type PublicKeys = PublicKey[]
+/**
+ *
+ * A human readable name for the key
+ *
+ */
+export type Name = string
+/**
+ *
+ * error code
+ *
+ */
+export type ErrorCode = string
+/**
+ *
+ * A human readable error description
+ *
+ */
+export type ErrorDescription = string
+export interface Error {
+    error: ErrorCode
+    error_description: ErrorDescription
+    [k: string]: any
+}
+/**
+ *
+ * Status of the transaction signing process.
+ *
+ */
+export type SigningStatus = 'pending' | 'signed' | 'rejected' | 'failed'
+/**
+ *
+ * Signature of the transaction if it was signed.
+ *
+ */
+export type Signature = string
 /**
  *
  * Additional metadata about the transaction.
  *
  */
-export interface ObjectTcbHGNLS {
+export interface Metadata {
     [key: string]: any
 }
 export interface Transaction {
-    txId: StringWl2Vj63L
-    status: SigningStatusEnum
-    signature?: StringAqnQ2CGz
-    publicKey?: StringLE4EvXxW
-    metadata?: ObjectTcbHGNLS
+    txId: TxId
+    status: SigningStatus
+    signature?: Signature
+    publicKey?: PublicKey
+    metadata?: Metadata
     [k: string]: any
 }
 /**
@@ -118,9 +99,9 @@ export interface Transaction {
  * List of transactions matching the provided filters
  *
  */
-export type UnorderedSetOfTransactioniBjiped3 = Transaction[]
-export interface ObjectOfUnorderedSetOfTransactioniBjiped3NTBdjiqM {
-    transactions?: UnorderedSetOfTransactioniBjiped3
+export type Transactions = Transaction[]
+export interface ObjectOfTransactionsVFXklMGk {
+    transactions?: Transactions
     [k: string]: any
 }
 /**
@@ -128,23 +109,11 @@ export interface ObjectOfUnorderedSetOfTransactioniBjiped3NTBdjiqM {
  * Unique identifier for the key
  *
  */
-export type StringSeicKbSk = string
-/**
- *
- * A human readable name for the key
- *
- */
-export type StringLI0CTZ6I = string
-/**
- *
- * Public key associated with the key
- *
- */
-export type StringFrHbj8VQ = string
+export type Id = string
 export interface Key {
-    id: StringSeicKbSk
-    name: StringLI0CTZ6I
-    publicKey: StringFrHbj8VQ
+    id: Id
+    name: Name
+    publicKey: PublicKey
     [k: string]: any
 }
 /**
@@ -152,25 +121,25 @@ export interface Key {
  * List of keys availabile at the Wallet Provider
  *
  */
-export type UnorderedSetOfKeyU58FG0Db = Key[]
+export type Keys = Key[]
 export interface SignTransactionParams {
-    tx: StringQ5XJO2Da
-    txHash: StringPy3PzHzD
-    publicKey: StringYbbTuhoe
-    internalTxId?: StringRqVz1Pmx
+    tx: Tx
+    txHash: TxHash
+    publicKey: PublicKey
+    internalTxId?: InternalTxId
     [k: string]: any
 }
 export interface GetTransactionParams {
-    txId: StringOGxjiOSa
+    txId: TxId
     [k: string]: any
 }
 export interface GetTransactionsParams {
-    txIds?: UnorderedSetOfStringDoaGddGAKQfdHD6C
-    publicKeys?: UnorderedSetOfStringDoaGddGApgyvBfbG
+    txIds?: TxIds
+    publicKeys?: PublicKeys
     [k: string]: any
 }
 export interface CreateKeyParams {
-    name: StringFkQopgLV
+    name: Name
     [k: string]: any
 }
 /**
@@ -182,16 +151,14 @@ export interface SetConfigurationParams {
     [key: string]: any
 }
 export interface SubscribeTransactionsParams {
-    txIds: UnorderedSetOfStringDoaGddGAWHFGy71V
+    txIds: TxIds
     [k: string]: any
 }
 export type SignTransactionResult = Error | Transaction
 export type GetTransactionResult = Error | Transaction
-export type GetTransactionsResult =
-    | Error
-    | ObjectOfUnorderedSetOfTransactioniBjiped3NTBdjiqM
+export type GetTransactionsResult = Error | ObjectOfTransactionsVFXklMGk
 export interface GetKeysResult {
-    keys?: UnorderedSetOfKeyU58FG0Db
+    keys?: Keys
     [k: string]: any
 }
 export type CreateKeyResult = Error | Key
@@ -202,11 +169,11 @@ export interface SetConfigurationResult {
     [key: string]: any
 }
 export interface SubscribeTransactionsResult {
-    txId: StringWl2Vj63L
-    status: SigningStatusEnum
-    signature?: StringAqnQ2CGz
-    publicKey?: StringLE4EvXxW
-    metadata?: ObjectTcbHGNLS
+    txId: TxId
+    status: SigningStatus
+    signature?: Signature
+    publicKey?: PublicKey
+    metadata?: Metadata
     [k: string]: any
 }
 /**

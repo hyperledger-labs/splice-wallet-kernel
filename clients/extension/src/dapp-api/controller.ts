@@ -30,7 +30,8 @@ export const dappController = (store?: Store) =>
         darsAvailable: async () => Promise.resolve({ dars: ['default-dar'] }),
         ledgerApi: async (params: LedgerApiParams) =>
             Promise.resolve({ response: 'default-response' }),
-        prepareExecute: async (params: PrepareExecuteParams) => null,
+        prepareExecute: async (params: PrepareExecuteParams) =>
+            Promise.resolve({ userUrl: 'default-url' }),
         prepareReturn: async (params: PrepareReturnParams) =>
             Promise.resolve({}),
         status: async () => {

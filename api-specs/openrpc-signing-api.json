@@ -16,18 +16,22 @@
                         "title": "SignTransactionParams",
                         "properties": {
                             "tx": {
+                                "title": "tx",
                                 "type": "string",
                                 "description": "Bytestring of the prepared transaction for verification purposes."
                             },
                             "txHash": {
+                                "title": "txHash",
                                 "type": "string",
                                 "description": "Hash of the prepared transaction that will be signed."
                             },
                             "publicKey": {
+                                "title": "publicKey",
                                 "type": "string",
                                 "description": "Public key to use to sign the transaction."
                             },
                             "internalTxId": {
+                                "title": "internalTxId",
                                 "type": "string",
                                 "description": "Internal txId used by the Wallet Kernel to store the transaction."
                             }
@@ -64,6 +68,7 @@
                         "type": "object",
                         "properties": {
                             "txId": {
+                                "title": "txId",
                                 "type": "string",
                                 "description": "Unique identifier of the transaction to retrieve."
                             }
@@ -98,15 +103,19 @@
                         "type": "object",
                         "properties": {
                             "txIds": {
+                                "title": "txIds",
                                 "type": "array",
                                 "items": {
+                                    "title": "txId",
                                     "type": "string"
                                 },
                                 "description": "List of transaction IDs to retrieve"
                             },
                             "publicKeys": {
+                                "title": "publicKeys",
                                 "type": "array",
                                 "items": {
+                                    "title": "publicKey",
                                     "type": "string"
                                 },
                                 "description": "List of public keys to filter transactions by"
@@ -128,6 +137,7 @@
                             "type": "object",
                             "properties": {
                                 "transactions": {
+                                    "title": "transactions",
                                     "type": "array",
                                     "items": {
                                         "$ref": "#/components/schemas/Transaction"
@@ -151,6 +161,7 @@
                     "type": "object",
                     "properties": {
                         "keys": {
+                            "title": "keys",
                             "type": "array",
                             "description": "List of keys availabile at the Wallet Provider",
                             "items": {
@@ -172,6 +183,7 @@
                         "type": "object",
                         "properties": {
                             "name": {
+                                "title": "name",
                                 "type": "string",
                                 "description": "A human readable name for the key."
                             }
@@ -238,9 +250,11 @@
                         "type": "object",
                         "properties": {
                             "txIds": {
+                                "title": "txIds",
                                 "type": "array",
                                 "description": "Unique identifiers of the transactions to subscribe to",
                                 "items": {
+                                    "title": "txId",
                                     "type": "string"
                                 }
                             }
@@ -266,18 +280,21 @@
                 "description": "Represents a null value, used in responses where no data is returned."
             },
             "Key": {
-                "type": "object",
                 "title": "Key",
+                "type": "object",
                 "properties": {
                     "id": {
+                        "title": "id",
                         "type": "string",
                         "description": "Unique identifier for the key"
                     },
                     "name": {
+                        "title": "name",
                         "type": "string",
                         "description": "A human readable name for the key"
                     },
                     "publicKey": {
+                        "title": "publicKey",
                         "type": "string",
                         "description": "Public key associated with the key"
                     }
@@ -289,10 +306,12 @@
                 "title": "Error",
                 "properties": {
                     "error": {
+                        "title": "errorCode",
                         "type": "string",
                         "description": "error code"
                     },
                     "error_description": {
+                        "title": "errorDescription",
                         "type": "string",
                         "description": "A human readable error description"
                     }
@@ -300,8 +319,8 @@
                 "required": ["error", "error_description"]
             },
             "SigningStatus": {
-                "title": "SigningStatusEnum",
                 "type": "string",
+                "title": "SigningStatus",
                 "enum": ["pending", "signed", "rejected", "failed"],
                 "description": "Status of the transaction signing process"
             },
@@ -310,6 +329,7 @@
                 "title": "Transaction",
                 "properties": {
                     "txId": {
+                        "title": "txId",
                         "type": "string",
                         "description": "Unique identifier of the signed transaction given by the Wallet Provider. This may not be the same as the internal txId given by the Wallet Kernel."
                     },
@@ -318,14 +338,17 @@
                         "description": "Status of the transaction signing process."
                     },
                     "signature": {
+                        "title": "signature",
                         "type": "string",
                         "description": "Signature of the transaction if it was signed."
                     },
                     "publicKey": {
+                        "title": "publicKey",
                         "type": "string",
                         "description": "Public key used to sign the transaction."
                     },
                     "metadata": {
+                        "title": "metadata",
                         "type": "object",
                         "description": "Additional metadata about the transaction."
                     }
