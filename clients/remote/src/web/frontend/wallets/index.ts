@@ -7,6 +7,8 @@ import { Wallet } from 'core-wallet-store'
 import { userClient } from '../rpc-client'
 import { CreateWalletParams } from 'core-wallet-user-rpc-client'
 
+import '../index'
+
 @customElement('user-ui-wallets')
 export class UserUiWallets extends LitElement {
     @state()
@@ -65,6 +67,7 @@ export class UserUiWallets extends LitElement {
 
     protected render() {
         return html`<div>
+            <user-ui-nav></user-ui-nav>
             <h1>Wallets UI</h1>
 
             <h2>Create a Wallet</h2>

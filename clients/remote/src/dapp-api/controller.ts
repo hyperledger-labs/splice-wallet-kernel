@@ -9,6 +9,8 @@ import {
     PrepareReturnParams,
 } from './rpc-gen/typings.js'
 import { Store } from 'core-wallet-store'
+import { LedgerClient } from 'core-ledger-client'
+import { v4 } from 'uuid'
 
 const kernelInfo: KernelInfo = {
     id: 'remote-da',
@@ -16,22 +18,49 @@ const kernelInfo: KernelInfo = {
     url: 'http://localhost:3000/rpc',
 }
 
-export const dappController = (store: Store, context?: AuthContext) =>
+export const dappController = (
+    store: Store,
+    ledgerClient: LedgerClient,
+    context?: AuthContext
+) =>
     buildController({
         connect: async () =>
             Promise.resolve({
                 kernel: kernelInfo,
                 isConnected: false,
                 chainId: 'default-chain-id',
-                userUrl: 'http://localhost:3002/login',
+                userUrl: 'http://localhost:3002/login/',
             }),
         darsAvailable: async () => Promise.resolve({ dars: ['default-dar'] }),
         ledgerApi: async (params: LedgerApiParams) =>
             Promise.resolve({ response: 'default-response' }),
         prepareExecute: async (params: PrepareExecuteParams) =>
             Promise.resolve({ userUrl: 'default-url' }),
-        prepareReturn: async (params: PrepareReturnParams) =>
-            Promise.resolve({}),
+        prepareReturn: async (params: PrepareReturnParams) => {
+            const wallet = await store.getPrimaryWallet()
+
+            if (context === undefined) {
+                throw new Error('Unauthenticated context')
+            }
+
+            if (wallet === undefined) {
+                throw new Error('No primary wallet found')
+            }
+
+            const prepareParams = {
+                commandId: v4(),
+                userId: context.userId,
+                actAs: [wallet.partyId],
+                readAs: [],
+                disclosedContracts: [],
+                synchronizerId: '', // (get from network store config)
+                verboseHashing: false,
+                packageIdSelectionPreference: [],
+                commands: params.commands,
+            }
+
+            return await ledgerClient.interactivePreparePost(prepareParams)
+        },
         status: async () => {
             if (context === null) {
                 return Promise.resolve({

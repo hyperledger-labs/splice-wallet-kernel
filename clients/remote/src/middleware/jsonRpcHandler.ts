@@ -1,7 +1,12 @@
 import { NextFunction, Request, Response } from 'express'
 import { Logger } from 'pino'
 import { rpcErrors } from '@metamask/rpc-errors'
-import { JsonRpcRequest, JsonRpcResponse, ResponsePayload } from 'core-types'
+import {
+    ErrorResponse,
+    JsonRpcRequest,
+    JsonRpcResponse,
+    ResponsePayload,
+} from 'core-types'
 
 interface JsonRpcHttpOptions<T> {
     logger: Logger
@@ -72,16 +77,33 @@ export const jsonRpcHandler =
                     .then((result: any) => {
                         res.json(toRpcResponse(id, { result }))
                     })
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    .catch((error: any) => {
-                        logger.error(`Error in method ${method}:`, error)
-                        res.status(500).json(
-                            toRpcResponse(null, {
-                                error: rpcErrors.internal({
-                                    message: `Error in method ${method}: ${error.message}`,
-                                }),
-                            })
-                        )
+                    .catch((error: unknown) => {
+                        let response: ErrorResponse = {
+                            error: {
+                                ...rpcErrors.internal(),
+                                message: `Something went wrong while calling ${method}`,
+                                data: undefined,
+                            },
+                        }
+
+                        if (error instanceof Error) {
+                            response.error.message = error.message
+                        } else if (typeof error === 'string') {
+                            response.error.message = error
+                        } else if (ErrorResponse.safeParse(error).success) {
+                            response = error as ErrorResponse
+                        } else if (
+                            // Check for a Ledger API error format
+                            typeof error === 'object' &&
+                            error !== null &&
+                            'cause' in error &&
+                            'code' in error
+                        ) {
+                            response.error.message = error.cause as string
+                            response.error.data = error
+                        }
+
+                        res.status(500).json(toRpcResponse(null, response))
                     })
             }
         }
