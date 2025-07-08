@@ -286,7 +286,7 @@
                 "type": "object",
                 "description": "Represents the type of auth (implicit or password) for a specified network",
                 "properties": {
-                    "type": {
+                    "authType": {
                         "title": "type",
                         "type": "string"
                     },
@@ -373,6 +373,7 @@
                         "type": "array",
                         "description": "Filter wallets by network IDs.",
                         "items": {
+                            "title": "networkId",
                             "type": "string"
                         }
                     },
@@ -381,6 +382,7 @@
                         "type": "array",
                         "description": "Filter wallets by signing provider IDs.",
                         "items": {
+                            "title": "signingProviderId",
                             "type": "string"
                         }
                     }

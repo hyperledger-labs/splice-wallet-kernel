@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as process from 'process'
 import { blue, green, italic, red, yellow } from 'yoctocolors'
+import * as jsonc from 'jsonc-parser'
 
 export const info = (message: string): string => italic(blue(message))
 export const warn = (message: string): string => yellow(message)
@@ -45,14 +46,51 @@ export function findJsonKeyPosition(
     jsonContent: string,
     key: string
 ): { line: number; column: number } {
-    const lines = jsonContent.split('\n')
-    for (let i = 0; i < lines.length; i++) {
-        const column = lines[i].indexOf(`"${key}"`)
-        if (column !== -1) {
-            return { line: i + 1, column: column + 1 }
+    const keyPath = key.split('.')
+    let found: { line: number; column: number } | null = null
+
+    function search(node: jsonc.Node, pathIdx: number) {
+        if (!node || found) return
+        if (node.type === 'object') {
+            for (const prop of node.children ?? []) {
+                if (prop.type === 'property' && prop.children?.[0]?.value) {
+                    const propName = prop.children[0].value as string
+                    const isLast = pathIdx === keyPath.length - 1
+                    const matches = isLast
+                        ? propName.startsWith(keyPath[pathIdx])
+                        : propName === keyPath[pathIdx]
+                    // If matches, advance pathIdx
+                    if (matches) {
+                        if (isLast) {
+                            const offset = prop.children[0].offset
+                            const before = jsonContent.slice(0, offset)
+                            const lines = before.split('\n')
+                            found = {
+                                line: lines.length,
+                                column: lines[lines.length - 1].length + 1,
+                            }
+                            return
+                        } else if (prop.children[1]) {
+                            search(prop.children[1], pathIdx + 1)
+                        }
+                    }
+                    // Always search deeper with the same pathIdx (skip intermediate keys)
+                    if (prop.children[1]) {
+                        search(prop.children[1], pathIdx)
+                    }
+                }
+            }
+        } else if (node.type === 'array') {
+            for (const child of node.children ?? []) {
+                search(child, pathIdx)
+            }
         }
     }
-    return { line: 1, column: 1 }
+
+    const root = jsonc.parseTree(jsonContent)
+    if (root) search(root, 0)
+
+    return found ?? { line: 1, column: 1 }
 }
 
 export function traverseDirectory(
