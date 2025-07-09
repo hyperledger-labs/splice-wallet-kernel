@@ -1,9 +1,9 @@
 import { css, html, LitElement } from 'lit'
 import { discover } from './windows/discovery.js'
 import { customElement } from 'lit/decorators.js'
-import 'bootstrap/dist/css/bootstrap.min.css'
 
 export * from './components/AppHeader.js'
+export * from './components/AppLayout.js'
 export * from './components/Discovery.js'
 export * from './windows/discovery.js'
 export * from './windows/popup.js'

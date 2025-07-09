@@ -2,7 +2,7 @@ import { css, html, LitElement } from 'lit'
 import { customElement, query, state } from 'lit/decorators.js'
 
 import 'core-wallet-ui-components'
-import 'core-wallet-ui-components/themes/default.css'
+
 import { Wallet } from 'core-wallet-store'
 import { userClient } from '../rpc-client'
 import { CreateWalletParams } from 'core-wallet-user-rpc-client'
@@ -36,12 +36,6 @@ export class UserUiWallets extends LitElement {
     accessor _primaryCheckbox: HTMLInputElement | null = null
 
     static styles = css`
-        div {
-            background-color: var(--splice-wk-background-color, none);
-            color: var(--splice-wk-text-color, black);
-            font-family: var(--splice-wk-font-family);
-        }
-
         #create-wallet-form {
             max-width: 300px;
             display: flex;

@@ -1,20 +1,11 @@
-import { css, html, LitElement } from 'lit'
+import { html, LitElement } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { NetworkConfig } from 'core-wallet-store'
 import 'core-wallet-ui-components'
-import 'core-wallet-ui-components/themes/default.css'
 import { userClient } from '../rpc-client'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
-    static styles = css`
-        div {
-            background-color: var(--splice-wk-background-color, none);
-            color: var(--splice-wk-text-color, black);
-            font-family: var(--splice-wk-font-family);
-        }
-    `
-
     @state()
     accessor idps: NetworkConfig[] = []
 
