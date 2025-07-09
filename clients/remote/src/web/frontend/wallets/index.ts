@@ -59,10 +59,6 @@ export class UserUiWallets extends LitElement {
         }
     `
 
-    createRenderRoot() {
-        return this // Use light DOM so <slot> works as expected
-    }
-
     protected render() {
         return html`<div>
             <user-ui-nav></user-ui-nav>
