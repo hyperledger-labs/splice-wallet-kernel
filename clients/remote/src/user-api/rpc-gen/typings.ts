@@ -43,7 +43,7 @@ export type Audience = string
  *
  */
 export interface Auth {
-    type: Type
+    authType?: Type
     tokenUrl?: TokenUrl
     grantType?: GrantType
     scope?: Scope

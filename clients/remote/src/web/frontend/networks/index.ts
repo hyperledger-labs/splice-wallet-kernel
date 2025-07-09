@@ -7,6 +7,7 @@ import {
     Network,
     RemoveNetworkParams,
 } from 'core-wallet-user-rpc-client'
+import 'core-wallet-ui-components'
 
 @customElement('user-ui-networks')
 export class UserUiNetworks extends LitElement {
@@ -145,11 +146,9 @@ export class UserUiNetworks extends LitElement {
         await this.listNetworks()
     }
 
-    handleSubmit = async (e: SubmitEvent) => {
+    handleSubmit = async (e: CustomEvent<FormData>) => {
         e.preventDefault()
-
-        const form = e.target as HTMLFormElement
-        const formData = new FormData(form)
+        const formData = e.detail
 
         const authType = formData.get('authType') as string
 
@@ -265,124 +264,12 @@ export class UserUiNetworks extends LitElement {
                                       ? 'Edit Network'
                                       : 'Add Network'}
                               </h3>
-                              <form @submit=${this.handleSubmit}>
-                                  <input
-                                      name="name"
-                                      placeholder="Name"
-                                      .value=${this.editingNetwork?.name ?? ''}
-                                      required
-                                  />
-                                  <input
-                                      name="networkId"
-                                      placeholder="Network Id"
-                                      .value=${this.editingNetwork?.networkId ??
-                                      ''}
-                                      required
-                                  />
-                                  <input
-                                      name="description"
-                                      placeholder="Description"
-                                      .value=${this.editingNetwork
-                                          ?.description ?? ''}
-                                      required
-                                  />
-                                  <input
-                                      name="ledgerApi.baseurl"
-                                      placeholder="Ledger API Base Url"
-                                      .value=${this.editingNetwork?.ledgerApi
-                                          ?.baseUrl ?? ''}
-                                      required
-                                  />
-
-                                  <select
-                                      name="authType"
-                                      @change=${this.onAuthTypeChange}
-                                      .value=${this.authType}
-                                  >
-                                      <option value="password">password</option>
-                                      <option value="implicit">implicit</option>
-                                  </select>
-
-                                  ${this.authType === 'implicit'
-                                      ? html`
-                                            <input
-                                                name="domain"
-                                                placeholder="Domain"
-                                                .value=${this.getAuthField(
-                                                    'domain'
-                                                )}
-                                                required
-                                            />
-                                            <input
-                                                name="clientId"
-                                                placeholder="ClientId"
-                                                .value=${this.getAuthField(
-                                                    'clientId'
-                                                )}
-                                                required
-                                            />
-                                            <input
-                                                name="scope"
-                                                placeholder="Scope"
-                                                .value=${this.getAuthField(
-                                                    'scope'
-                                                )}
-                                                required
-                                            />
-                                            <input
-                                                name="audience"
-                                                placeholder="Audience"
-                                                .value=${this.getAuthField(
-                                                    'audience'
-                                                )}
-                                                required
-                                            />
-                                        `
-                                      : html`
-                                            <input
-                                                name="tokenUrl"
-                                                placeholder="TokenUrl"
-                                                .value=${this.getAuthField(
-                                                    'tokenUrl'
-                                                )}
-                                                required
-                                            />
-                                            <input
-                                                name="grantType"
-                                                placeholder="GrantType"
-                                                .value=${this.getAuthField(
-                                                    'grantType'
-                                                )}
-                                                required
-                                            />
-                                            <input
-                                                name="scope"
-                                                placeholder="Scope"
-                                                .value=${this.getAuthField(
-                                                    'scope'
-                                                )}
-                                                required
-                                            />
-                                            <input
-                                                name="audience"
-                                                placeholder="Audience"
-                                                .value=${this.getAuthField(
-                                                    'audience'
-                                                )}
-                                                required
-                                            />
-                                        `}
-
-                                  <div class="buttons">
-                                      <button type="submit">Save</button>
-                                      <button
-                                          type="button"
-                                          @click=${this.closeModal}
-                                      >
-                                          Cancel
-                                      </button>
-                                  </div>
-                              </form>
+                              <network-form
+                                  .editingNetwork=${this.editingNetwork}
+                                  .authType=${this.authType}
+                                  @form-submit=${this.handleSubmit}
+                                  @cancel=${this.closeModal}
+                              ></network-form>
                           </div>
                       </div>
                   `

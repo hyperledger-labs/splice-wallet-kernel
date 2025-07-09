@@ -5312,6 +5312,7 @@ __metadata:
     "@types/bootstrap": "npm:^5"
     bootstrap: "npm:^5.3.7"
     core-types: "workspace:^"
+    core-wallet-store: "workspace:^"
     lit: "npm:^3.3.0"
     typescript: "npm:^5.8.3"
     vite: "npm:^6.3.5"
