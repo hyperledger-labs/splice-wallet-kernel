@@ -3,7 +3,7 @@ nodes.local.start()
 
 // Bootstrap the synchronizer
 bootstrap.synchronizer(
-  synchronizerName = "da",
+  synchronizerName = "wallet",
   sequencers = Seq(sequencer1),
   mediators = Seq(mediator1),
   synchronizerOwners = Seq(sequencer1, mediator1),
@@ -11,11 +11,11 @@ bootstrap.synchronizer(
   staticSynchronizerParameters = StaticSynchronizerParameters.defaultsWithoutKMS(ProtocolVersion.forSynchronizer),
 )
 
-// Connect participant1 to da using the connect macro.
+// Connect participant1 to wallet using the connect macro.
 // The connect macro will inspect the synchronizer configuration to find the correct URL and Port.
 // The macro is convenient for local testing, but obviously doesn't work in a distributed setup.
-participant1.synchronizers.connect_local(sequencer1, alias = "da")
+participant1.synchronizers.connect_local(sequencer1, alias = "wallet")
 
 utils.retry_until_true {
-    participant1.synchronizers.active("da")
+    participant1.synchronizers.active("wallet")
 }
