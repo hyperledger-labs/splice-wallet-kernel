@@ -8,7 +8,8 @@ export const info = (message: string): string => italic(blue(message))
 export const warn = (message: string): string => yellow(message)
 export const error = (message: string): string => red(message)
 export const success = (message: string): string => green(message)
-
+export const trimNewline = (message: string): string =>
+    message.replace(/\n$/, '')
 // Get the root of the current repository
 // Assumption: the root of the repository is the closest
 //     ancestor directory of the CWD that contains a .git directory
