@@ -3,11 +3,7 @@ import { Auth, NetworkConfig } from 'core-wallet-store'
 import { LitElement, html } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { userClient } from '../rpc-client'
-import {
-    AddNetworkParams,
-    Network,
-    RemoveNetworkParams,
-} from 'core-wallet-user-rpc-client'
+import { Network, RemoveNetworkParams } from 'core-wallet-user-rpc-client'
 
 @customElement('user-ui-networks')
 export class UserUiNetworks extends LitElement {
@@ -25,21 +21,16 @@ export class UserUiNetworks extends LitElement {
     private async listNetworks() {
         const response = await userClient.request('listNetworks')
         this.networks = response.networks as NetworkConfig[]
-        console.log(
-            'logging networks from listNetworks' + JSON.stringify(this.networks)
-        )
     }
 
     connectedCallback(): void {
         super.connectedCallback()
         this.listNetworks()
-        console.log('connected callback ' + JSON.stringify(this.networks))
     }
 
     openAddModal = () => {
         this.isModalOpen = true
         this.editingNetwork = null
-        console.log('opened')
     }
 
     closeModal = () => {
@@ -89,15 +80,7 @@ export class UserUiNetworks extends LitElement {
             description: formData.get('description') as string,
         }
 
-        const p: AddNetworkParams = {
-            network: networkParam,
-            auth: auth,
-            ledgerApiUrl: formData.get('ledgerApi.baseurl') as string,
-        }
-
-        console.log('add network params. ' + JSON.stringify(p))
-
-        const result = await userClient.transport.submit({
+        await userClient.transport.submit({
             method: 'addNetwork',
             params: {
                 network: networkParam,
@@ -107,7 +90,7 @@ export class UserUiNetworks extends LitElement {
         })
 
         await this.listNetworks()
-        console.log(result)
+
         this.closeModal()
     }
 
