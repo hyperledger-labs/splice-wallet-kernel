@@ -34,11 +34,13 @@ async function main() {
                 },
                 function (err) {
                     pm2.launchBus((err, bus) => {
-                        bus.on('log:out', (packet) => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        bus.on('log:out', (packet: any) => {
                             if (packet.process.name == processName)
                                 console.log(info(trimNewline(packet.data)))
                         })
-                        bus.on('log:err', (packet) => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        bus.on('log:err', (packet: any) => {
                             if (packet.process.name == processName)
                                 console.error(error(trimNewline(packet.data)))
                         })
