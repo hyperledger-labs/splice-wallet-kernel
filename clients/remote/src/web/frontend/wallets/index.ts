@@ -36,12 +36,6 @@ export class UserUiWallets extends LitElement {
     accessor _primaryCheckbox: HTMLInputElement | null = null
 
     static styles = css`
-        div {
-            background-color: var(--splice-wk-background-color, none);
-            color: var(--splice-wk-text-color, black);
-            font-family: var(--splice-wk-font-family);
-        }
-
         #create-wallet-form {
             max-width: 300px;
             display: flex;

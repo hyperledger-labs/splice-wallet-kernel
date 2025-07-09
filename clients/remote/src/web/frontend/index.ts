@@ -3,17 +3,10 @@ import { customElement } from 'lit/decorators.js'
 import { classMap } from 'lit/directives/class-map.js'
 
 import 'core-wallet-ui-components'
+import '/style.css'
 
 @customElement('user-ui')
 export class UserUI extends LitElement {
-    static styles = css`
-        div {
-            background-color: var(--splice-wk-background-color, none);
-            color: var(--splice-wk-text-color, black);
-            font-family: var(--splice-wk-font-family);
-        }
-    `
-
     protected render() {
         return html`<div>
             <user-ui-nav></user-ui-nav>

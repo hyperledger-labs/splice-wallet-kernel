@@ -9,7 +9,22 @@ export class AppLayout extends LitElement {
     @property({ type: String }) themeSrc?: string
 
     static styles = css`
-        ${unsafeCSS(bootstrapCss)}
+        ${unsafeCSS(bootstrapCss.replaceAll(/:root/g, ':root,:host'))}
+
+        :host {
+            --bs-body-color: var(--splice-wk-text-color);
+
+            margin: 0;
+            font-family: var(--bs-body-font-family);
+            font-size: var(--bs-body-font-size);
+            font-weight: var(--bs-body-font-weight);
+            line-height: var(--bs-body-line-height);
+            color: var(--bs-body-color);
+            text-align: var(--bs-body-text-align);
+            background-color: var(--bs-body-bg);
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
     `
 
     private customThemeCss: string | null = null

@@ -1,15 +1,12 @@
-import { css, html, LitElement } from 'lit'
+import { html, LitElement } from 'lit'
 import { customElement } from 'lit/decorators.js'
 
 @customElement('swk-configuration')
 export class Configuration extends LitElement {
-    static styles = css`
-        div {
-            background-color: var(--splice-wk-background-color, none);
-            color: var(--splice-wk-text-color, black);
-            font-family: var(--splice-wk-font-family);
-        }
-    `
+    // Prevent shadow DOM so external CSS applies
+    createRenderRoot() {
+        return this
+    }
 
     protected render() {
         return html`
