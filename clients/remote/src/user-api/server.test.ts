@@ -7,6 +7,7 @@ import { AuthService } from 'core-wallet-auth'
 import { ConfigUtils } from '../config/ConfigUtils.js'
 import * as schemas from '../config/StoreConfig.js'
 import { LedgerClient } from 'core-ledger-client'
+import { Notifier } from '../notification/NotificationService.js'
 
 jest.mock('core-ledger-client')
 
@@ -29,8 +30,18 @@ const config: StoreInternalConfig = {
 const store = new StoreInternal(config)
 const ledgerClient = new LedgerClient('http://localhost:5003')
 
+const notificationService = {
+    getNotifier: jest.fn<() => Notifier>().mockReturnValue({
+        on: jest.fn(),
+        emit: jest.fn<Notifier['emit']>(),
+        removeListener: jest.fn(),
+    }),
+}
+
 test('call connect rpc', async () => {
-    const response = await request(user(ledgerClient, authService, store))
+    const response = await request(
+        user(ledgerClient, notificationService, authService, store)
+    )
         .post('/rpc')
         .send({ jsonrpc: '2.0', id: 0, method: 'listNetworks', params: [] })
         .set('Accept', 'application/json')

@@ -28,7 +28,7 @@ const authService: AuthService = {
     },
 }
 
-class NotificationService implements NotificationService {
+export class NotificationService implements NotificationService {
     private notifiers: Map<string, Notifier> = new Map()
 
     getNotifier(notifierId: string): Notifier {
