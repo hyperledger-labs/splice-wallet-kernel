@@ -28,6 +28,10 @@ export const apps = [
         script: 'yarn workspace core-splice-provider dev',
     },
     {
+        name: 'core-wallet-auth',
+        script: 'yarn workspace core-wallet-auth dev',
+    },
+    {
         name: 'core-wallet-ui-components',
         script: 'yarn workspace core-wallet-ui-components build:watch',
     },

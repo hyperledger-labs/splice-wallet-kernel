@@ -12,11 +12,13 @@ import { LedgerClient } from 'core-ledger-client'
 
 import { createServer } from 'http'
 import { Server } from 'socket.io'
+import { NotificationService } from '../notification/NotificationService.js'
 
 const logger = pino({ name: 'main', level: 'debug' })
 
 export const dapp = (
     ledgerClient: LedgerClient,
+    notificationService: NotificationService,
     authService: AuthService,
     store: Store & AuthAware<Store>
 ) => {
@@ -46,9 +48,27 @@ export const dapp = (
         },
     })
 
-    store.getNotifier().on('accountsChanged', (data) => {
-        logger.info('Accounts changed, emitting event')
-        io.emit('accountsChanged', data)
+    io.on('connection', (socket) => {
+        logger.info('Socket.io client connected')
+
+        authService
+            .verifyToken(socket.handshake.auth.token)
+            .then((authContext) => {
+                const userId = authContext?.userId
+
+                if (!userId) {
+                    return
+                }
+
+                const notifier = notificationService.getNotifier(userId)
+                notifier.on('accountsChanged', (wallets) => {
+                    socket.emit('accountsChanged', wallets)
+                })
+            })
+
+        socket.on('disconnect', () => {
+            logger.info('Socket.io client disconnected')
+        })
     })
 
     return server

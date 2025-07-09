@@ -8,6 +8,7 @@ import { StoreInternal, StoreInternalConfig } from 'core-wallet-store'
 import { ConfigUtils } from './config/ConfigUtils.js'
 import * as schemas from './config/StoreConfig.js'
 import { LedgerClient } from 'core-ledger-client'
+import { Notifier } from './notification/NotificationService.js'
 import EventEmitter from 'events'
 
 const dAppPort = 3000
@@ -17,10 +18,32 @@ const webPort = 3002
 const logger = pino({ name: 'main', level: 'debug' })
 
 const authService: AuthService = {
-    verifyToken: async () => {
-        return new Promise((resolve) => resolve({ userId: 'user123' }))
+    verifyToken: async (bearerToken?: string) => {
+        // TODO: distinguish public vs private endpoints that need auth.
+        if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
+            return undefined
+        }
+
+        return { userId: 'user123' }
     },
 }
+
+class NotificationService implements NotificationService {
+    private notifiers: Map<string, Notifier> = new Map()
+
+    getNotifier(notifierId: string): Notifier {
+        let notifier = this.notifiers.get(notifierId)
+
+        if (!notifier) {
+            notifier = new EventEmitter()
+            this.notifiers.set(notifierId, notifier)
+        }
+
+        return notifier
+    }
+}
+
+const notificationService = new NotificationService()
 
 const networkConfigPath =
     process.env.NETWORK_CONFIG_PATH || '../test/multi-network-config.json'
@@ -29,23 +52,27 @@ const networks = ConfigUtils.loadConfigFile(networkConfigPath)
 const config: StoreInternalConfig = {
     networks: schemas.networksSchema.parse(networks),
 }
-const store = new StoreInternal(config, new EventEmitter())
+const store = new StoreInternal(config)
 
 const ledgerClient = new LedgerClient('http://localhost:5003')
 
-export const dAppServer = dapp(ledgerClient, authService, store).listen(
-    dAppPort,
-    () => {
-        logger.info(`dApp Server running at http://localhost:${dAppPort}`)
-    }
-)
+export const dAppServer = dapp(
+    ledgerClient,
+    notificationService,
+    authService,
+    store
+).listen(dAppPort, () => {
+    logger.info(`dApp Server running at http://localhost:${dAppPort}`)
+})
 
-export const userServer = user(ledgerClient, authService, store).listen(
-    userPort,
-    () => {
-        logger.info(`User Server running at http://localhost:${userPort}`)
-    }
-)
+export const userServer = user(
+    ledgerClient,
+    notificationService,
+    authService,
+    store
+).listen(userPort, () => {
+    logger.info(`User Server running at http://localhost:${userPort}`)
+})
 
 export const webServer = ViteExpress.listen(web, webPort, () =>
     logger.info(`Web server running at http://localhost:${webPort}`)

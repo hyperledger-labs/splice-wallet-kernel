@@ -7,10 +7,6 @@ export function jwtAuth(authService: AuthService, logger: Logger) {
     return async (req: Request, res: Response, next: NextFunction) => {
         const authHeader = req.headers.authorization
 
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return next()
-        }
-
         try {
             const context = await authService.verifyToken(authHeader)
             req.authContext = context

@@ -21,7 +21,7 @@ describe('StoreInternal', () => {
     let store: StoreInternal
 
     beforeEach(() => {
-        store = new StoreInternal(storeConfig, undefined, authContextMock)
+        store = new StoreInternal(storeConfig, authContextMock)
     })
 
     test('should add and retrieve wallets', async () => {

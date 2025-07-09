@@ -6,12 +6,27 @@ export class SpliceProviderHttp extends SpliceProviderBase {
     private sessionToken?: string
     private socket: Socket
 
+    private openSocket(url: URL): Socket {
+        // Assumes the RPC URL is on /rpc, and the socket URL is the same but without the /rpc path.
+        const socketUrl = new URL(url.href)
+        socketUrl.pathname = ''
+
+        if (this.socket) {
+            this.socket.disconnect()
+        }
+
+        return io(socketUrl.href, {
+            forceNew: true,
+            auth: {
+                token: `Bearer ${this.sessionToken}`,
+            },
+        })
+    }
+
     constructor(private url: URL) {
         super()
 
-        const socketUrl = new URL(url.href)
-        socketUrl.pathname = ''
-        this.socket = io(socketUrl.href, { forceNew: true })
+        this.socket = this.openSocket(url)
 
         // Listen for the auth success event sent from the WK UI popup to the SDK running in the parent window.
         window.addEventListener('message', (event) => {
@@ -24,6 +39,9 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 console.log(
                     `SpliceProviderHttp: setting sessionToken to ${this.sessionToken}`
                 )
+                this.socket.auth = {
+                    token: `Bearer ${this.sessionToken}`,
+                }
             }
         })
 

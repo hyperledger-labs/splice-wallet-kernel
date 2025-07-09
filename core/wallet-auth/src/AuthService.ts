@@ -5,7 +5,7 @@ export interface AuthContext {
 }
 
 export interface AuthService {
-    verifyToken(token: string): Promise<AuthContext | undefined>
+    verifyToken(bearerToken?: string): Promise<AuthContext | undefined>
 }
 
 export interface AuthAware<T> {
