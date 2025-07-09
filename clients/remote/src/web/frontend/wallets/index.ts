@@ -2,7 +2,7 @@ import { css, html, LitElement } from 'lit'
 import { customElement, query, state } from 'lit/decorators.js'
 
 import 'core-wallet-ui-components'
-import 'core-wallet-ui-components/themes/default.css'
+
 import { Wallet } from 'core-wallet-store'
 import { userClient } from '../rpc-client'
 import { CreateWalletParams } from 'core-wallet-user-rpc-client'
@@ -64,6 +64,10 @@ export class UserUiWallets extends LitElement {
             }
         }
     `
+
+    createRenderRoot() {
+        return this // Use light DOM so <slot> works as expected
+    }
 
     protected render() {
         return html`<div>

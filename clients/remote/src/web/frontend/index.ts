@@ -3,7 +3,6 @@ import { customElement } from 'lit/decorators.js'
 import { classMap } from 'lit/directives/class-map.js'
 
 import 'core-wallet-ui-components'
-import 'core-wallet-ui-components/themes/default.css'
 
 @customElement('user-ui')
 export class UserUI extends LitElement {

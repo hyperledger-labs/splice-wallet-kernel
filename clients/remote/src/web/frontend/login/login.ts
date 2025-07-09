@@ -2,7 +2,6 @@ import { css, html, LitElement } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { NetworkConfig } from 'core-wallet-store'
 import 'core-wallet-ui-components'
-import 'core-wallet-ui-components/themes/default.css'
 import { userClient } from '../rpc-client'
 
 @customElement('user-ui-login')
