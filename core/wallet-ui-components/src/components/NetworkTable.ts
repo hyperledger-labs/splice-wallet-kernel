@@ -98,6 +98,7 @@ export class NetworkTable extends LitElement {
     `
 
     render() {
+        console.log('rendering with networks ' + JSON.stringify(this.networks))
         return html`
             <table>
                 <thead>
@@ -106,6 +107,7 @@ export class NetworkTable extends LitElement {
                         <th>ID</th>
                         <th>Description</th>
                         <th>Auth type</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>

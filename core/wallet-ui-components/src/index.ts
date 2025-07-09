@@ -10,6 +10,8 @@ export * from './windows/popup.js'
 
 import './components/Discovery.js'
 import './components/Configuration.js'
+import './components/NetworkTable.js'
+import './components/NetworkForm.js'
 import { html as htmlStatic, literal } from 'lit/static-html.js'
 
 @customElement('app-ui')
