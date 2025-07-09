@@ -1,11 +1,32 @@
 import { isSpliceMessageEvent, RequestPayload, WalletEvent } from 'core-types'
 import { SpliceProviderBase } from './SpliceProvider'
+import { io, Socket } from 'socket.io-client'
 
 export class SpliceProviderHttp extends SpliceProviderBase {
     private sessionToken?: string
+    private socket: Socket
+
+    private openSocket(url: URL): Socket {
+        // Assumes the RPC URL is on /rpc, and the socket URL is the same but without the /rpc path.
+        const socketUrl = new URL(url.href)
+        socketUrl.pathname = ''
+
+        if (this.socket) {
+            this.socket.disconnect()
+        }
+
+        return io(socketUrl.href, {
+            forceNew: true,
+            auth: {
+                token: `Bearer ${this.sessionToken}`,
+            },
+        })
+    }
 
     constructor(private url: URL) {
         super()
+
+        this.socket = this.openSocket(url)
 
         // Listen for the auth success event sent from the WK UI popup to the SDK running in the parent window.
         window.addEventListener('message', (event) => {
@@ -18,6 +39,9 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 console.log(
                     `SpliceProviderHttp: setting sessionToken to ${this.sessionToken}`
                 )
+                this.socket.auth = {
+                    token: `Bearer ${this.sessionToken}`,
+                }
             }
         })
 
@@ -68,5 +92,24 @@ export class SpliceProviderHttp extends SpliceProviderBase {
         const body = await res.json()
         if (body.error) throw new Error(body.error.message)
         return body.result
+    }
+
+    // Re-alias the event methods directly to the socket instance
+    override on(event: string, listener: EventListener): SpliceProviderHttp {
+        this.socket.on(event, listener)
+        return this
+    }
+
+    override emit(event: string, ...args: unknown[]): boolean {
+        this.socket.emit(event, ...args)
+        return true
+    }
+
+    override removeListener(
+        event: string,
+        listenerToRemove: EventListener
+    ): SpliceProviderHttp {
+        this.socket.removeListener(event, listenerToRemove)
+        return this
     }
 }

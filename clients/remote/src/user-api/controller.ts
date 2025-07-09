@@ -12,10 +12,16 @@ import {
 } from './rpc-gen/typings.js'
 import { Store, Wallet } from 'core-wallet-store'
 import pino from 'pino'
+import {
+    NotificationService,
+    Notifier,
+} from '../notification/NotificationService.js'
+import { AuthContext } from 'core-wallet-auth'
 
 // Placeholder function -- replace with a real Signing API call
 async function signingDriverCreate(
     store: Store,
+    notifier: Notifier | undefined,
     ledgerClient: LedgerClient,
     { signingProviderId, primary, partyHint, networkId }: CreateWalletParams
 ): Promise<CreateWalletResult> {
@@ -35,7 +41,11 @@ async function signingDriverCreate(
                 networkId: networkId,
             }
 
-            store.addWallet(wallet)
+            await store.addWallet(wallet)
+
+            const wallets = await store.getWallets()
+            notifier?.emit('accountsChanged', wallets)
+
             return { wallet }
         }
         default:
@@ -45,7 +55,12 @@ async function signingDriverCreate(
     }
 }
 
-export const userController = (store: Store, ledgerClient: LedgerClient) =>
+export const userController = (
+    store: Store,
+    notificationService: NotificationService,
+    authContext: AuthContext | undefined,
+    ledgerClient: LedgerClient
+) =>
     buildController({
         addNetwork: async (params: AddNetworkParams) =>
             Promise.resolve({} as AddNetwork),
@@ -58,8 +73,14 @@ export const userController = (store: Store, ledgerClient: LedgerClient) =>
             pino.pino().info(
                 `Allocating party with params: ${JSON.stringify(params)}`
             )
+
+            const notifier = authContext?.userId
+                ? notificationService.getNotifier(authContext.userId)
+                : undefined
+
             const result = await signingDriverCreate(
                 store,
+                notifier,
                 ledgerClient,
                 params
             )
