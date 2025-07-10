@@ -3,6 +3,69 @@
 
 /**
  *
+ * Name of network
+ *
+ */
+export type Name = string
+/**
+ *
+ * Description of network
+ *
+ */
+export type Description = string
+/**
+ *
+ * Network Id
+ *
+ */
+export type NetworkId = string
+/**
+ *
+ * network
+ *
+ */
+export interface Network {
+    name: Name
+    description: Description
+    networkId: NetworkId
+    [k: string]: any
+}
+export type Type = string
+export type TokenUrl = string
+export type GrantType = string
+export type Scope = string
+export type ClientId = string
+export type Domain = string
+export type Audience = string
+/**
+ *
+ * auth
+ *
+ */
+export interface Auth {
+    authType?: Type
+    tokenUrl?: TokenUrl
+    grantType?: GrantType
+    scope?: Scope
+    clientId?: ClientId
+    domain?: Domain
+    audience?: Audience
+    [k: string]: any
+}
+/**
+ *
+ * Ledger api url
+ *
+ */
+export type LedgerApiUrl = string
+/**
+ *
+ * Ledger api url
+ *
+ */
+export type NetworkName = string
+/**
+ *
  * Set as primary wallet for dApp usage.
  *
  */
@@ -13,12 +76,6 @@ export type Primary = boolean
  *
  */
 export type PartyHint = string
-/**
- *
- * The network ID the wallet corresponds to.
- *
- */
-export type NetworkId = string
 /**
  *
  * The signing provider ID the wallet corresponds to.
@@ -88,24 +145,19 @@ export type CorrelationId = string
 export type TraceId = string
 /**
  *
- * Name of network
- *
- */
-export type Name = string
-/**
- *
- * Description of network
- *
- */
-export type Description = string
-/**
- *
  * Structure representing the connected Networks
  *
  */
 export type Networks = any[]
 export interface AddNetworkParams {
-    [key: string]: any
+    network: Network
+    auth: Auth
+    ledgerApiUrl: LedgerApiUrl
+    [k: string]: any
+}
+export interface RemoveNetworkParams {
+    networkName: NetworkName
+    [k: string]: any
 }
 export interface CreateWalletParams {
     primary?: Primary
@@ -172,9 +224,10 @@ export interface ListNetworksResult {
  * Generated! Represents an alias to any of the provided schemas
  *
  */
-export type AnyOfAddNetworkParamsCreateWalletParamsRemoveWalletParamsListWalletsParamsSignParamsExecuteParamsNullCreateWalletResultRemovePartyResultListWalletsResultSignResultExecuteResultListNetworksResult =
+export type AnyOfAddNetworkParamsRemoveNetworkParamsCreateWalletParamsRemoveWalletParamsListWalletsParamsSignParamsExecuteParamsNullNullCreateWalletResultRemovePartyResultListWalletsResultSignResultExecuteResultListNetworksResult =
 
         | AddNetworkParams
+        | RemoveNetworkParams
         | CreateWalletParams
         | RemoveWalletParams
         | ListWalletsParams
@@ -187,7 +240,8 @@ export type AnyOfAddNetworkParamsCreateWalletParamsRemoveWalletParamsListWallets
         | SignResult
         | ExecuteResult
         | ListNetworksResult
-export type AddNetwork = (network: AddNetworkParams) => Promise<Null>
+export type AddNetwork = (params: AddNetworkParams) => Promise<Null>
+export type RemoveNetwork = (params: RemoveNetworkParams) => Promise<Null>
 export type CreateWallet = (
     params: CreateWalletParams
 ) => Promise<CreateWalletResult>

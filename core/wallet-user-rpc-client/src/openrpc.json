@@ -10,10 +10,30 @@
             "name": "addNetwork",
             "params": [
                 {
-                    "name": "network",
+                    "name": "params",
                     "schema": {
                         "title": "AddNetworkParams",
-                        "type": "object"
+                        "type": "object",
+                        "properties": {
+                            "network": {
+                                "title": "network",
+                                "type": "object",
+                                "description": "network",
+                                "$ref": "#/components/schemas/Network"
+                            },
+                            "auth": {
+                                "title": "auth",
+                                "type": "object",
+                                "description": "auth",
+                                "$ref": "#/components/schemas/Auth"
+                            },
+                            "ledgerApiUrl": {
+                                "title": "ledgerApiUrl",
+                                "type": "string",
+                                "description": "Ledger api url"
+                            }
+                        },
+                        "required": ["network", "auth", "ledgerApiUrl"]
                     }
                 }
             ],
@@ -28,6 +48,37 @@
                 }
             },
             "description": "Adds a new network configuration (similar to EIP-3085)."
+        },
+        {
+            "name": "removeNetwork",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "RemoveNetworkParams",
+                        "type": "object",
+                        "properties": {
+                            "networkName": {
+                                "title": "networkName",
+                                "type": "string",
+                                "description": "Ledger api url"
+                            }
+                        },
+                        "required": ["networkName"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "Null",
+                    "schema": {
+                        "$ref": "#/components/schemas/Null"
+                    },
+                    "description": "Represents a null value, used in responses where no data is returned."
+                }
+            },
+            "description": "Removes a new network configuration (similar to EIP-3085)."
         },
         {
             "name": "createWallet",
@@ -278,8 +329,14 @@
                         "title": "description",
                         "type": "string",
                         "description": "Description of network"
+                    },
+                    "networkId": {
+                        "title": "networkId",
+                        "type": "string",
+                        "description": "Network Id"
                     }
-                }
+                },
+                "required": ["name", "description", "networkId"]
             },
             "Auth": {
                 "title": "type",
@@ -292,6 +349,10 @@
                     },
                     "tokenUrl": {
                         "title": "tokenUrl",
+                        "type": "string"
+                    },
+                    "grantType": {
+                        "title": "grantType",
                         "type": "string"
                     },
                     "scope": {
@@ -310,7 +371,8 @@
                         "title": "audience",
                         "type": "string"
                     }
-                }
+                },
+                "required": ["type"]
             },
             "Wallet": {
                 "title": "Wallet",
