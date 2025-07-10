@@ -259,12 +259,22 @@
                                 "title": "partyId",
                                 "type": "string"
                             },
+                            "commandId": {
+                                "title": "commandId",
+                                "type": "string",
+                                "description": "The command ID of the transaction to be executed."
+                            },
                             "signedBy": {
                                 "title": "signedBy",
                                 "type": "string"
                             }
                         },
-                        "required": ["signature", "partyId", "signedBy"]
+                        "required": [
+                            "commandId",
+                            "signature",
+                            "partyId",
+                            "signedBy"
+                        ]
                     }
                 }
             ],

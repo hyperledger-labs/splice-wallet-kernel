@@ -33,12 +33,14 @@ function App() {
         if (provider) {
             provider.on('message', messageListener)
             provider.on('connect', messageListener)
+            provider.on('txChanged', messageListener)
             provider.on('accountsChanged', onAccountsChanged)
         }
 
         return () => {
             provider?.removeListener('message', messageListener)
             provider?.removeListener('connect', messageListener)
+            provider?.removeListener('txChanged', messageListener)
             provider?.removeListener('accountsChanged', onAccountsChanged)
         }
     }, [status])
@@ -51,7 +53,7 @@ function App() {
         if (provider !== undefined) {
             provider
                 .request({
-                    method: 'prepareReturn',
+                    method: 'prepareExecute',
                     params: createPingCommand(primaryParty!),
                 })
                 .then(() => {

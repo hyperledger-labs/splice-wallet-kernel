@@ -1,4 +1,4 @@
-import { paths } from '../generated-clients/openapi-3.4.0-SNAPSHOT'
+import { paths } from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
 import createClient, { Client } from 'openapi-fetch'
 
 export type PartiesPostReq =
@@ -10,6 +10,11 @@ export type InteractivePreparePostReq =
     paths['/v2/interactive-submission/prepare']['post']['requestBody']['content']['application/json']
 export type InteractivePreparePostRes =
     paths['/v2/interactive-submission/prepare']['post']['responses']['200']['content']['application/json']
+
+export type SubmitAndWaitPostReq =
+    paths['/v2/commands/submit-and-wait']['post']['requestBody']['content']['application/json']
+export type SubmitAndWaitPostRes =
+    paths['/v2/commands/submit-and-wait']['post']['responses']['200']['content']['application/json']
 
 export class LedgerClient {
     private readonly client: Client<paths>
@@ -32,6 +37,16 @@ export class LedgerClient {
             '/v2/interactive-submission/prepare',
             { body }
         )
+
+        return this.valueOrError(resp)
+    }
+
+    public async submitAndWaitPost(
+        body: SubmitAndWaitPostReq
+    ): Promise<SubmitAndWaitPostRes> {
+        const resp = await this.client.POST('/v2/commands/submit-and-wait', {
+            body,
+        })
 
         return this.valueOrError(resp)
     }
