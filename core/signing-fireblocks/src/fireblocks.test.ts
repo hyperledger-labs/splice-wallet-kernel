@@ -17,23 +17,29 @@ describe('fireblocks handler', () => {
         // in index.test.ts
         test.skip('FIREBLOCKS_API_KEY environment variable is not set, skipping test.', () => {})
     } else {
-        test('key creation', async () => {
-            const secretPath = path.resolve(process.cwd(), SECRET_KEY_LOCATION)
-            const apiSecret = readFileSync(secretPath, 'utf8')
-            const handler = new FireblocksHandler(apiKey, apiSecret)
-
+        const secretPath = path.resolve(process.cwd(), SECRET_KEY_LOCATION)
+        const apiSecret = readFileSync(secretPath, 'utf8')
+        const handler = new FireblocksHandler(apiKey, apiSecret)
+        test('getPublicKeys', async () => {
             const keys = await handler.getPublicKeys()
             expect(keys.length).toBeGreaterThan(0)
-            const transactions = await Array.fromAsync(
-                handler.getTransactions()
-            )
-            expect(transactions.length).toBeGreaterThan(0)
-
+        }, 25000)
+        test('signTransaction', async () => {
             const transaction = await handler.signTransaction(
                 TEST_TRANSACTION_HASH,
                 '02fefbcc9aebc8a479f211167a9f564df53aefd603a8662d9449a98c1ead2eba'
             )
             expect(transaction).toBeDefined()
+        })
+        test('getTransactions', async () => {
+            const transactions = await Array.fromAsync(
+                handler.getTransactions({ limit: 200 })
+            )
+            const limitedTransactions = await Array.fromAsync(
+                handler.getTransactions({ limit: 25 })
+            )
+            expect(transactions.length).toEqual(limitedTransactions.length)
+            console.log(transactions.length)
         }, 25000)
     }
 })
