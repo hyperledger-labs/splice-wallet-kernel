@@ -66,6 +66,6 @@ You can also customize the layout by specifying a custom icon or stylesheet:
 ```
 
 - `iconSrc`: Path to a custom icon displayed in the header.
-- `themeSrc`: Path to an additional CSS file for custom theming.
+- `themeSrc`: Path to an alternative CSS file for custom theming.
 
 This approach allows you to rapidly compose wallet UIs with a consistent structure and appearance, while still supporting customization as needed.
