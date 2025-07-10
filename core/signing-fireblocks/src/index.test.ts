@@ -151,3 +151,18 @@ test('transaction signature', async () => {
     })
     throwWhenRpcError(foundTx)
 }, 60000)
+
+test('test config change', async () => {
+    const { signingDriver } = await setupTest()
+    const newPath = 'new-path'
+
+    const config = await signingDriver.controller.getConfiguration()
+    signingDriver.controller.setConfiguration({
+        apiKey: config.apiKey,
+        apiSecret: config.apiSecret,
+        apiPath: newPath,
+    })
+
+    const newConfig = await signingDriver.controller.getConfiguration()
+    expect(newConfig.apiPath).toBe(newPath)
+})

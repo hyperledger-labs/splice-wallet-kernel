@@ -25,17 +25,27 @@ import {
     Transaction,
 } from 'core-signing-lib'
 import { FireblocksHandler } from './fireblocks'
+import _ from 'lodash'
+import { z } from 'zod'
 
-interface FireblocksConfig {
+export interface FireblocksConfig {
     apiKey: string
     apiSecret: string
     apiPath?: string
 }
 
+const FireblocksConfigSchema = z.object({
+    apiKey: z.string(),
+    apiSecret: z.string(),
+    apiPath: z.string().optional(),
+})
+
 export default class FireblocksSigningDriver implements SigningDriverInterface {
     private fireblocks: FireblocksHandler
+    private config: FireblocksConfig
 
     constructor(config: FireblocksConfig) {
+        this.config = config
         this.fireblocks = new FireblocksHandler(
             config.apiKey,
             config.apiSecret,
@@ -129,13 +139,20 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
         },
 
         getKeys: async (): Promise<GetKeysResult> => {
-            const keys = await this.fireblocks.getPublicKeys()
-            return {
-                keys: keys.map((k) => ({
-                    id: k.derivationPath.join('-'),
-                    name: k.name,
-                    publicKey: k.publicKey,
-                })),
+            try {
+                const keys = await this.fireblocks.getPublicKeys()
+                return {
+                    keys: keys.map((k) => ({
+                        id: k.derivationPath.join('-'),
+                        name: k.name,
+                        publicKey: k.publicKey,
+                    })),
+                }
+            } catch (error) {
+                return {
+                    error: 'fetch_error',
+                    error_description: (error as Error).message,
+                }
             }
         },
 
@@ -149,13 +166,30 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
             }
         },
 
-        // TODO: implement dynamic reconfiguration of the Fireblocks client
-        getConfiguration: async (): Promise<GetConfigurationResult> =>
-            Promise.resolve({} as GetConfigurationResult),
+        getConfiguration: async (): Promise<GetConfigurationResult> => {
+            return this.config
+        },
+
         setConfiguration: async (
             params: SetConfigurationParams
-        ): Promise<SetConfigurationResult> =>
-            Promise.resolve({} as SetConfigurationResult),
+        ): Promise<SetConfigurationResult> => {
+            const validated = FireblocksConfigSchema.safeParse(params)
+            if (!validated.success) {
+                return {
+                    error: 'bad_arguments',
+                    error_description: validated.error.message,
+                }
+            }
+            if (!_.isEqual(validated.data, this.config)) {
+                this.config = validated.data
+                this.fireblocks = new FireblocksHandler(
+                    validated.data.apiKey,
+                    validated.data.apiSecret,
+                    validated.data.apiPath || 'https://api.fireblocks.io/v1'
+                )
+            }
+            return params
+        },
 
         // TODO: implement subscribeTransactions - we will need to figure out how to handle subscriptions
         // when the controller is not running in a server context
