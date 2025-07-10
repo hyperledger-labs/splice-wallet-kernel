@@ -5,6 +5,8 @@ import { customElement, state } from 'lit/decorators.js'
 import { userClient } from '../rpc-client'
 import { Network, RemoveNetworkParams } from 'core-wallet-user-rpc-client'
 
+import '../index'
+
 @customElement('user-ui-networks')
 export class UserUiNetworks extends LitElement {
     @state()
