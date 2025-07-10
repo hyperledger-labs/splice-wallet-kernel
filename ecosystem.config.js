@@ -12,7 +12,7 @@ export const apps = [
         script: 'yarn workspace clients-extension dev',
     },
     {
-        name: 'example dApp',
+        name: 'example',
         script: 'yarn workspace example dev',
     },
     {

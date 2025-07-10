@@ -33,6 +33,7 @@ export const dapp = (
             jsonRpcHandler<Methods>({
                 controller: dappController(
                     store.withAuthContext(req.authContext),
+                    notificationService,
                     ledgerClient,
                     req.authContext
                 ),
@@ -63,6 +64,10 @@ export const dapp = (
                 const notifier = notificationService.getNotifier(userId)
                 notifier.on('accountsChanged', (wallets) => {
                     socket.emit('accountsChanged', wallets)
+                })
+
+                notifier.on('txChanged', (txChanged) => {
+                    socket.emit('txChanged', txChanged)
                 })
             })
 

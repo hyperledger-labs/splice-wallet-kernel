@@ -4,7 +4,7 @@ import generateSchema from 'openapi-typescript'
 import { getRepoRoot } from './utils.js'
 
 // Directories
-const OUTPUT_DIR = `${getRepoRoot()}/core/ledger-client/generated-clients`
+const OUTPUT_DIR = `${getRepoRoot()}/core/ledger-client/src/generated-clients`
 const SPECS_DIR = `${getRepoRoot()}/api-specs/ledger-api`
 
 // Read all files in the specs directory
@@ -19,7 +19,7 @@ files.forEach(async (file) => {
         const inputPath = path.join(SPECS_DIR, file)
         const outputPath = path.join(
             OUTPUT_DIR,
-            `${fileName.replace('.yaml', '.d.ts')}`
+            `${fileName.replace('.yaml', '.ts')}`
         )
 
         const schema = await generateSchema(inputPath)
