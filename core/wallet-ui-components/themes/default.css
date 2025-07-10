@@ -22,6 +22,12 @@
 .header img {
     margin-right: 10px;
 }
+
+.header .logo-box {
+    display: inline-block;
+    cursor: pointer;
+}
+
 .container {
     padding: 20px;
 }

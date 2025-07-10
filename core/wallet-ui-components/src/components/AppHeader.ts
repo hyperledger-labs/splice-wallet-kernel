@@ -16,18 +16,25 @@ export class AppHeader extends LitElement {
                 class="header d-flex justify-content-between align-items-center"
             >
                 <h2>
-                    <img
-                        src="${this.iconSrc}"
-                        alt="Icon"
-                        width="24"
-                        height="24"
-                    />
-                    Splice Wallet
+                    <div
+                        class="logo-box"
+                        @click=${() => (window.location.href = '/')}
+                        aria-label="Go to home"
+                    >
+                        <img
+                            src="${this.iconSrc}"
+                            alt="Icon"
+                            width="24"
+                            height="24"
+                        />
+                        Splice Wallet
+                    </div>
                 </h2>
                 <div>
                     <button
                         class="btn btn-outline-secondary btn-sm"
                         id="settingsButton"
+                        @click=${() => (window.location.href = '/networks/')}
                     >
                         Settings
                     </button>
