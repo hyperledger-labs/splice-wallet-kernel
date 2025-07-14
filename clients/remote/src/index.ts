@@ -18,13 +18,13 @@ const webPort = 3002
 const logger = pino({ name: 'main', level: 'debug' })
 
 const authService: AuthService = {
-    verifyToken: async (bearerToken?: string) => {
+    verifyToken: async (accessToken?: string) => {
         // TODO: distinguish public vs private endpoints that need auth.
-        if (!bearerToken || !bearerToken.startsWith('Bearer ')) {
+        if (!accessToken || !accessToken.startsWith('Bearer ')) {
             return undefined
         }
 
-        return { userId: 'user123' }
+        return { userId: 'user123', accessToken: '123' }
     },
 }
 

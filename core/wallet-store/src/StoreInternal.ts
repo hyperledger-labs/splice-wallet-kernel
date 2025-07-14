@@ -165,15 +165,19 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     async getCurrentNetwork(): Promise<NetworkConfig> {
-        const networkName = this.getStorage().session?.network
-        if (!networkName) {
+        const session = this.getStorage().session
+        if (!session) {
+            throw new Error('No session found')
+        }
+        const networkId = session.network
+        if (!networkId) {
             throw new Error('No current network set in session')
         }
 
         const networks = await this.listNetworks()
-        const network = networks.find((n) => n.name === networkName)
+        const network = networks.find((n) => n.networkId === networkId)
         if (!network) {
-            throw new Error(`Network "${networkName}" not found`)
+            throw new Error(`Network "${networkId}" not found`)
         }
         return network
     }

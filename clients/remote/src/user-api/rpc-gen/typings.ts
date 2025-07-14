@@ -21,7 +21,7 @@ export type Description = string
 export type NetworkId = string
 /**
  *
- * network
+ * Structure representing the connected Networks
  *
  */
 export interface Network {
@@ -155,6 +155,7 @@ export type TraceId = string
  *
  */
 export type Networks = any[]
+export type Status = 'connected' | 'disconnected'
 export interface AddNetworkParams {
     network: Network
     auth: Auth
@@ -192,6 +193,10 @@ export interface ExecuteParams {
     signedBy: SignedBy
     [k: string]: any
 }
+export interface AddSessionParams {
+    networkId: NetworkId
+    [k: string]: any
+}
 /**
  *
  * Represents a null value, used in responses where no data is returned.
@@ -226,12 +231,17 @@ export interface ListNetworksResult {
     networks: Networks
     [k: string]: any
 }
+export interface AddSessionResult {
+    network: Network
+    status: Status
+    [k: string]: any
+}
 /**
  *
  * Generated! Represents an alias to any of the provided schemas
  *
  */
-export type AnyOfAddNetworkParamsRemoveNetworkParamsCreateWalletParamsRemoveWalletParamsListWalletsParamsSignParamsExecuteParamsNullNullCreateWalletResultRemovePartyResultListWalletsResultSignResultExecuteResultListNetworksResult =
+export type AnyOfAddNetworkParamsRemoveNetworkParamsCreateWalletParamsRemoveWalletParamsListWalletsParamsSignParamsExecuteParamsAddSessionParamsNullNullCreateWalletResultRemovePartyResultListWalletsResultSignResultExecuteResultListNetworksResultAddSessionResult =
 
         | AddNetworkParams
         | RemoveNetworkParams
@@ -240,6 +250,7 @@ export type AnyOfAddNetworkParamsRemoveNetworkParamsCreateWalletParamsRemoveWall
         | ListWalletsParams
         | SignParams
         | ExecuteParams
+        | AddSessionParams
         | Null
         | CreateWalletResult
         | RemovePartyResult
@@ -247,6 +258,7 @@ export type AnyOfAddNetworkParamsRemoveNetworkParamsCreateWalletParamsRemoveWall
         | SignResult
         | ExecuteResult
         | ListNetworksResult
+        | AddSessionResult
 export type AddNetwork = (params: AddNetworkParams) => Promise<Null>
 export type RemoveNetwork = (params: RemoveNetworkParams) => Promise<Null>
 export type CreateWallet = (
@@ -261,3 +273,4 @@ export type ListWallets = (
 export type Sign = (params: SignParams) => Promise<SignResult>
 export type Execute = (params: ExecuteParams) => Promise<ExecuteResult>
 export type ListNetworks = () => Promise<ListNetworksResult>
+export type AddSession = (params: AddSessionParams) => Promise<AddSessionResult>

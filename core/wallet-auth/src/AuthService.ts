@@ -2,10 +2,11 @@ export type UserId = string
 
 export interface AuthContext {
     userId: UserId
+    accessToken: string
 }
 
 export interface AuthService {
-    verifyToken(bearerToken?: string): Promise<AuthContext | undefined>
+    verifyToken(accessToken?: string): Promise<AuthContext | undefined>
 }
 
 export interface AuthAware<T> {

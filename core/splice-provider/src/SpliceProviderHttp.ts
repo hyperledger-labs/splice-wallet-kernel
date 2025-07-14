@@ -43,6 +43,9 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 this.socket.auth = {
                     token: `Bearer ${this.sessionToken}`,
                 }
+
+                const status = this.request({ method: 'status' })
+                console.log(status)
             }
         })
 
@@ -53,6 +56,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 'sessionToken' in args &&
                 typeof args.sessionToken === 'string'
             ) {
+                console.log('onconnected event')
                 console.log(
                     `SpliceProviderHttp: setting sessionToken to ${args.sessionToken}`
                 )

@@ -9,6 +9,9 @@ import {
     CreateWalletResult,
     ExecuteParams,
     SignParams,
+    AddSessionParams,
+    Null,
+    AddSessionResult,
 } from './rpc-gen/typings.js'
 import { Store, Wallet, Auth } from 'core-wallet-store'
 import pino from 'pino'
@@ -17,6 +20,7 @@ import {
     Notifier,
 } from '../notification/NotificationService.js'
 import { AuthContext } from 'core-wallet-auth'
+import { th } from 'zod/v4/locales'
 
 // Placeholder function -- replace with a real Signing API call
 async function signingDriverCreate(
@@ -199,4 +203,28 @@ export const userController = (
         },
         listNetworks: async () =>
             Promise.resolve({ networks: await store.listNetworks() }),
+        addSession: async function (
+            params: AddSessionParams
+        ): Promise<AddSessionResult> {
+            try {
+                await store.setSession({
+                    network: params.networkId,
+                    accessToken: authContext?.accessToken || '',
+                })
+                const network = await store.getCurrentNetwork()
+                return Promise.resolve({
+                    network: {
+                        name: network.name,
+                        networkId: network.networkId,
+                        description: network.description,
+                        ledgerApi: network.ledgerApi,
+                        auth: network.auth,
+                    },
+                    status: 'connected', // TODO: Determine actual status based on connection logic
+                })
+            } catch (error) {
+                pino.pino().error(`Failed to add session: ${error}`)
+                throw new Error(`Failed to add session: ${error}`)
+            }
+        },
     })
