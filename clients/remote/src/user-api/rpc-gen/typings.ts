@@ -107,6 +107,12 @@ export interface WalletFilter {
 }
 export type Data = string
 export type Signature = string
+/**
+ *
+ * The command ID of the transaction to be executed.
+ *
+ */
+export type CommandId = string
 export type SignedBy = string
 /**
  *
@@ -182,6 +188,7 @@ export interface SignParams {
 export interface ExecuteParams {
     signature: Signature
     partyId: PartyId
+    commandId: CommandId
     signedBy: SignedBy
     [k: string]: any
 }

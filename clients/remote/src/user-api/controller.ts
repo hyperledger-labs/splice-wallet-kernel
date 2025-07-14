@@ -1,18 +1,16 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { LedgerClient } from 'core-ledger-client'
+import { LedgerClient, SubmitAndWaitPostReq } from 'core-ledger-client'
 import buildController from './rpc-gen/index.js'
 import {
-    AddNetwork,
     AddNetworkParams,
     RemoveNetworkParams,
     CreateWalletParams,
     CreateWalletResult,
     ExecuteParams,
-    Network,
     SignParams,
 } from './rpc-gen/typings.js'
-import { Store, Wallet, NetworkConfig, Auth } from 'core-wallet-store'
+import { Store, Wallet, Auth } from 'core-wallet-store'
 import pino from 'pino'
 import {
     NotificationService,
@@ -31,7 +29,14 @@ async function signingDriverCreate(
         case 'participant': {
             const res = await ledgerClient.partiesPost({
                 partyIdHint: partyHint,
+                identityProviderId: '',
+                synchronizerId: '',
+                userId: '',
             })
+
+            if (!res.partyDetails?.party) {
+                throw new Error('Failed to allocate party')
+            }
 
             const wallet: Wallet = {
                 primary: primary ?? false,
@@ -138,11 +143,60 @@ export const userController = (
                 signedBy: 'default-signed-by',
                 partyId: 'default-party',
             }),
-        execute: async (params: ExecuteParams) =>
-            Promise.resolve({
+        execute: async ({ commandId }: ExecuteParams) => {
+            const wallet = await store.getPrimaryWallet()
+
+            if (wallet === undefined) {
+                throw new Error('No primary wallet found')
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain -- we are certain userId is defined here because the store validates it
+            const userId = authContext?.userId!
+            const notifier = notificationService.getNotifier(userId)
+
+            const transaction = await store.getTransaction(commandId)
+
+            switch (wallet.signingProviderId) {
+                case 'participant': {
+                    // Participant signing provider specific logic can be added here
+                    const request: SubmitAndWaitPostReq = {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
+                        commands: transaction?.payload as any,
+                        commandId,
+                        userId,
+                        actAs: [wallet.partyId],
+                        readAs: [],
+                        disclosedContracts: [],
+                        synchronizerId: '',
+                        packageIdSelectionPreference: [],
+                    }
+                    try {
+                        const res =
+                            await ledgerClient.submitAndWaitPost(request)
+
+                        notifier.emit('txChanged', {
+                            status: 'executed',
+                            commandId,
+                            payload: res,
+                        })
+                    } catch (error) {
+                        throw new Error(
+                            'Failed to submit transaction: ' + error
+                        )
+                    }
+                    break
+                }
+                default:
+                    throw new Error(
+                        `Unsupported signing provider: ${wallet.signingProviderId}`
+                    )
+            }
+
+            return {
                 correlationId: 'default-correlation-id',
                 traceId: 'default-trace-id',
-            }),
+            }
+        },
         listNetworks: async () =>
             Promise.resolve({ networks: await store.listNetworks() }),
     })

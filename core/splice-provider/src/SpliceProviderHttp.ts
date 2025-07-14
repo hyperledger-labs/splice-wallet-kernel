@@ -1,6 +1,7 @@
 import { isSpliceMessageEvent, RequestPayload, WalletEvent } from 'core-types'
 import { SpliceProviderBase } from './SpliceProvider'
 import { io, Socket } from 'socket.io-client'
+import { popupHref } from 'core-wallet-ui-components'
 
 export class SpliceProviderHttp extends SpliceProviderBase {
     private sessionToken?: string
@@ -90,6 +91,12 @@ export class SpliceProviderHttp extends SpliceProviderBase {
         })
 
         const body = await res.json()
+
+        if (method === 'prepareExecute') {
+            const userUrl = body.result?.userUrl
+            popupHref(userUrl)
+        }
+
         if (body.error) throw new Error(body.error.message)
         return body.result
     }

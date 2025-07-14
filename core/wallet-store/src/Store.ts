@@ -89,7 +89,16 @@ export interface NetworkConfig {
     auth: Auth
 }
 
-// Store interface for managing wallets, sessions, and networks
+export interface Transaction {
+    // TODO: reuse same status enum as TxChanged event type
+    status: 'pending' | 'signed' | 'executed' | 'failed'
+    commandId: string
+    preparedTransaction: string
+    preparedTransactionHash: string
+    payload?: unknown
+}
+
+// Store interface for managing wallets, sessions, networks, and transactions
 
 export interface Store {
     // Wallet methods
@@ -110,4 +119,8 @@ export interface Store {
     updateNetwork(network: NetworkConfig): Promise<void>
     addNetwork(network: NetworkConfig): Promise<void>
     removeNetwork(name: string): Promise<void>
+
+    // Transaction methods
+    setTransaction(tx: Transaction): Promise<void>
+    getTransaction(commandId: string): Promise<Transaction | undefined>
 }

@@ -6,10 +6,12 @@ import {
     Session,
     NetworkConfig,
     WalletFilter,
+    Transaction,
 } from './Store.js'
 
 interface UserStorage {
     wallets: Array<Wallet>
+    transactions: Map<string, Transaction>
     session: Session | undefined
 }
 
@@ -43,6 +45,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     static createStorage(): UserStorage {
         return {
             wallets: [],
+            transactions: new Map<string, Transaction>(),
             session: undefined,
         }
     }
@@ -199,5 +202,21 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         this.systemStorage.networks = this.systemStorage.networks.filter(
             (n) => n.name !== name
         )
+    }
+
+    // Transaction methods
+    async setTransaction(transaction: Transaction): Promise<void> {
+        this.assertConnected()
+        const storage = this.getStorage()
+
+        storage.transactions.set(transaction.commandId, transaction)
+        this.updateStorage(storage)
+    }
+
+    async getTransaction(commandId: string): Promise<Transaction | undefined> {
+        this.assertConnected()
+        const storage = this.getStorage()
+
+        return storage.transactions.get(commandId)
     }
 }

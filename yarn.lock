@@ -3329,15 +3329,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ws@npm:^8.18.1":
-  version: 8.18.1
-  resolution: "@types/ws@npm:8.18.1"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10c0/61aff1129143fcc4312f083bc9e9e168aa3026b7dd6e70796276dcfb2c8211c4292603f9c4864fae702f2ed86e4abd4d38aa421831c2fd7f856c931a481afbab
-  languageName: node
-  linkType: hard
-
 "@types/yargs-parser@npm:*":
   version: 21.0.3
   resolution: "@types/yargs-parser@npm:21.0.3"
@@ -4883,7 +4874,6 @@ __metadata:
     "@types/jest": "npm:^29.5.14"
     "@types/node": "npm:^22.15.30"
     "@types/supertest": "npm:^6.0.3"
-    "@types/ws": "npm:^8.18.1"
     core-ledger-client: "workspace:^"
     core-types: "workspace:^"
     core-wallet-auth: "workspace:^"
@@ -4906,7 +4896,6 @@ __metadata:
     uuid: "npm:^11.1.0"
     vite: "npm:^6.3.5"
     vite-express: "npm:^0.21.1"
-    ws: "npm:^8.18.2"
     zod: "npm:^3.25.64"
   languageName: unknown
   linkType: soft
@@ -5266,6 +5255,7 @@ __metadata:
   resolution: "core-splice-provider@workspace:core/splice-provider"
   dependencies:
     core-types: "workspace:^"
+    core-wallet-ui-components: "workspace:^"
     socket.io-client: "npm:^4.8.1"
     typescript: "npm:^5.8.3"
   languageName: unknown
@@ -13133,7 +13123,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.0.0, ws@npm:^8.18.2":
+"ws@npm:^8.0.0":
   version: 8.18.2
   resolution: "ws@npm:8.18.2"
   peerDependencies:

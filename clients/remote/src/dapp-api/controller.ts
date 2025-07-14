@@ -9,8 +9,13 @@ import {
     PrepareReturnParams,
 } from './rpc-gen/typings.js'
 import { Store } from 'core-wallet-store'
-import { LedgerClient } from 'core-ledger-client'
+import {
+    LedgerClient,
+    InteractivePreparePostRes,
+    InteractivePreparePostReq,
+} from 'core-ledger-client'
 import { v4 } from 'uuid'
+import { NotificationService } from '../notification/NotificationService.js'
 
 const kernelInfo: KernelInfo = {
     id: 'remote-da',
@@ -18,24 +23,86 @@ const kernelInfo: KernelInfo = {
     url: 'http://localhost:3000/rpc',
 }
 
+async function prepareSubmission(
+    userId: string,
+    partyId: string,
+    synchronizerId: string,
+    commands: unknown,
+    ledgerClient: LedgerClient,
+    commandId?: string
+): Promise<InteractivePreparePostRes> {
+    const prepareParams: InteractivePreparePostReq = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
+        commands: commands as any,
+        commandId: commandId || v4(),
+        userId,
+        actAs: [partyId],
+        readAs: [],
+        disclosedContracts: [],
+        synchronizerId,
+        verboseHashing: false,
+        packageIdSelectionPreference: [],
+    }
+
+    return await ledgerClient.interactivePreparePost(prepareParams)
+}
+
 export const dappController = (
     store: Store,
+    notificationService: NotificationService,
     ledgerClient: LedgerClient,
     context?: AuthContext
 ) =>
     buildController({
-        connect: async () =>
-            Promise.resolve({
-                kernel: kernelInfo,
-                isConnected: false,
-                chainId: 'default-chain-id',
-                userUrl: 'http://localhost:3002/login/',
-            }),
-        darsAvailable: async () => Promise.resolve({ dars: ['default-dar'] }),
-        ledgerApi: async (params: LedgerApiParams) =>
-            Promise.resolve({ response: 'default-response' }),
-        prepareExecute: async (params: PrepareExecuteParams) =>
-            Promise.resolve({ userUrl: 'default-url' }),
+        connect: async () => ({
+            kernel: kernelInfo,
+            isConnected: false,
+            chainId: 'default-chain-id',
+            userUrl: 'http://localhost:3002/login/',
+        }),
+        darsAvailable: async () => ({ dars: ['default-dar'] }),
+        ledgerApi: async (params: LedgerApiParams) => ({
+            response: 'default-response',
+        }),
+        prepareExecute: async (params: PrepareExecuteParams) => {
+            const wallet = await store.getPrimaryWallet()
+
+            if (context === undefined) {
+                throw new Error('Unauthenticated context')
+            }
+
+            if (wallet === undefined) {
+                throw new Error('No primary wallet found')
+            }
+
+            const userId = context.userId
+            const notifier = notificationService.getNotifier(userId)
+            const commandId = v4()
+
+            notifier.emit('txChanged', { status: 'pending', commandId })
+
+            const { preparedTransactionHash, preparedTransaction = '' } =
+                await prepareSubmission(
+                    context.userId,
+                    wallet.partyId,
+                    '',
+                    params.commands,
+                    ledgerClient,
+                    commandId
+                )
+
+            store.setTransaction({
+                commandId,
+                status: 'pending',
+                preparedTransaction,
+                preparedTransactionHash,
+                payload: params.commands,
+            })
+
+            return {
+                userUrl: `http://localhost:3002/approve/index.html?commandId=${commandId}`,
+            }
+        },
         prepareReturn: async (params: PrepareReturnParams) => {
             const wallet = await store.getPrimaryWallet()
 
@@ -47,32 +114,26 @@ export const dappController = (
                 throw new Error('No primary wallet found')
             }
 
-            const prepareParams = {
-                commandId: v4(),
-                userId: context.userId,
-                actAs: [wallet.partyId],
-                readAs: [],
-                disclosedContracts: [],
-                synchronizerId: '', // (get from network store config)
-                verboseHashing: false,
-                packageIdSelectionPreference: [],
-                commands: params.commands,
-            }
-
-            return await ledgerClient.interactivePreparePost(prepareParams)
+            return prepareSubmission(
+                context.userId,
+                wallet.partyId,
+                '',
+                params.commands,
+                ledgerClient
+            )
         },
         status: async () => {
             if (context === null) {
-                return Promise.resolve({
+                return {
                     kernel: kernelInfo,
                     isConnected: false,
-                })
+                }
             } else {
-                return Promise.resolve({
+                return {
                     kernel: kernelInfo,
                     isConnected: true,
                     chainId: (await store.getCurrentNetwork()).name,
-                })
+                }
             }
         },
         onConnected: async () => {
