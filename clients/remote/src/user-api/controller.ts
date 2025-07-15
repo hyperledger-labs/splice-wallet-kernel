@@ -230,6 +230,7 @@ export const userController = (
                     network: {
                         name: network.name,
                         networkId: network.networkId,
+                        synchronizerId: network.synchronizerId,
                         description: network.description,
                         ledgerApi: network.ledgerApi,
                         auth: network.auth,

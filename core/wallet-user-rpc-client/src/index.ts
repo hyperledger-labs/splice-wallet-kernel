@@ -17,6 +17,12 @@ export type Name = string
 export type Description = string
 /**
  *
+ * Synchronizer ID
+ *
+ */
+export type SynchronizerId = string
+/**
+ *
  * Network Id
  *
  */
@@ -29,6 +35,7 @@ export type NetworkId = string
 export interface Network {
     name: Name
     description: Description
+    synchronizerId: SynchronizerId
     networkId: NetworkId
     [k: string]: any
 }

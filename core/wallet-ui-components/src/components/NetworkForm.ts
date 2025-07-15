@@ -53,6 +53,12 @@ export class NetworkForm extends LitElement {
                     required
                 />
                 <input
+                    name="synchronizerId"
+                    placeholder="Synchronizer Id"
+                    .value=${this.editingNetwork?.synchronizerId ?? ''}
+                    required
+                />
+                <input
                     name="description"
                     placeholder="Description"
                     .value=${this.editingNetwork?.description ?? ''}

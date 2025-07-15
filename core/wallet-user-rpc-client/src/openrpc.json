@@ -381,13 +381,23 @@
                         "type": "string",
                         "description": "Description of network"
                     },
+                    "synchronizerId": {
+                        "title": "synchronizerId",
+                        "type": "string",
+                        "description": "Synchronizer ID"
+                    },
                     "networkId": {
                         "title": "networkId",
                         "type": "string",
                         "description": "Network Id"
                     }
                 },
-                "required": ["name", "description", "networkId"]
+                "required": [
+                    "name",
+                    "description",
+                    "networkId",
+                    "synchronizerId"
+                ]
             },
             "Auth": {
                 "title": "type",
