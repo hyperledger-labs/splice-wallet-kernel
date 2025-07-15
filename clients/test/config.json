@@ -33,7 +33,7 @@
                 "auth": {
                     "type": "implicit",
                     "domain": "http://127.0.0.1:8889",
-                    "audience": "https://daml.com/jwt/aud/participant/canton-utilities-app",
+                    "audience": "https://daml.com/jwt/aud/participant/wallet-kernel",
                     "scope": "openid daml_ledger_api offline_access",
                     "clientId": "Cg9zZXJ2aWNlLmFjY291bnQSBWxvY2Fs"
                 }
