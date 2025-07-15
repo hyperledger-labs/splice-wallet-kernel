@@ -13,6 +13,7 @@ function App() {
     useEffect(() => {
         const provider = window.splice
 
+        // Attempt to get WK status on initial load
         sdk.status()
             .then((result) => {
                 setStatus(
@@ -21,10 +22,15 @@ function App() {
             })
             .catch(() => setStatus('disconnected'))
 
-        // TODO: is not received
+        // Listen for connected eved from the provider
+        // This will be triggered when the user connects to the wallet kernel
         provider?.on('onConnected', (event) => {
-            setMessages((prev) => [...prev, JSON.stringify(event)])
             console.log('DAPP: Connected to Wallet Kernel:', event)
+            const result = event as sdk.dappAPI.OnConnectedEvent
+            setStatus(
+                `Wallet Kernel: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
+            )
+            setMessages((prev) => [...prev, JSON.stringify(event)])
         })
 
         const messageListener = (event: unknown) => {

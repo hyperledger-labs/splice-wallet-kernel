@@ -69,6 +69,10 @@ export const dapp = (
                 notifier.on('txChanged', (txChanged) => {
                     socket.emit('txChanged', txChanged)
                 })
+
+                notifier.on('onConnected', (event) => {
+                    socket.emit('onConnected', event)
+                })
             })
 
         socket.on('disconnect', () => {

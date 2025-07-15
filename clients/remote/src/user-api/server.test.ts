@@ -13,7 +13,9 @@ jest.mock('core-ledger-client')
 
 const authService: AuthService = {
     verifyToken: async () => {
-        return new Promise((resolve) => resolve({ userId: 'user123' }))
+        return new Promise((resolve) =>
+            resolve({ userId: 'user123', accessToken: 'token123' })
+        )
     },
 }
 

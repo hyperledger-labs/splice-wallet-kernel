@@ -216,14 +216,12 @@ export const userController = (
                     ? notificationService.getNotifier(authContext.userId)
                     : undefined
 
-                // TODO: is not received
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                notifier?.emit('onConnected' as any, {
-                    // TODO: Fix type casting; perhaps use event OnNetworkChanged
+                notifier?.emit('onConnected', {
                     kernel: kernelInfo as KernelInfo,
                     sessionToken: authContext?.accessToken || '',
                     chainId: network.networkId,
                 })
+
                 return Promise.resolve({
                     network: {
                         name: network.name,
