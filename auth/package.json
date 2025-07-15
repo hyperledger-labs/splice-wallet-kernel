@@ -15,19 +15,13 @@
     },
     "devDependencies": {
         "@types/basic-auth": "^1.1.8",
-        "@types/body-parser": "^1.19.6",
-        "@types/express": "^5.0.2",
-        "@types/jsonwebtoken": "^9",
         "ts-node": "^10.9.2",
         "tsx": "^4.20.3",
         "typescript": "^5.8.3"
     },
     "dependencies": {
+        "@types/node": "^24.0.14",
         "basic-auth": "^2.0.1",
-        "body-parser": "^2.2.0",
-        "express": "^5.1.0",
-        "jose": "^6.0.11",
-        "jsonwebtoken": "^9.0.2",
         "oauth2-mock-server": "^8.1.0"
     }
 }

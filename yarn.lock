@@ -2911,7 +2911,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/body-parser@npm:*, @types/body-parser@npm:^1.19.6":
+"@types/body-parser@npm:*":
   version: 1.19.6
   resolution: "@types/body-parser@npm:1.19.6"
   dependencies:
@@ -3111,16 +3111,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jsonwebtoken@npm:^9":
-  version: 9.0.10
-  resolution: "@types/jsonwebtoken@npm:9.0.10"
-  dependencies:
-    "@types/ms": "npm:*"
-    "@types/node": "npm:*"
-  checksum: 10c0/0688ac8fb75f809201cb7e18a12b9d80ce539cb9dd27e1b01e11807cb1a337059e899b8ee3abc3f2c9417f02e363a3069d9eab9ef9724b1da1f0e10713514f94
-  languageName: node
-  linkType: hard
-
 "@types/lodash@npm:^4.14.149, @types/lodash@npm:^4.17.17":
   version: 4.17.18
   resolution: "@types/lodash@npm:4.17.18"
@@ -3198,6 +3188,15 @@ __metadata:
   dependencies:
     undici-types: "npm:~6.21.0"
   checksum: 10c0/63a2fa52adf1134d1b3bee8b1862d4b8e4550fffc190551068d3d41a41d9e5c0c8f1cb81faa18767b260637360f662115c26c5e4e7718868ead40c4a57cbc0e3
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^24.0.14":
+  version: 24.0.14
+  resolution: "@types/node@npm:24.0.14"
+  dependencies:
+    undici-types: "npm:~7.8.0"
+  checksum: 10c0/536b5a816554ad1522e9e0c1d517b317f8478798bd76a332d83690aa42b19b5b263eb295ee25f9d0badb430ee6e36412ee9070cb5e3359f6bdcf7e08f94302f1
   languageName: node
   linkType: hard
 
@@ -9744,14 +9743,8 @@ __metadata:
   resolution: "mock-oauth2@workspace:auth"
   dependencies:
     "@types/basic-auth": "npm:^1.1.8"
-    "@types/body-parser": "npm:^1.19.6"
-    "@types/express": "npm:^5.0.2"
-    "@types/jsonwebtoken": "npm:^9"
+    "@types/node": "npm:^24.0.14"
     basic-auth: "npm:^2.0.1"
-    body-parser: "npm:^2.2.0"
-    express: "npm:^5.1.0"
-    jose: "npm:^6.0.11"
-    jsonwebtoken: "npm:^9.0.2"
     oauth2-mock-server: "npm:^8.1.0"
     ts-node: "npm:^10.9.2"
     tsx: "npm:^4.20.3"
