@@ -54,3 +54,30 @@ participant1.synchronizers.connect_local(sequencer1, alias = "wallet")
 utils.retry_until_true {
     participant1.synchronizers.active("wallet")
 }
+
+
+val idpName        = "mock-oauth2"
+val idpJwksUrl     = "http://localhost:8888/jwks"
+val idpIssuer      = "http://localhost:8888"
+val defaultIdpAudience = "https://daml.com/jwt/aud/participant/canton-utilities-app"
+
+
+logger.info(s"WALLET-KERNEL-BOOTSTRAP: Creating IDP $idpName")
+participant1.ledger_api.identity_provider_config.create("idp-id1", isDeactivated = false, jwksUrl = "http://localhost:8888/jwks", issuer = "http://localhost:8888", audience = Some("https://daml.com/jwt/aud/participant/canton-utilities-app"))
+
+
+logger.info(s"WALLET-KERNEL-BOOTSTRAP: Creating operator user and party")
+val operatorParty = participant1.ledger_api.parties.allocate("operator").party
+participant1.ledger_api.users.create("operator", Set(operatorParty), Some(operatorParty))
+
+
+val serviceAccountId = sys.env.get("SERVICE_ACCOUNT_USER_ID").getOrElse("Cg9zZXJ2aWNlLmFjY291bnQSBWxvY2Fs")
+participant1.ledger_api.users
+  .create(
+    id = serviceAccountId,
+    primaryParty = Some(operatorParty),
+    actAs = Set(),
+    readAs = Set(),
+    participantAdmin = true,
+    isDeactivated = false
+  )

@@ -2902,7 +2902,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/body-parser@npm:*":
+"@types/basic-auth@npm:^1.1.8":
+  version: 1.1.8
+  resolution: "@types/basic-auth@npm:1.1.8"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/6eaca98493546a384267eb83a2a2d89555fa541b794efa5173450ddad983f5d179534980f9e98477a57c865adcb48f8350569efe078a05ecf2c087bf3bd112c2
+  languageName: node
+  linkType: hard
+
+"@types/body-parser@npm:*, @types/body-parser@npm:^1.19.6":
   version: 1.19.6
   resolution: "@types/body-parser@npm:1.19.6"
   dependencies:
@@ -3099,6 +3108,16 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: 10c0/b12d068b021e4078f6ac4441353965769be87acf15326173e2aea9f3bf8ead41bd0ad29421df5bbeb0123ec3fc02eb0a734481d52903704a1454a1845896b9eb
+  languageName: node
+  linkType: hard
+
+"@types/jsonwebtoken@npm:^9":
+  version: 9.0.10
+  resolution: "@types/jsonwebtoken@npm:9.0.10"
+  dependencies:
+    "@types/ms": "npm:*"
+    "@types/node": "npm:*"
+  checksum: 10c0/0688ac8fb75f809201cb7e18a12b9d80ce539cb9dd27e1b01e11807cb1a337059e899b8ee3abc3f2c9417f02e363a3069d9eab9ef9724b1da1f0e10713514f94
   languageName: node
   linkType: hard
 
@@ -9719,6 +9738,26 @@ __metadata:
   checksum: 10c0/9f2b975e9246351f5e3a40dcfac99fcd0baa31fbfab615fe059fb11e51f10e4803c63de1f384c54d656e4db31d000e4767e9ef076a22e12a641357602e31d57d
   languageName: node
   linkType: hard
+
+"mock-oauth2@workspace:auth":
+  version: 0.0.0-use.local
+  resolution: "mock-oauth2@workspace:auth"
+  dependencies:
+    "@types/basic-auth": "npm:^1.1.8"
+    "@types/body-parser": "npm:^1.19.6"
+    "@types/express": "npm:^5.0.2"
+    "@types/jsonwebtoken": "npm:^9"
+    basic-auth: "npm:^2.0.1"
+    body-parser: "npm:^2.2.0"
+    express: "npm:^5.1.0"
+    jose: "npm:^6.0.11"
+    jsonwebtoken: "npm:^9.0.2"
+    oauth2-mock-server: "npm:^8.1.0"
+    ts-node: "npm:^10.9.2"
+    tsx: "npm:^4.20.3"
+    typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
 
 "module-details-from-path@npm:^1.0.3":
   version: 1.0.4
