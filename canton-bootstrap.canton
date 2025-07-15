@@ -55,14 +55,7 @@ utils.retry_until_true {
     participant1.synchronizers.active("wallet")
 }
 
-
-val idpName        = "mock-oauth2"
-val idpJwksUrl     = "http://127.0.0.1:8889/jwks"
-val idpIssuer      = "http://127.0.0.1:8889"
-val defaultIdpAudience = "https://daml.com/jwt/aud/participant/canton-utilities-app"
-
-
-logger.info(s"WALLET-KERNEL-BOOTSTRAP: Creating IDP $idpName")
+logger.info(s"WALLET-KERNEL-BOOTSTRAP: Creating IDP idp-id1")
 participant1.ledger_api.identity_provider_config.create("idp-id1", isDeactivated = false, jwksUrl = "http://127.0.0.1:8889/jwks", issuer = "http://127.0.0.1:8889", audience = Some("https://daml.com/jwt/aud/participant/canton-utilities-app"))
 
 

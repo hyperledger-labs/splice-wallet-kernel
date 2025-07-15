@@ -8,7 +8,6 @@ async function main() {
     await server.start(8889, '127.0.0.1')
 
     const service = server.service
-    console.log('running on ', server.address.toString)
 
     service.on('beforeTokenSigning', (token, req) => {
         // const credentials = basicAuth(req);
