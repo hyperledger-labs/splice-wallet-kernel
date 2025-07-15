@@ -15,6 +15,8 @@ test('config from json file', async () => {
     }
     expect(resp.store.networks[1].auth.type).toBe('implicit')
     if (resp.store.networks[1].auth.type === 'implicit') {
-        expect(resp.store.networks[1].auth.audience).toBe('test-audience')
+        expect(resp.store.networks[1].auth.audience).toBe(
+            'https://daml.com/jwt/aud/participant/wallet-kernel'
+        )
     }
 })
