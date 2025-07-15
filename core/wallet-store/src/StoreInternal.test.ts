@@ -11,6 +11,7 @@ import {
 
 const authContextMock = {
     userId: 'test-user-id',
+    accessToken: 'test-access-token',
 }
 
 const storeConfig = {

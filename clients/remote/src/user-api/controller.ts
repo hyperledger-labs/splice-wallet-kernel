@@ -10,7 +10,6 @@ import {
     ExecuteParams,
     SignParams,
     AddSessionParams,
-    Null,
     AddSessionResult,
 } from './rpc-gen/typings.js'
 import { Store, Wallet, Auth } from 'core-wallet-store'
@@ -20,7 +19,8 @@ import {
     Notifier,
 } from '../notification/NotificationService.js'
 import { AuthContext } from 'core-wallet-auth'
-import { th } from 'zod/v4/locales'
+import { kernelInfo } from '../index.js'
+import { KernelInfo } from '../dapp-api/rpc-gen/typings.js'
 
 // Placeholder function -- replace with a real Signing API call
 async function signingDriverCreate(
@@ -212,6 +212,18 @@ export const userController = (
                     accessToken: authContext?.accessToken || '',
                 })
                 const network = await store.getCurrentNetwork()
+                const notifier = authContext?.userId
+                    ? notificationService.getNotifier(authContext.userId)
+                    : undefined
+
+                // TODO: is not received
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                notifier?.emit('onConnected' as any, {
+                    // TODO: Fix type casting; perhaps use event OnNetworkChanged
+                    kernel: kernelInfo as KernelInfo,
+                    sessionToken: authContext?.accessToken || '',
+                    chainId: network.networkId,
+                })
                 return Promise.resolve({
                     network: {
                         name: network.name,

@@ -16,12 +16,7 @@ import {
 } from 'core-ledger-client'
 import { v4 } from 'uuid'
 import { NotificationService } from '../notification/NotificationService.js'
-
-const kernelInfo: KernelInfo = {
-    id: 'remote-da',
-    clientType: 'remote',
-    url: 'http://localhost:3000/rpc',
-}
+import { kernelInfo } from '../index.js'
 
 async function prepareSubmission(
     userId: string,
@@ -55,7 +50,7 @@ export const dappController = (
 ) =>
     buildController({
         connect: async () => ({
-            kernel: kernelInfo,
+            kernel: kernelInfo as KernelInfo,
             isConnected: false,
             chainId: 'default-chain-id',
             userUrl: 'http://localhost:3002/login/',
@@ -125,14 +120,14 @@ export const dappController = (
         status: async () => {
             if (context === null) {
                 return {
-                    kernel: kernelInfo,
+                    kernel: kernelInfo as KernelInfo,
                     isConnected: false,
                 }
             } else {
                 return {
-                    kernel: kernelInfo,
+                    kernel: kernelInfo as KernelInfo,
                     isConnected: true,
-                    chainId: (await store.getCurrentNetwork()).name,
+                    chainId: (await store.getCurrentNetwork()).networkId,
                 }
             }
         },

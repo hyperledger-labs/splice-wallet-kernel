@@ -5,13 +5,27 @@ import { createPingCommand } from './commands/createPingCommand'
 
 function App() {
     const [loading, setLoading] = useState(false)
-    const [status, setStatus] = useState('disconnected')
+    const [status, setStatus] = useState('')
     const [error, setError] = useState('')
     const [messages, setMessages] = useState<string[]>([])
     const [primaryParty, setPrimaryParty] = useState<string>()
 
     useEffect(() => {
         const provider = window.splice
+
+        sdk.status()
+            .then((result) => {
+                setStatus(
+                    `Wallet Kernel: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
+                )
+            })
+            .catch(() => setStatus('disconnected'))
+
+        // TODO: is not received
+        provider?.on('onConnected', (event) => {
+            setMessages((prev) => [...prev, JSON.stringify(event)])
+            console.log('DAPP: Connected to Wallet Kernel:', event)
+        })
 
         const messageListener = (event: unknown) => {
             setMessages((prev) => [...prev, JSON.stringify(event)])

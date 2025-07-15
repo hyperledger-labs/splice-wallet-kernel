@@ -17,6 +17,12 @@ const webPort = 3002
 
 const logger = pino({ name: 'main', level: 'debug' })
 
+export const kernelInfo = {
+    id: 'remote-da',
+    clientType: 'remote',
+    url: 'http://localhost:3000/rpc',
+}
+
 const authService: AuthService = {
     verifyToken: async (accessToken?: string) => {
         // TODO: distinguish public vs private endpoints that need auth.
