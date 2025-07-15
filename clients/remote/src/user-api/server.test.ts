@@ -79,10 +79,11 @@ test('call connect rpc', async () => {
                     ledgerApi: { baseUrl: 'https://test' },
                     auth: {
                         type: 'implicit',
-                        domain: 'http://localhost:8082',
-                        audience: 'test-audience',
-                        scope: 'openid',
-                        clientId: 'mock-oauth2-clientId',
+                        domain: 'http://127.0.0.1:8889',
+                        audience:
+                            'https://daml.com/jwt/aud/participant/canton-utilities-app',
+                        scope: 'openid daml_ledger_api offline_access',
+                        clientId: 'Cg9zZXJ2aWNlLmFjY291bnQSBWxvY2Fs',
                     },
                 },
             ],
