@@ -101,11 +101,3 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
             } as ConnectError
         })
 }
-
-export async function status(): Promise<dappAPI.StatusResult> {
-    const provider = window.splice
-    if (!provider) {
-        throw new Error('No wallet provider found')
-    }
-    return provider.request<dappAPI.StatusResult>({ method: 'status' })
-}

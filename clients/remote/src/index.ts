@@ -4,9 +4,9 @@ import { web } from './web/server.js'
 import { pino } from 'pino'
 import ViteExpress from 'vite-express'
 import { AuthService } from 'core-wallet-auth'
-import { StoreInternal, StoreInternalConfig } from 'core-wallet-store'
+import { StoreInternal } from 'core-wallet-store'
 import { ConfigUtils } from './config/ConfigUtils.js'
-import * as schemas from './config/StoreConfig.js'
+import { Config, configSchema } from './config/Config.js'
 import { LedgerClient } from 'core-ledger-client'
 import { Notifier } from './notification/NotificationService.js'
 import EventEmitter from 'events'
@@ -16,12 +16,6 @@ const userPort = 3001
 const webPort = 3002
 
 const logger = pino({ name: 'main', level: 'debug' })
-
-export const kernelInfo = {
-    id: 'remote-da',
-    clientType: 'remote',
-    url: 'http://localhost:3000/rpc',
-}
 
 const authService: AuthService = {
     verifyToken: async (accessToken?: string) => {
@@ -51,18 +45,15 @@ export class NotificationService implements NotificationService {
 
 const notificationService = new NotificationService()
 
-const networkConfigPath =
-    process.env.NETWORK_CONFIG_PATH || '../test/multi-network-config.json'
-const networks = ConfigUtils.loadConfigFile(networkConfigPath)
+const configPath = process.env.NETWORK_CONFIG_PATH || '../test/config.json'
+const configFile = ConfigUtils.loadConfigFile(configPath)
+const config = configSchema.parse(configFile) as Config
 
-const config: StoreInternalConfig = {
-    networks: schemas.networksSchema.parse(networks),
-}
-const store = new StoreInternal(config)
-
+const store = new StoreInternal(config.store)
 const ledgerClient = new LedgerClient('http://localhost:5003')
 
 export const dAppServer = dapp(
+    config.kernel,
     ledgerClient,
     notificationService,
     authService,
@@ -72,6 +63,7 @@ export const dAppServer = dapp(
 })
 
 export const userServer = user(
+    config.kernel,
     ledgerClient,
     notificationService,
     authService,

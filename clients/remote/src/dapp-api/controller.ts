@@ -16,7 +16,7 @@ import {
 } from 'core-ledger-client'
 import { v4 } from 'uuid'
 import { NotificationService } from '../notification/NotificationService.js'
-import { kernelInfo } from '../index.js'
+import { KernelInfo as KernelInfoConfig } from '../config/Config.js'
 
 async function prepareSubmission(
     userId: string,
@@ -43,6 +43,7 @@ async function prepareSubmission(
 }
 
 export const dappController = (
+    kernelInfo: KernelInfoConfig,
     store: Store,
     notificationService: NotificationService,
     ledgerClient: LedgerClient,

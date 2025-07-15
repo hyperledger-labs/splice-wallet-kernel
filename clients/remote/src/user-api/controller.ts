@@ -19,8 +19,7 @@ import {
     Notifier,
 } from '../notification/NotificationService.js'
 import { AuthContext } from 'core-wallet-auth'
-import { kernelInfo } from '../index.js'
-import { KernelInfo } from '../dapp-api/rpc-gen/typings.js'
+import { KernelInfo } from '../config/Config.js'
 
 // Placeholder function -- replace with a real Signing API call
 async function signingDriverCreate(
@@ -67,6 +66,7 @@ async function signingDriverCreate(
 }
 
 export const userController = (
+    kernelInfo: KernelInfo,
     store: Store,
     notificationService: NotificationService,
     authContext: AuthContext | undefined,

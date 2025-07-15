@@ -10,10 +10,12 @@ import { rpcRateLimit } from '../middleware/rateLimit.js'
 import cors from 'cors'
 import { LedgerClient } from 'core-ledger-client'
 import { NotificationService } from '../notification/NotificationService.js'
+import { KernelInfo } from '../config/Config.js'
 
 const logger = pino({ name: 'main', level: 'debug' })
 
 export const user = (
+    kernelInfo: KernelInfo,
     ledgerClient: LedgerClient,
     notificationService: NotificationService,
     authService: AuthService,
@@ -29,6 +31,7 @@ export const user = (
         (req, res, next) =>
             jsonRpcHandler<Methods>({
                 controller: userController(
+                    kernelInfo,
                     store.withAuthContext(req.authContext),
                     notificationService,
                     req.authContext,

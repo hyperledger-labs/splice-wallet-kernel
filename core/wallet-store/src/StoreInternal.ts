@@ -4,10 +4,10 @@ import {
     Wallet,
     PartyId,
     Session,
-    NetworkConfig,
     WalletFilter,
     Transaction,
 } from './Store.js'
+import { NetworkConfig } from './config/schema.js'
 
 interface UserStorage {
     wallets: Array<Wallet>

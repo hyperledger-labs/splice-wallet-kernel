@@ -14,7 +14,8 @@ function App() {
         const provider = window.splice
 
         // Attempt to get WK status on initial load
-        sdk.status()
+        provider
+            ?.request<sdk.dappAPI.StatusResult>({ method: 'status' })
             .then((result) => {
                 setStatus(
                     `Wallet Kernel: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
