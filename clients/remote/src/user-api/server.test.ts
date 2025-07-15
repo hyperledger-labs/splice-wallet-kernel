@@ -56,6 +56,8 @@ test('call connect rpc', async () => {
                 {
                     name: 'Password Auth',
                     networkId: 'canton:local',
+                    synchronizerId:
+                        'wallet::1220aa7665e1190b584acc00a808f6a11a0a96aebf171f6f9a78d343b34461752ea2::34-0',
                     description: 'Unimplemented Password Auth',
                     ledgerApi: { baseUrl: 'https://test' },
                     auth: {
@@ -69,6 +71,8 @@ test('call connect rpc', async () => {
                 {
                     name: 'Mock OAuth Server',
                     networkId: 'canton:local',
+                    synchronizerId:
+                        'wallet::1220aa7665e1190b584acc00a808f6a11a0a96aebf171f6f9a78d343b34461752ea2::34-0',
                     description: 'Mock OAuth IDP',
                     ledgerApi: { baseUrl: 'https://test' },
                     auth: {

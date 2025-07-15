@@ -19,7 +19,7 @@ export class LoginUI extends LitElement {
 
     private async loadNetworks() {
         const response = await userClient.request('listNetworks')
-        return response.networks as NetworkConfig[]
+        return response.networks
     }
 
     async connectedCallback() {

@@ -13,9 +13,14 @@ function App() {
     useEffect(() => {
         const provider = window.splice
 
+        if (!provider) {
+            setStatus('Splice provider not found')
+            return
+        }
+
         // Attempt to get WK status on initial load
         provider
-            ?.request<sdk.dappAPI.StatusResult>({ method: 'status' })
+            .request<sdk.dappAPI.StatusResult>({ method: 'status' })
             .then((result) => {
                 setStatus(
                     `Wallet Kernel: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
@@ -23,15 +28,14 @@ function App() {
             })
             .catch(() => setStatus('disconnected'))
 
-        // Listen for connected eved from the provider
+        // Listen for connected events from the provider
         // This will be triggered when the user connects to the wallet kernel
-        provider?.on('onConnected', (event) => {
-            console.log('DAPP: Connected to Wallet Kernel:', event)
-            const result = event as sdk.dappAPI.OnConnectedEvent
+        provider.on<sdk.dappAPI.OnConnectedEvent>('onConnected', (result) => {
+            console.log('DAPP: Connected to Wallet Kernel:', result)
             setStatus(
                 `Wallet Kernel: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
             )
-            setMessages((prev) => [...prev, JSON.stringify(event)])
+            setMessages((prev) => [...prev, JSON.stringify(result)])
         })
 
         const messageListener = (event: unknown) => {
@@ -52,14 +56,12 @@ function App() {
         }
 
         if (provider) {
-            provider.on('message', messageListener)
             provider.on('connect', messageListener)
             provider.on('txChanged', messageListener)
             provider.on('accountsChanged', onAccountsChanged)
         }
 
         return () => {
-            provider?.removeListener('message', messageListener)
             provider?.removeListener('connect', messageListener)
             provider?.removeListener('txChanged', messageListener)
             provider?.removeListener('accountsChanged', onAccountsChanged)

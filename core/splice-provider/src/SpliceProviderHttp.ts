@@ -1,5 +1,10 @@
-import { isSpliceMessageEvent, RequestPayload, WalletEvent } from 'core-types'
-import { SpliceProviderBase } from './SpliceProvider'
+import {
+    isSpliceMessageEvent,
+    JsonRpcResponse,
+    RequestPayload,
+    WalletEvent,
+} from 'core-types'
+import { EventListener, SpliceProviderBase } from './SpliceProvider'
 import { io, Socket } from 'socket.io-client'
 import { popupHref } from 'core-wallet-ui-components'
 
@@ -76,31 +81,38 @@ export class SpliceProviderHttp extends SpliceProviderBase {
             }),
         })
 
-        const body = await res.json()
+        const body = await res.json().then(JsonRpcResponse.parse)
+
+        if ('error' in body) throw new Error(body.error.message)
 
         if (method === 'prepareExecute') {
-            const userUrl = body.result?.userUrl
+            const { userUrl } = body.result as { userUrl?: string }
+            if (!userUrl) {
+                throw new Error('No userUrl provided in response')
+            }
             popupHref(userUrl)
         }
 
-        if (body.error) throw new Error(body.error.message)
-        return body.result
+        return body.result as T
     }
 
     // Re-alias the event methods directly to the socket instance
-    override on(event: string, listener: EventListener): SpliceProviderHttp {
+    override on<T>(
+        event: string,
+        listener: EventListener<T>
+    ): SpliceProviderHttp {
         this.socket.on(event, listener)
         return this
     }
 
-    override emit(event: string, ...args: unknown[]): boolean {
+    override emit<T>(event: string, ...args: T[]): boolean {
         this.socket.emit(event, ...args)
         return true
     }
 
-    override removeListener(
+    override removeListener<T>(
         event: string,
-        listenerToRemove: EventListener
+        listenerToRemove: EventListener<T>
     ): SpliceProviderHttp {
         this.socket.removeListener(event, listenerToRemove)
         return this

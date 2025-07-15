@@ -20,7 +20,6 @@ export class UserUI extends LitElement {
 export class UserUINav extends LitElement {
     static styles = css`
         nav {
-            background-color: var(--splice-wk-background-color, none);
             color: var(--splice-wk-text-color, black);
             font-family: var(--splice-wk-font-family);
         }
@@ -45,6 +44,9 @@ export class UserUINav extends LitElement {
             <a href="/" class=${classMap(this.isActive('/'))}>Home</a>
             <a href="/wallets/" class=${classMap(this.isActive('/wallets/'))}
                 >Wallets</a
+            >
+            <a href="/networks/" class=${classMap(this.isActive('/networks/'))}
+                >Networks</a
             >
         </nav>`
     }

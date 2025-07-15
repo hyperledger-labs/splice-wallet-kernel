@@ -1,19 +1,19 @@
 import { RequestPayload } from 'core-types'
 
-export type EventListener = (...args: unknown[]) => void
+export type EventListener<T> = (...args: T[]) => void
 
 export interface SpliceProvider {
     request<T>(args: RequestPayload): Promise<T>
-    on(event: string, listener: EventListener): SpliceProvider
-    emit(event: string, ...args: unknown[]): boolean
-    removeListener(
+    on<T>(event: string, listener: EventListener<T>): SpliceProvider
+    emit<T>(event: string, ...args: T[]): boolean
+    removeListener<T>(
         event: string,
-        listenerToRemove: EventListener
+        listenerToRemove: EventListener<T>
     ): SpliceProvider
 }
 
 export abstract class SpliceProviderBase implements SpliceProvider {
-    listeners: { [event: string]: EventListener[] }
+    listeners: { [event: string]: EventListener<unknown>[] }
 
     constructor() {
         this.listeners = {} // Event listeners
@@ -22,16 +22,17 @@ export abstract class SpliceProviderBase implements SpliceProvider {
     abstract request<T>(args: RequestPayload): Promise<T>
 
     // Event handling
-    public on(event: string, listener: EventListener): SpliceProvider {
+    public on<T>(event: string, listener: EventListener<T>): SpliceProvider {
         if (!this.listeners[event]) {
             this.listeners[event] = []
         }
-        this.listeners[event].push(listener)
+        const listeners = this.listeners[event] as EventListener<T>[]
+        listeners.push(listener)
 
         return this
     }
 
-    public emit(event: string, ...args: unknown[]): boolean {
+    public emit<T>(event: string, ...args: T[]): boolean {
         if (this.listeners[event]) {
             this.listeners[event].forEach((listener) => listener(...args))
             return true
@@ -39,9 +40,9 @@ export abstract class SpliceProviderBase implements SpliceProvider {
         return false
     }
 
-    public removeListener(
+    public removeListener<T>(
         event: string,
-        listenerToRemove: EventListener
+        listenerToRemove: EventListener<T>
     ): SpliceProvider {
         if (!this.listeners[event]) return this
 
