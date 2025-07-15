@@ -5,9 +5,10 @@ async function main() {
     const server = new OAuth2Server()
 
     await server.issuer.keys.generate('RS256')
-    await server.start(8888, 'localhost')
+    await server.start(8889, '127.0.0.1')
 
     const service = server.service
+    console.log('running on ', server.address.toString)
 
     service.on('beforeTokenSigning', (token, req) => {
         // const credentials = basicAuth(req);
@@ -16,6 +17,7 @@ async function main() {
         // token.payload.sub = clientId
         // token.payload.aud =  aud
         console.log(req.body)
+        token.payload.iss = 'http://127.0.0.1:8889'
         token.payload.sub = 'Cg9zZXJ2aWNlLmFjY291bnQSBWxvY2Fs'
         token.payload.aud =
             'https://daml.com/jwt/aud/participant/canton-utilities-app'
