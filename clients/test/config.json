@@ -1,0 +1,41 @@
+{
+    "kernel": {
+        "id": "remote-da",
+        "clientType": "remote",
+        "url": "http://localhost:3000/rpc"
+    },
+    "store": {
+        "networks": [
+            {
+                "name": "Password Auth",
+                "networkId": "canton:local",
+                "description": "Unimplemented Password Auth",
+                "ledgerApi": {
+                    "baseUrl": "https://test"
+                },
+                "auth": {
+                    "type": "password",
+                    "tokenUrl": "tokenUrl",
+                    "grantType": "password",
+                    "scope": "openid",
+                    "clientId": "wk-service-account"
+                }
+            },
+            {
+                "name": "Mock OAuth Server",
+                "networkId": "canton:local",
+                "description": "Mock OAuth IDP",
+                "ledgerApi": {
+                    "baseUrl": "https://test"
+                },
+                "auth": {
+                    "type": "implicit",
+                    "domain": "http://localhost:8082",
+                    "audience": "test-audience",
+                    "scope": "openid",
+                    "clientId": "mock-oauth2-clientId"
+                }
+            }
+        ]
+    }
+}

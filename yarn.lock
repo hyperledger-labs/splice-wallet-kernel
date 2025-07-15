@@ -5327,6 +5327,7 @@ __metadata:
     ts-jest: "npm:^29.4.0"
     ts-jest-resolver: "npm:^2.0.1"
     typescript: "npm:^5.8.3"
+    zod: "npm:^3.25.64"
   languageName: unknown
   linkType: soft
 

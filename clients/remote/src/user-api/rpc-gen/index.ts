@@ -8,6 +8,7 @@ import { ListWallets } from './typings.js'
 import { Sign } from './typings.js'
 import { Execute } from './typings.js'
 import { ListNetworks } from './typings.js'
+import { AddSession } from './typings.js'
 
 export type Methods = {
     addNetwork: AddNetwork
@@ -18,6 +19,7 @@ export type Methods = {
     sign: Sign
     execute: Execute
     listNetworks: ListNetworks
+    addSession: AddSession
 }
 
 function buildController(methods: Methods) {
@@ -30,6 +32,7 @@ function buildController(methods: Methods) {
         sign: methods.sign,
         execute: methods.execute,
         listNetworks: methods.listNetworks,
+        addSession: methods.addSession,
     }
 }
 

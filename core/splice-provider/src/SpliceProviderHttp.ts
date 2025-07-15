@@ -24,13 +24,17 @@ export class SpliceProviderHttp extends SpliceProviderBase {
         })
     }
 
-    constructor(private url: URL) {
+    constructor(
+        private url: URL,
+        sessionToken?: string
+    ) {
         super()
 
+        if (sessionToken) this.sessionToken = sessionToken
         this.socket = this.openSocket(url)
 
         // Listen for the auth success event sent from the WK UI popup to the SDK running in the parent window.
-        window.addEventListener('message', (event) => {
+        window.addEventListener('message', async (event) => {
             if (!isSpliceMessageEvent(event)) return
 
             if (
@@ -43,24 +47,6 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 this.socket.auth = {
                     token: `Bearer ${this.sessionToken}`,
                 }
-            }
-        })
-
-        this.on('onConnected', (args) => {
-            if (
-                args &&
-                args instanceof Object &&
-                'sessionToken' in args &&
-                typeof args.sessionToken === 'string'
-            ) {
-                console.log(
-                    `SpliceProviderHttp: setting sessionToken to ${args.sessionToken}`
-                )
-                this.sessionToken = args.sessionToken
-            } else {
-                console.log(
-                    `SpliceProviderHttp: onConnected event did not contain a valid sessionToken`
-                )
             }
         })
     }

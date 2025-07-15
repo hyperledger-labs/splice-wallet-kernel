@@ -9,6 +9,8 @@ import {
     CreateWalletResult,
     ExecuteParams,
     SignParams,
+    AddSessionParams,
+    AddSessionResult,
 } from './rpc-gen/typings.js'
 import { Store, Wallet, Auth } from 'core-wallet-store'
 import pino from 'pino'
@@ -17,6 +19,7 @@ import {
     Notifier,
 } from '../notification/NotificationService.js'
 import { AuthContext } from 'core-wallet-auth'
+import { KernelInfo } from '../config/Config.js'
 
 // Placeholder function -- replace with a real Signing API call
 async function signingDriverCreate(
@@ -63,6 +66,7 @@ async function signingDriverCreate(
 }
 
 export const userController = (
+    kernelInfo: KernelInfo,
     store: Store,
     notificationService: NotificationService,
     authContext: AuthContext | undefined,
@@ -199,4 +203,38 @@ export const userController = (
         },
         listNetworks: async () =>
             Promise.resolve({ networks: await store.listNetworks() }),
+        addSession: async function (
+            params: AddSessionParams
+        ): Promise<AddSessionResult> {
+            try {
+                await store.setSession({
+                    network: params.networkId,
+                    accessToken: authContext?.accessToken || '',
+                })
+                const network = await store.getCurrentNetwork()
+                const notifier = authContext?.userId
+                    ? notificationService.getNotifier(authContext.userId)
+                    : undefined
+
+                notifier?.emit('onConnected', {
+                    kernel: kernelInfo as KernelInfo,
+                    sessionToken: authContext?.accessToken || '',
+                    chainId: network.networkId,
+                })
+
+                return Promise.resolve({
+                    network: {
+                        name: network.name,
+                        networkId: network.networkId,
+                        description: network.description,
+                        ledgerApi: network.ledgerApi,
+                        auth: network.auth,
+                    },
+                    status: 'connected', // TODO: Determine actual status based on connection logic
+                })
+            } catch (error) {
+                pino.pino().error(`Failed to add session: ${error}`)
+                throw new Error(`Failed to add session: ${error}`)
+            }
+        },
     })

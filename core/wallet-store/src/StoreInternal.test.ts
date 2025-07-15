@@ -1,16 +1,12 @@
 import { beforeEach, describe, expect, test } from '@jest/globals'
 
 import { StoreInternal } from './StoreInternal'
-import {
-    Wallet,
-    Session,
-    NetworkConfig,
-    PasswordAuth,
-    LedgerApi,
-} from '../../../core/wallet-store/src/Store'
+import { Wallet, Session } from '../../../core/wallet-store/src/Store'
+import { LedgerApi, NetworkConfig, PasswordAuth } from './config/schema'
 
 const authContextMock = {
     userId: 'test-user-id',
+    accessToken: 'test-access-token',
 }
 
 const storeConfig = {

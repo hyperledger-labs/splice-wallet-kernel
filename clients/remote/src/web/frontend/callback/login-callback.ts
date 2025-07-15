@@ -1,6 +1,7 @@
 import { WalletEvent } from 'core-types'
 import { LitElement, html } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
+import { userClient } from '../rpc-client'
 
 @customElement('login-callback')
 export class LoginCallback extends LitElement {
@@ -47,6 +48,13 @@ export class LoginCallback extends LitElement {
             const tokenResponse = await res.json()
 
             if (tokenResponse.access_token) {
+                await userClient.transport.submit({
+                    method: 'addSession',
+                    params: {
+                        networkId: 'canton:local', // TODO: get from local storage or use inline callback in login.ts
+                    },
+                })
+
                 this.accessToken = tokenResponse.access_token
                 localStorage.setItem('access_token', this.accessToken)
 

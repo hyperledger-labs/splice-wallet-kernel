@@ -15,7 +15,8 @@
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
     },
     "dependencies": {
-        "core-wallet-auth": "workspace:^"
+        "core-wallet-auth": "workspace:^",
+        "zod": "^3.25.64"
     },
     "devDependencies": {
         "@jest/globals": "^29.0.0",

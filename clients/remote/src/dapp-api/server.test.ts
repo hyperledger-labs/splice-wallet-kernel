@@ -2,32 +2,29 @@ import { expect, test, jest } from '@jest/globals'
 
 import request from 'supertest'
 import { dapp } from './server.js'
-import { StoreInternal, StoreInternalConfig } from 'core-wallet-store'
+import { StoreInternal } from 'core-wallet-store'
 import { AuthService } from 'core-wallet-auth'
 import { ConfigUtils } from '../config/ConfigUtils.js'
-import * as schemas from '../config/StoreConfig.js'
 import { LedgerClient } from 'core-ledger-client'
 import { Notifier } from '../notification/NotificationService.js'
+import { configSchema } from '../config/Config.js'
 
 jest.mock('core-ledger-client')
 
 const authService: AuthService = {
     verifyToken: async () => {
-        return new Promise((resolve) => resolve({ userId: 'user123' }))
+        return new Promise((resolve) =>
+            resolve({ userId: 'user123', accessToken: 'token123' })
+        )
     },
 }
 
-const networkConfigPath =
-    process.env.NETWORK_CONFIG_PATH || '../test/multi-network-config.json'
+const configPath = process.env.NETWORK_CONFIG_PATH || '../test/config.json'
+const configFile = ConfigUtils.loadConfigFile(configPath)
 
-const network = schemas.networksSchema.parse(
-    ConfigUtils.loadConfigFile(networkConfigPath)
-)
+const config = configSchema.parse(configFile)
+const store = new StoreInternal(config.store)
 
-const config: StoreInternalConfig = {
-    networks: network,
-}
-const store = new StoreInternal(config)
 const ledgerClient = new LedgerClient('http://localhost:5003')
 
 const notificationService = {
@@ -40,7 +37,13 @@ const notificationService = {
 
 test('call connect rpc', async () => {
     const response = await request(
-        dapp(ledgerClient, notificationService, authService, store)
+        dapp(
+            config.kernel,
+            ledgerClient,
+            notificationService,
+            authService,
+            store
+        )
     )
         .post('/rpc')
         .send({ jsonrpc: '2.0', id: 0, method: 'connect', params: [] })

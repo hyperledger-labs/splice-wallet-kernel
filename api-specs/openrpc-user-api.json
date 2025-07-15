@@ -316,6 +316,47 @@
                     "required": ["networks"]
                 }
             }
+        },
+        {
+            "name": "addSession",
+            "description": "Adds a network session.",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "AddSessionParams",
+                        "type": "object",
+                        "properties": {
+                            "networkId": {
+                                "title": "networkId",
+                                "type": "string",
+                                "description": "Network Id"
+                            }
+                        },
+                        "required": ["networkId"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "AddSessionResult",
+                    "type": "object",
+                    "properties": {
+                        "network": {
+                            "title": "network",
+                            "type": "object",
+                            "$ref": "#/components/schemas/Network"
+                        },
+                        "status": {
+                            "title": "status",
+                            "type": "string",
+                            "enum": ["connected", "disconnected"]
+                        }
+                    },
+                    "required": ["network", "status"]
+                }
+            }
         }
     ],
     "components": {

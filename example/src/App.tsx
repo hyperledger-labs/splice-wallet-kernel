@@ -5,13 +5,34 @@ import { createPingCommand } from './commands/createPingCommand'
 
 function App() {
     const [loading, setLoading] = useState(false)
-    const [status, setStatus] = useState('disconnected')
+    const [status, setStatus] = useState('')
     const [error, setError] = useState('')
     const [messages, setMessages] = useState<string[]>([])
     const [primaryParty, setPrimaryParty] = useState<string>()
 
     useEffect(() => {
         const provider = window.splice
+
+        // Attempt to get WK status on initial load
+        provider
+            ?.request<sdk.dappAPI.StatusResult>({ method: 'status' })
+            .then((result) => {
+                setStatus(
+                    `Wallet Kernel: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
+                )
+            })
+            .catch(() => setStatus('disconnected'))
+
+        // Listen for connected eved from the provider
+        // This will be triggered when the user connects to the wallet kernel
+        provider?.on('onConnected', (event) => {
+            console.log('DAPP: Connected to Wallet Kernel:', event)
+            const result = event as sdk.dappAPI.OnConnectedEvent
+            setStatus(
+                `Wallet Kernel: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
+            )
+            setMessages((prev) => [...prev, JSON.stringify(event)])
+        })
 
         const messageListener = (event: unknown) => {
             setMessages((prev) => [...prev, JSON.stringify(event)])

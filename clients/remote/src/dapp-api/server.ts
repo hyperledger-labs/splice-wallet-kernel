@@ -13,10 +13,12 @@ import { LedgerClient } from 'core-ledger-client'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { NotificationService } from '../notification/NotificationService.js'
+import { KernelInfo } from '../config/Config.js'
 
 const logger = pino({ name: 'main', level: 'debug' })
 
 export const dapp = (
+    kernelInfo: KernelInfo,
     ledgerClient: LedgerClient,
     notificationService: NotificationService,
     authService: AuthService,
@@ -32,6 +34,7 @@ export const dapp = (
         (req, res, next) =>
             jsonRpcHandler<Methods>({
                 controller: dappController(
+                    kernelInfo,
                     store.withAuthContext(req.authContext),
                     notificationService,
                     ledgerClient,
@@ -68,6 +71,10 @@ export const dapp = (
 
                 notifier.on('txChanged', (txChanged) => {
                     socket.emit('txChanged', txChanged)
+                })
+
+                notifier.on('onConnected', (event) => {
+                    socket.emit('onConnected', event)
                 })
             })
 

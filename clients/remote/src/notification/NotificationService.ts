@@ -1,27 +1,13 @@
-import { TxChanged } from 'core-types'
-import { Wallet } from 'core-wallet-store'
-
-// Define the structure of the events that can be emitted by the Notifier
-// The field name represents event names, and the associated type is message schema.
-type SupportedEvents = {
-    accountsChanged: Wallet[]
-    txChanged: TxChanged
-}
+// TODO: make events type-of dApp methods (perhaps just )
 
 // Support event-driven notifications. We represent a notifier with a generic interface to support node and browser implementations.
 type EventListener = (...args: unknown[]) => void
 export interface Notifier {
-    on<T extends keyof SupportedEvents>(event: T, listener: EventListener): void
+    on(event: string, listener: EventListener): void
 
-    emit<T extends keyof SupportedEvents>(
-        event: T,
-        ...args: SupportedEvents[T][]
-    ): boolean
+    emit(event: string, ...args: unknown[]): boolean
 
-    removeListener<T extends keyof SupportedEvents>(
-        event: T,
-        listenerToRemove: EventListener
-    ): void
+    removeListener(event: string, listenerToRemove: EventListener): void
 }
 
 export interface NotificationService {

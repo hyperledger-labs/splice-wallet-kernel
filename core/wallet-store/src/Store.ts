@@ -1,22 +1,6 @@
 // Account
 
-export interface Account {
-    id: string
-    name: string
-}
-
-// Party / Wallet
-
-export interface PaperAddress {
-    publicKey: string
-    privateKey: string
-}
-
-export interface CCSPAddress {
-    provider: string
-    id: string
-    publicKey: string
-}
+import { NetworkConfig } from './config/schema'
 
 export enum AddressType {
     PaperAddress = 'PaperAddress',
@@ -55,38 +39,6 @@ export interface Wallet {
 export interface Session {
     network: string
     accessToken: string
-}
-
-// Network and Auth configuration
-
-export interface LedgerApi {
-    baseUrl: string
-}
-
-export interface PasswordAuth {
-    type: 'password'
-    tokenUrl: string
-    grantType: string
-    clientId: string
-    scope: string
-}
-
-export interface ImplicitAuth {
-    type: 'implicit'
-    domain: string
-    clientId: string
-    scope: string
-    audience: string
-}
-
-export type Auth = PasswordAuth | ImplicitAuth
-
-export interface NetworkConfig {
-    name: string
-    networkId: string
-    description: string
-    ledgerApi: LedgerApi
-    auth: Auth
 }
 
 export interface Transaction {
