@@ -14,7 +14,7 @@ web.use((req, res, next) => {
         !req.path.endsWith('/')
     ) {
         const query = req.url.slice(req.path.length) // Preserve query parameters
-        res.redirect(req.path + '/' + query) // Redirect with 301 (Permanent Redirect)
+        res.redirect(301, req.path + '/' + query) // Redirect with 301 (Permanent Redirect)
     } else {
         next() // Continue to the next middleware or route handler
     }
