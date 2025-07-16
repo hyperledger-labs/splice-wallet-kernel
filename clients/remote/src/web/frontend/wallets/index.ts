@@ -15,7 +15,7 @@ export class UserUiWallets extends LitElement {
     accessor signingProviders: string[] = ['participant']
 
     @state()
-    accessor selectedSigningProvider: string = 'participant'
+    accessor networks: string[] = []
 
     @state()
     accessor wallets: Wallet[] = []
@@ -31,6 +31,9 @@ export class UserUiWallets extends LitElement {
 
     @query('#signing-provider-id')
     accessor _signingProviderSelect: HTMLSelectElement | null = null
+
+    @query('#network-id')
+    accessor _networkSelect: HTMLSelectElement | null = null
 
     @query('#primary')
     accessor _primaryCheckbox: HTMLInputElement | null = null
@@ -82,8 +85,21 @@ export class UserUiWallets extends LitElement {
                         Signing provider for wallet
                     </option>
                     ${this.signingProviders.map(
-                        (providerId, index) =>
-                            html`<option value=${index}>${providerId}</option>`
+                        (providerId) =>
+                            html`<option value=${providerId}>
+                                ${providerId}
+                            </option>`
+                    )}
+                </select>
+
+                <label for="network-id">Network:</label>
+                <select class="form-control" id="network-id">
+                    <option disabled value="">Select a network</option>
+                    ${this.networks.map(
+                        (networkId) =>
+                            html`<option value=${networkId}>
+                                ${networkId}
+                            </option>`
                     )}
                 </select>
 
@@ -118,6 +134,13 @@ export class UserUiWallets extends LitElement {
     connectedCallback(): void {
         super.connectedCallback()
         this.updateWallets()
+        this.updateNetworks()
+    }
+
+    private async updateNetworks() {
+        userClient.request('listNetworks').then(({ networks }) => {
+            this.networks = networks.map((network) => network.chainId)
+        })
     }
 
     private async updateWallets() {
@@ -131,8 +154,8 @@ export class UserUiWallets extends LitElement {
 
         const partyHint = this._partyHintInput?.value || ''
         const primary = this._primaryCheckbox?.checked || false
-        const signingProviderId = this.selectedSigningProvider
-        const chainId = 'placeholder-network-id'
+        const signingProviderId = this._signingProviderSelect?.value || ''
+        const chainId = this._networkSelect?.value || ''
 
         const body: CreateWalletParams = {
             primary,

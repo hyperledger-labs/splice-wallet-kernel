@@ -120,7 +120,7 @@ export const dappController = (
             )
         },
         status: async () => {
-            if (context === null) {
+            if (!context) {
                 return {
                     kernel: kernelInfo,
                     isConnected: false,

@@ -88,6 +88,15 @@ export const jsonRpcHandler =
 
                         if (error instanceof Error) {
                             response.error.message = error.message
+
+                            if (error.message === 'User is not connected') {
+                                response.error.code =
+                                    rpcErrors.invalidRequest().code
+                                res.status(401).json(
+                                    toRpcResponse(null, response)
+                                )
+                                return
+                            }
                         } else if (typeof error === 'string') {
                             response.error.message = error
                         } else if (ErrorResponse.safeParse(error).success) {

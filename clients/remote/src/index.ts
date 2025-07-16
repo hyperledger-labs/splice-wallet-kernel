@@ -10,6 +10,7 @@ import { configSchema } from './config/Config.js'
 import { LedgerClient } from 'core-ledger-client'
 import { Notifier } from './notification/NotificationService.js'
 import EventEmitter from 'events'
+import { createRemoteJWKSet, jwtVerify } from 'jose'
 
 const dAppPort = 3000
 const userPort = 3001
@@ -19,12 +20,32 @@ const logger = pino({ name: 'main', level: 'debug' })
 
 const authService: AuthService = {
     verifyToken: async (accessToken?: string) => {
-        // TODO: distinguish public vs private endpoints that need auth.
         if (!accessToken || !accessToken.startsWith('Bearer ')) {
             return undefined
         }
 
-        return { userId: 'user123', accessToken: '123' }
+        const jwt = accessToken.split(' ')[1]
+
+        try {
+            const jwks = createRemoteJWKSet(
+                new URL('http://localhost:8082/jwks')
+            )
+
+            const { payload } = await jwtVerify(jwt, jwks, {
+                algorithms: ['RS256'],
+            })
+
+            if (!payload.sub) {
+                return undefined
+            }
+
+            return { userId: payload.sub, accessToken: jwt }
+        } catch (error) {
+            if (error instanceof Error) {
+                logger.error('Failed to verify token ' + error.stack)
+            }
+            return undefined
+        }
     },
 }
 
