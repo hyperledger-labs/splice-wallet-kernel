@@ -14,7 +14,17 @@ web.use((req, res, next) => {
         !req.path.endsWith('/')
     ) {
         const query = req.url.slice(req.path.length) // Preserve query parameters
-        res.redirect(301, req.path + '/' + query) // Redirect with 301 (Permanent Redirect)
+        // Ensure the path is valid and local
+        try {
+            const redirectUrl = new URL(req.path + '/', `http://${req.headers.host}`);
+            if (redirectUrl.origin === `http://${req.headers.host}`) {
+                res.redirect(301, req.path + '/' + query); // Redirect with 301 (Permanent Redirect)
+            } else {
+                next(); // Skip redirection if validation fails
+            }
+        } catch (e) {
+            next(); // Skip redirection if URL construction fails
+        }
     } else {
         next() // Continue to the next middleware or route handler
     }
