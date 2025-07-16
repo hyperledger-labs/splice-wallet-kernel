@@ -51,7 +51,7 @@ export interface KernelInfo {
 export type IsConnected = boolean
 /**
  *
- * A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'.
+ * The network ID the wallet corresponds to.
  *
  */
 export type ChainId = string
@@ -124,12 +124,6 @@ export type PublicKey = string
 export type Namespace = string
 /**
  *
- * The network ID the wallet corresponds to.
- *
- */
-export type NetworkId = string
-/**
- *
  * The signing provider ID the wallet corresponds to.
  *
  */
@@ -145,7 +139,7 @@ export interface Wallet {
     hint: Hint
     publicKey: PublicKey
     namespace: Namespace
-    networkId: NetworkId
+    chainId: ChainId
     signingProviderId: SigningProviderId
     [k: string]: any
 }
@@ -333,20 +327,7 @@ export type TxChangedEvent =
  * Generated! Represents an alias to any of the provided schemas
  *
  */
-export type AnyOfPrepareReturnParamsPrepareExecuteParamsLedgerApiParamsStatusResultConnectResultDarsAvailableResultPrepareReturnResultPrepareExecuteResultLedgerApiResultOnConnectedEventAccountsChangedEventTxChangedEvent =
 
-        | PrepareReturnParams
-        | PrepareExecuteParams
-        | LedgerApiParams
-        | StatusResult
-        | ConnectResult
-        | DarsAvailableResult
-        | PrepareReturnResult
-        | PrepareExecuteResult
-        | LedgerApiResult
-        | OnConnectedEvent
-        | AccountsChangedEvent
-        | TxChangedEvent
 export type Status = () => Promise<StatusResult>
 export type Connect = () => Promise<ConnectResult>
 export type DarsAvailable = () => Promise<DarsAvailableResult>

@@ -5,7 +5,7 @@ import { ConfigUtils } from './ConfigUtils.js'
 test('config from json file', async () => {
     const jsonData = ConfigUtils.loadConfigFile('../test/config.json')
     const resp = s.configSchema.parse(jsonData)
-    expect(resp.store.networks[0].name).toBe('Password Auth')
+    expect(resp.store.networks[0].name).toBe('Local (password IDP)')
     expect(resp.store.networks[0].ledgerApi.baseUrl).toBe('https://test')
     expect(resp.store.networks[0].auth.clientId).toBe('wk-service-account')
     expect(resp.store.networks[0].auth.scope).toBe('openid')

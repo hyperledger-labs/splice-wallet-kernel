@@ -16,35 +16,17 @@
                         "type": "object",
                         "properties": {
                             "network": {
-                                "title": "network",
-                                "type": "object",
-                                "description": "network",
                                 "$ref": "#/components/schemas/Network"
-                            },
-                            "auth": {
-                                "title": "auth",
-                                "type": "object",
-                                "description": "auth",
-                                "$ref": "#/components/schemas/Auth"
-                            },
-                            "ledgerApiUrl": {
-                                "title": "ledgerApiUrl",
-                                "type": "string",
-                                "description": "Ledger api url"
                             }
                         },
-                        "required": ["network", "auth", "ledgerApiUrl"]
+                        "required": ["network"]
                     }
                 }
             ],
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "Null",
-                    "schema": {
-                        "$ref": "#/components/schemas/Null"
-                    },
-                    "description": "Represents a null value, used in responses where no data is returned."
+                    "$ref": "#/components/schemas/Null"
                 }
             },
             "description": "Adds a new network configuration (similar to EIP-3085)."
@@ -71,11 +53,7 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "Null",
-                    "schema": {
-                        "$ref": "#/components/schemas/Null"
-                    },
-                    "description": "Represents a null value, used in responses where no data is returned."
+                    "$ref": "#/components/schemas/Null"
                 }
             },
             "description": "Removes a new network configuration (similar to EIP-3085)."
@@ -99,8 +77,8 @@
                                 "type": "string",
                                 "description": "The party hint and name of the wallet."
                             },
-                            "networkId": {
-                                "title": "networkId",
+                            "chainId": {
+                                "title": "chainId",
                                 "type": "string",
                                 "description": "The network ID the wallet corresponds to."
                             },
@@ -112,7 +90,7 @@
                         },
                         "required": [
                             "partyHint",
-                            "networkId",
+                            "chainId",
                             "signingProviderId"
                         ]
                     }
@@ -310,7 +288,9 @@
                         "networks": {
                             "title": "networks",
                             "type": "array",
-                            "$ref": "#/components/schemas/Network"
+                            "items": {
+                                "$ref": "#/components/schemas/Network"
+                            }
                         }
                     },
                     "required": ["networks"]
@@ -327,13 +307,13 @@
                         "title": "AddSessionParams",
                         "type": "object",
                         "properties": {
-                            "networkId": {
-                                "title": "networkId",
+                            "chainId": {
+                                "title": "chainId",
                                 "type": "string",
                                 "description": "Network Id"
                             }
                         },
-                        "required": ["networkId"]
+                        "required": ["chainId"]
                     }
                 }
             ],
@@ -342,19 +322,28 @@
                 "schema": {
                     "title": "AddSessionResult",
                     "type": "object",
+                    "$ref": "#/components/schemas/Session"
+                }
+            }
+        },
+        {
+            "name": "listSessions",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "ListSessionsResult",
+                    "type": "object",
                     "properties": {
-                        "network": {
-                            "title": "network",
-                            "type": "object",
-                            "$ref": "#/components/schemas/Network"
-                        },
-                        "status": {
-                            "title": "status",
-                            "type": "string",
-                            "enum": ["connected", "disconnected"]
+                        "sessions": {
+                            "title": "sessions",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/Session"
+                            }
                         }
                     },
-                    "required": ["network", "status"]
+                    "required": ["sessions"]
                 }
             }
         }
@@ -369,7 +358,7 @@
             "Network": {
                 "title": "Network",
                 "type": "object",
-                "description": "Structure representing the connected Networks",
+                "description": "Structure representing the Networks",
                 "properties": {
                     "name": {
                         "title": "name",
@@ -386,21 +375,32 @@
                         "type": "string",
                         "description": "Synchronizer ID"
                     },
-                    "networkId": {
-                        "title": "networkId",
+                    "chainId": {
+                        "title": "chainId",
                         "type": "string",
                         "description": "Network Id"
+                    },
+                    "auth": {
+                        "$ref": "#/components/schemas/Auth"
+                    },
+                    "ledgerApi": {
+                        "title": "ledgerApi",
+                        "type": "string",
+                        "description": "Ledger api url"
                     }
                 },
                 "required": [
                     "name",
                     "description",
-                    "networkId",
-                    "synchronizerId"
-                ]
+                    "chainId",
+                    "synchronizerId",
+                    "auth",
+                    "ledgerApi"
+                ],
+                "additionalProperties": false
             },
             "Auth": {
-                "title": "type",
+                "title": "auth",
                 "type": "object",
                 "description": "Represents the type of auth (implicit or password) for a specified network",
                 "properties": {
@@ -465,8 +465,8 @@
                         "type": "string",
                         "description": "The namespace of the party."
                     },
-                    "networkId": {
-                        "title": "networkId",
+                    "chainId": {
+                        "title": "chainId",
                         "type": "string",
                         "description": "The network ID the wallet corresponds to."
                     },
@@ -482,7 +482,7 @@
                     "hint",
                     "publicKey",
                     "namespace",
-                    "networkId",
+                    "chainId",
                     "signingProviderId"
                 ]
             },
@@ -491,12 +491,12 @@
                 "type": "object",
                 "description": "Filter for wallets",
                 "properties": {
-                    "networkIds": {
-                        "title": "networkIds",
+                    "chainIds": {
+                        "title": "chainIds",
                         "type": "array",
                         "description": "Filter wallets by network IDs.",
                         "items": {
-                            "title": "networkId",
+                            "title": "chainId",
                             "type": "string"
                         }
                     },
@@ -511,6 +511,28 @@
                     }
                 },
                 "required": []
+            },
+            "Session": {
+                "title": "Session",
+                "type": "object",
+                "description": "Structure representing the connected network session",
+                "properties": {
+                    "network": {
+                        "$ref": "#/components/schemas/Network"
+                    },
+                    "accessToken": {
+                        "title": "accessToken",
+                        "type": "string",
+                        "description": "The access token for the session."
+                    },
+                    "status": {
+                        "title": "status",
+                        "type": "string",
+                        "enum": ["connected", "disconnected"]
+                    }
+                },
+                "required": ["network", "status", "accessToken"],
+                "additionalProperties": false
             }
         }
     }

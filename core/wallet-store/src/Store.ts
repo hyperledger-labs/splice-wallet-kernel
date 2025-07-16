@@ -1,6 +1,6 @@
 // Account
 
-import { NetworkConfig } from './config/schema'
+import { Network } from './config/schema'
 
 export enum AddressType {
     PaperAddress = 'PaperAddress',
@@ -20,7 +20,7 @@ export interface SigningProvider {
 }
 
 export interface WalletFilter {
-    networkIds?: string[]
+    chainIds?: string[]
     signingProviderIds?: string[]
 }
 
@@ -30,7 +30,7 @@ export interface Wallet {
     hint: string
     publicKey: string
     namespace: string
-    networkId: string
+    chainId: string
     signingProviderId: string
 }
 
@@ -64,12 +64,12 @@ export interface Store {
     removeSession(): Promise<void>
 
     // Network methods
-    getNetwork(name: string): Promise<NetworkConfig>
-    getCurrentNetwork(): Promise<NetworkConfig>
-    listNetworks(): Promise<Array<NetworkConfig>>
-    updateNetwork(network: NetworkConfig): Promise<void>
-    addNetwork(network: NetworkConfig): Promise<void>
-    removeNetwork(name: string): Promise<void>
+    getNetwork(chainId: string): Promise<Network>
+    getCurrentNetwork(): Promise<Network>
+    listNetworks(): Promise<Array<Network>>
+    updateNetwork(network: Network): Promise<void>
+    addNetwork(network: Network): Promise<void>
+    removeNetwork(chainId: string): Promise<void>
 
     // Transaction methods
     setTransaction(tx: Transaction): Promise<void>

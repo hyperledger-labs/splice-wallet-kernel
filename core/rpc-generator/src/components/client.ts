@@ -15,7 +15,7 @@ import _ from "lodash";
 
 import { RequestPayload, RpcTransport } from 'core-types'
 
-<%= methodTypings.toString("typescript") %>
+<%= methodTypings.toString("typescript").replace(/export type AnyOf[A-Za-z0-9]+ =(?:[\\r\\n]|.)*?;/gm, "") %>
 
 export class <%= className %> {
   public transport: RpcTransport;
@@ -55,6 +55,10 @@ jsonrpc_client!(pub struct <%= className %> {
 });
 `)
 
+export const stripAnyOfTypes = (content: string): string => {
+    return content.replace(/export type AnyOf[A-Za-z0-9]+ =[\s\S]*?;/gm, '')
+}
+
 const hooks: IHooks = {
     afterCopyStatic: [
         async (dest, frm, component): Promise<void> => {
@@ -84,7 +88,6 @@ const hooks: IHooks = {
 
                 return await writeFile(packagePath, updatedPkg)
             }
-
             if (component.language === 'rust') {
                 const cargoTOMLPath = path.join(dest, 'Cargo.toml')
                 const fileContents = await readFile(cargoTOMLPath)

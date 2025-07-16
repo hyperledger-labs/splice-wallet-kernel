@@ -1,4 +1,4 @@
-import { NetworkConfig } from 'core-wallet-store'
+import { Network } from 'core-wallet-store'
 import { LitElement, html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 
@@ -6,7 +6,7 @@ import { styles } from '../themes/styles.js'
 
 @customElement('network-table')
 export class NetworkTable extends LitElement {
-    @property({ type: Array }) networks: NetworkConfig[] = []
+    @property({ type: Array }) networks: Network[] = []
 
     static styles = [styles]
 
@@ -29,7 +29,7 @@ export class NetworkTable extends LitElement {
                         (net) => html`
                             <tr>
                                 <td>${net.name}</td>
-                                <td>${net.networkId}</td>
+                                <td>${net.chainId}</td>
                                 <td>${net.description}</td>
                                 <td>${net.auth.type}</td>
                                 <td>${net.synchronizerId}</td>

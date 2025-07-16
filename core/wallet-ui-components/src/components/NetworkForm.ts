@@ -1,11 +1,11 @@
-import { NetworkConfig } from 'core-wallet-store'
+import { Network } from 'core-wallet-store'
 import { LitElement, html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { styles } from '../themes/styles.js'
 
 @customElement('network-form')
 export class NetworkForm extends LitElement {
-    @property({ type: Object }) editingNetwork: NetworkConfig | null = null
+    @property({ type: Object }) editingNetwork: Network | null = null
     @property({ type: String }) authType: string = 'implicit'
 
     static styles = [styles]
@@ -47,9 +47,9 @@ export class NetworkForm extends LitElement {
                     required
                 />
                 <input
-                    name="networkId"
+                    name="chainId"
                     placeholder="Network Id"
-                    .value=${this.editingNetwork?.networkId ?? ''}
+                    .value=${this.editingNetwork?.chainId ?? ''}
                     required
                 />
                 <input

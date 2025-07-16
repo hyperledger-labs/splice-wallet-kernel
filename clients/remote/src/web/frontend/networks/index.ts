@@ -1,21 +1,28 @@
 import 'core-wallet-ui-components'
-import { Auth, NetworkConfig } from 'core-wallet-store'
+import { Auth } from 'core-wallet-store'
 import { LitElement, html } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { userClient } from '../rpc-client'
-import { Network, RemoveNetworkParams } from 'core-wallet-user-rpc-client'
+import {
+    Network,
+    RemoveNetworkParams,
+    Session,
+} from 'core-wallet-user-rpc-client'
 
 import '../index'
 
 @customElement('user-ui-networks')
 export class UserUiNetworks extends LitElement {
     @state()
-    accessor networks: NetworkConfig[] = []
+    accessor networks: Network[] = []
+
+    @state()
+    accessor sessions: Session[] = []
 
     @state()
     accessor isModalOpen = false
 
-    @state() accessor editingNetwork: NetworkConfig | null = null
+    @state() accessor editingNetwork: Network | null = null
 
     @state() accessor authType: string =
         this.editingNetwork?.auth?.type ?? 'implicit'
@@ -25,9 +32,15 @@ export class UserUiNetworks extends LitElement {
         this.networks = response.networks
     }
 
+    private async listSessions() {
+        const response = await userClient.request('listSessions')
+        this.sessions = response.sessions
+    }
+
     connectedCallback(): void {
         super.connectedCallback()
         this.listNetworks()
+        this.listSessions()
     }
 
     openAddModal = () => {
@@ -40,7 +53,7 @@ export class UserUiNetworks extends LitElement {
         this.listNetworks()
     }
 
-    private async handleDelete(net: NetworkConfig) {
+    private async handleDelete(net: Network) {
         if (!confirm(`delete network "${net.name}"?`)) return
 
         const params: RemoveNetworkParams = {
@@ -77,18 +90,18 @@ export class UserUiNetworks extends LitElement {
         }
 
         const networkParam: Network = {
-            networkId: formData.get('networkId') as string,
+            chainId: formData.get('chainId') as string,
             synchronizerId: formData.get('synchronizerId') as string,
             name: formData.get('name') as string,
             description: formData.get('description') as string,
+            auth: auth,
+            ledgerApi: formData.get('ledgerApi.baseurl') as string,
         }
 
         await userClient.transport.submit({
             method: 'addNetwork',
             params: {
                 network: networkParam,
-                auth: auth,
-                ledgerApiUrl: formData.get('ledgerApi.baseurl') as string,
             },
         })
 
@@ -105,6 +118,29 @@ export class UserUiNetworks extends LitElement {
     protected render() {
         return html`
             <user-ui-nav></user-ui-nav>
+
+            <div class="header"><h1>Sessions</h1></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Network ID</th>
+                        <th>Status</th>
+                        <th>AccessToken</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${this.sessions.map(
+                        (session) => html`
+                            <tr>
+                                <td>${session.network.chainId}</td>
+                                <td>${session.status}</td>
+                                <td>${session.accessToken}</td>
+                            </tr>
+                        `
+                    )}
+                </tbody>
+            </table>
+
             <div class="header"><h1>Networks</h1></div>
             <button class="buttons" @click=${this.openAddModal}>
                 Add Network
