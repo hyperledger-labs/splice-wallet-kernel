@@ -146,18 +146,7 @@ export interface OnConnectedEvent {
  * Generated! Represents an alias to any of the provided schemas
  *
  */
-export type AnyOfPrepareReturnParamsPrepareExecuteParamsLedgerApiParamsStatusResultConnectResultDarsAvailableResultPrepareReturnResultPrepareExecuteResultLedgerApiResultOnConnectedEvent =
 
-        | PrepareReturnParams
-        | PrepareExecuteParams
-        | LedgerApiParams
-        | StatusResult
-        | ConnectResult
-        | DarsAvailableResult
-        | PrepareReturnResult
-        | PrepareExecuteResult
-        | LedgerApiResult
-        | OnConnectedEvent
 export type Status = () => Promise<StatusResult>
 export type Connect = () => Promise<ConnectResult>
 export type DarsAvailable = () => Promise<DarsAvailableResult>

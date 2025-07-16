@@ -11,6 +11,7 @@ import {
     SignParams,
     AddSessionParams,
     AddSessionResult,
+    ListSessionsResult,
 } from './rpc-gen/typings.js'
 import { Store, Wallet, Auth } from 'core-wallet-store'
 import pino from 'pino'
@@ -109,10 +110,12 @@ export const userController = (
                 ledgerApi,
             }
 
-            Promise.resolve(store.addNetwork(newNetwork))
+            await store.addNetwork(newNetwork)
+            return null
         },
         removeNetwork: async (params: RemoveNetworkParams) => {
-            Promise.resolve(store.removeNetwork(params.networkName))
+            await store.removeNetwork(params.networkName)
+            return null
         },
         createWallet: async (params: {
             primary?: boolean
@@ -227,6 +230,8 @@ export const userController = (
                 })
 
                 return Promise.resolve({
+                    accessToken: authContext?.accessToken || '',
+                    status: 'connected',
                     network: {
                         name: network.name,
                         chainId: network.chainId,
@@ -235,11 +240,33 @@ export const userController = (
                         ledgerApi: network.ledgerApi,
                         auth: network.auth,
                     },
-                    status: 'connected', // TODO: Determine actual status based on connection logic
                 })
             } catch (error) {
                 pino.pino().error(`Failed to add session: ${error}`)
                 throw new Error(`Failed to add session: ${error}`)
+            }
+        },
+        listSessions: async (): Promise<ListSessionsResult> => {
+            const session = await store.getSession()
+            if (!session) {
+                return { sessions: [] }
+            }
+            const network = await store.getNetwork(session.network)
+            return {
+                sessions: [
+                    {
+                        accessToken: authContext?.accessToken || '',
+                        status: 'connected',
+                        network: {
+                            name: network.name,
+                            chainId: network.chainId,
+                            synchronizerId: network.synchronizerId,
+                            description: network.description,
+                            ledgerApi: network.ledgerApi,
+                            auth: network.auth,
+                        },
+                    },
+                ],
             }
         },
     })

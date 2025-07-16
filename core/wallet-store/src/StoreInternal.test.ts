@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from '@jest/globals'
 
 import { StoreInternal } from './StoreInternal'
 import { Wallet, Session } from '../../../core/wallet-store/src/Store'
-import { LedgerApi, NetworkConfig, PasswordAuth } from './config/schema'
+import { LedgerApi, Network, PasswordAuth } from './config/schema'
 
 const authContextMock = {
     userId: 'test-user-id',
@@ -129,7 +129,7 @@ describe('StoreInternal', () => {
             clientId: 'cid',
             scope: 'scope',
         }
-        const network: NetworkConfig = {
+        const network: Network = {
             name: 'testnet',
             chainId: 'network1',
             synchronizerId: 'sync1::fingerprint',

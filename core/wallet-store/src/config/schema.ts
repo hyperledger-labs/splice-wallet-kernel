@@ -25,7 +25,7 @@ export const authSchema = z.discriminatedUnion('type', [
     implicitAuthSchema,
 ])
 
-export const networkConfigSchema = z.object({
+export const networkSchema = z.object({
     name: z.string(),
     chainId: z.string(),
     synchronizerId: z.string(),
@@ -35,12 +35,12 @@ export const networkConfigSchema = z.object({
 })
 
 export const storeConfigSchema = z.object({
-    networks: z.array(networkConfigSchema),
+    networks: z.array(networkSchema),
 })
 
 export type StoreConfig = z.infer<typeof storeConfigSchema>
 export type Auth = z.infer<typeof authSchema>
-export type NetworkConfig = z.infer<typeof networkConfigSchema>
+export type Network = z.infer<typeof networkSchema>
 export type ImplicitAuth = z.infer<typeof implicitAuthSchema>
 export type PasswordAuth = z.infer<typeof passwordAuthSchema>
 export type LedgerApi = z.infer<typeof ledgerApiSchema>

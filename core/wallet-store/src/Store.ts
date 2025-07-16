@@ -1,6 +1,6 @@
 // Account
 
-import { NetworkConfig } from './config/schema'
+import { Network } from './config/schema'
 
 export enum AddressType {
     PaperAddress = 'PaperAddress',
@@ -65,11 +65,11 @@ export interface Store {
     removeSession(): Promise<void>
 
     // Network methods
-    getNetwork(chainId: string): Promise<NetworkConfig>
-    getCurrentNetwork(): Promise<NetworkConfig>
-    listNetworks(): Promise<Array<NetworkConfig>>
-    updateNetwork(network: NetworkConfig): Promise<void>
-    addNetwork(network: NetworkConfig): Promise<void>
+    getNetwork(chainId: string): Promise<Network>
+    getCurrentNetwork(): Promise<Network>
+    listNetworks(): Promise<Array<Network>>
+    updateNetwork(network: Network): Promise<void>
+    addNetwork(network: Network): Promise<void>
     removeNetwork(chainId: string): Promise<void>
 
     // Transaction methods

@@ -181,22 +181,7 @@ export interface SubscribeTransactionsResult {
  * Generated! Represents an alias to any of the provided schemas
  *
  */
-export type AnyOfSignTransactionParamsGetTransactionParamsGetTransactionsParamsCreateKeyParamsSetConfigurationParamsSubscribeTransactionsParamsSignTransactionResultGetTransactionResultGetTransactionsResultGetKeysResultCreateKeyResultGetConfigurationResultSetConfigurationResultSubscribeTransactionsResult =
 
-        | SignTransactionParams
-        | GetTransactionParams
-        | GetTransactionsParams
-        | CreateKeyParams
-        | SetConfigurationParams
-        | SubscribeTransactionsParams
-        | SignTransactionResult
-        | GetTransactionResult
-        | GetTransactionsResult
-        | GetKeysResult
-        | CreateKeyResult
-        | GetConfigurationResult
-        | SetConfigurationResult
-        | SubscribeTransactionsResult
 export type SignTransaction = (
     params: SignTransactionParams
 ) => Promise<SignTransactionResult>
