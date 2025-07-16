@@ -27,11 +27,11 @@ async function signingDriverCreate(
     store: Store,
     notifier: Notifier | undefined,
     ledgerClient: LedgerClient,
-    { signingProviderId, primary, partyHint, networkId }: CreateWalletParams
+    { signingProviderId, primary, partyHint, chainId }: CreateWalletParams
 ): Promise<CreateWalletResult> {
     switch (signingProviderId) {
         case 'participant': {
-            const network = await store.getNetwork(networkId)
+            const network = await store.getNetwork(chainId)
 
             const res = await ledgerClient.partiesPost({
                 partyIdHint: partyHint,
@@ -51,7 +51,7 @@ async function signingDriverCreate(
                 publicKey: 'placeholder-public-key',
                 namespace: 'placeholder-namespace',
                 signingProviderId: signingProviderId,
-                networkId: networkId,
+                chainId: chainId,
             }
 
             await store.addWallet(wallet)
@@ -103,7 +103,7 @@ export const userController = (
 
             const newNetwork = {
                 name: network.network.name,
-                networkId: network.network.networkId,
+                chainId: network.network.chainId,
                 description: network.network.description,
                 synchronizerId: network.network.synchronizerId,
                 auth,
@@ -120,7 +120,7 @@ export const userController = (
         createWallet: async (params: {
             primary?: boolean
             partyHint: string
-            networkId: string
+            chainId: string
             signingProviderId: string
         }) => {
             pino.pino().info(
@@ -142,7 +142,7 @@ export const userController = (
         removeWallet: async (params: { partyId: string }) =>
             Promise.resolve({}),
         listWallets: async (params: {
-            filter?: { networkIds?: string[]; signingProviderIds?: string[] }
+            filter?: { chainIds?: string[]; signingProviderIds?: string[] }
         }) => {
             // TODO: support filters
             return store.getWallets()
@@ -215,7 +215,7 @@ export const userController = (
         ): Promise<AddSessionResult> {
             try {
                 await store.setSession({
-                    network: params.networkId,
+                    network: params.chainId,
                     accessToken: authContext?.accessToken || '',
                 })
                 const network = await store.getCurrentNetwork()
@@ -226,7 +226,7 @@ export const userController = (
                 notifier?.emit('onConnected', {
                     kernel: kernelInfo,
                     sessionToken: authContext?.accessToken || '',
-                    chainId: network.networkId,
+                    chainId: network.chainId,
                 })
 
                 return Promise.resolve({
@@ -234,7 +234,7 @@ export const userController = (
                     status: 'connected',
                     network: {
                         name: network.name,
-                        networkId: network.networkId,
+                        chainId: network.chainId,
                         synchronizerId: network.synchronizerId,
                         description: network.description,
                         ledgerApi: network.ledgerApi,
@@ -259,7 +259,7 @@ export const userController = (
                         status: 'connected',
                         network: {
                             name: network.name,
-                            networkId: network.networkId,
+                            chainId: network.chainId,
                             synchronizerId: network.synchronizerId,
                             description: network.description,
                             ledgerApi: network.ledgerApi,

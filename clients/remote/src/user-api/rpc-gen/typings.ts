@@ -24,7 +24,7 @@ export type SynchronizerId = string
  * Network Id
  *
  */
-export type NetworkId = string
+export type ChainId = string
 export type Type = string
 export type TokenUrl = string
 export type GrantType = string
@@ -62,7 +62,7 @@ export interface Network {
     name: Name
     description: Description
     synchronizerId: SynchronizerId
-    networkId: NetworkId
+    chainId: ChainId
     auth: Auth
     ledgerApi: LedgerApi
 }
@@ -96,7 +96,7 @@ export type PartyId = string
  * Filter wallets by network IDs.
  *
  */
-export type NetworkIds = NetworkId[]
+export type ChainIds = ChainId[]
 /**
  *
  * Filter wallets by signing provider IDs.
@@ -109,7 +109,7 @@ export type SigningProviderIds = SigningProviderId[]
  *
  */
 export interface WalletFilter {
-    networkIds?: NetworkIds
+    chainIds?: ChainIds
     signingProviderIds?: SigningProviderIds
     [k: string]: any
 }
@@ -151,7 +151,7 @@ export interface Wallet {
     hint: Hint
     publicKey: PublicKey
     namespace: Namespace
-    networkId: NetworkId
+    chainId: ChainId
     signingProviderId: SigningProviderId
     [k: string]: any
 }
@@ -187,7 +187,7 @@ export interface RemoveNetworkParams {
 export interface CreateWalletParams {
     primary?: Primary
     partyHint: PartyHint
-    networkId: NetworkId
+    chainId: ChainId
     signingProviderId: SigningProviderId
     [k: string]: any
 }
@@ -212,7 +212,7 @@ export interface ExecuteParams {
     [k: string]: any
 }
 export interface AddSessionParams {
-    networkId: NetworkId
+    chainId: ChainId
     [k: string]: any
 }
 /**

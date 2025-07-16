@@ -90,7 +90,7 @@ export class UserUiNetworks extends LitElement {
         }
 
         const networkParam: Network = {
-            networkId: formData.get('networkId') as string,
+            chainId: formData.get('chainId') as string,
             synchronizerId: formData.get('synchronizerId') as string,
             name: formData.get('name') as string,
             description: formData.get('description') as string,
@@ -132,7 +132,7 @@ export class UserUiNetworks extends LitElement {
                     ${this.sessions.map(
                         (session) => html`
                             <tr>
-                                <td>${session.network.networkId}</td>
+                                <td>${session.network.chainId}</td>
                                 <td>${session.status}</td>
                                 <td>${session.accessToken}</td>
                             </tr>

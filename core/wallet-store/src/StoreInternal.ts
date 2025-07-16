@@ -73,20 +73,20 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     // Wallet methods
 
     async getWallets(filter: WalletFilter = {}): Promise<Array<Wallet>> {
-        const { networkIds, signingProviderIds } = filter
-        const networkIdSet = networkIds ? new Set(networkIds) : null
+        const { chainIds, signingProviderIds } = filter
+        const chainIdSet = chainIds ? new Set(chainIds) : null
         const signingProviderIdSet = signingProviderIds
             ? new Set(signingProviderIds)
             : null
 
         return this.getStorage().wallets.filter((wallet) => {
-            const matchedNetworkIds = networkIdSet
-                ? networkIdSet.has(wallet.networkId)
+            const matchedChainIds = chainIdSet
+                ? chainIdSet.has(wallet.chainId)
                 : true
             const matchedStorageProviderIdS = signingProviderIdSet
                 ? signingProviderIdSet.has(wallet.signingProviderId)
                 : true
-            return matchedNetworkIds && matchedStorageProviderIdS
+            return matchedChainIds && matchedStorageProviderIdS
         })
     }
 
@@ -153,14 +153,14 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     // Network methods
-    async getNetwork(name: string): Promise<Network> {
+    async getNetwork(chainId: string): Promise<Network> {
         this.assertConnected()
 
         const networks = await this.listNetworks()
         if (!networks) throw new Error('No networks available')
 
-        const network = networks.find((n) => n.name === name)
-        if (!network) throw new Error(`Network "${name}" not found`)
+        const network = networks.find((n) => n.chainId === chainId)
+        if (!network) throw new Error(`Network "${chainId}" not found`)
         return network
     }
 
@@ -169,15 +169,15 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         if (!session) {
             throw new Error('No session found')
         }
-        const networkId = session.network
-        if (!networkId) {
+        const chainId = session.network
+        if (!chainId) {
             throw new Error('No current network set in session')
         }
 
         const networks = await this.listNetworks()
-        const network = networks.find((n) => n.networkId === networkId)
+        const network = networks.find((n) => n.chainId === chainId)
         if (!network) {
-            throw new Error(`Network "${networkId}" not found`)
+            throw new Error(`Network "${chainId}" not found`)
         }
         return network
     }
@@ -187,24 +187,24 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     async updateNetwork(network: Network): Promise<void> {
-        this.removeNetwork(network.name) // Ensure no duplicates
+        this.removeNetwork(network.chainId) // Ensure no duplicates
         this.systemStorage.networks.push(network)
     }
 
     async addNetwork(network: Network): Promise<void> {
         const networkAlreadyExists = this.systemStorage.networks.find(
-            (n) => n.name === network.name
+            (n) => n.chainId === network.chainId
         )
         if (networkAlreadyExists) {
-            throw new Error(`Network ${network.name} already exists`)
+            throw new Error(`Network ${network.chainId} already exists`)
         } else {
             this.systemStorage.networks.push(network)
         }
     }
 
-    async removeNetwork(name: string): Promise<void> {
+    async removeNetwork(chainId: string): Promise<void> {
         this.systemStorage.networks = this.systemStorage.networks.filter(
-            (n) => n.name !== name
+            (n) => n.chainId !== chainId
         )
     }
 

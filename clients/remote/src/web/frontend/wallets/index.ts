@@ -132,12 +132,12 @@ export class UserUiWallets extends LitElement {
         const partyHint = this._partyHintInput?.value || ''
         const primary = this._primaryCheckbox?.checked || false
         const signingProviderId = this.selectedSigningProvider
-        const networkId = 'placeholder-network-id'
+        const chainId = 'placeholder-network-id'
 
         const body: CreateWalletParams = {
             primary,
             partyHint,
-            networkId,
+            chainId,
             signingProviderId,
         }
 
