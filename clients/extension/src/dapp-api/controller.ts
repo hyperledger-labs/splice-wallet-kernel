@@ -38,6 +38,12 @@ export const dappController = (store?: Store) =>
             throw new Error('Function not implemented.')
         },
         onConnected: async () => {
-            throw new Error('Function not implemented.')
+            throw new Error('Only for events.')
+        },
+        onAccountsChanged: async () => {
+            throw new Error('Only for events.')
+        },
+        onTxChanged: async () => {
+            throw new Error('Only for events.')
         },
     })
