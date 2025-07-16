@@ -1,16 +1,17 @@
 import { html, LitElement } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
-import { NetworkConfig } from 'core-wallet-store'
+
 import 'core-wallet-ui-components'
 import { userClient } from '../rpc-client'
+import { Network } from 'core-wallet-user-rpc-client'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
     @state()
-    accessor idps: NetworkConfig[] = []
+    accessor idps: Network[] = []
 
     @state()
-    accessor selectedNetwork: NetworkConfig | null = null
+    accessor selectedNetwork: Network | null = null
 
     private handleChange(e: Event) {
         const index = parseInt((e.target as HTMLSelectElement).value)
@@ -49,11 +50,11 @@ export class LoginUI extends LitElement {
             const params = new URLSearchParams({
                 response_type: 'code',
                 response_mode: 'fragment',
-                client_id: this.selectedNetwork.auth.clientId,
-                redirect_uri: redirectUri,
+                client_id: this.selectedNetwork.auth.clientId || '',
+                redirect_uri: redirectUri || '',
                 nonce: crypto.randomUUID(),
-                scope,
-                audience,
+                scope: scope || '',
+                audience: audience || '',
                 state: btoa(JSON.stringify(statePayload)),
             })
 

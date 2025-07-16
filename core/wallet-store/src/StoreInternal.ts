@@ -7,7 +7,7 @@ import {
     WalletFilter,
     Transaction,
 } from './Store.js'
-import { NetworkConfig } from './config/schema.js'
+import { Network } from './config/schema.js'
 
 interface UserStorage {
     wallets: Array<Wallet>
@@ -16,7 +16,7 @@ interface UserStorage {
 }
 
 export interface StoreInternalConfig {
-    networks: Array<NetworkConfig>
+    networks: Array<Network>
 }
 
 type Memory = Map<UserId, UserStorage>
@@ -153,7 +153,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     // Network methods
-    async getNetwork(name: string): Promise<NetworkConfig> {
+    async getNetwork(name: string): Promise<Network> {
         this.assertConnected()
 
         const networks = await this.listNetworks()
@@ -164,7 +164,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         return network
     }
 
-    async getCurrentNetwork(): Promise<NetworkConfig> {
+    async getCurrentNetwork(): Promise<Network> {
         const session = this.getStorage().session
         if (!session) {
             throw new Error('No session found')
@@ -182,16 +182,16 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         return network
     }
 
-    async listNetworks(): Promise<Array<NetworkConfig>> {
+    async listNetworks(): Promise<Array<Network>> {
         return this.systemStorage.networks
     }
 
-    async updateNetwork(network: NetworkConfig): Promise<void> {
+    async updateNetwork(network: Network): Promise<void> {
         this.removeNetwork(network.name) // Ensure no duplicates
         this.systemStorage.networks.push(network)
     }
 
-    async addNetwork(network: NetworkConfig): Promise<void> {
+    async addNetwork(network: Network): Promise<void> {
         const networkAlreadyExists = this.systemStorage.networks.find(
             (n) => n.name === network.name
         )

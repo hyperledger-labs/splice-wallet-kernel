@@ -25,18 +25,6 @@ export type SynchronizerId = string
  *
  */
 export type NetworkId = string
-/**
- *
- * Structure representing the connected Networks
- *
- */
-export interface Network {
-    name: Name
-    description: Description
-    synchronizerId: SynchronizerId
-    networkId: NetworkId
-    [k: string]: any
-}
 export type Type = string
 export type TokenUrl = string
 export type GrantType = string
@@ -46,7 +34,7 @@ export type Domain = string
 export type Audience = string
 /**
  *
- * auth
+ * Represents the type of auth (implicit or password) for a specified network
  *
  */
 export interface Auth {
@@ -64,7 +52,20 @@ export interface Auth {
  * Ledger api url
  *
  */
-export type LedgerApiUrl = string
+export type LedgerApi = string
+/**
+ *
+ * Structure representing the Networks
+ *
+ */
+export interface Network {
+    name: Name
+    description: Description
+    synchronizerId: SynchronizerId
+    networkId: NetworkId
+    auth: Auth
+    ledgerApi: LedgerApi
+}
 /**
  *
  * Ledger api url
@@ -156,17 +157,27 @@ export interface Wallet {
 }
 export type CorrelationId = string
 export type TraceId = string
+export type Networks = Network[]
 /**
  *
- * Structure representing the connected Networks
+ * The access token for the session.
  *
  */
-export type Networks = any[]
+export type AccessToken = string
 export type Status = 'connected' | 'disconnected'
+/**
+ *
+ * Structure representing the connected network session
+ *
+ */
+export interface Session {
+    network: Network
+    accessToken: AccessToken
+    status: Status
+}
+export type Sessions = Session[]
 export interface AddNetworkParams {
     network: Network
-    auth: Auth
-    ledgerApiUrl: LedgerApiUrl
     [k: string]: any
 }
 export interface RemoveNetworkParams {
@@ -209,7 +220,7 @@ export interface AddSessionParams {
  * Represents a null value, used in responses where no data is returned.
  *
  */
-export type Null = any
+export type Null = null
 export interface CreateWalletResult {
     wallet: Wallet
     [k: string]: any
@@ -238,9 +249,18 @@ export interface ListNetworksResult {
     networks: Networks
     [k: string]: any
 }
+/**
+ *
+ * Structure representing the connected network session
+ *
+ */
 export interface AddSessionResult {
     network: Network
+    accessToken: AccessToken
     status: Status
+}
+export interface ListSessionsResult {
+    sessions: Sessions
     [k: string]: any
 }
 /**
@@ -248,24 +268,7 @@ export interface AddSessionResult {
  * Generated! Represents an alias to any of the provided schemas
  *
  */
-export type AnyOfAddNetworkParamsRemoveNetworkParamsCreateWalletParamsRemoveWalletParamsListWalletsParamsSignParamsExecuteParamsAddSessionParamsNullNullCreateWalletResultRemovePartyResultListWalletsResultSignResultExecuteResultListNetworksResultAddSessionResult =
 
-        | AddNetworkParams
-        | RemoveNetworkParams
-        | CreateWalletParams
-        | RemoveWalletParams
-        | ListWalletsParams
-        | SignParams
-        | ExecuteParams
-        | AddSessionParams
-        | Null
-        | CreateWalletResult
-        | RemovePartyResult
-        | ListWalletsResult
-        | SignResult
-        | ExecuteResult
-        | ListNetworksResult
-        | AddSessionResult
 export type AddNetwork = (params: AddNetworkParams) => Promise<Null>
 export type RemoveNetwork = (params: RemoveNetworkParams) => Promise<Null>
 export type CreateWallet = (
@@ -281,3 +284,4 @@ export type Sign = (params: SignParams) => Promise<SignResult>
 export type Execute = (params: ExecuteParams) => Promise<ExecuteResult>
 export type ListNetworks = () => Promise<ListNetworksResult>
 export type AddSession = (params: AddSessionParams) => Promise<AddSessionResult>
+export type ListSessions = () => Promise<ListSessionsResult>
