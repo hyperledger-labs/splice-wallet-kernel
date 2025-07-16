@@ -133,6 +133,7 @@ describe('StoreInternal', () => {
         const network: NetworkConfig = {
             name: 'testnet',
             networkId: 'network1',
+            synchronizerId: 'sync1::fingerprint',
             description: 'Test Network',
             ledgerApi,
             auth,

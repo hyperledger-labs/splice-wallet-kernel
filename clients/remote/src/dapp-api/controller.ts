@@ -3,7 +3,6 @@
 import { AuthContext } from 'core-wallet-auth'
 import buildController from './rpc-gen/index.js'
 import {
-    KernelInfo,
     LedgerApiParams,
     PrepareExecuteParams,
     PrepareReturnParams,
@@ -51,7 +50,7 @@ export const dappController = (
 ) =>
     buildController({
         connect: async () => ({
-            kernel: kernelInfo as KernelInfo,
+            kernel: kernelInfo,
             isConnected: false,
             chainId: 'default-chain-id',
             userUrl: 'http://localhost:3002/login/',
@@ -62,6 +61,7 @@ export const dappController = (
         }),
         prepareExecute: async (params: PrepareExecuteParams) => {
             const wallet = await store.getPrimaryWallet()
+            const network = await store.getCurrentNetwork()
 
             if (context === undefined) {
                 throw new Error('Unauthenticated context')
@@ -81,7 +81,7 @@ export const dappController = (
                 await prepareSubmission(
                     context.userId,
                     wallet.partyId,
-                    '',
+                    network.synchronizerId,
                     params.commands,
                     ledgerClient,
                     commandId
@@ -101,6 +101,7 @@ export const dappController = (
         },
         prepareReturn: async (params: PrepareReturnParams) => {
             const wallet = await store.getPrimaryWallet()
+            const network = await store.getCurrentNetwork()
 
             if (context === undefined) {
                 throw new Error('Unauthenticated context')
@@ -113,7 +114,7 @@ export const dappController = (
             return prepareSubmission(
                 context.userId,
                 wallet.partyId,
-                '',
+                network.synchronizerId,
                 params.commands,
                 ledgerClient
             )
@@ -121,12 +122,12 @@ export const dappController = (
         status: async () => {
             if (context === null) {
                 return {
-                    kernel: kernelInfo as KernelInfo,
+                    kernel: kernelInfo,
                     isConnected: false,
                 }
             } else {
                 return {
-                    kernel: kernelInfo as KernelInfo,
+                    kernel: kernelInfo,
                     isConnected: true,
                     chainId: (await store.getCurrentNetwork()).networkId,
                 }

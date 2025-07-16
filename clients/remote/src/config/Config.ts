@@ -3,7 +3,12 @@ import { z } from 'zod'
 
 export const kernelInfoSchema = z.object({
     id: z.string(),
-    clientType: z.string(), // 'remote' | 'extension'
+    clientType: z.union([
+        z.literal('browser'),
+        z.literal('desktop'),
+        z.literal('mobile'),
+        z.literal('remote'),
+    ]),
     url: z.string().url(),
 })
 

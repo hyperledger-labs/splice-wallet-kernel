@@ -5,6 +5,7 @@ import { popup } from './popup.js'
 export async function discover(): Promise<DiscoverResult> {
     const win = await popup(Discovery, {
         title: 'Wallet Discovery',
+        target: 'wallet-discovery',
     })
 
     return new Promise((resolve, reject) => {

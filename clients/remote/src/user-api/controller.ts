@@ -30,10 +30,12 @@ async function signingDriverCreate(
 ): Promise<CreateWalletResult> {
     switch (signingProviderId) {
         case 'participant': {
+            const network = await store.getNetwork(networkId)
+
             const res = await ledgerClient.partiesPost({
                 partyIdHint: partyHint,
                 identityProviderId: '',
-                synchronizerId: '',
+                synchronizerId: network.synchronizerId,
                 userId: '',
             })
 
@@ -102,6 +104,7 @@ export const userController = (
                 name: network.network.name,
                 networkId: network.network.networkId,
                 description: network.network.description,
+                synchronizerId: network.network.synchronizerId,
                 auth,
                 ledgerApi,
             }
@@ -149,6 +152,7 @@ export const userController = (
             }),
         execute: async ({ commandId }: ExecuteParams) => {
             const wallet = await store.getPrimaryWallet()
+            const network = await store.getCurrentNetwork()
 
             if (wallet === undefined) {
                 throw new Error('No primary wallet found')
@@ -171,7 +175,7 @@ export const userController = (
                         actAs: [wallet.partyId],
                         readAs: [],
                         disclosedContracts: [],
-                        synchronizerId: '',
+                        synchronizerId: network.synchronizerId,
                         packageIdSelectionPreference: [],
                     }
                     try {
@@ -217,7 +221,7 @@ export const userController = (
                     : undefined
 
                 notifier?.emit('onConnected', {
-                    kernel: kernelInfo as KernelInfo,
+                    kernel: kernelInfo,
                     sessionToken: authContext?.accessToken || '',
                     chainId: network.networkId,
                 })
@@ -226,6 +230,7 @@ export const userController = (
                     network: {
                         name: network.name,
                         networkId: network.networkId,
+                        synchronizerId: network.synchronizerId,
                         description: network.description,
                         ledgerApi: network.ledgerApi,
                         auth: network.auth,

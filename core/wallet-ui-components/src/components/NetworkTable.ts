@@ -20,6 +20,7 @@ export class NetworkTable extends LitElement {
                         <th>ID</th>
                         <th>Description</th>
                         <th>Auth type</th>
+                        <th>Synchronizer ID</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -31,6 +32,7 @@ export class NetworkTable extends LitElement {
                                 <td>${net.networkId}</td>
                                 <td>${net.description}</td>
                                 <td>${net.auth.type}</td>
+                                <td>${net.synchronizerId}</td>
                                 <td class="actions">
                                     <button>Update</button>
                                     <button

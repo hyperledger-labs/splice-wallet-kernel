@@ -22,7 +22,7 @@ export class UserUiNetworks extends LitElement {
 
     private async listNetworks() {
         const response = await userClient.request('listNetworks')
-        this.networks = response.networks as NetworkConfig[]
+        this.networks = response.networks
     }
 
     connectedCallback(): void {
@@ -78,6 +78,7 @@ export class UserUiNetworks extends LitElement {
 
         const networkParam: Network = {
             networkId: formData.get('networkId') as string,
+            synchronizerId: formData.get('synchronizerId') as string,
             name: formData.get('name') as string,
             description: formData.get('description') as string,
         }
@@ -103,6 +104,7 @@ export class UserUiNetworks extends LitElement {
 
     protected render() {
         return html`
+            <user-ui-nav></user-ui-nav>
             <div class="header"><h1>Networks</h1></div>
             <button class="buttons" @click=${this.openAddModal}>
                 Add Network
