@@ -1,10 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as process from 'process'
-import { blue, green, italic, red, yellow } from 'yoctocolors'
+import { white, green, italic, red, yellow } from 'yoctocolors'
 import * as jsonc from 'jsonc-parser'
 
-export const info = (message: string): string => italic(blue(message))
+export const info = (message: string): string => italic(white(message))
 export const warn = (message: string): string => yellow(message)
 export const error = (message: string): string => red(message)
 export const success = (message: string): string => green(message)
