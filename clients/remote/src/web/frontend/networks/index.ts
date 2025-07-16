@@ -77,7 +77,7 @@ export class UserUiNetworks extends LitElement {
         }
 
         const networkParam: Network = {
-            networkId: formData.get('networkId') as string,
+            chainId: formData.get('chainId') as string,
             synchronizerId: formData.get('synchronizerId') as string,
             name: formData.get('name') as string,
             description: formData.get('description') as string,

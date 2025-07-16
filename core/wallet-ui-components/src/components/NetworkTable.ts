@@ -29,7 +29,7 @@ export class NetworkTable extends LitElement {
                         (net) => html`
                             <tr>
                                 <td>${net.name}</td>
-                                <td>${net.networkId}</td>
+                                <td>${net.chainId}</td>
                                 <td>${net.description}</td>
                                 <td>${net.auth.type}</td>
                                 <td>${net.synchronizerId}</td>

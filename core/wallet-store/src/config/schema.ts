@@ -27,7 +27,7 @@ export const authSchema = z.discriminatedUnion('type', [
 
 export const networkConfigSchema = z.object({
     name: z.string(),
-    networkId: z.string(),
+    chainId: z.string(),
     synchronizerId: z.string(),
     description: z.string(),
     ledgerApi: ledgerApiSchema,

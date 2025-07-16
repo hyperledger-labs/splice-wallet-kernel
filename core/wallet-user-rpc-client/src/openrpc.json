@@ -99,8 +99,8 @@
                                 "type": "string",
                                 "description": "The party hint and name of the wallet."
                             },
-                            "networkId": {
-                                "title": "networkId",
+                            "chainId": {
+                                "title": "chainId",
                                 "type": "string",
                                 "description": "The network ID the wallet corresponds to."
                             },
@@ -112,7 +112,7 @@
                         },
                         "required": [
                             "partyHint",
-                            "networkId",
+                            "chainId",
                             "signingProviderId"
                         ]
                     }
@@ -327,13 +327,13 @@
                         "title": "AddSessionParams",
                         "type": "object",
                         "properties": {
-                            "networkId": {
-                                "title": "networkId",
+                            "chainId": {
+                                "title": "chainId",
                                 "type": "string",
                                 "description": "Network Id"
                             }
                         },
-                        "required": ["networkId"]
+                        "required": ["chainId"]
                     }
                 }
             ],
@@ -386,18 +386,13 @@
                         "type": "string",
                         "description": "Synchronizer ID"
                     },
-                    "networkId": {
-                        "title": "networkId",
+                    "chainId": {
+                        "title": "chainId",
                         "type": "string",
                         "description": "Network Id"
                     }
                 },
-                "required": [
-                    "name",
-                    "description",
-                    "networkId",
-                    "synchronizerId"
-                ]
+                "required": ["name", "description", "chainId", "synchronizerId"]
             },
             "Auth": {
                 "title": "type",
@@ -465,8 +460,8 @@
                         "type": "string",
                         "description": "The namespace of the party."
                     },
-                    "networkId": {
-                        "title": "networkId",
+                    "chainId": {
+                        "title": "chainId",
                         "type": "string",
                         "description": "The network ID the wallet corresponds to."
                     },
@@ -482,7 +477,7 @@
                     "hint",
                     "publicKey",
                     "namespace",
-                    "networkId",
+                    "chainId",
                     "signingProviderId"
                 ]
             },
@@ -491,12 +486,12 @@
                 "type": "object",
                 "description": "Filter for wallets",
                 "properties": {
-                    "networkIds": {
-                        "title": "networkIds",
+                    "chainIds": {
+                        "title": "chainIds",
                         "type": "array",
                         "description": "Filter wallets by network IDs.",
                         "items": {
-                            "title": "networkId",
+                            "title": "chainId",
                             "type": "string"
                         }
                     },
