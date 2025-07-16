@@ -47,9 +47,9 @@ export class NetworkForm extends LitElement {
                     required
                 />
                 <input
-                    name="networkId"
+                    name="chainId"
                     placeholder="Network Id"
-                    .value=${this.editingNetwork?.networkId ?? ''}
+                    .value=${this.editingNetwork?.chainId ?? ''}
                     required
                 />
                 <input

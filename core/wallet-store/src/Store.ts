@@ -20,7 +20,7 @@ export interface SigningProvider {
 }
 
 export interface WalletFilter {
-    networkIds?: string[]
+    chainIds?: string[]
     signingProviderIds?: string[]
 }
 
@@ -30,7 +30,7 @@ export interface Wallet {
     hint: string
     publicKey: string
     namespace: string
-    networkId: string
+    chainId: string
     signingProviderId: string
 }
 
@@ -65,12 +65,12 @@ export interface Store {
     removeSession(): Promise<void>
 
     // Network methods
-    getNetwork(name: string): Promise<NetworkConfig>
+    getNetwork(chainId: string): Promise<NetworkConfig>
     getCurrentNetwork(): Promise<NetworkConfig>
     listNetworks(): Promise<Array<NetworkConfig>>
     updateNetwork(network: NetworkConfig): Promise<void>
     addNetwork(network: NetworkConfig): Promise<void>
-    removeNetwork(name: string): Promise<void>
+    removeNetwork(chainId: string): Promise<void>
 
     // Transaction methods
     setTransaction(tx: Transaction): Promise<void>

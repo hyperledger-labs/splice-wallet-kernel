@@ -28,7 +28,7 @@ describe('StoreInternal', () => {
             signingProviderId: 'internal',
             publicKey: 'publicKey',
             namespace: 'namespace',
-            networkId: 'network1',
+            chainId: 'network1',
         }
         await store.addWallet(wallet)
         const wallets = await store.getWallets()
@@ -43,7 +43,7 @@ describe('StoreInternal', () => {
             signingProviderId: 'internal1',
             publicKey: 'publicKey',
             namespace: 'namespace',
-            networkId: 'network1',
+            chainId: 'network1',
         }
         const wallet2: Wallet = {
             primary: false,
@@ -52,7 +52,7 @@ describe('StoreInternal', () => {
             signingProviderId: 'internal2',
             publicKey: 'publicKey',
             namespace: 'namespace',
-            networkId: 'network1',
+            chainId: 'network1',
         }
         const wallet3: Wallet = {
             primary: false,
@@ -61,27 +61,26 @@ describe('StoreInternal', () => {
             signingProviderId: 'internal2',
             publicKey: 'publicKey',
             namespace: 'namespace',
-            networkId: 'network2',
+            chainId: 'network2',
         }
         await store.addWallet(wallet1)
         await store.addWallet(wallet2)
         await store.addWallet(wallet3)
         const getAllWallets = await store.getWallets()
-        const getWalletsByNetworkId = await store.getWallets({
-            networkIds: ['network1'],
+        const getWalletsByChainId = await store.getWallets({
+            chainIds: ['network1'],
         })
         const getWalletsBySigningProviderId = await store.getWallets({
             signingProviderIds: ['internal2'],
         })
-        const getWalletsByNetworkIdAndSigningProviderId =
-            await store.getWallets({
-                networkIds: ['network1'],
-                signingProviderIds: ['internal2'],
-            })
+        const getWalletsByChainIdAndSigningProviderId = await store.getWallets({
+            chainIds: ['network1'],
+            signingProviderIds: ['internal2'],
+        })
         expect(getAllWallets).toHaveLength(3)
-        expect(getWalletsByNetworkId).toHaveLength(2)
+        expect(getWalletsByChainId).toHaveLength(2)
         expect(getWalletsBySigningProviderId).toHaveLength(2)
-        expect(getWalletsByNetworkIdAndSigningProviderId).toHaveLength(1)
+        expect(getWalletsByChainIdAndSigningProviderId).toHaveLength(1)
     })
 
     test('should set and get primary wallet', async () => {
@@ -92,7 +91,7 @@ describe('StoreInternal', () => {
             signingProviderId: 'internal',
             publicKey: 'publicKey',
             namespace: 'namespace',
-            networkId: 'network1',
+            chainId: 'network1',
         }
         const wallet2: Wallet = {
             primary: false,
@@ -101,7 +100,7 @@ describe('StoreInternal', () => {
             signingProviderId: 'internal',
             publicKey: 'publicKey',
             namespace: 'namespace',
-            networkId: 'network1',
+            chainId: 'network1',
         }
         await store.addWallet(wallet1)
         await store.addWallet(wallet2)
@@ -132,7 +131,7 @@ describe('StoreInternal', () => {
         }
         const network: NetworkConfig = {
             name: 'testnet',
-            networkId: 'network1',
+            chainId: 'network1',
             synchronizerId: 'sync1::fingerprint',
             description: 'Test Network',
             ledgerApi,
@@ -143,10 +142,10 @@ describe('StoreInternal', () => {
         expect(listed).toHaveLength(1)
         expect(listed[0].name).toBe('testnet')
 
-        const fetched = await store.getNetwork('testnet')
+        const fetched = await store.getNetwork('network1')
         expect(fetched.description).toBe('Test Network')
 
-        await store.removeNetwork('testnet')
+        await store.removeNetwork('network1')
         const afterRemove = await store.listNetworks()
         expect(afterRemove).toHaveLength(0)
     })

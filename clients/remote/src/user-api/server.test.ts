@@ -54,8 +54,8 @@ test('call connect rpc', async () => {
         result: {
             networks: [
                 {
-                    name: 'Password Auth',
-                    networkId: 'canton:local',
+                    name: 'Local (password IDP)',
+                    chainId: 'canton:local-password',
                     synchronizerId:
                         'wallet::1220aa7665e1190b584acc00a808f6a11a0a96aebf171f6f9a78d343b34461752ea2::34-0',
                     description: 'Unimplemented Password Auth',
@@ -69,8 +69,8 @@ test('call connect rpc', async () => {
                     },
                 },
                 {
-                    name: 'Mock OAuth Server',
-                    networkId: 'canton:local',
+                    name: 'Local (OAuth IDP)',
+                    chainId: 'canton:local-oauth',
                     synchronizerId:
                         'wallet::1220aa7665e1190b584acc00a808f6a11a0a96aebf171f6f9a78d343b34461752ea2::34-0',
                     description: 'Mock OAuth IDP',

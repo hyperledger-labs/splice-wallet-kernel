@@ -51,7 +51,7 @@ export class LoginCallback extends LitElement {
                 await userClient.transport.submit({
                     method: 'addSession',
                     params: {
-                        networkId: 'canton:local', // TODO: get from local storage or use inline callback in login.ts
+                        chainId: 'canton:local-oauth', // TODO: get from local storage or use inline callback in login.ts
                     },
                 })
 
