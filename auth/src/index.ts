@@ -12,11 +12,16 @@ async function main() {
     service.on('beforeTokenSigning', (token, req) => {
         console.log(req.body)
         const credentials = basicAuth(req)
-        token.payload.iss = 'http://127.0.0.1:8889'
         const clientId = credentials ? credentials.name : req.body.client_id
+
+        const issuer: string =
+            clientId === 'operator' ? '' : 'http://127.0.0.1:8889'
+
+        token.payload.iss = issuer
         const aud = req.body.audience
         token.payload.sub = clientId
         token.payload.aud = aud
+        token.payload.scope = 'daml_ledger_api'
     })
 }
 

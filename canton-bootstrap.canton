@@ -55,25 +55,13 @@ utils.retry_until_true {
     participant1.synchronizers.active("wallet")
 }
 
-logger.info(s"WALLET-KERNEL-BOOTSTRAP: Creating IDP idp-id1")
-participant1.ledger_api.identity_provider_config.create("idp-id1", isDeactivated = false, jwksUrl = "http://127.0.0.1:8889/jwks", issuer = "http://127.0.0.1:8889", audience = Some("https://daml.com/jwt/aud/participant/wallet-kernel"))
-
-
 logger.info(s"WALLET-KERNEL-BOOTSTRAP: Creating operator user and party")
 val operatorParty = participant1.ledger_api.parties.allocate("operator").party
-participant1.ledger_api.users.create("operator", Set(operatorParty), Some(operatorParty))
 
+participant1.ledger_api.users.create(id = "operator", actAs = Set(operatorParty), readAs = Set(operatorParty), primaryParty = Some(operatorParty), participantAdmin = true, isDeactivated = false, annotations = Map("foo" -> "bar", "description" -> "This is a description"))
 
-val serviceAccountId = "Cg9zZXJ2aWNlLmFjY291bnQSBWxvY2Fs"
-participant1.ledger_api.users
-  .create(
-    id = serviceAccountId,
-    primaryParty = Some(operatorParty),
-    actAs = Set(),
-    readAs = Set(),
-    participantAdmin = true,
-    isDeactivated = false,
-    identityProviderAdmin = true,
-    identityProviderId = "idp-id1",
-    annotations = Map("email" -> "email", "name" -> "name")
-  )
+logger.info(s"WALLET-KERNEL-BOOTSTRAP: created operator user and party")
+
+val parId = participant1.id.toLengthLimitedString
+
+logger.info(s"WALLET-KERNEL-BOOTSTRAP ParticipantId is: $parId")
