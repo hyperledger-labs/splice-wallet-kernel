@@ -42,7 +42,6 @@ export interface Session {
 }
 
 export interface Transaction {
-    // TODO: reuse same status enum as TxChanged event type
     status: 'pending' | 'signed' | 'executed' | 'failed'
     commandId: string
     preparedTransaction: string

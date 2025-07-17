@@ -28,25 +28,22 @@ function App() {
             })
             .catch(() => setStatus('disconnected'))
 
-        // Listen for connected events from the provider
-        // This will be triggered when the user connects to the wallet kernel
-        provider.on<sdk.dappAPI.OnConnectedEvent>('onConnected', (result) => {
-            console.log('DAPP: Connected to Wallet Kernel:', result)
-            setStatus(
-                `Wallet Kernel: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
-            )
-            setMessages((prev) => [...prev, JSON.stringify(result)])
-        })
-
         const messageListener = (event: unknown) => {
             setMessages((prev) => [...prev, JSON.stringify(event)])
         }
 
-        const onAccountsChanged = (event: unknown) => {
-            const wallets = event as { primary: boolean; partyId: string }[]
+        const onConnected = (result: sdk.dappAPI.OnConnectedEvent) => {
+            console.log('DAPP: Connected to Wallet Kernel:', result)
+            messageListener(result)
+            setStatus(
+                `Wallet Kernel: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
+            )
+        }
 
-            setMessages((prev) => [...prev, JSON.stringify(event)])
-
+        const onAccountsChanged = (
+            wallets: sdk.dappAPI.AccountsChangedEvent
+        ) => {
+            messageListener(wallets)
             if (wallets.length > 0) {
                 const primaryWallet = wallets.find((w) => w.primary)
                 setPrimaryParty(primaryWallet?.partyId)
@@ -55,14 +52,17 @@ function App() {
             }
         }
 
-        if (provider) {
-            provider.on('connect', messageListener)
-            provider.on('txChanged', messageListener)
-            provider.on('accountsChanged', onAccountsChanged)
-        }
+        // Listen for connected events from the provider
+        // This will be triggered when the user connects to the wallet kernel
+        provider.on<sdk.dappAPI.OnConnectedEvent>('onConnected', onConnected)
+        provider.on<sdk.dappAPI.TxChangedEvent>('txChanged', messageListener)
+        provider.on<sdk.dappAPI.AccountsChangedEvent>(
+            'accountsChanged',
+            onAccountsChanged
+        )
 
         return () => {
-            provider.removeListener('onConnected', messageListener)
+            provider.removeListener('onConnected', onConnected)
             provider.removeListener('txChanged', messageListener)
             provider.removeListener('accountsChanged', onAccountsChanged)
         }

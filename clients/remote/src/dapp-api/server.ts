@@ -65,6 +65,7 @@ export const dapp = (
                 }
 
                 const notifier = notificationService.getNotifier(userId)
+
                 notifier.on('accountsChanged', (wallets) => {
                     socket.emit('accountsChanged', wallets)
                 })

@@ -24,7 +24,9 @@ const configFile = ConfigUtils.loadConfigFile(configPath)
 const config = configSchema.parse(configFile)
 
 const store = new StoreInternal(config.store)
-const ledgerClient = new LedgerClient('http://localhost:5003')
+const ledgerClient = new LedgerClient('http://localhost:5003', async () => {
+    return ''
+})
 
 const notificationService = {
     getNotifier: jest.fn<() => Notifier>().mockReturnValue({

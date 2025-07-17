@@ -25,7 +25,9 @@ const configFile = ConfigUtils.loadConfigFile(configPath)
 const config = configSchema.parse(configFile)
 const store = new StoreInternal(config.store)
 
-const ledgerClient = new LedgerClient('http://localhost:5003')
+const ledgerClient = new LedgerClient('http://localhost:5003', () =>
+    Promise.resolve('fake-token')
+)
 
 const notificationService = {
     getNotifier: jest.fn<() => Notifier>().mockReturnValue({
@@ -60,7 +62,6 @@ test('call connect rpc', async () => {
                 url: 'http://localhost:3000/rpc',
             },
             isConnected: false,
-            chainId: 'default-chain-id',
             userUrl: 'http://localhost:3002/login/',
         },
     })

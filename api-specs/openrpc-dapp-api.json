@@ -213,6 +213,26 @@
                 }
             },
             "description": "Informs when the user connects to a network."
+        },
+        {
+            "name": "onAccountsChanged",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/AccountsChangedEvent"
+                }
+            }
+        },
+        {
+            "name": "onTxChanged",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/TxChangedEvent"
+                }
+            }
         }
     ],
     "components": {
@@ -285,6 +305,157 @@
                         "description": "The hash of the prepared transaction."
                     }
                 }
+            },
+            "AccountsChangedEvent": {
+                "title": "AccountsChangedEvent",
+                "type": "array",
+                "description": "Event emitted when the user's accounts change.",
+                "items": {
+                    "$ref": "api-specs/openrpc-user-api.json#/components/schemas/Wallet"
+                }
+            },
+            "CommandId": {
+                "title": "CommandId",
+                "type": "string",
+                "description": "The unique identifier of the command associated with the transaction."
+            },
+            "TxChangedPendingEvent": {
+                "title": "TxChangedPendingEvent",
+                "description": "Event emitted when a transaction is pending.",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "status": {
+                        "title": "statusPending",
+                        "type": "string",
+                        "enum": ["pending"],
+                        "description": "The status of the transaction."
+                    },
+                    "commandId": {
+                        "$ref": "#/components/schemas/CommandId"
+                    }
+                },
+                "required": ["status", "commandId"]
+            },
+            "TxChangedSignedPayload": {
+                "type": "object",
+                "title": "TxChangedSignedPayload",
+                "description": "Payload for the TxChangedSignedEvent.",
+                "additionalProperties": false,
+                "properties": {
+                    "signature": {
+                        "title": "signature",
+                        "type": "string",
+                        "description": "The signature of the transaction."
+                    },
+                    "signedBy": {
+                        "title": "signedBy",
+                        "type": "string",
+                        "description": "The identifier of the provider that signed the transaction."
+                    },
+                    "party": {
+                        "title": "party",
+                        "type": "string",
+                        "description": "The party that signed the transaction."
+                    }
+                },
+                "required": ["signature", "signedBy", "party"]
+            },
+            "TxChangedSignedEvent": {
+                "title": "TxChangedSignedEvent",
+                "description": "Event emitted when a transaction has been signed.",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "status": {
+                        "title": "statusSigned",
+                        "type": "string",
+                        "enum": ["signed"],
+                        "description": "The status of the transaction."
+                    },
+                    "commandId": {
+                        "$ref": "#/components/schemas/CommandId"
+                    },
+                    "payload": {
+                        "$ref": "#/components/schemas/TxChangedSignedPayload"
+                    }
+                },
+                "required": ["status", "commandId", "payload"]
+            },
+            "TxChangedExecutedPayload": {
+                "type": "object",
+                "title": "TxChangedExecutedPayload",
+                "description": "Payload for the TxChangedExecutedEvent.",
+                "additionalProperties": false,
+                "properties": {
+                    "updateId": {
+                        "title": "updateId",
+                        "type": "string",
+                        "description": "The update ID corresponding to the transaction."
+                    },
+                    "completionOffset": {
+                        "title": "completionOffset",
+                        "type": "integer"
+                    }
+                },
+                "required": ["updateId", "completionOffset"]
+            },
+            "TxChangedExecutedEvent": {
+                "title": "TxChangedExecutedEvent",
+                "description": "Event emitted when a transaction is executed against the participant.",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "status": {
+                        "title": "statusExecuted",
+                        "type": "string",
+                        "enum": ["executed"],
+                        "description": "The status of the transaction."
+                    },
+                    "commandId": {
+                        "$ref": "#/components/schemas/CommandId"
+                    },
+                    "payload": {
+                        "$ref": "#/components/schemas/TxChangedExecutedPayload"
+                    }
+                },
+                "required": ["status", "commandId", "payload"]
+            },
+            "TxChangedFailedEvent": {
+                "title": "TxChangedFailedEvent",
+                "description": "Event emitted when a transaction has failed.",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "status": {
+                        "title": "statusFailed",
+                        "type": "string",
+                        "enum": ["failed"],
+                        "description": "The status of the transaction."
+                    },
+                    "commandId": {
+                        "$ref": "#/components/schemas/CommandId"
+                    }
+                },
+                "required": ["status", "commandId"]
+            },
+            "TxChangedEvent": {
+                "title": "TxChangedEvent",
+                "description": "Event emitted when a transaction changes.",
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/TxChangedPendingEvent"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TxChangedSignedEvent"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TxChangedExecutedEvent"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TxChangedFailedEvent"
+                    }
+                ]
             }
         }
     }

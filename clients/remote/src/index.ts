@@ -11,12 +11,38 @@ import { LedgerClient } from 'core-ledger-client'
 import { Notifier } from './notification/NotificationService.js'
 import EventEmitter from 'events'
 import { createRemoteJWKSet, jwtVerify } from 'jose'
+import axios from 'axios'
+import qs from 'qs'
 
 const dAppPort = 3000
 const userPort = 3001
 const webPort = 3002
 
 const logger = pino({ name: 'main', level: 'debug' })
+
+const getServiceToken = async () => {
+    //TODO: get this from config
+    const tokenEndpoint = 'http://localhost:8082/token'
+    const clientId = 'operator'
+    const clientSecret = 'service-account-secret'
+    const audience =
+        'https://daml.com/jwt/aud/participant/participant1::12204896f5edaba049a658f4d09f12d7c7f762a3fecfae6bdd4f96c7b704f90c2b42'
+
+    const data = {
+        grant_type: 'client_credentials',
+        client_id: clientId,
+        client_secret: clientSecret,
+        audience,
+    }
+
+    const response = await axios.post(tokenEndpoint, qs.stringify(data), {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+    })
+
+    return response.data.accessToken
+}
 
 export class NotificationService implements NotificationService {
     private notifiers: Map<string, Notifier> = new Map()
@@ -72,7 +98,9 @@ const authService: AuthService = {
 }
 
 const store = new StoreInternal(config.store)
-const ledgerClient = new LedgerClient('http://localhost:5003')
+
+//TODO: potentially create a map of <networkId, ledgerClients> based off of config
+const ledgerClient = new LedgerClient('http://localhost:5003', getServiceToken)
 
 export const dAppServer = dapp(
     config.kernel,

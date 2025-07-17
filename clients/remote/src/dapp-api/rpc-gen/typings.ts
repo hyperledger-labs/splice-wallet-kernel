@@ -49,7 +49,7 @@ export interface KernelInfo {
 export type IsConnected = boolean
 /**
  *
- * A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'.
+ * The network ID the wallet corresponds to.
  *
  */
 export type ChainId = string
@@ -90,6 +90,169 @@ export type Response = string
  *
  */
 export type SessionToken = string
+/**
+ *
+ * Set as primary wallet for dApp usage.
+ *
+ */
+export type Primary = boolean
+/**
+ *
+ * The party ID corresponding to the wallet.
+ *
+ */
+export type PartyId = string
+/**
+ *
+ * The party hint and name of the wallet.
+ *
+ */
+export type Hint = string
+/**
+ *
+ * The public key of the party.
+ *
+ */
+export type PublicKey = string
+/**
+ *
+ * The namespace of the party.
+ *
+ */
+export type Namespace = string
+/**
+ *
+ * The signing provider ID the wallet corresponds to.
+ *
+ */
+export type SigningProviderId = string
+/**
+ *
+ * Structure representing a wallet
+ *
+ */
+export interface Wallet {
+    primary: Primary
+    partyId: PartyId
+    hint: Hint
+    publicKey: PublicKey
+    namespace: Namespace
+    chainId: ChainId
+    signingProviderId: SigningProviderId
+    [k: string]: any
+}
+/**
+ *
+ * The status of the transaction.
+ *
+ */
+export type StatusPending = 'pending'
+/**
+ *
+ * The unique identifier of the command associated with the transaction.
+ *
+ */
+export type CommandId = string
+/**
+ *
+ * Event emitted when a transaction is pending.
+ *
+ */
+export interface TxChangedPendingEvent {
+    status: StatusPending
+    commandId: CommandId
+}
+/**
+ *
+ * The status of the transaction.
+ *
+ */
+export type StatusSigned = 'signed'
+/**
+ *
+ * The signature of the transaction.
+ *
+ */
+export type Signature = string
+/**
+ *
+ * The identifier of the provider that signed the transaction.
+ *
+ */
+export type SignedBy = string
+/**
+ *
+ * The party that signed the transaction.
+ *
+ */
+export type Party = string
+/**
+ *
+ * Payload for the TxChangedSignedEvent.
+ *
+ */
+export interface TxChangedSignedPayload {
+    signature: Signature
+    signedBy: SignedBy
+    party: Party
+}
+/**
+ *
+ * Event emitted when a transaction has been signed.
+ *
+ */
+export interface TxChangedSignedEvent {
+    status: StatusSigned
+    commandId: CommandId
+    payload: TxChangedSignedPayload
+}
+/**
+ *
+ * The status of the transaction.
+ *
+ */
+export type StatusExecuted = 'executed'
+/**
+ *
+ * The update ID corresponding to the transaction.
+ *
+ */
+export type UpdateId = string
+export type CompletionOffset = number
+/**
+ *
+ * Payload for the TxChangedExecutedEvent.
+ *
+ */
+export interface TxChangedExecutedPayload {
+    updateId: UpdateId
+    completionOffset: CompletionOffset
+}
+/**
+ *
+ * Event emitted when a transaction is executed against the participant.
+ *
+ */
+export interface TxChangedExecutedEvent {
+    status: StatusExecuted
+    commandId: CommandId
+    payload: TxChangedExecutedPayload
+}
+/**
+ *
+ * The status of the transaction.
+ *
+ */
+export type StatusFailed = 'failed'
+/**
+ *
+ * Event emitted when a transaction has failed.
+ *
+ */
+export interface TxChangedFailedEvent {
+    status: StatusFailed
+    commandId: CommandId
+}
 export interface PrepareReturnParams {
     commands: JsCommands
     [k: string]: any
@@ -143,6 +306,22 @@ export interface OnConnectedEvent {
 }
 /**
  *
+ * Event emitted when the user's accounts change.
+ *
+ */
+export type AccountsChangedEvent = Wallet[]
+/**
+ *
+ * Event emitted when a transaction changes.
+ *
+ */
+export type TxChangedEvent =
+    | TxChangedPendingEvent
+    | TxChangedSignedEvent
+    | TxChangedExecutedEvent
+    | TxChangedFailedEvent
+/**
+ *
  * Generated! Represents an alias to any of the provided schemas
  *
  */
@@ -158,3 +337,5 @@ export type PrepareExecute = (
 ) => Promise<PrepareExecuteResult>
 export type LedgerApi = (params: LedgerApiParams) => Promise<LedgerApiResult>
 export type OnConnected = () => Promise<OnConnectedEvent>
+export type OnAccountsChanged = () => Promise<AccountsChangedEvent>
+export type OnTxChanged = () => Promise<TxChangedEvent>
