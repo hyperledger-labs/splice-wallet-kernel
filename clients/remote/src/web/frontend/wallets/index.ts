@@ -132,7 +132,7 @@ export class UserUiWallets extends LitElement {
         const partyHint = this._partyHintInput?.value || ''
         const primary = this._primaryCheckbox?.checked || false
         const signingProviderId = this.selectedSigningProvider
-        const chainId = 'placeholder-network-id'
+        const chainId = 'canton:local-oauth'
 
         const body: CreateWalletParams = {
             primary,
