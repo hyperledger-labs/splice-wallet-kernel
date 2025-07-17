@@ -16,6 +16,8 @@ const userPort = 3001
 const webPort = 3002
 
 const logger = pino({ name: 'main', level: 'debug' })
+const fakeToken =
+    'eyJraWQiOiJjNTdhNTAxNzk4NmYwYzMxNjgyMGQyMmE4MGEyMWZlMjMwODI5NTVmYjkyYzUzYWJjYWE2NDA3ZWE3NmIyNTEzNzBiOTU0MGI3ZDkxYThhNiIsInR5cCI6IkpXVCIsImFsZyI6IlJTMjU2In0.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODIiLCJpYXQiOjE3NTI3Njc2NjQsImV4cCI6MTc1Mjc3MTI2NCwibmJmIjoxNzUyNzY3NjU0LCJzdWIiOiJqb2huZG9lIiwiYW1yIjpbInB3ZCJdLCJzY29wZSI6ImR1bW15In0.aKWl3q-zuTEFNKRMY5nWOnw3VzA-tJWnN5-HocuNJXlh0vpRIcD8BgxTDEhhn05mt5-xkzVvtzztKNIZs2IWTZUGGFBokvBRiPXO7aJByo4SVSYbHw5xN4XVq2wJ2KukWxls46av97dPJR3fsPBZUtp8QmaIv9woA7KBWejUIJpCJxHR6VTPptw8XmcjTE5v8YZdyl7k-GnAfyrHAGfiorkfTwfUPl29wVg2ABRaBz6iVc2lEkeLn1SRixFi8PM4j8DszceQNYA3Ut2Lr-L5IpahynrST0Fcswe7leDVrNMvT360FahyUmdYifdSgb1YIdQDjACKiONLfNnxEgeZ5A'
 
 const authService: AuthService = {
     verifyToken: async (accessToken?: string) => {
@@ -50,7 +52,9 @@ const configFile = ConfigUtils.loadConfigFile(configPath)
 const config = configSchema.parse(configFile)
 
 const store = new StoreInternal(config.store)
-const ledgerClient = new LedgerClient('http://localhost:5003')
+const ledgerClient = new LedgerClient('http://localhost:5003', async () => {
+    return fakeToken
+})
 
 export const dAppServer = dapp(
     config.kernel,

@@ -3191,7 +3191,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/qs@npm:*":
+"@types/qs@npm:*, @types/qs@npm:^6":
   version: 6.14.0
   resolution: "@types/qs@npm:6.14.0"
   checksum: 10c0/5b3036df6e507483869cdb3858201b2e0b64b4793dc4974f188caa5b5732f2333ab9db45c08157975054d3b070788b35088b4bc60257ae263885016ee2131310
@@ -4110,7 +4110,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.5.0, axios@npm:^1.6.7":
+"axios@npm:^1.10.0, axios@npm:^1.5.0, axios@npm:^1.6.7":
   version: 1.10.0
   resolution: "axios@npm:1.10.0"
   dependencies:
@@ -4873,7 +4873,9 @@ __metadata:
     "@types/express": "npm:^5.0.2"
     "@types/jest": "npm:^29.5.14"
     "@types/node": "npm:^22.15.30"
+    "@types/qs": "npm:^6"
     "@types/supertest": "npm:^6.0.3"
+    axios: "npm:^1.10.0"
     core-ledger-client: "workspace:^"
     core-types: "workspace:^"
     core-wallet-auth: "workspace:^"
@@ -4886,8 +4888,10 @@ __metadata:
     express-rate-limit: "npm:^7.5.1"
     jest: "npm:^29.7.0"
     lit: "npm:^3.3.0"
+    oidc-client-ts: "npm:^3.3.0"
     pino: "npm:^9.7.0"
     pino-pretty: "npm:^13.0.0"
+    qs: "npm:^6.14.0"
     socket.io: "npm:^4.8.1"
     supertest: "npm:^7.1.1"
     ts-jest-resolver: "npm:^2.0.1"
@@ -9054,6 +9058,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jwt-decode@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "jwt-decode@npm:4.0.0"
+  checksum: 10c0/de75bbf89220746c388cf6a7b71e56080437b77d2edb29bae1c2155048b02c6b8c59a3e5e8d6ccdfd54f0b8bda25226e491a4f1b55ac5f8da04cfbadec4e546c
+  languageName: node
+  linkType: hard
+
 "keyv@npm:^4.5.3, keyv@npm:^4.5.4":
   version: 4.5.4
   resolution: "keyv@npm:4.5.4"
@@ -9979,6 +9990,15 @@ __metadata:
   version: 1.13.4
   resolution: "object-inspect@npm:1.13.4"
   checksum: 10c0/d7f8711e803b96ea3191c745d6f8056ce1f2496e530e6a19a0e92d89b0fa3c76d910c31f0aa270432db6bd3b2f85500a376a83aaba849a8d518c8845b3211692
+  languageName: node
+  linkType: hard
+
+"oidc-client-ts@npm:^3.3.0":
+  version: 3.3.0
+  resolution: "oidc-client-ts@npm:3.3.0"
+  dependencies:
+    jwt-decode: "npm:^4.0.0"
+  checksum: 10c0/f749a0718df00009a4c75a656b7a32e45064b9e30db2cb9df77bdd01a136ed84e1aa29075c18941b644c1fbf6b0bf61d78d2cd0af381336d2c0a6d3420aead82
   languageName: node
   linkType: hard
 
