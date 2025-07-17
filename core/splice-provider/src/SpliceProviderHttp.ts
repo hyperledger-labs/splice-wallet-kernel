@@ -56,10 +56,6 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                     `SpliceProviderHttp: setting sessionToken to ${this.sessionToken}`
                 )
                 this.openSocket(this.url)
-
-                this.request({ method: 'status' }).then((resp) => {
-                    return this.emit('onConnected', resp)
-                })
             }
         })
     }
