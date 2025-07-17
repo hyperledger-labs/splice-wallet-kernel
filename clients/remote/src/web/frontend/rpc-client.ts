@@ -33,7 +33,7 @@ class HttpTransport implements RpcTransport {
         })
 
         if (!response.ok) {
-            if (response.status === 401 || response.status === 403) {
+            if (response.status === 401) {
                 // Handle unauthorized access, e.g., clear token
                 tokenManager.clearAccessToken()
             }

@@ -52,7 +52,6 @@ export const dappController = (
         connect: async () => ({
             kernel: kernelInfo,
             isConnected: false,
-            chainId: 'default-chain-id',
             userUrl: 'http://localhost:3002/login/',
         }),
         darsAvailable: async () => ({ dars: ['default-dar'] }),

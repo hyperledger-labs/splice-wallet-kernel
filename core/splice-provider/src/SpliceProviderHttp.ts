@@ -4,7 +4,7 @@ import {
     RequestPayload,
     WalletEvent,
 } from 'core-types'
-import { EventListener, SpliceProviderBase } from './SpliceProvider'
+import { SpliceProviderBase } from './SpliceProvider'
 import { io, Socket } from 'socket.io-client'
 import { popupHref } from 'core-wallet-ui-components'
 
@@ -21,12 +21,18 @@ export class SpliceProviderHttp extends SpliceProviderBase {
             this.socket.disconnect()
         }
 
-        return io(socketUrl.href, {
+        const socket = io(socketUrl.href, {
             forceNew: true,
             auth: {
                 token: `Bearer ${this.sessionToken}`,
             },
         })
+
+        socket.onAny((event, ...args) => {
+            this.emit(event, ...args)
+        })
+
+        return socket
     }
 
     constructor(
@@ -49,9 +55,11 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 console.log(
                     `SpliceProviderHttp: setting sessionToken to ${this.sessionToken}`
                 )
-                this.socket.auth = {
-                    token: `Bearer ${this.sessionToken}`,
-                }
+                this.openSocket(this.url)
+
+                this.request({ method: 'status' }).then((resp) => {
+                    return this.emit('onConnected', resp)
+                })
             }
         })
     }
@@ -94,27 +102,5 @@ export class SpliceProviderHttp extends SpliceProviderBase {
         }
 
         return body.result as T
-    }
-
-    // Re-alias the event methods directly to the socket instance
-    override on<T>(
-        event: string,
-        listener: EventListener<T>
-    ): SpliceProviderHttp {
-        this.socket.on(event, listener)
-        return this
-    }
-
-    override emit<T>(event: string, ...args: T[]): boolean {
-        this.socket.emit(event, ...args)
-        return true
-    }
-
-    override removeListener<T>(
-        event: string,
-        listenerToRemove: EventListener<T>
-    ): SpliceProviderHttp {
-        this.socket.removeListener(event, listenerToRemove)
-        return this
     }
 }

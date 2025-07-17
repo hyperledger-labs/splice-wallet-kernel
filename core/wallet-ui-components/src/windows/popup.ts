@@ -95,6 +95,7 @@ export function popupHref(
         )
 
         if (win) {
+            win.focus()
             resolve(win)
         } else {
             reject(new Error('Failed to open popup window.'))

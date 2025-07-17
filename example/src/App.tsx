@@ -62,11 +62,11 @@ function App() {
         }
 
         return () => {
-            provider?.removeListener('connect', messageListener)
-            provider?.removeListener('txChanged', messageListener)
-            provider?.removeListener('accountsChanged', onAccountsChanged)
+            provider.removeListener('onConnected', messageListener)
+            provider.removeListener('txChanged', messageListener)
+            provider.removeListener('accountsChanged', onAccountsChanged)
         }
-    }, [status])
+    }, [])
 
     function createPingContract() {
         setError('')
