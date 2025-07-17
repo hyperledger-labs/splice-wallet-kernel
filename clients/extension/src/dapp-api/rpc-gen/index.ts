@@ -7,6 +7,8 @@ import { PrepareReturn } from './typings.js'
 import { PrepareExecute } from './typings.js'
 import { LedgerApi } from './typings.js'
 import { OnConnected } from './typings.js'
+import { OnAccountsChanged } from './typings.js'
+import { OnTxChanged } from './typings.js'
 
 export type Methods = {
     status: Status
@@ -16,6 +18,8 @@ export type Methods = {
     prepareExecute: PrepareExecute
     ledgerApi: LedgerApi
     onConnected: OnConnected
+    onAccountsChanged: OnAccountsChanged
+    onTxChanged: OnTxChanged
 }
 
 function buildController(methods: Methods) {
@@ -27,6 +31,8 @@ function buildController(methods: Methods) {
         prepareExecute: methods.prepareExecute,
         ledgerApi: methods.ledgerApi,
         onConnected: methods.onConnected,
+        onAccountsChanged: methods.onAccountsChanged,
+        onTxChanged: methods.onTxChanged,
     }
 }
 

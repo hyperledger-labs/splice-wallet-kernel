@@ -32,14 +32,13 @@ if (connection) {
 }
 
 const onConnected = (provider: SpliceProvider, result: DiscoverResult) => {
-    provider.on('onConnected', (event) => {
+    provider.on<dappAPI.OnConnectedEvent>('onConnected', (event) => {
         console.log('SDK: Store connection')
-        const onCreatedEvent = event as dappAPI.OnConnectedEvent
         localStorage.setItem(
             SDK.LOCAL_STORAGE_KEY_CONNECTION,
             JSON.stringify({
                 ...result,
-                sessionToken: onCreatedEvent.sessionToken,
+                sessionToken: event.sessionToken,
             })
         )
     })
