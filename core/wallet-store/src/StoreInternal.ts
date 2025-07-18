@@ -187,6 +187,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     async updateNetwork(network: Network): Promise<void> {
+        this.assertConnected()
         this.removeNetwork(network.chainId) // Ensure no duplicates
         this.systemStorage.networks.push(network)
     }
@@ -203,6 +204,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     async removeNetwork(chainId: string): Promise<void> {
+        this.assertConnected()
         this.systemStorage.networks = this.systemStorage.networks.filter(
             (n) => n.chainId !== chainId
         )

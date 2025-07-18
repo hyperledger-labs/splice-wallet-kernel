@@ -34,17 +34,16 @@ function App() {
 
         const onConnected = (result: sdk.dappAPI.OnConnectedEvent) => {
             console.log('DAPP: Connected to Wallet Kernel:', result)
+            messageListener(result)
             setStatus(
                 `Wallet Kernel: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
             )
-            setMessages((prev) => [...prev, JSON.stringify(result)])
         }
 
-        const onAccountsChanged = (event: unknown) => {
-            const wallets = event as { primary: boolean; partyId: string }[]
-
-            setMessages((prev) => [...prev, JSON.stringify(event)])
-
+        const onAccountsChanged = (
+            wallets: sdk.dappAPI.AccountsChangedEvent
+        ) => {
+            messageListener(wallets)
             if (wallets.length > 0) {
                 const primaryWallet = wallets.find((w) => w.primary)
                 setPrimaryParty(primaryWallet?.partyId)
@@ -67,7 +66,7 @@ function App() {
             provider.removeListener('txChanged', messageListener)
             provider.removeListener('accountsChanged', onAccountsChanged)
         }
-    }, [status])
+    }, [])
 
     function createPingContract() {
         setError('')
