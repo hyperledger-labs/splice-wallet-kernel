@@ -12,6 +12,8 @@ import {
     AddSessionParams,
     AddSessionResult,
     ListSessionsResult,
+    Null,
+    SetPrimaryWalletParams,
 } from './rpc-gen/typings.js'
 import { Store, Wallet, Auth } from 'core-wallet-store'
 import { Logger } from 'pino'
@@ -36,7 +38,7 @@ async function signingDriverCreate(
             const res = await ledgerClient.partiesPost({
                 partyIdHint: partyHint,
                 identityProviderId: '',
-                synchronizerId: network.synchronizerId,
+                synchronizerId: '',
                 userId: '',
             })
 
@@ -140,6 +142,16 @@ export const userController = (
                 params
             )
             return result
+        },
+        setPrimaryWallet: function (
+            params: SetPrimaryWalletParams
+        ): Promise<Null> {
+            store.setPrimaryWallet(params.partyId)
+            const notifier = authContext?.userId
+                ? notificationService.getNotifier(authContext.userId)
+                : undefined
+            notifier?.emit('accountsChanged', store.getWallets())
+            return Promise.resolve(null)
         },
         removeWallet: async (params: { partyId: string }) =>
             Promise.resolve({}),
