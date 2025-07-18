@@ -90,7 +90,7 @@ const authService: AuthService = {
             return { userId: payload.sub, accessToken: jwt }
         } catch (error) {
             if (error instanceof Error) {
-                logger.error('Failed to verify token ' + error.stack)
+                logger.warn('Failed to verify token ' + error.message)
             }
             return undefined
         }

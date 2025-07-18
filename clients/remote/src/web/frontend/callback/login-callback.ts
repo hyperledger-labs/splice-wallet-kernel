@@ -46,15 +46,6 @@ export class LoginCallback extends LitElement {
             const tokenResponse = await res.json()
 
             if (tokenResponse.access_token) {
-                tokenManager.setAccessToken(tokenResponse.access_token)
-
-                await userClient.transport.submit({
-                    method: 'addSession',
-                    params: {
-                        chainId: 'canton:local-oauth', // TODO: get from local storage or use inline callback in login.ts
-                    },
-                })
-
                 if (window.opener && !window.opener.closed) {
                     window.opener.postMessage(
                         {
@@ -64,6 +55,15 @@ export class LoginCallback extends LitElement {
                         '*'
                     )
                 }
+
+                tokenManager.setAccessToken(tokenResponse.access_token)
+
+                await userClient.transport.submit({
+                    method: 'addSession',
+                    params: {
+                        chainId: 'canton:local-oauth', // TODO: get from local storage or use inline callback in login.ts
+                    },
+                })
 
                 window.location.replace('/')
             }

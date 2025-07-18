@@ -56,6 +56,11 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                     `SpliceProviderHttp: setting sessionToken to ${this.sessionToken}`
                 )
                 this.openSocket(this.url)
+
+                // we requery the status explicitly here, as it's not guaranteed that the socket will be open & authenticated before the `onConnected` event is fired from the `addSession` RPC call.
+                this.request({ method: 'status' }).then((status) => {
+                    this.emit('onConnected', status)
+                })
             }
         })
     }
