@@ -114,6 +114,33 @@
             "description": "Allocates a new wallet and party with the given hint."
         },
         {
+            "name": "setPrimaryWallet",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "SetPrimaryWalletParams",
+                        "type": "object",
+                        "properties": {
+                            "partyId": {
+                                "title": "partyId",
+                                "type": "string",
+                                "description": "The party id of the wallet to set as primary."
+                            }
+                        },
+                        "required": ["partyId"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/Null"
+                }
+            },
+            "description": "Sets the specified wallet as the primary wallet for dApp usage."
+        },
+        {
             "name": "removeWallet",
             "params": [
                 {
