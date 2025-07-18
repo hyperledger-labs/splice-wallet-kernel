@@ -2,7 +2,7 @@ import { WalletEvent } from 'core-types'
 import { LitElement, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { userClient } from '../rpc-client'
-import { tokenManager } from '../token-manager'
+import { stateManager } from '../state-manager'
 
 @customElement('login-callback')
 export class LoginCallback extends LitElement {
@@ -56,12 +56,12 @@ export class LoginCallback extends LitElement {
                     )
                 }
 
-                tokenManager.setAccessToken(tokenResponse.access_token)
+                stateManager.accessToken.set(tokenResponse.access_token)
 
                 await userClient.transport.submit({
                     method: 'addSession',
                     params: {
-                        chainId: 'canton:local-oauth', // TODO: get from local storage or use inline callback in login.ts
+                        chainId: stateManager.chainId.get(),
                     },
                 })
 

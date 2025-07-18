@@ -4,6 +4,7 @@ import { customElement, state } from 'lit/decorators.js'
 import 'core-wallet-ui-components'
 import { userClient } from '../rpc-client'
 import { Network } from 'core-wallet-user-rpc-client'
+import { stateManager } from '../state-manager'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
@@ -34,7 +35,10 @@ export class LoginUI extends LitElement {
             return
         }
 
-        const redirectUri = 'http://localhost:3002/callback/' //should probably be config driven?
+        stateManager.chainId.set(this.selectedNetwork.chainId)
+
+        const redirectUri = `${window.origin}/callback/`
+
         if (this.selectedNetwork.auth.type === 'implicit') {
             const domain = this.selectedNetwork.auth.domain
 

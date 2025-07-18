@@ -4,7 +4,7 @@ import { classMap } from 'lit/directives/class-map.js'
 
 import 'core-wallet-ui-components'
 import '/style.css'
-import { tokenManager } from './token-manager'
+import { stateManager } from './state-manager'
 
 @customElement('user-ui')
 export class UserUI extends LitElement {
@@ -58,7 +58,7 @@ export class UserUIAuthRedirect extends LitElement {
     connectedCallback(): void {
         super.connectedCallback()
 
-        if (!tokenManager.getAccessToken()) {
+        if (!stateManager.accessToken.get()) {
             window.location.href = '/login/'
         }
     }
