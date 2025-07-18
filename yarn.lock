@@ -2902,15 +2902,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/basic-auth@npm:^1.1.8":
-  version: 1.1.8
-  resolution: "@types/basic-auth@npm:1.1.8"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10c0/6eaca98493546a384267eb83a2a2d89555fa541b794efa5173450ddad983f5d179534980f9e98477a57c865adcb48f8350569efe078a05ecf2c087bf3bd112c2
-  languageName: node
-  linkType: hard
-
 "@types/body-parser@npm:*":
   version: 1.19.6
   resolution: "@types/body-parser@npm:1.19.6"
@@ -3188,15 +3179,6 @@ __metadata:
   dependencies:
     undici-types: "npm:~6.21.0"
   checksum: 10c0/63a2fa52adf1134d1b3bee8b1862d4b8e4550fffc190551068d3d41a41d9e5c0c8f1cb81faa18767b260637360f662115c26c5e4e7718868ead40c4a57cbc0e3
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:^24.0.14":
-  version: 24.0.14
-  resolution: "@types/node@npm:24.0.14"
-  dependencies:
-    undici-types: "npm:~7.8.0"
-  checksum: 10c0/536b5a816554ad1522e9e0c1d517b317f8478798bd76a332d83690aa42b19b5b263eb295ee25f9d0badb430ee6e36412ee9070cb5e3359f6bdcf7e08f94302f1
   languageName: node
   linkType: hard
 
@@ -9737,20 +9719,6 @@ __metadata:
   checksum: 10c0/9f2b975e9246351f5e3a40dcfac99fcd0baa31fbfab615fe059fb11e51f10e4803c63de1f384c54d656e4db31d000e4767e9ef076a22e12a641357602e31d57d
   languageName: node
   linkType: hard
-
-"mock-oauth2@workspace:auth":
-  version: 0.0.0-use.local
-  resolution: "mock-oauth2@workspace:auth"
-  dependencies:
-    "@types/basic-auth": "npm:^1.1.8"
-    "@types/node": "npm:^24.0.14"
-    basic-auth: "npm:^2.0.1"
-    oauth2-mock-server: "npm:^8.1.0"
-    ts-node: "npm:^10.9.2"
-    tsx: "npm:^4.20.3"
-    typescript: "npm:^5.8.3"
-  languageName: unknown
-  linkType: soft
 
 "module-details-from-path@npm:^1.0.3":
   version: 1.0.4

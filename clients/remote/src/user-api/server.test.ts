@@ -81,9 +81,9 @@ test('call connect rpc', async () => {
                         type: 'implicit',
                         domain: 'http://127.0.0.1:8889',
                         audience:
-                            'https://daml.com/jwt/aud/participant/wallet-kernel',
+                            'https://daml.com/jwt/aud/participant/participant1::12204896f5edaba049a658f4d09f12d7c7f762a3fecfae6bdd4f96c7b704f90c2b42',
                         scope: 'openid daml_ledger_api offline_access',
-                        clientId: 'Cg9zZXJ2aWNlLmFjY291bnQSBWxvY2Fs',
+                        clientId: 'operator',
                     },
                 },
             ],
