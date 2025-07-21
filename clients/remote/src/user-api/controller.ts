@@ -31,21 +31,7 @@ async function signingDriverCreate(
 ): Promise<CreateWalletResult> {
     switch (signingProviderId) {
         case 'participant': {
-            pino.pino().info(`Signing provider is participant`)
             const network = await store.getNetwork(chainId)
-
-            pino.pino().info(`Found network in store`)
-
-            try {
-                const res1 = await ledgerClient.partiesPost({
-                    partyIdHint: partyHint,
-                    identityProviderId: '',
-                    synchronizerId: network.synchronizerId,
-                    userId: '',
-                })
-            } catch (error) {
-                pino.pino().info(`Error is ` + error)
-            }
 
             const res = await ledgerClient.partiesPost({
                 partyIdHint: partyHint,
@@ -53,8 +39,6 @@ async function signingDriverCreate(
                 synchronizerId: network.synchronizerId,
                 userId: '',
             })
-
-            pino.pino().info(`Completed ledger client call`)
 
             if (!res.partyDetails?.party) {
                 throw new Error('Failed to allocate party')
@@ -147,7 +131,6 @@ export const userController = (
                 ? notificationService.getNotifier(authContext.userId)
                 : undefined
 
-            pino.pino().info(`Auth context: ${JSON.stringify(authContext)}`)
             const result = await signingDriverCreate(
                 store,
                 notifier,

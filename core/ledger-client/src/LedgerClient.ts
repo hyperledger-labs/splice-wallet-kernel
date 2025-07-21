@@ -16,33 +16,6 @@ export type SubmitAndWaitPostReq =
 export type SubmitAndWaitPostRes =
     paths['/v2/commands/submit-and-wait']['post']['responses']['200']['content']['application/json']
 
-// export function installFetchLogger() {
-//   const originalFetch = global.fetch
-
-//   global.fetch = async (...args) => {
-//     const [input, init] = args
-//     const method = init?.method || 'GET'
-//     const url = typeof input === 'string' ? input : input?.url || '[unknown]'
-
-//     logger.info({ method, url }, 'Outgoing fetch request')
-
-//     try {
-//       const response = await originalFetch(...args)
-//       logger.info({
-//         method,
-//         url,
-//         status: response.status,
-//         statusText: response.statusText,
-//       }, 'Fetch response')
-
-//       return response
-//     } catch (err) {
-//       logger.error({ method, url, err }, 'Fetch failed')
-//       throw err
-//     }
-//   }
-// }
-
 export class LedgerClient {
     private readonly client: Client<paths>
     private readonly getToken!: () => Promise<string>
@@ -70,11 +43,6 @@ export class LedgerClient {
         })
         return this.valueOrError(resp)
     }
-
-    // public async partiesGet(): Promise<PartiesPostRes> {
-    //     const resp = await this.client.GET('/v2/parties')
-    //     return this.valueOrError(resp)
-    // }
 
     public async interactivePreparePost(
         body: InteractivePreparePostReq
