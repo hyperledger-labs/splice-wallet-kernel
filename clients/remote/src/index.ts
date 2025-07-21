@@ -10,6 +10,7 @@ import { configSchema } from './config/Config.js'
 import { LedgerClient } from 'core-ledger-client'
 import { Notifier } from './notification/NotificationService.js'
 import EventEmitter from 'events'
+import { createRemoteJWKSet, jwtVerify } from 'jose'
 import axios from 'axios'
 import qs from 'qs'
 
@@ -43,17 +44,6 @@ const getServiceToken = async () => {
     return response.data.access_token
 }
 
-const authService: AuthService = {
-    verifyToken: async (accessToken?: string) => {
-        // TODO: distinguish public vs private endpoints that need auth.
-        if (!accessToken || !accessToken.startsWith('Bearer ')) {
-            return undefined
-        }
-
-        return { userId: 'user123', accessToken: '123' }
-    },
-}
-
 export class NotificationService implements NotificationService {
     private notifiers: Map<string, Notifier> = new Map()
 
@@ -62,6 +52,15 @@ export class NotificationService implements NotificationService {
 
         if (!notifier) {
             notifier = new EventEmitter()
+            // Wrap all events to log with pino
+            const originalEmit = notifier.emit
+            notifier.emit = function (event: string, ...args: unknown[]) {
+                logger.debug(
+                    { event, args },
+                    `Notifier emitted event: ${event}`
+                )
+                return originalEmit.apply(this, [event, ...args])
+            }
             this.notifiers.set(notifierId, notifier)
         }
 
@@ -74,6 +73,38 @@ const notificationService = new NotificationService()
 const configPath = process.env.NETWORK_CONFIG_PATH || '../test/config.json'
 const configFile = ConfigUtils.loadConfigFile(configPath)
 const config = configSchema.parse(configFile)
+
+const authService: AuthService = {
+    verifyToken: async (accessToken?: string) => {
+        if (!accessToken || !accessToken.startsWith('Bearer ')) {
+            return undefined
+        }
+
+        const jwt = accessToken.split(' ')[1]
+
+        try {
+            // TODO: get JWKS URL from network config for the active network/session
+            const jwks = createRemoteJWKSet(
+                new URL('http://localhost:8082/jwks')
+            )
+
+            const { payload } = await jwtVerify(jwt, jwks, {
+                algorithms: ['RS256'],
+            })
+
+            if (!payload.sub) {
+                return undefined
+            }
+
+            return { userId: payload.sub, accessToken: jwt }
+        } catch (error) {
+            if (error instanceof Error) {
+                logger.warn('Failed to verify token ' + error.message)
+            }
+            return undefined
+        }
+    },
+}
 
 const store = new StoreInternal(config.store)
 //TODO: potentially create a map of <networkId, ledgerClients> based off of config

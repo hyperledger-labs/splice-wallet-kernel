@@ -1,13 +1,11 @@
 import { WalletEvent } from 'core-types'
 import { LitElement, html } from 'lit'
-import { customElement, state } from 'lit/decorators.js'
+import { customElement } from 'lit/decorators.js'
 import { userClient } from '../rpc-client'
+import { stateManager } from '../state-manager'
 
 @customElement('login-callback')
 export class LoginCallback extends LitElement {
-    @state()
-    accessor accessToken = ''
-
     connectedCallback(): void {
         super.connectedCallback()
         this.handleRedirect()
@@ -49,25 +47,24 @@ export class LoginCallback extends LitElement {
             const tokenResponse = await res.json()
 
             if (tokenResponse.access_token) {
-                await userClient.transport.submit({
-                    method: 'addSession',
-                    params: {
-                        chainId: 'canton:local-oauth', // TODO: get from local storage or use inline callback in login.ts
-                    },
-                })
-
-                this.accessToken = tokenResponse.access_token
-                localStorage.setItem('access_token', this.accessToken)
-
                 if (window.opener && !window.opener.closed) {
                     window.opener.postMessage(
                         {
                             type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
-                            token: this.accessToken,
+                            token: tokenResponse.access_token,
                         },
                         '*'
                     )
                 }
+
+                stateManager.accessToken.set(tokenResponse.access_token)
+
+                await userClient.transport.submit({
+                    method: 'addSession',
+                    params: {
+                        chainId: stateManager.chainId.get(),
+                    },
+                })
 
                 window.location.replace('/')
             }
@@ -75,6 +72,6 @@ export class LoginCallback extends LitElement {
     }
 
     render() {
-        return html` <h2>Logged in!</h2> `
+        return html`<h2>Logged in!</h2>`
     }
 }

@@ -35,7 +35,8 @@ export const user = (
                     store.withAuthContext(req.authContext),
                     notificationService,
                     req.authContext,
-                    ledgerClient
+                    ledgerClient,
+                    logger
                 ),
                 logger,
             })(req, res, next)

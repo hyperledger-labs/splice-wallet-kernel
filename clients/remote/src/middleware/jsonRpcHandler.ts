@@ -54,7 +54,7 @@ export const jsonRpcHandler =
                 const { method, params, id = null } = parsed.data
 
                 logger.debug(
-                    `Received RPC request: method=${method}, params=${JSON.stringify(params)}`
+                    `Received RPC request: method=${method}, params=${JSON.stringify(params)}, authContext=${JSON.stringify(req.authContext)}`
                 )
 
                 const methodFn = controller[method as keyof T] as (
@@ -88,6 +88,15 @@ export const jsonRpcHandler =
 
                         if (error instanceof Error) {
                             response.error.message = error.message
+
+                            if (error.message === 'User is not connected') {
+                                response.error.code =
+                                    rpcErrors.invalidRequest().code
+                                res.status(401).json(
+                                    toRpcResponse(null, response)
+                                )
+                                return
+                            }
                         } else if (typeof error === 'string') {
                             response.error.message = error
                         } else if (ErrorResponse.safeParse(error).success) {

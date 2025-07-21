@@ -14,7 +14,7 @@ import {
     ListSessionsResult,
 } from './rpc-gen/typings.js'
 import { Store, Wallet, Auth } from 'core-wallet-store'
-import pino from 'pino'
+import { Logger } from 'pino'
 import {
     NotificationService,
     Notifier,
@@ -73,9 +73,11 @@ export const userController = (
     store: Store,
     notificationService: NotificationService,
     authContext: AuthContext | undefined,
-    ledgerClient: LedgerClient
-) =>
-    buildController({
+    ledgerClient: LedgerClient,
+    _logger: Logger
+) => {
+    const logger = _logger.child({ component: 'user-controller' })
+    return buildController({
         addNetwork: async (network: AddNetworkParams) => {
             const ledgerApi = {
                 baseUrl: network.ledgerApiUrl ?? '',
@@ -123,7 +125,7 @@ export const userController = (
             chainId: string
             signingProviderId: string
         }) => {
-            pino.pino().info(
+            logger.info(
                 `Allocating party with params: ${JSON.stringify(params)}`
             )
 
@@ -219,22 +221,19 @@ export const userController = (
                     accessToken: authContext?.accessToken || '',
                 })
                 const network = await store.getCurrentNetwork()
-                const notifier = authContext?.userId
-                    ? notificationService.getNotifier(authContext.userId)
-                    : undefined
 
-                pino.pino().info(
-                    'auth context is : ' + authContext?.accessToken
-                )
+                // Assumption: `setSession` calls `assertConnected`, so its safe to declare that the authContext is defined.
+                const { userId, accessToken } = authContext!
+                const notifier = notificationService.getNotifier(userId)
 
-                notifier?.emit('onConnected', {
+                notifier.emit('onConnected', {
                     kernel: kernelInfo,
-                    sessionToken: authContext?.accessToken || '',
+                    sessionToken: accessToken,
                     chainId: network.chainId,
                 })
 
                 return Promise.resolve({
-                    accessToken: authContext?.accessToken || '',
+                    accessToken,
                     status: 'connected',
                     network: {
                         name: network.name,
@@ -246,7 +245,7 @@ export const userController = (
                     },
                 })
             } catch (error) {
-                pino.pino().error(`Failed to add session: ${error}`)
+                logger.error(`Failed to add session: ${error}`)
                 throw new Error(`Failed to add session: ${error}`)
             }
         },
@@ -259,7 +258,7 @@ export const userController = (
             return {
                 sessions: [
                     {
-                        accessToken: authContext?.accessToken || '',
+                        accessToken: authContext!.accessToken,
                         status: 'connected',
                         network: {
                             name: network.name,
@@ -274,3 +273,4 @@ export const userController = (
             }
         },
     })
+}

@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { RpcTransport } from 'core-types'
 import UserApiClient from 'core-wallet-user-rpc-client'
 import { config } from './config'
+import { stateManager } from './state-manager'
 
 // TODO(#131) - move this to rpc-transport package
 class HttpTransport implements RpcTransport {
@@ -17,18 +18,25 @@ class HttpTransport implements RpcTransport {
             id: uuidv4(),
         }
 
-        const authToken = 'not-a-real-token'
+        const authToken = stateManager.accessToken.get()
+        const header = authToken
+            ? { Authorization: `Bearer ${authToken}` }
+            : undefined
 
         const response = await fetch(this.url, {
             method: 'POST',
             headers: {
-                Authorization: `Bearer ${authToken}`,
+                ...header,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(request),
         })
 
         if (!response.ok) {
+            if (response.status === 401) {
+                // Handle unauthorized access, e.g., clear token
+                stateManager.accessToken.clear()
+            }
             throw new Error(`HTTP error! status: ${response.status}`)
         }
 
