@@ -25,7 +25,7 @@
             {
                 "name": "Local (OAuth IDP)",
                 "chainId": "canton:local-oauth",
-                "synchronizerId": "wallet::12209b35e9f73331cafbbf19596ff5faf2b5ced342dd00b08756beaa271898d2d8a5::34-0",
+                "synchronizerId": "wallet::1220aa7665e1190b584acc00a808f6a11a0a96aebf171f6f9a78d343b34461752ea2::34-0",
                 "description": "Mock OAuth IDP",
                 "ledgerApi": {
                     "baseUrl": "http://127.0.0.1:5003"
