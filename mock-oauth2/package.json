@@ -9,7 +9,7 @@
     "type": "module",
     "scripts": {
         "build": "tsc -b",
-        "dev": "tsc -b --watch",
+        "dev": "tsx src/index.ts",
         "start": "tsx src/index.ts",
         "clean": "tsc -b --clean; rm -rf dist"
     },
