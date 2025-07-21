@@ -11,7 +11,7 @@ export const apps = [
     },
     {
         name: 'mock-oauth2-server',
-        script: 'yarn start:oauth2-mock-server',
+        script: 'yarn workspace mock-oauth2 start',
         env_development: sharedEnvDevelopment,
     },
     {

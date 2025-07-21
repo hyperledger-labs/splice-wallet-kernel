@@ -2,7 +2,6 @@
     "name": "splice-wallet-kernel",
     "scripts": {
         "start:all": "yarn pm2 start ecosystem.config.js --env development",
-        "start:oauth2-mock-server": "oauth2-mock-server -a localhost -p 8082",
         "start:canton": "tsx ./scripts/src/start-canton.ts",
         "start:canton:console": ".canton/bin/canton --config canton.conf --bootstrap canton-bootstrap.canton",
         "stop:all": "yarn pm2 stop all",
@@ -27,7 +26,8 @@
         "core/**",
         "example",
         "sdk",
-        "scripts"
+        "scripts",
+        "mock-oauth2"
     ],
     "devDependencies": {
         "@eslint/compat": "^1.2.9",

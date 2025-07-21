@@ -15,6 +15,8 @@ test('config from json file', async () => {
     }
     expect(resp.store.networks[1].auth.type).toBe('implicit')
     if (resp.store.networks[1].auth.type === 'implicit') {
-        expect(resp.store.networks[1].auth.audience).toBe('test-audience')
+        expect(resp.store.networks[1].auth.audience).toBe(
+            'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424'
+        )
     }
 })

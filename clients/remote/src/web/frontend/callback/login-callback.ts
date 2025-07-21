@@ -42,6 +42,7 @@ export class LoginCallback extends LitElement {
                     code,
                     redirect_uri: 'http://localhost:3002/callback/',
                     client_id: state.clientId,
+                    audience: state.audience,
                 }),
             })
 

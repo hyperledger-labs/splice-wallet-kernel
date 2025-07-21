@@ -21,11 +21,11 @@ const logger = pino({ name: 'main', level: 'debug' })
 
 const getServiceToken = async () => {
     //TODO: get this from config
-    const tokenEndpoint = 'http://localhost:8082/token'
+    const tokenEndpoint = 'http://127.0.0.1:8889/token'
     const clientId = 'operator'
     const clientSecret = 'service-account-secret'
     const audience =
-        'https://daml.com/jwt/aud/participant/participant1::12204896f5edaba049a658f4d09f12d7c7f762a3fecfae6bdd4f96c7b704f90c2b42'
+        'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424'
 
     const data = {
         grant_type: 'client_credentials',
@@ -40,7 +40,7 @@ const getServiceToken = async () => {
         },
     })
 
-    return response.data.accessToken
+    return response.data.access_token
 }
 
 const authService: AuthService = {
@@ -76,7 +76,6 @@ const configFile = ConfigUtils.loadConfigFile(configPath)
 const config = configSchema.parse(configFile)
 
 const store = new StoreInternal(config.store)
-
 //TODO: potentially create a map of <networkId, ledgerClients> based off of config
 const ledgerClient = new LedgerClient('http://localhost:5003', getServiceToken)
 

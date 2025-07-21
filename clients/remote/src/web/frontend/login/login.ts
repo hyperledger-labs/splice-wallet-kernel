@@ -45,6 +45,7 @@ export class LoginUI extends LitElement {
             const statePayload = {
                 domain: domain,
                 clientId: this.selectedNetwork.auth.clientId,
+                audience: audience,
             }
 
             const params = new URLSearchParams({

@@ -223,6 +223,10 @@ export const userController = (
                     ? notificationService.getNotifier(authContext.userId)
                     : undefined
 
+                pino.pino().info(
+                    'auth context is : ' + authContext?.accessToken
+                )
+
                 notifier?.emit('onConnected', {
                     kernel: kernelInfo,
                     sessionToken: authContext?.accessToken || '',

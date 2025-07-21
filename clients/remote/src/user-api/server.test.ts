@@ -76,13 +76,14 @@ test('call connect rpc', async () => {
                     synchronizerId:
                         'wallet::1220aa7665e1190b584acc00a808f6a11a0a96aebf171f6f9a78d343b34461752ea2::34-0',
                     description: 'Mock OAuth IDP',
-                    ledgerApi: { baseUrl: 'https://test' },
+                    ledgerApi: { baseUrl: 'http://127.0.0.1:5003' },
                     auth: {
                         type: 'implicit',
-                        domain: 'http://localhost:8082',
-                        audience: 'test-audience',
-                        scope: 'openid',
-                        clientId: 'mock-oauth2-clientId',
+                        domain: 'http://127.0.0.1:8889',
+                        audience:
+                            'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424',
+                        scope: 'openid daml_ledger_api offline_access',
+                        clientId: 'operator',
                     },
                 },
             ],
