@@ -14,7 +14,7 @@ import {
     ListSessionsResult,
 } from './rpc-gen/typings.js'
 import { Store, Wallet, Auth } from 'core-wallet-store'
-import pino from 'pino'
+import { Logger } from 'pino'
 import {
     NotificationService,
     Notifier,
@@ -73,9 +73,11 @@ export const userController = (
     store: Store,
     notificationService: NotificationService,
     authContext: AuthContext | undefined,
-    ledgerClient: LedgerClient
-) =>
-    buildController({
+    ledgerClient: LedgerClient,
+    _logger: Logger
+) => {
+    const logger = _logger.child({ component: 'user-controller' })
+    return buildController({
         addNetwork: async (network: AddNetworkParams) => {
             const ledgerApi = {
                 baseUrl: network.ledgerApiUrl ?? '',
@@ -123,7 +125,7 @@ export const userController = (
             chainId: string
             signingProviderId: string
         }) => {
-            pino.pino().info(
+            logger.info(
                 `Allocating party with params: ${JSON.stringify(params)}`
             )
 
@@ -243,7 +245,7 @@ export const userController = (
                     },
                 })
             } catch (error) {
-                pino.pino().error(`Failed to add session: ${error}`)
+                logger.error(`Failed to add session: ${error}`)
                 throw new Error(`Failed to add session: ${error}`)
             }
         },
@@ -271,3 +273,4 @@ export const userController = (
             }
         },
     })
+}

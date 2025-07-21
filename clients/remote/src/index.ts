@@ -52,6 +52,15 @@ export class NotificationService implements NotificationService {
 
         if (!notifier) {
             notifier = new EventEmitter()
+            // Wrap all events to log with pino
+            const originalEmit = notifier.emit
+            notifier.emit = function (event: string, ...args: unknown[]) {
+                logger.debug(
+                    { event, args },
+                    `Notifier emitted event: ${event}`
+                )
+                return originalEmit.apply(this, [event, ...args])
+            }
             this.notifiers.set(notifierId, notifier)
         }
 
