@@ -54,7 +54,7 @@ export const jsonRpcHandler =
                 const { method, params, id = null } = parsed.data
 
                 logger.debug(
-                    `Received RPC request: method=${method}, params=${JSON.stringify(params)}`
+                    `Received RPC request: method=${method}, params=${JSON.stringify(params)}, authContext=${JSON.stringify(req.authContext)}`
                 )
 
                 const methodFn = controller[method as keyof T] as (
