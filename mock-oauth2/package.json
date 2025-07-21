@@ -1,0 +1,27 @@
+{
+    "name": "mock-oauth2",
+    "version": "1.0.0",
+    "description": "Creates mock oauth2 server",
+    "license": "Apache-2.0",
+    "packageManager": "yarn@4.9.2",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b",
+        "dev": "tsx src/index.ts",
+        "start": "tsx src/index.ts",
+        "clean": "tsc -b --clean; rm -rf dist"
+    },
+    "devDependencies": {
+        "@types/basic-auth": "^1.1.8",
+        "ts-node": "^10.9.2",
+        "tsx": "^4.20.3",
+        "typescript": "^5.8.3"
+    },
+    "dependencies": {
+        "@types/node": "^24.0.14",
+        "basic-auth": "^2.0.1",
+        "oauth2-mock-server": "^8.1.0"
+    }
+}
