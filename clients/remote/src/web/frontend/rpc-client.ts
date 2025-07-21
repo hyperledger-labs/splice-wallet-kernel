@@ -19,8 +19,6 @@ class HttpTransport implements RpcTransport {
 
         const authToken = 'not-a-real-token'
 
-        console.log('ledger api url:' + this.url)
-
         const response = await fetch(this.url, {
             method: 'POST',
             headers: {

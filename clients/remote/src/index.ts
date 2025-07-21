@@ -21,7 +21,7 @@ const logger = pino({ name: 'main', level: 'debug' })
 
 const getServiceToken = async () => {
     //TODO: get this from config
-    const tokenEndpoint = 'http://http://127.0.0.1:8889/token'
+    const tokenEndpoint = 'http://127.0.0.1:8889/token'
     const clientId = 'operator'
     const clientSecret = 'service-account-secret'
     const audience =
@@ -40,7 +40,7 @@ const getServiceToken = async () => {
         },
     })
 
-    return response.data.accessToken
+    return response.data.access_token
 }
 
 const authService: AuthService = {
@@ -76,7 +76,6 @@ const configFile = ConfigUtils.loadConfigFile(configPath)
 const config = configSchema.parse(configFile)
 
 const store = new StoreInternal(config.store)
-
 //TODO: potentially create a map of <networkId, ledgerClients> based off of config
 const ledgerClient = new LedgerClient('http://localhost:5003', getServiceToken)
 

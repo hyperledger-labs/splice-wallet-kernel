@@ -147,6 +147,7 @@ export const userController = (
                 ? notificationService.getNotifier(authContext.userId)
                 : undefined
 
+            pino.pino().info(`Auth context: ${JSON.stringify(authContext)}`)
             const result = await signingDriverCreate(
                 store,
                 notifier,
@@ -238,6 +239,10 @@ export const userController = (
                 const notifier = authContext?.userId
                     ? notificationService.getNotifier(authContext.userId)
                     : undefined
+
+                pino.pino().info(
+                    'auth context is : ' + authContext?.accessToken
+                )
 
                 notifier?.emit('onConnected', {
                     kernel: kernelInfo,
