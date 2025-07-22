@@ -38,7 +38,7 @@ async function signingDriverCreate(
             const res = await ledgerClient.partiesPost({
                 partyIdHint: partyHint,
                 identityProviderId: '',
-                synchronizerId: '',
+                synchronizerId: network.synchronizerId,
                 userId: '',
             })
 
