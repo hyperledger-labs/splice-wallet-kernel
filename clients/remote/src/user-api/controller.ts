@@ -151,7 +151,7 @@ export const userController = (
                 ? notificationService.getNotifier(authContext.userId)
                 : undefined
             notifier?.emit('accountsChanged', store.getWallets())
-            return Promise.resolve(null)
+            return null
         },
         removeWallet: async (params: { partyId: string }) =>
             Promise.resolve({}),
