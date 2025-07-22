@@ -4895,6 +4895,9 @@ __metadata:
     "@types/supertest": "npm:^6.0.3"
     axios: "npm:^1.10.0"
     core-ledger-client: "workspace:^"
+    core-signing-internal: "workspace:^"
+    core-signing-lib: "workspace:^"
+    core-signing-participant: "workspace:^"
     core-types: "workspace:^"
     core-wallet-auth: "workspace:^"
     core-wallet-dapp-rpc-client: "workspace:^"
@@ -5218,7 +5221,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"core-signing-internal@workspace:core/signing-internal":
+"core-signing-internal@workspace:^, core-signing-internal@workspace:core/signing-internal":
   version: 0.0.0-use.local
   resolution: "core-signing-internal@workspace:core/signing-internal"
   dependencies:
@@ -5253,7 +5256,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"core-signing-participant@workspace:core/signing-participant":
+"core-signing-participant@workspace:^, core-signing-participant@workspace:core/signing-participant":
   version: 0.0.0-use.local
   resolution: "core-signing-participant@workspace:core/signing-participant"
   dependencies:

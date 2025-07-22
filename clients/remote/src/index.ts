@@ -13,6 +13,9 @@ import EventEmitter from 'events'
 import { createRemoteJWKSet, jwtVerify } from 'jose'
 import axios from 'axios'
 import qs from 'qs'
+import { SigningProvider } from 'core-signing-lib'
+import { ParticipantSigningDriver } from 'core-signing-participant'
+import { InternalSigningDriver } from 'core-signing-internal'
 
 const dAppPort = 3000
 const userPort = 3001
@@ -110,6 +113,11 @@ const store = new StoreInternal(config.store)
 //TODO: potentially create a map of <networkId, ledgerClients> based off of config
 const ledgerClient = new LedgerClient('http://localhost:5003', getServiceToken)
 
+const drivers = {
+    [SigningProvider.PARTICIPANT]: new ParticipantSigningDriver(),
+    [SigningProvider.WALLET_KERNEL]: new InternalSigningDriver(),
+}
+
 export const dAppServer = dapp(
     config.kernel,
     ledgerClient,
@@ -125,6 +133,7 @@ export const userServer = user(
     ledgerClient,
     notificationService,
     authService,
+    drivers,
     store
 ).listen(userPort, () => {
     logger.info(`User Server running at http://localhost:${userPort}`)

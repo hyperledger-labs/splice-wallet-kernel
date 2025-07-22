@@ -37,12 +37,14 @@ const notificationService = {
 }
 
 test('call connect rpc', async () => {
+    const drivers = {}
     const response = await request(
         user(
             config.kernel,
             ledgerClient,
             notificationService,
             authService,
+            drivers,
             store
         )
     )

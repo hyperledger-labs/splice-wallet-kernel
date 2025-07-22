@@ -11,6 +11,7 @@ import cors from 'cors'
 import { LedgerClient } from 'core-ledger-client'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo } from '../config/Config.js'
+import { SigningDriverInterface, SigningProvider } from 'core-signing-lib'
 
 const logger = pino({ name: 'main', level: 'debug' })
 
@@ -19,6 +20,7 @@ export const user = (
     ledgerClient: LedgerClient,
     notificationService: NotificationService,
     authService: AuthService,
+    drivers: Partial<Record<SigningProvider, SigningDriverInterface>>,
     store: Store & AuthAware<Store>
 ) => {
     const user = express()
@@ -36,6 +38,7 @@ export const user = (
                     notificationService,
                     req.authContext,
                     ledgerClient,
+                    drivers,
                     logger
                 ),
                 logger,
