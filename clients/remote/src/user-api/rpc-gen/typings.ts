@@ -191,6 +191,10 @@ export interface CreateWalletParams {
     signingProviderId: SigningProviderId
     [k: string]: any
 }
+export interface SetPrimaryWalletParams {
+    partyId: PartyId
+    [k: string]: any
+}
 export interface RemoveWalletParams {
     partyId: PartyId
     [k: string]: any
@@ -274,6 +278,7 @@ export type RemoveNetwork = (params: RemoveNetworkParams) => Promise<Null>
 export type CreateWallet = (
     params: CreateWalletParams
 ) => Promise<CreateWalletResult>
+export type SetPrimaryWallet = (params: SetPrimaryWalletParams) => Promise<Null>
 export type RemoveWallet = (
     params: RemoveWalletParams
 ) => Promise<RemovePartyResult>

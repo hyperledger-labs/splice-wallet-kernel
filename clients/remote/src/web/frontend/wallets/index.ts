@@ -67,6 +67,39 @@ export class UserUiWallets extends LitElement {
             <user-ui-nav></user-ui-nav>
             <h1>Wallets UI</h1>
 
+            <h2>Primary Wallet</h2>
+            <form id="primary-wallet-form">
+                <label for="primary-wallet-select"
+                    >Select Primary Wallet:</label
+                >
+                <select
+                    class="form-control"
+                    id="primary-wallet-select"
+                    @change=${async (e: Event) => {
+                        const select = e.target as HTMLSelectElement
+                        const selectedWalletId = select.value
+                        if (selectedWalletId) {
+                            await userClient.request('setPrimaryWallet', {
+                                partyId: selectedWalletId,
+                            })
+                            this.updateWallets()
+                        }
+                    }}
+                >
+                    <option disabled value="">Select a wallet</option>
+                    ${this.wallets.map(
+                        (wallet) =>
+                            html` <option
+                                value=${wallet.partyId}
+                                .selected=${wallet.primary}
+                            >
+                                ${wallet.hint}
+                                ${wallet.primary ? '(Primary)' : ''}
+                            </option>`
+                    )}
+                </select>
+            </form>
+
             <h2>Create a Wallet</h2>
 
             <form id="create-wallet-form">

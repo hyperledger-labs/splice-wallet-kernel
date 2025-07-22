@@ -53,7 +53,7 @@ export interface Transaction {
 
 export interface Store {
     // Wallet methods
-    getWallets(): Promise<Array<Wallet>>
+    getWallets(filter?: WalletFilter): Promise<Array<Wallet>>
     getPrimaryWallet(): Promise<Wallet | undefined>
     setPrimaryWallet(partyId: PartyId): Promise<void>
     addWallet(wallet: Wallet): Promise<void>

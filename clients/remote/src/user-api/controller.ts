@@ -12,6 +12,8 @@ import {
     AddSessionParams,
     AddSessionResult,
     ListSessionsResult,
+    Null,
+    SetPrimaryWalletParams,
 } from './rpc-gen/typings.js'
 import { Store, Wallet, Auth } from 'core-wallet-store'
 import { Logger } from 'pino'
@@ -140,6 +142,16 @@ export const userController = (
                 params
             )
             return result
+        },
+        setPrimaryWallet: function (
+            params: SetPrimaryWalletParams
+        ): Promise<Null> {
+            store.setPrimaryWallet(params.partyId)
+            const notifier = authContext?.userId
+                ? notificationService.getNotifier(authContext.userId)
+                : undefined
+            notifier?.emit('accountsChanged', store.getWallets())
+            return null
         },
         removeWallet: async (params: { partyId: string }) =>
             Promise.resolve({}),
