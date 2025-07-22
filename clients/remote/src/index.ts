@@ -85,7 +85,7 @@ const authService: AuthService = {
         try {
             // TODO: get JWKS URL from network config for the active network/session
             const jwks = createRemoteJWKSet(
-                new URL('http://localhost:8082/jwks')
+                new URL('http://127.0.0.1:8889/jwks')
             )
 
             const { payload } = await jwtVerify(jwt, jwks, {
