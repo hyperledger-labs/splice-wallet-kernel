@@ -143,9 +143,7 @@ export const userController = (
             )
             return result
         },
-        setPrimaryWallet: function (
-            params: SetPrimaryWalletParams
-        ): Promise<Null> {
+        setPrimaryWallet: async (params: SetPrimaryWalletParams) => {
             store.setPrimaryWallet(params.partyId)
             const notifier = authContext?.userId
                 ? notificationService.getNotifier(authContext.userId)
