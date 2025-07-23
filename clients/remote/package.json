@@ -16,7 +16,7 @@
     "type": "module",
     "dependencies": {
         "@metamask/rpc-errors": "^7.0.2",
-        "axios": "^1.10.0",
+        "axios": "^1.11.0",
         "core-ledger-client": "workspace:^",
         "core-types": "workspace:^",
         "core-wallet-auth": "workspace:^",
