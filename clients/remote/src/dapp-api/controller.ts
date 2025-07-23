@@ -45,7 +45,6 @@ export const dappController = (
     kernelInfo: KernelInfoConfig,
     store: Store,
     notificationService: NotificationService,
-    ledgerClient: LedgerClient,
     context?: AuthContext
 ) =>
     buildController({
@@ -69,6 +68,11 @@ export const dappController = (
             if (wallet === undefined) {
                 throw new Error('No primary wallet found')
             }
+
+            const ledgerClient = new LedgerClient(
+                network.ledgerApi.baseUrl,
+                context.accessToken
+            )
 
             const userId = context.userId
             const notifier = notificationService.getNotifier(userId)
@@ -109,6 +113,11 @@ export const dappController = (
             if (wallet === undefined) {
                 throw new Error('No primary wallet found')
             }
+
+            const ledgerClient = new LedgerClient(
+                network.ledgerApi.baseUrl,
+                context.accessToken
+            )
 
             return prepareSubmission(
                 context.userId,

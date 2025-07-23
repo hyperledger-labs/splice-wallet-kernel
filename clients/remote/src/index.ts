@@ -7,42 +7,15 @@ import { AuthService } from 'core-wallet-auth'
 import { StoreInternal } from 'core-wallet-store'
 import { ConfigUtils } from './config/ConfigUtils.js'
 import { configSchema } from './config/Config.js'
-import { LedgerClient } from 'core-ledger-client'
 import { Notifier } from './notification/NotificationService.js'
 import EventEmitter from 'events'
 import { createRemoteJWKSet, jwtVerify } from 'jose'
-import axios from 'axios'
-import qs from 'qs'
 
 const dAppPort = 3000
 const userPort = 3001
 const webPort = 3002
 
 const logger = pino({ name: 'main', level: 'debug' })
-
-const getServiceToken = async () => {
-    //TODO: get this from config
-    const tokenEndpoint = 'http://127.0.0.1:8889/token'
-    const clientId = 'operator'
-    const clientSecret = 'service-account-secret'
-    const audience =
-        'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424'
-
-    const data = {
-        grant_type: 'client_credentials',
-        client_id: clientId,
-        client_secret: clientSecret,
-        audience,
-    }
-
-    const response = await axios.post(tokenEndpoint, qs.stringify(data), {
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-    })
-
-    return response.data.access_token
-}
 
 export class NotificationService implements NotificationService {
     private notifiers: Map<string, Notifier> = new Map()
@@ -81,7 +54,6 @@ const authService: AuthService = {
         }
 
         const jwt = accessToken.split(' ')[1]
-
         try {
             // TODO: get JWKS URL from network config for the active network/session
             const jwks = createRemoteJWKSet(
@@ -107,12 +79,9 @@ const authService: AuthService = {
 }
 
 const store = new StoreInternal(config.store)
-//TODO: potentially create a map of <networkId, ledgerClients> based off of config
-const ledgerClient = new LedgerClient('http://localhost:5003', getServiceToken)
 
 export const dAppServer = dapp(
     config.kernel,
-    ledgerClient,
     notificationService,
     authService,
     store
@@ -122,7 +91,6 @@ export const dAppServer = dapp(
 
 export const userServer = user(
     config.kernel,
-    ledgerClient,
     notificationService,
     authService,
     store

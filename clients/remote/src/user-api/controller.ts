@@ -75,7 +75,6 @@ export const userController = (
     store: Store,
     notificationService: NotificationService,
     authContext: AuthContext | undefined,
-    ledgerClient: LedgerClient,
     _logger: Logger
 ) => {
     const logger = _logger.child({ component: 'user-controller' })
@@ -135,6 +134,17 @@ export const userController = (
                 ? notificationService.getNotifier(authContext.userId)
                 : undefined
 
+            const network = await store.getCurrentNetwork()
+
+            if (authContext === undefined || network === undefined) {
+                throw new Error('Unauthenticated context')
+            }
+
+            const ledgerClient = new LedgerClient(
+                network.ledgerApi.baseUrl,
+                authContext?.accessToken
+            )
+
             const result = await signingDriverCreate(
                 store,
                 notifier,
@@ -178,6 +188,15 @@ export const userController = (
             const notifier = notificationService.getNotifier(userId)
 
             const transaction = await store.getTransaction(commandId)
+
+            if (authContext === undefined || network === undefined) {
+                throw new Error('Unauthenticated context')
+            }
+
+            const ledgerClient = new LedgerClient(
+                network.ledgerApi.baseUrl,
+                authContext?.accessToken
+            )
 
             switch (wallet.signingProviderId) {
                 case 'participant': {

@@ -5,7 +5,6 @@ import { user } from './server.js'
 import { StoreInternal } from 'core-wallet-store'
 import { AuthService } from 'core-wallet-auth'
 import { ConfigUtils } from '../config/ConfigUtils.js'
-import { LedgerClient } from 'core-ledger-client'
 import { Notifier } from '../notification/NotificationService.js'
 import { configSchema } from '../config/Config.js'
 
@@ -24,9 +23,6 @@ const configFile = ConfigUtils.loadConfigFile(configPath)
 const config = configSchema.parse(configFile)
 
 const store = new StoreInternal(config.store)
-const ledgerClient = new LedgerClient('http://localhost:5003', async () => {
-    return ''
-})
 
 const notificationService = {
     getNotifier: jest.fn<() => Notifier>().mockReturnValue({
@@ -38,13 +34,7 @@ const notificationService = {
 
 test('call connect rpc', async () => {
     const response = await request(
-        user(
-            config.kernel,
-            ledgerClient,
-            notificationService,
-            authService,
-            store
-        )
+        user(config.kernel, notificationService, authService, store)
     )
         .post('/rpc')
         .send({ jsonrpc: '2.0', id: 0, method: 'listNetworks', params: [] })
