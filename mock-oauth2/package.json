@@ -22,6 +22,7 @@
     "dependencies": {
         "@types/node": "^24.0.14",
         "basic-auth": "^2.0.1",
-        "oauth2-mock-server": "^8.1.0"
+        "oauth2-mock-server": "^8.1.0",
+        "pino": "^9.7.0"
     }
 }

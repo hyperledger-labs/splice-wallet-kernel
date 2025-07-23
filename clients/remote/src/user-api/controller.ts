@@ -89,7 +89,8 @@ export const userController = (
             if (network.auth.type === 'implicit') {
                 auth = {
                     type: 'implicit',
-                    domain: network.auth.domain ?? '',
+                    issuer: network.auth.issuer ?? '',
+                    wellKnown: network.auth.wellKnown ?? '',
                     audience: network.auth.audience ?? '',
                     scope: network.auth.scope ?? '',
                     clientId: network.auth.clientId ?? '',
@@ -97,6 +98,8 @@ export const userController = (
             } else {
                 auth = {
                     type: 'password',
+                    issuer: network.auth.issuer ?? '',
+                    wellKnown: network.auth.wellKnown ?? '',
                     tokenUrl: network.auth.tokenUrl ?? '',
                     grantType: network.auth.grantType ?? '',
                     scope: network.auth.scope ?? '',
