@@ -134,7 +134,7 @@ implementations.forEach(([name, StoreImpl]) => {
             const auth: PasswordAuth = {
                 type: 'password',
                 issuer: 'http://auth',
-                wellKnown: 'http://auth/.well-known/openid-configuration',
+                configUrl: 'http://auth/.well-known/openid-configuration',
                 tokenUrl: 'http://auth',
                 grantType: 'password',
                 clientId: 'cid',

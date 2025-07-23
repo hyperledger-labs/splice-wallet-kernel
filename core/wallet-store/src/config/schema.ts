@@ -7,7 +7,7 @@ export const ledgerApiSchema = z.object({
 export const passwordAuthSchema = z.object({
     type: z.literal('password'),
     issuer: z.string(),
-    wellKnown: z.string(),
+    configUrl: z.string(),
     tokenUrl: z.string(),
     grantType: z.string(),
     scope: z.string(),
@@ -17,7 +17,7 @@ export const passwordAuthSchema = z.object({
 const implicitAuthSchema = z.object({
     type: z.literal('implicit'),
     issuer: z.string(),
-    wellKnown: z.string(),
+    configUrl: z.string(),
     audience: z.string(),
     scope: z.string(),
     clientId: z.string(),

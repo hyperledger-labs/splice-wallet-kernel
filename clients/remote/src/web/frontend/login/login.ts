@@ -40,16 +40,13 @@ export class LoginUI extends LitElement {
         const redirectUri = `${window.origin}/callback/`
 
         if (this.selectedNetwork.auth.type === 'implicit') {
-            const domain = this.selectedNetwork.auth.domain
+            const auth = this.selectedNetwork.auth
 
-            const configUrl = `${domain}/.well-known/openid-configuration`
-            const config = await fetch(configUrl).then((res) => res.json())
-            const scope = this.selectedNetwork.auth.scope
-            const audience = this.selectedNetwork.auth.audience
+            const config = await fetch(auth.configUrl).then((res) => res.json())
             const statePayload = {
-                domain: domain,
-                clientId: this.selectedNetwork.auth.clientId,
-                audience: audience,
+                configUrl: auth.configUrl,
+                clientId: auth.clientId,
+                audience: auth.audience,
             }
 
             const params = new URLSearchParams({
@@ -58,8 +55,8 @@ export class LoginUI extends LitElement {
                 client_id: this.selectedNetwork.auth.clientId || '',
                 redirect_uri: redirectUri || '',
                 nonce: crypto.randomUUID(),
-                scope: scope || '',
-                audience: audience || '',
+                scope: auth.scope || '',
+                audience: auth.audience || '',
                 state: btoa(JSON.stringify(statePayload)),
             })
 

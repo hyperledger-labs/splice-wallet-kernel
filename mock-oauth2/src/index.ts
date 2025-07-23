@@ -14,6 +14,8 @@ async function main() {
     await server.issuer.keys.generate('RS256')
     await server.start(port, host)
 
+    logger.info('Mock OAuth2 server started')
+
     const service = server.service
 
     service.on('beforeTokenSigning', (token, req) => {

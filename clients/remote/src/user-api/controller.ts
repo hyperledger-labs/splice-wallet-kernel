@@ -90,7 +90,7 @@ export const userController = (
                 auth = {
                     type: 'implicit',
                     issuer: network.auth.issuer ?? '',
-                    wellKnown: network.auth.wellKnown ?? '',
+                    configUrl: network.auth.configUrl ?? '',
                     audience: network.auth.audience ?? '',
                     scope: network.auth.scope ?? '',
                     clientId: network.auth.clientId ?? '',
@@ -99,7 +99,7 @@ export const userController = (
                 auth = {
                     type: 'password',
                     issuer: network.auth.issuer ?? '',
-                    wellKnown: network.auth.wellKnown ?? '',
+                    configUrl: network.auth.configUrl ?? '',
                     tokenUrl: network.auth.tokenUrl ?? '',
                     grantType: network.auth.grantType ?? '',
                     scope: network.auth.scope ?? '',

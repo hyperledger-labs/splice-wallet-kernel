@@ -25,6 +25,7 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 return undefined
             }
 
+            // TODO: change once IDP is decoupled from networks
             const networks = await store.listNetworks()
             const idp: Auth | undefined = networks.find(
                 (n) => n.auth.issuer === iss
@@ -33,7 +34,8 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 logger.warn(`No identity provider found for issuer: ${iss}`)
                 return undefined
             }
-            const response = await fetch(idp.wellKnown)
+            logger.debug(`Using IDP: ${JSON.stringify(idp)}`)
+            const response = await fetch(idp.configUrl)
             const config = await response.json()
             const jwks = createRemoteJWKSet(new URL(config.jwks_uri))
 
