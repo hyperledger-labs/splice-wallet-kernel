@@ -4128,7 +4128,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.10.0, axios@npm:^1.5.0, axios@npm:^1.6.7":
+"axios@npm:^1.11.0":
+  version: 1.11.0
+  resolution: "axios@npm:1.11.0"
+  dependencies:
+    follow-redirects: "npm:^1.15.6"
+    form-data: "npm:^4.0.4"
+    proxy-from-env: "npm:^1.1.0"
+  checksum: 10c0/5de273d33d43058610e4d252f0963cc4f10714da0bfe872e8ef2cbc23c2c999acc300fd357b6bce0fc84a2ca9bd45740fa6bb28199ce2c1266c8b1a393f2b36e
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.6.7":
   version: 1.10.0
   resolution: "axios@npm:1.10.0"
   dependencies:
@@ -4893,7 +4904,7 @@ __metadata:
     "@types/node": "npm:^22.15.30"
     "@types/qs": "npm:^6"
     "@types/supertest": "npm:^6.0.3"
-    axios: "npm:^1.10.0"
+    axios: "npm:^1.11.0"
     core-ledger-client: "workspace:^"
     core-types: "workspace:^"
     core-wallet-auth: "workspace:^"
@@ -6925,7 +6936,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"form-data@npm:^4.0.0":
+"form-data@npm:^4.0.0, form-data@npm:^4.0.4":
   version: 4.0.4
   resolution: "form-data@npm:4.0.4"
   dependencies:
@@ -11394,7 +11405,7 @@ __metadata:
     "@open-rpc/meta-schema": "npm:^1.14.9"
     "@types/node": "npm:^24.0.4"
     "@types/tar-fs": "npm:^2.0.4"
-    axios: "npm:^1.5.0"
+    axios: "npm:^1.11.0"
     jsonc-parser: "npm:^3.3.1"
     openapi-typescript: "npm:^6.0.0"
     pm2: "npm:^6.0.8"
