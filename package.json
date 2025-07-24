@@ -18,7 +18,8 @@
         "script:fetch:canton": "tsx ./scripts/src/fetch-canton.ts",
         "script:fetch:ledger": "tsx ./scripts/src/fetch-ledger-api-specs.ts",
         "script:openrpc:titles": "tsx ./scripts/src/schema-title-validation.ts",
-        "full:rebuild": "yarn clean:all && yarn generate:all && yarn build:all"
+        "full:rebuild": "yarn clean:all && yarn generate:all && yarn build:all",
+        "generate:grpc": "yarn grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./clients/remote/src/generated --ts_out=./clients/remote/src/generated --grpc_out=grpc_js:./clients/remote/src/generated -I ./.canton/protobuf/lib -I ./.canton/protobuf/community ./.canton/protobuf/community/com/digitalasset/canton/topology/admin/v30/topology_manager_write_service.proto"
     },
     "workspaces": [
         "api-specs",
@@ -32,9 +33,13 @@
     "devDependencies": {
         "@eslint/compat": "^1.2.9",
         "@eslint/js": "^9.28.0",
+        "@grpc/grpc-js": "^1.13.4",
+        "@grpc/proto-loader": "^0.7.15",
         "@open-rpc/generator": "^2.0.0",
         "eslint": "^9.28.0",
         "globals": "^16.2.0",
+        "grpc-tools": "^1.13.0",
+        "grpc_tools_node_protoc_ts": "^5.3.3",
         "husky": "^9.1.7",
         "lint-staged": "^16.1.0",
         "oauth2-mock-server": "^8.1.0",
