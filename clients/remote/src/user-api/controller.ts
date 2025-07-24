@@ -12,7 +12,6 @@ import {
     AddSessionParams,
     AddSessionResult,
     ListSessionsResult,
-    Null,
     SetPrimaryWalletParams,
 } from './rpc-gen/typings.js'
 import { Store, Wallet, Auth } from 'core-wallet-store'
@@ -106,7 +105,6 @@ export const userController = (
     store: Store,
     notificationService: NotificationService,
     authContext: AuthContext | undefined,
-    ledgerClient: LedgerClient,
     drivers: AvailableSigningDrivers,
     _logger: Logger
 ) => {
@@ -122,7 +120,8 @@ export const userController = (
             if (network.auth.type === 'implicit') {
                 auth = {
                     type: 'implicit',
-                    domain: network.auth.domain ?? '',
+                    issuer: network.auth.issuer ?? '',
+                    configUrl: network.auth.configUrl ?? '',
                     audience: network.auth.audience ?? '',
                     scope: network.auth.scope ?? '',
                     clientId: network.auth.clientId ?? '',
@@ -130,6 +129,8 @@ export const userController = (
             } else {
                 auth = {
                     type: 'password',
+                    issuer: network.auth.issuer ?? '',
+                    configUrl: network.auth.configUrl ?? '',
                     tokenUrl: network.auth.tokenUrl ?? '',
                     grantType: network.auth.grantType ?? '',
                     scope: network.auth.scope ?? '',
@@ -166,6 +167,17 @@ export const userController = (
             const notifier = authContext?.userId
                 ? notificationService.getNotifier(authContext.userId)
                 : undefined
+
+            const network = await store.getCurrentNetwork()
+
+            if (authContext === undefined || network === undefined) {
+                throw new Error('Unauthenticated context')
+            }
+
+            const ledgerClient = new LedgerClient(
+                network.ledgerApi.baseUrl,
+                authContext?.accessToken
+            )
 
             const result = await signingDriverCreate(
                 store,
@@ -211,6 +223,15 @@ export const userController = (
             const notifier = notificationService.getNotifier(userId)
 
             const transaction = await store.getTransaction(commandId)
+
+            if (authContext === undefined || network === undefined) {
+                throw new Error('Unauthenticated context')
+            }
+
+            const ledgerClient = new LedgerClient(
+                network.ledgerApi.baseUrl,
+                authContext?.accessToken
+            )
 
             switch (wallet.signingProviderId) {
                 case 'participant': {

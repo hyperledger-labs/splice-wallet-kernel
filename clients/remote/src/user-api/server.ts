@@ -8,7 +8,6 @@ import { AuthService, AuthAware } from 'core-wallet-auth'
 import { jwtAuth } from '../middleware/jwtAuth.js'
 import { rpcRateLimit } from '../middleware/rateLimit.js'
 import cors from 'cors'
-import { LedgerClient } from 'core-ledger-client'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo } from '../config/Config.js'
 import { SigningDriverInterface, SigningProvider } from 'core-signing-lib'
@@ -17,7 +16,6 @@ const logger = pino({ name: 'main', level: 'debug' })
 
 export const user = (
     kernelInfo: KernelInfo,
-    ledgerClient: LedgerClient,
     notificationService: NotificationService,
     authService: AuthService,
     drivers: Partial<Record<SigningProvider, SigningDriverInterface>>,
@@ -37,7 +35,6 @@ export const user = (
                     store.withAuthContext(req.authContext),
                     notificationService,
                     req.authContext,
-                    ledgerClient,
                     drivers,
                     logger
                 ),

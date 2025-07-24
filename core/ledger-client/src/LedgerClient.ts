@@ -20,12 +20,10 @@ export class LedgerClient {
     private readonly client: Client<paths>
     private readonly getToken!: () => Promise<string>
 
-    constructor(baseUrl: string, getToken: () => Promise<string>) {
-        this.getToken = getToken
+    constructor(baseUrl: string, token: string) {
         this.client = createClient<paths>({
             baseUrl,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
-                const token = await this.getToken()
                 return fetch(url, {
                     ...options,
                     headers: {

@@ -8,8 +8,6 @@ import { jwtAuth } from '../middleware/jwtAuth.js'
 import { AuthService, AuthAware } from 'core-wallet-auth'
 import { rpcRateLimit } from '../middleware/rateLimit.js'
 import cors from 'cors'
-import { LedgerClient } from 'core-ledger-client'
-
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import {
@@ -22,7 +20,6 @@ const logger = pino({ name: 'main', level: 'debug' })
 
 export const dapp = (
     kernelInfo: KernelInfo,
-    ledgerClient: LedgerClient,
     notificationService: NotificationService,
     authService: AuthService,
     store: Store & AuthAware<Store>
@@ -40,7 +37,6 @@ export const dapp = (
                     kernelInfo,
                     store.withAuthContext(req.authContext),
                     notificationService,
-                    ledgerClient,
                     req.authContext
                 ),
                 logger,

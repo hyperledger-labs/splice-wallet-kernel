@@ -451,8 +451,12 @@
                         "title": "clientId",
                         "type": "string"
                     },
-                    "domain": {
-                        "title": "domain",
+                    "issuer": {
+                        "title": "issuer",
+                        "type": "string"
+                    },
+                    "configUrl": {
+                        "title": "configUrl",
                         "type": "string"
                     },
                     "audience": {
@@ -460,7 +464,7 @@
                         "type": "string"
                     }
                 },
-                "required": ["type"]
+                "required": ["type", "issuer", "configUrl"]
             },
             "Wallet": {
                 "title": "Wallet",

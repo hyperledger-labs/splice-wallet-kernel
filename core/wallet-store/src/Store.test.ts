@@ -133,6 +133,8 @@ implementations.forEach(([name, StoreImpl]) => {
             const ledgerApi: LedgerApi = { baseUrl: 'http://api' }
             const auth: PasswordAuth = {
                 type: 'password',
+                issuer: 'http://auth',
+                configUrl: 'http://auth/.well-known/openid-configuration',
                 tokenUrl: 'http://auth',
                 grantType: 'password',
                 clientId: 'cid',

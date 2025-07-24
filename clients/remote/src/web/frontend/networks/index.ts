@@ -74,7 +74,8 @@ export class UserUiNetworks extends LitElement {
         if (authType === 'implicit') {
             auth = {
                 type: 'implicit',
-                domain: formData.get('domain') as string,
+                issuer: formData.get('issuer') as string,
+                configUrl: formData.get('configUrl') as string,
                 audience: formData.get('audience') as string,
                 scope: formData.get('scope') as string,
                 clientId: formData.get('clientId') as string,
@@ -82,6 +83,8 @@ export class UserUiNetworks extends LitElement {
         } else {
             auth = {
                 type: 'password',
+                issuer: formData.get('issuer') as string,
+                configUrl: formData.get('configUrl') as string,
                 tokenUrl: formData.get('tokenUrl') as string,
                 grantType: formData.get('grantType') as string,
                 scope: formData.get('scope') as string,
