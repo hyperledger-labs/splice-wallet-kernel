@@ -12,7 +12,6 @@ import {
     AddSessionParams,
     AddSessionResult,
     ListSessionsResult,
-    Null,
     SetPrimaryWalletParams,
 } from './rpc-gen/typings.js'
 import { Store, Wallet, Auth } from 'core-wallet-store'
