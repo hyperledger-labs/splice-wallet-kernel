@@ -33,8 +33,9 @@ const notificationService = {
 }
 
 test('call connect rpc', async () => {
+    const drivers = {}
     const response = await request(
-        user(config.kernel, notificationService, authService, store)
+        user(config.kernel, notificationService, authService, drivers, store)
     )
         .post('/rpc')
         .send({ jsonrpc: '2.0', id: 0, method: 'listNetworks', params: [] })

@@ -17,6 +17,9 @@
     "dependencies": {
         "@metamask/rpc-errors": "^7.0.2",
         "core-ledger-client": "workspace:^",
+        "core-signing-internal": "workspace:^",
+        "core-signing-lib": "workspace:^",
+        "core-signing-participant": "workspace:^",
         "core-types": "workspace:^",
         "core-wallet-auth": "workspace:^",
         "core-wallet-dapp-rpc-client": "workspace:^",

@@ -6,13 +6,14 @@ import 'core-wallet-ui-components'
 import { Wallet } from 'core-wallet-store'
 import { userClient } from '../rpc-client'
 import { CreateWalletParams } from 'core-wallet-user-rpc-client'
+import { SigningProvider } from 'core-signing-lib'
 
 import '../index'
 
 @customElement('user-ui-wallets')
 export class UserUiWallets extends LitElement {
     @state()
-    accessor signingProviders: string[] = ['participant']
+    accessor signingProviders: string[] = Object.values(SigningProvider)
 
     @state()
     accessor networks: string[] = []

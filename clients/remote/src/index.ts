@@ -8,6 +8,9 @@ import { ConfigUtils } from './config/ConfigUtils.js'
 import { configSchema } from './config/Config.js'
 import { Notifier } from './notification/NotificationService.js'
 import EventEmitter from 'events'
+import { SigningProvider } from 'core-signing-lib'
+import { ParticipantSigningDriver } from 'core-signing-participant'
+import { InternalSigningDriver } from 'core-signing-internal'
 import { jwtAuthService } from './auth/JwtAuthService.js'
 
 const dAppPort = 3000
@@ -48,6 +51,11 @@ const config = configSchema.parse(configFile)
 const store = new StoreInternal(config.store)
 const authService = jwtAuthService(store, logger)
 
+const drivers = {
+    [SigningProvider.PARTICIPANT]: new ParticipantSigningDriver(),
+    [SigningProvider.WALLET_KERNEL]: new InternalSigningDriver(),
+}
+
 export const dAppServer = dapp(
     config.kernel,
     notificationService,
@@ -61,6 +69,7 @@ export const userServer = user(
     config.kernel,
     notificationService,
     authService,
+    drivers,
     store
 ).listen(userPort, () => {
     logger.info(`User Server running at http://localhost:${userPort}`)

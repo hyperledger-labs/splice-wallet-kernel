@@ -10,6 +10,7 @@ import { rpcRateLimit } from '../middleware/rateLimit.js'
 import cors from 'cors'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo } from '../config/Config.js'
+import { SigningDriverInterface, SigningProvider } from 'core-signing-lib'
 
 const logger = pino({ name: 'main', level: 'debug' })
 
@@ -17,6 +18,7 @@ export const user = (
     kernelInfo: KernelInfo,
     notificationService: NotificationService,
     authService: AuthService,
+    drivers: Partial<Record<SigningProvider, SigningDriverInterface>>,
     store: Store & AuthAware<Store>
 ) => {
     const user = express()
@@ -33,6 +35,7 @@ export const user = (
                     store.withAuthContext(req.authContext),
                     notificationService,
                     req.authContext,
+                    drivers,
                     logger
                 ),
                 logger,

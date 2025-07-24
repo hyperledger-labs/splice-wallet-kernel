@@ -2,6 +2,9 @@
     "name": "core-signing-internal",
     "private": true,
     "packageManager": "yarn@4.9.2",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "scripts": {
         "build": "tsc -b",
         "clean": "tsc -b --clean && rm -rf ./dist",

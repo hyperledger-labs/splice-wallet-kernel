@@ -22,16 +22,30 @@ import {
 } from '../notification/NotificationService.js'
 import { AuthContext } from 'core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
+import { SigningDriverInterface, SigningProvider } from 'core-signing-lib'
+
+type AvailableSigningDrivers = Partial<
+    Record<SigningProvider, SigningDriverInterface>
+>
 
 // Placeholder function -- replace with a real Signing API call
 async function signingDriverCreate(
     store: Store,
     notifier: Notifier | undefined,
     ledgerClient: LedgerClient,
+    drivers: AvailableSigningDrivers,
     { signingProviderId, primary, partyHint, chainId }: CreateWalletParams
 ): Promise<CreateWalletResult> {
+    const driver = drivers[signingProviderId as SigningProvider]
+
+    if (!driver) {
+        throw new Error(`Signing provider ${signingProviderId} not supported`)
+    }
+
+    let wallet: Wallet
+
     switch (signingProviderId) {
-        case 'participant': {
+        case SigningProvider.PARTICIPANT: {
             const network = await store.getNetwork(chainId)
 
             const res = await ledgerClient.partiesPost({
@@ -45,28 +59,45 @@ async function signingDriverCreate(
                 throw new Error('Failed to allocate party')
             }
 
-            const wallet: Wallet = {
+            wallet = {
                 primary: primary ?? false,
                 partyId: res.partyDetails.party,
                 hint: partyHint,
                 publicKey: 'placeholder-public-key',
                 namespace: 'placeholder-namespace',
-                signingProviderId: signingProviderId,
-                chainId: chainId,
+                signingProviderId,
+                chainId,
             }
 
-            await store.addWallet(wallet)
+            break
+        }
+        case SigningProvider.WALLET_KERNEL: {
+            const key = await driver.controller.createKey({ name: partyHint })
 
-            const wallets = await store.getWallets()
-            notifier?.emit('accountsChanged', wallets)
+            wallet = {
+                primary: primary ?? false,
+                partyId: 'placeholder-party-id', // Placeholder, replace with actual party ID from external allocation
+                hint: partyHint,
+                publicKey: key.publicKey,
+                namespace: 'placeholder-namespace',
+                signingProviderId,
+                chainId,
+            }
 
-            return { wallet }
+            break
         }
         default:
             throw new Error(
                 `Unsupported signing provider: ${signingProviderId}`
             )
     }
+
+    await store.addWallet(wallet)
+
+    const wallets = await store.getWallets()
+    notifier?.emit('accountsChanged', wallets)
+
+    return { wallet }
 }
 
 export const userController = (
@@ -74,6 +105,7 @@ export const userController = (
     store: Store,
     notificationService: NotificationService,
     authContext: AuthContext | undefined,
+    drivers: AvailableSigningDrivers,
     _logger: Logger
 ) => {
     const logger = _logger.child({ component: 'user-controller' })
@@ -151,6 +183,7 @@ export const userController = (
                 store,
                 notifier,
                 ledgerClient,
+                drivers,
                 params
             )
             return result
