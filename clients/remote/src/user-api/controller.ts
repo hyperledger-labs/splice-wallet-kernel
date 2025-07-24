@@ -12,7 +12,6 @@ import {
     AddSessionParams,
     AddSessionResult,
     ListSessionsResult,
-    Null,
     SetPrimaryWalletParams,
 } from './rpc-gen/typings.js'
 import { Store, Wallet, Auth } from 'core-wallet-store'
@@ -89,7 +88,8 @@ export const userController = (
             if (network.auth.type === 'implicit') {
                 auth = {
                     type: 'implicit',
-                    domain: network.auth.domain ?? '',
+                    issuer: network.auth.issuer ?? '',
+                    configUrl: network.auth.configUrl ?? '',
                     audience: network.auth.audience ?? '',
                     scope: network.auth.scope ?? '',
                     clientId: network.auth.clientId ?? '',
@@ -97,6 +97,8 @@ export const userController = (
             } else {
                 auth = {
                     type: 'password',
+                    issuer: network.auth.issuer ?? '',
+                    configUrl: network.auth.configUrl ?? '',
                     tokenUrl: network.auth.tokenUrl ?? '',
                     grantType: network.auth.grantType ?? '',
                     scope: network.auth.scope ?? '',

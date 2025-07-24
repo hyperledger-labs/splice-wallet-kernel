@@ -9751,6 +9751,7 @@ __metadata:
     "@types/node": "npm:^24.0.14"
     basic-auth: "npm:^2.0.1"
     oauth2-mock-server: "npm:^8.1.0"
+    pino: "npm:^9.7.0"
     ts-node: "npm:^10.9.2"
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.8.3"

@@ -12,7 +12,6 @@ export class LoginCallback extends LitElement {
     }
 
     async handleRedirect() {
-        console.log('entered handle redirect')
         const url = new URL(window.location.href)
         const code = url.searchParams.get('code')
         const encodedState = url.searchParams.get('state')
@@ -24,9 +23,7 @@ export class LoginCallback extends LitElement {
 
         if (code && encodedState) {
             const state = JSON.parse(atob(encodedState))
-            const fetchConfig = await fetch(
-                `${state.domain}/.well-known/openid-configuration`
-            )
+            const fetchConfig = await fetch(state.configUrl)
             const config = await fetchConfig.json()
             const tokenEndpoint = config.token_endpoint
 

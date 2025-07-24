@@ -54,6 +54,9 @@ test('call connect rpc', async () => {
                     ledgerApi: { baseUrl: 'https://test' },
                     auth: {
                         type: 'password',
+                        issuer: 'http://127.0.0.1:8889',
+                        configUrl:
+                            'http://127.0.0.1:8889/.well-known/openid-configuration',
                         tokenUrl: 'tokenUrl',
                         grantType: 'password',
                         scope: 'openid',
@@ -69,7 +72,9 @@ test('call connect rpc', async () => {
                     ledgerApi: { baseUrl: 'http://127.0.0.1:5003' },
                     auth: {
                         type: 'implicit',
-                        domain: 'http://127.0.0.1:8889',
+                        issuer: 'http://127.0.0.1:8889',
+                        configUrl:
+                            'http://127.0.0.1:8889/.well-known/openid-configuration',
                         audience:
                             'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424',
                         scope: 'openid daml_ledger_api offline_access',

@@ -32,7 +32,8 @@ export type TokenUrl = string
 export type GrantType = string
 export type Scope = string
 export type ClientId = string
-export type Domain = string
+export type Issuer = string
+export type ConfigUrl = string
 export type Audience = string
 /**
  *
@@ -45,7 +46,8 @@ export interface Auth {
     grantType?: GrantType
     scope?: Scope
     clientId?: ClientId
-    domain?: Domain
+    issuer: Issuer
+    configUrl: ConfigUrl
     audience?: Audience
     [k: string]: any
 }
