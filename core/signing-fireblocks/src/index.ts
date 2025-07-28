@@ -71,7 +71,7 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
     }
     public partyMode = PartyMode.EXTERNAL
     public signingProvider = SigningProvider.FIREBLOCKS
-    public controller = (authContext: AuthContext) =>
+    public controller = (authContext: AuthContext | undefined) =>
         buildController({
             signTransaction: async (
                 params: SignTransactionParams
@@ -80,7 +80,7 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
 
                 try {
                     const tx = await this.fireblocks.signTransaction(
-                        authContext.userId,
+                        authContext?.userId,
                         params.txHash,
                         params.publicKey
                     )
@@ -102,7 +102,7 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
                 params: GetTransactionParams
             ): Promise<GetTransactionResult> => {
                 for await (const tx of this.fireblocks.getTransactions(
-                    authContext.userId
+                    authContext?.userId
                 )) {
                     if (tx.txId === params.txId) {
                         return {
@@ -128,7 +128,7 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
                     const txIds = new Set(params.txIds)
                     const publicKeys = new Set(params.publicKeys)
                     for await (const tx of this.fireblocks.getTransactions(
-                        authContext.userId
+                        authContext?.userId
                     )) {
                         if (
                             txIds.has(tx.txId) ||
@@ -165,7 +165,7 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
             getKeys: async (): Promise<GetKeysResult> => {
                 try {
                     const keys = await this.fireblocks.getPublicKeys(
-                        authContext.userId
+                        authContext?.userId
                     )
                     return {
                         keys: keys.map((k) => ({

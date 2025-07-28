@@ -27,7 +27,7 @@ describe('fireblocks handler', () => {
         }, 25000)
         test('signTransaction', async () => {
             const transaction = await handler.signTransaction(
-                undefined,
+                userId,
                 TEST_TRANSACTION_HASH,
                 '02fefbcc9aebc8a479f211167a9f564df53aefd603a8662d9449a98c1ead2eba'
             )

@@ -34,6 +34,7 @@ async function signingDriverCreate(
     notifier: Notifier | undefined,
     ledgerClient: LedgerClient,
     drivers: AvailableSigningDrivers,
+    authContext: AuthContext | undefined,
     { signingProviderId, primary, partyHint, chainId }: CreateWalletParams
 ): Promise<CreateWalletResult> {
     const driver = drivers[signingProviderId as SigningProvider]
@@ -72,7 +73,9 @@ async function signingDriverCreate(
             break
         }
         case SigningProvider.WALLET_KERNEL: {
-            const key = await driver.controller.createKey({ name: partyHint })
+            const key = await driver
+                .controller(authContext)
+                .createKey({ name: partyHint })
 
             wallet = {
                 primary: primary ?? false,
@@ -184,6 +187,7 @@ export const userController = (
                 notifier,
                 ledgerClient,
                 drivers,
+                authContext,
                 params
             )
             return result
