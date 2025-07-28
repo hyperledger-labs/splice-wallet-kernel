@@ -5269,6 +5269,7 @@ __metadata:
     "@types/node": "npm:^22.15.29"
     core-ledger-client: "workspace:^"
     core-signing-lib: "workspace:^"
+    core-wallet-auth: "workspace:^"
     jest: "npm:^29.7.0"
     ts-jest-resolver: "npm:^2.0.1"
     typescript: "npm:^5.8.3"

@@ -59,7 +59,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
 
     public partyMode = PartyMode.EXTERNAL
     public signingProvider = SigningProvider.WALLET_KERNEL
-    public controller = (authContext: AuthContext) =>
+    public controller = (_authContext: AuthContext) =>
         buildController({
             signTransaction: async (
                 params: SignTransactionParams

@@ -5,29 +5,39 @@ import { InternalSigningDriver } from './controller.js'
 import { CreateKeyResult, isRpcError, Key, Transaction } from 'core-signing-lib'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
+import { Methods } from 'core-signing-lib/dist/rpc-gen/index.js'
+import { AuthContext } from 'core-wallet-auth'
 
 const TEST_KEY_NAME = 'test-key-name'
 const TEST_TRANSACTION = 'test-tx'
 const TEST_TRANSACTION_HASH =
     '88beb0783e394f6128699bad42906374ab64197d260db05bb0cfeeb518ba3ac2'
 
+const authContext: AuthContext = {
+    userId: 'test-user-id',
+    accessToken: 'test-access-token',
+}
+
 interface TestValues {
     signingDriver: InternalSigningDriver
     key: CreateKeyResult
+    controller: Methods
 }
 
 async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     const signingDriver = new InternalSigningDriver()
-    const key = await signingDriver.controller.createKey({ name: keyName })
+    const controller = signingDriver.controller(authContext)
+    const key = await controller.createKey({ name: keyName })
     return {
         signingDriver,
         key,
+        controller: signingDriver.controller(authContext),
     }
 }
 
 test('key creation', async () => {
-    const { signingDriver, key } = await setupTest()
-    const keys = await signingDriver.controller.getKeys()
+    const { controller, key } = await setupTest()
+    const keys = await controller.getKeys()
     expect(
         keys.keys?.find(
             (k: Key) => k.id === key.id && k.publicKey === key.publicKey
@@ -36,8 +46,8 @@ test('key creation', async () => {
 })
 
 test('transaction signature', async () => {
-    const { signingDriver, key } = await setupTest()
-    const tx = await signingDriver.controller.signTransaction({
+    const { controller, key } = await setupTest()
+    const tx = await controller.signTransaction({
         tx: TEST_TRANSACTION,
         txHash: TEST_TRANSACTION_HASH,
         publicKey: key.publicKey,
@@ -59,7 +69,7 @@ test('transaction signature', async () => {
         )
     ).toBe(true)
 
-    const transactionsByKey = await signingDriver.controller.getTransactions({
+    const transactionsByKey = await controller.getTransactions({
         publicKeys: [key.publicKey],
     })
     if (isRpcError(transactionsByKey)) {
@@ -73,7 +83,7 @@ test('transaction signature', async () => {
         )
     ).toBeDefined()
 
-    const transactionsById = await signingDriver.controller.getTransactions({
+    const transactionsById = await controller.getTransactions({
         txIds: [tx.txId],
     })
     if (isRpcError(transactionsById)) {

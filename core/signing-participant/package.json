@@ -12,7 +12,8 @@
     },
     "dependencies": {
         "core-ledger-client": "workspace:^",
-        "core-signing-lib": "workspace:^"
+        "core-signing-lib": "workspace:^",
+        "core-wallet-auth": "workspace:^"
     },
     "devDependencies": {
         "@jest/globals": "^29.0.0",
