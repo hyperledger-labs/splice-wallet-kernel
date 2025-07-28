@@ -12,6 +12,7 @@
     },
     "dependencies": {
         "core-signing-lib": "0.0.1",
+        "core-wallet-auth": "1.0.0",
         "fs-extra": "^11.3.0",
         "lodash": "^4.17.21",
         "tweetnacl": "^1.0.3",

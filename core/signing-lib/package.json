@@ -11,6 +11,7 @@
         "clean": "tsc -b --clean && rm -rf ./dist"
     },
     "dependencies": {
+        "core-wallet-auth": "1.0.0",
         "fs-extra": "^11.3.0",
         "lodash": "^4.17.21"
     },

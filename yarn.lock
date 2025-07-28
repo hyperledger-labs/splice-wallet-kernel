@@ -5206,6 +5206,7 @@ __metadata:
     "@types/node": "npm:^22.15.29"
     async-mutex: "npm:^0.5.0"
     core-signing-lib: "npm:0.0.1"
+    core-wallet-auth: "npm:1.0.0"
     fs-extra: "npm:^11.3.0"
     jest: "npm:^29.7.0"
     lodash: "npm:^4.17.21"
@@ -5230,6 +5231,7 @@ __metadata:
     "@types/lodash": "npm:^4.17.17"
     "@types/node": "npm:^22.15.29"
     core-signing-lib: "npm:0.0.1"
+    core-wallet-auth: "npm:1.0.0"
     fs-extra: "npm:^11.3.0"
     jest: "npm:^29.7.0"
     lodash: "npm:^4.17.21"
@@ -5247,6 +5249,7 @@ __metadata:
     "@types/fs-extra": "npm:^11"
     "@types/lodash": "npm:^4.17.17"
     "@types/node": "npm:^22.15.29"
+    core-wallet-auth: "npm:1.0.0"
     fs-extra: "npm:^11.3.0"
     lodash: "npm:^4.17.21"
     typescript: "npm:^5.8.3"
@@ -5299,7 +5302,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-wallet-auth@workspace:^, core-wallet-auth@workspace:core/wallet-auth":
+"core-wallet-auth@npm:1.0.0, core-wallet-auth@workspace:^, core-wallet-auth@workspace:core/wallet-auth":
   version: 0.0.0-use.local
   resolution: "core-wallet-auth@workspace:core/wallet-auth"
   dependencies:
