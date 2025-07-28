@@ -10,8 +10,8 @@
     "dependencies": {
         "@fireblocks/ts-sdk": "^10.2.0",
         "async-mutex": "^0.5.0",
-        "core-signing-lib": "0.0.1",
-        "core-wallet-auth": "1.0.0",
+        "core-signing-lib": "workspace:^",
+        "core-wallet-auth": "workspace:^",
         "fs-extra": "^11.3.0",
         "lodash": "^4.17.21",
         "pino": "^9.7.0",

@@ -19,7 +19,10 @@ import { randomUUID } from 'node:crypto'
 export class ParticipantSigningDriver implements SigningDriverInterface {
     public partyMode = PartyMode.INTERNAL
     public signingProvider = SigningProvider.PARTICIPANT
-    public controller = (_authContext: AuthContext) =>
+
+    public controller = (
+        _authContext: AuthContext // eslint-disable-line @typescript-eslint/no-unused-vars
+    ) =>
         buildController({
             signTransaction: async (
                 params: SignTransactionParams
