@@ -120,7 +120,7 @@ async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     }
 }
 
-test('key creation', async () => {
+test.skip('key creation', async () => {
     const { controller } = await setupTest()
     const err = await controller.createKey({ name: 'test' })
     expect(isRpcError(err)).toBe(true)

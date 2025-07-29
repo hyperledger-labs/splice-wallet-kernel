@@ -31,6 +31,7 @@ interface FireblocksKey {
 export interface FireblocksTransaction {
     txId: string
     status: SigningStatus
+    createdAt?: number
     signature?: string | undefined
     publicKey?: string | undefined
     derivationPath: number[]
@@ -198,6 +199,7 @@ export class FireblocksHandler {
                         yield {
                             txId: tx.id,
                             status: 'signed',
+                            createdAt: tx.createdAt!,
                             publicKey: signedMessage.publicKey,
                             signature: signedMessage.signature.fullSig,
                             derivationPath: signedMessage.derivationPath!,
@@ -241,6 +243,7 @@ export class FireblocksHandler {
                         yield {
                             txId: tx.id,
                             status: status,
+                            createdAt: tx.createdAt!,
                             publicKey: publicKey?.publicKey,
                             derivationPath: message.derivationPath,
                         }

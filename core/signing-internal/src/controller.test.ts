@@ -31,7 +31,7 @@ async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     return {
         signingDriver,
         key,
-        controller: signingDriver.controller(authContext),
+        controller,
     }
 }
 
