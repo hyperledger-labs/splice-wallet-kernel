@@ -42,17 +42,6 @@ export interface FireblocksKeyInfo {
     apiSecret: string
 }
 
-export const hideFireblocksKeySecret = (
-    keyInfo: FireblocksKeyInfo | undefined
-): FireblocksKeyInfo | undefined => {
-    return keyInfo
-        ? {
-              apiKey: keyInfo.apiKey,
-              apiSecret: '***HIDDEN***',
-          }
-        : undefined
-}
-
 const logger = pino({ name: 'main', level: 'debug' })
 
 export class FireblocksHandler {

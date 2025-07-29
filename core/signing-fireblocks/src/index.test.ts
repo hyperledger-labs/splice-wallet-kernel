@@ -14,6 +14,7 @@ import {
 import { PublicKeyInformationAlgorithmEnum } from '@fireblocks/ts-sdk'
 import { AuthContext } from 'core-wallet-auth'
 import { Methods } from 'core-signing-lib/dist/rpc-gen'
+import { FireblocksKeyInfo } from './fireblocks'
 
 const TEST_KEY_NAME = 'test-key-name'
 const TEST_TRANSACTION = 'test-tx'
@@ -25,8 +26,13 @@ const TEST_FIREBLOCKS_VAULT_ID = TEST_FIREBLOCKS_DERIVATION_PATH.join('-')
 const TEST_FIREBLOCKS_PUBLIC_KEY =
     '02fefbcc9aebc8a479f211167a9f564df53aefd603a8662d9449a98c1ead2eba'
 
-const authContext: AuthContext = {
+const TEST_AUTH_CONTEXT: AuthContext = {
     userId: 'test-user-id',
+    accessToken: 'test-access-token',
+}
+
+const TEST_BAD_AUTH_CONTEXT: AuthContext = {
+    userId: 'bad-user-id',
     accessToken: 'test-access-token',
 }
 
@@ -36,36 +42,65 @@ jest.mock('./fireblocks', () => {
         return actual
     } else {
         return {
-            FireblocksHandler: jest.fn().mockImplementation(() => {
-                return {
-                    constructor: jest.fn(),
-                    getPublicKeys: jest.fn().mockResolvedValue([
-                        {
-                            name: TEST_KEY_NAME,
-                            publicKey: TEST_FIREBLOCKS_PUBLIC_KEY,
-                            derivationPath: [42, CC_COIN_TYPE, 4, 0, 0],
-                            algorithm:
-                                PublicKeyInformationAlgorithmEnum.EddsaEd25519,
-                        },
-                    ]),
-                    getTransactions: jest.fn(() => {
-                        async function* generator() {
-                            yield {
+            // NOTE: beware that the mock's constructor is _not_ typesafe, if the constructor's first argument is changed,
+            // the test will fail at runtime, not at compile time
+            FireblocksHandler: jest
+                .fn()
+                .mockImplementation(
+                    (defaultKey: FireblocksKeyInfo | undefined) => {
+                        return {
+                            constructor: jest.fn(),
+                            getPublicKeys: jest
+                                .fn()
+                                .mockImplementation((userId: string) => {
+                                    if (
+                                        userId === TEST_AUTH_CONTEXT.userId ||
+                                        defaultKey !== undefined
+                                    ) {
+                                        return [
+                                            {
+                                                name: TEST_KEY_NAME,
+                                                publicKey:
+                                                    TEST_FIREBLOCKS_PUBLIC_KEY,
+                                                derivationPath: [
+                                                    42,
+                                                    CC_COIN_TYPE,
+                                                    4,
+                                                    0,
+                                                    0,
+                                                ],
+                                                algorithm:
+                                                    PublicKeyInformationAlgorithmEnum.EddsaEd25519,
+                                            },
+                                        ]
+                                    } else {
+                                        return {
+                                            error: 'User not found',
+                                            error_description:
+                                                'User does not exist in Fireblocks',
+                                        }
+                                    }
+                                }),
+                            getTransactions: jest.fn(() => {
+                                async function* generator() {
+                                    yield {
+                                        txId: TEST_TRANSACTION_HASH,
+                                        status: 'signed',
+                                        signature: 'test-signature',
+                                        publicKey: TEST_FIREBLOCKS_PUBLIC_KEY,
+                                        derivationPath:
+                                            TEST_FIREBLOCKS_DERIVATION_PATH,
+                                    }
+                                }
+                                return generator()
+                            }),
+                            signTransaction: jest.fn().mockResolvedValue({
                                 txId: TEST_TRANSACTION_HASH,
                                 status: 'signed',
-                                signature: 'test-signature',
-                                publicKey: TEST_FIREBLOCKS_PUBLIC_KEY,
-                                derivationPath: TEST_FIREBLOCKS_DERIVATION_PATH,
-                            }
+                            }),
                         }
-                        return generator()
-                    }),
-                    signTransaction: jest.fn().mockResolvedValue({
-                        txId: TEST_TRANSACTION_HASH,
-                        status: 'signed',
-                    }),
-                }
-            }),
+                    }
+                ),
         }
     }
 })
@@ -74,6 +109,7 @@ interface TestValues {
     signingDriver: FireblocksSigningDriver
     key: CreateKeyResult
     controller: Methods
+    noDefaultSigningDriver: FireblocksSigningDriver
 }
 
 export function throwWhenRpcError<T>(value: T | RpcError): void {
@@ -85,29 +121,38 @@ export function throwWhenRpcError<T>(value: T | RpcError): void {
 }
 
 async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
-    let signingDriver: FireblocksSigningDriver
+    let keyInfo: FireblocksKeyInfo
+    let userApiKeys: Map<string, FireblocksKeyInfo>
     const apiKey = process.env.FIREBLOCKS_API_KEY
     const secretLocation =
         process.env.SECRET_KEY_LOCATION || 'fireblocks_secret.key'
     if (!apiKey) {
-        signingDriver = new FireblocksSigningDriver({
-            defaultKeyInfo: {
-                apiKey: 'mocked',
-                apiSecret: 'mocked',
-            },
-            userApiKeys: new Map(),
-        })
+        keyInfo = {
+            apiKey: 'mocked',
+            apiSecret: 'mocked',
+        }
+        userApiKeys = new Map<string, FireblocksKeyInfo>([
+            [TEST_AUTH_CONTEXT.userId, keyInfo],
+        ])
     } else {
         const secretPath = path.resolve(process.cwd(), secretLocation)
         const apiSecret = readFileSync(secretPath, 'utf8')
-        signingDriver = new FireblocksSigningDriver({
-            defaultKeyInfo: {
-                apiKey,
-                apiSecret,
-            },
-            userApiKeys: new Map(),
-        })
+        keyInfo = {
+            apiKey,
+            apiSecret,
+        }
+        userApiKeys = new Map<string, FireblocksKeyInfo>([
+            [TEST_AUTH_CONTEXT.userId, keyInfo],
+        ])
     }
+    const signingDriver = new FireblocksSigningDriver({
+        defaultKeyInfo: keyInfo,
+        userApiKeys,
+    })
+    const noDefaultSigningDriver = new FireblocksSigningDriver({
+        defaultKeyInfo: undefined,
+        userApiKeys,
+    })
     const key = {
         id: TEST_FIREBLOCKS_VAULT_ID,
         name: keyName,
@@ -115,8 +160,9 @@ async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     }
     return {
         signingDriver,
+        noDefaultSigningDriver,
         key,
-        controller: signingDriver.controller(authContext),
+        controller: signingDriver.controller(TEST_AUTH_CONTEXT),
     }
 }
 
@@ -124,6 +170,20 @@ test.skip('key creation', async () => {
     const { controller } = await setupTest()
     const err = await controller.createKey({ name: 'test' })
     expect(isRpcError(err)).toBe(true)
+})
+
+test('non-existing user cannot use driver without a default', async () => {
+    const { noDefaultSigningDriver } = await setupTest()
+    const err = await noDefaultSigningDriver
+        .controller(TEST_BAD_AUTH_CONTEXT)
+        .getKeys()
+    expect(isRpcError(err)).toBe(true)
+})
+
+test('non-existing user can use driver that does have a default', async () => {
+    const { signingDriver } = await setupTest()
+    const err = await signingDriver.controller(TEST_BAD_AUTH_CONTEXT).getKeys()
+    expect(isRpcError(err)).toBe(false)
 })
 
 test('transaction signature', async () => {

@@ -197,6 +197,17 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
             },
 
             getConfiguration: async (): Promise<GetConfigurationResult> => {
+                const hideFireblocksKeySecret = (
+                    keyInfo: FireblocksKeyInfo | undefined
+                ): FireblocksKeyInfo | undefined => {
+                    return keyInfo
+                        ? {
+                              apiKey: keyInfo.apiKey,
+                              apiSecret: '***HIDDEN***',
+                          }
+                        : undefined
+                }
+
                 return {
                     ...this.config,
                     defaultKeyInfo: hideFireblocksKeySecret(
