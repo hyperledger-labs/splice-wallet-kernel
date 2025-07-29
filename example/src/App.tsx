@@ -31,6 +31,30 @@ function App() {
             })
             .catch(() => setStatus('disconnected'))
 
+        provider
+            .request({
+                method: 'requestAccounts',
+            })
+            .then((wallets) => {
+                const requestedAccounts =
+                    wallets as sdk.dappAPI.RequestAccountsResult
+                setAccounts(requestedAccounts)
+                console.log('accounts are ' + JSON.stringify(accounts))
+
+                if (requestedAccounts?.length > 0) {
+                    const primaryWallet = requestedAccounts.find(
+                        (w) => w.primary
+                    )
+                    setPrimaryParty(primaryWallet?.partyId)
+                } else {
+                    setPrimaryParty(undefined)
+                }
+            })
+            .catch((err) => {
+                console.error('Error requesting wallets:', err)
+                setError(err instanceof Error ? err.message : String(err))
+            })
+
         const messageListener = (event: unknown) => {
             setMessages((prev) => [...prev, JSON.stringify(event)])
         }
@@ -93,37 +117,6 @@ function App() {
         }
     }
 
-    function requestAccounts() {
-        setError('')
-        const provider = window.splice
-
-        if (provider !== undefined) {
-            provider
-                .request({
-                    method: 'requestAccounts',
-                })
-                .then((wallets) => {
-                    const requestedAccounts =
-                        wallets as sdk.dappAPI.RequestAccountsResult
-                    setAccounts(requestedAccounts)
-                    console.log('accounts are ' + JSON.stringify(accounts))
-
-                    if (requestedAccounts?.length > 0) {
-                        const primaryWallet = requestedAccounts.find(
-                            (w) => w.primary
-                        )
-                        setPrimaryParty(primaryWallet?.partyId)
-                    } else {
-                        setPrimaryParty(undefined)
-                    }
-                })
-                .catch((err) => {
-                    console.error('Error requesting wallets:', err)
-                    setError(err instanceof Error ? err.message : String(err))
-                })
-        }
-    }
-
     return (
         <div>
             <h1>Example dApp</h1>
@@ -140,7 +133,6 @@ function App() {
                         onClick={() => {
                             console.log('Connecting to Wallet Kernel...')
                             setLoading(true)
-                            requestAccounts()
                             sdk.connect()
                                 .then(({ kernel, isConnected, chainId }) => {
                                     setLoading(false)
