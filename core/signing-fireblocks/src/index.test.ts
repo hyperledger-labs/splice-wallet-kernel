@@ -121,19 +121,16 @@ export function throwWhenRpcError<T>(value: T | RpcError): void {
 }
 
 async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
-    let keyInfo: FireblocksKeyInfo
-    let userApiKeys: Map<string, FireblocksKeyInfo>
     const apiKey = process.env.FIREBLOCKS_API_KEY
     const secretLocation =
         process.env.SECRET_KEY_LOCATION || 'fireblocks_secret.key'
+    let keyInfo: FireblocksKeyInfo
+
     if (!apiKey) {
         keyInfo = {
             apiKey: 'mocked',
             apiSecret: 'mocked',
         }
-        userApiKeys = new Map<string, FireblocksKeyInfo>([
-            [TEST_AUTH_CONTEXT.userId, keyInfo],
-        ])
     } else {
         const secretPath = path.resolve(process.cwd(), secretLocation)
         const apiSecret = readFileSync(secretPath, 'utf8')
@@ -141,10 +138,10 @@ async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
             apiKey,
             apiSecret,
         }
-        userApiKeys = new Map<string, FireblocksKeyInfo>([
-            [TEST_AUTH_CONTEXT.userId, keyInfo],
-        ])
     }
+    const userApiKeys = new Map<string, FireblocksKeyInfo>([
+        [TEST_AUTH_CONTEXT.userId, keyInfo],
+    ])
     const signingDriver = new FireblocksSigningDriver({
         defaultKeyInfo: keyInfo,
         userApiKeys,

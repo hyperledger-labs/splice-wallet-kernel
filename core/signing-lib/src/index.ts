@@ -25,5 +25,5 @@ export enum SigningProvider {
 export interface SigningDriverInterface {
     partyMode: PartyMode
     signingProvider: SigningProvider
-    buildController: (authContext: AuthContext | undefined) => Methods
+    controller: (authContext: AuthContext | undefined) => Methods
 }

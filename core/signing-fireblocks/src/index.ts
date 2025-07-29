@@ -24,11 +24,7 @@ import {
     SetConfigurationResult,
     Transaction,
 } from 'core-signing-lib'
-import {
-    FireblocksHandler,
-    FireblocksKeyInfo,
-    hideFireblocksKeySecret,
-} from './fireblocks'
+import { FireblocksHandler, FireblocksKeyInfo } from './fireblocks'
 import _ from 'lodash'
 import { z } from 'zod'
 import { AuthContext } from 'core-wallet-auth'
