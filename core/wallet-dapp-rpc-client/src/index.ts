@@ -314,6 +314,12 @@ export interface OnConnectedEvent {
 export type AccountsChangedEvent = Wallet[]
 /**
  *
+ * An array of accounts that the user has authorized the dapp to access..
+ *
+ */
+export type RequestAccountsResult = Wallet[]
+/**
+ *
  * Event emitted when a transaction changes.
  *
  */
@@ -340,6 +346,7 @@ export type PrepareExecute = (
 export type LedgerApi = (params: LedgerApiParams) => Promise<LedgerApiResult>
 export type OnConnected = () => Promise<OnConnectedEvent>
 export type OnAccountsChanged = () => Promise<AccountsChangedEvent>
+export type RequestAccounts = () => Promise<RequestAccountsResult>
 export type OnTxChanged = () => Promise<TxChangedEvent>
 
 export class SpliceWalletJSONRPCDAppAPI {
@@ -420,6 +427,15 @@ export class SpliceWalletJSONRPCDAppAPI {
         method: 'onAccountsChanged',
         ...params: Parameters<OnAccountsChanged>
     ): ReturnType<OnAccountsChanged>
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public async request(
+        method: 'requestAccounts',
+        ...params: Parameters<RequestAccounts>
+    ): ReturnType<RequestAccounts>
 
     /**
      *
