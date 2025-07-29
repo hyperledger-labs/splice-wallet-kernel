@@ -42,6 +42,17 @@ export interface FireblocksKeyInfo {
     apiSecret: string
 }
 
+export const hideFireblocksKeySecret = (
+    keyInfo: FireblocksKeyInfo | undefined
+): FireblocksKeyInfo | undefined => {
+    return keyInfo
+        ? {
+              apiKey: keyInfo.apiKey,
+              apiSecret: '***HIDDEN***',
+          }
+        : undefined
+}
+
 const logger = pino({ name: 'main', level: 'debug' })
 
 export class FireblocksHandler {
@@ -56,9 +67,7 @@ export class FireblocksHandler {
         } else if (this.defaultClient) {
             return this.defaultClient
         } else {
-            throw new Error(
-                'No Fireblocks client available. Please provide a valid userId or default key.'
-            )
+            throw new Error('No Fireblocks client available for this user.')
         }
     }
 

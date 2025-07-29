@@ -24,7 +24,11 @@ import {
     SetConfigurationResult,
     Transaction,
 } from 'core-signing-lib'
-import { FireblocksHandler, FireblocksKeyInfo } from './fireblocks'
+import {
+    FireblocksHandler,
+    FireblocksKeyInfo,
+    hideFireblocksKeySecret,
+} from './fireblocks'
 import _ from 'lodash'
 import { z } from 'zod'
 import { AuthContext } from 'core-wallet-auth'
@@ -71,7 +75,7 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
     }
     public partyMode = PartyMode.EXTERNAL
     public signingProvider = SigningProvider.FIREBLOCKS
-    public buildController = (authContext: AuthContext | undefined) =>
+    public controller = (authContext: AuthContext | undefined) =>
         buildController({
             signTransaction: async (
                 params: SignTransactionParams
@@ -193,7 +197,17 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
             },
 
             getConfiguration: async (): Promise<GetConfigurationResult> => {
-                return this.config
+                return {
+                    ...this.config,
+                    defaultKeyInfo: hideFireblocksKeySecret(
+                        this.config.defaultKeyInfo
+                    ),
+                    userApiKeys: new Map(
+                        Array.from(this.config.userApiKeys.entries()).map(
+                            ([k, v]) => [k, hideFireblocksKeySecret(v)]
+                        )
+                    ),
+                }
             },
 
             setConfiguration: async (
