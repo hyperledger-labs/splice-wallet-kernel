@@ -203,9 +203,10 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
                         this.config.defaultKeyInfo
                     ),
                     userApiKeys: new Map(
-                        Array.from(this.config.userApiKeys.entries()).map(
-                            ([k, v]) => [k, hideFireblocksKeySecret(v)]
-                        )
+                        [...this.config.userApiKeys].map(([k, v]) => [
+                            k,
+                            hideFireblocksKeySecret(v),
+                        ])
                     ),
                 }
             },
