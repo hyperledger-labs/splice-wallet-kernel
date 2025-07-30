@@ -4,11 +4,11 @@ import {
     SigningKeyScheme,
     SigningKeySpec,
     SigningPublicKey,
-} from './generated/com/digitalasset/canton/crypto/v30/crypto.js'
+} from './_proto/com/digitalasset/canton/crypto/v30/crypto.js'
 import {
     StoreId,
     StoreId_Authorized,
-} from './generated/com/digitalasset/canton/topology/admin/v30/common.js'
+} from './_proto/com/digitalasset/canton/topology/admin/v30/common.js'
 import {
     Enums_ParticipantPermission,
     Enums_TopologyChangeOp,
@@ -16,13 +16,13 @@ import {
     PartyToKeyMapping,
     PartyToParticipant,
     TopologyMapping,
-} from './generated/com/digitalasset/canton/protocol/v30/topology.js'
+} from './_proto/com/digitalasset/canton/protocol/v30/topology.js'
 import {
     GenerateTransactionsRequest,
     GenerateTransactionsRequest_Proposal,
     GenerateTransactionsResponse,
-} from './generated/com/digitalasset/canton/topology/admin/v30/topology_manager_write_service.js'
-import { TopologyManagerWriteServiceClient } from './generated/com/digitalasset/canton/topology/admin/v30/topology_manager_write_service.client.js'
+} from './_proto/com/digitalasset/canton/topology/admin/v30/topology_manager_write_service.js'
+import { TopologyManagerWriteServiceClient } from './_proto/com/digitalasset/canton/topology/admin/v30/topology_manager_write_service.client.js'
 import { GrpcTransport } from '@protobuf-ts/grpc-transport'
 import { ChannelCredentials } from '@grpc/grpc-js'
 

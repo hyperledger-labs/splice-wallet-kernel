@@ -6,7 +6,7 @@ import { getRepoRoot, traverseDirectory } from './utils.js'
 
 const repoRoot = getRepoRoot()
 
-const outdir = `${repoRoot}/clients/remote/src/generated`
+const outdir = `${repoRoot}/clients/remote/src/_proto`
 const roots = [
     `${repoRoot}/.canton/protobuf/community`,
     `${repoRoot}/.canton/protobuf/lib`,

@@ -9,7 +9,7 @@
         "generate:user": "yarn workspace core-rpc-generator build && open-rpc-generator generate -c ./rpc-generator-config-user.json",
         "generate:signing": "yarn workspace core-rpc-generator build && open-rpc-generator generate -c ./rpc-generator-config-signing.json",
         "generate:grpc": "tsx ./scripts/src/generate-protobufs.ts",
-        "generate:all": "yarn generate:dapp && yarn generate:user && yarn generate:signing && yarn generate:grpc",
+        "generate:all": "yarn generate:dapp && yarn generate:user && yarn generate:signing",
         "build:all": "yarn workspaces foreach -A -t run build",
         "clean:all": "yarn workspaces foreach -A run clean",
         "test:all": "yarn workspaces foreach -A run test",

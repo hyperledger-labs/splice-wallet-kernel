@@ -29,9 +29,6 @@ jobs:
             - name: eslint code
               run: yarn workspaces foreach -A run eslint
 
-            - name: download canton
-              run: yarn script:fetch:canton
-
             - name: run codegen
               run: yarn generate:all
 
