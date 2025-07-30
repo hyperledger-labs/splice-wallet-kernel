@@ -127,10 +127,15 @@ function main(): void {
     const rootDir = getRepoRoot()
     let errorCount = 0
     traverseDirectory(rootDir, (filePath) => {
+        if (filePath.includes('.canton') || filePath.includes('.yarn')) {
+            return // Skip directories
+        }
+
         if (filePath.endsWith('package.json')) {
             errorCount += checkPackageJson(filePath)
         }
         if (filePath.endsWith('tsconfig.json')) {
+            console.log(`Checking tsconfig at ${filePath}`)
             errorCount += checkTsconfigJson(filePath)
         }
     })

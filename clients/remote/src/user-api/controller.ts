@@ -23,6 +23,7 @@ import {
 import { AuthContext } from 'core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
 import { SigningDriverInterface, SigningProvider } from 'core-signing-lib'
+import { TopologyWriteService } from '../TopologyWriteService.js'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
@@ -73,6 +74,16 @@ async function signingDriverCreate(
         }
         case SigningProvider.WALLET_KERNEL: {
             const key = await driver.controller.createKey({ name: partyHint })
+
+            const topologyService = new TopologyWriteService(
+                'localhost:5002',
+                ledgerClient
+            )
+
+            topologyService.generateTransactions(
+                key.publicKey,
+                'placeholder-party-hint'
+            )
 
             wallet = {
                 primary: primary ?? false,
