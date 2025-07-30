@@ -147,6 +147,10 @@ export const dappController = (
         onAccountsChanged: async () => {
             throw new Error('Only for events.')
         },
+        requestAccounts: async () => {
+            const wallets = await store.getWallets()
+            return wallets
+        },
         onTxChanged: async () => {
             throw new Error('Only for events.')
         },

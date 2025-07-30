@@ -225,6 +225,16 @@
             }
         },
         {
+            "name": "requestAccounts",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/RequestAccountsResult"
+                }
+            }
+        },
+        {
             "name": "onTxChanged",
             "params": [],
             "result": {
@@ -310,6 +320,14 @@
                 "title": "AccountsChangedEvent",
                 "type": "array",
                 "description": "Event emitted when the user's accounts change.",
+                "items": {
+                    "$ref": "api-specs/openrpc-user-api.json#/components/schemas/Wallet"
+                }
+            },
+            "RequestAccountsResult": {
+                "title": "RequestAccountsResult",
+                "type": "array",
+                "description": "An array of accounts that the user has authorized the dapp to access..",
                 "items": {
                     "$ref": "api-specs/openrpc-user-api.json#/components/schemas/Wallet"
                 }

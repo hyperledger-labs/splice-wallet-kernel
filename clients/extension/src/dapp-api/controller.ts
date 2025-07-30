@@ -37,6 +37,10 @@ export const dappController = (store?: Store) =>
         status: async () => {
             throw new Error('Function not implemented.')
         },
+        requestAccounts: async () => {
+            const wallets = await store!.getWallets()
+            return wallets
+        },
         onConnected: async () => {
             throw new Error('Only for events.')
         },

@@ -1,15 +1,18 @@
 import { paths } from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
 import createClient, { Client } from 'openapi-fetch'
 
+export type InteractivePreparePostReq =
+    paths['/v2/interactive-submission/prepare']['post']['requestBody']['content']['application/json']
+export type InteractivePreparePostRes =
+    paths['/v2/interactive-submission/prepare']['post']['responses']['200']['content']['application/json']
+
 export type PartiesPostReq =
     paths['/v2/parties']['post']['requestBody']['content']['application/json']
 export type PartiesPostRes =
     paths['/v2/parties']['post']['responses']['200']['content']['application/json']
 
-export type InteractivePreparePostReq =
-    paths['/v2/interactive-submission/prepare']['post']['requestBody']['content']['application/json']
-export type InteractivePreparePostRes =
-    paths['/v2/interactive-submission/prepare']['post']['responses']['200']['content']['application/json']
+export type PartiesParticipantIdRes =
+    paths['/v2/parties/participant-id']['get']['responses']['200']['content']['application/json']
 
 export type SubmitAndWaitPostReq =
     paths['/v2/commands/submit-and-wait']['post']['requestBody']['content']['application/json']
@@ -18,7 +21,6 @@ export type SubmitAndWaitPostRes =
 
 export class LedgerClient {
     private readonly client: Client<paths>
-    private readonly getToken!: () => Promise<string>
 
     constructor(baseUrl: string, token: string) {
         this.client = createClient<paths>({
@@ -35,13 +37,6 @@ export class LedgerClient {
         })
     }
 
-    public async partiesPost(body: PartiesPostReq): Promise<PartiesPostRes> {
-        const resp = await this.client.POST('/v2/parties', {
-            body,
-        })
-        return this.valueOrError(resp)
-    }
-
     public async interactivePreparePost(
         body: InteractivePreparePostReq
     ): Promise<InteractivePreparePostRes> {
@@ -50,6 +45,18 @@ export class LedgerClient {
             { body }
         )
 
+        return this.valueOrError(resp)
+    }
+
+    public async partiesPost(body: PartiesPostReq): Promise<PartiesPostRes> {
+        const resp = await this.client.POST('/v2/parties', {
+            body,
+        })
+        return this.valueOrError(resp)
+    }
+
+    public async partiesParticipantIdGet(): Promise<PartiesParticipantIdRes> {
+        const resp = await this.client.GET('/v2/parties/participant-id')
         return this.valueOrError(resp)
     }
 
