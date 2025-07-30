@@ -2,7 +2,7 @@ import { AuthContext } from 'core-wallet-auth'
 import { Methods } from './rpc-gen/index.js'
 import { Error as RpcError } from './rpc-gen/typings.js'
 
-export { default as buildController } from './rpc-gen/index.js'
+export { default as buildController, Methods } from './rpc-gen/index.js'
 export * from './rpc-gen/typings.js'
 
 export const CC_COIN_TYPE = 6767

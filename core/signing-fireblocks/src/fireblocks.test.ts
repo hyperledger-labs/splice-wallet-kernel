@@ -1,6 +1,6 @@
 import { expect, test, describe } from '@jest/globals'
 
-import { FireblocksHandler } from './fireblocks'
+import { FireblocksHandler } from './fireblocks.js'
 import { readFileSync } from 'fs-extra'
 import path from 'path'
 

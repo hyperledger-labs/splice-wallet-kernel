@@ -24,7 +24,7 @@ import {
     SetConfigurationResult,
     Transaction,
 } from 'core-signing-lib'
-import { FireblocksHandler, FireblocksKeyInfo } from './fireblocks'
+import { FireblocksHandler, FireblocksKeyInfo } from './fireblocks.js'
 import _ from 'lodash'
 import { z } from 'zod'
 import { AuthContext } from 'core-wallet-auth'
@@ -186,9 +186,9 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
                 _params: CreateKeyParams
             ): Promise<CreateKeyResult> => {
                 return {
-                    error: 'not_implemented',
+                    error: 'not_allowed',
                     error_description:
-                        'Create key is not allowed in Fireblocks driver.',
+                        'Creating a Fireblocks key through the Wallet Kernel is not allowed, please create new keys directly in Fireblocks.',
                 }
             },
 

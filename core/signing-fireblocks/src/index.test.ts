@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals'
 
-import FireblocksSigningDriver from './index'
+import FireblocksSigningDriver from './index.js'
 import { readFileSync } from 'fs-extra'
 import path from 'path'
 
@@ -13,8 +13,8 @@ import {
 } from 'core-signing-lib'
 import { PublicKeyInformationAlgorithmEnum } from '@fireblocks/ts-sdk'
 import { AuthContext } from 'core-wallet-auth'
-import { Methods } from 'core-signing-lib/dist/rpc-gen'
-import { FireblocksKeyInfo } from './fireblocks'
+import { Methods } from 'core-signing-lib'
+import { FireblocksKeyInfo } from './fireblocks.js'
 
 const TEST_KEY_NAME = 'test-key-name'
 const TEST_TRANSACTION = 'test-tx'
@@ -163,7 +163,7 @@ async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     }
 }
 
-test.skip('key creation', async () => {
+test('key creation', async () => {
     const { controller } = await setupTest()
     const err = await controller.createKey({ name: 'test' })
     expect(isRpcError(err)).toBe(true)
@@ -179,8 +179,8 @@ test('non-existing user cannot use driver without a default', async () => {
 
 test('non-existing user can use driver that does have a default', async () => {
     const { signingDriver } = await setupTest()
-    const err = await signingDriver.controller(TEST_BAD_AUTH_CONTEXT).getKeys()
-    expect(isRpcError(err)).toBe(false)
+    const keys = await signingDriver.controller(TEST_BAD_AUTH_CONTEXT).getKeys()
+    expect(isRpcError(keys)).toBe(false)
 })
 
 test('transaction signature', async () => {
