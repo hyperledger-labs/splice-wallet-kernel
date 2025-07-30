@@ -22,14 +22,26 @@ import {
 } from '../notification/NotificationService.js'
 import { AuthContext } from 'core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
-import { SigningDriverInterface, SigningProvider } from 'core-signing-lib'
+import {
+    CreateKeyResult,
+    SigningDriverInterface,
+    SigningProvider,
+} from 'core-signing-lib'
 import { TopologyWriteService } from '../TopologyWriteService.js'
+import {
+    Signature,
+    SignatureFormat,
+    SigningAlgorithmSpec,
+} from '../_proto/com/digitalasset/canton/crypto/v30/crypto.js'
+import {
+    MultiTransactionSignatures,
+    SignedTopologyTransaction,
+} from '../_proto/com/digitalasset/canton/protocol/v30/topology.js'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
 >
 
-// Placeholder function -- replace with a real Signing API call
 async function signingDriverCreate(
     store: Store,
     notifier: Notifier | undefined,
@@ -49,6 +61,9 @@ async function signingDriverCreate(
         case SigningProvider.PARTICIPANT: {
             const network = await store.getNetwork(chainId)
 
+            const { participantId: namespace } =
+                await ledgerClient.partiesParticipantIdGet()
+
             const res = await ledgerClient.partiesPost({
                 partyIdHint: partyHint,
                 identityProviderId: '',
@@ -64,35 +79,98 @@ async function signingDriverCreate(
                 primary: primary ?? false,
                 partyId: res.partyDetails.party,
                 hint: partyHint,
-                publicKey: 'placeholder-public-key',
-                namespace: 'placeholder-namespace',
-                signingProviderId,
+                publicKey: namespace,
+                namespace,
                 chainId,
+                signingProviderId,
             }
 
             break
         }
         case SigningProvider.WALLET_KERNEL: {
-            const key = await driver.controller.createKey({ name: partyHint })
+            const key = await driver.controller.createKey({
+                name: partyHint,
+            })
+
+            const namespace = TopologyWriteService.createFingerprintFromKey(
+                key.publicKey
+            )
+            const partyId = `${partyHint}::${namespace}`
 
             const topologyService = new TopologyWriteService(
                 'localhost:5002',
                 ledgerClient
             )
 
-            topologyService.generateTransactions(
-                key.publicKey,
-                'placeholder-party-hint'
+            const transactions = await topologyService
+                .generateTransactions(key.publicKey, partyHint)
+                .then((resp) => resp.generatedTransactions)
+
+            const combinedHash = TopologyWriteService.combineHashes(
+                transactions.map((tx) =>
+                    Buffer.from(tx.transactionHash).toString('base64')
+                ),
+                'base64'
             )
 
-            wallet = {
-                primary: primary ?? false,
-                partyId: 'placeholder-party-id', // Placeholder, replace with actual party ID from external allocation
-                hint: partyHint,
+            const signed = await driver.controller.signTransaction({
+                tx: combinedHash,
+                txHash: combinedHash,
                 publicKey: key.publicKey,
-                namespace: 'placeholder-namespace',
+            })
+
+            if (signed.status === 'signed') {
+                console.log('Public key: ', key.publicKey)
+                console.log('Namespace: ', namespace)
+                console.log('Signing successful:', JSON.stringify(signed))
+
+                const signedTopologyTxs = transactions.map((tx) =>
+                    SignedTopologyTransaction.create({
+                        transaction: tx.serializedTransaction,
+                        signatures: [],
+                        proposal: true,
+                        multiTransactionSignatures: [
+                            MultiTransactionSignatures.create({
+                                transactionHashes: transactions.map(
+                                    (tx) => tx.transactionHash
+                                ),
+                                signatures: [
+                                    Signature.create({
+                                        format: SignatureFormat.RAW,
+                                        signature: Buffer.from(
+                                            signed.signature,
+                                            'base64'
+                                        ),
+                                        signedBy: namespace,
+                                        signingAlgorithmSpec:
+                                            SigningAlgorithmSpec.ED25519,
+                                    }),
+                                ],
+                            }),
+                        ],
+                    })
+                )
+
+                topologyService.addTransactions(signedTopologyTxs)
+
+                const partyToParticipantMapping =
+                    await topologyService.getPartyToParticipantMapping(partyId)
+
+                await topologyService.authorize(partyToParticipantMapping)
+            } else {
+                throw new Error(
+                    `Failed to sign transaction: ${signed.error_description}`
+                )
+            }
+
+            wallet = {
+                partyId,
+                namespace,
                 signingProviderId,
                 chainId,
+                primary: primary ?? false,
+                hint: partyHint,
+                publicKey: key.publicKey,
             }
 
             break

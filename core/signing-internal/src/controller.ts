@@ -85,17 +85,17 @@ export class InternalSigningDriver implements SigningDriverInterface {
 
                 this.transactions.set(txId, internalTransaction)
 
-                return Promise.resolve({
+                return {
                     txId,
                     status: 'signed',
                     signature,
-                } as SignTransactionResult)
+                }
             } else {
-                return Promise.resolve({
+                return {
                     error: 'key_not_found',
                     error_description:
                         'The provided public key does not exist in the signing.',
-                })
+                }
             }
         },
 

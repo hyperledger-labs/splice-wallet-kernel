@@ -50,7 +50,7 @@ test('call connect rpc', async () => {
                     name: 'Local (password IDP)',
                     chainId: 'canton:local-password',
                     synchronizerId:
-                        'wallet::1220f72fe353becff17129007f13ffc6c621c6f717fb9cfb77baff8571fea382500a',
+                        'wallet::1220786b33d21d02cb43625088125de70efacbf23d3494287d088e41fe5d42f2be22',
                     description: 'Unimplemented Password Auth',
                     ledgerApi: { baseUrl: 'https://test' },
                     auth: {
@@ -68,7 +68,7 @@ test('call connect rpc', async () => {
                     name: 'Local (OAuth IDP)',
                     chainId: 'canton:local-oauth',
                     synchronizerId:
-                        'wallet::1220f72fe353becff17129007f13ffc6c621c6f717fb9cfb77baff8571fea382500a',
+                        'wallet::1220786b33d21d02cb43625088125de70efacbf23d3494287d088e41fe5d42f2be22',
                     description: 'Mock OAuth IDP',
                     ledgerApi: { baseUrl: 'http://127.0.0.1:5003' },
                     auth: {
