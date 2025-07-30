@@ -31,27 +31,54 @@ interface FireblocksKey {
 export interface FireblocksTransaction {
     txId: string
     status: SigningStatus
+    createdAt?: number
     signature?: string | undefined
     publicKey?: string | undefined
     derivationPath: number[]
 }
 
+export interface FireblocksKeyInfo {
+    apiKey: string
+    apiSecret: string
+}
+
 const logger = pino({ name: 'main', level: 'debug' })
 
 export class FireblocksHandler {
-    private client: Fireblocks
+    private defaultClient: Fireblocks | undefined = undefined
+    private clients: Map<string, Fireblocks> = new Map()
     private keyCacheByPublicKey: Map<string, FireblocksKey> = new Map()
     private keyCacheByDerivationPath: Map<string, FireblocksKey> = new Map()
 
+    private getClient = (userId: string | undefined): Fireblocks => {
+        if (userId !== undefined && this.clients.has(userId)) {
+            return this.clients.get(userId)!
+        } else if (this.defaultClient) {
+            return this.defaultClient
+        } else {
+            throw new Error('No Fireblocks client available for this user.')
+        }
+    }
+
     constructor(
-        apiKey: string,
-        apiSecret: string,
+        defaultKey: FireblocksKeyInfo | undefined,
+        userKeys: Map<string, FireblocksKeyInfo>,
         apiPath: string = 'https://api.fireblocks.io/v1'
     ) {
-        this.client = new Fireblocks({
-            apiKey: apiKey,
-            basePath: apiPath,
-            secretKey: apiSecret,
+        if (defaultKey) {
+            this.defaultClient = new Fireblocks({
+                apiKey: defaultKey.apiKey,
+                basePath: apiPath,
+                secretKey: defaultKey.apiSecret,
+            })
+        }
+        userKeys.forEach((keyInfo, userId) => {
+            const client = new Fireblocks({
+                apiKey: keyInfo.apiKey,
+                basePath: apiPath,
+                secretKey: keyInfo.apiSecret,
+            })
+            this.clients.set(userId, client)
         })
     }
 
@@ -60,14 +87,17 @@ export class FireblocksHandler {
      * also refresh the key cache.
      * @returns List of Fireblocks public keys
      */
-    public async getPublicKeys(): Promise<FireblocksKey[]> {
+    public async getPublicKeys(
+        userId: string | undefined
+    ): Promise<FireblocksKey[]> {
         const keys: FireblocksKey[] = []
         try {
+            const client = this.getClient(userId)
             const vaultAccounts: VaultAccount[] = []
             let after: string | undefined = undefined
 
             do {
-                const resp = await this.client.vaults.getPagedVaultAccounts(
+                const resp = await client.vaults.getPagedVaultAccounts(
                     after ? { after } : {}
                 )
                 after = resp.data.paging?.after
@@ -77,7 +107,7 @@ export class FireblocksHandler {
             for (const vault of vaultAccounts) {
                 if (vault.id) {
                     const derivationPath = `[44, ${CC_COIN_TYPE}, ${vault.id}, 0, 0]`
-                    const key = await this.client.vaults.getPublicKeyInfo({
+                    const key = await client.vaults.getPublicKeyInfo({
                         algorithm: 'MPC_EDDSA_ED25519',
                         derivationPath,
                     })
@@ -117,26 +147,27 @@ export class FireblocksHandler {
      * refresh the key cache.
      * @returns AsyncGenerator of FireblocksTransactions
      */
-    public async *getTransactions({
-        limit = 200,
-        before,
-    }: {
-        limit?: number
-        before?: number
-    } = {}): AsyncGenerator<FireblocksTransaction> {
+    public async *getTransactions(
+        userId: string | undefined,
+        {
+            limit = 200,
+            before,
+        }: {
+            limit?: number
+            before?: number
+        } = {}
+    ): AsyncGenerator<FireblocksTransaction> {
         let refreshedCache = false
         let fetchedLength = 0
         let beforeQuery: number | undefined = before
         try {
+            const client = this.getClient(userId)
             do {
-                const transactions =
-                    await this.client.transactions.getTransactions({
-                        sourceType: 'VAULT_ACCOUNT',
-                        limit,
-                        ...(beforeQuery
-                            ? { before: beforeQuery.toString() }
-                            : {}),
-                    })
+                const transactions = await client.transactions.getTransactions({
+                    sourceType: 'VAULT_ACCOUNT',
+                    limit,
+                    ...(beforeQuery ? { before: beforeQuery.toString() } : {}),
+                })
                 fetchedLength = transactions.data.length
                 for (const tx of transactions.data) {
                     // set next before to createdAt - 1 as before is inclusive of any transaction exactly at that
@@ -166,6 +197,7 @@ export class FireblocksHandler {
                         yield {
                             txId: tx.id,
                             status: 'signed',
+                            createdAt: tx.createdAt!,
                             publicKey: signedMessage.publicKey,
                             signature: signedMessage.signature.fullSig,
                             derivationPath: signedMessage.derivationPath!,
@@ -194,7 +226,7 @@ export class FireblocksHandler {
                             // Refresh the key cache only once in case the cache has not been populated
                             // since the transaction was created - however do not repeatedly refresh
                             // in case of derivation paths that definitely do not exist
-                            await this.getPublicKeys()
+                            await this.getPublicKeys(userId)
                             refreshedCache = true
                         }
                         const publicKey =
@@ -209,6 +241,7 @@ export class FireblocksHandler {
                         yield {
                             txId: tx.id,
                             status: status,
+                            createdAt: tx.createdAt!,
                             publicKey: publicKey?.publicKey,
                             derivationPath: message.derivationPath,
                         }
@@ -229,37 +262,38 @@ export class FireblocksHandler {
      * @return The transaction object from Fireblocks
      */
     public async signTransaction(
+        userId: string | undefined,
         tx: string,
         publicKey: string
     ): Promise<FireblocksTransaction> {
         try {
+            const client = this.getClient(userId)
             if (!this.keyCacheByPublicKey.has(publicKey)) {
                 // refresh the keycache
-                await this.getPublicKeys()
+                await this.getPublicKeys(userId)
             }
             const key = this.keyCacheByPublicKey.get(publicKey)
             if (!key) {
                 throw new Error(`Public key ${publicKey} not found in cache`)
             }
 
-            const transaction =
-                await this.client.transactions.createTransaction({
-                    transactionRequest: {
-                        operation: 'RAW',
-                        note: `Signing transaction with public key ${publicKey}`,
-                        extraParameters: {
-                            rawMessageData: {
-                                messages: [
-                                    {
-                                        content: tx,
-                                        derivationPath: key.derivationPath,
-                                    },
-                                ],
-                                algorithm: key.algorithm,
-                            },
+            const transaction = await client.transactions.createTransaction({
+                transactionRequest: {
+                    operation: 'RAW',
+                    note: `Signing transaction with public key ${publicKey}`,
+                    extraParameters: {
+                        rawMessageData: {
+                            messages: [
+                                {
+                                    content: tx,
+                                    derivationPath: key.derivationPath,
+                                },
+                            ],
+                            algorithm: key.algorithm,
                         },
                     },
-                })
+                },
+            })
             let status: SigningStatus = 'pending'
             switch (transaction.data.status) {
                 case 'REJECTED':
