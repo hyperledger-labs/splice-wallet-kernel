@@ -1,6 +1,7 @@
 import {
     Fireblocks,
     PublicKeyInformationAlgorithmEnum,
+    TransactionResponse,
     VaultAccount,
 } from '@fireblocks/ts-sdk'
 import { pino } from 'pino'
@@ -49,6 +50,10 @@ export class FireblocksHandler {
     private clients: Map<string, Fireblocks> = new Map()
     private keyCacheByPublicKey: Map<string, FireblocksKey> = new Map()
     private keyCacheByDerivationPath: Map<string, FireblocksKey> = new Map()
+
+    // a list of derivation paths that have show up in transactions but have not been found in the vaults
+    // this is used to avoid repeatedly refreshing the key cache for derivation paths that definitely do not exist
+    private missingDerivationPaths: Set<string> = new Set()
 
     private getClient = (userId: string | undefined): Fireblocks => {
         if (userId !== undefined && this.clients.has(userId)) {
@@ -141,6 +146,95 @@ export class FireblocksHandler {
         return keys
     }
 
+    private async formatTransaction(
+        userId: string | undefined,
+        tx: TransactionResponse
+    ): Promise<FireblocksTransaction | undefined> {
+        if (tx.signedMessages && tx.signedMessages.length > 0) {
+            const signedMessage = tx.signedMessages[0]
+            if (
+                !signedMessage.publicKey ||
+                !signedMessage.content ||
+                !signedMessage.signature
+            ) {
+                return undefined
+            }
+            return {
+                txId: tx.id!,
+                status: 'signed',
+                createdAt: tx.createdAt!,
+                publicKey: signedMessage.publicKey,
+                signature: signedMessage.signature.fullSig,
+                derivationPath: signedMessage.derivationPath!,
+            }
+        } else {
+            const rawMessageData = RawMessageExtraParametersSchema.safeParse(
+                tx.extraParameters
+            )
+            if (!rawMessageData.success) {
+                // Skip transactions with invalid rawMessageData
+                return undefined
+            }
+            const message = rawMessageData.data.rawMessageData.messages[0]
+            const derivationPath = JSON.stringify(message.derivationPath)
+
+            const publicKey = await this.lookupPublicKey(userId, derivationPath)
+
+            const status =
+                tx.status === 'REJECTED' || tx.status === 'BLOCKED'
+                    ? 'rejected'
+                    : tx.status === 'FAILED'
+                      ? 'failed'
+                      : 'pending'
+            return {
+                txId: tx.id!,
+                status: status,
+                createdAt: tx.createdAt!,
+                publicKey: publicKey?.publicKey,
+                derivationPath: message.derivationPath,
+            }
+        }
+    }
+    private async lookupPublicKey(
+        userId: string | undefined,
+        derivationPath: string
+    ): Promise<FireblocksKey | undefined> {
+        if (
+            !this.keyCacheByDerivationPath.has(derivationPath) &&
+            !this.missingDerivationPaths.has(derivationPath)
+        ) {
+            // Refresh the key cache only once per missing derivation path case the cache
+            // in case the cache has not been repopulated since the transaction was created -
+            // however do not repeatedly refresh the cache for this derivation path
+            // in case it definitely does not exist
+            await this.getPublicKeys(userId)
+            this.missingDerivationPaths.add(derivationPath)
+        }
+
+        if (this.keyCacheByDerivationPath.has(derivationPath)) {
+            this.missingDerivationPaths.delete(derivationPath)
+            return this.keyCacheByDerivationPath.get(derivationPath)
+        } else {
+            return undefined
+        }
+    }
+
+    public async getTransaction(
+        userId: string | undefined,
+        txId: string
+    ): Promise<FireblocksTransaction | undefined> {
+        try {
+            const client = this.getClient(userId)
+            const transaction = await client.transactions.getTransaction({
+                txId: txId,
+            })
+            return await this.formatTransaction(userId, transaction.data)
+        } catch {
+            // if the transaction was not found for any reason, return undefined
+            return undefined
+        }
+    }
+
     /**
      * Get all RAW transactions from Fireblocks. Returns an async generator as
      * this may return a large number of transactions and will occasionally need to
@@ -157,7 +251,6 @@ export class FireblocksHandler {
             before?: number
         } = {}
     ): AsyncGenerator<FireblocksTransaction> {
-        let refreshedCache = false
         let fetchedLength = 0
         let beforeQuery: number | undefined = before
         try {
@@ -173,78 +266,15 @@ export class FireblocksHandler {
                     // set next before to createdAt - 1 as before is inclusive of any transaction exactly at that
                     // timestamp
                     beforeQuery = tx.createdAt! - 1
-                    if (
-                        !tx.id ||
-                        tx.operation !== 'RAW' ||
-                        !tx.extraParameters ||
-                        !('rawMessageData' in tx.extraParameters)
-                    ) {
-                        // Skip transactions that are not RAW or do not conform to expected structure
-                        continue
-                    }
-
-                    if (tx.signedMessages && tx.signedMessages.length > 0) {
-                        const signedMessage = tx.signedMessages[0]
-                        if (
-                            !signedMessage.publicKey ||
-                            !signedMessage.content ||
-                            !signedMessage.signature
-                        ) {
-                            throw new Error(
-                                `Transaction ${tx.id} has no public key or content in signed message`
-                            )
-                        }
-                        yield {
-                            txId: tx.id,
-                            status: 'signed',
-                            createdAt: tx.createdAt!,
-                            publicKey: signedMessage.publicKey,
-                            signature: signedMessage.signature.fullSig,
-                            derivationPath: signedMessage.derivationPath!,
-                        }
+                    const formatTransaction = await this.formatTransaction(
+                        userId,
+                        tx
+                    )
+                    if (formatTransaction) {
+                        yield formatTransaction
                     } else {
-                        const rawMessageData =
-                            RawMessageExtraParametersSchema.safeParse(
-                                tx.extraParameters
-                            )
-                        if (!rawMessageData.success) {
-                            // Skip transactions with invalid rawMessageData
-                            continue
-                        }
-                        const message =
-                            rawMessageData.data.rawMessageData.messages[0]
-                        const derivationPath = JSON.stringify(
-                            message.derivationPath
-                        )
-
-                        if (
-                            !this.keyCacheByDerivationPath.has(
-                                derivationPath
-                            ) &&
-                            !refreshedCache
-                        ) {
-                            // Refresh the key cache only once in case the cache has not been populated
-                            // since the transaction was created - however do not repeatedly refresh
-                            // in case of derivation paths that definitely do not exist
-                            await this.getPublicKeys(userId)
-                            refreshedCache = true
-                        }
-                        const publicKey =
-                            this.keyCacheByDerivationPath.get(derivationPath)
-
-                        const status =
-                            tx.status === 'REJECTED' || tx.status === 'BLOCKED'
-                                ? 'rejected'
-                                : tx.status === 'FAILED'
-                                  ? 'failed'
-                                  : 'pending'
-                        yield {
-                            txId: tx.id,
-                            status: status,
-                            createdAt: tx.createdAt!,
-                            publicKey: publicKey?.publicKey,
-                            derivationPath: message.derivationPath,
-                        }
+                        // if the transaction failed to format, continue so we do not skip remaining valid transactions
+                        continue
                     }
                 }
                 // once the fetched length is 0 before our last createdAt tx,

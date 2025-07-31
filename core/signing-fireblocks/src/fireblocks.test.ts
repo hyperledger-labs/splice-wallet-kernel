@@ -31,14 +31,28 @@ describe('fireblocks handler', () => {
             const keys = await handler.getPublicKeys(userId)
             expect(keys.length).toBeGreaterThan(0)
         }, 25000)
-        test('signTransaction', async () => {
+        test('sign and find transaction', async () => {
             const transaction = await handler.signTransaction(
                 userId,
                 TEST_TRANSACTION_HASH,
                 '02fefbcc9aebc8a479f211167a9f564df53aefd603a8662d9449a98c1ead2eba'
             )
             expect(transaction).toBeDefined()
+            const foundTransaction = await handler.getTransaction(
+                userId,
+                transaction.txId
+            )
+            expect(foundTransaction).toBeDefined()
         })
+
+        test('findTransaction failure', async () => {
+            const badTransaction = await handler.getTransaction(
+                userId,
+                'bad-tx-id'
+            )
+            expect(badTransaction).toBeUndefined()
+        })
+
         test('getTransactions', async () => {
             const transactions = await Array.fromAsync(
                 handler.getTransactions(userId, { limit: 200 })

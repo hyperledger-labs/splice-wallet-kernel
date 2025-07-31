@@ -101,22 +101,23 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
             getTransaction: async (
                 params: GetTransactionParams
             ): Promise<GetTransactionResult> => {
-                for await (const tx of this.fireblocks.getTransactions(
-                    authContext?.userId
-                )) {
-                    if (tx.txId === params.txId) {
-                        return {
-                            txId: tx.txId,
-                            status: tx.status,
-                            signature: tx.signature,
-                            publicKey: tx.publicKey,
-                        } as GetTransactionResult
+                const tx = await this.fireblocks.getTransaction(
+                    authContext?.userId,
+                    params.txId
+                )
+                if (tx) {
+                    return {
+                        txId: tx.txId,
+                        status: tx.status,
+                        signature: tx.signature,
+                        publicKey: tx.publicKey,
+                    } as GetTransactionResult
+                } else {
+                    return {
+                        error: 'transaction_not_found',
+                        error_description:
+                            'The requested transaction does not exist.',
                     }
-                }
-                return {
-                    error: 'transaction_not_found',
-                    error_description:
-                        'The requested transaction does not exist.',
                 }
             },
 
