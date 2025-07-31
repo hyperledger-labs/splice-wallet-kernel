@@ -203,10 +203,9 @@ export class FireblocksHandler {
             !this.keyCacheByDerivationPath.has(derivationPath) &&
             !this.missingDerivationPaths.has(derivationPath)
         ) {
-            // Refresh the key cache only once per missing derivation path case the cache
-            // in case the cache has not been repopulated since the transaction was created -
-            // however do not repeatedly refresh the cache for this derivation path
-            // in case it definitely does not exist
+            // Refresh the key cache only once per missing derivation path in case the cache has not been
+            // repopulated since the transaction was created, however do not repeatedly refresh the cache
+            // for this derivation path in case it definitely does not exist
             await this.getPublicKeys(userId)
             this.missingDerivationPaths.add(derivationPath)
         }
