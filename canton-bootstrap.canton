@@ -65,108 +65,24 @@ val testedProtocolVersion = ProtocolVersion.v34
 val newStaticSynchronizerParameters =
   StaticSynchronizerParameters.defaultsWithoutKMS(protocolVersion = testedProtocolVersion)
 
-
-val physicalSynchronizerId =
-  PhysicalSynchronizerId(synchronizerId, newStaticSynchronizerParameters.toInternal)
-
-val migratedCantonNodes = CantonNodes(
-  participants = Seq(),
-  sequencers = Seq(sequencer1),
-  mediators = Seq(mediator1)
+migrateNode(
+  migratedNode = sequencer1,
+  newStaticSynchronizerParameters = newStaticSynchronizerParameters,
+  synchronizerId = synchronizerId,
+  newSequencers = Seq(sequencer1),
+  dars = Seq(),
+  exportDirectory = better.files.File("synchronizer-bootstrap"),
 )
 
-def initializeSequencer(
-                                 migrated: SequencerReference,
-                                 genesisState: ByteString,
-                                 staticSynchronizerParameters: StaticSynchronizerParameters,
-                               ): Unit = {
-  migrated.health.wait_for_ready_for_initialization()
-  migrated.setup.assign_from_genesis_state(
-    genesisState,
-    staticSynchronizerParameters,
-  )
+migrateNode(
+  migratedNode = mediator1,
+  newStaticSynchronizerParameters = newStaticSynchronizerParameters,
+  synchronizerId = synchronizerId,
+  newSequencers = Seq(sequencer1),
+  dars = Seq(),
+  exportDirectory = better.files.File("synchronizer-bootstrap"),
+)
 
-  migrated.health.initialized()
-
-}
-
-def migrateNode(
-                 migratedNode: InstanceReference,
-                 newStaticSynchronizerParameters: StaticSynchronizerParameters,
-                 synchronizerId: SynchronizerId,
-                 newSequencers: Seq[SequencerReference],
-                 dars: Seq[String],
-                 sequencerTrustThreshold: PositiveInt = PositiveInt.one,
-                 exportDirectory: File,
-                 sourceNodeNames: Map[String, String] = Map.empty,
-               ): Unit = {
-
-  val files = UpgradeDataFiles.from(
-    sourceNodeNames.getOrElse(migratedNode.name, migratedNode.name),
-    exportDirectory,
-  )
-
-    files.keys.foreach { case (keys, name) =>
-      migratedNode.keys.secret.upload(keys, name)
-    }
-
-  migratedNode.topology.init_id_from_uid(files.uid)
-
-  migratedNode.health.wait_for_ready_for_node_topology()
-
-  migratedNode.topology.transactions
-      .import_topology_snapshot(files.authorizedStore, TopologyStoreId.Authorized)
-
-    migratedNode match {
-      case newSequencer: SequencerReference =>
-        logger.info("initializing sequencer")
-        initializeSequencer(
-          newSequencer,
-          files.genesisState,
-          newStaticSynchronizerParameters,
-        )
-
-      case newMediator: MediatorReference =>
-        newMediator.setup.assign(
-          PhysicalSynchronizerId(synchronizerId, newStaticSynchronizerParameters.toInternal),
-          SequencerConnections.tryMany(
-            newSequencers
-              .map(s => s.sequencerConnection.withAlias(SequencerAlias.tryCreate(s.name))),
-            sequencerTrustThreshold,
-            SubmissionRequestAmplification.NoAmplification,
-          ),
-        )
-      case _ =>
-        throw new IllegalStateException(
-          s"Unsupported migration from $files to $migratedNode"
-        )
-    }
-
-}
-
-
-migratedCantonNodes.sequencers.foreach { newNode =>
-  migrateNode(
-    migratedNode = newNode,
-    newStaticSynchronizerParameters = newStaticSynchronizerParameters,
-    synchronizerId = synchronizerId,
-    newSequencers = migratedCantonNodes.sequencers,
-    dars = Seq(),
-    exportDirectory = better.files.File("synchronizer-bootstrap"),
-  )
-
-}
-
-migratedCantonNodes.mediators.foreach { newNode =>
-  migrateNode(
-    migratedNode = newNode,
-    newStaticSynchronizerParameters = newStaticSynchronizerParameters,
-    synchronizerId = synchronizerId,
-    newSequencers = migratedCantonNodes.sequencers,
-    dars = Seq(),
-    exportDirectory = better.files.File("synchronizer-bootstrap"),
-  )
-}
 
 // start all local instances defined in the configuration file
 
@@ -221,6 +137,74 @@ participant1.ledger_api.users
   )
 
 
+def initializeSequencer(
+                         migrated: SequencerReference,
+                         genesisState: ByteString,
+                         staticSynchronizerParameters: StaticSynchronizerParameters,
+                       ): Unit = {
+  migrated.health.wait_for_ready_for_initialization()
+  migrated.setup.assign_from_genesis_state(
+    genesisState,
+    staticSynchronizerParameters,
+  )
+
+  migrated.health.initialized()
+
+}
+
+def migrateNode(
+                 migratedNode: InstanceReference,
+                 newStaticSynchronizerParameters: StaticSynchronizerParameters,
+                 synchronizerId: SynchronizerId,
+                 newSequencers: Seq[SequencerReference],
+                 dars: Seq[String],
+                 sequencerTrustThreshold: PositiveInt = PositiveInt.one,
+                 exportDirectory: File,
+                 sourceNodeNames: Map[String, String] = Map.empty,
+               ): Unit = {
+
+  val files = UpgradeDataFiles.from(
+    sourceNodeNames.getOrElse(migratedNode.name, migratedNode.name),
+    exportDirectory,
+  )
+
+  files.keys.foreach { case (keys, name) =>
+    migratedNode.keys.secret.upload(keys, name)
+  }
+
+  migratedNode.topology.init_id_from_uid(files.uid)
+
+  migratedNode.health.wait_for_ready_for_node_topology()
+
+  migratedNode.topology.transactions
+    .import_topology_snapshot(files.authorizedStore, TopologyStoreId.Authorized)
+
+  migratedNode match {
+    case newSequencer: SequencerReference =>
+      logger.info("initializing sequencer")
+      initializeSequencer(
+        newSequencer,
+        files.genesisState,
+        newStaticSynchronizerParameters,
+      )
+
+    case newMediator: MediatorReference =>
+      newMediator.setup.assign(
+        PhysicalSynchronizerId(synchronizerId, newStaticSynchronizerParameters.toInternal),
+        SequencerConnections.tryMany(
+          newSequencers
+            .map(s => s.sequencerConnection.withAlias(SequencerAlias.tryCreate(s.name))),
+          sequencerTrustThreshold,
+          SubmissionRequestAmplification.NoAmplification,
+        ),
+      )
+    case _ =>
+      throw new IllegalStateException(
+        s"Unsupported migration from $files to $migratedNode"
+      )
+  }
+
+}
 
 final case class UpgradeDataFiles(
                                    uidFile: better.files.File,
@@ -288,9 +272,3 @@ object UpgradeDataFiles {
     )
   }
 }
-
-final case class CantonNodes(
-                              participants: Seq[ParticipantReference],
-                              sequencers: Seq[SequencerReference],
-                              mediators: Seq[MediatorReference],
-                            )
