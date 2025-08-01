@@ -54,25 +54,20 @@ participant1.topology.owner_to_key_mappings.propose(
 participant1.health.wait_for_initialized()
 
 //import data
-logger.info("IMPORTING DATA NOW")
-
-logger.info("WALLET KERNEL BOOTSTRAP: getting synchronizer id now")
+logger.info("Importing sequencer/mediator data ")
 
 val synchronizerId = SynchronizerId.tryFromString(better.files.File("synchronizer-bootstrap/synchronizer-id").contentAsString)
 logger.info(s"synchronizer id is $synchronizerId")
 
 val testedProtocolVersion = ProtocolVersion.v34
-logger.info(s"WALLET KERNEL BOOTSTRAP: protocol version is $testedProtocolVersion" )
+
 
 val newStaticSynchronizerParameters =
   StaticSynchronizerParameters.defaultsWithoutKMS(protocolVersion = testedProtocolVersion)
 
-logger.info(s"WALLET KERNEL BOOTSTRAP: static params are $newStaticSynchronizerParameters" )
 
 val physicalSynchronizerId =
   PhysicalSynchronizerId(synchronizerId, newStaticSynchronizerParameters.toInternal)
-
-logger.info(s"WALLET KERNEL BOOTSTRAP: physical synchronizer id $physicalSynchronizerId")
 
 val migratedCantonNodes = CantonNodes(
   participants = Seq(),
@@ -93,7 +88,6 @@ def initializeSequencer(
 
   migrated.health.initialized()
 
-  logger.info("WALLET KERNEL: sequencer initalized")
 }
 
 def migrateNode(
@@ -107,31 +101,22 @@ def migrateNode(
                  sourceNodeNames: Map[String, String] = Map.empty,
                ): Unit = {
 
-  logger.info("WALLET KERNEL: About to upgrade data files: ")
-
   val files = UpgradeDataFiles.from(
     sourceNodeNames.getOrElse(migratedNode.name, migratedNode.name),
     exportDirectory,
   )
 
-  logger.info(s"WALLET KERNEL Got the files, filtering the key files")
     files.keys.foreach { case (keys, name) =>
       migratedNode.keys.secret.upload(keys, name)
     }
 
-  logger.info("files.uid is" + files.uid)
-
-  logger.info("WALLET KERNEL topology_init_from_uid ")
-
   migratedNode.topology.init_id_from_uid(files.uid)
 
-  logger.info("WALLET KERNEL WAITING FOR TOPOLOGY ")
-    migratedNode.health.wait_for_ready_for_node_topology()
-  logger.info("WALLET KERNEL IMPORTING SNAPSHOT ")
-    migratedNode.topology.transactions
+  migratedNode.health.wait_for_ready_for_node_topology()
+
+  migratedNode.topology.transactions
       .import_topology_snapshot(files.authorizedStore, TopologyStoreId.Authorized)
 
-  logger.info("WALLET KERNEL; imported topology snapshot")
     migratedNode match {
       case newSequencer: SequencerReference =>
         logger.info("initializing sequencer")
@@ -157,7 +142,6 @@ def migrateNode(
         )
     }
 
-  logger.info("migratedNode - sequencer initialized")
 }
 
 
