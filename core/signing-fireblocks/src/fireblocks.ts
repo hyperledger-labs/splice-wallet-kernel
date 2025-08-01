@@ -194,6 +194,11 @@ export class FireblocksHandler {
             }
         }
     }
+
+    /**
+     * Looks up or fetches the public key (only) for a given derivation path
+     * @returns The public key as a string
+     */
     private async lookupPublicKey(
         userId: string | undefined,
         derivationPath: number[]
@@ -225,6 +230,10 @@ export class FireblocksHandler {
         }
     }
 
+    /**
+     * Fetch a single RAW transaction from Fireblocks by its transaction ID
+     * @returns FireblocksTransaction or undefined if not found
+     */
     public async getTransaction(
         userId: string | undefined,
         txId: string
