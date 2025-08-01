@@ -14,7 +14,7 @@ import {
 import { PublicKeyInformationAlgorithmEnum } from '@fireblocks/ts-sdk'
 import { AuthContext } from 'core-wallet-auth'
 import { Methods } from 'core-signing-lib'
-import { FireblocksKeyInfo, FireblocksTransaction } from './fireblocks.js'
+import { FireblocksApiKeyInfo, FireblocksTransaction } from './fireblocks.js'
 
 const TEST_KEY_NAME = 'test-key-name'
 const TEST_TRANSACTION = 'test-tx'
@@ -55,7 +55,7 @@ jest.mock('./fireblocks', () => {
             FireblocksHandler: jest
                 .fn()
                 .mockImplementation(
-                    (defaultKey: FireblocksKeyInfo | undefined) => {
+                    (defaultKey: FireblocksApiKeyInfo | undefined) => {
                         return {
                             constructor: jest.fn(),
                             getPublicKeys: jest
@@ -128,7 +128,7 @@ async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     const apiKey = process.env.FIREBLOCKS_API_KEY
     const secretLocation =
         process.env.SECRET_KEY_LOCATION || 'fireblocks_secret.key'
-    let keyInfo: FireblocksKeyInfo
+    let keyInfo: FireblocksApiKeyInfo
 
     if (!apiKey) {
         keyInfo = {
@@ -143,7 +143,7 @@ async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
             apiSecret,
         }
     }
-    const userApiKeys = new Map<string, FireblocksKeyInfo>([
+    const userApiKeys = new Map<string, FireblocksApiKeyInfo>([
         [TEST_AUTH_CONTEXT.userId, keyInfo],
     ])
     const signingDriver = new FireblocksSigningDriver({
