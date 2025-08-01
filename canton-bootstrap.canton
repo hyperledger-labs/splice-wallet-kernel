@@ -1,3 +1,23 @@
+import com.google.protobuf.ByteString
+
+import java.io._
+import java.net.{HttpURLConnection, URI}
+import java.nio.file.{Files, Path, StandardCopyOption}
+import scala.concurrent.blocking
+import better.files.File
+import com.digitalasset.canton.console.{
+  InstanceReference,
+  LocalInstanceReference,
+  LocalMediatorReference,
+  LocalSequencerReference,
+  MediatorReference,
+  ParticipantReference,
+  SequencerReference,
+}
+import com.digitalasset.canton.version.ProtocolVersion._
+import com.digitalasset.canton.topology.{PhysicalSynchronizerId, SynchronizerId, UniqueIdentifier}
+
+
 
 logger.info(s"WALLET-KERNEL-BOOTSTRAP")
 
@@ -25,26 +45,159 @@ val signingKey = participant1.keys.secret.generate_signing_key(s"participant1-${
 val encryptionKey = participant1.keys.secret.generate_encryption_key("participant1-encryption")
 
 participant1.topology.owner_to_key_mappings.propose(
-      OwnerToKeyMapping(
-        participant1.id.member,
-        com.daml.nonempty.NonEmpty(Seq, sequencerAuthKey, signingKey, encryptionKey),
-      ),
-      signedBy = Seq(namespaceKey.fingerprint, sequencerAuthKey.fingerprint, signingKey.fingerprint),
-    )
+  OwnerToKeyMapping(
+    participant1.id.member,
+    com.daml.nonempty.NonEmpty(Seq, sequencerAuthKey, signingKey, encryptionKey),
+  ),
+  signedBy = Seq(namespaceKey.fingerprint, sequencerAuthKey.fingerprint, signingKey.fingerprint),
+)
 participant1.health.wait_for_initialized()
 
+//import data
+logger.info("IMPORTING DATA NOW")
+
+logger.info("WALLET KERNEL BOOTSTRAP: getting synchronizer id now")
+
+val synchronizerId = SynchronizerId.tryFromString(better.files.File("synchronizer-bootstrap/synchronizer-id").contentAsString)
+logger.info(s"synchronizer id is $synchronizerId")
+
+val testedProtocolVersion = ProtocolVersion.v34
+logger.info(s"WALLET KERNEL BOOTSTRAP: protocol version is $testedProtocolVersion" )
+
+val newStaticSynchronizerParameters =
+  StaticSynchronizerParameters.defaultsWithoutKMS(protocolVersion = testedProtocolVersion)
+
+logger.info(s"WALLET KERNEL BOOTSTRAP: static params are $newStaticSynchronizerParameters" )
+
+val physicalSynchronizerId =
+  PhysicalSynchronizerId(synchronizerId, newStaticSynchronizerParameters.toInternal)
+
+logger.info(s"WALLET KERNEL BOOTSTRAP: physical synchronizer id $physicalSynchronizerId")
+
+val migratedCantonNodes = CantonNodes(
+  participants = Seq(),
+  sequencers = Seq(sequencer1),
+  mediators = Seq(mediator1)
+)
+
+def initializeSequencer(
+                                 migrated: SequencerReference,
+                                 genesisState: ByteString,
+                                 staticSynchronizerParameters: StaticSynchronizerParameters,
+                               ): Unit = {
+  migrated.health.wait_for_ready_for_initialization()
+  migrated.setup.assign_from_genesis_state(
+    genesisState,
+    staticSynchronizerParameters,
+  )
+
+  migrated.health.initialized()
+
+  logger.info("WALLET KERNEL: sequencer initalized")
+}
+
+def migrateNode(
+                 migratedNode: InstanceReference,
+                 newStaticSynchronizerParameters: StaticSynchronizerParameters,
+                 synchronizerId: SynchronizerId,
+                 newSequencers: Seq[SequencerReference],
+                 dars: Seq[String],
+                 sequencerTrustThreshold: PositiveInt = PositiveInt.one,
+                 exportDirectory: File,
+                 sourceNodeNames: Map[String, String] = Map.empty,
+               ): Unit = {
+
+  logger.info("WALLET KERNEL: About to upgrade data files: ")
+
+  val files = UpgradeDataFiles.from(
+    sourceNodeNames.getOrElse(migratedNode.name, migratedNode.name),
+    exportDirectory,
+  )
+
+  logger.info(s"WALLET KERNEL Got the files, filtering the key files")
+    files.keys.foreach { case (keys, name) =>
+      migratedNode.keys.secret.upload(keys, name)
+    }
+
+  logger.info("files.uid is" + files.uid)
+
+  logger.info("WALLET KERNEL topology_init_from_uid ")
+
+  migratedNode.topology.init_id_from_uid(files.uid)
+
+  logger.info("WALLET KERNEL WAITING FOR TOPOLOGY ")
+    migratedNode.health.wait_for_ready_for_node_topology()
+  logger.info("WALLET KERNEL IMPORTING SNAPSHOT ")
+    migratedNode.topology.transactions
+      .import_topology_snapshot(files.authorizedStore, TopologyStoreId.Authorized)
+
+  logger.info("WALLET KERNEL; imported topology snapshot")
+    migratedNode match {
+      case newSequencer: SequencerReference =>
+        logger.info("initializing sequencer")
+        initializeSequencer(
+          newSequencer,
+          files.genesisState,
+          newStaticSynchronizerParameters,
+        )
+
+      case newMediator: MediatorReference =>
+        newMediator.setup.assign(
+          PhysicalSynchronizerId(synchronizerId, newStaticSynchronizerParameters.toInternal),
+          SequencerConnections.tryMany(
+            newSequencers
+              .map(s => s.sequencerConnection.withAlias(SequencerAlias.tryCreate(s.name))),
+            sequencerTrustThreshold,
+            SubmissionRequestAmplification.NoAmplification,
+          ),
+        )
+      case _ =>
+        throw new IllegalStateException(
+          s"Unsupported migration from $files to $migratedNode"
+        )
+    }
+
+  logger.info("migratedNode - sequencer initialized")
+}
+
+
+migratedCantonNodes.sequencers.foreach { newNode =>
+  migrateNode(
+    migratedNode = newNode,
+    newStaticSynchronizerParameters = newStaticSynchronizerParameters,
+    synchronizerId = synchronizerId,
+    newSequencers = migratedCantonNodes.sequencers,
+    dars = Seq(),
+    exportDirectory = better.files.File("synchronizer-bootstrap"),
+  )
+
+}
+
+migratedCantonNodes.mediators.foreach { newNode =>
+  migrateNode(
+    migratedNode = newNode,
+    newStaticSynchronizerParameters = newStaticSynchronizerParameters,
+    synchronizerId = synchronizerId,
+    newSequencers = migratedCantonNodes.sequencers,
+    dars = Seq(),
+    exportDirectory = better.files.File("synchronizer-bootstrap"),
+  )
+}
+
 // start all local instances defined in the configuration file
+
 nodes.local.start()
 
-// Bootstrap the synchronizer
 bootstrap.synchronizer(
   synchronizerName = "wallet",
   sequencers = Seq(sequencer1),
   mediators = Seq(mediator1),
-  synchronizerOwners = Seq(sequencer1, mediator1),
-  synchronizerThreshold = PositiveInt.two,
+  synchronizerOwners = Seq(sequencer1),
+  synchronizerThreshold = PositiveInt.one,
   staticSynchronizerParameters = StaticSynchronizerParameters.defaultsWithoutKMS(ProtocolVersion.forSynchronizer),
 )
+
+
 
 // Connect participant1 to wallet using the connect macro.
 // The connect macro will inspect the synchronizer configuration to find the correct URL and Port.
@@ -52,8 +205,9 @@ bootstrap.synchronizer(
 participant1.synchronizers.connect_local(sequencer1, alias = "wallet")
 
 utils.retry_until_true {
-    participant1.synchronizers.active("wallet")
+  participant1.synchronizers.active("wallet")
 }
+
 
 logger.info(s"WALLET-KERNEL-BOOTSTRAP: Creating operator user and party")
 val operatorParty = participant1.ledger_api.parties.allocate("operator").party
@@ -81,3 +235,78 @@ participant1.ledger_api.users
     identityProviderId = "mock-oauth2",
     annotations = Map()
   )
+
+
+
+final case class UpgradeDataFiles(
+                                   uidFile: better.files.File,
+                                   keyFiles: Seq[better.files.File],
+                                   authorizedStoreFile: better.files.File,
+                                   genesisStateFile: better.files.File,
+                                 ) {
+
+  def tryReadByteStringFromFile(inputFile: String): ByteString = readByteStringFromFile(inputFile)
+    .fold(err => throw new IllegalArgumentException(s"Can not load $inputFile: $err"), identity)
+
+
+  def readByteStringFromFile(inputFile: String): Either[String, ByteString] = {
+    @SuppressWarnings(Array("org.wartremover.warts.Var"))
+    var bis: Option[BufferedInputStream] = None
+    try {
+      bis = Some(new BufferedInputStream(new FileInputStream(inputFile)))
+      blocking {
+        bis.map(ByteString.readFrom).toRight("Will not happen as otherwise it would throw")
+      }
+    } catch {
+      case e: IOException =>
+        val f = new java.io.File(inputFile)
+        if (!f.exists())
+          Left(s"No such file [$inputFile].")
+        else
+          Left(
+            s"File exists but cannot be read [$inputFile]."
+          )
+    } finally {
+      bis.foreach(_.close())
+    }
+  }
+
+  def uid: UniqueIdentifier =
+    UniqueIdentifier.tryFromProtoPrimitive(
+      uidFile.contentAsString
+    )
+
+  def keys: Seq[(ByteString, Option[String])] =
+    keyFiles.map { file =>
+      val key = tryReadByteStringFromFile(file.canonicalPath)
+      val name = file.name.stripSuffix(".keys")
+      key -> Option(name)
+    }
+
+  def authorizedStore: ByteString =
+    tryReadByteStringFromFile(authorizedStoreFile.canonicalPath)
+
+  def genesisState: ByteString =
+    tryReadByteStringFromFile(genesisStateFile.canonicalPath)
+}
+
+object UpgradeDataFiles {
+  def from(nodeName: String, baseDirectory: File): UpgradeDataFiles = {
+    val keys =
+      baseDirectory.list
+        .filter(file => file.name.startsWith(nodeName) && file.name.endsWith(".keys"))
+        .toList
+    UpgradeDataFiles(
+      uidFile = better.files.File(s"synchronizer-bootstrap/$nodeName-uid"),
+      keyFiles = keys,
+      authorizedStoreFile = better.files.File(s"synchronizer-bootstrap/$nodeName-authorized-store"),
+      genesisStateFile = better.files.File("synchronizer-bootstrap/sequencer-genesis-state")
+    )
+  }
+}
+
+final case class CantonNodes(
+                              participants: Seq[ParticipantReference],
+                              sequencers: Seq[SequencerReference],
+                              mediators: Seq[MediatorReference],
+                            )
