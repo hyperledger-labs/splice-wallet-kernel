@@ -52,6 +52,10 @@ export class FireblocksHandler {
     private keyInfoByPublicKey: Map<string, FireblocksKey> = new Map()
     private publicKeyByDerivationPath: Map<string, string> = new Map()
 
+    // a list of derivation paths that have show up in transactions but have not been found in the vaults
+    // this is used to avoid repeatedly refreshing the key cache for derivation paths that definitely do not exist
+    private missingDerivationPaths: Set<string> = new Set()
+
     private getClient = (userId: string | undefined): Fireblocks => {
         if (userId !== undefined && this.clients.has(userId)) {
             return this.clients.get(userId)!
@@ -136,6 +140,94 @@ export class FireblocksHandler {
             throw error
         }
         return keys
+    }
+
+    private async formatTransaction(
+        userId: string | undefined,
+        tx: TransactionResponse
+    ): Promise<FireblocksTransaction | undefined> {
+        if (tx.signedMessages && tx.signedMessages.length > 0) {
+            const signedMessage = tx.signedMessages[0]
+            if (
+                !signedMessage.publicKey ||
+                !signedMessage.content ||
+                !signedMessage.signature
+            ) {
+                return undefined
+            }
+            return {
+                txId: tx.id!,
+                status: 'signed',
+                createdAt: tx.createdAt!,
+                publicKey: signedMessage.publicKey,
+                signature: signedMessage.signature.fullSig,
+                derivationPath: signedMessage.derivationPath!,
+            }
+        } else {
+            const rawMessageData = RawMessageExtraParametersSchema.safeParse(
+                tx.extraParameters
+            )
+            if (!rawMessageData.success) {
+                // Skip transactions with invalid rawMessageData
+                return undefined
+            }
+            const message = rawMessageData.data.rawMessageData.messages[0]
+            const derivationPath = JSON.stringify(message.derivationPath)
+
+            const publicKey = await this.lookupPublicKey(userId, derivationPath)
+
+            const status =
+                tx.status === 'REJECTED' || tx.status === 'BLOCKED'
+                    ? 'rejected'
+                    : tx.status === 'FAILED'
+                      ? 'failed'
+                      : 'pending'
+            return {
+                txId: tx.id!,
+                status: status,
+                createdAt: tx.createdAt!,
+                publicKey: publicKey?.publicKey,
+                derivationPath: message.derivationPath,
+            }
+        }
+    }
+    private async lookupPublicKey(
+        userId: string | undefined,
+        derivationPath: string
+    ): Promise<FireblocksKey | undefined> {
+        if (
+            !this.keyCacheByDerivationPath.has(derivationPath) &&
+            !this.missingDerivationPaths.has(derivationPath)
+        ) {
+            // Refresh the key cache only once per missing derivation path in case the cache has not been
+            // repopulated since the transaction was created, however do not repeatedly refresh the cache
+            // for this derivation path in case it definitely does not exist
+            await this.getPublicKeys(userId)
+            this.missingDerivationPaths.add(derivationPath)
+        }
+
+        if (this.keyCacheByDerivationPath.has(derivationPath)) {
+            this.missingDerivationPaths.delete(derivationPath)
+            return this.keyCacheByDerivationPath.get(derivationPath)
+        } else {
+            return undefined
+        }
+    }
+
+    public async getTransaction(
+        userId: string | undefined,
+        txId: string
+    ): Promise<FireblocksTransaction | undefined> {
+        try {
+            const client = this.getClient(userId)
+            const transaction = await client.transactions.getTransaction({
+                txId: txId,
+            })
+            return await this.formatTransaction(userId, transaction.data)
+        } catch {
+            // if the transaction was not found for any reason, return undefined
+            return undefined
+        }
     }
 
     /**
