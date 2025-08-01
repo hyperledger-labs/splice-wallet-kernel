@@ -288,12 +288,14 @@ export class FireblocksHandler {
      * Sign a transaction using a public key
      * @param tx - The transaction to sign, as a string
      * @param publicKey - The public key to use for signing
+     * @param externalTxId - The transaction ID assigned by the wallet kernel
      * @return The transaction object from Fireblocks
      */
     public async signTransaction(
         userId: string | undefined,
         tx: string,
-        publicKey: string
+        publicKey: string,
+        externalTxId?: string
     ): Promise<FireblocksTransaction> {
         try {
             const client = this.getClient(userId)
@@ -310,6 +312,7 @@ export class FireblocksHandler {
                 transactionRequest: {
                     operation: 'RAW',
                     note: `Signing transaction with public key ${publicKey}`,
+                    externalTxId,
                     extraParameters: {
                         rawMessageData: {
                             messages: [
