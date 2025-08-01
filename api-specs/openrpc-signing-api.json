@@ -109,7 +109,7 @@
                                     "title": "txId",
                                     "type": "string"
                                 },
-                                "description": "List of unique identifiers assigned by the signing provider of the transactions to retrieve."
+                                "description": "List of unique identifiers assigned by the Signing Provider of the transactions to retrieve."
                             },
                             "publicKeys": {
                                 "title": "publicKeys",
@@ -252,7 +252,7 @@
                             "txIds": {
                                 "title": "txIds",
                                 "type": "array",
-                                "description": "Unique identifiers assigned by the signing provider of the transactions to subscribe to.",
+                                "description": "Unique identifiers assigned by the Signing Provider of the transactions to subscribe to.",
                                 "items": {
                                     "title": "txId",
                                     "type": "string"

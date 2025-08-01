@@ -33,7 +33,7 @@ export type InternalTxId = string
 export type TxId = string
 /**
  *
- * Unique identifiers assigned by the signing provider of the transactions to subscribe to.
+ * Unique identifiers assigned by the Signing Provider of the transactions to subscribe to.
  *
  */
 export type TxIds = TxId[]
