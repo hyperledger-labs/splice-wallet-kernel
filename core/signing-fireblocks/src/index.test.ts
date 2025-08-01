@@ -14,7 +14,7 @@ import {
 import { PublicKeyInformationAlgorithmEnum } from '@fireblocks/ts-sdk'
 import { AuthContext } from 'core-wallet-auth'
 import { Methods } from 'core-signing-lib'
-import { FireblocksKeyInfo } from './fireblocks.js'
+import { FireblocksKeyInfo, FireblocksTransaction } from './fireblocks.js'
 
 const TEST_KEY_NAME = 'test-key-name'
 const TEST_TRANSACTION = 'test-tx'
@@ -25,6 +25,14 @@ const TEST_FIREBLOCKS_DERIVATION_PATH = [42, CC_COIN_TYPE, 4, 0, 0]
 const TEST_FIREBLOCKS_VAULT_ID = TEST_FIREBLOCKS_DERIVATION_PATH.join('-')
 const TEST_FIREBLOCKS_PUBLIC_KEY =
     '02fefbcc9aebc8a479f211167a9f564df53aefd603a8662d9449a98c1ead2eba'
+
+const FAKE_TRANSACTION: FireblocksTransaction = {
+    txId: TEST_TRANSACTION_HASH,
+    status: 'signed',
+    signature: 'test-signature',
+    publicKey: TEST_FIREBLOCKS_PUBLIC_KEY,
+    derivationPath: TEST_FIREBLOCKS_DERIVATION_PATH,
+}
 
 const TEST_AUTH_CONTEXT: AuthContext = {
     userId: 'test-user-id',
@@ -83,17 +91,13 @@ jest.mock('./fireblocks', () => {
                                 }),
                             getTransactions: jest.fn(() => {
                                 async function* generator() {
-                                    yield {
-                                        txId: TEST_TRANSACTION_HASH,
-                                        status: 'signed',
-                                        signature: 'test-signature',
-                                        publicKey: TEST_FIREBLOCKS_PUBLIC_KEY,
-                                        derivationPath:
-                                            TEST_FIREBLOCKS_DERIVATION_PATH,
-                                    }
+                                    yield FAKE_TRANSACTION
                                 }
                                 return generator()
                             }),
+                            getTransaction: jest
+                                .fn()
+                                .mockResolvedValue(FAKE_TRANSACTION),
                             signTransaction: jest.fn().mockResolvedValue({
                                 txId: TEST_TRANSACTION_HASH,
                                 status: 'signed',
