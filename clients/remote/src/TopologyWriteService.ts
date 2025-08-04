@@ -34,6 +34,13 @@ import { GrpcTransport } from '@protobuf-ts/grpc-transport'
 import { ChannelCredentials } from '@grpc/grpc-js'
 import { createHash } from 'node:crypto'
 
+function prefixedInt(value: number, bytes: Buffer | Uint8Array): Buffer {
+    const buffer = Buffer.alloc(4 + bytes.length)
+    buffer.writeUInt32BE(value, 0)
+    Buffer.from(bytes).copy(buffer, 4)
+    return buffer
+}
+
 function signingPublicKeyFromEd25519(publicKey: string): SigningPublicKey {
     return {
         format: CryptoKeyFormat.RAW,
@@ -44,16 +51,13 @@ function signingPublicKeyFromEd25519(publicKey: string): SigningPublicKey {
     }
 }
 
-function cantonHash(bytes: Uint8Array, purpose: number): string {
-    const buffer = Buffer.concat([Buffer.alloc(4), Buffer.from(bytes)])
-    buffer.writeUInt32BE(purpose, 0)
+function computeSha256CantonHash(purpose: number, bytes: Uint8Array): string {
+    const hashInput = prefixedInt(purpose, bytes)
 
-    const hash = createHash('sha256').update(buffer).digest('hex')
+    const hash = createHash('sha256').update(hashInput).digest()
     const multiprefix = Buffer.from([0x12, 0x20])
 
-    return Buffer.concat([multiprefix, Buffer.from(hash, 'hex')]).toString(
-        'hex'
-    )
+    return Buffer.concat([multiprefix, hash]).toString('hex')
 }
 
 export class TopologyWriteService {
@@ -77,19 +81,18 @@ export class TopologyWriteService {
         this.ledgerClient = ledgerClient
     }
 
-    static combineHashes(hashes: string[], encoding: BufferEncoding): string {
-        const sorted = hashes.sort()
+    static combineHashes(hashes: string[]): string {
+        // hashes should be sorted lexicographically by hex string
+        const sorted = hashes.sort().map((hash) => Buffer.from(hash, 'hex'))
+
+        const initial = prefixedInt(sorted.length, Buffer.alloc(0))
+
         const combined = sorted.reduce<Buffer>((acc, hash) => {
-            const buf = Buffer.concat([
-                Buffer.alloc(4),
-                Buffer.from(hash, encoding),
-            ])
-            buf.writeUInt32BE(hash.length, 0)
+            const input = prefixedInt(hash.length, hash)
+            return Buffer.concat([acc, input])
+        }, initial)
 
-            return Buffer.concat([acc, buf])
-        }, Buffer.alloc(0))
-
-        return cantonHash(combined, 55)
+        return computeSha256CantonHash(55, combined)
     }
 
     static createFingerprintFromKey = (
@@ -105,10 +108,10 @@ export class TopologyWriteService {
 
         // Hash purpose codes can be looked up in the Canton codebase:
         //  https://github.com/DACH-NY/canton/blob/62e9ccd3f1743d2c9422d863cfc2ca800405c71b/community/base/src/main/scala/com/digitalasset/canton/crypto/HashPurpose.scala#L52
-        const hashPurpose = 0x12 // For `PublicKeyFingerprint`
+        const hashPurpose = 12 // For `PublicKeyFingerprint`
 
         // Implementation for creating a fingerprint from the public key
-        return cantonHash(key.publicKey, hashPurpose)
+        return computeSha256CantonHash(hashPurpose, key.publicKey)
     }
 
     private generateTransactionsRequest(

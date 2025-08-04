@@ -108,9 +108,8 @@ async function signingDriverCreate(
 
             const combinedHash = TopologyWriteService.combineHashes(
                 transactions.map((tx) =>
-                    Buffer.from(tx.transactionHash).toString('base64')
-                ),
-                'base64'
+                    Buffer.from(tx.transactionHash).toString('hex')
+                )
             )
 
             const signed = await driver.controller.signTransaction({
