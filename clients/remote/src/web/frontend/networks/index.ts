@@ -160,13 +160,15 @@ export class UserUiNetworks extends LitElement {
                     ? html`
                           <div class="modal" @click=${this.closeModal}>
                               <div
-                                  class="modal-content"
+                                  class="<div style={{ border: "1px solid black", padding: "10px", margin: "10px" }}>"
                                   @click=${(e: Event) => e.stopPropagation()}
                               >
                                   <h3>
-                                      ${this.editingNetwork
-                                          ? 'Edit Network'
-                                          : 'Add Network'}
+                                      ${
+                                          this.editingNetwork
+                                              ? 'Edit Network'
+                                              : 'Add Network'
+                                      }
                                   </h3>
                                   <network-form
                                       .editingNetwork=${this.editingNetwork}
