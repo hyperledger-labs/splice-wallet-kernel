@@ -106,11 +106,24 @@ async function signingDriverCreate(
                 .generateTransactions(key.publicKey, partyHint)
                 .then((resp) => resp.generatedTransactions)
 
+            console.log(
+                `Generated transactions: ${JSON.stringify(
+                    transactions.map((tx) => ({
+                        serialized: Buffer.from(
+                            tx.serializedTransaction
+                        ).toString('hex'),
+                        hash: Buffer.from(tx.transactionHash).toString('hex'),
+                    }))
+                )}`
+            )
+
             const combinedHash = TopologyWriteService.combineHashes(
                 transactions.map((tx) =>
                     Buffer.from(tx.transactionHash).toString('hex')
                 )
             )
+
+            console.log('Combined hash: ', combinedHash)
 
             const signed = await driver.controller.signTransaction({
                 tx: combinedHash,

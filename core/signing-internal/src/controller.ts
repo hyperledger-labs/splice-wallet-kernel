@@ -153,10 +153,14 @@ export class InternalSigningDriver implements SigningDriverInterface {
         createKey: async (
             params: CreateKeyParams
         ): Promise<CreateKeyResult> => {
-            const key = nacl.sign.keyPair()
+            // const key = nacl.sign.keyPair()
             const id = randomUUID()
-            const publicKey = naclUtil.encodeBase64(key.publicKey)
-            const privateKey = naclUtil.encodeBase64(key.secretKey)
+            // const publicKey = naclUtil.encodeBase64(key.publicKey)
+            // const privateKey = naclUtil.encodeBase64(key.secretKey)
+            const publicKey = 'ahwfmPvmDXIGhApRN0MfQ/nMI5YquAk9/eWrVQ1Hy2U='
+            const privateKey =
+                'EazgbmYD5KD47C1qqFCqvKNukzGpHhMmwolyz8nEN61qHB+Y++YNcgaEClE3Qx9D+cwjliq4CT395atVDUfLZQ=='
+
             const internalKey: InternalKey = {
                 id,
                 name: params.name,
@@ -167,11 +171,11 @@ export class InternalSigningDriver implements SigningDriverInterface {
             this.signer.set(id, internalKey)
             this.signerByPublicKey.set(publicKey, internalKey)
 
-            return Promise.resolve({
+            return {
                 id,
+                publicKey,
                 name: params.name,
-                publicKey: naclUtil.encodeBase64(key.publicKey),
-            } as CreateKeyResult)
+            }
         },
 
         getConfiguration: async (): Promise<GetConfigurationResult> =>
