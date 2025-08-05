@@ -85,7 +85,8 @@ export class TopologyWriteService {
         // hashes should be sorted lexicographically by hex string
         const sorted = hashes.sort().map((hash) => Buffer.from(hash, 'hex'))
 
-        const initial = prefixedInt(sorted.length, Buffer.alloc(0))
+        const initial = Buffer.alloc(4)
+        initial.writeUInt32BE(sorted.length, 0)
 
         const combined = sorted.reduce<Buffer>((acc, hash) => {
             const input = prefixedInt(hash.length, hash)

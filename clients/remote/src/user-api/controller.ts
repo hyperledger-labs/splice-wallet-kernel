@@ -125,32 +125,27 @@ async function signingDriverCreate(
 
             console.log('Combined hash: ', combinedHash)
 
-            const signed = await driver.controller.signTransaction({
-                tx: combinedHash,
-                txHash: combinedHash,
-                publicKey: key.publicKey,
-            })
-
-            if (signed.status === 'signed') {
-                console.log('Public key: ', key.publicKey)
-                console.log('Namespace: ', namespace)
-                console.log('Signing successful:', JSON.stringify(signed))
-
-                const signedTopologyTxs = transactions.map((tx) =>
-                    SignedTopologyTransaction.create({
-                        transaction: tx.serializedTransaction,
-                        signatures: [],
-                        proposal: true,
-                        multiTransactionSignatures: [
-                            MultiTransactionSignatures.create({
-                                transactionHashes: transactions.map(
-                                    (tx) => tx.transactionHash
-                                ),
+            const signedTopologyTxs = await Promise.all(
+                transactions.map((tx) => {
+                    return driver.controller
+                        .signTransaction({
+                            tx: Buffer.from(tx.serializedTransaction).toString(
+                                'base64'
+                            ),
+                            txHash: Buffer.from(tx.transactionHash).toString(
+                                'base64'
+                            ),
+                            publicKey: key.publicKey,
+                        })
+                        .then((res) =>
+                            SignedTopologyTransaction.create({
+                                transaction: tx.serializedTransaction,
+                                proposal: true,
                                 signatures: [
                                     Signature.create({
                                         format: SignatureFormat.RAW,
                                         signature: Buffer.from(
-                                            signed.signature,
+                                            res.signature,
                                             'base64'
                                         ),
                                         signedBy: namespace,
@@ -158,10 +153,42 @@ async function signingDriverCreate(
                                             SigningAlgorithmSpec.ED25519,
                                     }),
                                 ],
-                            }),
-                        ],
-                    })
-                )
+                            })
+                        )
+                })
+            )
+
+            // eslint-disable-next-line no-constant-condition
+            if (true) {
+                console.log('Public key: ', key.publicKey)
+                console.log('Namespace: ', namespace)
+
+                // const signedTopologyTxs = transactions.map((tx) =>
+                //     SignedTopologyTransaction.create({
+                //         transaction: tx.serializedTransaction,
+                //         signatures: [],
+                //         proposal: true,
+                //         multiTransactionSignatures: [
+                //             // MultiTransactionSignatures.create({
+                //             //     transactionHashes: transactions.map(
+                //             //         (tx) => tx.transactionHash
+                //             //     ),
+                //             //     signatures: [
+                //             //         Signature.create({
+                //             //             format: SignatureFormat.RAW,
+                //             //             signature: Buffer.from(
+                //             //                 signed.signature,
+                //             //                 'base64'
+                //             //             ),
+                //             //             signedBy: namespace,
+                //             //             signingAlgorithmSpec:
+                //             //                 SigningAlgorithmSpec.ED25519,
+                //             //         }),
+                //             //     ],
+                //             // }),
+                //         ],
+                //     })
+                // )
 
                 topologyService.addTransactions(signedTopologyTxs)
 
@@ -170,9 +197,7 @@ async function signingDriverCreate(
 
                 await topologyService.authorize(partyToParticipantMapping)
             } else {
-                throw new Error(
-                    `Failed to sign transaction: ${signed.error_description}`
-                )
+                throw new Error(`Failed to sign transaction`)
             }
 
             wallet = {
