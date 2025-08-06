@@ -1,0 +1,9 @@
+version: v2
+plugins:
+  - local: ./protoc-gen-ts-proto
+    out: ./core/tx-visualizer/src/_gen
+    opt:
+      - env=browser
+      - globalThisPolyfill=true
+    include_imports: true
+    strategy: all

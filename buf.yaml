@@ -1,0 +1,30 @@
+# For details on buf.yaml configuration, visit https://buf.build/docs/configuration/v2/buf-yaml
+version: v2
+deps:
+  - buf.build/googleapis/googleapis
+modules:
+  - path: .canton/protobuf/ledger-api
+    excludes:
+      - .canton/protobuf/ledger-api/com/daml/ledger/api/scalapb
+lint:
+  use:
+    - STANDARD
+  ignore_only:
+    RPC_REQUEST_RESPONSE_UNIQUE:
+      - canton/protobuf/ledger-api/com/daml/ledger/api/v2/command_service.proto
+      - canton/protobuf/ledger-api/com/daml/ledger/api/v2/update_service.proto
+    RPC_REQUEST_STANDARD_NAME:
+      - canton/protobuf/ledger-api/com/daml/ledger/api/v2/command_service.proto
+      - canton/protobuf/ledger-api/com/daml/ledger/api/v2/update_service.proto
+    RPC_RESPONSE_STANDARD_NAME:
+      - canton/protobuf/ledger-api/com/daml/ledger/api/v2/update_service.proto
+    ENUM_ZERO_VALUE_SUFFIX:
+      - canton/protobuf/ledger-api/com/daml/ledger/api/v2/package_service.proto
+      - canton/protobuf/ledger-api/com/daml/ledger/api/v2/participant_offset.proto
+  except:
+    # lint exception needed for admin protos
+    - PACKAGE_VERSION_SUFFIX
+  rpc_allow_google_protobuf_empty_responses: true
+breaking:
+  use:
+    - FILE

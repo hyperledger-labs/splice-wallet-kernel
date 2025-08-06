@@ -1,0 +1,26 @@
+{
+    "name": "tx-visualizer",
+    "version": "1.0.0",
+    "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
+    "license": "Apache-2.0",
+    "packageManager": "yarn@4.9.2",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b",
+        "dev": "tsc -b --watch",
+        "clean": "tsc -b --clean; rm -rf dist"
+    },
+    "devDependencies": {
+        "globals": "^16.0.0",
+        "ts-proto": "^2.7.5"
+    },
+    "dependencies": {
+        "@bufbuild/buf": "^1.56.0",
+        "@bufbuild/protobuf": "^2.6.3",
+        "@types/node": "^22.15.30",
+        "build": "^0.1.4",
+        "rxjs": "^7.8.2"
+    }
+}
