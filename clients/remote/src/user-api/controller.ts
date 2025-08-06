@@ -22,11 +22,7 @@ import {
 } from '../notification/NotificationService.js'
 import { AuthContext } from 'core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
-import {
-    CreateKeyResult,
-    SigningDriverInterface,
-    SigningProvider,
-} from 'core-signing-lib'
+import { SigningDriverInterface, SigningProvider } from 'core-signing-lib'
 import { TopologyWriteService } from '../TopologyWriteService.js'
 import {
     Signature,
@@ -89,98 +85,63 @@ async function signingDriverCreate(
             break
         }
         case SigningProvider.WALLET_KERNEL: {
+            const network = await store.getNetwork(chainId)
+            const topologyService = new TopologyWriteService(
+                network.synchronizerId,
+                network.ledgerApi.adminGrpcUrl,
+                ledgerClient
+            )
+
             const key = await driver.controller(authContext).createKey({
                 name: partyHint,
             })
-
             const namespace = TopologyWriteService.createFingerprintFromKey(
                 key.publicKey
             )
             const partyId = `${partyHint}::${namespace}`
 
-            const topologyService = new TopologyWriteService(
-                'localhost:5002',
-                ledgerClient
-            )
-
             const transactions = await topologyService
-                .generateTransactions(key.publicKey, partyHint)
+                .generateTransactions(key.publicKey, partyId)
                 .then((resp) => resp.generatedTransactions)
 
-            console.log(
-                `Generated transactions: ${JSON.stringify(
-                    transactions.map((tx) => ({
-                        serialized: Buffer.from(
-                            tx.serializedTransaction
-                        ).toString('hex'),
-                        hash: Buffer.from(tx.transactionHash).toString('hex'),
-                    }))
-                )}`
+            const txHashes = transactions.map((tx) =>
+                Buffer.from(tx.transactionHash)
             )
 
-            const combinedHash = TopologyWriteService.combineHashes(
-                transactions.map((tx) =>
-                    Buffer.from(tx.transactionHash).toString('hex')
-                )
-            )
+            const combinedHash = TopologyWriteService.combineHashes(txHashes)
 
-            console.log('Combined hash: ', combinedHash)
+            const { signature } = await driver
+                .controller(authContext)
+                .signTransaction({
+                    tx: '',
+                    txHash: Buffer.from(combinedHash, 'hex').toString('base64'),
+                    publicKey: key.publicKey,
+                })
 
-            const signedTopologyTxs = await Promise.all(
-                transactions.map((transaction) => {
-                    const tx = Buffer.from(
-                        transaction.serializedTransaction
-                    ).toString('base64')
-
-                    const txHash = Buffer.from(
-                        transaction.transactionHash
-                    ).toString('base64')
-
-                    const publicKey = key.publicKey
-
-                    console.log('Signing tx: ', { tx, txHash, publicKey })
-
-                    return driver
-                        .controller(authContext)
-                        .signTransaction({
-                            tx,
-                            txHash,
-                            publicKey,
-                        })
-                        .then((res) =>
-                            SignedTopologyTransaction.create({
-                                transaction: transaction.serializedTransaction,
-                                proposal: true,
-                                signatures: [
-                                    Signature.create({
-                                        format: SignatureFormat.RAW,
-                                        signature: Buffer.from(
-                                            res.signature,
-                                            'base64'
-                                        ),
-                                        signedBy: namespace,
-                                        signingAlgorithmSpec:
-                                            SigningAlgorithmSpec.ED25519,
-                                    }),
-                                ],
-                            })
-                        )
+            const signedTopologyTxs = transactions.map((transaction) =>
+                SignedTopologyTransaction.create({
+                    transaction: transaction.serializedTransaction,
+                    proposal: true,
+                    signatures: [],
+                    multiTransactionSignatures: [
+                        MultiTransactionSignatures.create({
+                            transactionHashes: txHashes,
+                            signatures: [
+                                Signature.create({
+                                    format: SignatureFormat.RAW,
+                                    signature: Buffer.from(signature, 'base64'),
+                                    signedBy: namespace,
+                                    signingAlgorithmSpec:
+                                        SigningAlgorithmSpec.ED25519,
+                                }),
+                            ],
+                        }),
+                    ],
                 })
             )
 
-            console.log('Public key: ', key.publicKey)
-            console.log('Namespace: ', namespace)
-
             topologyService.addTransactions(signedTopologyTxs)
-
-            console.log('ADDED TRANSACTIONS!')
-
-            const partyToParticipantMapping =
-                await topologyService.getPartyToParticipantMapping(partyId)
-
-            console.log('GOT PARTY MAPPING!')
-
-            await topologyService.authorize(partyToParticipantMapping)
+            await topologyService.authorizePartyToParticipant(partyId)
 
             wallet = {
                 partyId,

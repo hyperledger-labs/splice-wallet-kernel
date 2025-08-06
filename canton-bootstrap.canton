@@ -25,6 +25,9 @@ val keyName = "participant1NameSpaceKey"
 
 participant1.keys.secret.upload_from("keypair.key", Some(keyName))
 
+// I don't think this SHOULD be necessary, but it was the only way to get the partyToParticipant authorization to succeed
+sequencer1.keys.secret.upload_from("keypair.key", Some(keyName))
+
 val key = participant1.keys.secret.list(filterName = keyName).headOption.get
 
 
