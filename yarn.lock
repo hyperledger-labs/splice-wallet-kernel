@@ -6766,6 +6766,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"example-scripts@workspace:example-scripts":
+  version: 0.0.0-use.local
+  resolution: "example-scripts@workspace:example-scripts"
+  dependencies:
+    "@metamask/rpc-errors": "npm:^7.0.2"
+    axios: "npm:^1.11.0"
+    core-ledger-client: "workspace:^"
+    core-types: "workspace:^"
+    core-wallet-auth: "workspace:^"
+    core-wallet-dapp-rpc-client: "workspace:^"
+    core-wallet-user-rpc-client: "workspace:^"
+    cors: "npm:^2.8.5"
+    express: "npm:^5.1.0"
+    lit: "npm:^3.3.0"
+    pino: "npm:^9.7.0"
+    qs: "npm:^6.14.0"
+    socket.io: "npm:^4.8.1"
+    tsx: "npm:^4.20.3"
+    typescript: "npm:^5.8.3"
+    uuid: "npm:^11.1.0"
+    vite-express: "npm:^0.21.1"
+    zod: "npm:^3.25.64"
+  languageName: unknown
+  linkType: soft
+
 "example@workspace:example":
   version: 0.0.0-use.local
   resolution: "example@workspace:example"

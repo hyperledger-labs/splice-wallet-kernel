@@ -73,7 +73,12 @@ export class LoginUI extends LitElement {
                 <option value="">--Network--</option>
                 ${this.idps.map(
                     (net, index) =>
-                        html`<option value=${index}>${net.name}</option>`
+                        html`<option
+                            value=${index}
+                            ?disabled=${net.auth.type !== 'implicit'}
+                        >
+                            ${net.name}
+                        </option>`
                 )}
             </select>
             <button @click=${this.handleConnectToIDP}>Connect</button>

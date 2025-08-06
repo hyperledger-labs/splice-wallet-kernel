@@ -26,6 +26,7 @@
         "clients/*",
         "core/**",
         "example",
+        "example-scripts",
         "sdk",
         "scripts",
         "mock-oauth2"

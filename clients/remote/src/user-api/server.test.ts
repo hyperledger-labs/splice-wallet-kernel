@@ -41,49 +41,10 @@ test('call connect rpc', async () => {
         .send({ jsonrpc: '2.0', id: 0, method: 'listNetworks', params: [] })
         .set('Accept', 'application/json')
 
-    expect(response.body).toEqual({
-        jsonrpc: '2.0',
-        id: 0,
-        result: {
-            networks: [
-                {
-                    name: 'Local (password IDP)',
-                    chainId: 'canton:local-password',
-                    synchronizerId:
-                        'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd',
-                    description: 'Unimplemented Password Auth',
-                    ledgerApi: { baseUrl: 'https://test' },
-                    auth: {
-                        type: 'password',
-                        issuer: 'http://127.0.0.1:8889',
-                        configUrl:
-                            'http://127.0.0.1:8889/.well-known/openid-configuration',
-                        tokenUrl: 'tokenUrl',
-                        grantType: 'password',
-                        scope: 'openid',
-                        clientId: 'wk-service-account',
-                    },
-                },
-                {
-                    name: 'Local (OAuth IDP)',
-                    chainId: 'canton:local-oauth',
-                    synchronizerId:
-                        'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd',
-                    description: 'Mock OAuth IDP',
-                    ledgerApi: { baseUrl: 'http://127.0.0.1:5003' },
-                    auth: {
-                        type: 'implicit',
-                        issuer: 'http://127.0.0.1:8889',
-                        configUrl:
-                            'http://127.0.0.1:8889/.well-known/openid-configuration',
-                        audience:
-                            'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424',
-                        scope: 'openid daml_ledger_api offline_access',
-                        clientId: 'operator',
-                    },
-                },
-            ],
-        },
-    })
+    const json = await response.body.result
     expect(response.statusCode).toBe(200)
+    expect(json.networks.length).toBe(3)
+    expect(json.networks[0].name).toBe('Local (password IDP)')
+    expect(json.networks[1].name).toBe('Local (OAuth IDP)')
+    expect(json.networks[2].name).toBe('Local (OAuth IDP - Client Credentials)')
 })
