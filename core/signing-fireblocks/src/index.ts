@@ -82,7 +82,8 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
                     const tx = await this.fireblocks.signTransaction(
                         authContext?.userId,
                         params.txHash,
-                        params.publicKey
+                        params.publicKey,
+                        params.internalTxId
                     )
                     return {
                         txId: tx.txId,
