@@ -178,11 +178,11 @@ export class InternalSigningDriver implements SigningDriverInterface {
                 this.signer.set(id, internalKey)
                 this.signerByPublicKey.set(publicKey, internalKey)
 
-                return Promise.resolve({
+                return {
                     id,
+                    publicKey,
                     name: params.name,
-                    publicKey: naclUtil.encodeBase64(key.publicKey),
-                } as CreateKeyResult)
+                }
             },
 
             getConfiguration: async (): Promise<GetConfigurationResult> =>

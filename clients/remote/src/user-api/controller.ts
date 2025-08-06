@@ -127,20 +127,29 @@ async function signingDriverCreate(
             console.log('Combined hash: ', combinedHash)
 
             const signedTopologyTxs = await Promise.all(
-                transactions.map((tx) => {
-                    return driver.controller
+                transactions.map((transaction) => {
+                    const tx = Buffer.from(
+                        transaction.serializedTransaction
+                    ).toString('base64')
+
+                    const txHash = Buffer.from(
+                        transaction.transactionHash
+                    ).toString('base64')
+
+                    const publicKey = key.publicKey
+
+                    console.log('Signing tx: ', { tx, txHash, publicKey })
+
+                    return driver
+                        .controller(authContext)
                         .signTransaction({
-                            tx: Buffer.from(tx.serializedTransaction).toString(
-                                'base64'
-                            ),
-                            txHash: Buffer.from(tx.transactionHash).toString(
-                                'base64'
-                            ),
-                            publicKey: key.publicKey,
+                            tx,
+                            txHash,
+                            publicKey,
                         })
                         .then((res) =>
                             SignedTopologyTransaction.create({
-                                transaction: tx.serializedTransaction,
+                                transaction: transaction.serializedTransaction,
                                 proposal: true,
                                 signatures: [
                                     Signature.create({
@@ -159,47 +168,19 @@ async function signingDriverCreate(
                 })
             )
 
-            // eslint-disable-next-line no-constant-condition
-            if (true) {
-                console.log('Public key: ', key.publicKey)
-                console.log('Namespace: ', namespace)
+            console.log('Public key: ', key.publicKey)
+            console.log('Namespace: ', namespace)
 
-                // const signedTopologyTxs = transactions.map((tx) =>
-                //     SignedTopologyTransaction.create({
-                //         transaction: tx.serializedTransaction,
-                //         signatures: [],
-                //         proposal: true,
-                //         multiTransactionSignatures: [
-                //             // MultiTransactionSignatures.create({
-                //             //     transactionHashes: transactions.map(
-                //             //         (tx) => tx.transactionHash
-                //             //     ),
-                //             //     signatures: [
-                //             //         Signature.create({
-                //             //             format: SignatureFormat.RAW,
-                //             //             signature: Buffer.from(
-                //             //                 signed.signature,
-                //             //                 'base64'
-                //             //             ),
-                //             //             signedBy: namespace,
-                //             //             signingAlgorithmSpec:
-                //             //                 SigningAlgorithmSpec.ED25519,
-                //             //         }),
-                //             //     ],
-                //             // }),
-                //         ],
-                //     })
-                // )
+            topologyService.addTransactions(signedTopologyTxs)
 
-                topologyService.addTransactions(signedTopologyTxs)
+            console.log('ADDED TRANSACTIONS!')
 
-                const partyToParticipantMapping =
-                    await topologyService.getPartyToParticipantMapping(partyId)
+            const partyToParticipantMapping =
+                await topologyService.getPartyToParticipantMapping(partyId)
 
-                await topologyService.authorize(partyToParticipantMapping)
-            } else {
-                throw new Error(`Failed to sign transaction`)
-            }
+            console.log('GOT PARTY MAPPING!')
+
+            await topologyService.authorize(partyToParticipantMapping)
 
             wallet = {
                 partyId,
