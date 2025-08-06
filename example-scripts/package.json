@@ -1,0 +1,37 @@
+{
+    "name": "example-scripts",
+    "version": "1.0.0",
+    "description": "Various scripts for the Wallet Kernel Project.",
+    "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
+    "license": "Apache-2.0",
+    "packageManager": "yarn@4.9.2",
+    "type": "module",
+    "scripts": {
+        "test": "tsc -b",
+        "clean": "tsc -b --clean",
+        "run-01": "tsx ./01-create-a-party/script.ts",
+        "run-02": "tsx ./02-list-parties/script.ts"
+    },
+    "devDependencies": {
+        "tsx": "^4.20.3",
+        "typescript": "^5.8.3"
+    },
+    "dependencies": {
+        "@metamask/rpc-errors": "^7.0.2",
+        "axios": "^1.11.0",
+        "core-ledger-client": "workspace:^",
+        "core-types": "workspace:^",
+        "core-wallet-auth": "workspace:^",
+        "core-wallet-dapp-rpc-client": "workspace:^",
+        "core-wallet-user-rpc-client": "workspace:^",
+        "cors": "^2.8.5",
+        "express": "^5.1.0",
+        "lit": "^3.3.0",
+        "pino": "^9.7.0",
+        "qs": "^6.14.0",
+        "socket.io": "^4.8.1",
+        "uuid": "^11.1.0",
+        "vite-express": "^0.21.1",
+        "zod": "^3.25.64"
+    }
+}
