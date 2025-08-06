@@ -7,7 +7,6 @@
     "packageManager": "yarn@4.9.2",
     "type": "module",
     "scripts": {
-        "test": "tsc -b",
         "clean": "tsc -b --clean",
         "run-01": "tsx ./01-create-a-party/script.ts",
         "run-02": "tsx ./02-list-parties/script.ts"
