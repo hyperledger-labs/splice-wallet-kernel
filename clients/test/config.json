@@ -9,7 +9,7 @@
             {
                 "name": "Local (password IDP)",
                 "chainId": "canton:local-password",
-                "synchronizerId": "wallet::1220f72fe353becff17129007f13ffc6c621c6f717fb9cfb77baff8571fea382500a",
+                "synchronizerId": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
                 "description": "Unimplemented Password Auth",
                 "ledgerApi": {
                     "baseUrl": "https://test"
@@ -27,7 +27,7 @@
             {
                 "name": "Local (OAuth IDP)",
                 "chainId": "canton:local-oauth",
-                "synchronizerId": "wallet::1220f72fe353becff17129007f13ffc6c621c6f717fb9cfb77baff8571fea382500a",
+                "synchronizerId": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
                 "description": "Mock OAuth IDP",
                 "ledgerApi": {
                     "baseUrl": "http://127.0.0.1:5003"

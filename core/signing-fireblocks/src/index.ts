@@ -24,25 +24,25 @@ import {
     SetConfigurationResult,
     Transaction,
 } from 'core-signing-lib'
-import { FireblocksHandler, FireblocksKeyInfo } from './fireblocks.js'
+import { FireblocksHandler, FireblocksApiKeyInfo } from './fireblocks.js'
 import _ from 'lodash'
 import { z } from 'zod'
 import { AuthContext } from 'core-wallet-auth'
 
 export interface FireblocksConfig {
-    defaultKeyInfo?: FireblocksKeyInfo
-    userApiKeys: Map<string, FireblocksKeyInfo>
+    defaultKeyInfo?: FireblocksApiKeyInfo
+    userApiKeys: Map<string, FireblocksApiKeyInfo>
     apiPath?: string
 }
 
-const FireblocksKeyInfoSchema = z.object({
+const FireblocksApiKeyInfoSchema = z.object({
     apiKey: z.string(),
     apiSecret: z.string(),
 })
 
 const FireblocksConfigSchema = z.object({
-    defaultApiKey: FireblocksKeyInfoSchema.optional(),
-    userApiKeys: z.map(z.string(), FireblocksKeyInfoSchema),
+    defaultApiKey: FireblocksApiKeyInfoSchema.optional(),
+    userApiKeys: z.map(z.string(), FireblocksApiKeyInfoSchema),
     apiPath: z.string().optional(),
 })
 
@@ -196,8 +196,8 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
 
             getConfiguration: async (): Promise<GetConfigurationResult> => {
                 const hideFireblocksKeySecret = (
-                    keyInfo: FireblocksKeyInfo | undefined
-                ): FireblocksKeyInfo | undefined => {
+                    keyInfo: FireblocksApiKeyInfo | undefined
+                ): FireblocksApiKeyInfo | undefined => {
                     return keyInfo
                         ? {
                               apiKey: keyInfo.apiKey,
