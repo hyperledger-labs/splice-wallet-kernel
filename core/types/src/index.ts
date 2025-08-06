@@ -138,12 +138,10 @@ export const DiscoverResult = z.discriminatedUnion('walletType', [
     z.object({
         walletType: z.literal('extension'),
         url: z.optional(z.never()),
-        sessionToken: z.optional(z.string()),
     }),
     z.object({
         walletType: z.literal('remote'),
         url: z.string().url(),
-        sessionToken: z.optional(z.string()),
     }),
 ])
 
@@ -151,9 +149,6 @@ export type DiscoverResult = z.infer<typeof DiscoverResult>
 
 export interface RpcTransport {
     submit: (payload: RequestPayload) => Promise<ResponsePayload>
-    submitRequest: (payload: RequestPayload) => Promise<ResponsePayload>
-    submitResponse: (payload: ResponsePayload) => void
-    submitUserResponse: (payload: ResponsePayload) => void
 }
 
 export class WindowTransport implements RpcTransport {
@@ -166,7 +161,7 @@ export class WindowTransport implements RpcTransport {
 
     submitRequest = async (payload: RequestPayload) => {
         const message: SpliceMessage = {
-            request: jsonRpcRequest('', payload),
+            request: jsonRpcRequest('', payload), // TODO: add id
             type: WalletEvent.SPLICE_WALLET_REQUEST,
         }
         this.win.postMessage(message, '*')
@@ -179,6 +174,7 @@ export class WindowTransport implements RpcTransport {
                     return
                 }
 
+                console.log('Received message from wallet:', event.data)
                 window.removeEventListener('message', listener)
                 if ('error' in event.data.response) {
                     reject(event.data.response.error)
@@ -193,7 +189,7 @@ export class WindowTransport implements RpcTransport {
 
     submitResponse = (payload: ResponsePayload) => {
         const message: SpliceMessage = {
-            response: jsonRpcResponse('', payload),
+            response: jsonRpcResponse(null, payload),
             type: WalletEvent.SPLICE_WALLET_RESPONSE,
         }
         this.win.postMessage(message, '*')

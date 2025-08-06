@@ -13,6 +13,7 @@ import {
     AddSessionResult,
     ListSessionsResult,
     SetPrimaryWalletParams,
+    InfoResult,
 } from './rpc-gen/typings.js'
 import { Store, Wallet, Auth } from 'core-wallet-store'
 import { Logger } from 'pino'
@@ -124,6 +125,9 @@ export const userController = (
 ) => {
     const logger = _logger.child({ component: 'user-controller' })
     return buildController({
+        info: function (): Promise<InfoResult> {
+            return Promise.resolve({ kernel: kernelInfo })
+        },
         addNetwork: async (network: AddNetworkParams) => {
             const ledgerApi = {
                 baseUrl: network.ledgerApiUrl ?? '',
@@ -312,6 +316,7 @@ export const userController = (
                 })
 
                 return Promise.resolve({
+                    userId,
                     accessToken,
                     status: 'connected',
                     network: {
@@ -337,6 +342,7 @@ export const userController = (
             return {
                 sessions: [
                     {
+                        userId: authContext!.userId,
                         accessToken: authContext!.accessToken,
                         status: 'connected',
                         network: {

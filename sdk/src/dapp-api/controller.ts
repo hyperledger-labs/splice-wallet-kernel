@@ -12,16 +12,16 @@ import { isSpliceMessage, SuccessResponse, WalletEvent } from 'core-types'
 import * as userApi from 'core-wallet-user-rpc-client'
 
 enum WK_URL {
-    LOGIN = 'http://localhost:3002/login/',
+    LOGIN = '/login/',
 }
 
 const popupInteraction = async <T>(
-    url: WK_URL,
+    url: URL,
     callback: (data: SuccessResponse) => T
 ): Promise<T> => {
-    const win = await popupHref(new URL(url))
+    const win = await popupHref(url)
     console.log('popup window opened', win)
-    let response = false
+    let eventReceived = false
     return new Promise((resolve, reject) => {
         const listener = (event: MessageEvent) => {
             console.log('user has done stuff in the UI', event.data)
@@ -32,6 +32,7 @@ const popupInteraction = async <T>(
                 event.data.type === WalletEvent.SPLICE_WALLET_USER_RESPONSE
             ) {
                 window.removeEventListener('message', listener)
+                eventReceived = true
 
                 if ('error' in event.data.response) {
                     console.error(
@@ -44,7 +45,6 @@ const popupInteraction = async <T>(
                         'User response received:',
                         event.data.response.result
                     )
-                    response = true
                     resolve(callback(event.data.response))
                 }
             }
@@ -53,21 +53,25 @@ const popupInteraction = async <T>(
 
         const interval = setInterval(() => {
             if (!win || win.closed) {
-                console.log('Wallet discovery window closed by user')
                 clearInterval(interval)
                 window.removeEventListener('message', listener)
-                if (response === false) {
+                if (eventReceived === false) {
                     reject('User closed the wallet window prior to interaction')
                 }
-            } else {
-                console.log('Waiting for user to interact with the UI')
             }
         }, 1000)
     })
 }
 
-export const dappController = () =>
-    buildController({
+export const dappController = (rpcUrl: URL, uiUrl: URL) => {
+    console.log(
+        'Creating dapp controller with rpcUrl:',
+        rpcUrl,
+        'and uiUrl:',
+        uiUrl
+    )
+    const url = (page: WK_URL) => new URL(page, uiUrl)
+    return buildController({
         status: function (): Promise<StatusResult> {
             return Promise.resolve({
                 kernel: {
@@ -80,24 +84,28 @@ export const dappController = () =>
             })
         },
         connect: async function (): Promise<ConnectResult> {
-            return popupInteraction(WK_URL.LOGIN, (data: SuccessResponse) => {
-                const addSessionResult = data.result as userApi.AddSessionResult
-                console.log(
-                    'User has logged in, received result:',
-                    addSessionResult
-                )
-                return {
-                    kernel: {
-                        id: 'kernel-id', // TODO: get from userApi
-                        clientType: 'remote',
-                        url: 'url', // TODO: get from userApi
-                    },
-                    isConnected: true,
-                    chainId: addSessionResult.network.chainId,
-                    userUrl: 'user-url', // TODO: get from userApi
-                    sessionToken: addSessionResult.accessToken,
+            return popupInteraction(
+                url(WK_URL.LOGIN),
+                (data: SuccessResponse) => {
+                    const addSessionResult =
+                        data.result as userApi.AddSessionResult
+                    console.log(
+                        'User has logged in, received result:',
+                        addSessionResult
+                    )
+                    return {
+                        kernel: {
+                            id: 'kernel-id', // TODO: get from userApi
+                            clientType: 'remote',
+                            url: 'url', // TODO: get from userApi
+                        },
+                        isConnected: true,
+                        chainId: addSessionResult.network.chainId,
+                        userUrl: 'user-url', // TODO: get from userApi
+                        sessionToken: addSessionResult.accessToken,
+                    }
                 }
-            })
+            )
         },
         darsAvailable: async () => ({ dars: ['default-dar'] }),
         prepareReturn: function (): Promise<PrepareReturnResult> {
@@ -122,3 +130,4 @@ export const dappController = () =>
             throw new Error('Only for events.')
         },
     })
+}

@@ -1,27 +1,20 @@
-import { discover, popupHref } from 'core-wallet-ui-components'
-import {
-    injectSpliceProvider,
-    ProviderType,
-    SpliceProvider,
-} from 'core-splice-provider'
+import { discover } from 'core-wallet-ui-components'
+import { injectSpliceProvider, ProviderType } from 'core-splice-provider'
 import * as dappAPI from 'core-wallet-dapp-rpc-client'
 import { SDK } from '../enums.js'
-import { DiscoverResult, SpliceMessage, WalletEvent } from 'core-types'
+import { DiscoverResult } from 'core-types'
 import { DappServer } from '../dapp-api/server.js'
 export * from 'core-splice-provider'
 
 let dappServer: DappServer | undefined = undefined
 
-const injectProvider = ({ walletType }: DiscoverResult) => {
-    if (walletType === 'remote') {
-        // return injectSpliceProvider(
-        //     ProviderType.HTTP,
-        //     new URL(url),
-        //     sessionToken
-        // )
-        dappServer = new DappServer()
-        dappServer.run()
+const injectProvider = ({ walletType, url }: DiscoverResult) => {
+    // Stop the previous DappServer if it exists
+    dappServer?.stop()
 
+    if (walletType === 'remote') {
+        dappServer = new DappServer(new URL(url))
+        dappServer.run()
         return injectSpliceProvider(ProviderType.WINDOW)
     } else {
         return injectSpliceProvider(ProviderType.WINDOW)
@@ -35,38 +28,6 @@ if (connection) {
         injectProvider(DiscoverResult.parse(JSON.parse(connection)))
     } catch (e) {
         console.error('Failed to parse stored wallet connection:', e)
-    }
-}
-
-const onConnected = (provider: SpliceProvider, result: DiscoverResult) => {
-    provider.on<dappAPI.OnConnectedEvent>('onConnected', (event) => {
-        console.log('SDK: Store connection')
-        localStorage.setItem(
-            SDK.LOCAL_STORAGE_KEY_CONNECTION,
-            JSON.stringify({
-                ...result,
-                sessionToken: event.sessionToken,
-            })
-        )
-    })
-}
-
-const openKernelUserUI = (
-    walletType: DiscoverResult['walletType'],
-    userUrl: string
-) => {
-    switch (walletType) {
-        case 'remote':
-            popupHref(new URL(userUrl))
-            break
-        case 'extension': {
-            const msg: SpliceMessage = {
-                type: WalletEvent.SPLICE_WALLET_EXT_OPEN,
-                url: userUrl,
-            }
-            window.postMessage(msg, '*')
-            break
-        }
     }
 }
 
@@ -84,19 +45,19 @@ export type ConnectError = {
 export async function connect(): Promise<dappAPI.ConnectResult> {
     return discover()
         .then(async (result) => {
-            dappServer?.stop()
             const provider = injectProvider(result)
-
-            // Listen for connected eved from the provider
-            // This will be triggered when the user connects to the wallet kernel
-            onConnected(provider, result)
-
             const response = await provider.request<dappAPI.ConnectResult>({
                 method: 'connect',
             })
 
-            if (!response.isConnected)
-                openKernelUserUI(result.walletType, response.userUrl)
+            console.log('SDK: Store connection')
+            localStorage.setItem(
+                SDK.LOCAL_STORAGE_KEY_CONNECTION,
+                JSON.stringify({
+                    ...result,
+                    sessionToken: response.sessionToken,
+                })
+            )
 
             return response
         })
