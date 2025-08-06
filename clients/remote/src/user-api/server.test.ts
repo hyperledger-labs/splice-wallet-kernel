@@ -52,7 +52,10 @@ test('call connect rpc', async () => {
                     synchronizerId:
                         'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd',
                     description: 'Unimplemented Password Auth',
-                    ledgerApi: { baseUrl: 'https://test' },
+                    ledgerApi: {
+                        baseUrl: 'https://test',
+                        adminGrpcUrl: 'localhost:5012',
+                    },
                     auth: {
                         type: 'password',
                         issuer: 'http://127.0.0.1:8889',
@@ -70,7 +73,10 @@ test('call connect rpc', async () => {
                     synchronizerId:
                         'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd',
                     description: 'Mock OAuth IDP',
-                    ledgerApi: { baseUrl: 'http://127.0.0.1:5003' },
+                    ledgerApi: {
+                        baseUrl: 'http://127.0.0.1:5003',
+                        adminGrpcUrl: 'localhost:5012',
+                    },
                     auth: {
                         type: 'implicit',
                         issuer: 'http://127.0.0.1:8889',

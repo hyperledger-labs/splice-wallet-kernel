@@ -13,7 +13,7 @@
                 "description": "Unimplemented Password Auth",
                 "ledgerApi": {
                     "baseUrl": "https://test",
-                    "adminGrpcUrl": "localhost:5002"
+                    "adminGrpcUrl": "localhost:5012"
                 },
                 "auth": {
                     "type": "password",
@@ -32,7 +32,7 @@
                 "description": "Mock OAuth IDP",
                 "ledgerApi": {
                     "baseUrl": "http://127.0.0.1:5003",
-                    "adminGrpcUrl": "localhost:5002"
+                    "adminGrpcUrl": "localhost:5012"
                 },
                 "auth": {
                     "type": "implicit",
