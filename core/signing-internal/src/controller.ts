@@ -162,11 +162,8 @@ export class InternalSigningDriver implements SigningDriverInterface {
             ): Promise<CreateKeyResult> => {
                 const key = nacl.sign.keyPair()
                 const id = randomUUID()
-                // const publicKey = naclUtil.encodeBase64(key.publicKey)
-                // const privateKey = naclUtil.encodeBase64(key.secretKey)
-                const publicKey = 'ahwfmPvmDXIGhApRN0MfQ/nMI5YquAk9/eWrVQ1Hy2U='
-                const privateKey =
-                    'EazgbmYD5KD47C1qqFCqvKNukzGpHhMmwolyz8nEN61qHB+Y++YNcgaEClE3Qx9D+cwjliq4CT395atVDUfLZQ=='
+                const publicKey = naclUtil.encodeBase64(key.publicKey)
+                const privateKey = naclUtil.encodeBase64(key.secretKey)
 
                 const internalKey: InternalKey = {
                     id,
