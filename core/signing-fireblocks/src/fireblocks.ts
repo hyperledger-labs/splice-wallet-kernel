@@ -38,7 +38,7 @@ export interface FireblocksTransaction {
     derivationPath: number[]
 }
 
-export interface FireblocksKeyInfo {
+export interface FireblocksApiKeyInfo {
     apiKey: string
     apiSecret: string
 }
@@ -48,12 +48,9 @@ const logger = pino({ name: 'main', level: 'debug' })
 export class FireblocksHandler {
     private defaultClient: Fireblocks | undefined = undefined
     private clients: Map<string, Fireblocks> = new Map()
-    private keyCacheByPublicKey: Map<string, FireblocksKey> = new Map()
-    private keyCacheByDerivationPath: Map<string, FireblocksKey> = new Map()
 
-    // a list of derivation paths that have show up in transactions but have not been found in the vaults
-    // this is used to avoid repeatedly refreshing the key cache for derivation paths that definitely do not exist
-    private missingDerivationPaths: Set<string> = new Set()
+    private keyInfoByPublicKey: Map<string, FireblocksKey> = new Map()
+    private publicKeyByDerivationPath: Map<string, string> = new Map()
 
     private getClient = (userId: string | undefined): Fireblocks => {
         if (userId !== undefined && this.clients.has(userId)) {
@@ -66,8 +63,8 @@ export class FireblocksHandler {
     }
 
     constructor(
-        defaultKey: FireblocksKeyInfo | undefined,
-        userKeys: Map<string, FireblocksKeyInfo>,
+        defaultKey: FireblocksApiKeyInfo | undefined,
+        userKeys: Map<string, FireblocksApiKeyInfo>,
         apiPath: string = 'https://api.fireblocks.io/v1'
     ) {
         if (defaultKey) {
@@ -88,9 +85,9 @@ export class FireblocksHandler {
     }
 
     /**
-     * Get public keys from Fireblocks vault accounts. This will
+     * Get all public keys which correspond to Fireblocks vault accounts. This will
      * also refresh the key cache.
-     * @returns List of Fireblocks public keys
+     * @returns List of Fireblocks public key information
      */
     public async getPublicKeys(
         userId: string | undefined
@@ -111,32 +108,27 @@ export class FireblocksHandler {
 
             for (const vault of vaultAccounts) {
                 if (vault.id) {
-                    const derivationPath = `[44, ${CC_COIN_TYPE}, ${vault.id}, 0, 0]`
-                    const key = await client.vaults.getPublicKeyInfo({
-                        algorithm: 'MPC_EDDSA_ED25519',
+                    const derivationPath = [
+                        44,
+                        CC_COIN_TYPE,
+                        Number(vault.id) || 0,
+                        0,
+                        0,
+                    ]
+                    const publicKey = await this.lookupPublicKey(
+                        userId,
+                        derivationPath
+                    )
+
+                    const storedKey = {
                         derivationPath,
-                    })
-                    if (
-                        key.data.publicKey &&
-                        key.data.algorithm &&
-                        key.data.derivationPath
-                    ) {
-                        const storedKey = {
-                            derivationPath: key.data.derivationPath || [],
-                            publicKey: key.data.publicKey,
-                            name: vault.name || vault.id,
-                            algorithm: key.data.algorithm,
-                        }
-                        keys.push(storedKey)
-                        this.keyCacheByPublicKey.set(
-                            storedKey.publicKey,
-                            storedKey
-                        )
-                        this.keyCacheByDerivationPath.set(
-                            JSON.stringify(key.data.derivationPath),
-                            storedKey
-                        )
+                        publicKey,
+                        name: vault.name || vault.id,
+                        algorithm:
+                            PublicKeyInformationAlgorithmEnum.EddsaEd25519,
                     }
+                    keys.push(storedKey)
+                    this.keyInfoByPublicKey.set(storedKey.publicKey, storedKey)
                 }
             }
         } catch (error) {
@@ -146,6 +138,12 @@ export class FireblocksHandler {
         return keys
     }
 
+    /**
+     * Takes a Fireblocks response from a transactions call and extracts the transaction information
+     * relevant to the Wallet Kernel. This will potentially fetch the public key since unsigned transactions
+     * do  not include it
+     * @returns FireblocksTransaction
+     */
     private async formatTransaction(
         userId: string | undefined,
         tx: TransactionResponse
@@ -176,9 +174,10 @@ export class FireblocksHandler {
                 return undefined
             }
             const message = rawMessageData.data.rawMessageData.messages[0]
-            const derivationPath = JSON.stringify(message.derivationPath)
-
-            const publicKey = await this.lookupPublicKey(userId, derivationPath)
+            const publicKey = await this.lookupPublicKey(
+                userId,
+                message.derivationPath
+            )
 
             const status =
                 tx.status === 'REJECTED' || tx.status === 'BLOCKED'
@@ -190,34 +189,51 @@ export class FireblocksHandler {
                 txId: tx.id!,
                 status: status,
                 createdAt: tx.createdAt!,
-                publicKey: publicKey?.publicKey,
+                publicKey: publicKey,
                 derivationPath: message.derivationPath,
             }
         }
     }
+
+    /**
+     * Looks up or fetches the public key (only) for a given derivation path
+     * @returns The public key as a string
+     */
     private async lookupPublicKey(
         userId: string | undefined,
-        derivationPath: string
-    ): Promise<FireblocksKey | undefined> {
-        if (
-            !this.keyCacheByDerivationPath.has(derivationPath) &&
-            !this.missingDerivationPaths.has(derivationPath)
-        ) {
-            // Refresh the key cache only once per missing derivation path in case the cache has not been
-            // repopulated since the transaction was created, however do not repeatedly refresh the cache
-            // for this derivation path in case it definitely does not exist
-            await this.getPublicKeys(userId)
-            this.missingDerivationPaths.add(derivationPath)
-        }
-
-        if (this.keyCacheByDerivationPath.has(derivationPath)) {
-            this.missingDerivationPaths.delete(derivationPath)
-            return this.keyCacheByDerivationPath.get(derivationPath)
+        derivationPath: number[]
+    ): Promise<string> {
+        const derivationPathString = JSON.stringify(derivationPath)
+        if (this.publicKeyByDerivationPath.has(derivationPathString)) {
+            return this.publicKeyByDerivationPath.get(derivationPathString)!
         } else {
-            return undefined
+            try {
+                const client = this.getClient(userId)
+                const key = await client.vaults.getPublicKeyInfo({
+                    algorithm: PublicKeyInformationAlgorithmEnum.EddsaEd25519,
+                    derivationPath: derivationPathString,
+                })
+                if (key.data.publicKey) {
+                    this.publicKeyByDerivationPath.set(
+                        derivationPathString,
+                        key.data.publicKey
+                    )
+                    return key.data.publicKey
+                } else {
+                    throw new Error(
+                        'Malformed public key response from Fireblocks'
+                    )
+                }
+            } catch (error) {
+                throw new Error(`Error looking up public key: ${error}`)
+            }
         }
     }
 
+    /**
+     * Fetch a single RAW transaction from Fireblocks by its transaction ID
+     * @returns FireblocksTransaction or undefined if not found
+     */
     public async getTransaction(
         userId: string | undefined,
         txId: string
@@ -297,19 +313,19 @@ export class FireblocksHandler {
     ): Promise<FireblocksTransaction> {
         try {
             const client = this.getClient(userId)
-            if (!this.keyCacheByPublicKey.has(publicKey)) {
+            if (!this.keyInfoByPublicKey.has(publicKey)) {
                 // refresh the keycache
                 await this.getPublicKeys(userId)
             }
-            const key = this.keyCacheByPublicKey.get(publicKey)
+            const key = this.keyInfoByPublicKey.get(publicKey)
             if (!key) {
-                throw new Error(`Public key ${publicKey} not found in cache`)
+                throw new Error(`Public key ${publicKey} not found in vaults`)
             }
 
             const transaction = await client.transactions.createTransaction({
                 transactionRequest: {
                     operation: 'RAW',
-                    note: `Signing transaction with public key ${publicKey}`,
+                    note: `Signing transaction with public key for ${key.name}`,
                     extraParameters: {
                         rawMessageData: {
                             messages: [
