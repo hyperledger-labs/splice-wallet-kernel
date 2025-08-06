@@ -12282,10 +12282,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "splice-wallet-sdk@workspace:sdk"
   dependencies:
+    "@metamask/rpc-errors": "npm:^7.0.2"
     core-splice-provider: "workspace:^"
     core-types: "workspace:^"
     core-wallet-dapp-rpc-client: "workspace:^"
     core-wallet-ui-components: "workspace:^"
+    core-wallet-user-rpc-client: "workspace:^"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft

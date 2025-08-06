@@ -1,4 +1,4 @@
-import { WalletEvent } from 'core-types'
+import { WalletEvent, WindowTransport } from 'core-types'
 import { LitElement, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { userClient } from '../rpc-client'
@@ -56,12 +56,14 @@ export class LoginCallback extends LitElement {
 
                 stateManager.accessToken.set(tokenResponse.access_token)
 
-                await userClient.transport.submit({
+                const session = await userClient.transport.submit({
                     method: 'addSession',
                     params: {
                         chainId: stateManager.chainId.get(),
                     },
                 })
+
+                new WindowTransport(window.opener).submitUserResponse(session)
 
                 window.location.replace('/')
             }

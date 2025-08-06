@@ -14,7 +14,7 @@
             "name": "wallet-dapp-rpc-server",
             "language": "typescript",
             "openRPCPath": null,
-            "outPath": "./clients/remote/src/dapp-api/rpc-gen",
+            "outPath": "./sdk/src/dapp-api/rpc-gen",
             "customComponent": "./core/rpc-generator/dist/components/controller.js",
             "customType": "controller"
         },

@@ -7,15 +7,22 @@ import {
 import * as dappAPI from 'core-wallet-dapp-rpc-client'
 import { SDK } from '../enums.js'
 import { DiscoverResult, SpliceMessage, WalletEvent } from 'core-types'
+import { DappServer } from '../dapp-api/server.js'
 export * from 'core-splice-provider'
 
-const injectProvider = ({ walletType, url, sessionToken }: DiscoverResult) => {
+let dappServer: DappServer | undefined = undefined
+
+const injectProvider = ({ walletType }: DiscoverResult) => {
     if (walletType === 'remote') {
-        return injectSpliceProvider(
-            ProviderType.HTTP,
-            new URL(url),
-            sessionToken
-        )
+        // return injectSpliceProvider(
+        //     ProviderType.HTTP,
+        //     new URL(url),
+        //     sessionToken
+        // )
+        dappServer = new DappServer()
+        dappServer.run()
+
+        return injectSpliceProvider(ProviderType.WINDOW)
     } else {
         return injectSpliceProvider(ProviderType.WINDOW)
     }
@@ -77,6 +84,7 @@ export type ConnectError = {
 export async function connect(): Promise<dappAPI.ConnectResult> {
     return discover()
         .then(async (result) => {
+            dappServer?.stop()
             const provider = injectProvider(result)
 
             // Listen for connected eved from the provider

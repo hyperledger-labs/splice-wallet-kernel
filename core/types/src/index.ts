@@ -48,6 +48,28 @@ export type JsonRpcRequest = z.infer<typeof JsonRpcRequest>
 export const JsonRpcResponse = z.intersection(JsonRpcMeta, ResponsePayload)
 export type JsonRpcResponse = z.infer<typeof JsonRpcResponse>
 
+export const jsonRpcRequest = (
+    id: string | number | null,
+    payload: RequestPayload
+): JsonRpcRequest => {
+    return {
+        jsonrpc: '2.0',
+        id, // id should be set based on the request context
+        ...payload,
+    }
+}
+
+export const jsonRpcResponse = (
+    id: string | number | null,
+    payload: ResponsePayload
+): JsonRpcResponse => {
+    return {
+        jsonrpc: '2.0',
+        id, // id should be set based on the request context
+        ...payload,
+    }
+}
+
 /**
  * Window / message events
  */
@@ -61,6 +83,8 @@ export enum WalletEvent {
     SPLICE_WALLET_EXT_OPEN = 'SPLICE_WALLET_EXT_OPEN', // A request from the dApp to the browser extension to open the wallet UI
     // Auth events
     SPLICE_WALLET_IDP_AUTH_SUCCESS = 'SPLICE_WALLET_IDP_AUTH_SUCCESS',
+    // User Interactions
+    SPLICE_WALLET_USER_RESPONSE = 'SPLICE_WALLET_USER_RESPONSE',
 }
 
 export interface SpliceMessageEvent extends MessageEvent {
@@ -85,6 +109,10 @@ export const SpliceMessage = z.discriminatedUnion('type', [
     z.object({
         type: z.literal(WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS),
         token: z.string(),
+    }),
+    z.object({
+        type: z.literal(WalletEvent.SPLICE_WALLET_USER_RESPONSE),
+        response: JsonRpcResponse,
     }),
 ])
 export type SpliceMessage = z.infer<typeof SpliceMessage>
@@ -123,4 +151,59 @@ export type DiscoverResult = z.infer<typeof DiscoverResult>
 
 export interface RpcTransport {
     submit: (payload: RequestPayload) => Promise<ResponsePayload>
+    submitRequest: (payload: RequestPayload) => Promise<ResponsePayload>
+    submitResponse: (payload: ResponsePayload) => void
+    submitUserResponse: (payload: ResponsePayload) => void
+}
+
+export class WindowTransport implements RpcTransport {
+    constructor(private win: Window) {
+        this.win = win
+    }
+
+    // Default is SPLICE_WALLET_REQUEST
+    submit = async (payload: RequestPayload) => this.submitRequest(payload)
+
+    submitRequest = async (payload: RequestPayload) => {
+        const message: SpliceMessage = {
+            request: jsonRpcRequest('', payload),
+            type: WalletEvent.SPLICE_WALLET_REQUEST,
+        }
+        this.win.postMessage(message, '*')
+        return new Promise<SuccessResponse>((resolve, reject) => {
+            const listener = (event: MessageEvent) => {
+                if (
+                    !isSpliceMessageEvent(event) ||
+                    event.data.type !== WalletEvent.SPLICE_WALLET_RESPONSE
+                ) {
+                    return
+                }
+
+                window.removeEventListener('message', listener)
+                if ('error' in event.data.response) {
+                    reject(event.data.response.error)
+                } else {
+                    resolve(event.data.response)
+                }
+            }
+
+            window.addEventListener('message', listener)
+        })
+    }
+
+    submitResponse = (payload: ResponsePayload) => {
+        const message: SpliceMessage = {
+            response: jsonRpcResponse('', payload),
+            type: WalletEvent.SPLICE_WALLET_RESPONSE,
+        }
+        this.win.postMessage(message, '*')
+    }
+
+    submitUserResponse = (payload: ResponsePayload) => {
+        const message: SpliceMessage = {
+            response: jsonRpcResponse('', payload),
+            type: WalletEvent.SPLICE_WALLET_USER_RESPONSE,
+        }
+        this.win.postMessage(message, '*')
+    }
 }
