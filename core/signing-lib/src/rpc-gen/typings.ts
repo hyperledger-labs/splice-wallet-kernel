@@ -27,13 +27,13 @@ export type PublicKey = string
 export type InternalTxId = string
 /**
  *
- * Unique identifier of the signed transaction given by the Wallet Provider. This may not be the same as the internal txId given by the Wallet Kernel.
+ * Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Kernel.
  *
  */
 export type TxId = string
 /**
  *
- * Unique identifiers of the transactions to subscribe to
+ * Unique identifiers assigned by the Signing Provider of the transactions to subscribe to.
  *
  */
 export type TxIds = TxId[]
@@ -100,7 +100,7 @@ export interface Transaction {
  *
  */
 export type Transactions = Transaction[]
-export interface ObjectOfTransactionsVFXklMGk {
+export interface ObjectOfTransactionsNe2GhqhN {
     transactions?: Transactions
     [k: string]: any
 }
@@ -156,7 +156,7 @@ export interface SubscribeTransactionsParams {
 }
 export type SignTransactionResult = Error | Transaction
 export type GetTransactionResult = Error | Transaction
-export type GetTransactionsResult = Error | ObjectOfTransactionsVFXklMGk
+export type GetTransactionsResult = Error | ObjectOfTransactionsNe2GhqhN
 export interface GetKeysResult {
     keys?: Keys
     [k: string]: any

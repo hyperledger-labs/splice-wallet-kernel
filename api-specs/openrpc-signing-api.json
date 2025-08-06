@@ -70,7 +70,7 @@
                             "txId": {
                                 "title": "txId",
                                 "type": "string",
-                                "description": "Unique identifier of the transaction to retrieve."
+                                "description": "Unique identifier assigned by the Signing Provider of the transaction to retrieve."
                             }
                         },
                         "required": ["txId"]
@@ -109,7 +109,7 @@
                                     "title": "txId",
                                     "type": "string"
                                 },
-                                "description": "List of transaction IDs to retrieve"
+                                "description": "List of unique identifiers assigned by the Signing Provider of the transactions to retrieve."
                             },
                             "publicKeys": {
                                 "title": "publicKeys",
@@ -252,7 +252,7 @@
                             "txIds": {
                                 "title": "txIds",
                                 "type": "array",
-                                "description": "Unique identifiers of the transactions to subscribe to",
+                                "description": "Unique identifiers assigned by the Signing Provider of the transactions to subscribe to.",
                                 "items": {
                                     "title": "txId",
                                     "type": "string"
@@ -331,7 +331,7 @@
                     "txId": {
                         "title": "txId",
                         "type": "string",
-                        "description": "Unique identifier of the signed transaction given by the Wallet Provider. This may not be the same as the internal txId given by the Wallet Kernel."
+                        "description": "Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Kernel."
                     },
                     "status": {
                         "$ref": "#/components/schemas/SigningStatus",
