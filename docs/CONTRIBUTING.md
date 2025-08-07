@@ -58,7 +58,7 @@ To run a Canton instance locally:
 
 1. Ensure you have Java installed. A convenient tool to manage Java SDK versions (similar to `nvm` for Node) is [sdkman](https://sdkman.io/install)
 2. Run `yarn scripts:fetch:canton` to download and install Canton 3.4 to a local `.canton/` directory in the repo (if you haven't already)
-3. Run `yarn start:canton` to start a participant using the root-level `canton.conf` configuration
-    - (alternatively) start canton directly to access the interactive console: `.canton/bin/canton -c canton.conf --bootstrap canton-bootstrap.canton`
+3. Run `yarn start:canton` to start a participant & synchronizer using the repo setup defined in `canton/`
+    - (alternatively) start canton directly to access the interactive console: `yarn start:canton:console`
 
 Canton is _not_ started automatically through the `start:all` script, as it requires extra dependencies and has a higher resource footprint.

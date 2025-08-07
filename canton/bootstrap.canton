@@ -18,12 +18,14 @@ import com.digitalasset.canton.version.ProtocolVersion._
 import com.digitalasset.canton.topology.{PhysicalSynchronizerId, SynchronizerId, UniqueIdentifier}
 
 
+val cantonDir = "canton"
+val synchronizerDir = s"$cantonDir/synchronizer-bootstrap"
 
 logger.info(s"WALLET-KERNEL-BOOTSTRAP")
 
 val keyName = "participant1NameSpaceKey"
 
-participant1.keys.secret.upload_from("keypair.key", Some(keyName))
+participant1.keys.secret.upload_from(s"$cantonDir/participant1.key", Some(keyName))
 
 val key = participant1.keys.secret.list(filterName = keyName).headOption.get
 
@@ -56,7 +58,7 @@ participant1.health.wait_for_initialized()
 //import data
 logger.info("Importing sequencer/mediator data ")
 
-val synchronizerId = SynchronizerId.tryFromString(better.files.File("synchronizer-bootstrap/synchronizer-id").contentAsString)
+val synchronizerId = SynchronizerId.tryFromString(better.files.File(s"$synchronizerDir/synchronizer-id").contentAsString)
 logger.info(s"synchronizer id is $synchronizerId")
 
 val testedProtocolVersion = ProtocolVersion.v34
@@ -71,7 +73,7 @@ migrateNode(
   synchronizerId = synchronizerId,
   newSequencers = Seq(sequencer1),
   dars = Seq(),
-  exportDirectory = better.files.File("synchronizer-bootstrap"),
+  exportDirectory = better.files.File(synchronizerDir),
 )
 
 migrateNode(
@@ -80,7 +82,7 @@ migrateNode(
   synchronizerId = synchronizerId,
   newSequencers = Seq(sequencer1),
   dars = Seq(),
-  exportDirectory = better.files.File("synchronizer-bootstrap"),
+  exportDirectory = better.files.File(synchronizerDir),
 )
 
 
@@ -265,10 +267,10 @@ object UpgradeDataFiles {
         .filter(file => file.name.startsWith(nodeName) && file.name.endsWith(".keys"))
         .toList
     UpgradeDataFiles(
-      uidFile = better.files.File(s"synchronizer-bootstrap/$nodeName-uid"),
+      uidFile = better.files.File(s"$synchronizerDir/$nodeName-uid"),
       keyFiles = keys,
-      authorizedStoreFile = better.files.File(s"synchronizer-bootstrap/$nodeName-authorized-store"),
-      genesisStateFile = better.files.File("synchronizer-bootstrap/sequencer-genesis-state")
+      authorizedStoreFile = better.files.File(s"$synchronizerDir/$nodeName-authorized-store"),
+      genesisStateFile = better.files.File(s"$synchronizerDir/sequencer-genesis-state")
     )
   }
 }
