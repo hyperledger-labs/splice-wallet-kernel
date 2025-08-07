@@ -220,6 +220,17 @@ export interface Session {
     accessToken: AccessToken
     status: Status
 }
+/**
+ *
+ * Structure representing the connected network session
+ *
+ */
+export interface Session {
+    network: Network
+    userId: UserId
+    accessToken: AccessToken
+    status: Status
+}
 export type Sessions = Session[]
 export interface AddNetworkParams {
     network: Network
@@ -302,6 +313,10 @@ export interface ListNetworksResult {
     networks: Networks
     [k: string]: any
 }
+export interface GetSessionResult {
+    session: Session
+    [k: string]: any
+}
 /**
  *
  * Structure representing the connected network session
@@ -339,5 +354,6 @@ export type ListWallets = (
 export type Sign = (params: SignParams) => Promise<SignResult>
 export type Execute = (params: ExecuteParams) => Promise<ExecuteResult>
 export type ListNetworks = () => Promise<ListNetworksResult>
+export type GetSession = () => Promise<GetSessionResult>
 export type AddSession = (params: AddSessionParams) => Promise<AddSessionResult>
 export type ListSessions = () => Promise<ListSessionsResult>

@@ -8,8 +8,15 @@ import {
     LedgerApiResult,
     RequestAccountsResult,
 } from './rpc-gen/typings'
-import { isSpliceMessage, SuccessResponse, WalletEvent } from 'core-types'
+import {
+    HttpTransport,
+    isSpliceMessage,
+    RequestPayload,
+    SuccessResponse,
+    WalletEvent,
+} from 'core-types'
 import * as userApi from 'core-wallet-user-rpc-client'
+import { SDK } from '../enums'
 
 enum WK_URL {
     LOGIN = '/login/',
@@ -63,46 +70,97 @@ const popupInteraction = async <T>(
     })
 }
 
+class UserClient {
+    private transport: HttpTransport
+
+    constructor(url: URL, sessionToken?: string) {
+        this.transport = new HttpTransport(url, sessionToken)
+    }
+
+    public async request<T>({ method, params }: RequestPayload): Promise<T> {
+        const response = await this.transport.submit({ method, params })
+        if ('error' in response) throw new Error(response.error.message)
+        return response.result as T
+    }
+}
+
 export const dappController = (rpcUrl: URL, uiUrl: URL) => {
-    console.log(
-        'Creating dapp controller with rpcUrl:',
-        rpcUrl,
-        'and uiUrl:',
-        uiUrl
-    )
     const url = (page: WK_URL) => new URL(page, uiUrl)
+    let sessionToken: string | undefined = undefined
+    const session = localStorage.getItem(SDK.LOCAL_STORAGE_KEY_SESSION)
+    if (session) {
+        try {
+            const sessionData = JSON.parse(session) as userApi.AddSessionResult
+            sessionToken = sessionData.accessToken
+            console.log('SDK: Restored session:', sessionData)
+        } catch (e) {
+            console.error('Failed to parse stored session:', e)
+        }
+    }
+    let userClient = new UserClient(rpcUrl, sessionToken)
+
     return buildController({
-        status: function (): Promise<StatusResult> {
-            return Promise.resolve({
-                kernel: {
-                    id: 'kernel-id', // TODO: get from userApi
-                    clientType: 'remote',
-                    url: 'url', // TODO: get from userApi
-                },
-                isConnected: false,
-                chainId: 'chain-id', // TODO: get from userApi
+        status: async function (): Promise<StatusResult> {
+            const info = await userClient.request<userApi.InfoResult>({
+                method: 'info',
+                params: [],
             })
+            try {
+                const session =
+                    await userClient.request<userApi.GetSessionResult>({
+                        method: 'getSession',
+                        params: [],
+                    })
+                return Promise.resolve({
+                    kernel: {
+                        id: info.kernel.id,
+                        clientType: info.kernel.clientType,
+                        url: '', // TODO: remove
+                    },
+                    isConnected: true,
+                    chainId: session.chainId,
+                })
+            } catch (error) {
+                console.error('Error fetching session:', error)
+                return Promise.resolve({
+                    kernel: {
+                        id: info.kernel.id,
+                        clientType: info.kernel.clientType,
+                        url: '', // TODO: remove
+                    },
+                    isConnected: false,
+                })
+            }
         },
         connect: async function (): Promise<ConnectResult> {
             return popupInteraction(
                 url(WK_URL.LOGIN),
-                (data: SuccessResponse) => {
-                    const addSessionResult =
-                        data.result as userApi.AddSessionResult
-                    console.log(
-                        'User has logged in, received result:',
-                        addSessionResult
+                async (data: SuccessResponse) => {
+                    const session = data.result as userApi.AddSessionResult
+                    console.log('User has logged in, received result:', session)
+                    userClient = new UserClient(rpcUrl, session.accessToken)
+
+                    // TODO: localstorage service
+                    localStorage.setItem(
+                        SDK.LOCAL_STORAGE_KEY_SESSION,
+                        JSON.stringify(session)
                     )
+
+                    const info = await userClient.request<userApi.InfoResult>({
+                        method: 'info',
+                        params: [],
+                    })
+
                     return {
                         kernel: {
-                            id: 'kernel-id', // TODO: get from userApi
-                            clientType: 'remote',
-                            url: 'url', // TODO: get from userApi
+                            id: info.kernel.id,
+                            clientType: info.kernel.clientType,
+                            url: '', // TODO: remove
                         },
                         isConnected: true,
-                        chainId: addSessionResult.network.chainId,
+                        chainId: session.network.chainId,
                         userUrl: 'user-url', // TODO: get from userApi
-                        sessionToken: addSessionResult.accessToken,
+                        sessionToken: session.accessToken,
                     }
                 }
             )

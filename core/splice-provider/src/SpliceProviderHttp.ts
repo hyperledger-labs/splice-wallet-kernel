@@ -1,16 +1,16 @@
 import {
+    HttpTransport,
     isSpliceMessageEvent,
-    JsonRpcResponse,
     RequestPayload,
     WalletEvent,
 } from 'core-types'
 import { SpliceProviderBase } from './SpliceProvider'
 import { io, Socket } from 'socket.io-client'
-import { popupHref } from 'core-wallet-ui-components'
 
 export class SpliceProviderHttp extends SpliceProviderBase {
     private sessionToken?: string
     private socket: Socket
+    private transport: HttpTransport
 
     private openSocket(url: URL): Socket {
         // Assumes the RPC URL is on /rpc, and the socket URL is the same but without the /rpc path.
@@ -43,6 +43,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
 
         if (sessionToken) this.sessionToken = sessionToken
         this.socket = this.openSocket(url)
+        this.transport = new HttpTransport(url, sessionToken)
 
         // Listen for the auth success event sent from the WK UI popup to the SDK running in the parent window.
         window.addEventListener('message', async (event) => {
@@ -66,42 +67,8 @@ export class SpliceProviderHttp extends SpliceProviderBase {
     }
 
     public async request<T>({ method, params }: RequestPayload): Promise<T> {
-        return await this.jsonRpcRequest(this.url, method, params)
-    }
-
-    async jsonRpcRequest<T>(
-        url: URL,
-        method: string,
-        params: unknown
-    ): Promise<T> {
-        const res = await fetch(url.href, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(this.sessionToken && {
-                    Authorization: `Bearer ${this.sessionToken}`,
-                }),
-            },
-            body: JSON.stringify({
-                jsonrpc: '2.0',
-                id: Date.now(),
-                method,
-                params,
-            }),
-        })
-
-        const body = await res.json().then(JsonRpcResponse.parse)
-
-        if ('error' in body) throw new Error(body.error.message)
-
-        if (method === 'prepareExecute') {
-            const { userUrl } = body.result as { userUrl?: string }
-            if (!userUrl) {
-                throw new Error('No userUrl provided in response')
-            }
-            popupHref(userUrl)
-        }
-
-        return body.result as T
+        const response = await this.transport.submit({ method, params })
+        if ('error' in response) throw new Error(response.error.message)
+        return response.result as T
     }
 }

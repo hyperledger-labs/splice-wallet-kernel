@@ -203,3 +203,34 @@ export class WindowTransport implements RpcTransport {
         this.win.postMessage(message, '*')
     }
 }
+
+export class HttpTransport implements RpcTransport {
+    constructor(
+        private url: URL,
+        private sessionToken?: string
+    ) {
+        this.url = url
+        this.sessionToken = sessionToken
+    }
+
+    submit = async (payload: RequestPayload) => {
+        const res = await fetch(this.url.href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(this.sessionToken && {
+                    Authorization: `Bearer ${this.sessionToken}`,
+                }),
+            },
+            body: JSON.stringify({
+                jsonrpc: '2.0',
+                id: Date.now(),
+                method: payload.method,
+                params: payload.params,
+            }),
+        })
+
+        const body = await res.json().then(JsonRpcResponse.parse)
+        return body
+    }
+}

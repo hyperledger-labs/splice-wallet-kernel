@@ -343,6 +343,24 @@
             }
         },
         {
+            "name": "getSession",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "GetSessionResult",
+                    "type": "object",
+                    "properties": {
+                        "session": {
+                            "title": "session",
+                            "$ref": "#/components/schemas/Session"
+                        }
+                    },
+                    "required": ["session"]
+                }
+            }
+        },
+        {
             "name": "addSession",
             "description": "Adds a network session.",
             "params": [
