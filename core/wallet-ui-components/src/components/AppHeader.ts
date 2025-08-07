@@ -40,6 +40,10 @@ export class AppHeader extends LitElement {
                     </button>
                     <button
                         class="btn btn-outline-secondary btn-sm"
+                        @click=${() => {
+                            localStorage.clear()
+                            window.location.href = '/login'
+                        }}
                         id="logoutButton"
                     >
                         Logout
