@@ -160,7 +160,7 @@ export class UserUiNetworks extends LitElement {
                     ? html`
                           <div class="modal" @click=${this.closeModal}>
                               <div
-                                  class="<div style={{ border: "1px solid black", padding: "10px", margin: "10px" }}>"
+                                  class="modal-content"
                                   @click=${(e: Event) => e.stopPropagation()}
                               >
                                   <h3>
