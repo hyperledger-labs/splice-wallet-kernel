@@ -53,7 +53,7 @@ async function encodeInt64(
   return new Uint8Array(buffer);
 }
 
-async function encodeString(value: string = ""): Promise<Uint8Array> {
+export async function encodeString(value: string = ""): Promise<Uint8Array> {
   const utf8Bytes = new TextEncoder().encode(value);
   return encodeBytes(utf8Bytes);
 }

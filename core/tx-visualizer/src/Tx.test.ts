@@ -3,6 +3,8 @@ import { PreparedTransaction } from './_gen/com/daml/ledger/api/v2/interactive/i
 import * as path from 'path'
 import { readFileSync } from 'fs'
 import { decodePreparedTransaction } from '.'
+import camelcaseKeys from 'camelcase-keys'
+
 
 
 test('test blah', async () => {
@@ -12,9 +14,13 @@ test('test blah', async () => {
 
     const preapredTXJson = JSON.parse(readFileSync(resolvedFilePath, 'utf-8'))
 
+    console.log("Parsed json " + JSON.stringify(preapredTXJson))
+    const camelCasePreparedTx = camelcaseKeys(preapredTXJson, {deep: true})
+
+    console.log("Converted json " + JSON.stringify(camelCasePreparedTx))
 
 
-    const message = PreparedTransaction.fromJSON(preapredTXJson)
+    const message = PreparedTransaction.fromJSON(camelCasePreparedTx)
 
     const protoBytes = PreparedTransaction.encode(message).finish()
     const base64String = Buffer.from(protoBytes).toString('base64')
