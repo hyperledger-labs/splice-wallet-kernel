@@ -1,5 +1,5 @@
 {
-    "name": "tx-visualizer",
+    "name": "core-tx-visualizer",
     "version": "1.0.0",
     "license": "Apache-2.0",
     "packageManager": "yarn@4.9.2",
