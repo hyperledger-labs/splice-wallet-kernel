@@ -164,11 +164,9 @@ export class UserUiNetworks extends LitElement {
                                   @click=${(e: Event) => e.stopPropagation()}
                               >
                                   <h3>
-                                      ${
-                                          this.editingNetwork
-                                              ? 'Edit Network'
-                                              : 'Add Network'
-                                      }
+                                      ${this.editingNetwork
+                                          ? 'Edit Network'
+                                          : 'Add Network'}
                                   </h3>
                                   <network-form
                                       .editingNetwork=${this.editingNetwork}

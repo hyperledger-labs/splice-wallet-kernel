@@ -20,7 +20,6 @@
         "script:fetch:ledger": "tsx ./scripts/src/fetch-ledger-api-specs.ts",
         "script:openrpc:titles": "tsx ./scripts/src/schema-title-validation.ts",
         "full:rebuild": "yarn clean:all && yarn generate:all && yarn build:all",
-        "build:plugin": "yarn workspace scripts test && mkdir -p bin && cp ./scripts/dist/protoc-gen-ts-proto.js ./bin/protoc-gen-ts-proto && chmod +x ./bin/protoc-gen-ts-proto ",
         "buf:update": "buf dep update",
         "buf:gen": "buf generate",
         "buf:build": "buf build"

@@ -27,10 +27,9 @@ export class ApproveUi extends LitElement {
 
         this.preparedTx = url.searchParams.get('preparedTx') || ''
         this.preparedTxHash = url.searchParams.get('preparedTxHash') || ''
-
     }
 
-    private decode()  {
+    private decode() {
         return JSON.stringify(decodePreparedTransaction(this.preparedTx))
     }
 
