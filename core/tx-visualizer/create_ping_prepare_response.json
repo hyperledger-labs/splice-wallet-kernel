@@ -1,81 +1,79 @@
 {
-        "transaction": {
-            "roots": [
-                "0"
-            ],
-            "nodes": [
-                {
-                    "node_id": "0",
-                    "v1": {
-                        "create": {
-                            "signatories": [
-                                "operator::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"
-                            ],
-                            "stakeholders": [
-                                "operator::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424",
-                                "participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"
-                            ],
-                            "lf_version": "2.1",
-                            "contract_id": "00550802ddb16371f5fc6d364e6cd4b3283a9eb5c0ccb121ae368cdebbad0fbf56",
-                            "package_name": "AdminWorkflows",
-                            "template_id": {
-                                "package_id": "2a38b963f6abf45b76c702f9700bfd9060555872af915ef7f8f68795e2c831bd",
-                                "module_name": "Canton.Internal.Ping",
-                                "entity_name": "Ping"
-                            },
-                            "argument": {
-                                "record": {
-                                    "fields": [
-                                        {
-                                            "label": "id",
-                                            "value": {
-                                                "text": "ping_id"
-                                            }
-                                        },
-                                        {
-                                            "label": "initiator",
-                                            "value": {
-                                                "party": "operator::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"
-                                            }
-                                        },
-                                        {
-                                            "label": "responder",
-                                            "value": {
-                                                "party": "participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"
-                                            }
+    "transaction": {
+        "roots": ["0"],
+        "nodes": [
+            {
+                "node_id": "0",
+                "v1": {
+                    "create": {
+                        "signatories": [
+                            "operator::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"
+                        ],
+                        "stakeholders": [
+                            "operator::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424",
+                            "participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"
+                        ],
+                        "lf_version": "2.1",
+                        "contract_id": "00550802ddb16371f5fc6d364e6cd4b3283a9eb5c0ccb121ae368cdebbad0fbf56",
+                        "package_name": "AdminWorkflows",
+                        "template_id": {
+                            "package_id": "2a38b963f6abf45b76c702f9700bfd9060555872af915ef7f8f68795e2c831bd",
+                            "module_name": "Canton.Internal.Ping",
+                            "entity_name": "Ping"
+                        },
+                        "argument": {
+                            "record": {
+                                "fields": [
+                                    {
+                                        "label": "id",
+                                        "value": {
+                                            "text": "ping_id"
                                         }
-                                    ],
-                                    "record_id": {
-                                        "package_id": "2a38b963f6abf45b76c702f9700bfd9060555872af915ef7f8f68795e2c831bd",
-                                        "module_name": "Canton.Internal.Ping",
-                                        "entity_name": "Ping"
+                                    },
+                                    {
+                                        "label": "initiator",
+                                        "value": {
+                                            "party": "operator::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"
+                                        }
+                                    },
+                                    {
+                                        "label": "responder",
+                                        "value": {
+                                            "party": "participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"
+                                        }
                                     }
+                                ],
+                                "record_id": {
+                                    "package_id": "2a38b963f6abf45b76c702f9700bfd9060555872af915ef7f8f68795e2c831bd",
+                                    "module_name": "Canton.Internal.Ping",
+                                    "entity_name": "Ping"
                                 }
                             }
                         }
                     }
                 }
+            }
+        ],
+        "node_seeds": [
+            {
+                "node_id": 0,
+                "seed": "a9qiU1EUUZ11qestRMl0IgevXH3udJCcNHmDdVBd/Z4="
+            }
+        ],
+        "version": "2.1"
+    },
+    "metadata": {
+        "input_contracts": [],
+        "global_key_mapping": [],
+        "submitter_info": {
+            "act_as": [
+                "operator::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"
             ],
-            "node_seeds": [
-                {
-                    "node_id": 0,
-                    "seed": "a9qiU1EUUZ11qestRMl0IgevXH3udJCcNHmDdVBd/Z4="
-                }
-            ],
-            "version": "2.1"
+            "command_id": "f2ec4d8f-ccc1-402b-b278-7556fdd2b412"
         },
-        "metadata": {
-            "input_contracts": [],
-            "global_key_mapping": [],
-            "submitter_info": {
-                "act_as": [
-                    "operator::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"
-                ],
-                "command_id": "f2ec4d8f-ccc1-402b-b278-7556fdd2b412"
-            },
-            "synchronizer_id": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
-            "mediator_group": 0,
-            "transaction_uuid": "a328162e-728e-4e05-ac78-b34f070983ba",
-            "preparation_time": "1754534109899822"
-        }
+        "synchronizer_id": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
+        "mediator_group": 0,
+        "transaction_uuid": "a328162e-728e-4e05-ac78-b34f070983ba",
+        "preparation_time": "1754534109899822"
     }
+}

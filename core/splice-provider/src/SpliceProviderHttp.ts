@@ -94,11 +94,11 @@ export class SpliceProviderHttp extends SpliceProviderBase {
 
         if ('error' in body) throw new Error(body.error.message)
 
-
         //TODO: add user url in response
         if (method === 'prepareExecute') {
-            console.log("body.result user url: " + JSON.stringify(body))
-            const { userUrl } = body.result as { userUrl?: string } || "http://localhost:3002"
+            console.log('body.result user url: ' + JSON.stringify(body))
+            const { userUrl } =
+                (body.result as { userUrl?: string }) || 'http://localhost:3002'
             if (!userUrl) {
                 throw new Error('No userUrl provided in response')
             }
