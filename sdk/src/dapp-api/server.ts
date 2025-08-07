@@ -11,11 +11,14 @@ import { Methods } from './rpc-gen'
 import { dappController } from './controller'
 import { rpcErrors } from '@metamask/rpc-errors'
 import * as userApi from 'core-wallet-user-rpc-client'
+import { HttpClient } from '../http-client'
 
 export class DappServer {
     private controller: Promise<Methods>
+    private httpClient: HttpClient
 
     constructor(private rpcUrl: URL) {
+        this.httpClient = new HttpClient(rpcUrl)
         this.controller = this.getController()
     }
 
@@ -49,7 +52,10 @@ export class DappServer {
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 methodFn(request.params as any)
-                    .then((result) => resolve(jsonRpcResponse(id, { result })))
+                    .then((result) => {
+                        console.log('RPC method response:', result)
+                        resolve(jsonRpcResponse(id, { result }))
+                    })
                     .catch((error) =>
                         reject(
                             jsonRpcResponse(id, {
@@ -68,27 +74,11 @@ export class DappServer {
         })
     }
 
-    async getKernelInfo(): Promise<userApi.InfoResult> {
-        console.log('Fetching Kernel info...')
-        const res = await fetch(this.rpcUrl.href, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                jsonrpc: '2.0',
-                id: Date.now(),
-                method: 'info',
-            }),
-        })
-
-        const body = await res.json().then(JsonRpcResponse.parse)
-        if ('error' in body) throw new Error(body.error.message)
-        return body.result as userApi.InfoResult
-    }
-
     async getController(): Promise<Methods> {
-        const kernelInfo = await this.getKernelInfo()
+        const kernelInfo = await this.httpClient.request<userApi.InfoResult>({
+            method: 'info',
+            params: [],
+        })
         if (!kernelInfo.kernel.uiUrl) {
             throw new Error('Kernel info does not contain uiUrl')
         }

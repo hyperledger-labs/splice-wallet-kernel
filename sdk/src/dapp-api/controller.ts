@@ -8,15 +8,10 @@ import {
     LedgerApiResult,
     RequestAccountsResult,
 } from './rpc-gen/typings'
-import {
-    HttpTransport,
-    isSpliceMessage,
-    RequestPayload,
-    SuccessResponse,
-    WalletEvent,
-} from 'core-types'
+import { isSpliceMessage, SuccessResponse, WalletEvent } from 'core-types'
 import * as userApi from 'core-wallet-user-rpc-client'
-import { SDK } from '../enums'
+import { HttpClient } from '../http-client'
+import * as storage from '../storage.js'
 
 enum WK_URL {
     LOGIN = '/login/',
@@ -70,34 +65,17 @@ const popupInteraction = async <T>(
     })
 }
 
-class UserClient {
-    private transport: HttpTransport
-
-    constructor(url: URL, sessionToken?: string) {
-        this.transport = new HttpTransport(url, sessionToken)
-    }
-
-    public async request<T>({ method, params }: RequestPayload): Promise<T> {
-        const response = await this.transport.submit({ method, params })
-        if ('error' in response) throw new Error(response.error.message)
-        return response.result as T
-    }
-}
-
 export const dappController = (rpcUrl: URL, uiUrl: URL) => {
     const url = (page: WK_URL) => new URL(page, uiUrl)
-    let sessionToken: string | undefined = undefined
-    const session = localStorage.getItem(SDK.LOCAL_STORAGE_KEY_SESSION)
-    if (session) {
-        try {
-            const sessionData = JSON.parse(session) as userApi.AddSessionResult
-            sessionToken = sessionData.accessToken
-            console.log('SDK: Restored session:', sessionData)
-        } catch (e) {
-            console.error('Failed to parse stored session:', e)
-        }
+
+    // Initialize the userApi client with the rpcUrl and sessionToken
+    const sessionToken = storage.getKernelSession()?.accessToken
+    if (sessionToken) {
+        console.log('SDK: Restored session token:', sessionToken)
+    } else {
+        console.warn('SDK: No session token found, proceeding without it')
     }
-    let userClient = new UserClient(rpcUrl, sessionToken)
+    let userClient = new HttpClient(rpcUrl, sessionToken)
 
     return buildController({
         status: async function (): Promise<StatusResult> {
@@ -111,6 +89,7 @@ export const dappController = (rpcUrl: URL, uiUrl: URL) => {
                         method: 'getSession',
                         params: [],
                     })
+
                 return Promise.resolve({
                     kernel: {
                         id: info.kernel.id,
@@ -138,13 +117,10 @@ export const dappController = (rpcUrl: URL, uiUrl: URL) => {
                 async (data: SuccessResponse) => {
                     const session = data.result as userApi.AddSessionResult
                     console.log('User has logged in, received result:', session)
-                    userClient = new UserClient(rpcUrl, session.accessToken)
+                    userClient = new HttpClient(rpcUrl, session.accessToken)
 
-                    // TODO: localstorage service
-                    localStorage.setItem(
-                        SDK.LOCAL_STORAGE_KEY_SESSION,
-                        JSON.stringify(session)
-                    )
+                    console.log('SDK: Store connection')
+                    storage.setKernelSession(session)
 
                     const info = await userClient.request<userApi.InfoResult>({
                         method: 'info',

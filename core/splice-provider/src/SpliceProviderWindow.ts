@@ -10,7 +10,9 @@ export class SpliceProviderWindow extends SpliceProviderBase {
     }
 
     public async request<T>({ method, params }: RequestPayload): Promise<T> {
+        console.log('SpliceProviderWindow request:', method, params)
         const response = await this.transport.submit({ method, params })
+        console.log('SpliceProviderWindow response:', response)
         return response.result as T
     }
 }

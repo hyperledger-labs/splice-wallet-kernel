@@ -1,10 +1,10 @@
 import { discover } from 'core-wallet-ui-components'
 import { injectSpliceProvider, ProviderType } from 'core-splice-provider'
 import * as dappAPI from 'core-wallet-dapp-rpc-client'
-import { SDK } from '../enums.js'
 import { DiscoverResult } from 'core-types'
 import { DappServer } from '../dapp-api/server.js'
 export * from 'core-splice-provider'
+import * as storage from '../storage.js'
 
 let dappServer: DappServer | undefined = undefined
 
@@ -22,14 +22,8 @@ const injectProvider = ({ walletType, url }: DiscoverResult) => {
 }
 
 // On page load, restore and re-register the listener if needed
-const connection = localStorage.getItem(SDK.LOCAL_STORAGE_KEY_CONNECTION)
-if (connection) {
-    try {
-        injectProvider(DiscoverResult.parse(JSON.parse(connection)))
-    } catch (e) {
-        console.error('Failed to parse stored wallet connection:', e)
-    }
-}
+const discovery = storage.getKernelDiscovery()
+if (discovery) injectProvider(discovery)
 
 export enum ErrorCode {
     UserCancelled,
@@ -51,13 +45,7 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
             })
 
             console.log('SDK: Store connection')
-            localStorage.setItem(
-                SDK.LOCAL_STORAGE_KEY_CONNECTION,
-                JSON.stringify({
-                    ...result,
-                    sessionToken: response.sessionToken,
-                })
-            )
+            storage.setKernelDiscovery(result)
 
             return response
         })
