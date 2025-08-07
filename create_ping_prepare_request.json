@@ -1,0 +1,39 @@
+{
+  "user_id": "operator",
+  "command_id": "f2ec4d8f-ccc1-402b-b278-7556fdd2b412",
+  "act_as": ["operator::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"],
+  "synchronizer_id": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
+  "verbose_hashing": true,
+  "commands": [
+    {
+      "create": {
+        "template_id": {
+          "package_id": "2a38b963f6abf45b76c702f9700bfd9060555872af915ef7f8f68795e2c831bd",
+          "module_name": "Canton.Internal.Ping",
+          "entity_name": "Ping"
+        },
+        "create_arguments": {
+          "record_id": {
+            "package_id": "2a38b963f6abf45b76c702f9700bfd9060555872af915ef7f8f68795e2c831bd",
+            "module_name": "Canton.Internal.Ping",
+            "entity_name": "Ping"
+          },
+          "fields": [
+            {
+                "label" :"id",
+                "value": { "text": "ping_id" }
+            },
+            {
+                "label" :"initiator",
+                "value": { "party": "operator::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424" }
+            },
+            {
+                "label" :"responder",
+                "value": { "party": "participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424" }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

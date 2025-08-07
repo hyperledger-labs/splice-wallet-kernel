@@ -3,6 +3,7 @@ import { customElement, state } from 'lit/decorators.js'
 import 'core-wallet-ui-components'
 import { userClient } from '../rpc-client'
 import { ExecuteParams } from 'core-wallet-user-rpc-client'
+import { decodePreparedTransaction } from 'tx-visualizer'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends LitElement {
@@ -26,6 +27,11 @@ export class ApproveUi extends LitElement {
 
         this.preparedTx = url.searchParams.get('preparedTx') || ''
         this.preparedTxHash = url.searchParams.get('preparedTxHash') || ''
+
+    }
+
+    private decode()  {
+        return JSON.stringify(decodePreparedTransaction(this.preparedTx))
     }
 
     private async handleExecute() {
@@ -56,6 +62,8 @@ export class ApproveUi extends LitElement {
                 <p>Command Id: ${this.commandId}</p>
                 <h2>Prepared transaction base64</h2>
                 <p>${this.preparedTx}</p>
+                <h2>Decoded</h2>
+                <p>${this.decode()}</p>
                 <h2>Prepared transaction hash</h2>
                 <p>${this.preparedTxHash}</p>
             </div>

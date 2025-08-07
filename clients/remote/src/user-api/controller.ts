@@ -72,6 +72,8 @@ async function signingDriverCreate(
                 throw new Error('Failed to allocate party')
             }
 
+
+            console.log("result is " + JSON.stringify(res.partyDetails))
             wallet = {
                 primary: primary ?? false,
                 partyId: res.partyDetails.party,
