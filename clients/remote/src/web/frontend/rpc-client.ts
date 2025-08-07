@@ -37,9 +37,6 @@ class HttpTransport implements RpcTransport {
                 // Handle unauthorized access, e.g., clear token
                 stateManager.accessToken.clear()
             }
-            const errorMessage = await response.text()
-            console.log(response.status)
-            console.log(`error message is ${errorMessage}`)
             throw new Error(`HTTP error! status: ${response.status}`)
         }
 
