@@ -1,7 +1,6 @@
 {
     "name": "tx-visualizer",
     "version": "1.0.0",
-    "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
     "license": "Apache-2.0",
     "packageManager": "yarn@4.9.2",
     "main": "./dist/index.js",
