@@ -6,3 +6,4 @@ package-lock.json
 .git
 core/ledger-client/generated-clients/*
 api-specs/ledger-api/*
+core/tx-visualizer/src/_gen/*
