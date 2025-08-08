@@ -128,6 +128,42 @@ export type CommandId = string
 export type SignedBy = string
 /**
  *
+ * The unique identifier of the wallet kernel.
+ *
+ */
+export type Id = string
+/**
+ *
+ * The type of client that implements the wallet kernel.
+ *
+ */
+export type ClientType = 'browser' | 'desktop' | 'mobile' | 'remote'
+/**
+ *
+ * The RPC URL of the wallet kernel.
+ *
+ */
+export type RpcUrl = string
+/**
+ *
+ * The UI URL of the wallet kernel.
+ *
+ */
+export type UiUrl = string
+/**
+ *
+ * Represents a wallet kernel.
+ *
+ */
+export interface KernelInfo {
+    id: Id
+    clientType: ClientType
+    rpcUrl?: RpcUrl
+    uiUrl?: UiUrl
+    [k: string]: any
+}
+/**
+ *
  * The party hint and name of the wallet.
  *
  */
@@ -164,6 +200,12 @@ export type TraceId = string
 export type Networks = Network[]
 /**
  *
+ * The user ID associated with the session.
+ *
+ */
+export type UserId = string
+/**
+ *
  * The access token for the session.
  *
  */
@@ -176,6 +218,18 @@ export type Status = 'connected' | 'disconnected'
  */
 export interface Session {
     network: Network
+    userId: UserId
+    accessToken: AccessToken
+    status: Status
+}
+/**
+ *
+ * Structure representing the connected network session
+ *
+ */
+export interface Session {
+    network: Network
+    userId: UserId
     accessToken: AccessToken
     status: Status
 }
@@ -223,6 +277,10 @@ export interface AddSessionParams {
     chainId: ChainId
     [k: string]: any
 }
+export interface InfoResult {
+    kernel: KernelInfo
+    [k: string]: any
+}
 /**
  *
  * Represents a null value, used in responses where no data is returned.
@@ -257,6 +315,10 @@ export interface ListNetworksResult {
     networks: Networks
     [k: string]: any
 }
+export interface GetSessionResult {
+    session: Session
+    [k: string]: any
+}
 /**
  *
  * Structure representing the connected network session
@@ -264,6 +326,7 @@ export interface ListNetworksResult {
  */
 export interface AddSessionResult {
     network: Network
+    userId: UserId
     accessToken: AccessToken
     status: Status
 }
@@ -277,6 +340,7 @@ export interface ListSessionsResult {
  *
  */
 
+export type Info = () => Promise<InfoResult>
 export type AddNetwork = (params: AddNetworkParams) => Promise<Null>
 export type RemoveNetwork = (params: RemoveNetworkParams) => Promise<Null>
 export type CreateWallet = (
@@ -292,6 +356,7 @@ export type ListWallets = (
 export type Sign = (params: SignParams) => Promise<SignResult>
 export type Execute = (params: ExecuteParams) => Promise<ExecuteResult>
 export type ListNetworks = () => Promise<ListNetworksResult>
+export type GetSession = () => Promise<GetSessionResult>
 export type AddSession = (params: AddSessionParams) => Promise<AddSessionResult>
 export type ListSessions = () => Promise<ListSessionsResult>
 
@@ -301,6 +366,15 @@ export class SpliceWalletJSONRPCUserAPI {
     constructor(transport: RpcTransport) {
         this.transport = transport
     }
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public async request(
+        method: 'info',
+        ...params: Parameters<Info>
+    ): ReturnType<Info>
 
     /**
      *
@@ -382,6 +456,15 @@ export class SpliceWalletJSONRPCUserAPI {
         method: 'listNetworks',
         ...params: Parameters<ListNetworks>
     ): ReturnType<ListNetworks>
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public async request(
+        method: 'getSession',
+        ...params: Parameters<GetSession>
+    ): ReturnType<GetSession>
 
     /**
      *

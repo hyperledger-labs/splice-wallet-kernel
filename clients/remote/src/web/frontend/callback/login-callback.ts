@@ -1,4 +1,4 @@
-import { WalletEvent } from 'core-types'
+import { WindowTransport } from 'core-types'
 import { LitElement, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { userClient } from '../rpc-client'
@@ -44,24 +44,19 @@ export class LoginCallback extends LitElement {
             const tokenResponse = await res.json()
 
             if (tokenResponse.access_token) {
-                if (window.opener && !window.opener.closed) {
-                    window.opener.postMessage(
-                        {
-                            type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
-                            token: tokenResponse.access_token,
-                        },
-                        '*'
-                    )
-                }
-
                 stateManager.accessToken.set(tokenResponse.access_token)
 
-                await userClient.transport.submit({
+                const session = await userClient.transport.submit({
                     method: 'addSession',
                     params: {
                         chainId: stateManager.chainId.get(),
                     },
                 })
+
+                new WindowTransport(window.opener).submitUserResponse(
+                    null,
+                    session
+                )
 
                 window.location.replace('/')
             }

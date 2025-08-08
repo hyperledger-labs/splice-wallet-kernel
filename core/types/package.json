@@ -12,6 +12,7 @@
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
+        "uuid": "^11.1.0",
         "zod": "^3.25.67"
     },
     "devDependencies": {

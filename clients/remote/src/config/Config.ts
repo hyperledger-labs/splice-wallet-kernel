@@ -9,7 +9,8 @@ export const kernelInfoSchema = z.object({
         z.literal('mobile'),
         z.literal('remote'),
     ]),
-    url: z.string().url(),
+    rpcUrl: z.string().url(),
+    uiUrl: z.string().url(),
 })
 
 export const configSchema = z.object({
