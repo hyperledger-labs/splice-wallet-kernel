@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { v4 as uuidv4 } from 'uuid'
 
 /**
  *  Requests / responses
@@ -161,7 +162,7 @@ export class WindowTransport implements RpcTransport {
 
     submitRequest = async (payload: RequestPayload) => {
         const message: SpliceMessage = {
-            request: jsonRpcRequest('', payload), // TODO: add id
+            request: jsonRpcRequest(uuidv4(), payload),
             type: WalletEvent.SPLICE_WALLET_REQUEST,
         }
         this.win.postMessage(message, '*')
@@ -169,16 +170,24 @@ export class WindowTransport implements RpcTransport {
             const listener = (event: MessageEvent) => {
                 if (
                     !isSpliceMessageEvent(event) ||
-                    event.data.type !== WalletEvent.SPLICE_WALLET_RESPONSE
+                    event.data.type !== WalletEvent.SPLICE_WALLET_RESPONSE ||
+                    event.data.response.id !== message.request.id
                 ) {
                     return
                 }
 
-                console.log('Received message from wallet:', event.data)
                 window.removeEventListener('message', listener)
                 if ('error' in event.data.response) {
+                    console.error(
+                        'Error in response:',
+                        event.data.response.error
+                    )
                     reject(event.data.response.error)
                 } else {
+                    console.log(
+                        'Received response for request',
+                        event.data.response
+                    )
                     resolve(event.data.response)
                 }
             }
@@ -187,17 +196,20 @@ export class WindowTransport implements RpcTransport {
         })
     }
 
-    submitResponse = (payload: ResponsePayload) => {
+    submitResponse = (id: string | number | null, payload: ResponsePayload) => {
         const message: SpliceMessage = {
-            response: jsonRpcResponse(null, payload),
+            response: jsonRpcResponse(id, payload),
             type: WalletEvent.SPLICE_WALLET_RESPONSE,
         }
         this.win.postMessage(message, '*')
     }
 
-    submitUserResponse = (payload: ResponsePayload) => {
+    submitUserResponse = (
+        id: string | number | null,
+        payload: ResponsePayload
+    ) => {
         const message: SpliceMessage = {
-            response: jsonRpcResponse('', payload),
+            response: jsonRpcResponse(id, payload),
             type: WalletEvent.SPLICE_WALLET_USER_RESPONSE,
         }
         this.win.postMessage(message, '*')
@@ -224,7 +236,7 @@ export class HttpTransport implements RpcTransport {
             },
             body: JSON.stringify({
                 jsonrpc: '2.0',
-                id: Date.now(),
+                id: uuidv4(),
                 method: payload.method,
                 params: payload.params,
             }),

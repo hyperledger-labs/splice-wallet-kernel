@@ -13,9 +13,13 @@ const injectProvider = ({ walletType, url }: DiscoverResult) => {
     dappServer?.stop()
 
     if (walletType === 'remote') {
-        dappServer = new DappServer(new URL(url))
-        dappServer.run()
-        return injectSpliceProvider(ProviderType.WINDOW)
+        const rpcUrl = new URL(url)
+        dappServer = new DappServer(rpcUrl)
+        return injectSpliceProvider(
+            ProviderType.HTTP,
+            rpcUrl,
+            storage.getKernelSession()?.accessToken
+        )
     } else {
         return injectSpliceProvider(ProviderType.WINDOW)
     }

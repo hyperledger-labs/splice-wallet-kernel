@@ -5568,6 +5568,7 @@ __metadata:
   resolution: "core-types@workspace:core/types"
   dependencies:
     typescript: "npm:^5.8.3"
+    uuid: "npm:^11.1.0"
     zod: "npm:^3.25.67"
   languageName: unknown
   linkType: soft

@@ -29,7 +29,10 @@ function App() {
                     `Wallet Kernel: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
                 )
             })
-            .catch(() => setStatus('disconnected'))
+            .catch((e) => {
+                console.error('Error getting status:', e)
+                setStatus('disconnected')
+            })
 
         provider
             .request({

@@ -22,12 +22,9 @@ const popupInteraction = async <T>(
     callback: (data: SuccessResponse) => T
 ): Promise<T> => {
     const win = await popupHref(url)
-    console.log('popup window opened', win)
     let eventReceived = false
     return new Promise((resolve, reject) => {
         const listener = (event: MessageEvent) => {
-            console.log('user has done stuff in the UI', event.data)
-
             // TODO: check that is of type some user api result?
             if (
                 isSpliceMessage(event.data) &&
@@ -37,16 +34,8 @@ const popupInteraction = async <T>(
                 eventReceived = true
 
                 if ('error' in event.data.response) {
-                    console.error(
-                        'Error in user response:',
-                        event.data.response.error
-                    )
                     reject(event.data.response.error)
                 } else {
-                    console.log(
-                        'User response received:',
-                        event.data.response.result
-                    )
                     resolve(callback(event.data.response))
                 }
             }
@@ -70,9 +59,7 @@ export const dappController = (rpcUrl: URL, uiUrl: URL) => {
 
     // Initialize the userApi client with the rpcUrl and sessionToken
     const sessionToken = storage.getKernelSession()?.accessToken
-    if (sessionToken) {
-        console.log('SDK: Restored session token:', sessionToken)
-    } else {
+    if (!sessionToken) {
         console.warn('SDK: No session token found, proceeding without it')
     }
     let userClient = new HttpClient(rpcUrl, sessionToken)
@@ -83,45 +70,38 @@ export const dappController = (rpcUrl: URL, uiUrl: URL) => {
                 method: 'info',
                 params: [],
             })
-            try {
-                const session =
-                    await userClient.request<userApi.GetSessionResult>({
-                        method: 'getSession',
-                        params: [],
-                    })
+            const session = await userClient.request<userApi.GetSessionResult>({
+                method: 'getSession',
+                params: [],
+            })
 
-                return Promise.resolve({
-                    kernel: {
-                        id: info.kernel.id,
-                        clientType: info.kernel.clientType,
-                        url: '', // TODO: remove
-                    },
-                    isConnected: true,
-                    chainId: session.chainId,
-                })
-            } catch (error) {
-                console.error('Error fetching session:', error)
-                return Promise.resolve({
-                    kernel: {
-                        id: info.kernel.id,
-                        clientType: info.kernel.clientType,
-                        url: '', // TODO: remove
-                    },
-                    isConnected: false,
-                })
-            }
+            return Promise.resolve({
+                kernel: {
+                    id: info.kernel.id,
+                    clientType: info.kernel.clientType,
+                    url: '', // TODO: remove
+                },
+                isConnected: true,
+                chainId: session.session.network.chainId,
+            })
         },
         connect: async function (): Promise<ConnectResult> {
             return popupInteraction(
                 url(WK_URL.LOGIN),
                 async (data: SuccessResponse) => {
                     const session = data.result as userApi.AddSessionResult
-                    console.log('User has logged in, received result:', session)
-                    userClient = new HttpClient(rpcUrl, session.accessToken)
 
-                    console.log('SDK: Store connection')
+                    // Store connection and notify the provider
                     storage.setKernelSession(session)
+                    window.postMessage(
+                        {
+                            type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
+                            token: session.accessToken,
+                        },
+                        '*'
+                    )
 
+                    userClient = new HttpClient(rpcUrl, session.accessToken)
                     const info = await userClient.request<userApi.InfoResult>({
                         method: 'info',
                         params: [],
