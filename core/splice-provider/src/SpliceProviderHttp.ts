@@ -55,6 +55,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 event.data.type === WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS
             ) {
                 this.sessionToken = event.data.token
+                this.transport = new HttpTransport(url, this.sessionToken)
                 console.log(
                     `SpliceProviderHttp: setting sessionToken to ${this.sessionToken}`
                 )
