@@ -245,7 +245,8 @@ export const userController = (
 
             const ledgerClient = new LedgerClient(
                 network.ledgerApi.baseUrl,
-                authContext?.accessToken
+                authContext?.accessToken,
+                logger
             )
 
             const result = await signingDriverCreate(
@@ -300,7 +301,8 @@ export const userController = (
 
             const ledgerClient = new LedgerClient(
                 network.ledgerApi.baseUrl,
-                authContext?.accessToken
+                authContext?.accessToken,
+                logger
             )
 
             switch (wallet.signingProviderId) {

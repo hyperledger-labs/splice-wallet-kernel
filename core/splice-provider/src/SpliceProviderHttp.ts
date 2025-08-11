@@ -1,6 +1,6 @@
 import {
+    HttpTransport,
     isSpliceMessageEvent,
-    JsonRpcResponse,
     RequestPayload,
     WalletEvent,
 } from 'core-types'
@@ -11,6 +11,7 @@ import { popupHref } from 'core-wallet-ui-components'
 export class SpliceProviderHttp extends SpliceProviderBase {
     private sessionToken?: string
     private socket: Socket
+    private transport: HttpTransport
 
     private openSocket(url: URL): Socket {
         // Assumes the RPC URL is on /rpc, and the socket URL is the same but without the /rpc path.
@@ -42,6 +43,8 @@ export class SpliceProviderHttp extends SpliceProviderBase {
         super()
 
         if (sessionToken) this.sessionToken = sessionToken
+        this.transport = new HttpTransport(url, sessionToken)
+
         this.socket = this.openSocket(url)
 
         // Listen for the auth success event sent from the WK UI popup to the SDK running in the parent window.
@@ -66,42 +69,16 @@ export class SpliceProviderHttp extends SpliceProviderBase {
     }
 
     public async request<T>({ method, params }: RequestPayload): Promise<T> {
-        return await this.jsonRpcRequest(this.url, method, params)
-    }
-
-    async jsonRpcRequest<T>(
-        url: URL,
-        method: string,
-        params: unknown
-    ): Promise<T> {
-        const res = await fetch(url.href, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(this.sessionToken && {
-                    Authorization: `Bearer ${this.sessionToken}`,
-                }),
-            },
-            body: JSON.stringify({
-                jsonrpc: '2.0',
-                id: Date.now(),
-                method,
-                params,
-            }),
-        })
-
-        const body = await res.json().then(JsonRpcResponse.parse)
-
-        if ('error' in body) throw new Error(body.error.message)
-
+        const response = await this.transport.submit({ method, params })
+        if ('error' in response) throw new Error(response.error.message)
+        const result = response.result as T
         if (method === 'prepareExecute') {
-            const { userUrl } = body.result as { userUrl?: string }
+            const { userUrl } = result as { userUrl?: string }
             if (!userUrl) {
                 throw new Error('No userUrl provided in response')
             }
             popupHref(userUrl)
         }
-
-        return body.result as T
+        return result
     }
 }

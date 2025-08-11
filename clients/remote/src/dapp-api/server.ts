@@ -37,6 +37,7 @@ export const dapp = (
                     kernelInfo,
                     store.withAuthContext(req.authContext),
                     notificationService,
+                    logger,
                     req.authContext
                 ),
                 logger,
