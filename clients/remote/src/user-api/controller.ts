@@ -13,6 +13,8 @@ import {
     AddSessionResult,
     ListSessionsResult,
     SetPrimaryWalletParams,
+    InfoResult,
+    GetSessionResult,
 } from './rpc-gen/typings.js'
 import { Store, Wallet, Auth } from 'core-wallet-store'
 import { Logger } from 'pino'
@@ -179,6 +181,9 @@ export const userController = (
 ) => {
     const logger = _logger.child({ component: 'user-controller' })
     return buildController({
+        info: function (): Promise<InfoResult> {
+            return Promise.resolve({ kernel: kernelInfo })
+        },
         addNetwork: async (network: AddNetworkParams) => {
             const ledgerApi = {
                 baseUrl: network.ledgerApiUrl ?? '',
@@ -367,6 +372,7 @@ export const userController = (
                 })
 
                 return Promise.resolve({
+                    userId,
                     accessToken,
                     status: 'connected',
                     network: {
@@ -392,6 +398,7 @@ export const userController = (
             return {
                 sessions: [
                     {
+                        userId: authContext!.userId,
                         accessToken: authContext!.accessToken,
                         status: 'connected',
                         network: {
@@ -404,6 +411,29 @@ export const userController = (
                         },
                     },
                 ],
+            }
+        },
+        getSession: async function (): Promise<GetSessionResult> {
+            const session = await store.getSession()
+            if (!session) {
+                throw new Error('No active session found')
+            }
+            const network = await store.getNetwork(session.network)
+
+            return {
+                session: {
+                    userId: authContext!.userId,
+                    accessToken: authContext!.accessToken,
+                    status: 'connected',
+                    network: {
+                        name: network.name,
+                        chainId: network.chainId,
+                        synchronizerId: network.synchronizerId,
+                        description: network.description,
+                        ledgerApi: network.ledgerApi,
+                        auth: network.auth,
+                    },
+                },
             }
         },
     })

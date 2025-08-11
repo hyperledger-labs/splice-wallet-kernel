@@ -14,10 +14,12 @@
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
     "dependencies": {
+        "@metamask/rpc-errors": "^7.0.2",
         "core-splice-provider": "workspace:^",
         "core-types": "workspace:^",
         "core-wallet-dapp-rpc-client": "workspace:^",
-        "core-wallet-ui-components": "workspace:^"
+        "core-wallet-ui-components": "workspace:^",
+        "core-wallet-user-rpc-client": "workspace:^"
     },
     "devDependencies": {
         "typescript": "^5.8.3"

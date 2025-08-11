@@ -2,7 +2,8 @@
     "kernel": {
         "id": "remote-da",
         "clientType": "remote",
-        "url": "http://localhost:3000/rpc"
+        "rpcUrl": "http://localhost:3001/rpc",
+        "uiUrl": "http://localhost:3002"
     },
     "store": {
         "networks": [
