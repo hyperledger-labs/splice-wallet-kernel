@@ -66,24 +66,38 @@ export const dappController = (rpcUrl: URL, uiUrl: URL) => {
 
     return buildController({
         status: async function (): Promise<StatusResult> {
-            const info = await userClient.request<userApi.InfoResult>({
-                method: 'info',
-                params: [],
-            })
-            const session = await userClient.request<userApi.GetSessionResult>({
-                method: 'getSession',
-                params: [],
-            })
+            try {
+                const info = await userClient.request<userApi.InfoResult>({
+                    method: 'info',
+                    params: [],
+                })
+                const session =
+                    await userClient.request<userApi.GetSessionResult>({
+                        method: 'getSession',
+                        params: [],
+                    })
 
-            return Promise.resolve({
-                kernel: {
-                    id: info.kernel.id,
-                    clientType: info.kernel.clientType,
-                    url: '', // TODO: remove
-                },
-                isConnected: true,
-                chainId: session.session.network.chainId,
-            })
+                return Promise.resolve({
+                    kernel: {
+                        id: info.kernel.id,
+                        clientType: info.kernel.clientType,
+                        url: '', // TODO: remove
+                    },
+                    isConnected: true,
+                    chainId: session.session.network.chainId,
+                })
+            } catch (error) {
+                console.error(error)
+                return Promise.resolve({
+                    kernel: {
+                        id: 'error',
+                        clientType: 'remote',
+                        url: 'error',
+                    },
+                    isConnected: true,
+                    chainId: 'error',
+                })
+            }
         },
         connect: async function (): Promise<ConnectResult> {
             return popupInteraction(
