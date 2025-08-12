@@ -63,7 +63,7 @@ function App() {
             console.log('DAPP: Connected to Wallet Kernel:', result)
             messageListener(result)
             setStatus(
-                `Wallet Kernel: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
+                `Wallet Kernel: ${result.kernel.id}, status: connected, chain: ${result.chainId}`
             )
         }
 

@@ -111,12 +111,10 @@ export const DiscoverResult = z.discriminatedUnion('walletType', [
     z.object({
         walletType: z.literal('extension'),
         url: z.optional(z.never()),
-        sessionToken: z.optional(z.string()),
     }),
     z.object({
         walletType: z.literal('remote'),
         url: z.string().url(),
-        sessionToken: z.optional(z.string()),
     }),
 ])
 

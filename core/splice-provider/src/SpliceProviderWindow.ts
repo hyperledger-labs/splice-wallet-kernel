@@ -31,7 +31,8 @@ export class SpliceProviderWindow extends SpliceProviderBase {
             const listener = (event: SpliceMessageEvent) => {
                 if (
                     event.source !== window ||
-                    event.data.type !== WalletEvent.SPLICE_WALLET_RESPONSE
+                    event.data.type !== WalletEvent.SPLICE_WALLET_RESPONSE ||
+                    event.data.response.id !== message.request.id
                 )
                     return
 
