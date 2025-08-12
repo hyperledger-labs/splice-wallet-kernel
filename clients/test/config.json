@@ -49,7 +49,8 @@
                 "synchronizerId": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
                 "description": "Mock OAuth IDP (Client Credentials)",
                 "ledgerApi": {
-                    "baseUrl": "http://127.0.0.1:5003"
+                    "baseUrl": "http://127.0.0.1:5003",
+                    "adminGrpcUrl": "localhost:5012"
                 },
                 "auth": {
                     "type": "client_credentials",
