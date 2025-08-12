@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { v4 as uuidv4 } from 'uuid'
 
 /**
  *  Requests / responses
@@ -123,4 +124,41 @@ export type DiscoverResult = z.infer<typeof DiscoverResult>
 
 export interface RpcTransport {
     submit: (payload: RequestPayload) => Promise<ResponsePayload>
+}
+
+// TODO(#131) - move this to rpc-transport package
+export class HttpTransport implements RpcTransport {
+    constructor(
+        private url: URL,
+        private accessToken?: string
+    ) {}
+
+    async submit(payload: RequestPayload): Promise<ResponsePayload> {
+        const request: JsonRpcRequest = {
+            jsonrpc: '2.0',
+            method: payload.method,
+            params: payload.params,
+            id: uuidv4(),
+        }
+
+        const header = this.accessToken
+            ? { Authorization: `Bearer ${this.accessToken}` }
+            : undefined
+
+        const response = await fetch(this.url.href, {
+            method: 'POST',
+            headers: {
+                ...header,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(request),
+        })
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const json = await response.json()
+        return ResponsePayload.parse(json)
+    }
 }
