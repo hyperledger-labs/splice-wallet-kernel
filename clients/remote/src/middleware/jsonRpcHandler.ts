@@ -1,27 +1,11 @@
 import { NextFunction, Request, Response } from 'express'
 import { Logger } from 'pino'
 import { rpcErrors } from '@metamask/rpc-errors'
-import {
-    ErrorResponse,
-    JsonRpcRequest,
-    JsonRpcResponse,
-    ResponsePayload,
-} from 'core-types'
+import { ErrorResponse, JsonRpcRequest, jsonRpcResponse } from 'core-types'
 
 interface JsonRpcHttpOptions<T> {
     logger: Logger
     controller: T
-}
-
-const toRpcResponse = (
-    id: string | number | null,
-    payload: ResponsePayload
-): JsonRpcResponse => {
-    return {
-        ...payload,
-        jsonrpc: '2.0',
-        id, // id should be set based on the request context
-    }
 }
 
 export const jsonRpcHandler =
@@ -44,7 +28,7 @@ export const jsonRpcHandler =
 
             if (!parsed.success) {
                 res.status(400).json(
-                    toRpcResponse(null, {
+                    jsonRpcResponse(null, {
                         error: rpcErrors.invalidRequest({
                             message: 'Invalid JSON-RPC request format',
                         }),
@@ -63,7 +47,7 @@ export const jsonRpcHandler =
                 if (!methodFn) {
                     logger.error(`Method ${method} not found`)
                     res.status(404).json(
-                        toRpcResponse(null, {
+                        jsonRpcResponse(id, {
                             error: rpcErrors.methodNotFound({
                                 message: `Method ${method} not found`,
                             }),
@@ -75,7 +59,7 @@ export const jsonRpcHandler =
                 methodFn(params as Params)
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .then((result: any) => {
-                        res.json(toRpcResponse(id, { result }))
+                        res.json(jsonRpcResponse(id, { result }))
                     })
                     .catch((error: unknown) => {
                         let response: ErrorResponse = {
@@ -93,7 +77,7 @@ export const jsonRpcHandler =
                                 response.error.code =
                                     rpcErrors.invalidRequest().code
                                 res.status(401).json(
-                                    toRpcResponse(null, response)
+                                    jsonRpcResponse(id, response)
                                 )
                                 return
                             }
@@ -112,7 +96,7 @@ export const jsonRpcHandler =
                             response.error.data = error
                         }
 
-                        res.status(500).json(toRpcResponse(null, response))
+                        res.status(500).json(jsonRpcResponse(id, response))
                     })
             }
         }
