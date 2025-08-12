@@ -164,6 +164,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
                 const id = randomUUID()
                 const publicKey = naclUtil.encodeBase64(key.publicKey)
                 const privateKey = naclUtil.encodeBase64(key.secretKey)
+
                 const internalKey: InternalKey = {
                     id,
                     name: params.name,
@@ -174,11 +175,11 @@ export class InternalSigningDriver implements SigningDriverInterface {
                 this.signer.set(id, internalKey)
                 this.signerByPublicKey.set(publicKey, internalKey)
 
-                return Promise.resolve({
+                return {
                     id,
+                    publicKey,
                     name: params.name,
-                    publicKey: naclUtil.encodeBase64(key.publicKey),
-                } as CreateKeyResult)
+                }
             },
 
             getConfiguration: async (): Promise<GetConfigurationResult> =>

@@ -16,6 +16,7 @@ import {
 import { v4 } from 'uuid'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo as KernelInfoConfig } from '../config/Config.js'
+import { Logger } from 'pino'
 
 async function prepareSubmission(
     userId: string,
@@ -45,9 +46,11 @@ export const dappController = (
     kernelInfo: KernelInfoConfig,
     store: Store,
     notificationService: NotificationService,
+    _logger: Logger,
     context?: AuthContext
-) =>
-    buildController({
+) => {
+    const logger = _logger.child({ component: 'dapp-controller' })
+    return buildController({
         connect: async () => ({
             kernel: kernelInfo,
             isConnected: false,
@@ -71,7 +74,8 @@ export const dappController = (
 
             const ledgerClient = new LedgerClient(
                 network.ledgerApi.baseUrl,
-                context.accessToken
+                context.accessToken,
+                logger
             )
 
             const userId = context.userId
@@ -116,7 +120,8 @@ export const dappController = (
 
             const ledgerClient = new LedgerClient(
                 network.ledgerApi.baseUrl,
-                context.accessToken
+                context.accessToken,
+                logger
             )
 
             return prepareSubmission(
@@ -155,3 +160,4 @@ export const dappController = (
             throw new Error('Only for events.')
         },
     })
+}

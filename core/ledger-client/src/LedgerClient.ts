@@ -1,5 +1,6 @@
 import { paths } from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
 import createClient, { Client } from 'openapi-fetch'
+import { Logger } from 'pino'
 
 export type InteractivePreparePostReq =
     paths['/v2/interactive-submission/prepare']['post']['requestBody']['content']['application/json']
@@ -22,7 +23,11 @@ export type SubmitAndWaitPostRes =
 export class LedgerClient {
     private readonly client: Client<paths>
 
-    constructor(baseUrl: string, token: string) {
+    constructor(
+        baseUrl: string,
+        token: string,
+        private logger: Logger
+    ) {
         this.client = createClient<paths>({
             baseUrl,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
@@ -40,33 +45,37 @@ export class LedgerClient {
     public async interactivePreparePost(
         body: InteractivePreparePostReq
     ): Promise<InteractivePreparePostRes> {
-        const resp = await this.client.POST(
-            '/v2/interactive-submission/prepare',
-            { body }
-        )
-
-        return this.valueOrError(resp)
+        return this.post('/v2/interactive-submission/prepare', body)
     }
 
     public async partiesPost(body: PartiesPostReq): Promise<PartiesPostRes> {
-        const resp = await this.client.POST('/v2/parties', {
-            body,
-        })
-        return this.valueOrError(resp)
+        return this.post('/v2/parties', body)
     }
 
     public async partiesParticipantIdGet(): Promise<PartiesParticipantIdRes> {
-        const resp = await this.client.GET('/v2/parties/participant-id')
-        return this.valueOrError(resp)
+        return this.get('/v2/parties/participant-id')
     }
 
     public async submitAndWaitPost(
         body: SubmitAndWaitPostReq
     ): Promise<SubmitAndWaitPostRes> {
-        const resp = await this.client.POST('/v2/commands/submit-and-wait', {
-            body,
-        })
+        return this.post('/v2/commands/submit-and-wait', body)
+    }
 
+    private async get<Res>(path: keyof paths): Promise<Res> {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const resp = await this.client.GET(path as any, {})
+        this.logger.debug({ response: resp }, `LedgerClient: GET ${path}`)
+        return this.valueOrError(resp)
+    }
+
+    private async post<Req, Res>(path: keyof paths, body: Req): Promise<Res> {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const resp = await this.client.POST(path as any, { body })
+        this.logger.debug(
+            { requestBody: body, response: resp },
+            `LedgerClient: POST ${path}`
+        )
         return this.valueOrError(resp)
     }
 

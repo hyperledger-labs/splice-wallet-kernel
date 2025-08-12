@@ -5445,6 +5445,7 @@ __metadata:
     jest: "npm:^30.0.0"
     openapi-fetch: "npm:^0.14.0"
     openapi-typescript: "npm:^7.8.0"
+    pino: "npm:^9.7.0"
     ts-jest: "npm:^29.4.0"
     ts-jest-resolver: "npm:^2.0.1"
     typescript: "npm:^5.8.3"
@@ -5568,6 +5569,7 @@ __metadata:
   resolution: "core-types@workspace:core/types"
   dependencies:
     typescript: "npm:^5.8.3"
+    uuid: "npm:^11.1.0"
     zod: "npm:^3.25.67"
   languageName: unknown
   linkType: soft

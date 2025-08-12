@@ -33,8 +33,8 @@ export function getRepoRoot(): string {
 const repoRoot = getRepoRoot()
 export const CANTON_PATH = path.join(repoRoot, '.canton')
 export const CANTON_BIN = path.join(CANTON_PATH, 'bin/canton')
-export const CANTON_CONF = path.join(repoRoot, 'canton.conf')
-export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton-bootstrap.canton')
+export const CANTON_CONF = path.join(repoRoot, 'canton/canton.conf')
+export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton/bootstrap.canton')
 export const API_SPECS_PATH = path.join(repoRoot, 'api-specs')
 
 // Canton versions
