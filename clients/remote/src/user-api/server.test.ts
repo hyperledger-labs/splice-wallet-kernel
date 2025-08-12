@@ -41,7 +41,6 @@ test('call connect rpc', async () => {
         .send({ jsonrpc: '2.0', id: 0, method: 'listNetworks', params: [] })
         .set('Accept', 'application/json')
 
-
     const json = await response.body.result
 
     expect(response.statusCode).toBe(200)
