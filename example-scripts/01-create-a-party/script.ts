@@ -6,7 +6,7 @@ const userClient = new UserApiClient(
     new HttpTransport('http://localhost:3001/rpc')
 )
 
-async function createPartyWithPrivateKey() {
+async function createPartyWithWalletKernelSigner() {
     const params = {
         partyHint: 'example-party',
         chainId: 'canton:local-oauth',
@@ -22,4 +22,4 @@ async function createPartyWithPrivateKey() {
     }
 }
 
-auth(userClient).then(() => createPartyWithPrivateKey())
+auth(userClient).then(() => createPartyWithWalletKernelSigner())
