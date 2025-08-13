@@ -1,4 +1,5 @@
 {
+    "extends": "../../tsconfig.node.json",
     "lib": ["ES2015"],
     "compilerOptions": {
         "module": "ESNext",

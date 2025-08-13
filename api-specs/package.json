@@ -2,6 +2,7 @@
     "name": "splice-wallet-api-specs",
     "version": "1.0.0",
     "description": "Splice Wallet Kernel API specifications",
+    "type": "module",
     "scripts": {
         "dapp-mock-server": "open-rpc-mock-server -d openrpc-dapp-api.json",
         "user-mock-server": "open-rpc-mock-server -d openrpc-user-api.json",

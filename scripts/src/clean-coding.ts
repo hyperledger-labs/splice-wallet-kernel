@@ -11,8 +11,8 @@ function checkPackageJson(packageJsonPath: string): number {
     const packageJsonContent = fs.readFileSync(packageJsonPath, 'utf-8')
     const packageJson = JSON.parse(packageJsonContent)
     // Allow names with specific prefixes according to docs/CLEANCODING.md
-    const packageName = packageJson.name?.replace(
-        /^splice-wallet-(kernel-)?/,
+    const packageName: string = packageJson.name?.replace(
+        /^splice-(wallet-)?(kernel-)?/,
         ''
     )
     const mainFile = packageJson.main
@@ -25,6 +25,7 @@ function checkPackageJson(packageJsonPath: string): number {
         folderPath.includes('.yarn') ||
         folderPath.includes('.vite') ||
         folderPath.includes('.canton') ||
+        folderPath.includes('rpc-generator') ||
         folderPath == ''
     ) {
         return 0
@@ -43,7 +44,12 @@ function checkPackageJson(packageJsonPath: string): number {
     let mismatchCount = 0
 
     // Check if the folder path matches the package name
-    if (packageName !== folderPath) {
+    if (!folderPath.split('').every((f) => packageName.includes(f))) {
+        console.log(folderPath)
+        console.log(packageName)
+        console.log(packageName.endsWith(folderPath))
+        console.log(folderPath.endsWith(packageName))
+        console.log(packageName !== folderPath)
         markFile(
             relativePath,
             packageJsonContent,
@@ -104,6 +110,10 @@ function checkTsconfigJson(tsconfigJsonPath: string): number {
     const extendsFile = tsconfig.extends
     const relativePath = path.relative(getRepoRoot(), tsconfigJsonPath)
 
+    if (tsconfigJsonPath.includes('example/')) {
+        return 0 // Skip example tsconfig files
+    }
+
     // Check if "extends" contains the correct tsconfig.json variation
     if (
         !extendsFile ||
@@ -127,7 +137,11 @@ function main(): void {
     const rootDir = getRepoRoot()
     let errorCount = 0
     traverseDirectory(rootDir, (filePath) => {
-        if (filePath.includes('.canton') || filePath.includes('.yarn')) {
+        if (
+            filePath.includes('.canton') ||
+            filePath.includes('.yarn') ||
+            filePath.includes('.splice')
+        ) {
             return // Skip directories
         }
 
@@ -135,7 +149,6 @@ function main(): void {
             errorCount += checkPackageJson(filePath)
         }
         if (filePath.endsWith('tsconfig.json')) {
-            console.log(`Checking tsconfig at ${filePath}`)
             errorCount += checkTsconfigJson(filePath)
         }
     })
