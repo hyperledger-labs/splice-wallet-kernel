@@ -5170,6 +5170,7 @@ __metadata:
     lit: "npm:^3.3.0"
     pino: "npm:^9.7.0"
     pino-pretty: "npm:^13.0.0"
+    pino-test: "npm:^1.1.0"
     socket.io: "npm:^4.8.1"
     supertest: "npm:^7.1.1"
     ts-jest-resolver: "npm:^2.0.1"
@@ -10959,6 +10960,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pino-test@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "pino-test@npm:1.1.0"
+  dependencies:
+    split2: "npm:^4.2.0"
+  checksum: 10c0/3a305210b982a9d5c377c86df6985b896e0b31844d8184af56be4c2f24690ae8a315fae06ae304a092dc3b871d6485a1b10f64c90dc0d2163badd14b388dd178
+  languageName: node
+  linkType: hard
+
 "pino@npm:8.20.0":
   version: 8.20.0
   resolution: "pino@npm:8.20.0"
@@ -12317,7 +12327,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"split2@npm:^4.0.0":
+"split2@npm:^4.0.0, split2@npm:^4.2.0":
   version: 4.2.0
   resolution: "split2@npm:4.2.0"
   checksum: 10c0/b292beb8ce9215f8c642bb68be6249c5a4c7f332fc8ecadae7be5cbdf1ea95addc95f0459ef2e7ad9d45fd1064698a097e4eb211c83e772b49bc0ee423e91534

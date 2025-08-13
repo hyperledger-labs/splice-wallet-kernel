@@ -33,6 +33,7 @@ import {
     MultiTransactionSignatures,
     SignedTopologyTransaction,
 } from '../_proto/com/digitalasset/canton/protocol/v30/topology.js'
+import { adminAuthService } from '../auth/admin-auth-service.js'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
@@ -42,8 +43,9 @@ async function signingDriverCreate(
     store: Store,
     notifier: Notifier | undefined,
     ledgerClient: LedgerClient,
+    ledgerClientAdmin: LedgerClient,
     drivers: AvailableSigningDrivers,
-    authContext: AuthContext | undefined,
+    authContext: AuthContext,
     { signingProviderId, primary, partyHint, chainId }: CreateWalletParams
 ): Promise<CreateWalletResult> {
     const driver = drivers[signingProviderId as SigningProvider]
@@ -61,12 +63,15 @@ async function signingDriverCreate(
             const { participantId: namespace } =
                 await ledgerClient.partiesParticipantIdGet()
 
-            const res = await ledgerClient.partiesPost({
-                partyIdHint: partyHint,
-                identityProviderId: '',
-                synchronizerId: network.synchronizerId,
-                userId: '',
-            })
+            const res = await ledgerClient.partiesPost(
+                {
+                    partyIdHint: partyHint,
+                    identityProviderId: '',
+                    synchronizerId: network.synchronizerId,
+                    userId: '',
+                },
+                authContext.userId
+            )
 
             if (!res.partyDetails?.party) {
                 throw new Error('Failed to allocate party')
@@ -203,6 +208,7 @@ export const userController = (
                     grantType: network.auth.grantType ?? '',
                     scope: network.auth.scope ?? '',
                     clientId: network.auth.clientId ?? '',
+                    audience: network.auth.audience ?? '',
                 }
             }
 
@@ -248,10 +254,21 @@ export const userController = (
                 logger
             )
 
+            const adminToken = await adminAuthService(
+                store,
+                logger
+            ).fetchToken()
+            const ledgerClientAdmin = new LedgerClient(
+                network.ledgerApi.baseUrl,
+                adminToken,
+                logger
+            )
+
             const result = await signingDriverCreate(
                 store,
                 notifier,
                 ledgerClient,
+                ledgerClientAdmin,
                 drivers,
                 authContext,
                 params

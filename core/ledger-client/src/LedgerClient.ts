@@ -9,6 +9,8 @@ export type InteractivePreparePostRes =
 
 export type PartiesPostReq =
     paths['/v2/parties']['post']['requestBody']['content']['application/json']
+export type GrantUserRightsReq =
+    paths['/v2/users/{user-id}/rights']['post']['requestBody']['content']['application/json']
 export type PartiesPostRes =
     paths['/v2/parties']['post']['responses']['200']['content']['application/json']
 
@@ -46,8 +48,33 @@ export class LedgerClient {
         return this.post('/v2/interactive-submission/prepare', body)
     }
 
-    public async partiesPost(body: PartiesPostReq): Promise<PartiesPostRes> {
-        return this.post('/v2/parties', body)
+    public async partiesPost(
+        body: PartiesPostReq,
+        userId: string
+    ): Promise<PartiesPostRes> {
+        const res = await this.post<PartiesPostReq, PartiesPostRes>(
+            '/v2/parties',
+            body
+        )
+        await this.post<GrantUserRightsReq, unknown>(
+            `/v2/users/${userId}/rights` as keyof paths,
+            {
+                identityProviderId: '',
+                userId,
+                rights: [
+                    {
+                        kind: {
+                            CanActAs: {
+                                value: {
+                                    party: res.partyDetails!.party,
+                                },
+                            },
+                        },
+                    },
+                ],
+            }
+        )
+        return res
     }
 
     public async partiesParticipantIdGet(): Promise<PartiesParticipantIdRes> {
