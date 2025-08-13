@@ -14,7 +14,7 @@ import {
     ListSessionsResult,
     SetPrimaryWalletParams,
 } from './rpc-gen/typings.js'
-import { Store, Wallet, Auth } from 'core-wallet-store'
+import { Store, Wallet, Auth, Transaction } from 'core-wallet-store'
 import { Logger } from 'pino'
 import {
     NotificationService,
@@ -39,7 +39,64 @@ type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
 >
 
+async function grantUserRights(
+    partyId: string,
+    userId: string,
+    client: LedgerClient
+) {
+    // Wait for party to appear on participant
+    let partyFound = false
+    let tries = 0
+    const maxTries = 5
+
+    while (!partyFound || tries >= maxTries) {
+        const parties = await client.get('/v2/parties')
+        partyFound =
+            parties.partyDetails?.some((party) => party.party === partyId) ||
+            false
+
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        tries++
+    }
+
+    if (tries >= maxTries) {
+        throw new Error('timed out waiting for new party to appear')
+    }
+
+    // Assign user rights to party
+    const result = await client.post(
+        '/v2/users/{user-id}/rights',
+        {
+            identityProviderId: '',
+            userId,
+            rights: [
+                {
+                    kind: {
+                        CanActAs: {
+                            value: {
+                                party: partyId,
+                            },
+                        },
+                    },
+                },
+            ],
+        },
+        {
+            path: {
+                'user-id': userId,
+            },
+        }
+    )
+
+    if (!result.newlyGrantedRights) {
+        throw new Error('Failed to grant user rights')
+    }
+
+    return
+}
+
 async function signingDriverCreate(
+    userId: string,
     store: Store,
     notifier: Notifier | undefined,
     ledgerClient: LedgerClient,
@@ -65,10 +122,10 @@ async function signingDriverCreate(
             )
 
             const res = await ledgerClientAdmin.post('/v2/parties', {
+                userId,
                 partyIdHint: partyHint,
                 identityProviderId: '',
                 synchronizerId: network.synchronizerId,
-                userId: authContext.userId,
             })
 
             if (!res.partyDetails?.party) {
@@ -85,6 +142,9 @@ async function signingDriverCreate(
                 signingProviderId,
             }
 
+            grantUserRights(wallet.partyId, userId, ledgerClient).catch(
+                console.error
+            )
             break
         }
         case SigningProvider.WALLET_KERNEL: {
@@ -156,6 +216,7 @@ async function signingDriverCreate(
                 publicKey: key.publicKey,
             }
 
+            grantUserRights(wallet.partyId, userId, ledgerClient)
             break
         }
         default:
@@ -236,10 +297,13 @@ export const userController = (
                 `Allocating party with params: ${JSON.stringify(params)}`
             )
 
-            const notifier = authContext?.userId
-                ? notificationService.getNotifier(authContext.userId)
-                : undefined
+            const userId = authContext?.userId
 
+            if (!userId) {
+                throw new Error('User not found')
+            }
+
+            const notifier = notificationService.getNotifier(userId)
             const network = await store.getCurrentNetwork()
 
             if (authContext === undefined || network === undefined) {
@@ -264,6 +328,7 @@ export const userController = (
             )
 
             const result = await signingDriverCreate(
+                userId,
                 store,
                 notifier,
                 ledgerClient,
@@ -290,12 +355,11 @@ export const userController = (
             // TODO: support filters
             return store.getWallets()
         },
-        sign: async (params: SignParams) =>
-            Promise.resolve({
-                signature: 'default-signature',
-                signedBy: 'default-signed-by',
-                partyId: 'default-party',
-            }),
+        sign: async (params: SignParams) => ({
+            signature: 'default-signature',
+            signedBy: 'default-signed-by',
+            partyId: 'default-party',
+        }),
         execute: async ({ commandId }: ExecuteParams) => {
             const wallet = await store.getPrimaryWallet()
             const network = await store.getCurrentNetwork()
@@ -304,24 +368,23 @@ export const userController = (
                 throw new Error('No primary wallet found')
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain -- we are certain userId is defined here because the store validates it
-            const userId = authContext?.userId!
-            const notifier = notificationService.getNotifier(userId)
-
-            const transaction = await store.getTransaction(commandId)
-
             if (authContext === undefined || network === undefined) {
                 throw new Error('Unauthenticated context')
             }
 
+            const userId = authContext.userId
+            const notifier = notificationService.getNotifier(userId)
+
+            const transaction = await store.getTransaction(commandId)
+
             const ledgerClient = new LedgerClient(
                 network.ledgerApi.baseUrl,
-                authContext?.accessToken,
+                authContext.accessToken,
                 logger
             )
 
             switch (wallet.signingProviderId) {
-                case 'participant': {
+                case SigningProvider.PARTICIPANT: {
                     // Participant signing provider specific logic can be added here
                     const request = {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
@@ -350,6 +413,90 @@ export const userController = (
                             'Failed to submit transaction: ' + error
                         )
                     }
+                    break
+                }
+                case SigningProvider.WALLET_KERNEL: {
+                    const { preparedTransactionHash, preparedTransaction } =
+                        await ledgerClient.post(
+                            '/v2/interactive-submission/prepare',
+                            {
+                                userId,
+                                commandId,
+                                actAs: [wallet.partyId],
+                                readAs: [],
+                                disclosedContracts: [],
+                                synchronizerId: network.synchronizerId,
+                                packageIdSelectionPreference: [],
+                                verboseHashing: false,
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
+                                commands: transaction?.payload as any,
+                            }
+                        )
+
+                    if (!preparedTransaction) {
+                        throw new Error('prepared transaction failed')
+                    }
+
+                    const driver = drivers[SigningProvider.WALLET_KERNEL]
+                    if (!driver) {
+                        throw new Error('No driver found for WALLET_KERNEL')
+                    }
+
+                    const signature = await driver
+                        .controller(authContext)
+                        .signTransaction({
+                            tx: preparedTransaction,
+                            txHash: preparedTransactionHash,
+                            publicKey: wallet.publicKey,
+                        })
+
+                    if (!signature.signature) {
+                        throw new Error(
+                            'Failed to sign transaction: ' +
+                                JSON.stringify(signature)
+                        )
+                    }
+
+                    const result = await ledgerClient.post(
+                        '/v2/interactive-submission/execute',
+                        {
+                            userId,
+                            preparedTransaction,
+                            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
+                            submissionId: commandId,
+                            deduplicationPeriod: {
+                                Empty: {},
+                            },
+                            partySignatures: {
+                                signatures: [
+                                    {
+                                        party: wallet.partyId,
+                                        signatures: [
+                                            {
+                                                signature: signature.signature,
+                                                format: 'SIGNATURE_FORMAT_RAW',
+                                                signingAlgorithmSpec:
+                                                    'SIGNING_ALGORITHM_SPEC_ED25519',
+                                                signedBy: wallet.namespace,
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        }
+                    )
+
+                    const signedTx: Transaction = {
+                        commandId: commandId,
+                        status: 'executed',
+                        preparedTransaction,
+                        preparedTransactionHash,
+                        payload: result,
+                    }
+
+                    store.setTransaction(signedTx)
+                    notifier.emit('txChanged', signedTx)
+
                     break
                 }
                 default:
