@@ -1,8 +1,8 @@
 {
-    "name": "splice-wallet-sdk",
+    "name": "splice-sdk-wallet",
     "type": "module",
     "version": "0.0.1",
-    "description": "Connects your splice dApp to Wallet Client users",
+    "description": "Simplified connecting your Wallet provider service to a validator",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
@@ -14,10 +14,7 @@
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
     "dependencies": {
-        "core-splice-provider": "workspace:^",
-        "core-types": "workspace:^",
-        "core-wallet-dapp-rpc-client": "workspace:^",
-        "core-wallet-ui-components": "workspace:^"
+        "core-ledger-client": "workspace:^"
     },
     "devDependencies": {
         "typescript": "^5.8.3"

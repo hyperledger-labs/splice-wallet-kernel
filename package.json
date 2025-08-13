@@ -17,6 +17,7 @@
         "script:cleancoding": "tsx ./scripts/src/clean-coding.ts",
         "script:generate:ledger": "tsx ./scripts/src/generate-ledger-client.ts",
         "script:fetch:canton": "tsx ./scripts/src/fetch-canton.ts",
+        "script:fetch:tokenstandard": "tsx ./scripts/src/fetch-token-standard.ts",
         "script:fetch:ledger": "tsx ./scripts/src/fetch-ledger-api-specs.ts",
         "script:openrpc:titles": "tsx ./scripts/src/schema-title-validation.ts",
         "full:rebuild": "yarn clean:all && yarn generate:all && yarn build:all"
@@ -27,7 +28,7 @@
         "core/**",
         "example",
         "example-scripts",
-        "sdk",
+        "sdk/*",
         "scripts",
         "mock-oauth2"
     ],
