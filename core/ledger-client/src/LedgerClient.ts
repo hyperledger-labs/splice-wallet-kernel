@@ -22,12 +22,10 @@ export type SubmitAndWaitPostRes =
 
 export class LedgerClient {
     private readonly client: Client<paths>
+    private readonly logger: Logger
 
-    constructor(
-        baseUrl: string,
-        token: string,
-        private logger: Logger
-    ) {
+    constructor(baseUrl: string, token: string, _logger: Logger) {
+        this.logger = _logger.child({ component: 'LedgerClient' })
         this.client = createClient<paths>({
             baseUrl,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
@@ -65,17 +63,14 @@ export class LedgerClient {
     private async get<Res>(path: keyof paths): Promise<Res> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const resp = await this.client.GET(path as any, {})
-        this.logger.debug({ response: resp }, `LedgerClient: GET ${path}`)
+        this.logger.debug({ response: resp }, `GET ${path}`)
         return this.valueOrError(resp)
     }
 
     private async post<Req, Res>(path: keyof paths, body: Req): Promise<Res> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const resp = await this.client.POST(path as any, { body })
-        this.logger.debug(
-            { requestBody: body, response: resp },
-            `LedgerClient: POST ${path}`
-        )
+        this.logger.debug({ requestBody: body, response: resp }, `POST ${path}`)
         return this.valueOrError(resp)
     }
 
