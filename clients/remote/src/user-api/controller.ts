@@ -183,7 +183,6 @@ export const userController = (
             const ledgerApi = {
                 baseUrl: network.ledgerApiUrl ?? '',
             }
-            const authType = network.auth.type
 
             let auth: Auth
             if (network.auth.type === 'implicit') {
