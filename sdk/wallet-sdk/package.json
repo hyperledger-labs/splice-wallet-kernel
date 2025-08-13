@@ -1,5 +1,5 @@
 {
-    "name": "splice-wallet-sdk",
+    "name": "splice-sdk-wallet",
     "type": "module",
     "version": "0.0.1",
     "description": "Connects your splice dApp to Wallet Client users",

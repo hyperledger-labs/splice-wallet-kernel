@@ -6815,7 +6815,7 @@ __metadata:
     globals: "npm:^16.0.0"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
-    splice-dapp-sdk: "workspace:^"
+    splice-sdk-dapp: "workspace:^"
     typescript: "npm:~5.8.3"
     typescript-eslint: "npm:^8.30.1"
     vite: "npm:^6.3.5"
@@ -12282,14 +12282,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"splice-dapp-sdk@workspace:^, splice-dapp-sdk@workspace:sdk/dapp-sdk":
+"splice-sdk-dapp@workspace:^, splice-sdk-dapp@workspace:sdk/dapp-sdk":
   version: 0.0.0-use.local
-  resolution: "splice-dapp-sdk@workspace:sdk/dapp-sdk"
+  resolution: "splice-sdk-dapp@workspace:sdk/dapp-sdk"
   dependencies:
     core-splice-provider: "workspace:^"
     core-types: "workspace:^"
     core-wallet-dapp-rpc-client: "workspace:^"
     core-wallet-ui-components: "workspace:^"
+    typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
+
+"splice-sdk-wallet@workspace:sdk/wallet-sdk":
+  version: 0.0.0-use.local
+  resolution: "splice-sdk-wallet@workspace:sdk/wallet-sdk"
+  dependencies:
+    core-ledger-client: "workspace:^"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -12322,15 +12331,6 @@ __metadata:
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.8.3"
     typescript-eslint: "npm:^8.33.1"
-  languageName: unknown
-  linkType: soft
-
-"splice-wallet-sdk@workspace:sdk/wallet-sdk":
-  version: 0.0.0-use.local
-  resolution: "splice-wallet-sdk@workspace:sdk/wallet-sdk"
-  dependencies:
-    core-ledger-client: "workspace:^"
-    typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
 
