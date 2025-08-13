@@ -5452,14 +5452,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"core-ledger@workspace:core/ledger":
-  version: 0.0.0-use.local
-  resolution: "core-ledger@workspace:core/ledger"
-  dependencies:
-    typescript: "npm:^5.8.3"
-  languageName: unknown
-  linkType: soft
-
 "core-rpc-generator@workspace:core/rpc-generator":
   version: 0.0.0-use.local
   resolution: "core-rpc-generator@workspace:core/rpc-generator"
