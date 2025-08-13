@@ -1,6 +1,6 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { LedgerClient, SubmitAndWaitPostReq } from 'core-ledger-client'
+import { LedgerClient } from 'core-ledger-client'
 import buildController from './rpc-gen/index.js'
 import {
     AddNetworkParams,
@@ -58,10 +58,11 @@ async function signingDriverCreate(
         case SigningProvider.PARTICIPANT: {
             const network = await store.getNetwork(chainId)
 
-            const { participantId: namespace } =
-                await ledgerClient.partiesParticipantIdGet()
+            const { participantId: namespace } = await ledgerClient.get(
+                '/v2/parties/participant-id'
+            )
 
-            const res = await ledgerClient.partiesPost({
+            const res = await ledgerClient.post('/v2/parties', {
                 partyIdHint: partyHint,
                 identityProviderId: '',
                 synchronizerId: network.synchronizerId,
@@ -308,7 +309,7 @@ export const userController = (
             switch (wallet.signingProviderId) {
                 case 'participant': {
                     // Participant signing provider specific logic can be added here
-                    const request: SubmitAndWaitPostReq = {
+                    const request = {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
                         commands: transaction?.payload as any,
                         commandId,
@@ -320,8 +321,10 @@ export const userController = (
                         packageIdSelectionPreference: [],
                     }
                     try {
-                        const res =
-                            await ledgerClient.submitAndWaitPost(request)
+                        const res = await ledgerClient.post(
+                            '/v2/commands/submit-and-wait',
+                            request
+                        )
 
                         notifier.emit('txChanged', {
                             status: 'executed',
