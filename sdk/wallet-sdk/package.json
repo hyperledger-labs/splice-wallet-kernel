@@ -14,10 +14,7 @@
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
     "dependencies": {
-        "core-splice-provider": "workspace:^",
-        "core-types": "workspace:^",
-        "core-wallet-dapp-rpc-client": "workspace:^",
-        "core-wallet-ui-components": "workspace:^"
+        "core-ledger-client": "workspace:^"
     },
     "devDependencies": {
         "typescript": "^5.8.3"

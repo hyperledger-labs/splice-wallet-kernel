@@ -1,10 +1,10 @@
 {
-    "extends": "../tsconfig.web.json",
+    "extends": "../../tsconfig.web.json",
     "compilerOptions": {
         "rootDir": "./src",
         "outDir": "./dist",
         "moduleResolution": "node",
-        "baseUrl": ".",
+        "baseUrl": "./",
         "paths": {
             "core-wallet-dapp-rpc-client": [
                 "../core/wallet-dapp-rpc-client/src"
@@ -14,7 +14,7 @@
     },
     "include": ["src"],
     "references": [
-        { "path": "../core/wallet-dapp-rpc-client" },
-        { "path": "../core/splice-provider" }
+        { "path": "../../core/wallet-dapp-rpc-client" },
+        { "path": "../../core/splice-provider" }
     ]
 }

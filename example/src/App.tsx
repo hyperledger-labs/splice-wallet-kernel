@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import * as sdk from 'splice-wallet-sdk'
+import * as sdk from 'splice-dapp-sdk'
 import { createPingCommand } from './commands/createPingCommand'
 
 function App() {

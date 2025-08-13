@@ -28,8 +28,7 @@
         "core/**",
         "example",
         "example-scripts",
-        "dapp-sdk",
-        "wallet-sdk",
+        "sdk/*",
         "scripts",
         "mock-oauth2"
     ],
