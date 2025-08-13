@@ -12274,6 +12274,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"splice-dapp-sdk@workspace:dapp-sdk":
+  version: 0.0.0-use.local
+  resolution: "splice-dapp-sdk@workspace:dapp-sdk"
+  dependencies:
+    core-splice-provider: "workspace:^"
+    core-types: "workspace:^"
+    core-wallet-dapp-rpc-client: "workspace:^"
+    core-wallet-ui-components: "workspace:^"
+    typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
+
 "splice-wallet-api-specs@workspace:api-specs":
   version: 0.0.0-use.local
   resolution: "splice-wallet-api-specs@workspace:api-specs"
@@ -12305,9 +12317,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"splice-wallet-sdk@workspace:^, splice-wallet-sdk@workspace:sdk":
+"splice-wallet-sdk@workspace:^, splice-wallet-sdk@workspace:wallet-sdk":
   version: 0.0.0-use.local
-  resolution: "splice-wallet-sdk@workspace:sdk"
+  resolution: "splice-wallet-sdk@workspace:wallet-sdk"
   dependencies:
     core-splice-provider: "workspace:^"
     core-types: "workspace:^"
