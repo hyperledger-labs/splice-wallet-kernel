@@ -2,6 +2,7 @@ import { LitElement, html } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import './components/LoginForm'
 import './components/LoggedInView'
+import './components/WalletKernelConnector'
 import { LedgerService } from './ledger.service'
 
 @customElement('exercise-app')
@@ -29,14 +30,15 @@ export class ExerciseApp extends LitElement {
     }
 
     render() {
-        return html`
-            ${this.isLoggedIn
-                ? html` <logged-in-view
-                      .ledgerService=${this.ledgerService}
-                  ></logged-in-view>`
-                : html` <login-form
-                      @login-submit=${this.handleLoginSubmit}
-                  ></login-form>`}
-        `
+        return html` <wallet-kernel-connector></wallet-kernel-connector> `
+        // return html`
+        //     ${this.isLoggedIn
+        //         ? html` <logged-in-view
+        //               .ledgerService=${this.ledgerService}
+        //           ></logged-in-view>`
+        //         : html` <login-form
+        //               @login-submit=${this.handleLoginSubmit}
+        //           ></login-form>`}
+        // `
     }
 }
