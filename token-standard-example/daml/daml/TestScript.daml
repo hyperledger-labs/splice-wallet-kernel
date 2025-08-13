@@ -1,0 +1,139 @@
+module TestScript where
+
+import Daml.Script
+import Splice.Api.Token.MetadataV1
+import Splice.Api.Token.TransferInstructionV1
+import Splice.Api.Token.HoldingV1
+import TokenHolding
+import TokenTransfer
+import qualified DA.TextMap as TextMap
+import DA.Time
+
+testTransferWorkflow : Script ()
+testTransferWorkflow = script do
+  alice <- allocatePartyWithHint "Alice" (PartyIdHint "Alice")
+  bob <- allocatePartyWithHint "Bob" (PartyIdHint "Bob")
+  btcAdmin <- allocatePartyWithHint "BtcAdmin" (PartyIdHint "BtcAdmin")
+  ethAdmin <- allocatePartyWithHint "EthAdmin" (PartyIdHint "EthAdmin")
+
+  let
+    btcInstrumentId = InstrumentId with
+      id = "BTC"
+      admin = btcAdmin
+    emptyMeta = Metadata with values = mempty
+    emptyExtraArgs = ExtraArgs with
+      context = ChoiceContext with values = TextMap.empty
+      meta = emptyMetadata
+
+  let
+    ethInstrumentId = InstrumentId with
+      id = "ETH"
+      admin = ethAdmin
+    emptyMeta = Metadata with values = mempty
+    emptyExtraArgs = ExtraArgs with
+      context = ChoiceContext with values = TextMap.empty
+      meta = emptyMetadata
+
+  -- BtcAdmin creates the Transfer Factory for BTC
+  btcFactoryCid <- submit btcAdmin do
+    createCmd TokenTransferFactory with
+      admin = btcAdmin
+      observers = [alice, bob]
+      meta = emptyMeta
+
+  -- EthAdmin creates the Transfer Factory for ETH
+  ethFactoryCid <- submit ethAdmin do
+    createCmd TokenTransferFactory with
+      admin = ethAdmin
+      observers = [alice, bob]
+      meta = emptyMeta
+
+  -- BTC Admin gives Alice 100 BTC holding
+  aliceHoldingCid <- submit btcAdmin do
+    createCmd TokenHolding with
+      owner = alice
+      dso = btcAdmin
+      instrumentId = btcInstrumentId
+      amount = 100.0
+      meta = emptyMeta
+
+  now <- getTime
+  TransferInstructionResult {output = TransferInstructionResult_Pending {transferInstructionCid = instrToBobCid}}
+    <- submit alice do
+      exerciseCmd (toInterfaceContractId @TransferFactory btcFactoryCid) TransferFactory_Transfer with
+        expectedAdmin = btcAdmin
+        extraArgs = emptyExtraArgs
+        transfer = Transfer with
+          sender = alice
+          receiver = bob
+          amount = 55.0
+          instrumentId = btcInstrumentId
+          requestedAt = now
+          executeBefore = now `addRelTime` days 1
+          inputHoldingCids = [toInterfaceContractId aliceHoldingCid]
+          meta = emptyMeta
+
+  submit btcAdmin do
+    exerciseCmd instrToBobCid TransferInstruction_Update with
+      extraArgs = emptyExtraArgs
+      extraActors = [btcAdmin]
+
+  -- Bob gives 30 back to Alice from his 55
+  bobHoldings <- query @TokenHolding bob
+  let [bobBtcHoldingCid] = map fst bobHoldings
+  TransferInstructionResult {output = TransferInstructionResult_Pending {transferInstructionCid = instrBackToAlice}}
+    <- submit bob do
+      exerciseCmd (toInterfaceContractId @TransferFactory btcFactoryCid) TransferFactory_Transfer with
+        expectedAdmin = btcAdmin
+        extraArgs = emptyExtraArgs
+        transfer = Transfer with
+          sender = bob
+          receiver = alice
+          amount = 30.0
+          instrumentId = btcInstrumentId
+          requestedAt = now
+          executeBefore = now `addRelTime` days 1
+          inputHoldingCids = [toInterfaceContractId bobBtcHoldingCid]
+          meta = emptyMeta
+
+  submit btcAdmin do
+    exerciseCmd instrBackToAlice TransferInstruction_Update with
+      extraArgs = emptyExtraArgs
+      extraActors = [btcAdmin]
+
+  -- Alice tries to send 10 BTC, but btcAdmin will reject it
+  TransferInstructionResult {output = TransferInstructionResult_Pending {transferInstructionCid = instrToDecline}}
+    <- submit alice do
+      exerciseCmd (toInterfaceContractId @TransferFactory btcFactoryCid) TransferFactory_Transfer with
+        expectedAdmin = btcAdmin
+        extraArgs = emptyExtraArgs
+        transfer = Transfer with
+          sender = alice
+          receiver = bob
+          amount = 10.0
+          instrumentId = btcInstrumentId
+          requestedAt = now
+          executeBefore = now `addRelTime` days 1
+          inputHoldingCids = [toInterfaceContractId aliceHoldingCid]
+          meta = emptyMeta
+
+  let removalArgs = ExtraArgs with
+        context = ChoiceContext with values = TextMap.empty
+        meta = Metadata with values = TextMap.fromList [("action", "remove")]
+
+  -- Admin rejects the transfer via "remove" action
+  submit btcAdmin do
+    exerciseCmd instrToDecline TransferInstruction_Update with
+      extraArgs = removalArgs
+      extraActors = [btcAdmin]
+
+  -- ETH Admin gives Bob 99 ETH holding
+  bobEthHoldingCid <- submit ethAdmin do
+    createCmd TokenHolding with
+      owner = bob
+      dso = ethAdmin
+      instrumentId = ethInstrumentId
+      amount = 100.0
+      meta = emptyMeta
+
+  return ()

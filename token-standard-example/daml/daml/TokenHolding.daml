@@ -1,0 +1,23 @@
+module TokenHolding where
+
+import Splice.Api.Token.HoldingV1
+import Splice.Api.Token.MetadataV1
+
+template TokenHolding
+  with
+    owner : Party
+    dso : Party
+    instrumentId : InstrumentId
+    amount : Decimal
+    meta : Metadata
+  where
+    signatory dso
+    observer owner
+
+    interface instance Holding for TokenHolding where
+      view = HoldingView with
+        owner = owner
+        instrumentId = instrumentId
+        amount = amount
+        lock = None
+        meta = meta

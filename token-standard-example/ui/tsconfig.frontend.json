@@ -1,0 +1,10 @@
+{
+    "extends": "../../tsconfig.web.json",
+    "compilerOptions": {
+        "rootDir": "./src/",
+        "outDir": "./src/dist",
+        "experimentalDecorators": true,
+        "useDefineForClassFields": false
+    },
+    "include": ["src"]
+}

@@ -1,5 +1,5 @@
 import { paths } from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
-import createClient, { Client } from 'openapi-fetch'
+import createClient, { Client, ClientPathsWithMethod } from 'openapi-fetch'
 import { Logger } from 'pino'
 
 export type InteractivePreparePostReq =
@@ -19,6 +19,17 @@ export type SubmitAndWaitPostReq =
     paths['/v2/commands/submit-and-wait']['post']['requestBody']['content']['application/json']
 export type SubmitAndWaitPostRes =
     paths['/v2/commands/submit-and-wait']['post']['responses']['200']['content']['application/json']
+
+export type ActiveContractsPostReq =
+    paths['/v2/state/active-contracts']['post']['requestBody']['content']['application/json']
+export type ActiveContractsPostRes =
+    paths['/v2/state/active-contracts']['post']['responses']['200']['content']['application/json']
+
+export type LedgerEndGetRes =
+    paths['/v2/state/ledger-end']['get']['responses']['200']['content']['application/json']
+
+export type GetUserByIdRes =
+    paths['/v2/users/{user-id}']['get']['responses']['200']['content']['application/json']
 
 export class LedgerClient {
     private readonly client: Client<paths>
@@ -62,21 +73,44 @@ export class LedgerClient {
         return this.post('/v2/commands/submit-and-wait', body)
     }
 
-    private async get<Res>(path: keyof paths): Promise<Res> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const resp = await this.client.GET(path as any, {})
-        this.logger.debug({ response: resp }, `LedgerClient: GET ${path}`)
-        return this.valueOrError(resp)
+    public async getUserById(userId: string): Promise<GetUserByIdRes> {
+        return this.get('/v2/users/{user-id}', {
+            params: { path: { 'user-id': userId } },
+        })
     }
 
-    private async post<Req, Res>(path: keyof paths, body: Req): Promise<Res> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const resp = await this.client.POST(path as any, { body })
+    public async getActiveContracts(
+        body: ActiveContractsPostReq
+    ): Promise<ActiveContractsPostRes> {
+        return this.post('/v2/state/active-contracts', body)
+    }
+
+    public async getLedgerEnd(): Promise<LedgerEndGetRes> {
+        return this.get('/v2/state/ledger-end')
+    }
+
+    private async get<Res>(
+        path: ClientPathsWithMethod<Client<paths>, 'get'>,
+        params: Record<string, unknown> = {}
+    ): Promise<Res> {
+        const resp = await this.client.GET(path, params)
+        this.logger.debug({ response: resp }, `LedgerClient: GET ${path}`)
+        // @ts-expect-error reason TBS
+        return await this.valueOrError<Res>(resp)
+    }
+
+    private async post<Req, Res>(
+        path: ClientPathsWithMethod<Client<paths>, 'post'>,
+        body: Req
+    ): Promise<Res> {
+        // @ts-expect-error reason TBS
+        const resp = await this.client.POST(path, { body })
         this.logger.debug(
             { requestBody: body, response: resp },
             `LedgerClient: POST ${path}`
         )
-        return this.valueOrError(resp)
+        // @ts-expect-error reason TBS
+        return this.valueOrError<Res>(resp)
     }
 
     private async valueOrError<T>(response: {

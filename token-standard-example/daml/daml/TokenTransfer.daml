@@ -1,0 +1,115 @@
+module TokenTransfer where
+
+import Splice.Api.Token.TransferInstructionV1
+import Splice.Api.Token.MetadataV1
+
+import TokenHolding
+import DA.Foldable (mapA_)
+import qualified DA.Map
+import qualified DA.TextMap as TM
+
+template TokenTransferInstruction
+  with
+    transfer : Transfer
+    meta : Metadata
+    originalInstructionCid : Optional (ContractId TransferInstruction)
+  where
+    signatory transfer.sender, transfer.instrumentId.admin
+    observer transfer.receiver
+
+    interface instance TransferInstruction for TokenTransferInstruction where
+      view = TransferInstructionView with
+        originalInstructionCid
+        transfer
+        status = TransferPendingInternalWorkflow with
+          pendingActions = DA.Map.fromList [(transfer.instrumentId.admin, "Approve or reject transfer")]
+        meta
+
+      -- Curently implemented only flow like in a bank, where receiver doesn't have to accept transfer
+      transferInstruction_acceptImpl = \_ _ -> do
+        abort "Direct accept is disabled. Use updateImpl by admin instead."
+
+      transferInstruction_rejectImpl = \_ _ -> do
+        abort "Direct reject is disabled. Use updateImpl by admin instead."
+
+      transferInstruction_withdrawImpl = \_ _ -> do
+        return TransferInstructionResult with
+          output = TransferInstructionResult_Failed
+          senderChangeCids = []
+          meta = meta
+
+      transferInstruction_updateImpl = \(self : ContractId TransferInstruction) TransferInstruction_Update {extraActors, extraArgs} -> do
+        assertMsg "Only admin can update" (transfer.instrumentId.admin `elem` extraActors)
+        -- Admin removes transfer
+        case TM.lookup "action" extraArgs.meta.values of
+          Some "remove" -> do
+            return TransferInstructionResult with
+              output = TransferInstructionResult_Failed
+              senderChangeCids = []
+              meta = meta
+          _ -> do
+            -- Admin accepts and executes the transfer
+            inputHoldingInterfaces <- mapA fetch transfer.inputHoldingCids
+            inputHoldings <- mapA (\i ->
+              case fromInterface @TokenHolding i of
+                Some h -> return h
+                None -> abort "Failed to cast to TokenHolding"
+              ) inputHoldingInterfaces
+
+            let total = sum (map (\h -> h.amount) inputHoldings)
+            mapA_ archive transfer.inputHoldingCids
+
+            receiverHolding <- create TokenHolding with
+              owner = transfer.receiver
+              dso = transfer.instrumentId.admin
+              instrumentId = transfer.instrumentId
+              amount = transfer.amount
+              meta = meta
+
+            let changeAmount = total - transfer.amount
+            senderChangeCids <-
+              if changeAmount > 0.0 then do
+                cid <- create TokenHolding with
+                  owner = transfer.sender
+                  dso = transfer.instrumentId.admin
+                  instrumentId = transfer.instrumentId
+                  amount = changeAmount
+                  meta = meta
+                return [cid]
+              else return []
+
+            return TransferInstructionResult with
+              output = TransferInstructionResult_Completed with receiverHoldingCids = [toInterfaceContractId receiverHolding]
+              senderChangeCids = map toInterfaceContractId senderChangeCids
+              meta = meta
+
+template TokenTransferFactory
+  with
+    admin : Party
+    meta : Metadata
+    observers : [Party]
+  where
+    signatory admin
+    observer observers
+
+    interface instance TransferFactory for TokenTransferFactory where
+      view = TransferFactoryView with admin = admin, meta = meta
+
+      transferFactory_transferImpl = \_ TransferFactory_Transfer{expectedAdmin, transfer, extraArgs} -> do
+        assertMsg "Admin mismatch" (expectedAdmin == admin)
+
+        now <- getTime
+        assertMsg "Transfer expired" (transfer.executeBefore > now)
+
+        instr <- create TokenTransferInstruction with
+          transfer = transfer
+          meta = meta
+          originalInstructionCid = None
+
+        return TransferInstructionResult with
+          output = TransferInstructionResult_Pending with
+            transferInstructionCid = toInterfaceContractId instr
+          senderChangeCids = []
+          meta = meta
+
+      transferFactory_publicFetchImpl = \_ _ -> return TransferFactoryView with admin = admin, meta = meta

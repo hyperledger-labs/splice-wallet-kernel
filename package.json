@@ -26,6 +26,7 @@
         "clients/*",
         "core/**",
         "example",
+        "token-standard-example/ui",
         "sdk",
         "scripts",
         "mock-oauth2"
