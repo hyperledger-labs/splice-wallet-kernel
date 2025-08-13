@@ -48,19 +48,16 @@ export class LedgerClient {
         return this.post('/v2/interactive-submission/prepare', body)
     }
 
-    public async partiesPost(
-        body: PartiesPostReq,
-        userId: string
-    ): Promise<PartiesPostRes> {
+    public async partiesPost(body: PartiesPostReq): Promise<PartiesPostRes> {
         const res = await this.post<PartiesPostReq, PartiesPostRes>(
             '/v2/parties',
             body
         )
         await this.post<GrantUserRightsReq, unknown>(
-            `/v2/users/${userId}/rights` as keyof paths,
+            `/v2/users/${body.userId}/rights` as keyof paths,
             {
                 identityProviderId: '',
-                userId,
+                userId: body.userId,
                 rights: [
                     {
                         kind: {

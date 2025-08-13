@@ -63,15 +63,12 @@ async function signingDriverCreate(
             const { participantId: namespace } =
                 await ledgerClient.partiesParticipantIdGet()
 
-            const res = await ledgerClient.partiesPost(
-                {
-                    partyIdHint: partyHint,
-                    identityProviderId: '',
-                    synchronizerId: network.synchronizerId,
-                    userId: '',
-                },
-                authContext.userId
-            )
+            const res = await ledgerClient.partiesPost({
+                partyIdHint: partyHint,
+                identityProviderId: '',
+                synchronizerId: network.synchronizerId,
+                userId: authContext.userId,
+            })
 
             if (!res.partyDetails?.party) {
                 throw new Error('Failed to allocate party')
