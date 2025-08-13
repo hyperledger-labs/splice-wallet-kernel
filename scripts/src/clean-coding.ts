@@ -45,11 +45,6 @@ function checkPackageJson(packageJsonPath: string): number {
 
     // Check if the folder path matches the package name
     if (!folderPath.split('').every((f) => packageName.includes(f))) {
-        console.log(folderPath)
-        console.log(packageName)
-        console.log(packageName.endsWith(folderPath))
-        console.log(folderPath.endsWith(packageName))
-        console.log(packageName !== folderPath)
         markFile(
             relativePath,
             packageJsonContent,
