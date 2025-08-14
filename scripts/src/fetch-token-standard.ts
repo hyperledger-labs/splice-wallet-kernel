@@ -10,6 +10,7 @@ import {
     success,
     SPLICE_PATH,
     SPLICE_ARCHIVE_HASH,
+    ensureDir,
 } from './utils.js'
 import crypto from 'crypto'
 import fs from 'fs'
@@ -50,7 +51,8 @@ async function verifyFileIntegrity(tarfile: string): Promise<void> {
 }
 
 async function main() {
-    fs.mkdirSync(SPLICE_PATH, { recursive: true }) // ensure output directory exists
+    await ensureDir(SPLICE_PATH)
+
     const tarfile = path.join(SPLICE_PATH, `${SPLICE_VERSION}.tar.gz`)
 
     if (fs.existsSync(tarfile)) {

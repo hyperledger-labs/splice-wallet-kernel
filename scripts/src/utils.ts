@@ -113,6 +113,42 @@ export function traverseDirectory(
     }
 }
 
+// Recursively get all files with a given extension
+export function getAllFilesWithExtension(
+    dir: string,
+    ext?: string,
+    recursive = true
+): string[] {
+    let results: string[] = []
+    const list = fs.readdirSync(dir)
+    for (const file of list) {
+        const filePath = path.join(dir, file)
+        const stat = fs.statSync(filePath)
+        if (stat && stat.isDirectory()) {
+            if (recursive) {
+                results = results.concat(
+                    getAllFilesWithExtension(filePath, ext, true)
+                )
+            }
+        } else if (ext === undefined || filePath.endsWith(ext)) {
+            results.push(filePath)
+        }
+    }
+    return results
+}
+
+// Ensure a directory exists
+export async function ensureDir(dir: string) {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true })
+    }
+}
+
+// Copy a file
+export async function copyFileRecursive(src: string, dest: string) {
+    fs.copyFileSync(src, dest)
+}
+
 export type markingLevel = 'info' | 'warn' | 'error'
 export function markFile(
     relativePath: string,
