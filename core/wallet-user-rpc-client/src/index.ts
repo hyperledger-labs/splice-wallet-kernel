@@ -160,8 +160,6 @@ export interface Wallet {
     signingProviderId: SigningProviderId
     [k: string]: any
 }
-export type CorrelationId = string
-export type TraceId = string
 export type Networks = Network[]
 /**
  *
@@ -252,9 +250,7 @@ export interface SignResult {
     [k: string]: any
 }
 export interface ExecuteResult {
-    correlationId: CorrelationId
-    traceId: TraceId
-    [k: string]: any
+    [key: string]: any
 }
 export interface ListNetworksResult {
     networks: Networks

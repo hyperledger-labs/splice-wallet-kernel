@@ -488,7 +488,7 @@ export const userController = (
                             payload: res,
                         })
 
-                        return res as unknown as ExecuteResult
+                        return res
                     } catch (error) {
                         throw new Error(
                             'Failed to submit transaction: ' + error
@@ -538,7 +538,7 @@ export const userController = (
                     store.setTransaction(signedTx)
                     notifier.emit('txChanged', signedTx)
 
-                    return result as unknown as ExecuteResult
+                    return result
                 }
                 default:
                     throw new Error(

@@ -300,18 +300,7 @@
                 "name": "result",
                 "schema": {
                     "title": "ExecuteResult",
-                    "type": "object",
-                    "properties": {
-                        "correlationId": {
-                            "title": "correlationId",
-                            "type": "string"
-                        },
-                        "traceId": {
-                            "title": "traceId",
-                            "type": "string"
-                        }
-                    },
-                    "required": ["correlationId", "traceId"]
+                    "type": "object"
                 }
             },
             "description": "Executes a signed transaction."
