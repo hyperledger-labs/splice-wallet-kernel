@@ -16,7 +16,7 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
         }
 
         const jwt = accessToken.split(' ')[1]
-        logger.debug(`Verifying JWT: ${jwt}`)
+        logger.debug(jwt, 'Verifying JWT token')
 
         try {
             const iss = decodeJwt(jwt).iss
@@ -34,7 +34,7 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 logger.warn(`No identity provider found for issuer: ${iss}`)
                 return undefined
             }
-            logger.debug(`Using IDP: ${JSON.stringify(idp)}`)
+            logger.debug(idp, 'Using IDP')
             const response = await fetch(idp.configUrl)
             const config = await response.json()
             const jwks = createRemoteJWKSet(new URL(config.jwks_uri))
@@ -50,7 +50,7 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
             return { userId: payload.sub, accessToken: jwt }
         } catch (error) {
             if (error instanceof Error) {
-                logger.warn(`Failed to verify token: ${error.message}`)
+                logger.warn(error, `Failed to verify token: ${error.message}`)
             }
             return undefined
         }

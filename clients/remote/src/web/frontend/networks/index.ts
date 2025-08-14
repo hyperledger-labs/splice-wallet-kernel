@@ -89,6 +89,7 @@ export class UserUiNetworks extends LitElement {
                 grantType: formData.get('grantType') as string,
                 scope: formData.get('scope') as string,
                 clientId: formData.get('clientId') as string,
+                audience: formData.get('audience') as string,
             }
         }
 
