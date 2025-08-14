@@ -210,8 +210,16 @@
                         "title": "SignParams",
                         "type": "object",
                         "properties": {
-                            "data": {
-                                "title": "data",
+                            "preparedTransaction": {
+                                "title": "preparedTransaction",
+                                "type": "string"
+                            },
+                            "preparedTransactionHash": {
+                                "title": "preparedTransactionHash",
+                                "type": "string"
+                            },
+                            "commandId": {
+                                "title": "commandId",
                                 "type": "string"
                             },
                             "partyId": {
@@ -219,7 +227,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["data"]
+                        "required": [
+                            "preparedTransactionHash",
+                            "preparedTransaction",
+                            "commandId",
+                            "partyId"
+                        ]
                     }
                 }
             ],

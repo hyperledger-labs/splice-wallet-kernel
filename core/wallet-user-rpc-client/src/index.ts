@@ -117,14 +117,15 @@ export interface WalletFilter {
     signingProviderIds?: SigningProviderIds
     [k: string]: any
 }
-export type Data = string
-export type Signature = string
+export type PreparedTransaction = string
+export type PreparedTransactionHash = string
 /**
  *
  * The command ID of the transaction to be executed.
  *
  */
 export type CommandId = string
+export type Signature = string
 export type SignedBy = string
 /**
  *
@@ -208,8 +209,10 @@ export interface ListWalletsParams {
     [k: string]: any
 }
 export interface SignParams {
-    data: Data
-    partyId?: PartyId
+    preparedTransaction: PreparedTransaction
+    preparedTransactionHash: PreparedTransactionHash
+    commandId: CommandId
+    partyId: PartyId
     [k: string]: any
 }
 export interface ExecuteParams {

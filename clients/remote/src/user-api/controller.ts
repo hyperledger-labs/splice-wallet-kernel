@@ -34,6 +34,7 @@ import {
     SignedTopologyTransaction,
 } from '../_proto/com/digitalasset/canton/protocol/v30/topology.js'
 import { adminAuthService } from '../auth/admin-auth-service.js'
+import { ExecuteResult } from 'core-wallet-user-rpc-client'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
@@ -99,8 +100,8 @@ async function signingDriverCreate(
     userId: string,
     store: Store,
     notifier: Notifier | undefined,
-    ledgerClient: LedgerClient,
     ledgerClientAdmin: LedgerClient,
+    adminToken: string,
     drivers: AvailableSigningDrivers,
     authContext: AuthContext,
     { signingProviderId, primary, partyHint, chainId }: CreateWalletParams
@@ -142,9 +143,7 @@ async function signingDriverCreate(
                 signingProviderId,
             }
 
-            grantUserRights(wallet.partyId, userId, ledgerClient).catch(
-                console.error
-            )
+            grantUserRights(wallet.partyId, userId, ledgerClientAdmin)
             break
         }
         case SigningProvider.WALLET_KERNEL: {
@@ -152,6 +151,7 @@ async function signingDriverCreate(
             const topologyService = new TopologyWriteService(
                 network.synchronizerId,
                 network.ledgerApi.adminGrpcUrl,
+                adminToken,
                 ledgerClientAdmin
             )
 
@@ -216,7 +216,7 @@ async function signingDriverCreate(
                 publicKey: key.publicKey,
             }
 
-            grantUserRights(wallet.partyId, userId, ledgerClient)
+            grantUserRights(wallet.partyId, userId, ledgerClientAdmin)
             break
         }
         default:
@@ -331,8 +331,8 @@ export const userController = (
                 userId,
                 store,
                 notifier,
-                ledgerClient,
                 ledgerClientAdmin,
+                adminToken,
                 drivers,
                 authContext,
                 params
@@ -355,13 +355,15 @@ export const userController = (
             // TODO: support filters
             return store.getWallets()
         },
-        sign: async (params: SignParams) => ({
-            signature: 'default-signature',
-            signedBy: 'default-signed-by',
-            partyId: 'default-party',
-        }),
-        execute: async ({ commandId }: ExecuteParams) => {
-            const wallet = await store.getPrimaryWallet()
+        sign: async ({
+            preparedTransaction,
+            preparedTransactionHash,
+            partyId,
+            commandId,
+        }: SignParams) => {
+            const wallets = await store.getWallets()
+            const wallet = wallets.find((w) => w.partyId === partyId)
+
             const network = await store.getCurrentNetwork()
 
             if (wallet === undefined) {
@@ -375,7 +377,82 @@ export const userController = (
             const userId = authContext.userId
             const notifier = notificationService.getNotifier(userId)
 
+            const signingProvider = wallet.signingProviderId as SigningProvider
+            const driver = drivers[signingProvider]
+            if (!driver) {
+                throw new Error('No driver found for WALLET_KERNEL')
+            }
+
+            switch (wallet.signingProviderId) {
+                case SigningProvider.PARTICIPANT: {
+                    return {
+                        signature: 'none',
+                        signedBy: wallet.namespace,
+                        partyId,
+                    }
+                }
+                case SigningProvider.WALLET_KERNEL: {
+                    const signature = await driver
+                        .controller(authContext)
+                        .signTransaction({
+                            tx: preparedTransaction,
+                            txHash: preparedTransactionHash,
+                            publicKey: wallet.publicKey,
+                        })
+
+                    if (!signature.signature) {
+                        throw new Error(
+                            'Failed to sign transaction: ' +
+                                JSON.stringify(signature)
+                        )
+                    }
+
+                    const signedTx: Transaction = {
+                        commandId,
+                        status: 'signed',
+                        preparedTransaction,
+                        preparedTransactionHash,
+                    }
+
+                    store.setTransaction(signedTx)
+                    notifier.emit('txChanged', signedTx)
+
+                    return {
+                        signature: signature.signature,
+                        signedBy: wallet.namespace,
+                        partyId: wallet.partyId,
+                    }
+                }
+                default:
+                    throw new Error(
+                        `Unsupported signing provider: ${wallet.signingProviderId}`
+                    )
+            }
+        },
+        execute: async ({
+            commandId,
+            signature,
+            signedBy,
+            partyId,
+        }: ExecuteParams) => {
+            const wallet = await store.getPrimaryWallet()
+            const network = await store.getCurrentNetwork()
             const transaction = await store.getTransaction(commandId)
+
+            if (wallet === undefined) {
+                throw new Error('No primary wallet found')
+            }
+
+            if (transaction === undefined) {
+                throw new Error('No transaction found')
+            }
+
+            if (authContext === undefined || network === undefined) {
+                throw new Error('Unauthenticated context')
+            }
+
+            const userId = authContext.userId
+            const notifier = notificationService.getNotifier(userId)
 
             const ledgerClient = new LedgerClient(
                 network.ledgerApi.baseUrl,
@@ -391,7 +468,7 @@ export const userController = (
                         commands: transaction?.payload as any,
                         commandId,
                         userId,
-                        actAs: [wallet.partyId],
+                        actAs: [partyId],
                         readAs: [],
                         disclosedContracts: [],
                         synchronizerId: network.synchronizerId,
@@ -408,60 +485,21 @@ export const userController = (
                             commandId,
                             payload: res,
                         })
+
+                        return res as unknown as ExecuteResult
                     } catch (error) {
                         throw new Error(
                             'Failed to submit transaction: ' + error
                         )
                     }
-                    break
                 }
                 case SigningProvider.WALLET_KERNEL: {
-                    const { preparedTransactionHash, preparedTransaction } =
-                        await ledgerClient.post(
-                            '/v2/interactive-submission/prepare',
-                            {
-                                userId,
-                                commandId,
-                                actAs: [wallet.partyId],
-                                readAs: [],
-                                disclosedContracts: [],
-                                synchronizerId: network.synchronizerId,
-                                packageIdSelectionPreference: [],
-                                verboseHashing: false,
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-                                commands: transaction?.payload as any,
-                            }
-                        )
-
-                    if (!preparedTransaction) {
-                        throw new Error('prepared transaction failed')
-                    }
-
-                    const driver = drivers[SigningProvider.WALLET_KERNEL]
-                    if (!driver) {
-                        throw new Error('No driver found for WALLET_KERNEL')
-                    }
-
-                    const signature = await driver
-                        .controller(authContext)
-                        .signTransaction({
-                            tx: preparedTransaction,
-                            txHash: preparedTransactionHash,
-                            publicKey: wallet.publicKey,
-                        })
-
-                    if (!signature.signature) {
-                        throw new Error(
-                            'Failed to sign transaction: ' +
-                                JSON.stringify(signature)
-                        )
-                    }
-
                     const result = await ledgerClient.post(
                         '/v2/interactive-submission/execute',
                         {
                             userId,
-                            preparedTransaction,
+                            preparedTransaction:
+                                transaction?.preparedTransaction,
                             hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
                             submissionId: commandId,
                             deduplicationPeriod: {
@@ -470,14 +508,14 @@ export const userController = (
                             partySignatures: {
                                 signatures: [
                                     {
-                                        party: wallet.partyId,
+                                        party: partyId,
                                         signatures: [
                                             {
-                                                signature: signature.signature,
+                                                signature,
+                                                signedBy,
                                                 format: 'SIGNATURE_FORMAT_RAW',
                                                 signingAlgorithmSpec:
                                                     'SIGNING_ALGORITHM_SPEC_ED25519',
-                                                signedBy: wallet.namespace,
                                             },
                                         ],
                                     },
@@ -487,27 +525,23 @@ export const userController = (
                     )
 
                     const signedTx: Transaction = {
-                        commandId: commandId,
+                        commandId,
                         status: 'executed',
-                        preparedTransaction,
-                        preparedTransactionHash,
+                        preparedTransaction: transaction.preparedTransaction,
+                        preparedTransactionHash:
+                            transaction.preparedTransactionHash,
                         payload: result,
                     }
 
                     store.setTransaction(signedTx)
                     notifier.emit('txChanged', signedTx)
 
-                    break
+                    return result as unknown as ExecuteResult
                 }
                 default:
                     throw new Error(
                         `Unsupported signing provider: ${wallet.signingProviderId}`
                     )
-            }
-
-            return {
-                correlationId: 'default-correlation-id',
-                traceId: 'default-trace-id',
             }
         },
         listNetworks: async () =>
