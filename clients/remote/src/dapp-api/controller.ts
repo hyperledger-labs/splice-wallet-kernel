@@ -8,11 +8,7 @@ import {
     PrepareReturnParams,
 } from './rpc-gen/typings.js'
 import { Store } from 'core-wallet-store'
-import {
-    LedgerClient,
-    InteractivePreparePostRes,
-    InteractivePreparePostReq,
-} from 'core-ledger-client'
+import { LedgerClient, PostResponse } from 'core-ledger-client'
 import { v4 } from 'uuid'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo as KernelInfoConfig } from '../config/Config.js'
@@ -25,8 +21,8 @@ async function prepareSubmission(
     commands: unknown,
     ledgerClient: LedgerClient,
     commandId?: string
-): Promise<InteractivePreparePostRes> {
-    const prepareParams: InteractivePreparePostReq = {
+): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
+    const prepareParams = {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
         commands: commands as any,
         commandId: commandId || v4(),
@@ -39,7 +35,10 @@ async function prepareSubmission(
         packageIdSelectionPreference: [],
     }
 
-    return await ledgerClient.interactivePreparePost(prepareParams)
+    return await ledgerClient.post(
+        '/v2/interactive-submission/prepare',
+        prepareParams
+    )
 }
 
 export const dappController = (
