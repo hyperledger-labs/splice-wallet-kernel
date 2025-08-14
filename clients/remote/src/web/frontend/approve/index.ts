@@ -27,8 +27,8 @@ export class ApproveUi extends LitElement {
 
         this.commandId = url.searchParams.get('commandId') || ''
         this.partyId = url.searchParams.get('partyId') || ''
-        this.txHash = url.searchParams.get('txHash') || ''
-        this.tx = url.searchParams.get('tx') || ''
+        this.txHash = decodeURIComponent(url.searchParams.get('txHash') || '')
+        this.tx = decodeURIComponent(url.searchParams.get('tx') || '')
     }
 
     private async handleExecute() {

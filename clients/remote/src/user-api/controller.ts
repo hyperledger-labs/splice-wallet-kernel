@@ -460,6 +460,8 @@ export const userController = (
                 logger
             )
 
+            logger.debug(transaction, 'transaction is')
+
             switch (wallet.signingProviderId) {
                 case SigningProvider.PARTICIPANT: {
                     // Participant signing provider specific logic can be added here
@@ -499,7 +501,7 @@ export const userController = (
                         {
                             userId,
                             preparedTransaction:
-                                transaction?.preparedTransaction,
+                                transaction.preparedTransaction,
                             hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
                             submissionId: commandId,
                             deduplicationPeriod: {

@@ -102,7 +102,7 @@ export const dappController = (
             })
 
             return {
-                userUrl: `http://localhost:3002/approve/index.html?commandId=${commandId}&partyId=${wallet.partyId}&txHash=${preparedTransactionHash}&tx=${preparedTransaction}`,
+                userUrl: `http://localhost:3002/approve/index.html?commandId=${commandId}&partyId=${wallet.partyId}&txHash=${encodeURIComponent(preparedTransactionHash)}&tx=${encodeURIComponent(preparedTransaction)}`,
             }
         },
         prepareReturn: async (params: PrepareReturnParams) => {
