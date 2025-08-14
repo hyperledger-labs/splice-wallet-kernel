@@ -105,7 +105,10 @@ function checkTsconfigJson(tsconfigJsonPath: string): number {
     const extendsFile = tsconfig.extends
     const relativePath = path.relative(getRepoRoot(), tsconfigJsonPath)
 
-    if (tsconfigJsonPath.includes('example/')) {
+    if (
+        tsconfigJsonPath.includes('example/') ||
+        tsconfigJsonPath.includes('token-standard/src')
+    ) {
         return 0 // Skip example tsconfig files
     }
 

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import fs from 'fs'
 import path from 'path'
-import { DAML_RELEASE_VERSION, getRepoRoot } from './utils.js'
+import { DAML_RELEASE_VERSION, ensureDir, getRepoRoot } from './utils.js'
 
 const rootPath = getRepoRoot()
 
@@ -21,8 +21,8 @@ interface GitHubFile {
 async function fetchApiSpecs() {
     try {
         // Ensure output directories exist
-        fs.mkdirSync(OUTPUT_DIR, { recursive: true })
-        fs.mkdirSync(FINAL_DIR, { recursive: true })
+        await ensureDir(OUTPUT_DIR)
+        await ensureDir(FINAL_DIR)
 
         // Get the list of files in the folder using GitHub API
         const response = await axios.get<GitHubFile[]>(

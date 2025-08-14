@@ -11,7 +11,7 @@ import EventEmitter from 'events'
 import { SigningProvider } from 'core-signing-lib'
 import { ParticipantSigningDriver } from 'core-signing-participant'
 import { InternalSigningDriver } from 'core-signing-internal'
-import { jwtAuthService } from './auth/JwtAuthService.js'
+import { jwtAuthService } from './auth/jwt-auth-service.js'
 
 const dAppPort = 3000
 const userPort = 3001

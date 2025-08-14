@@ -60,9 +60,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
     public partyMode = PartyMode.EXTERNAL
     public signingProvider = SigningProvider.WALLET_KERNEL
 
-    public controller = (
-        _authContext: AuthContext | undefined // eslint-disable-line @typescript-eslint/no-unused-vars
-    ) =>
+    public controller = (_authContext: AuthContext | undefined) =>
         buildController({
             signTransaction: async (
                 params: SignTransactionParams

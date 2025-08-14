@@ -33,6 +33,7 @@ import {
     MultiTransactionSignatures,
     SignedTopologyTransaction,
 } from '../_proto/com/digitalasset/canton/protocol/v30/topology.js'
+import { adminAuthService } from '../auth/admin-auth-service.js'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
@@ -42,8 +43,9 @@ async function signingDriverCreate(
     store: Store,
     notifier: Notifier | undefined,
     ledgerClient: LedgerClient,
+    ledgerClientAdmin: LedgerClient,
     drivers: AvailableSigningDrivers,
-    authContext: AuthContext | undefined,
+    authContext: AuthContext,
     { signingProviderId, primary, partyHint, chainId }: CreateWalletParams
 ): Promise<CreateWalletResult> {
     const driver = drivers[signingProviderId as SigningProvider]
@@ -58,15 +60,15 @@ async function signingDriverCreate(
         case SigningProvider.PARTICIPANT: {
             const network = await store.getNetwork(chainId)
 
-            const { participantId: namespace } = await ledgerClient.get(
+            const { participantId: namespace } = await ledgerClientAdmin.get(
                 '/v2/parties/participant-id'
             )
 
-            const res = await ledgerClient.post('/v2/parties', {
+            const res = await ledgerClientAdmin.post('/v2/parties', {
                 partyIdHint: partyHint,
                 identityProviderId: '',
                 synchronizerId: network.synchronizerId,
-                userId: '',
+                userId: authContext.userId,
             })
 
             if (!res.partyDetails?.party) {
@@ -90,7 +92,7 @@ async function signingDriverCreate(
             const topologyService = new TopologyWriteService(
                 network.synchronizerId,
                 network.ledgerApi.adminGrpcUrl,
-                ledgerClient
+                ledgerClientAdmin
             )
 
             const key = await driver.controller(authContext).createKey({
@@ -184,7 +186,6 @@ export const userController = (
             const ledgerApi = {
                 baseUrl: network.ledgerApiUrl ?? '',
             }
-            const authType = network.auth.type
 
             let auth: Auth
             if (network.auth.type === 'implicit') {
@@ -205,6 +206,7 @@ export const userController = (
                     grantType: network.auth.grantType ?? '',
                     scope: network.auth.scope ?? '',
                     clientId: network.auth.clientId ?? '',
+                    audience: network.auth.audience ?? '',
                 }
             }
 
@@ -250,10 +252,22 @@ export const userController = (
                 logger
             )
 
+            const adminToken = await adminAuthService(
+                store,
+                logger
+            ).fetchToken()
+
+            const ledgerClientAdmin = new LedgerClient(
+                network.ledgerApi.baseUrl,
+                adminToken,
+                logger
+            )
+
             const result = await signingDriverCreate(
                 store,
                 notifier,
                 ledgerClient,
+                ledgerClientAdmin,
                 drivers,
                 authContext,
                 params
