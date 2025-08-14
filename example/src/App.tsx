@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import * as sdk from 'splice-wallet-sdk'
+import * as sdk from 'splice-sdk-dapp'
 import { createPingCommand } from './commands/createPingCommand'
 
 function App() {
@@ -63,7 +63,7 @@ function App() {
             console.log('DAPP: Connected to Wallet Kernel:', result)
             messageListener(result)
             setStatus(
-                `Wallet Kernel: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
+                `Wallet Kernel: ${result.kernel.id}, status: connected, chain: ${result.chainId}`
             )
         }
 

@@ -32,16 +32,20 @@ export function getRepoRoot(): string {
 
 const repoRoot = getRepoRoot()
 export const CANTON_PATH = path.join(repoRoot, '.canton')
+export const SPLICE_PATH = path.join(repoRoot, '.splice')
 export const CANTON_BIN = path.join(CANTON_PATH, 'bin/canton')
-export const CANTON_CONF = path.join(repoRoot, 'canton.conf')
-export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton-bootstrap.canton')
+export const CANTON_CONF = path.join(repoRoot, 'canton/canton.conf')
+export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton/bootstrap.canton')
 export const API_SPECS_PATH = path.join(repoRoot, 'api-specs')
 
 // Canton versions
 export const DAML_RELEASE_VERSION = '3.4.0-snapshot.20250625.0'
 export const CANTON_VERSION = '3.4.0-snapshot.20250617.16217.0.vbdf62919'
+export const SPLICE_ARCHIVE_HASH =
+    'b5d16a4caa9b0996e5e4d6ff35382cdd359c544b0302b928153f7add6fabdbda'
 export const CANTON_ARCHIVE_HASH =
     '5f1bf64d5d3bf50c4dd379bca44d46069e6ece43377177a6e09b4ff0979f640d'
+export const SPLICE_VERSION = '0.4.10'
 
 export function findJsonKeyPosition(
     jsonContent: string,

@@ -7225,6 +7225,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"example-scripts@workspace:example-scripts":
+  version: 0.0.0-use.local
+  resolution: "example-scripts@workspace:example-scripts"
+  dependencies:
+    "@metamask/rpc-errors": "npm:^7.0.2"
+    axios: "npm:^1.11.0"
+    core-ledger-client: "workspace:^"
+    core-types: "workspace:^"
+    core-wallet-auth: "workspace:^"
+    core-wallet-dapp-rpc-client: "workspace:^"
+    core-wallet-user-rpc-client: "workspace:^"
+    cors: "npm:^2.8.5"
+    express: "npm:^5.1.0"
+    lit: "npm:^3.3.0"
+    pino: "npm:^9.7.0"
+    qs: "npm:^6.14.0"
+    socket.io: "npm:^4.8.1"
+    tsx: "npm:^4.20.3"
+    typescript: "npm:^5.8.3"
+    uuid: "npm:^11.1.0"
+    vite-express: "npm:^0.21.1"
+    zod: "npm:^3.25.64"
+  languageName: unknown
+  linkType: soft
+
 "example@workspace:example":
   version: 0.0.0-use.local
   resolution: "example@workspace:example"
@@ -7239,7 +7264,7 @@ __metadata:
     globals: "npm:^16.0.0"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
-    splice-wallet-sdk: "workspace:^"
+    splice-sdk-dapp: "workspace:^"
     typescript: "npm:~5.8.3"
     typescript-eslint: "npm:^8.30.1"
     vite: "npm:^6.3.5"
@@ -12740,6 +12765,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"splice-sdk-dapp@workspace:^, splice-sdk-dapp@workspace:sdk/dapp-sdk":
+  version: 0.0.0-use.local
+  resolution: "splice-sdk-dapp@workspace:sdk/dapp-sdk"
+  dependencies:
+    core-splice-provider: "workspace:^"
+    core-types: "workspace:^"
+    core-wallet-dapp-rpc-client: "workspace:^"
+    core-wallet-ui-components: "workspace:^"
+    typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
+
+"splice-sdk-wallet@workspace:sdk/wallet-sdk":
+  version: 0.0.0-use.local
+  resolution: "splice-sdk-wallet@workspace:sdk/wallet-sdk"
+  dependencies:
+    core-ledger-client: "workspace:^"
+    typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
+
 "splice-wallet-api-specs@workspace:api-specs":
   version: 0.0.0-use.local
   resolution: "splice-wallet-api-specs@workspace:api-specs"
@@ -12768,18 +12814,6 @@ __metadata:
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.8.3"
     typescript-eslint: "npm:^8.33.1"
-  languageName: unknown
-  linkType: soft
-
-"splice-wallet-sdk@workspace:^, splice-wallet-sdk@workspace:sdk":
-  version: 0.0.0-use.local
-  resolution: "splice-wallet-sdk@workspace:sdk"
-  dependencies:
-    core-splice-provider: "workspace:^"
-    core-types: "workspace:^"
-    core-wallet-dapp-rpc-client: "workspace:^"
-    core-wallet-ui-components: "workspace:^"
-    typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
 
@@ -13291,7 +13325,7 @@ __metadata:
     pino: "npm:^9.7.0"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
-    splice-wallet-sdk: "workspace:^"
+    splice-sdk-dapp: "workspace:^"
     typescript: "npm:~5.8.3"
     typescript-eslint: "npm:^8.30.1"
     vite: "npm:^6.3.5"

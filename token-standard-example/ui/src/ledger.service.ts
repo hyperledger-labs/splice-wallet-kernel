@@ -12,12 +12,7 @@ import {
     Transfer,
 } from '@daml.js/token-standard-transfer-instruction/lib/Splice/Api/Token/TransferInstructionV1'
 import { TokenHolding } from '@daml.js/exercise-app/lib/TokenHolding'
-import type {
-    ActiveContractsPostReq,
-    ActiveContractsPostRes,
-    SubmitAndWaitPostReq,
-    SubmitAndWaitPostRes,
-} from 'core-ledger-client'
+import { GetResponse, PostRequest, PostResponse } from 'core-ledger-client'
 import { LedgerClient } from 'core-ledger-client'
 import pino from 'pino'
 
@@ -74,7 +69,6 @@ export interface ITokenTransferInstruction {
 export class LedgerService {
     private constructor(
         public readonly login: string,
-        private readonly authToken: string,
         private readonly ledgerClient: LedgerClient
     ) {}
 
@@ -84,13 +78,21 @@ export class LedgerService {
     static async create(login: string): Promise<LedgerService> {
         const token = await getAuthToken(login)
         const client = createLedgerApiClient(token)
-        const svc = new LedgerService(login, token, client)
-        await svc.init()
+        const svc = new LedgerService(login, client)
+        await svc.init(login)
         return svc
     }
 
-    private async init(): Promise<void> {
-        const user = await this.ledgerClient.getUserById(this.login)
+    private async getUserById(
+        userId: string
+    ): Promise<GetResponse<'/v2/users/{user-id}'>> {
+        return this.ledgerClient.get('/v2/users/{user-id}', {
+            path: { 'user-id': userId },
+        })
+    }
+
+    private async init(login: string): Promise<void> {
+        const user = await this.getUserById(login)
         if (!user?.user) throw new Error('No such user')
         this.userId = user.user.id
         this.party = user.user.primaryParty
@@ -99,7 +101,7 @@ export class LedgerService {
     }
 
     private mapTransferFactoriesResponseData(
-        response: ActiveContractsPostRes
+        response: PostResponse<'/v2/state/active-contracts'>
     ): ITokenTransferFactory[] {
         return response
             .map((entry) => {
@@ -131,7 +133,7 @@ export class LedgerService {
     }
 
     private mapHoldingsResponseData(
-        response: ActiveContractsPostRes
+        response: PostResponse<'/v2/state/active-contracts'>
     ): ITokenHolding[] {
         return response
             .map((entry) => {
@@ -170,7 +172,7 @@ export class LedgerService {
     }
 
     private mapTransferInstructionsResponseData(
-        response: ActiveContractsPostRes
+        response: PostResponse<'/v2/state/active-contracts'>
     ): ITokenTransferInstruction[] {
         return response
             .map((entry) => {
@@ -191,14 +193,24 @@ export class LedgerService {
             .filter((entry) => entry !== null)
     }
 
+    private getLedgerEnd(): Promise<GetResponse<'/v2/state/ledger-end'>> {
+        return this.ledgerClient.get('/v2/state/ledger-end')
+    }
+
+    private getActiveContracts(
+        req: PostRequest<'/v2/state/active-contracts'>
+    ): Promise<PostResponse<'/v2/state/active-contracts'>> {
+        return this.ledgerClient.post('/v2/state/active-contracts', req)
+    }
+
     private async fetchActiveContractsByTemplate(templateId?: string) {
         if (!this.party) throw new Error('No defined party')
         if (!templateId) throw new Error('No defined templateId')
 
-        const offsetResponse = await this.ledgerClient.getLedgerEnd()
+        const offsetResponse = await this.getLedgerEnd()
         const { offset } = offsetResponse
 
-        const req: ActiveContractsPostReq = {
+        const req: PostRequest<'/v2/state/active-contracts'> = {
             eventFormat: {
                 filtersByParty: {
                     [this.party]: {
@@ -221,83 +233,81 @@ export class LedgerService {
             verbose: false,
             activeAtOffset: offset,
         }
-        return this.ledgerClient.getActiveContracts(req)
+        return this.getActiveContracts(req)
     }
 
-    public async connectActiveContractsStream(
-        templateId: string,
-        party: string
-    ): Promise<WebSocket> {
-        if (!this.party) throw new Error('No defined party')
-        if (!templateId) throw new Error('No defined templateId')
-
-        const offsetResponse = await this.ledgerClient.getLedgerEnd()
-        const { offset } = offsetResponse
-
-        const wsUrl = PROXY_URL.replace(/^http/, 'ws') + `v2/updates/flats`
-
-        const ws = new WebSocket(wsUrl, ['daml.ws.auth', this.authToken])
-        // window.myWs = ws;
-
-        ws.onopen = () => {
-            console.log('WebSocket connected')
-
-            const updatesRequest = {
-                beginExclusive: offset,
-                verbose: false,
-                updateFormat: {
-                    includeTransactions: {
-                        eventFormat: {
-                            filtersByParty: {
-                                [party]: {
-                                    cumulative: [
-                                        {
-                                            identifierFilter: {
-                                                TemplateFilter: {
-                                                    value: {
-                                                        templateId,
-                                                        includeCreatedEventBlob:
-                                                            false,
-                                                    },
-                                                },
-                                            },
-                                        },
-                                    ],
-                                },
-                            },
-                            verbose: false,
-                        },
-                        transactionShape: 'TRANSACTION_SHAPE_ACS_DELTA',
-                    },
-                },
-            }
-
-            ws.send(JSON.stringify(updatesRequest))
-        }
-
-        ws.onmessage = (event) => {
-            try {
-                const msg = JSON.parse(event.data)
-                console.log('Active contracts stream event:', msg)
-            } catch (err) {
-                console.error('Failed to parse stream message', err)
-            }
-        }
-
-        ws.onerror = (err) => {
-            console.error('WebSocket error:', err)
-        }
-
-        ws.onclose = (arg) => {
-            console.log('Active contracts stream closed.', arg)
-        }
-
-        return ws
-    }
+    // public async connectActiveContractsStream(
+    //     templateId: string,
+    //     party: string
+    // ): Promise<WebSocket> {
+    //     if (!this.party) throw new Error('No defined party')
+    //     if (!templateId) throw new Error('No defined templateId')
+    //
+    //     const offsetResponse = await this.ledgerClient.getLedgerEnd()
+    //     const { offset } = offsetResponse
+    //
+    //     const wsUrl = PROXY_URL.replace(/^http/, 'ws') + `v2/updates/flats`
+    //
+    //     const ws = new WebSocket(wsUrl, ['daml.ws.auth', this.authToken])
+    //     // window.myWs = ws;
+    //
+    //     ws.onopen = () => {
+    //         console.log('WebSocket connected')
+    //
+    //         const updatesRequest = {
+    //             beginExclusive: offset,
+    //             verbose: false,
+    //             updateFormat: {
+    //                 includeTransactions: {
+    //                     eventFormat: {
+    //                         filtersByParty: {
+    //                             [party]: {
+    //                                 cumulative: [
+    //                                     {
+    //                                         identifierFilter: {
+    //                                             TemplateFilter: {
+    //                                                 value: {
+    //                                                     templateId,
+    //                                                     includeCreatedEventBlob:
+    //                                                         false,
+    //                                                 },
+    //                                             },
+    //                                         },
+    //                                     },
+    //                                 ],
+    //                             },
+    //                         },
+    //                         verbose: false,
+    //                     },
+    //                     transactionShape: 'TRANSACTION_SHAPE_ACS_DELTA',
+    //                 },
+    //             },
+    //         }
+    //
+    //         ws.send(JSON.stringify(updatesRequest))
+    //     }
+    //
+    //     ws.onmessage = (event) => {
+    //         try {
+    //             const msg = JSON.parse(event.data)
+    //             console.log('Active contracts stream event:', msg)
+    //         } catch (err) {
+    //             console.error('Failed to parse stream message', err)
+    //         }
+    //     }
+    //
+    //     ws.onerror = (err) => {
+    //         console.error('WebSocket error:', err)
+    //     }
+    //
+    //     ws.onclose = (arg) => {
+    //         console.log('Active contracts stream closed.', arg)
+    //     }
+    //
+    //     return ws
+    // }
 
     public async fetchHoldings(): Promise<ITokenHolding[]> {
-        // window.holdingsSocket = await this.connectActiveContractsStream(TokenHolding.templateId, this.party)
-        // console.log('socket', window.holdingsSocket);
         const response = await this.fetchActiveContractsByTemplate(
             TokenHolding.templateId
         )
@@ -338,12 +348,18 @@ export class LedgerService {
         return factory
     }
 
+    private submitAndWaitPost(
+        req: PostRequest<'/v2/commands/submit-and-wait'>
+    ): Promise<PostResponse<'/v2/commands/submit-and-wait'>> {
+        return this.ledgerClient.post('/v2/commands/submit-and-wait', req)
+    }
+
     public async createTransfer(
         receiver: string,
         token: string,
         amount: string,
         inputHoldingCids: string[]
-    ): Promise<SubmitAndWaitPostRes> {
+    ): Promise<PostResponse<'/v2/commands/submit-and-wait'>> {
         const tokenTransferFactory = await this.fetchTokenTransferFactory(token)
 
         if (!this.party) {
@@ -372,7 +388,7 @@ export class LedgerService {
         }
 
         // @ts-expect-error reason TBS
-        const requestBody: SubmitAndWaitPostReq = {
+        const requestBody: PostRequest<'/v2/commands/submit-and-wait'> = {
             actAs: [this.party],
             userId: this.userId,
             commandId: crypto.randomUUID(),
@@ -393,10 +409,12 @@ export class LedgerService {
             ],
         }
 
-        return this.ledgerClient.submitAndWaitPost(requestBody)
+        return this.submitAndWaitPost(requestBody)
     }
 
-    async acceptTransfer(transfer: TokenTransferInstruction): Promise<void> {
+    async acceptTransfer(
+        transfer: TokenTransferInstruction
+    ): Promise<PostResponse<'/v2/commands/submit-and-wait'>> {
         if (!this.party) {
             throw new Error(`Admin party not found`)
         }
@@ -410,7 +428,7 @@ export class LedgerService {
         }
 
         // @ts-expect-error reason TBS
-        const requestBody: SubmitAndWaitPostReq = {
+        const requestBody: PostRequest<'/v2/commands/submit-and-wait'> = {
             actAs: [this.party],
             userId: this.userId,
             commandId: crypto.randomUUID(),
@@ -428,10 +446,12 @@ export class LedgerService {
             ],
         }
 
-        await this.ledgerClient.submitAndWaitPost(requestBody)
+        return this.submitAndWaitPost(requestBody)
     }
 
-    async rejectTransfer(transfer: TokenTransferInstruction): Promise<void> {
+    async rejectTransfer(
+        transfer: TokenTransferInstruction
+    ): Promise<PostResponse<'/v2/commands/submit-and-wait'>> {
         if (!this.party) {
             throw new Error(`Admin party not found`)
         }
@@ -445,7 +465,7 @@ export class LedgerService {
         }
 
         // @ts-expect-error reason TBS
-        const requestBody: SubmitAndWaitPostReq = {
+        const requestBody: PostRequest<'/v2/commands/submit-and-wait'> = {
             actAs: [this.party],
             userId: this.userId,
             commandId: crypto.randomUUID(),
@@ -463,6 +483,6 @@ export class LedgerService {
             ],
         }
 
-        await this.ledgerClient.submitAndWaitPost(requestBody)
+        return this.submitAndWaitPost(requestBody)
     }
 }
