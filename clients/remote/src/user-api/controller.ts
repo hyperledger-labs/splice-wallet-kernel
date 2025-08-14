@@ -61,9 +61,9 @@ async function signingDriverCreate(
             const network = await store.getNetwork(chainId)
 
             const { participantId: namespace } =
-                await ledgerClient.partiesParticipantIdGet()
+                await ledgerClientAdmin.partiesParticipantIdGet()
 
-            const res = await ledgerClient.partiesPost({
+            const res = await ledgerClientAdmin.partiesPost({
                 partyIdHint: partyHint,
                 identityProviderId: '',
                 synchronizerId: network.synchronizerId,
@@ -255,6 +255,7 @@ export const userController = (
                 store,
                 logger
             ).fetchToken()
+
             const ledgerClientAdmin = new LedgerClient(
                 network.ledgerApi.baseUrl,
                 adminToken,

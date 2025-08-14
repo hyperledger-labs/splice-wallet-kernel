@@ -38,7 +38,10 @@ export class AdminAuthService {
             )
             const json = await res.json()
 
-            this.logger.info({ response: json }, 'Fetched admin token')
+            this.logger.info(
+                { response: json },
+                `Fetched admin token for admin clientId: ${auth.admin?.clientId}`
+            )
 
             if (!json.access_token) {
                 throw new Error('No access_token in token endpoint response')

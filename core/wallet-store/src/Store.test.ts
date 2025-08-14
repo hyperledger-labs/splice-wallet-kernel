@@ -142,6 +142,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 grantType: 'password',
                 clientId: 'cid',
                 scope: 'scope',
+                audience: 'aud',
             }
             const network: Network = {
                 name: 'testnet',

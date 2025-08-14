@@ -49,8 +49,8 @@ export const jsonRpcHandler =
                         request: {
                             id: id,
                             method: method,
-                            params: JSON.stringify(params),
-                            authContext: JSON.stringify(req.authContext),
+                            params: params,
+                            authContext: req.authContext,
                         },
                     },
                     `RPC request: ${method}`
