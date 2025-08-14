@@ -6,10 +6,12 @@ import {
     DAML_RELEASE_VERSION,
     getRepoRoot,
     info,
+    warn,
     success,
     error,
 } from './utils.js'
 import { pipeline } from 'stream/promises'
+import { Readable } from 'stream'
 
 //this is done for comparison, the DAML_RELEASE_VERSION uses snapshot releases but the installed sdk included commit and might have a different minor version.
 function compareDamlVersionWithInstalledSDK(daml_version: string): boolean {
@@ -46,15 +48,25 @@ export async function installDamlSDK() {
 
     const osType = os.platform()
 
-    const assets = await (
-        await fetch(
-            `https://api.github.com/repos/digital-asset/daml/releases/tags/v${DAML_RELEASE_VERSION}`
-        )
-    ).json()
+    const fetchAssetList = await fetch(
+        `https://api.github.com/repos/digital-asset/daml/releases/tags/v${DAML_RELEASE_VERSION}`
+    )
 
-    const assetNames: string[] = assets.assets.map((a) => a.name)
+    if (!fetchAssetList.ok) {
+        console.error(
+            error(
+                `Failed to fetch release information: ${fetchAssetList.statusText}`
+            )
+        )
+        process.exit(1)
+    }
+
+    const assets = await fetchAssetList.json()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const assetNames: string[] = assets.assets.map((a: any) => a.name)
     const targetAsset = assetNames.find(
-        (name) =>
+        (name: string) =>
             name.startsWith('daml-sdk-') && name.endsWith(`${osType}.tar.gz`)
     )
 
@@ -90,8 +102,10 @@ export async function installDamlSDK() {
             )
             process.exit(1)
         }
-        await pipeline(response.body, fs.createWriteStream(tarball))
-
+        await pipeline(
+            Readable.fromWeb(response.body as globalThis.ReadableStream),
+            fs.createWriteStream(tarball)
+        )
         console.log(
             info(`== Installing Daml SDK version: ${DAML_RELEASE_VERSION} ==`)
         )

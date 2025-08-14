@@ -8,7 +8,7 @@ import {
     getAllFilesWithExtension,
     ensureDir,
     copyFileRecursive,
-} from './utils'
+} from './utils.js'
 import { installDamlSDK } from './install-daml-sdk.js'
 
 const repoRoot = getRepoRoot()
@@ -48,7 +48,6 @@ async function main() {
     execSync('exec daml build', {
         cwd: DEST_DIR,
         stdio: 'inherit',
-        shell: true,
     })
 
     console.log(info('Running "daml codegen js"...'))
@@ -56,7 +55,7 @@ async function main() {
         console.log(info(`exec daml codegen js`))
         execSync(
             `exec daml codegen js .daml/dist/token-standard-models-1.0.0.dar -o src`,
-            { cwd: DEST_DIR, stdio: 'inherit', shell: true }
+            { cwd: DEST_DIR, stdio: 'inherit' }
         )
         console.log(info('Codegen completed.'))
     } catch (err) {

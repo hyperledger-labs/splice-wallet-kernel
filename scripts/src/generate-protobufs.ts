@@ -53,7 +53,7 @@ function rewriteImports() {
     })
 }
 
-function main() {
+async function main() {
     await ensureDir(outdir)
     generateProtos()
     rewriteImports()
