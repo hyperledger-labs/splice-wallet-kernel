@@ -2,23 +2,45 @@ import { paths } from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from 'pino'
 
-export type InteractivePreparePostReq =
-    paths['/v2/interactive-submission/prepare']['post']['requestBody']['content']['application/json']
-export type InteractivePreparePostRes =
-    paths['/v2/interactive-submission/prepare']['post']['responses']['200']['content']['application/json']
+// A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
+// Any path without a POST is excluded via the `never` branch of the conditional
+type PostEndpoint = {
+    [Pathname in keyof paths]: paths[Pathname] extends {
+        post: unknown
+    }
+        ? Pathname
+        : never
+}[keyof paths]
 
-export type PartiesPostReq =
-    paths['/v2/parties']['post']['requestBody']['content']['application/json']
-export type PartiesPostRes =
-    paths['/v2/parties']['post']['responses']['200']['content']['application/json']
+// Given a pathname (string) that has a POST, this helper type extracts the request body type from the OpenAPI definition.
+export type PostRequest<Path extends PostEndpoint> = paths[Path] extends {
+    post: { requestBody: { content: { 'application/json': infer Req } } }
+}
+    ? Req
+    : never
 
-export type PartiesParticipantIdRes =
-    paths['/v2/parties/participant-id']['get']['responses']['200']['content']['application/json']
+// Given a pathname (string) that has a POST, this helper type extracts the 200 response type from the OpenAPI definition.
+export type PostResponse<Path extends PostEndpoint> = paths[Path] extends {
+    post: { responses: { 200: { content: { 'application/json': infer Res } } } }
+}
+    ? Res
+    : never
 
-export type SubmitAndWaitPostReq =
-    paths['/v2/commands/submit-and-wait']['post']['requestBody']['content']['application/json']
-export type SubmitAndWaitPostRes =
-    paths['/v2/commands/submit-and-wait']['post']['responses']['200']['content']['application/json']
+// Similar as above, for GETs
+type GetEndpoint = {
+    [Pathname in keyof paths]: paths[Pathname] extends {
+        get: unknown
+    }
+        ? Pathname
+        : never
+}[keyof paths]
+
+// Similar as above, for GETs
+export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
+    get: { responses: { 200: { content: { 'application/json': infer Res } } } }
+}
+    ? Res
+    : never
 
 export class LedgerClient {
     private readonly client: Client<paths>
@@ -40,40 +62,34 @@ export class LedgerClient {
         })
     }
 
-    public async interactivePreparePost(
-        body: InteractivePreparePostReq
-    ): Promise<InteractivePreparePostRes> {
-        return this.post('/v2/interactive-submission/prepare', body)
-    }
+    async post<Path extends PostEndpoint>(
+        path: Path,
+        body: PostRequest<Path>,
+        params?: {
+            path?: Record<string, string>
+            query?: Record<string, string>
+        }
+    ): Promise<PostResponse<Path>> {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
+        const options = { body, params } as any
 
-    public async partiesPost(body: PartiesPostReq): Promise<PartiesPostRes> {
-        return await this.post<PartiesPostReq, PartiesPostRes>(
-            '/v2/parties',
-            body
-        )
-    }
-
-    public async partiesParticipantIdGet(): Promise<PartiesParticipantIdRes> {
-        return this.get('/v2/parties/participant-id')
-    }
-
-    public async submitAndWaitPost(
-        body: SubmitAndWaitPostReq
-    ): Promise<SubmitAndWaitPostRes> {
-        return this.post('/v2/commands/submit-and-wait', body)
-    }
-
-    private async get<Res>(path: keyof paths): Promise<Res> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const resp = await this.client.GET(path as any, {})
-        this.logger.debug({ response: resp }, `GET ${path}`)
+        const resp = await this.client.POST(path, options)
+        this.logger.debug({ requestBody: body, response: resp }, `POST ${path}`)
         return this.valueOrError(resp)
     }
 
-    private async post<Req, Res>(path: keyof paths, body: Req): Promise<Res> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const resp = await this.client.POST(path as any, { body })
-        this.logger.debug({ requestBody: body, response: resp }, `POST ${path}`)
+    async get<Path extends GetEndpoint>(
+        path: Path,
+        params?: {
+            path?: Record<string, string>
+            query?: Record<string, string>
+        }
+    ): Promise<GetResponse<Path>> {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
+        const options = { params } as any
+
+        const resp = await this.client.GET(path, options)
+        this.logger.debug({ response: resp }, `GET ${path}`)
         return this.valueOrError(resp)
     }
 
