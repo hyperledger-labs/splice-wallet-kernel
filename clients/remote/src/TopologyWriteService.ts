@@ -217,8 +217,9 @@ export class TopologyWriteService {
         const namespace =
             TopologyWriteService.createFingerprintFromKey(signingPublicKey)
 
-        const { participantId } =
-            await this.ledgerClient.partiesParticipantIdGet()
+        const { participantId } = await this.ledgerClient.get(
+            '/v2/parties/participant-id'
+        )
 
         const req = this.generateTransactionsRequest(
             namespace,
