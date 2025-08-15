@@ -92,7 +92,7 @@ async function signingDriverCreate(
             const topologyService = new TopologyWriteService(
                 network.synchronizerId,
                 network.ledgerApi.adminGrpcUrl,
-                ledgerClient
+                ledgerClientAdmin
             )
 
             const key = await driver.controller(authContext).createKey({
