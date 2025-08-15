@@ -1,4 +1,5 @@
 import { Logger } from 'pino'
+// TODO: move store types to types package, then we don't need this dependency
 import { Auth, Network, Store } from 'core-wallet-store'
 
 export interface OIDCConfig {

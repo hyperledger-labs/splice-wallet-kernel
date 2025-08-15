@@ -2,11 +2,13 @@ import { expect, jest, test } from '@jest/globals'
 
 import request from 'supertest'
 import { user } from './server.js'
-import { StoreInternal } from 'core-wallet-store'
+import { StoreInternal } from 'core-wallet-store-inmemory'
 import { AuthService } from 'core-wallet-auth'
 import { ConfigUtils } from '../config/ConfigUtils.js'
 import { Notifier } from '../notification/NotificationService.js'
 import { configSchema } from '../config/Config.js'
+import { pino } from 'pino'
+import { sink } from 'pino-test'
 
 jest.mock('core-ledger-client')
 
@@ -22,7 +24,7 @@ const configPath = process.env.NETWORK_CONFIG_PATH || '../test/config.json'
 const configFile = ConfigUtils.loadConfigFile(configPath)
 const config = configSchema.parse(configFile)
 
-const store = new StoreInternal(config.store)
+const store = new StoreInternal(config.store, pino(sink()))
 
 const notificationService = {
     getNotifier: jest.fn<() => Notifier>().mockReturnValue({

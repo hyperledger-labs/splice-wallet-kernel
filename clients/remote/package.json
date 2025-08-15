@@ -28,6 +28,7 @@
         "core-wallet-auth": "workspace:^",
         "core-wallet-dapp-rpc-client": "workspace:^",
         "core-wallet-store": "workspace:^",
+        "core-wallet-store-inmemory": "workspace:^",
         "core-wallet-ui-components": "workspace:^",
         "core-wallet-user-rpc-client": "workspace:^",
         "cors": "^2.8.5",
