@@ -6,6 +6,11 @@
         "experimentalDecorators": false,
         "useDefineForClassFields": false
     },
-    "include": ["src", "types/express.d.ts"],
+    "include": [
+        "src",
+        "types/express.d.ts",
+        "src/auth/admin-auth-service.ts",
+        "src/auth/admin-auth.service.test.ts"
+    ],
     "exclude": ["src/web/frontend"]
 }

@@ -1,7 +1,7 @@
 {
-    "name": "core-wallet-store",
+    "name": "core-wallet-store-inmemory",
     "version": "1.0.0",
-    "description": "The Store API provides persistency for the wallet kernel.",
+    "description": "In-memory implementation of the Store API.",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
     "packageManager": "yarn@4.9.2",
@@ -15,6 +15,10 @@
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
     },
     "dependencies": {
+        "core-ledger-client": "workspace:^",
+        "core-wallet-auth": "workspace:^",
+        "core-wallet-store": "workspace:^",
+        "pino": "^9.7.0",
         "zod": "^3.25.64"
     },
     "devDependencies": {
@@ -23,6 +27,7 @@
         "@swc/jest": "^0.2.38",
         "@types/jest": "^30.0.0",
         "jest": "^30.0.0",
+        "pino-test": "^1.1.0",
         "ts-jest": "^29.4.0",
         "ts-jest-resolver": "^2.0.1",
         "typescript": "^5.8.3"
