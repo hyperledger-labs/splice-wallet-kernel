@@ -25,8 +25,8 @@ export const apps = [
         env_development: sharedEnvDevelopment,
     },
     {
-        name: 'splice-wallet-sdk',
-        script: 'yarn workspace splice-wallet-sdk dev',
+        name: 'splice-sdk-wallet',
+        script: 'yarn workspace splice-sdk-wallet dev',
         env_development: sharedEnvDevelopment,
     },
     {

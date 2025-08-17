@@ -62,7 +62,7 @@ export class LedgerClient {
         })
     }
 
-    async post<Path extends PostEndpoint>(
+    public async post<Path extends PostEndpoint>(
         path: Path,
         body: PostRequest<Path>,
         params?: {
@@ -78,7 +78,7 @@ export class LedgerClient {
         return this.valueOrError(resp)
     }
 
-    async get<Path extends GetEndpoint>(
+    public async get<Path extends GetEndpoint>(
         path: Path,
         params?: {
             path?: Record<string, string>
@@ -91,6 +91,66 @@ export class LedgerClient {
         const resp = await this.client.GET(path, options)
         this.logger.debug({ response: resp }, `GET ${path}`)
         return this.valueOrError(resp)
+    }
+
+    /**
+     * Grants a user the right to act as a party, while ensuring the party exists.
+     *
+     * @param userId The ID of the user to grant rights to.
+     * @param partyId The ID of the party to grant rights for.
+     * @returns A promise that resolves when the rights have been granted.
+     */
+    public async grantUserRights(userId: string, partyId: string) {
+        // Wait for party to appear on participant
+        let partyFound = false
+        let tries = 0
+        const maxTries = 5
+
+        while (!partyFound || tries >= maxTries) {
+            const parties = await this.get('/v2/parties')
+            partyFound =
+                parties.partyDetails?.some(
+                    (party) => party.party === partyId
+                ) || false
+
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+            tries++
+        }
+
+        if (tries >= maxTries) {
+            throw new Error('timed out waiting for new party to appear')
+        }
+
+        // Assign user rights to party
+        const result = await this.post(
+            '/v2/users/{user-id}/rights',
+            {
+                identityProviderId: '',
+                userId,
+                rights: [
+                    {
+                        kind: {
+                            CanActAs: {
+                                value: {
+                                    party: partyId,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+            {
+                path: {
+                    'user-id': userId,
+                },
+            }
+        )
+
+        if (!result.newlyGrantedRights) {
+            throw new Error('Failed to grant user rights')
+        }
+
+        return
     }
 
     private async valueOrError<T>(response: {

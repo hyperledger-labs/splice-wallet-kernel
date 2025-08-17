@@ -5,8 +5,6 @@ import buildController from './rpc-gen/index.js'
 import {
     AddNetworkParams,
     RemoveNetworkParams,
-    CreateWalletParams,
-    CreateWalletResult,
     ExecuteParams,
     SignParams,
     AddSessionParams,
@@ -14,224 +12,21 @@ import {
     ListSessionsResult,
     SetPrimaryWalletParams,
 } from './rpc-gen/typings.js'
-import { Store, Wallet, Auth, Transaction } from 'core-wallet-store'
+import { Store, Auth, Transaction } from 'core-wallet-store'
 import { Logger } from 'pino'
-import {
-    NotificationService,
-    Notifier,
-} from '../notification/NotificationService.js'
+import { NotificationService } from '../notification/NotificationService.js'
 import { AuthContext } from 'core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
 import { SigningDriverInterface, SigningProvider } from 'core-signing-lib'
-import { TopologyWriteService } from '../TopologyWriteService.js'
-import {
-    Signature,
-    SignatureFormat,
-    SigningAlgorithmSpec,
-} from '../_proto/com/digitalasset/canton/crypto/v30/crypto.js'
-import {
-    MultiTransactionSignatures,
-    SignedTopologyTransaction,
-} from '../_proto/com/digitalasset/canton/protocol/v30/topology.js'
 import { adminAuthService } from '../auth/admin-auth-service.js'
-import { ExecuteResult } from 'core-wallet-user-rpc-client'
+import {
+    AllocatedParty,
+    PartyAllocationService,
+} from '../ledger/party-allocation-service.js'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
 >
-
-async function grantUserRights(
-    partyId: string,
-    userId: string,
-    client: LedgerClient
-) {
-    // Wait for party to appear on participant
-    let partyFound = false
-    let tries = 0
-    const maxTries = 5
-
-    while (!partyFound || tries >= maxTries) {
-        const parties = await client.get('/v2/parties')
-        partyFound =
-            parties.partyDetails?.some((party) => party.party === partyId) ||
-            false
-
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        tries++
-    }
-
-    if (tries >= maxTries) {
-        throw new Error('timed out waiting for new party to appear')
-    }
-
-    // Assign user rights to party
-    const result = await client.post(
-        '/v2/users/{user-id}/rights',
-        {
-            identityProviderId: '',
-            userId,
-            rights: [
-                {
-                    kind: {
-                        CanActAs: {
-                            value: {
-                                party: partyId,
-                            },
-                        },
-                    },
-                },
-            ],
-        },
-        {
-            path: {
-                'user-id': userId,
-            },
-        }
-    )
-
-    if (!result.newlyGrantedRights) {
-        throw new Error('Failed to grant user rights')
-    }
-
-    return
-}
-
-async function signingDriverCreate(
-    userId: string,
-    store: Store,
-    notifier: Notifier | undefined,
-    ledgerClientAdmin: LedgerClient,
-    adminToken: string,
-    drivers: AvailableSigningDrivers,
-    authContext: AuthContext,
-    { signingProviderId, primary, partyHint, chainId }: CreateWalletParams
-): Promise<CreateWalletResult> {
-    const driver = drivers[signingProviderId as SigningProvider]
-
-    if (!driver) {
-        throw new Error(`Signing provider ${signingProviderId} not supported`)
-    }
-
-    let wallet: Wallet
-
-    switch (signingProviderId) {
-        case SigningProvider.PARTICIPANT: {
-            const network = await store.getNetwork(chainId)
-
-            const { participantId: namespace } = await ledgerClientAdmin.get(
-                '/v2/parties/participant-id'
-            )
-
-            const res = await ledgerClientAdmin.post('/v2/parties', {
-                userId,
-                partyIdHint: partyHint,
-                identityProviderId: '',
-                synchronizerId: network.synchronizerId,
-            })
-
-            if (!res.partyDetails?.party) {
-                throw new Error('Failed to allocate party')
-            }
-
-            wallet = {
-                primary: primary ?? false,
-                partyId: res.partyDetails.party,
-                hint: partyHint,
-                publicKey: namespace,
-                namespace,
-                chainId,
-                signingProviderId,
-            }
-
-            grantUserRights(wallet.partyId, userId, ledgerClientAdmin)
-            break
-        }
-        case SigningProvider.WALLET_KERNEL: {
-            const network = await store.getNetwork(chainId)
-            const topologyService = new TopologyWriteService(
-                network.synchronizerId,
-                network.ledgerApi.adminGrpcUrl,
-                adminToken,
-                ledgerClientAdmin
-            )
-
-            const key = await driver.controller(authContext).createKey({
-                name: partyHint,
-            })
-            const namespace = TopologyWriteService.createFingerprintFromKey(
-                key.publicKey
-            )
-            const partyId = `${partyHint}::${namespace}`
-
-            const transactions = await topologyService
-                .generateTransactions(key.publicKey, partyId)
-                .then((resp) => resp.generatedTransactions)
-
-            const txHashes = transactions.map((tx) =>
-                Buffer.from(tx.transactionHash)
-            )
-
-            const combinedHash = TopologyWriteService.combineHashes(txHashes)
-
-            const { signature } = await driver
-                .controller(authContext)
-                .signTransaction({
-                    tx: '',
-                    txHash: Buffer.from(combinedHash, 'hex').toString('base64'),
-                    publicKey: key.publicKey,
-                })
-
-            const signedTopologyTxs = transactions.map((transaction) =>
-                SignedTopologyTransaction.create({
-                    transaction: transaction.serializedTransaction,
-                    proposal: true,
-                    signatures: [],
-                    multiTransactionSignatures: [
-                        MultiTransactionSignatures.create({
-                            transactionHashes: txHashes,
-                            signatures: [
-                                Signature.create({
-                                    format: SignatureFormat.RAW,
-                                    signature: Buffer.from(signature, 'base64'),
-                                    signedBy: namespace,
-                                    signingAlgorithmSpec:
-                                        SigningAlgorithmSpec.ED25519,
-                                }),
-                            ],
-                        }),
-                    ],
-                })
-            )
-
-            topologyService.addTransactions(signedTopologyTxs)
-            await topologyService.authorizePartyToParticipant(partyId)
-
-            wallet = {
-                partyId,
-                namespace,
-                signingProviderId,
-                chainId,
-                primary: primary ?? false,
-                hint: partyHint,
-                publicKey: key.publicKey,
-            }
-
-            grantUserRights(wallet.partyId, userId, ledgerClientAdmin)
-            break
-        }
-        default:
-            throw new Error(
-                `Unsupported signing provider: ${signingProviderId}`
-            )
-    }
-
-    await store.addWallet(wallet)
-
-    const wallets = await store.getWallets()
-    notifier?.emit('accountsChanged', wallets)
-
-    return { wallet }
-}
 
 export const userController = (
     kernelInfo: KernelInfo,
@@ -310,34 +105,81 @@ export const userController = (
                 throw new Error('Unauthenticated context')
             }
 
-            const ledgerClient = new LedgerClient(
-                network.ledgerApi.baseUrl,
-                authContext?.accessToken,
-                logger
-            )
-
             const adminToken = await adminAuthService(
                 store,
                 logger
             ).fetchToken()
 
-            const ledgerClientAdmin = new LedgerClient(
-                network.ledgerApi.baseUrl,
+            const partyAllocator = new PartyAllocationService(
+                network.synchronizerId,
                 adminToken,
+                network.ledgerApi.baseUrl,
+                network.ledgerApi.adminGrpcUrl,
                 logger
             )
+            const driver = drivers[params.signingProviderId as SigningProvider]
 
-            const result = await signingDriverCreate(
-                userId,
-                store,
-                notifier,
-                ledgerClientAdmin,
-                adminToken,
-                drivers,
-                authContext,
-                params
-            )
-            return result
+            if (!driver) {
+                throw new Error(
+                    `Signing provider ${params.signingProviderId} not supported`
+                )
+            }
+
+            let party: AllocatedParty
+
+            switch (params.signingProviderId) {
+                case SigningProvider.PARTICIPANT: {
+                    party = await partyAllocator.allocateParty(
+                        userId,
+                        params.partyHint
+                    )
+                    break
+                }
+                case SigningProvider.WALLET_KERNEL: {
+                    const key = await driver.controller(authContext).createKey({
+                        name: params.partyHint,
+                    })
+
+                    party = await partyAllocator.allocateParty(
+                        userId,
+                        params.partyHint,
+                        {
+                            publicKey: key.publicKey,
+                            signingCallback: async (hash) => {
+                                const { signature } = await driver
+                                    .controller(authContext)
+                                    .signTransaction({
+                                        tx: '',
+                                        txHash: hash,
+                                        publicKey: key.publicKey,
+                                    })
+
+                                return signature
+                            },
+                        }
+                    )
+                    break
+                }
+                default:
+                    throw new Error(
+                        `Unsupported signing provider: ${params.signingProviderId}`
+                    )
+            }
+
+            const wallet = {
+                signingProviderId: params.signingProviderId,
+                chainId: params.chainId,
+                primary: params.primary ?? false,
+                publicKey: party.namespace,
+                ...party,
+            }
+
+            await store.addWallet(wallet)
+
+            const wallets = await store.getWallets()
+            notifier?.emit('accountsChanged', wallets)
+
+            return { wallet }
         },
         setPrimaryWallet: async (params: SetPrimaryWalletParams) => {
             store.setPrimaryWallet(params.partyId)
