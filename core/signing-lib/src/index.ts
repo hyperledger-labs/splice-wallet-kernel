@@ -1,4 +1,3 @@
-import { AuthContext } from 'core-wallet-auth'
 import { Methods } from './rpc-gen/index.js'
 import { Error as RpcError } from './rpc-gen/typings.js'
 
@@ -25,5 +24,5 @@ export enum SigningProvider {
 export interface SigningDriverInterface {
     partyMode: PartyMode
     signingProvider: SigningProvider
-    controller: (authContext: AuthContext | undefined) => Methods
+    controller: (userId: string | undefined) => Methods
 }

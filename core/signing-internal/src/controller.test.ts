@@ -6,17 +6,13 @@ import { CreateKeyResult, isRpcError, Key, Transaction } from 'core-signing-lib'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
 import { Methods } from 'core-signing-lib/dist/rpc-gen/index.js'
-import { AuthContext } from 'core-wallet-auth'
 
 const TEST_KEY_NAME = 'test-key-name'
 const TEST_TRANSACTION = 'test-tx'
 const TEST_TRANSACTION_HASH =
     '88beb0783e394f6128699bad42906374ab64197d260db05bb0cfeeb518ba3ac2'
 
-const authContext: AuthContext = {
-    userId: 'test-user-id',
-    accessToken: 'test-access-token',
-}
+const TEST_USER_ID = 'test-user-id'
 
 interface TestValues {
     signingDriver: InternalSigningDriver
@@ -26,7 +22,7 @@ interface TestValues {
 
 async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     const signingDriver = new InternalSigningDriver()
-    const controller = signingDriver.controller(authContext)
+    const controller = signingDriver.controller(TEST_USER_ID)
     const key = await controller.createKey({ name: keyName })
     return {
         signingDriver,
