@@ -22,7 +22,6 @@ export enum SigningProvider {
     WALLET_KERNEL = 'wallet-kernel',
     PARTICIPANT = 'participant',
     FIREBLOCKS = 'fireblocks',
-    OFFLINE = 'offline',
 }
 
 export interface SigningDriverInterface {
