@@ -13,7 +13,9 @@
     "dependencies": {
         "core-wallet-auth": "workspace:^",
         "fs-extra": "^11.3.0",
-        "lodash": "^4.17.21"
+        "lodash": "^4.17.21",
+        "tweetnacl": "^1.0.3",
+        "tweetnacl-util": "^0.15.1"
     },
     "devDependencies": {
         "@types/fs-extra": "^11",
