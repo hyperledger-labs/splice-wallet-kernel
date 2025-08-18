@@ -1,0 +1,35 @@
+{
+    "name": "core-wallet-store-inmemory",
+    "version": "1.0.0",
+    "description": "In-memory implementation of the Store API.",
+    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
+    "license": "Apache-2.0",
+    "packageManager": "yarn@4.9.2",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b",
+        "dev": "tsc -b --watch",
+        "clean": "tsc -b --clean; rm -rf dist",
+        "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
+    },
+    "dependencies": {
+        "core-ledger-client": "workspace:^",
+        "core-wallet-auth": "workspace:^",
+        "core-wallet-store": "workspace:^",
+        "pino": "^9.7.0",
+        "zod": "^3.25.64"
+    },
+    "devDependencies": {
+        "@jest/globals": "^29.0.0",
+        "@swc/core": "^1.11.31",
+        "@swc/jest": "^0.2.38",
+        "@types/jest": "^30.0.0",
+        "jest": "^30.0.0",
+        "pino-test": "^1.1.0",
+        "ts-jest": "^29.4.0",
+        "ts-jest-resolver": "^2.0.1",
+        "typescript": "^5.8.3"
+    }
+}

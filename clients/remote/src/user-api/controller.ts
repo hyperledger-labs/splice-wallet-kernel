@@ -1,6 +1,15 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { LedgerClient } from 'core-ledger-client'
+import {
+    LedgerClient,
+    TopologyWriteService,
+    Signature,
+    SignatureFormat,
+    SigningAlgorithmSpec,
+    MultiTransactionSignatures,
+    SignedTopologyTransaction,
+    GenerateTransactionsResponse_GeneratedTransaction,
+} from 'core-ledger-client'
 import buildController from './rpc-gen/index.js'
 import {
     AddNetworkParams,

@@ -16,6 +16,7 @@
         "postinstall": "husky",
         "script:cleancoding": "tsx ./scripts/src/clean-coding.ts",
         "script:generate:ledger": "tsx ./scripts/src/generate-ledger-client.ts",
+        "script:generate:protobufs": "tsx ./scripts/src/generate-protobufs.ts",
         "script:generate:tokenstandard": "tsx ./scripts/src/generate-token-standard.ts",
         "script:fetch:canton": "tsx ./scripts/src/fetch-canton.ts",
         "script:fetch:tokenstandard": "tsx ./scripts/src/fetch-token-standard.ts",

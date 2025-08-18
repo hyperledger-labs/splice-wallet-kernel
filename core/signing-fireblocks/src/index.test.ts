@@ -163,7 +163,7 @@ async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
         signingDriver,
         noDefaultSigningDriver,
         key,
-        controller: signingDriver.controller(TEST_AUTH_CONTEXT),
+        controller: signingDriver.controller(TEST_AUTH_CONTEXT.userId),
     }
 }
 
@@ -176,14 +176,16 @@ test('key creation', async () => {
 test('non-existing user cannot use driver without a default', async () => {
     const { noDefaultSigningDriver } = await setupTest()
     const err = await noDefaultSigningDriver
-        .controller(TEST_BAD_AUTH_CONTEXT)
+        .controller(TEST_BAD_AUTH_CONTEXT.userId)
         .getKeys()
     expect(isRpcError(err)).toBe(true)
 })
 
 test('non-existing user can use driver that does have a default', async () => {
     const { signingDriver } = await setupTest()
-    const keys = await signingDriver.controller(TEST_BAD_AUTH_CONTEXT).getKeys()
+    const keys = await signingDriver
+        .controller(TEST_BAD_AUTH_CONTEXT.userId)
+        .getKeys()
     expect(isRpcError(keys)).toBe(false)
 })
 

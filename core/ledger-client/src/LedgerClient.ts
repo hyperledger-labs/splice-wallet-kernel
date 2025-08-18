@@ -89,7 +89,10 @@ export class LedgerClient {
         const options = { params } as any
 
         const resp = await this.client.GET(path, options)
-        this.logger.debug({ response: resp }, `GET ${path}`)
+        this.logger.debug(
+            { path: path, params: params, response: resp },
+            `GET ${path}`
+        )
         return this.valueOrError(resp)
     }
 
