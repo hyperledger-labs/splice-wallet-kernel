@@ -1,6 +1,15 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { LedgerClient } from 'core-ledger-client'
+import {
+    LedgerClient,
+    TopologyWriteService,
+    Signature,
+    SignatureFormat,
+    SigningAlgorithmSpec,
+    MultiTransactionSignatures,
+    SignedTopologyTransaction,
+    GenerateTransactionsResponse_GeneratedTransaction,
+} from 'core-ledger-client'
 import buildController from './rpc-gen/index.js'
 import {
     AddNetworkParams,
@@ -23,16 +32,6 @@ import {
 import { AuthContext } from 'core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
 import { SigningDriverInterface, SigningProvider } from 'core-signing-lib'
-import { TopologyWriteService } from '../TopologyWriteService.js'
-import {
-    Signature,
-    SignatureFormat,
-    SigningAlgorithmSpec,
-} from '../_proto/com/digitalasset/canton/crypto/v30/crypto.js'
-import {
-    MultiTransactionSignatures,
-    SignedTopologyTransaction,
-} from '../_proto/com/digitalasset/canton/protocol/v30/topology.js'
 import { adminAuthService } from '../auth/admin-auth-service.js'
 
 type AvailableSigningDrivers = Partial<
@@ -105,7 +104,11 @@ async function signingDriverCreate(
 
             const transactions = await topologyService
                 .generateTransactions(key.publicKey, partyId)
-                .then((resp) => resp.generatedTransactions)
+                //TODO: Don't know why it couldn't automatically figure this out
+                .then(
+                    (resp) =>
+                        resp.generatedTransactions as GenerateTransactionsResponse_GeneratedTransaction[]
+                )
 
             const txHashes = transactions.map((tx) =>
                 Buffer.from(tx.transactionHash)

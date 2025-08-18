@@ -14,7 +14,9 @@
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
     "dependencies": {
-        "core-ledger-client": "workspace:^"
+        "core-ledger-client": "workspace:^",
+        "pino": "^9.7.0",
+        "uuid": "^11.1.0"
     },
     "devDependencies": {
         "typescript": "^5.8.3"

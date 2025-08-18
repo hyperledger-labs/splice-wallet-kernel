@@ -1,4 +1,4 @@
-import { LedgerClient } from 'core-ledger-client'
+import { LedgerClient } from './LedgerClient'
 import {
     CryptoKeyFormat,
     SigningKeyScheme,

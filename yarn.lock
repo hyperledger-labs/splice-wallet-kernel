@@ -5639,10 +5639,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "core-ledger-client@workspace:core/ledger-client"
   dependencies:
+    "@grpc/grpc-js": "npm:^1.13.4"
     "@jest/globals": "npm:^29.0.0"
+    "@protobuf-ts/grpc-transport": "npm:^2.11.1"
+    "@protobuf-ts/runtime": "npm:^2.11.1"
+    "@protobuf-ts/runtime-rpc": "npm:^2.11.1"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"
     "@types/jest": "npm:^30.0.0"
+    "@types/node": "npm:^22.15.30"
     jest: "npm:^30.0.0"
     openapi-fetch: "npm:^0.14.0"
     openapi-typescript: "npm:^7.8.0"
@@ -12538,7 +12543,9 @@ __metadata:
   resolution: "splice-sdk-wallet@workspace:sdk/wallet-sdk"
   dependencies:
     core-ledger-client: "workspace:^"
+    pino: "npm:^9.7.0"
     typescript: "npm:^5.8.3"
+    uuid: "npm:^11.1.0"
   languageName: unknown
   linkType: soft
 
