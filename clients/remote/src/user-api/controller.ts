@@ -23,7 +23,7 @@ import {
 import { AuthContext } from 'core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
 import { SigningDriverInterface, SigningProvider } from 'core-signing-lib'
-import { TopologyWriteService } from '../TopologyWriteService.js'
+import { TopologyWriteService } from '../../../../core/ledger-client/src/TopologyWriteService.js'
 import {
     Signature,
     SignatureFormat,
