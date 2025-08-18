@@ -1,4 +1,3 @@
-import { SignJWT } from 'jose'
 import {
     TokenTransferFactory,
     TokenTransferInstruction,
@@ -19,20 +18,6 @@ import pino from 'pino'
 const logger = pino({ name: 'token-standard-example', level: 'debug' })
 
 const PROXY_URL = 'http://localhost:8000/'
-
-async function getAuthToken(party: string): Promise<string> {
-    const secret = new TextEncoder().encode('secret')
-    return await new SignJWT({
-        sub: party,
-        scope: 'daml_ledger_api',
-        'https://daml.com/ledger-api': {
-            actAs: [party],
-            readAs: [party],
-        },
-    })
-        .setProtectedHeader({ alg: 'HS256' })
-        .sign(secret)
-}
 
 export function createLedgerApiClient(authToken: string): LedgerClient {
     return new LedgerClient(PROXY_URL, authToken, logger)
@@ -75,9 +60,11 @@ export class LedgerService {
     public userId?: string
     public party?: string
 
-    static async create(login: string): Promise<LedgerService> {
-        const token = await getAuthToken(login)
-        const client = createLedgerApiClient(token)
+    static async create(
+        login: string,
+        sessionToken: string
+    ): Promise<LedgerService> {
+        const client = createLedgerApiClient(sessionToken)
         const svc = new LedgerService(login, client)
         await svc.init(login)
         return svc
@@ -92,11 +79,25 @@ export class LedgerService {
     }
 
     private async init(login: string): Promise<void> {
-        const user = await this.getUserById(login)
-        if (!user?.user) throw new Error('No such user')
-        this.userId = user.user.id
-        this.party = user.user.primaryParty
-        // TODO I don't like it here, call it from somewhere else than init
+        const rights = await this.ledgerClient.get(
+            '/v2/users/{user-id}/rights',
+            {
+                path: {
+                    'user-id': 'operator',
+                },
+            }
+        )
+        // @ts-expect-error reason tbs
+        const partyRight = rights.rights
+            .filter((right) => 'CanActAs' in right.kind)
+            .find((right) => right.kind.CanActAs.value.party.startsWith(login))
+        // @ts-expect-error reason tbs
+        if (partyRight.kind.CanActAs.value.party) {
+            this.userId = 'operator'
+            // @ts-expect-error reason tbs
+            this.party = partyRight.kind.CanActAs.value.party
+        }
+
         await this.fetchTransferFactories()
     }
 
@@ -404,6 +405,43 @@ export class LedgerService {
                             transfer,
                             extraArgs: emptyExtraArgs,
                         },
+                    },
+                },
+            ],
+        }
+
+        return this.submitAndWaitPost(requestBody)
+    }
+
+    public async createTransferFactory(
+        symbol: string
+    ): Promise<PostResponse<'/v2/commands/submit-and-wait'>> {
+        type CreateArgs = {
+            admin: string // PartyId
+            meta: { values: Record<string, string> }
+            observers: string[]
+        }
+
+        if (!this.party) {
+            throw new Error(`Party not found`)
+        }
+
+        const args: CreateArgs = {
+            admin: this.party,
+            meta: { values: { symbol } },
+            observers: [],
+        }
+
+        // @ts-expect-error reason TBS
+        const requestBody: PostRequest<'/v2/commands/submit-and-wait'> = {
+            actAs: [this.party],
+            userId: this.userId,
+            commandId: crypto.randomUUID(),
+            commands: [
+                {
+                    CreateCommand: {
+                        templateId: TokenTransferFactory.templateId,
+                        createArguments: args,
                     },
                 },
             ],

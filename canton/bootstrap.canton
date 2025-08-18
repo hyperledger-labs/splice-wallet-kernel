@@ -16,6 +16,8 @@ import com.digitalasset.canton.console.{
 }
 import com.digitalasset.canton.version.ProtocolVersion._
 import com.digitalasset.canton.topology.{PhysicalSynchronizerId, SynchronizerId, UniqueIdentifier}
+import com.digitalasset.canton.topology.PartyId
+
 
 
 val cantonDir = "canton"
@@ -274,3 +276,6 @@ object UpgradeDataFiles {
     )
   }
 }
+
+val myDarPath = "/Users/pstepien/code/digital-asset/splice-wallet-kernel/canton/my-exercise-app.dar"
+participant1.dars.upload(myDarPath, vetAllPackages = true)

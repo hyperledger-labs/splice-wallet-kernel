@@ -1,44 +1,26 @@
-import { LitElement, html } from 'lit'
+import { LitElement, html, nothing } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
-import './components/LoginForm'
-import './components/LoggedInView'
 import './components/WalletKernelConnector'
-import { LedgerService } from './ledger.service'
+import './components/TokenStandardExample'
 
 @customElement('exercise-app')
 export class ExerciseApp extends LitElement {
-    // TODO create an interface for it and use for props
-    @state() ledgerService: LedgerService | null = null
+    @state() sessionToken: string | undefined = undefined
 
-    get isLoggedIn(): boolean {
-        return !!this.ledgerService
-    }
-
-    private async handleLoginSubmit(e: CustomEvent) {
-        const { login } = e.detail
-        if (!login) {
-            alert('Invalid login')
-            return
-        }
-        try {
-            const ledgerService = await LedgerService.create(login)
-            this.ledgerService = ledgerService
-        } catch (e) {
-            console.log(e)
-            alert("Couldn't connect to the ledger with user " + login)
-        }
+    private onConnected(e: CustomEvent<{ sessionToken: string }>) {
+        this.sessionToken = e.detail.sessionToken
     }
 
     render() {
-        return html` <wallet-kernel-connector></wallet-kernel-connector> `
-        // return html`
-        //     ${this.isLoggedIn
-        //         ? html` <logged-in-view
-        //               .ledgerService=${this.ledgerService}
-        //           ></logged-in-view>`
-        //         : html` <login-form
-        //               @login-submit=${this.handleLoginSubmit}
-        //           ></login-form>`}
-        // `
+        return html`
+            <wallet-kernel-connector
+                @connected=${this.onConnected}
+            ></wallet-kernel-connector>
+            ${this.sessionToken
+                ? html` <token-standard-example
+                      .sessionToken=${this.sessionToken}
+                  ></token-standard-example>`
+                : nothing}
+        `
     }
 }

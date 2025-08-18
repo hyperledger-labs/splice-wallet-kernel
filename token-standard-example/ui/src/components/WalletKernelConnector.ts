@@ -10,12 +10,21 @@ export class WalletKernelConnector extends LitElement {
     @state() accessor messages: string[] = []
     @state() accessor primaryParty: string | undefined = undefined
     @state() accessor accounts: sdk.dappAPI.RequestAccountsResult[] = []
+    @state() accessor isConnected: boolean = false
+    @state() accessor sessionToken: string | undefined = undefined
 
     private messageListener = (event: unknown) => {
         this.messages = [...this.messages, JSON.stringify(event)]
     }
 
     private onConnected = (result: sdk.dappAPI.OnConnectedEvent) => {
+        this.sessionToken = result.sessionToken
+        this.dispatchEvent(
+            new CustomEvent('connected', {
+                detail: { sessionToken: this.sessionToken },
+            })
+        )
+        // this.isConnected = result.isConnected
         this.messageListener(result)
         this.status =
             `Wallet Kernel: ${result.kernel.id}, ` +
@@ -26,6 +35,8 @@ export class WalletKernelConnector extends LitElement {
     private onAccountsChanged = (
         wallets: sdk.dappAPI.AccountsChangedEvent[]
     ) => {
+        console.log('onAccountsChanged', wallets)
+        this.accounts = wallets
         this.messageListener(wallets)
         if (wallets.length > 0) {
             // @ts-expect-error reason TBS
@@ -62,6 +73,7 @@ export class WalletKernelConnector extends LitElement {
             })
             const requestedAccounts =
                 wallets as sdk.dappAPI.RequestAccountsResult[]
+            console.log('initial set accounts', requestedAccounts)
             this.accounts = requestedAccounts
 
             if (requestedAccounts?.length > 0) {
@@ -97,6 +109,7 @@ export class WalletKernelConnector extends LitElement {
         console.log('Connecting to Wallet Kernel...')
         sdk.connect()
             .then(({ kernel, isConnected, chainId }) => {
+                this.isConnected = isConnected
                 console.log('connected', kernel, isConnected, chainId)
                 void this.onSdkConnect()
             })
@@ -105,6 +118,18 @@ export class WalletKernelConnector extends LitElement {
             })
     }
 
+    private async getConnectedStatus() {
+        const provider = window.splice
+        if (!provider) {
+            this.status = 'Splice provider not found'
+            return
+        }
+        const result: sdk.dappAPI.StatusResult = await provider.request({
+            method: 'status',
+        })
+        this.isConnected = result.isConnected
+        console.log('connected status:', result)
+    }
     render() {
         return html`
             <div>Status: ${this.status}</div>
@@ -118,6 +143,7 @@ export class WalletKernelConnector extends LitElement {
             <button @click=${this.connectToWalletKernel}>
                 Connect to wallet kernel
             </button>
+            <button @click=${this.getConnectedStatus}>Get status</button>
         `
     }
 }

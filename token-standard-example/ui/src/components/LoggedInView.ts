@@ -2,11 +2,13 @@ import { LitElement, html } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import './TokenHoldings/TokenHoldingsPage'
 import './TokenTransfers/TokenTransfersPage'
+import './TokenFactories/TokenFactoriesPage'
 import { LedgerService } from '../ledger.service'
 
 export const pages = {
     Holdings: 'holdings',
     Transfers: 'transfers',
+    Factories: 'factories',
 } as const
 
 type TPages = (typeof pages)[keyof typeof pages]
@@ -41,6 +43,10 @@ export class LoggedInView extends LitElement {
                 return html` <token-transfers-page
                     .ledgerService=${this.ledgerService}
                 ></token-transfers-page>`
+            case pages.Factories:
+                return html` <token-factories-page
+                    .ledgerService=${this.ledgerService}
+                ></token-factories-page>`
             default:
                 return html`Can't find page ${this.currentPage}`
         }
