@@ -1,144 +1,114 @@
-import { LedgerClient } from 'core-ledger-client'
-import { TopologyWriteService } from './TopologyWriteService.js'
-import { Logger } from 'pino'
-import {
-    Signature,
-    SignatureFormat,
-    SigningAlgorithmSpec,
-} from '../_proto/com/digitalasset/canton/crypto/v30/crypto.js'
-import {
-    MultiTransactionSignatures,
-    SignedTopologyTransaction,
-} from '../_proto/com/digitalasset/canton/protocol/v30/topology.js'
+import { jest } from '@jest/globals'
+import { pino } from 'pino'
+import { Network } from 'core-wallet-store'
+import { sink } from 'pino-test'
 
-export type AllocatedParty = {
-    partyId: string
-    hint: string
-    namespace: string
-}
+type AsyncFn = () => Promise<unknown>
 
-type SigningCbFn = (hash: string) => Promise<string>
+const mockLedgerGet = jest.fn<AsyncFn>()
+const mockLedgerPost = jest.fn<AsyncFn>()
+const mockLedgerGrantUserRights = jest.fn()
 
-/**
- * This service provides an abstraction for Canton party allocation that seamlessly handles both internal and external parties.
- */
-export class PartyAllocationService {
-    private ledgerClient: LedgerClient
-    private topologyClient: TopologyWriteService
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MockTopologyWriteService: jest.MockedClass<any> = jest
+    .fn()
+    .mockImplementation(() => ({
+        generateTransactions: jest.fn<AsyncFn>().mockResolvedValue({
+            generatedTransactions: [],
+        }),
+        addTransactions: jest.fn<AsyncFn>(),
+        authorizePartyToParticipant: jest.fn<AsyncFn>(),
+    }))
 
-    constructor(
-        private synchronizerId: string,
-        adminToken: string,
-        httpLedgerUrl: string,
-        adminApiUrl: string,
-        logger: Logger
-    ) {
-        this.ledgerClient = new LedgerClient(httpLedgerUrl, adminToken, logger)
-        this.topologyClient = new TopologyWriteService(
-            this.synchronizerId,
-            adminApiUrl,
-            adminToken,
-            this.ledgerClient
-        )
-    }
+// Add static method to the mock class
+MockTopologyWriteService.createFingerprintFromKey = jest
+    .fn()
+    .mockReturnValue('mypublickey')
+MockTopologyWriteService.combineHashes = jest
+    .fn()
+    .mockReturnValue('combinedhash')
 
-    async allocateParty(userId: string, hint: string): Promise<AllocatedParty>
-    async allocateParty(
-        userId: string,
-        hint: string,
-        options: { publicKey: string; signingCallback: SigningCbFn }
-    ): Promise<AllocatedParty>
-    async allocateParty(
-        userId: string,
-        hint: string,
-        options?: { publicKey?: string; signingCallback?: SigningCbFn }
-    ): Promise<AllocatedParty> {
-        const { publicKey, signingCallback } = options || {}
-        // Implementation for allocating a party to a user
-
-        if (publicKey !== undefined && signingCallback !== undefined) {
-            return this.allocateExternalParty(
-                userId,
-                hint,
-                publicKey,
-                signingCallback
-            )
-        } else {
-            return this.allocateInternalParty(userId, hint)
+jest.unstable_mockModule('core-ledger-client', () => ({
+    Signature: jest.fn(),
+    SignatureFormat: jest.fn(),
+    SigningAlgorithmSpec: jest.fn(),
+    MultiTransactionSignatures: jest.fn(),
+    SignedTopologyTransaction: jest.fn(),
+    LedgerClient: jest.fn().mockImplementation(() => {
+        return {
+            get: mockLedgerGet,
+            post: mockLedgerPost,
+            grantUserRights: mockLedgerGrantUserRights,
         }
+    }),
+    TopologyWriteService: MockTopologyWriteService,
+}))
+
+describe('PartyAllocationService', () => {
+    const network: Network = {
+        name: 'test',
+        chainId: 'chain-id',
+        synchronizerId: 'sync-id',
+        description: 'desc',
+        ledgerApi: {
+            baseUrl: 'http://ledger',
+            adminGrpcUrl: 'http://ledger/admin',
+        },
+        auth: {
+            type: 'implicit',
+            issuer: 'http://idp',
+            configUrl: 'http://idp/.well-known/openid-configuration',
+            audience: 'aud',
+            scope: 'scope',
+            clientId: 'cid',
+            admin: { clientId: 'cid', clientSecret: 'secret' },
+        },
     }
 
-    private async allocateInternalParty(
-        userId: string,
-        hint: string
-    ): Promise<AllocatedParty> {
-        const { participantId: namespace } = await this.ledgerClient.get(
-            '/v2/parties/participant-id'
-        )
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let service: any
 
-        const res = await this.ledgerClient.post('/v2/parties', {
-            userId,
-            partyIdHint: hint,
-            identityProviderId: '',
-            synchronizerId: this.synchronizerId,
+    beforeEach(async () => {
+        const mockLogger = pino(sink())
+        const pas = await import('./party-allocation-service.js')
+
+        service = new pas.PartyAllocationService(
+            network.synchronizerId,
+            'admin.jwt',
+            network.ledgerApi.baseUrl,
+            network.ledgerApi.adminGrpcUrl,
+            mockLogger
+        )
+    })
+
+    it('allocates an internal party', async () => {
+        mockLedgerGet.mockResolvedValueOnce({ participantId: 'participantid' })
+        mockLedgerPost.mockResolvedValueOnce({
+            partyDetails: { party: 'party1::participantid' },
         })
+        await expect(
+            service.allocateParty('user1', 'party1')
+        ).resolves.toStrictEqual({
+            hint: 'party1',
+            partyId: 'party1::participantid',
+            namespace: 'participantid',
+        })
+    })
 
-        if (!res.partyDetails?.party) {
-            throw new Error('Failed to allocate party')
-        }
+    it('allocates an external party', async () => {
+        const publicKey = 'mypublickey'
 
-        return { hint, namespace, partyId: res.partyDetails.party }
-    }
-
-    private async allocateExternalParty(
-        userId: string,
-        hint: string,
-        publicKey: string,
-        signingCallback: SigningCbFn
-    ): Promise<AllocatedParty> {
-        const namespace =
-            TopologyWriteService.createFingerprintFromKey(publicKey)
-        const partyId = `${hint}::${namespace}`
-
-        const transactions = await this.topologyClient
-            .generateTransactions(publicKey, partyId)
-            .then((resp) => resp.generatedTransactions)
-
-        const txHashes = transactions.map((tx) =>
-            Buffer.from(tx.transactionHash)
-        )
-
-        const combinedHash = TopologyWriteService.combineHashes(txHashes)
-        const signature = await signingCallback(
-            Buffer.from(combinedHash, 'hex').toString('base64')
-        )
-
-        const signedTopologyTxs = transactions.map((transaction) =>
-            SignedTopologyTransaction.create({
-                transaction: transaction.serializedTransaction,
-                proposal: true,
-                signatures: [],
-                multiTransactionSignatures: [
-                    MultiTransactionSignatures.create({
-                        transactionHashes: txHashes,
-                        signatures: [
-                            Signature.create({
-                                format: SignatureFormat.RAW,
-                                signature: Buffer.from(signature, 'base64'),
-                                signedBy: namespace,
-                                signingAlgorithmSpec:
-                                    SigningAlgorithmSpec.ED25519,
-                            }),
-                        ],
-                    }),
-                ],
-            })
-        )
-
-        await this.topologyClient.addTransactions(signedTopologyTxs)
-        await this.topologyClient.authorizePartyToParticipant(partyId)
-        await this.ledgerClient.grantUserRights(userId, partyId)
-
-        return { hint, partyId, namespace }
-    }
-}
+        await expect(
+            service.allocateParty(
+                'user1',
+                'party2',
+                publicKey,
+                async () => 'mysignedhash'
+            )
+        ).resolves.toStrictEqual({
+            hint: 'party2',
+            partyId: `party2::${publicKey}`,
+            namespace: publicKey,
+        })
+    })
+})
