@@ -8,6 +8,8 @@ import {
     SigningAlgorithmSpec,
     MultiTransactionSignatures,
     SignedTopologyTransaction,
+    GenerateTransactionsResponse,
+    GenerateTransactionsResponse_GeneratedTransaction,
 } from 'core-ledger-client'
 import buildController from './rpc-gen/index.js'
 import {
@@ -101,7 +103,11 @@ async function signingDriverCreate(
 
             const transactions = await topologyService
                 .generateTransactions(key.publicKey, partyId)
-                .then((resp) => resp.generatedTransactions)
+                //TODO: Don't know why it couldn't automatically figure this out
+                .then(
+                    (resp) =>
+                        resp.generatedTransactions as GenerateTransactionsResponse_GeneratedTransaction[]
+                )
 
             const txHashes = transactions.map((tx) =>
                 Buffer.from(tx.transactionHash)
