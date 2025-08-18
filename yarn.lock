@@ -5735,6 +5735,8 @@ __metadata:
     core-wallet-auth: "workspace:^"
     fs-extra: "npm:^11.3.0"
     lodash: "npm:^4.17.21"
+    tweetnacl: "npm:^1.0.3"
+    tweetnacl-util: "npm:^0.15.1"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -12543,6 +12545,7 @@ __metadata:
   resolution: "splice-sdk-wallet@workspace:sdk/wallet-sdk"
   dependencies:
     core-ledger-client: "workspace:^"
+    core-signing-lib: "workspace:^"
     pino: "npm:^9.7.0"
     typescript: "npm:^5.8.3"
     uuid: "npm:^11.1.0"

@@ -1,6 +1,8 @@
 import { AuthContext } from 'core-wallet-auth'
 import { Methods } from './rpc-gen/index.js'
 import { Error as RpcError } from './rpc-gen/typings.js'
+import nacl from 'tweetnacl'
+import naclUtil from 'tweetnacl-util'
 
 export { default as buildController, Methods } from './rpc-gen/index.js'
 export * from './rpc-gen/typings.js'
@@ -16,6 +18,11 @@ export enum PartyMode {
     EXTERNAL = 'external',
 }
 
+export interface KeyPair {
+    publicKey: string
+    privateKey: string
+}
+
 export enum SigningProvider {
     WALLET_KERNEL = 'wallet-kernel',
     PARTICIPANT = 'participant',
@@ -26,4 +33,23 @@ export interface SigningDriverInterface {
     partyMode: PartyMode
     signingProvider: SigningProvider
     controller: (userId: AuthContext['userId'] | undefined) => Methods
+}
+
+export const signTransactionHash = (
+    txHash: string,
+    privateKey: string
+): string => {
+    const decodedKey = naclUtil.decodeBase64(privateKey)
+
+    return naclUtil.encodeBase64(
+        nacl.sign.detached(naclUtil.decodeBase64(txHash), decodedKey)
+    )
+}
+
+export const createKeyPair = (): KeyPair => {
+    const key = nacl.sign.keyPair()
+    const publicKey = naclUtil.encodeBase64(key.publicKey)
+    const privateKey = naclUtil.encodeBase64(key.secretKey)
+
+    return { publicKey, privateKey }
 }
