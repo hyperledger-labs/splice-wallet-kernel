@@ -22,8 +22,7 @@
         "script:fetch:tokenstandard": "tsx ./scripts/src/fetch-token-standard.ts",
         "script:fetch:ledger": "tsx ./scripts/src/fetch-ledger-api-specs.ts",
         "script:openrpc:titles": "tsx ./scripts/src/schema-title-validation.ts",
-        "full:rebuild": "yarn clean:all && yarn generate:all && yarn build:all",
-        "gen:proto": "yarn grpc_tools_node_protoc --plugin=protoc-gen-ts_proto=$(yarn bin protoc-gen-ts_proto) ts_out=./test/_gen --ts_proto_opt=generate_dependencies -I ./.canton/protobuf/ledger-api './.canton/protobuf/ledger-api/**/*.proto'"
+        "full:rebuild": "yarn clean:all && yarn generate:all && yarn build:all"
     },
     "workspaces": [
         "api-specs",

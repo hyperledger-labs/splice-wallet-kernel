@@ -3,6 +3,7 @@
 import { execFileSync } from 'child_process'
 import fs from 'fs'
 import { ensureDir, getRepoRoot, traverseDirectory } from './utils.js'
+import * as path from 'path'
 
 const repoRoot = getRepoRoot()
 
@@ -37,31 +38,70 @@ function generateProtos() {
     }
 }
 
-// function generateProtosWithPlugin() {
-//     const protocArgs = [
-//         '--plugin=protoc-gen-ts_proto=$(yarn bin protoc-gen-ts_proto)',
-//         `--ts_out=${outdir2}`,
-//         '--ts_opt=generate_dependencies',
-//         ...roots.map((roots2) => `-I${roots2}`)
-//     ]
+function listFilesInDirectoryWithExtension(
+    dirPath: string,
+    extension: string
+): string[] {
+    let filesFound: string[] = []
 
-//     try {
-//         execFileSync('grpc_tools_node_protoc', protocArgs, { stdio: 'inherit' })
-//         console.log('Protobuf files generated successfully.')
-//     } catch (error) {
-//         console.error('Error generating protobuf files:', error)
-//         process.exit(1)
-//     }
-// }
+    try {
+        const items = fs.readdirSync(dirPath)
 
-// yarn grpc_tools_node_protoc --plugin=protoc-gen-ts_proto=$(yarn bin protoc-gen-ts_proto) --ts_out=/Users/rukminibasu/Desktop/IdeaProjects/splice-wallet-kernel/core/ledger-client/src/_gen \
-// --ts_opt=generate_dependencies \
-//  -I /Users/rukminibasu/Desktop/IdeaProjects/splice-wallet-kernel/.canton/protobuf/ledger-api $(find /Users/rukminibasu/Desktop/IdeaProjects/splice-wallet-kernel/.canton/protobuf/ledger-api -type f -name '*.proto' ! -path /Users/rukminibasu/Desktop/IdeaProjects/splice-wallet-kernel/.canton/protobuf/ledger-api/com/daml/ledger/api/scalapb/package.proto) \
-// -I /Users/rukminibasu/Desktop/IdeaProjects/splice-wallet-kernel/.canton/protobuf/lib $(find /Users/rukminibasu/Desktop/IdeaProjects/splice-wallet-kernel/.canton/protobuf/lib -type f -name '*.proto')
+        for (const item of items) {
+            const itemPath = path.join(dirPath, item)
+            const stats = fs.statSync(itemPath)
 
-// /Users/rukminibasu/Desktop/IdeaProjects/splice-wallet-kernel/.canton/protobuf/ledger-api/**/*.proto
+            if (stats.isFile()) {
+                if (
+                    path.extname(itemPath).toLowerCase() ===
+                    extension.toLowerCase()
+                ) {
+                    filesFound.push(itemPath)
+                }
+            } else if (stats.isDirectory()) {
+                filesFound = filesFound.concat(
+                    listFilesInDirectoryWithExtension(itemPath, extension)
+                )
+            }
+        }
+    } catch (error) {
+        console.error(`Error reading directory ${dirPath}:`, error)
+    }
 
-// $(find .canton/protobuf/ledger-api -type f -name '*.proto' ! -path .canton/protobuf/ledger-api/com/daml/ledger/api/scalapb/package.proto)
+    return filesFound
+}
+
+function generateProtosWithPlugin() {
+    const roots2 = [
+        `${repoRoot}/.canton/protobuf/ledger-api`,
+        `${repoRoot}/.canton/protobuf/lib`,
+    ]
+    const ledgerApiRoot = `${repoRoot}/.canton/protobuf/ledger-api`
+    const libRoot = `${repoRoot}/.canton/protobuf/lib`
+
+    const ledgerApiFiles = listFilesInDirectoryWithExtension(
+        ledgerApiRoot,
+        '.proto'
+    )
+    const libFiles = listFilesInDirectoryWithExtension(libRoot, '.proto')
+
+    const protocArgs = [
+        '--plugin=protoc-gen-ts_proto=$(yarn bin protoc-gen-ts_proto)',
+        `--ts_out=${outdir}`,
+        '--ts_opt=generate_dependencies',
+        ...roots2.map((root) => `-I${root}`),
+        ...libFiles,
+        ...ledgerApiFiles,
+    ]
+
+    try {
+        execFileSync('grpc_tools_node_protoc', protocArgs, { stdio: 'inherit' })
+        console.log('Protobuf files generated successfully.')
+    } catch (error) {
+        console.error('Error generating protobuf files:', error)
+        process.exit(1)
+    }
+}
 
 // The protobuf plugin we're using, @protobuf-ts/plugin, generates files with relative imports that do not include the .js extension.
 // This is required in ESModule projects using NodeJS (non-bundler mode).
@@ -83,6 +123,7 @@ function rewriteImports() {
 async function main() {
     await ensureDir(outdir)
     generateProtos()
+    generateProtosWithPlugin()
     rewriteImports()
 }
 
