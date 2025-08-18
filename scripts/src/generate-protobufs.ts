@@ -2,7 +2,7 @@
 
 import { execFileSync } from 'child_process'
 import fs from 'fs'
-import { getRepoRoot, traverseDirectory } from './utils.js'
+import { ensureDir, getRepoRoot, traverseDirectory } from './utils.js'
 
 const repoRoot = getRepoRoot()
 
@@ -53,8 +53,8 @@ function rewriteImports() {
     })
 }
 
-function main() {
-    fs.mkdirSync(outdir, { recursive: true })
+async function main() {
+    await ensureDir(outdir)
     generateProtos()
     rewriteImports()
 }

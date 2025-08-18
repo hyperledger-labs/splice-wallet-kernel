@@ -114,7 +114,7 @@ utils.retry_until_true {
 logger.info(s"WALLET-KERNEL-BOOTSTRAP: Creating operator user and party")
 val operatorParty = participant1.ledger_api.parties.allocate("operator").party
 
-participant1.ledger_api.users.create(id = "operator", actAs = Set(operatorParty), readAs = Set(operatorParty), primaryParty = Some(operatorParty), participantAdmin = true, isDeactivated = false, annotations = Map("foo" -> "bar", "description" -> "This is a description"))
+participant1.ledger_api.users.create(id = "operator", actAs = Set(operatorParty), readAs = Set(operatorParty), primaryParty = Some(operatorParty), participantAdmin = false, isDeactivated = false, annotations = Map("foo" -> "bar", "description" -> "This is a description"))
 
 logger.info(s"WALLET-KERNEL-BOOTSTRAP: created operator user and party")
 

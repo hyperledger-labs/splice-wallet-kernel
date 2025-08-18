@@ -12,10 +12,9 @@
         "build": "tsc -b",
         "dev": "tsc -b --watch",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
+        "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
     },
     "dependencies": {
-        "core-wallet-auth": "workspace:^",
         "zod": "^3.25.64"
     },
     "devDependencies": {

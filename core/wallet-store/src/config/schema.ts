@@ -5,14 +5,21 @@ export const ledgerApiSchema = z.object({
     adminGrpcUrl: z.string().url(), // TODO(#180): remove after grpc is gone
 })
 
-export const passwordAuthSchema = z.object({
+const clientCredentials = z.object({
+    clientId: z.string(),
+    clientSecret: z.string(),
+})
+
+const passwordAuthSchema = z.object({
     type: z.literal('password'),
     issuer: z.string(),
     configUrl: z.string(),
+    audience: z.string(),
     tokenUrl: z.string(),
     grantType: z.string(),
     scope: z.string(),
     clientId: z.string(),
+    admin: z.optional(clientCredentials),
 })
 
 const implicitAuthSchema = z.object({
@@ -22,6 +29,7 @@ const implicitAuthSchema = z.object({
     audience: z.string(),
     scope: z.string(),
     clientId: z.string(),
+    admin: z.optional(clientCredentials),
 })
 
 const clientCredentialAuthSchema = z.object({
@@ -32,6 +40,7 @@ const clientCredentialAuthSchema = z.object({
     scope: z.string(),
     clientId: z.string(),
     clientSecret: z.string(),
+    admin: z.optional(clientCredentials),
 })
 
 export const authSchema = z.discriminatedUnion('type', [

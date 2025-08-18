@@ -26,14 +26,14 @@
         "@types/node": "^22.15.30",
         "jest": "^30.0.0",
         "openapi-typescript": "^7.8.0",
-        "pino": "^9.7.0",
         "ts-jest": "^29.4.0",
         "ts-jest-resolver": "^2.0.1",
         "typescript": "^5.8.3"
     },
     "dependencies": {
+        "openapi-fetch": "^0.14.0",
+        "pino": "^9.7.0",
         "@protobuf-ts/runtime": "^2.11.1",
-        "@protobuf-ts/runtime-rpc": "^2.11.1",
-        "openapi-fetch": "^0.14.0"
+        "@protobuf-ts/runtime-rpc": "^2.11.1"
     }
 }

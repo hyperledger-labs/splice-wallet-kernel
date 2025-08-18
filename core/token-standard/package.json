@@ -1,0 +1,21 @@
+{
+    "name": "core-token-standard",
+    "version": "0.0.1",
+    "description": "daml codegen js for core token standard",
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "packageManager": "yarn@4.9.2",
+    "scripts": {
+        "build": "tsc -b",
+        "dev": "tsc -b --watch",
+        "clean": "tsc -b --clean; rm -rf dist"
+    },
+    "dependencies": {
+        "uuid": "^11.1.0",
+        "zod": "^3.25.67"
+    },
+    "devDependencies": {
+        "typescript": "^5.8.3"
+    }
+}

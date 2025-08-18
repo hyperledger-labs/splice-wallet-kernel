@@ -8,6 +8,7 @@ import {
     CANTON_PATH,
     CANTON_VERSION,
     DAML_RELEASE_VERSION,
+    ensureDir,
     error,
     info,
     success,
@@ -51,7 +52,7 @@ async function verifyFileIntegrity(tarfile: string): Promise<void> {
 }
 
 async function main() {
-    fs.mkdirSync(CANTON_PATH, { recursive: true }) // ensure output directory exists
+    await ensureDir(CANTON_PATH)
     const tarfile = path.join(CANTON_PATH, 'canton.tar.gz')
 
     if (fs.existsSync(tarfile)) {
