@@ -5,10 +5,9 @@ import {
     PartyMode,
     SigningDriverInterface,
     SigningProvider,
-    OfflineSignTransactionHash,
+    SignTransactionHash,
+    CreateKeyPair,
 } from 'core-signing-lib'
-import nacl from 'tweetnacl'
-import naclUtil from 'tweetnacl-util'
 
 import {
     SignTransactionParams,
@@ -71,7 +70,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
                 const key = this.signerByPublicKey.get(params.publicKey)
                 if (key) {
                     const txId = randomUUID()
-                    const signature = OfflineSignTransactionHash(
+                    const signature = SignTransactionHash(
                         params.txHash,
                         key.privateKey
                     )
@@ -156,10 +155,8 @@ export class InternalSigningDriver implements SigningDriverInterface {
             createKey: async (
                 params: CreateKeyParams
             ): Promise<CreateKeyResult> => {
-                const key = nacl.sign.keyPair()
+                const { publicKey, privateKey } = CreateKeyPair()
                 const id = randomUUID()
-                const publicKey = naclUtil.encodeBase64(key.publicKey)
-                const privateKey = naclUtil.encodeBase64(key.secretKey)
 
                 const internalKey: InternalKey = {
                     id,

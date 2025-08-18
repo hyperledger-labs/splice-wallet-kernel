@@ -18,6 +18,11 @@ export enum PartyMode {
     EXTERNAL = 'external',
 }
 
+export interface KeyPair {
+    publicKey: string
+    privateKey: string
+}
+
 export enum SigningProvider {
     WALLET_KERNEL = 'wallet-kernel',
     PARTICIPANT = 'participant',
@@ -30,7 +35,7 @@ export interface SigningDriverInterface {
     controller: (userId: AuthContext['userId'] | undefined) => Methods
 }
 
-export const OfflineSignTransactionHash = (
+export const SignTransactionHash = (
     txHash: string,
     privateKey: string
 ): string => {
@@ -39,4 +44,12 @@ export const OfflineSignTransactionHash = (
     return naclUtil.encodeBase64(
         nacl.sign.detached(naclUtil.decodeBase64(txHash), decodedKey)
     )
+}
+
+export const CreateKeyPair = (): KeyPair => {
+    const key = nacl.sign.keyPair()
+    const publicKey = naclUtil.encodeBase64(key.publicKey)
+    const privateKey = naclUtil.encodeBase64(key.secretKey)
+
+    return { publicKey, privateKey }
 }
