@@ -5732,7 +5732,6 @@ __metadata:
     "@types/fs-extra": "npm:^11"
     "@types/lodash": "npm:^4.17.17"
     "@types/node": "npm:^22.15.29"
-    core-wallet-auth: "workspace:^"
     fs-extra: "npm:^11.3.0"
     lodash: "npm:^4.17.21"
     typescript: "npm:^5.8.3"
