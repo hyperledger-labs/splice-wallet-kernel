@@ -76,6 +76,7 @@ export class TopologyWriteService {
     constructor(
         synchronizerId: string,
         userAdminUrl: string,
+        private userAdminToken: string,
         ledgerClient: LedgerClient
     ) {
         const transport = new GrpcTransport({
@@ -228,7 +229,11 @@ export class TopologyWriteService {
             signingPublicKey
         )
 
-        return this.topologyClient.generateTransactions(req).response
+        return this.topologyClient.generateTransactions(req, {
+            meta: {
+                Authorization: `Bearer ${this.userAdminToken}`,
+            },
+        }).response
     }
 
     async addTransactions(
@@ -240,7 +245,11 @@ export class TopologyWriteService {
             store: this.store,
         })
 
-        return this.topologyClient.addTransactions(request).response
+        return this.topologyClient.addTransactions(request, {
+            meta: {
+                Authorization: `Bearer ${this.userAdminToken}`,
+            },
+        }).response
     }
 
     async waitForPartyToParticipantProposal(
@@ -297,6 +306,10 @@ export class TopologyWriteService {
             store: this.store,
         })
 
-        return this.topologyClient.authorize(request).response
+        return this.topologyClient.authorize(request, {
+            meta: {
+                Authorization: `Bearer ${this.userAdminToken}`,
+            },
+        }).response
     }
 }

@@ -10,8 +10,6 @@ import { configSchema } from '../config/Config.js'
 import { pino } from 'pino'
 import { sink } from 'pino-test'
 
-jest.mock('core-ledger-client')
-
 const authService: AuthService = {
     verifyToken: async () => {
         return new Promise((resolve) =>
