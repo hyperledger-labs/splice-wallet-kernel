@@ -1,6 +1,6 @@
 import { AuthContext } from 'core-wallet-auth'
 import { Methods } from './rpc-gen/index.js'
-import { Error as RpcError, Transaction } from './rpc-gen/typings.js'
+import { Error as RpcError } from './rpc-gen/typings.js'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
 
@@ -30,48 +30,13 @@ export interface SigningDriverInterface {
     controller: (userId: AuthContext['userId'] | undefined) => Methods
 }
 
-export interface InternalKey {
-    id: string
-    name: string
-    publicKey: string
-    privateKey: string
-}
-
-export interface InternalTransaction {
-    id: string
-    hash: string
-    signature: string
-    publicKey: string
-    createdAt: Date
-}
-
-export const convertInternalTransaction = (
-    tx: InternalTransaction
-): Transaction => {
-    return {
-        txId: tx.id,
-        status: 'signed',
-        signature: tx.signature,
-        publicKey: tx.publicKey,
-    }
-}
-
-export const offlineSignTransaction = (
-    txId: string,
+export const OfflineSignTransactionHash = (
     txHash: string,
     privateKey: string
-): InternalTransaction => {
+): string => {
     const decodedKey = naclUtil.decodeBase64(privateKey)
-    const keyPair = nacl.sign.keyPair.fromSecretKey(decodedKey)
-    const signature = naclUtil.encodeBase64(
+
+    return naclUtil.encodeBase64(
         nacl.sign.detached(naclUtil.decodeBase64(txHash), decodedKey)
     )
-
-    return {
-        id: txId,
-        hash: txHash,
-        signature,
-        publicKey: naclUtil.encodeBase64(keyPair.publicKey),
-        createdAt: new Date(),
-    }
 }

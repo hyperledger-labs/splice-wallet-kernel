@@ -5,10 +5,7 @@ import {
     PartyMode,
     SigningDriverInterface,
     SigningProvider,
-    InternalKey,
-    InternalTransaction,
-    convertInternalTransaction,
-    offlineSignTransaction,
+    OfflineSignTransactionHash,
 } from 'core-signing-lib'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
@@ -28,9 +25,33 @@ import {
     SubscribeTransactionsParams,
     SubscribeTransactionsResult,
     SetConfigurationResult,
+    Transaction,
 } from 'core-signing-lib'
 import { randomUUID } from 'node:crypto'
 import { AuthContext } from 'core-wallet-auth'
+
+interface InternalKey {
+    id: string
+    name: string
+    publicKey: string
+    privateKey: string
+}
+
+interface InternalTransaction {
+    id: string
+    hash: string
+    signature: string
+    publicKey: string
+    createdAt: Date
+}
+const convertInternalTransaction = (tx: InternalTransaction): Transaction => {
+    return {
+        txId: tx.id,
+        status: 'signed',
+        signature: tx.signature,
+        publicKey: tx.publicKey,
+    }
+}
 
 export class InternalSigningDriver implements SigningDriverInterface {
     private signer: Map<string, InternalKey> = new Map()
@@ -50,18 +71,25 @@ export class InternalSigningDriver implements SigningDriverInterface {
                 const key = this.signerByPublicKey.get(params.publicKey)
                 if (key) {
                     const txId = randomUUID()
-                    const internalTransaction = offlineSignTransaction(
-                        txId,
+                    const signature = OfflineSignTransactionHash(
                         params.txHash,
                         key.privateKey
                     )
+
+                    const internalTransaction: InternalTransaction = {
+                        id: txId,
+                        hash: params.txHash,
+                        signature,
+                        publicKey: params.publicKey,
+                        createdAt: new Date(),
+                    }
 
                     this.transactions.set(txId, internalTransaction)
 
                     return Promise.resolve({
                         txId,
                         status: 'signed',
-                        signature: internalTransaction.signature,
+                        signature,
                     } as SignTransactionResult)
                 } else {
                     return Promise.resolve({

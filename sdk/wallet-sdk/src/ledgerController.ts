@@ -1,4 +1,5 @@
 import { LedgerClient, PostResponse } from 'core-ledger-client'
+import { OfflineSignTransactionHash } from 'core-signing-lib'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
 
@@ -41,6 +42,21 @@ export class LedgerController implements ledgerController {
     setSynchronizerId(synchronizerId: string): LedgerController {
         this.synchronizerId = synchronizerId
         return this
+    }
+
+    async prepareSignAndExecuteTransaction(
+        commands: unknown,
+        privateKey: string,
+        commandId?: string
+    ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
+        const prepared = await this.prepareSubmission(commands, commandId)
+
+        const signature = OfflineSignTransactionHash(
+            prepared.preparedTransactionHash,
+            privateKey
+        )
+
+        return this.executeSubmission(prepared, signature, commandId)
     }
 
     async prepareSubmission(

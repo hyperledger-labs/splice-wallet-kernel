@@ -12545,6 +12545,7 @@ __metadata:
   resolution: "splice-sdk-wallet@workspace:sdk/wallet-sdk"
   dependencies:
     core-ledger-client: "workspace:^"
+    core-signing-lib: "workspace:^"
     pino: "npm:^9.7.0"
     typescript: "npm:^5.8.3"
     uuid: "npm:^11.1.0"
