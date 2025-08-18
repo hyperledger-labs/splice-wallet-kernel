@@ -5,8 +5,8 @@ import {
     PartyMode,
     SigningDriverInterface,
     SigningProvider,
-    SignTransactionHash,
-    CreateKeyPair,
+    signTransactionHash,
+    createKeyPair,
 } from 'core-signing-lib'
 
 import {
@@ -70,7 +70,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
                 const key = this.signerByPublicKey.get(params.publicKey)
                 if (key) {
                     const txId = randomUUID()
-                    const signature = SignTransactionHash(
+                    const signature = signTransactionHash(
                         params.txHash,
                         key.privateKey
                     )
@@ -155,7 +155,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
             createKey: async (
                 params: CreateKeyParams
             ): Promise<CreateKeyResult> => {
-                const { publicKey, privateKey } = CreateKeyPair()
+                const { publicKey, privateKey } = createKeyPair()
                 const id = randomUUID()
 
                 const internalKey: InternalKey = {

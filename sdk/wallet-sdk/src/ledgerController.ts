@@ -1,5 +1,5 @@
 import { LedgerClient, PostResponse } from 'core-ledger-client'
-import { SignTransactionHash } from 'core-signing-lib'
+import { signTransactionHash } from 'core-signing-lib'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
 
@@ -51,7 +51,7 @@ export class LedgerController implements ledgerController {
     ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
         const prepared = await this.prepareSubmission(commands, commandId)
 
-        const signature = SignTransactionHash(
+        const signature = signTransactionHash(
             prepared.preparedTransactionHash,
             privateKey
         )

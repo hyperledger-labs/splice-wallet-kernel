@@ -35,7 +35,7 @@ export interface SigningDriverInterface {
     controller: (userId: AuthContext['userId'] | undefined) => Methods
 }
 
-export const SignTransactionHash = (
+export const signTransactionHash = (
     txHash: string,
     privateKey: string
 ): string => {
@@ -46,7 +46,7 @@ export const SignTransactionHash = (
     )
 }
 
-export const CreateKeyPair = (): KeyPair => {
+export const createKeyPair = (): KeyPair => {
     const key = nacl.sign.keyPair()
     const publicKey = naclUtil.encodeBase64(key.publicKey)
     const privateKey = naclUtil.encodeBase64(key.secretKey)
