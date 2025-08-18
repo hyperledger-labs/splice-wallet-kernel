@@ -1,9 +1,18 @@
 import { beforeEach, describe, expect, test } from '@jest/globals'
 
 import { StoreInternal } from './StoreInternal'
-import { Wallet, Session, Store } from './Store'
-import { LedgerApi, Network, PasswordAuth, StoreConfig } from './config/schema'
+import {
+    Wallet,
+    Session,
+    Store,
+    LedgerApi,
+    Network,
+    PasswordAuth,
+    StoreConfig,
+} from 'core-wallet-store'
 import { AuthContext } from 'core-wallet-auth'
+import { pino, Logger } from 'pino'
+import { sink } from 'pino-test'
 
 const authContextMock: AuthContext = {
     userId: 'test-user-id',
@@ -14,7 +23,11 @@ const storeConfig: StoreConfig = {
     networks: [],
 }
 
-type StoreCtor = new (config: StoreConfig, authContext?: AuthContext) => Store
+type StoreCtor = new (
+    config: StoreConfig,
+    logger: Logger,
+    authContext?: AuthContext
+) => Store
 
 const implementations: Array<[string, StoreCtor]> = [
     ['StoreInternal', StoreInternal],
@@ -25,7 +38,7 @@ implementations.forEach(([name, StoreImpl]) => {
         let store: Store
 
         beforeEach(() => {
-            store = new StoreImpl(storeConfig, authContextMock)
+            store = new StoreImpl(storeConfig, pino(sink()), authContextMock)
         })
 
         test('should add and retrieve wallets', async () => {

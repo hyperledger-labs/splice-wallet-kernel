@@ -1,3 +1,4 @@
+import { Logger } from 'pino'
 import { AuthContext, UserId, AuthAware } from 'core-wallet-auth'
 import {
     Store,
@@ -6,8 +7,9 @@ import {
     Session,
     WalletFilter,
     Transaction,
-} from './Store.js'
-import { Network } from './config/schema.js'
+    Network,
+} from 'core-wallet-store'
+import { LedgerClient } from 'core-ledger-client'
 
 interface UserStorage {
     wallets: Array<Wallet>
@@ -23,6 +25,7 @@ type Memory = Map<UserId, UserStorage>
 
 // TODO: remove AuthAware and instead provide wrapper in clients
 export class StoreInternal implements Store, AuthAware<StoreInternal> {
+    private logger: Logger
     private systemStorage: StoreInternalConfig
     private userStorage: Memory
 
@@ -30,16 +33,25 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
 
     constructor(
         config: StoreInternalConfig,
+        logger: Logger,
         authContext?: AuthContext,
         userStorage?: Memory
     ) {
+        this.logger = logger.child({ component: 'StoreInternal' })
         this.systemStorage = config
         this.authContext = authContext
         this.userStorage = userStorage || new Map()
+
+        this.syncWallets()
     }
 
     withAuthContext(context?: AuthContext): StoreInternal {
-        return new StoreInternal(this.systemStorage, context, this.userStorage)
+        return new StoreInternal(
+            this.systemStorage,
+            this.logger,
+            context,
+            this.userStorage
+        )
     }
 
     static createStorage(): UserStorage {
@@ -71,6 +83,75 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     // Wallet methods
+
+    private async syncWallets(): Promise<void> {
+        try {
+            const network = await this.getCurrentNetwork()
+
+            // Get existing parties from participant
+            const ledgerClient = new LedgerClient(
+                network.ledgerApi.baseUrl,
+                this.authContext!.accessToken,
+                this.logger
+            )
+            const rights = await ledgerClient.get(
+                '/v2/users/{user-id}/rights',
+                {
+                    path: {
+                        'user-id': this.authContext!.userId,
+                    },
+                }
+            )
+            const parties = rights.rights
+                ?.filter((right) => 'CanActAs' in right.kind)
+                .map((right) => {
+                    if ('CanActAs' in right.kind) {
+                        return right.kind.CanActAs.value.party
+                    }
+                    throw new Error('Unexpected right kind')
+                })
+
+            // Merge Wallets
+            const existingWallets = await this.getWallets()
+            const existingPartyIds = new Set(
+                existingWallets.map((w) => w.partyId)
+            )
+            const participantWallets: Array<Wallet> =
+                parties
+                    ?.filter(
+                        (party) => !existingPartyIds.has(party)
+                        // todo: filter on idp id
+                    )
+                    .map((party) => {
+                        const [hint, namespace] = party.split('::')
+                        return {
+                            primary: false,
+                            partyId: party,
+                            hint: hint,
+                            publicKey: namespace,
+                            namespace: namespace,
+                            chainId: network.chainId,
+                            signingProviderId: 'participant', // todo: determine based on partyDetails.isLocal
+                        }
+                    }) || []
+            const storage = this.getStorage()
+            const wallets = [...storage.wallets, ...participantWallets]
+
+            // Set primary wallet if none exists
+            const hasPrimary = wallets.some((w) => w.primary)
+            if (!hasPrimary && wallets.length > 0) {
+                wallets[0].primary = true
+            }
+
+            this.logger.debug(wallets, 'Wallets synchronized')
+
+            // Update storage with new wallets
+            storage.wallets = wallets
+            this.updateStorage(storage)
+        } catch {
+            return
+        }
+    }
 
     async getWallets(filter: WalletFilter = {}): Promise<Array<Wallet>> {
         const { chainIds, signingProviderIds } = filter
