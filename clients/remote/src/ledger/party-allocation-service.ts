@@ -1,15 +1,13 @@
-import { LedgerClient } from 'core-ledger-client'
-import { TopologyWriteService } from './TopologyWriteService.js'
-import { Logger } from 'pino'
 import {
+    LedgerClient,
+    TopologyWriteService,
     Signature,
     SignatureFormat,
     SigningAlgorithmSpec,
-} from '../_proto/com/digitalasset/canton/crypto/v30/crypto.js'
-import {
     MultiTransactionSignatures,
     SignedTopologyTransaction,
-} from '../_proto/com/digitalasset/canton/protocol/v30/topology.js'
+} from 'core-ledger-client'
+import { Logger } from 'pino'
 
 export type AllocatedParty = {
     partyId: string
