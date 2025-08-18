@@ -1,15 +1,6 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-    LedgerClient,
-    TopologyWriteService,
-    Signature,
-    SignatureFormat,
-    SigningAlgorithmSpec,
-    MultiTransactionSignatures,
-    SignedTopologyTransaction,
-    GenerateTransactionsResponse_GeneratedTransaction,
-} from 'core-ledger-client'
+import { LedgerClient } from 'core-ledger-client'
 import buildController from './rpc-gen/index.js'
 import {
     AddNetworkParams,
@@ -126,7 +117,9 @@ export const userController = (
                 network.ledgerApi.adminGrpcUrl,
                 logger
             )
-            const driver = drivers[params.signingProviderId as SigningProvider]
+            const driver = drivers[
+                params.signingProviderId as SigningProvider
+            ]?.controller(authContext.userId)
 
             if (!driver) {
                 throw new Error(
@@ -135,6 +128,7 @@ export const userController = (
             }
 
             let party: AllocatedParty
+            let publicKey: string | undefined
 
             switch (params.signingProviderId) {
                 case SigningProvider.PARTICIPANT: {
@@ -145,28 +139,25 @@ export const userController = (
                     break
                 }
                 case SigningProvider.WALLET_KERNEL: {
-                    const key = await driver.controller(authContext).createKey({
+                    const key = await driver.createKey({
                         name: params.partyHint,
                     })
 
                     party = await partyAllocator.allocateParty(
                         userId,
                         params.partyHint,
-                        {
-                            publicKey: key.publicKey,
-                            signingCallback: async (hash) => {
-                                const { signature } = await driver
-                                    .controller(authContext)
-                                    .signTransaction({
-                                        tx: '',
-                                        txHash: hash,
-                                        publicKey: key.publicKey,
-                                    })
+                        key.publicKey,
+                        async (hash) => {
+                            const { signature } = await driver.signTransaction({
+                                tx: '',
+                                txHash: hash,
+                                publicKey: key.publicKey,
+                            })
 
-                                return signature
-                            },
+                            return signature
                         }
                     )
+                    publicKey = key.publicKey
                     break
                 }
                 default:
@@ -179,7 +170,7 @@ export const userController = (
                 signingProviderId: params.signingProviderId,
                 chainId: params.chainId,
                 primary: params.primary ?? false,
-                publicKey: party.namespace,
+                publicKey: publicKey || party.namespace,
                 ...party,
             }
 
@@ -229,7 +220,10 @@ export const userController = (
             const notifier = notificationService.getNotifier(userId)
 
             const signingProvider = wallet.signingProviderId as SigningProvider
-            const driver = drivers[signingProvider]
+            const driver = drivers[signingProvider]?.controller(
+                authContext.userId
+            )
+
             if (!driver) {
                 throw new Error('No driver found for WALLET_KERNEL')
             }
@@ -243,13 +237,11 @@ export const userController = (
                     }
                 }
                 case SigningProvider.WALLET_KERNEL: {
-                    const signature = await driver
-                        .controller(authContext)
-                        .signTransaction({
-                            tx: preparedTransaction,
-                            txHash: preparedTransactionHash,
-                            publicKey: wallet.publicKey,
-                        })
+                    const signature = await driver.signTransaction({
+                        tx: preparedTransaction,
+                        txHash: preparedTransactionHash,
+                        publicKey: wallet.publicKey,
+                    })
 
                     if (!signature.signature) {
                         throw new Error(
@@ -310,8 +302,6 @@ export const userController = (
                 authContext.accessToken,
                 logger
             )
-
-            logger.debug(transaction, 'transaction is')
 
             switch (wallet.signingProviderId) {
                 case SigningProvider.PARTICIPANT: {
