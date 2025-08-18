@@ -67,21 +67,21 @@ class DynamicSequencingParameters$Type extends MessageType<DynamicSequencingPara
         options: BinaryReadOptions,
         target?: DynamicSequencingParameters
     ): DynamicSequencingParameters {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* bytes payload */ 1:
                     message.payload = reader.bytes()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -102,7 +102,7 @@ class DynamicSequencingParameters$Type extends MessageType<DynamicSequencingPara
         /* bytes payload = 1; */
         if (message.payload.length)
             writer.tag(1, WireType.LengthDelimited).bytes(message.payload)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,

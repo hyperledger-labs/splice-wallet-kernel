@@ -1481,10 +1481,10 @@ class FileDescriptorSet$Type extends MessageType<FileDescriptorSet> {
         options: BinaryReadOptions,
         target?: FileDescriptorSet
     ): FileDescriptorSet {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* repeated google.protobuf.FileDescriptorProto file */ 1:
                     message.file.push(
@@ -1496,12 +1496,12 @@ class FileDescriptorSet$Type extends MessageType<FileDescriptorSet> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1526,7 +1526,7 @@ class FileDescriptorSet$Type extends MessageType<FileDescriptorSet> {
                 writer.tag(1, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1642,10 +1642,10 @@ class FileDescriptorProto$Type extends MessageType<FileDescriptorProto> {
         options: BinaryReadOptions,
         target?: FileDescriptorProto
     ): FileDescriptorProto {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional string name */ 1:
                     message.name = reader.string()
@@ -1732,12 +1732,12 @@ class FileDescriptorProto$Type extends MessageType<FileDescriptorProto> {
                     message.syntax = reader.string()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1817,7 +1817,7 @@ class FileDescriptorProto$Type extends MessageType<FileDescriptorProto> {
         /* optional string syntax = 12; */
         if (message.syntax !== undefined)
             writer.tag(12, WireType.LengthDelimited).string(message.syntax)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1926,10 +1926,10 @@ class DescriptorProto$Type extends MessageType<DescriptorProto> {
         options: BinaryReadOptions,
         target?: DescriptorProto
     ): DescriptorProto {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional string name */ 1:
                     message.name = reader.string()
@@ -2009,12 +2009,12 @@ class DescriptorProto$Type extends MessageType<DescriptorProto> {
                     message.reservedName.push(reader.string())
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2096,7 +2096,7 @@ class DescriptorProto$Type extends MessageType<DescriptorProto> {
             writer
                 .tag(10, WireType.LengthDelimited)
                 .string(message.reservedName[i])
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2154,10 +2154,10 @@ class DescriptorProto_ExtensionRange$Type extends MessageType<DescriptorProto_Ex
         options: BinaryReadOptions,
         target?: DescriptorProto_ExtensionRange
     ): DescriptorProto_ExtensionRange {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional int32 start */ 1:
                     message.start = reader.int32()
@@ -2174,12 +2174,12 @@ class DescriptorProto_ExtensionRange$Type extends MessageType<DescriptorProto_Ex
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2210,7 +2210,7 @@ class DescriptorProto_ExtensionRange$Type extends MessageType<DescriptorProto_Ex
                 writer.tag(3, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2263,10 +2263,10 @@ class DescriptorProto_ReservedRange$Type extends MessageType<DescriptorProto_Res
         options: BinaryReadOptions,
         target?: DescriptorProto_ReservedRange
     ): DescriptorProto_ReservedRange {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional int32 start */ 1:
                     message.start = reader.int32()
@@ -2275,12 +2275,12 @@ class DescriptorProto_ReservedRange$Type extends MessageType<DescriptorProto_Res
                     message.end = reader.int32()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2304,7 +2304,7 @@ class DescriptorProto_ReservedRange$Type extends MessageType<DescriptorProto_Res
         /* optional int32 end = 2; */
         if (message.end !== undefined)
             writer.tag(2, WireType.Varint).int32(message.end)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2347,10 +2347,10 @@ class ExtensionRangeOptions$Type extends MessageType<ExtensionRangeOptions> {
         options: BinaryReadOptions,
         target?: ExtensionRangeOptions
     ): ExtensionRangeOptions {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* repeated google.protobuf.UninterpretedOption uninterpreted_option */ 999:
                     message.uninterpretedOption.push(
@@ -2362,12 +2362,12 @@ class ExtensionRangeOptions$Type extends MessageType<ExtensionRangeOptions> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2392,7 +2392,7 @@ class ExtensionRangeOptions$Type extends MessageType<ExtensionRangeOptions> {
                 writer.tag(999, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2503,10 +2503,10 @@ class FieldDescriptorProto$Type extends MessageType<FieldDescriptorProto> {
         options: BinaryReadOptions,
         target?: FieldDescriptorProto
     ): FieldDescriptorProto {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional string name */ 1:
                     message.name = reader.string()
@@ -2547,12 +2547,12 @@ class FieldDescriptorProto$Type extends MessageType<FieldDescriptorProto> {
                     message.proto3Optional = reader.bool()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2607,7 +2607,7 @@ class FieldDescriptorProto$Type extends MessageType<FieldDescriptorProto> {
         /* optional bool proto3_optional = 17; */
         if (message.proto3Optional !== undefined)
             writer.tag(17, WireType.Varint).bool(message.proto3Optional)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2647,10 +2647,10 @@ class OneofDescriptorProto$Type extends MessageType<OneofDescriptorProto> {
         options: BinaryReadOptions,
         target?: OneofDescriptorProto
     ): OneofDescriptorProto {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional string name */ 1:
                     message.name = reader.string()
@@ -2664,12 +2664,12 @@ class OneofDescriptorProto$Type extends MessageType<OneofDescriptorProto> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2697,7 +2697,7 @@ class OneofDescriptorProto$Type extends MessageType<OneofDescriptorProto> {
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2761,10 +2761,10 @@ class EnumDescriptorProto$Type extends MessageType<EnumDescriptorProto> {
         options: BinaryReadOptions,
         target?: EnumDescriptorProto
     ): EnumDescriptorProto {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional string name */ 1:
                     message.name = reader.string()
@@ -2799,12 +2799,12 @@ class EnumDescriptorProto$Type extends MessageType<EnumDescriptorProto> {
                     message.reservedName.push(reader.string())
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2851,7 +2851,7 @@ class EnumDescriptorProto$Type extends MessageType<EnumDescriptorProto> {
             writer
                 .tag(5, WireType.LengthDelimited)
                 .string(message.reservedName[i])
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2903,10 +2903,10 @@ class EnumDescriptorProto_EnumReservedRange$Type extends MessageType<EnumDescrip
         options: BinaryReadOptions,
         target?: EnumDescriptorProto_EnumReservedRange
     ): EnumDescriptorProto_EnumReservedRange {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional int32 start */ 1:
                     message.start = reader.int32()
@@ -2915,12 +2915,12 @@ class EnumDescriptorProto_EnumReservedRange$Type extends MessageType<EnumDescrip
                     message.end = reader.int32()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2944,7 +2944,7 @@ class EnumDescriptorProto_EnumReservedRange$Type extends MessageType<EnumDescrip
         /* optional int32 end = 2; */
         if (message.end !== undefined)
             writer.tag(2, WireType.Varint).int32(message.end)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -3003,10 +3003,10 @@ class EnumValueDescriptorProto$Type extends MessageType<EnumValueDescriptorProto
         options: BinaryReadOptions,
         target?: EnumValueDescriptorProto
     ): EnumValueDescriptorProto {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional string name */ 1:
                     message.name = reader.string()
@@ -3023,12 +3023,12 @@ class EnumValueDescriptorProto$Type extends MessageType<EnumValueDescriptorProto
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -3059,7 +3059,7 @@ class EnumValueDescriptorProto$Type extends MessageType<EnumValueDescriptorProto
                 writer.tag(3, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -3114,10 +3114,10 @@ class ServiceDescriptorProto$Type extends MessageType<ServiceDescriptorProto> {
         options: BinaryReadOptions,
         target?: ServiceDescriptorProto
     ): ServiceDescriptorProto {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional string name */ 1:
                     message.name = reader.string()
@@ -3140,12 +3140,12 @@ class ServiceDescriptorProto$Type extends MessageType<ServiceDescriptorProto> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -3180,7 +3180,7 @@ class ServiceDescriptorProto$Type extends MessageType<ServiceDescriptorProto> {
                 writer.tag(3, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -3250,10 +3250,10 @@ class MethodDescriptorProto$Type extends MessageType<MethodDescriptorProto> {
         options: BinaryReadOptions,
         target?: MethodDescriptorProto
     ): MethodDescriptorProto {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional string name */ 1:
                     message.name = reader.string()
@@ -3279,12 +3279,12 @@ class MethodDescriptorProto$Type extends MessageType<MethodDescriptorProto> {
                     message.serverStreaming = reader.bool()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -3324,7 +3324,7 @@ class MethodDescriptorProto$Type extends MessageType<MethodDescriptorProto> {
         /* optional bool server_streaming = 6 [default = false]; */
         if (message.serverStreaming !== undefined)
             writer.tag(6, WireType.Varint).bool(message.serverStreaming)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -3507,10 +3507,10 @@ class FileOptions$Type extends MessageType<FileOptions> {
         options: BinaryReadOptions,
         target?: FileOptions
     ): FileOptions {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional string java_package */ 1:
                     message.javaPackage = reader.string()
@@ -3582,12 +3582,12 @@ class FileOptions$Type extends MessageType<FileOptions> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -3686,7 +3686,7 @@ class FileOptions$Type extends MessageType<FileOptions> {
                 writer.tag(999, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -3754,10 +3754,10 @@ class MessageOptions$Type extends MessageType<MessageOptions> {
         options: BinaryReadOptions,
         target?: MessageOptions
     ): MessageOptions {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional bool message_set_wire_format = 1 [default = false] */ 1:
                     message.messageSetWireFormat = reader.bool()
@@ -3781,12 +3781,12 @@ class MessageOptions$Type extends MessageType<MessageOptions> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -3825,7 +3825,7 @@ class MessageOptions$Type extends MessageType<MessageOptions> {
                 writer.tag(999, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -3913,10 +3913,10 @@ class FieldOptions$Type extends MessageType<FieldOptions> {
         options: BinaryReadOptions,
         target?: FieldOptions
     ): FieldOptions {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional google.protobuf.FieldOptions.CType ctype = 1 [default = STRING] */ 1:
                     message.ctype = reader.int32()
@@ -3946,12 +3946,12 @@ class FieldOptions$Type extends MessageType<FieldOptions> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -3994,7 +3994,7 @@ class FieldOptions$Type extends MessageType<FieldOptions> {
                 writer.tag(999, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -4034,10 +4034,10 @@ class OneofOptions$Type extends MessageType<OneofOptions> {
         options: BinaryReadOptions,
         target?: OneofOptions
     ): OneofOptions {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* repeated google.protobuf.UninterpretedOption uninterpreted_option */ 999:
                     message.uninterpretedOption.push(
@@ -4049,12 +4049,12 @@ class OneofOptions$Type extends MessageType<OneofOptions> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -4079,7 +4079,7 @@ class OneofOptions$Type extends MessageType<OneofOptions> {
                 writer.tag(999, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -4133,10 +4133,10 @@ class EnumOptions$Type extends MessageType<EnumOptions> {
         options: BinaryReadOptions,
         target?: EnumOptions
     ): EnumOptions {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional bool allow_alias */ 2:
                     message.allowAlias = reader.bool()
@@ -4154,12 +4154,12 @@ class EnumOptions$Type extends MessageType<EnumOptions> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -4190,7 +4190,7 @@ class EnumOptions$Type extends MessageType<EnumOptions> {
                 writer.tag(999, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -4237,10 +4237,10 @@ class EnumValueOptions$Type extends MessageType<EnumValueOptions> {
         options: BinaryReadOptions,
         target?: EnumValueOptions
     ): EnumValueOptions {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional bool deprecated = 1 [default = false] */ 1:
                     message.deprecated = reader.bool()
@@ -4255,12 +4255,12 @@ class EnumValueOptions$Type extends MessageType<EnumValueOptions> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -4288,7 +4288,7 @@ class EnumValueOptions$Type extends MessageType<EnumValueOptions> {
                 writer.tag(999, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -4335,10 +4335,10 @@ class ServiceOptions$Type extends MessageType<ServiceOptions> {
         options: BinaryReadOptions,
         target?: ServiceOptions
     ): ServiceOptions {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional bool deprecated = 33 [default = false] */ 33:
                     message.deprecated = reader.bool()
@@ -4353,12 +4353,12 @@ class ServiceOptions$Type extends MessageType<ServiceOptions> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -4386,7 +4386,7 @@ class ServiceOptions$Type extends MessageType<ServiceOptions> {
                 writer.tag(999, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -4443,10 +4443,10 @@ class MethodOptions$Type extends MessageType<MethodOptions> {
         options: BinaryReadOptions,
         target?: MethodOptions
     ): MethodOptions {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* optional bool deprecated = 33 [default = false] */ 33:
                     message.deprecated = reader.bool()
@@ -4464,12 +4464,12 @@ class MethodOptions$Type extends MessageType<MethodOptions> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -4500,7 +4500,7 @@ class MethodOptions$Type extends MessageType<MethodOptions> {
                 writer.tag(999, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -4584,10 +4584,10 @@ class UninterpretedOption$Type extends MessageType<UninterpretedOption> {
         options: BinaryReadOptions,
         target?: UninterpretedOption
     ): UninterpretedOption {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* repeated google.protobuf.UninterpretedOption.NamePart name */ 2:
                     message.name.push(
@@ -4617,12 +4617,12 @@ class UninterpretedOption$Type extends MessageType<UninterpretedOption> {
                     message.aggregateValue = reader.string()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -4669,7 +4669,7 @@ class UninterpretedOption$Type extends MessageType<UninterpretedOption> {
             writer
                 .tag(8, WireType.LengthDelimited)
                 .string(message.aggregateValue)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -4721,10 +4721,10 @@ class UninterpretedOption_NamePart$Type extends MessageType<UninterpretedOption_
         options: BinaryReadOptions,
         target?: UninterpretedOption_NamePart
     ): UninterpretedOption_NamePart {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* required string name_part */ 1:
                     message.namePart = reader.string()
@@ -4733,12 +4733,12 @@ class UninterpretedOption_NamePart$Type extends MessageType<UninterpretedOption_
                     message.isExtension = reader.bool()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -4762,7 +4762,7 @@ class UninterpretedOption_NamePart$Type extends MessageType<UninterpretedOption_
         /* required bool is_extension = 2; */
         if (message.isExtension !== false)
             writer.tag(2, WireType.Varint).bool(message.isExtension)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -4803,10 +4803,10 @@ class SourceCodeInfo$Type extends MessageType<SourceCodeInfo> {
         options: BinaryReadOptions,
         target?: SourceCodeInfo
     ): SourceCodeInfo {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* repeated google.protobuf.SourceCodeInfo.Location location */ 1:
                     message.location.push(
@@ -4818,12 +4818,12 @@ class SourceCodeInfo$Type extends MessageType<SourceCodeInfo> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -4848,7 +4848,7 @@ class SourceCodeInfo$Type extends MessageType<SourceCodeInfo> {
                 writer.tag(1, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -4924,10 +4924,10 @@ class SourceCodeInfo_Location$Type extends MessageType<SourceCodeInfo_Location> 
         options: BinaryReadOptions,
         target?: SourceCodeInfo_Location
     ): SourceCodeInfo_Location {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* repeated int32 path = 1 [packed = true] */ 1:
                     if (wireType === WireType.LengthDelimited)
@@ -4959,12 +4959,12 @@ class SourceCodeInfo_Location$Type extends MessageType<SourceCodeInfo_Location> 
                     message.leadingDetachedComments.push(reader.string())
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -5011,7 +5011,7 @@ class SourceCodeInfo_Location$Type extends MessageType<SourceCodeInfo_Location> 
             writer
                 .tag(6, WireType.LengthDelimited)
                 .string(message.leadingDetachedComments[i])
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -5051,10 +5051,10 @@ class GeneratedCodeInfo$Type extends MessageType<GeneratedCodeInfo> {
         options: BinaryReadOptions,
         target?: GeneratedCodeInfo
     ): GeneratedCodeInfo {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* repeated google.protobuf.GeneratedCodeInfo.Annotation annotation */ 1:
                     message.annotation.push(
@@ -5066,12 +5066,12 @@ class GeneratedCodeInfo$Type extends MessageType<GeneratedCodeInfo> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -5096,7 +5096,7 @@ class GeneratedCodeInfo$Type extends MessageType<GeneratedCodeInfo> {
                 writer.tag(1, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -5163,10 +5163,10 @@ class GeneratedCodeInfo_Annotation$Type extends MessageType<GeneratedCodeInfo_An
         options: BinaryReadOptions,
         target?: GeneratedCodeInfo_Annotation
     ): GeneratedCodeInfo_Annotation {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* repeated int32 path = 1 [packed = true] */ 1:
                     if (wireType === WireType.LengthDelimited)
@@ -5188,12 +5188,12 @@ class GeneratedCodeInfo_Annotation$Type extends MessageType<GeneratedCodeInfo_An
                     message.end = reader.int32()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -5227,7 +5227,7 @@ class GeneratedCodeInfo_Annotation$Type extends MessageType<GeneratedCodeInfo_An
         /* optional int32 end = 4; */
         if (message.end !== undefined)
             writer.tag(4, WireType.Varint).int32(message.end)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,

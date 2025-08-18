@@ -185,10 +185,10 @@ class AcsCommitmentsCatchUpConfig$Type extends MessageType<AcsCommitmentsCatchUp
         options: BinaryReadOptions,
         target?: AcsCommitmentsCatchUpConfig
     ): AcsCommitmentsCatchUpConfig {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* uint32 catchup_interval_skip */ 1:
                     message.catchupIntervalSkip = reader.uint32()
@@ -197,12 +197,12 @@ class AcsCommitmentsCatchUpConfig$Type extends MessageType<AcsCommitmentsCatchUp
                     message.nrIntervalsToTriggerCatchup = reader.uint32()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -228,7 +228,7 @@ class AcsCommitmentsCatchUpConfig$Type extends MessageType<AcsCommitmentsCatchUp
             writer
                 .tag(2, WireType.Varint)
                 .uint32(message.nrIntervalsToTriggerCatchup)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -277,21 +277,21 @@ class ParticipantSynchronizerLimits$Type extends MessageType<ParticipantSynchron
         options: BinaryReadOptions,
         target?: ParticipantSynchronizerLimits
     ): ParticipantSynchronizerLimits {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* uint32 confirmation_requests_max_rate */ 1:
                     message.confirmationRequestsMaxRate = reader.uint32()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -314,7 +314,7 @@ class ParticipantSynchronizerLimits$Type extends MessageType<ParticipantSynchron
             writer
                 .tag(1, WireType.Varint)
                 .uint32(message.confirmationRequestsMaxRate)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -453,10 +453,10 @@ class DynamicSynchronizerParameters$Type extends MessageType<DynamicSynchronizer
         options: BinaryReadOptions,
         target?: DynamicSynchronizerParameters
     ): DynamicSynchronizerParameters {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* google.protobuf.Duration confirmation_response_timeout */ 1:
                     message.confirmationResponseTimeout =
@@ -572,12 +572,12 @@ class DynamicSynchronizerParameters$Type extends MessageType<DynamicSynchronizer
                         )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -685,7 +685,7 @@ class DynamicSynchronizerParameters$Type extends MessageType<DynamicSynchronizer
                 writer.tag(18, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,

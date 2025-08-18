@@ -300,10 +300,10 @@ class TrafficControlParameters$Type extends MessageType<TrafficControlParameters
         options: BinaryReadOptions,
         target?: TrafficControlParameters
     ): TrafficControlParameters {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* uint64 max_base_traffic_amount */ 1:
                     message.maxBaseTrafficAmount = reader.uint64().toBigInt()
@@ -336,12 +336,12 @@ class TrafficControlParameters$Type extends MessageType<TrafficControlParameters
                     message.baseEventCost = reader.uint64().toBigInt()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -387,7 +387,7 @@ class TrafficControlParameters$Type extends MessageType<TrafficControlParameters
         /* optional uint64 base_event_cost = 7; */
         if (message.baseEventCost !== undefined)
             writer.tag(7, WireType.Varint).uint64(message.baseEventCost)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -453,10 +453,10 @@ class TrafficReceipt$Type extends MessageType<TrafficReceipt> {
         options: BinaryReadOptions,
         target?: TrafficReceipt
     ): TrafficReceipt {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* uint64 consumed_cost */ 1:
                     message.consumedCost = reader.uint64().toBigInt()
@@ -468,12 +468,12 @@ class TrafficReceipt$Type extends MessageType<TrafficReceipt> {
                     message.baseTrafficRemainder = reader.uint64().toBigInt()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -500,7 +500,7 @@ class TrafficReceipt$Type extends MessageType<TrafficReceipt> {
         /* uint64 base_traffic_remainder = 3; */
         if (message.baseTrafficRemainder !== 0n)
             writer.tag(3, WireType.Varint).uint64(message.baseTrafficRemainder)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -581,10 +581,10 @@ class TrafficConsumed$Type extends MessageType<TrafficConsumed> {
         options: BinaryReadOptions,
         target?: TrafficConsumed
     ): TrafficConsumed {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string member */ 1:
                     message.member = reader.string()
@@ -602,12 +602,12 @@ class TrafficConsumed$Type extends MessageType<TrafficConsumed> {
                     message.sequencingTimestamp = reader.int64().toBigInt()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -640,7 +640,7 @@ class TrafficConsumed$Type extends MessageType<TrafficConsumed> {
         /* int64 sequencing_timestamp = 5; */
         if (message.sequencingTimestamp !== 0n)
             writer.tag(5, WireType.Varint).int64(message.sequencingTimestamp)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -712,10 +712,10 @@ class TrafficPurchased$Type extends MessageType<TrafficPurchased> {
         options: BinaryReadOptions,
         target?: TrafficPurchased
     ): TrafficPurchased {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string member */ 1:
                     message.member = reader.string()
@@ -730,12 +730,12 @@ class TrafficPurchased$Type extends MessageType<TrafficPurchased> {
                     message.sequencingTimestamp = reader.int64().toBigInt()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -765,7 +765,7 @@ class TrafficPurchased$Type extends MessageType<TrafficPurchased> {
         /* int64 sequencing_timestamp = 4; */
         if (message.sequencingTimestamp !== 0n)
             writer.tag(4, WireType.Varint).int64(message.sequencingTimestamp)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -844,10 +844,10 @@ class TrafficState$Type extends MessageType<TrafficState> {
         options: BinaryReadOptions,
         target?: TrafficState
     ): TrafficState {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* int64 extra_traffic_purchased */ 1:
                     message.extraTrafficPurchased = reader.int64().toBigInt()
@@ -868,12 +868,12 @@ class TrafficState$Type extends MessageType<TrafficState> {
                     message.serial = reader.uint32()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -909,7 +909,7 @@ class TrafficState$Type extends MessageType<TrafficState> {
         /* optional uint32 serial = 6; */
         if (message.serial !== undefined)
             writer.tag(6, WireType.Varint).uint32(message.serial)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -986,10 +986,10 @@ class SetTrafficPurchasedMessage$Type extends MessageType<SetTrafficPurchasedMes
         options: BinaryReadOptions,
         target?: SetTrafficPurchasedMessage
     ): SetTrafficPurchasedMessage {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string member */ 1:
                     message.member = reader.string()
@@ -1004,12 +1004,12 @@ class SetTrafficPurchasedMessage$Type extends MessageType<SetTrafficPurchasedMes
                     message.physicalSynchronizerId = reader.string()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1041,7 +1041,7 @@ class SetTrafficPurchasedMessage$Type extends MessageType<SetTrafficPurchasedMes
             writer
                 .tag(5, WireType.LengthDelimited)
                 .string(message.physicalSynchronizerId)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,

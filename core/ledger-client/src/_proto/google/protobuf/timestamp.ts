@@ -214,7 +214,7 @@ class Timestamp$Type extends MessageType<Timestamp> {
         message: Timestamp,
         options: JsonWriteOptions
     ): JsonValue {
-        const ms = PbLong.from(message.seconds).toNumber() * 1000
+        let ms = PbLong.from(message.seconds).toNumber() * 1000
         if (
             ms < Date.parse('0001-01-01T00:00:00Z') ||
             ms > Date.parse('9999-12-31T23:59:59Z')
@@ -228,9 +228,7 @@ class Timestamp$Type extends MessageType<Timestamp> {
             )
         let z = 'Z'
         if (message.nanos > 0) {
-            const nanosStr = (message.nanos + 1000000000)
-                .toString()
-                .substring(1)
+            let nanosStr = (message.nanos + 1000000000).toString().substring(1)
             if (nanosStr.substring(3) === '000000')
                 z = '.' + nanosStr.substring(0, 3) + 'Z'
             else if (nanosStr.substring(6) === '000')
@@ -254,14 +252,14 @@ class Timestamp$Type extends MessageType<Timestamp> {
                     typeofJsonValue(json) +
                     '.'
             )
-        const matches = json.match(
+        let matches = json.match(
             /^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})(?:Z|\.([0-9]{3,9})Z|([+-][0-9][0-9]:[0-9][0-9]))$/
         )
         if (!matches)
             throw new Error(
                 'Unable to parse Timestamp from JSON. Invalid format.'
             )
-        const ms = Date.parse(
+        let ms = Date.parse(
             matches[1] +
                 '-' +
                 matches[2] +
@@ -309,10 +307,10 @@ class Timestamp$Type extends MessageType<Timestamp> {
         options: BinaryReadOptions,
         target?: Timestamp
     ): Timestamp {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* int64 seconds */ 1:
                     message.seconds = reader.int64().toBigInt()
@@ -321,12 +319,12 @@ class Timestamp$Type extends MessageType<Timestamp> {
                     message.nanos = reader.int32()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -350,7 +348,7 @@ class Timestamp$Type extends MessageType<Timestamp> {
         /* int32 nanos = 2; */
         if (message.nanos !== 0)
             writer.tag(2, WireType.Varint).int32(message.nanos)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,

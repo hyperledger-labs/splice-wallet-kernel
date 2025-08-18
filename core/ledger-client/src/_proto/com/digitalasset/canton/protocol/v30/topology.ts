@@ -1011,18 +1011,18 @@ class Enums$Type extends MessageType<Enums> {
         options: BinaryReadOptions,
         target?: Enums
     ): Enums {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1040,7 +1040,7 @@ class Enums$Type extends MessageType<Enums> {
         writer: IBinaryWriter,
         options: BinaryWriteOptions
     ): IBinaryWriter {
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1114,10 +1114,10 @@ class NamespaceDelegation$Type extends MessageType<NamespaceDelegation> {
         options: BinaryReadOptions,
         target?: NamespaceDelegation
     ): NamespaceDelegation {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string namespace */ 1:
                     message.namespace = reader.string()
@@ -1172,12 +1172,12 @@ class NamespaceDelegation$Type extends MessageType<NamespaceDelegation> {
                     }
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1232,7 +1232,7 @@ class NamespaceDelegation$Type extends MessageType<NamespaceDelegation> {
                 writer.tag(6, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1272,18 +1272,18 @@ class NamespaceDelegation_CanSignAllMappings$Type extends MessageType<NamespaceD
         options: BinaryReadOptions,
         target?: NamespaceDelegation_CanSignAllMappings
     ): NamespaceDelegation_CanSignAllMappings {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1301,7 +1301,7 @@ class NamespaceDelegation_CanSignAllMappings$Type extends MessageType<NamespaceD
         writer: IBinaryWriter,
         options: BinaryWriteOptions
     ): IBinaryWriter {
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1342,18 +1342,18 @@ class NamespaceDelegation_CanSignAllButNamespaceDelegations$Type extends Message
         options: BinaryReadOptions,
         target?: NamespaceDelegation_CanSignAllButNamespaceDelegations
     ): NamespaceDelegation_CanSignAllButNamespaceDelegations {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1371,7 +1371,7 @@ class NamespaceDelegation_CanSignAllButNamespaceDelegations$Type extends Message
         writer: IBinaryWriter,
         options: BinaryWriteOptions
     ): IBinaryWriter {
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1425,10 +1425,10 @@ class NamespaceDelegation_CanSignSpecificMappings$Type extends MessageType<Names
         options: BinaryReadOptions,
         target?: NamespaceDelegation_CanSignSpecificMappings
     ): NamespaceDelegation_CanSignSpecificMappings {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* repeated com.digitalasset.canton.protocol.v30.Enums.TopologyMappingCode mappings */ 1:
                     if (wireType === WireType.LengthDelimited)
@@ -1441,12 +1441,12 @@ class NamespaceDelegation_CanSignSpecificMappings$Type extends MessageType<Names
                     else message.mappings.push(reader.int32())
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1471,7 +1471,7 @@ class NamespaceDelegation_CanSignSpecificMappings$Type extends MessageType<Names
                 writer.int32(message.mappings[i])
             writer.join()
         }
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1535,10 +1535,10 @@ class DecentralizedNamespaceDefinition$Type extends MessageType<DecentralizedNam
         options: BinaryReadOptions,
         target?: DecentralizedNamespaceDefinition
     ): DecentralizedNamespaceDefinition {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string decentralized_namespace */ 1:
                     message.decentralizedNamespace = reader.string()
@@ -1550,12 +1550,12 @@ class DecentralizedNamespaceDefinition$Type extends MessageType<DecentralizedNam
                     message.owners.push(reader.string())
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1584,7 +1584,7 @@ class DecentralizedNamespaceDefinition$Type extends MessageType<DecentralizedNam
         /* repeated string owners = 3; */
         for (let i = 0; i < message.owners.length; i++)
             writer.tag(3, WireType.LengthDelimited).string(message.owners[i])
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1632,10 +1632,10 @@ class OwnerToKeyMapping$Type extends MessageType<OwnerToKeyMapping> {
         options: BinaryReadOptions,
         target?: OwnerToKeyMapping
     ): OwnerToKeyMapping {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string member */ 1:
                     message.member = reader.string()
@@ -1650,12 +1650,12 @@ class OwnerToKeyMapping$Type extends MessageType<OwnerToKeyMapping> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1683,7 +1683,7 @@ class OwnerToKeyMapping$Type extends MessageType<OwnerToKeyMapping> {
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1737,10 +1737,10 @@ class PartyToKeyMapping$Type extends MessageType<PartyToKeyMapping> {
         options: BinaryReadOptions,
         target?: PartyToKeyMapping
     ): PartyToKeyMapping {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string party */ 1:
                     message.party = reader.string()
@@ -1758,12 +1758,12 @@ class PartyToKeyMapping$Type extends MessageType<PartyToKeyMapping> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1794,7 +1794,7 @@ class PartyToKeyMapping$Type extends MessageType<PartyToKeyMapping> {
                 writer.tag(4, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1849,10 +1849,10 @@ class SynchronizerTrustCertificate$Type extends MessageType<SynchronizerTrustCer
         options: BinaryReadOptions,
         target?: SynchronizerTrustCertificate
     ): SynchronizerTrustCertificate {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string participant_uid */ 1:
                     message.participantUid = reader.string()
@@ -1861,12 +1861,12 @@ class SynchronizerTrustCertificate$Type extends MessageType<SynchronizerTrustCer
                     message.synchronizerId = reader.string()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1894,7 +1894,7 @@ class SynchronizerTrustCertificate$Type extends MessageType<SynchronizerTrustCer
             writer
                 .tag(2, WireType.LengthDelimited)
                 .string(message.synchronizerId)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1975,10 +1975,10 @@ class ParticipantSynchronizerPermission$Type extends MessageType<ParticipantSync
         options: BinaryReadOptions,
         target?: ParticipantSynchronizerPermission
     ): ParticipantSynchronizerPermission {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string synchronizer_id */ 1:
                     message.synchronizerId = reader.string()
@@ -2002,12 +2002,12 @@ class ParticipantSynchronizerPermission$Type extends MessageType<ParticipantSync
                     message.loginAfter = reader.int64().toBigInt()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2048,7 +2048,7 @@ class ParticipantSynchronizerPermission$Type extends MessageType<ParticipantSync
         /* optional int64 login_after = 5; */
         if (message.loginAfter !== undefined)
             writer.tag(5, WireType.Varint).int64(message.loginAfter)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2095,10 +2095,10 @@ class PartyHostingLimits$Type extends MessageType<PartyHostingLimits> {
         options: BinaryReadOptions,
         target?: PartyHostingLimits
     ): PartyHostingLimits {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string synchronizer_id */ 1:
                     message.synchronizerId = reader.string()
@@ -2107,12 +2107,12 @@ class PartyHostingLimits$Type extends MessageType<PartyHostingLimits> {
                     message.party = reader.string()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2138,7 +2138,7 @@ class PartyHostingLimits$Type extends MessageType<PartyHostingLimits> {
         /* string party = 2; */
         if (message.party !== '')
             writer.tag(2, WireType.LengthDelimited).string(message.party)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2193,10 +2193,10 @@ class VettedPackages$Type extends MessageType<VettedPackages> {
         options: BinaryReadOptions,
         target?: VettedPackages
     ): VettedPackages {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string participant_uid */ 1:
                     message.participantUid = reader.string()
@@ -2214,12 +2214,12 @@ class VettedPackages$Type extends MessageType<VettedPackages> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2254,7 +2254,7 @@ class VettedPackages$Type extends MessageType<VettedPackages> {
                 writer.tag(4, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2314,10 +2314,10 @@ class VettedPackages_VettedPackage$Type extends MessageType<VettedPackages_Vette
         options: BinaryReadOptions,
         target?: VettedPackages_VettedPackage
     ): VettedPackages_VettedPackage {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string package_id */ 1:
                     message.packageId = reader.string()
@@ -2339,12 +2339,12 @@ class VettedPackages_VettedPackage$Type extends MessageType<VettedPackages_Vette
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2379,7 +2379,7 @@ class VettedPackages_VettedPackage$Type extends MessageType<VettedPackages_Vette
                 writer.tag(3, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2434,10 +2434,10 @@ class PartyToParticipant$Type extends MessageType<PartyToParticipant> {
         options: BinaryReadOptions,
         target?: PartyToParticipant
     ): PartyToParticipant {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string party */ 1:
                     message.party = reader.string()
@@ -2455,12 +2455,12 @@ class PartyToParticipant$Type extends MessageType<PartyToParticipant> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2491,7 +2491,7 @@ class PartyToParticipant$Type extends MessageType<PartyToParticipant> {
                 writer.tag(3, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2556,10 +2556,10 @@ class PartyToParticipant_HostingParticipant$Type extends MessageType<PartyToPart
         options: BinaryReadOptions,
         target?: PartyToParticipant_HostingParticipant
     ): PartyToParticipant_HostingParticipant {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string participant_uid */ 1:
                     message.participantUid = reader.string()
@@ -2577,12 +2577,12 @@ class PartyToParticipant_HostingParticipant$Type extends MessageType<PartyToPart
                         )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2615,7 +2615,7 @@ class PartyToParticipant_HostingParticipant$Type extends MessageType<PartyToPart
                 writer.tag(3, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2656,18 +2656,18 @@ class PartyToParticipant_HostingParticipant_Onboarding$Type extends MessageType<
         options: BinaryReadOptions,
         target?: PartyToParticipant_HostingParticipant_Onboarding
     ): PartyToParticipant_HostingParticipant_Onboarding {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2685,7 +2685,7 @@ class PartyToParticipant_HostingParticipant_Onboarding$Type extends MessageType<
         writer: IBinaryWriter,
         options: BinaryWriteOptions
     ): IBinaryWriter {
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2740,10 +2740,10 @@ class SynchronizerParametersState$Type extends MessageType<SynchronizerParameter
         options: BinaryReadOptions,
         target?: SynchronizerParametersState
     ): SynchronizerParametersState {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string synchronizer_id */ 1:
                     message.synchronizerId = reader.string()
@@ -2758,12 +2758,12 @@ class SynchronizerParametersState$Type extends MessageType<SynchronizerParameter
                         )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2793,7 +2793,7 @@ class SynchronizerParametersState$Type extends MessageType<SynchronizerParameter
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2848,10 +2848,10 @@ class DynamicSequencingParametersState$Type extends MessageType<DynamicSequencin
         options: BinaryReadOptions,
         target?: DynamicSequencingParametersState
     ): DynamicSequencingParametersState {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string synchronizer_id */ 1:
                     message.synchronizerId = reader.string()
@@ -2866,12 +2866,12 @@ class DynamicSequencingParametersState$Type extends MessageType<DynamicSequencin
                         )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2901,7 +2901,7 @@ class DynamicSequencingParametersState$Type extends MessageType<DynamicSequencin
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2980,10 +2980,10 @@ class MediatorSynchronizerState$Type extends MessageType<MediatorSynchronizerSta
         options: BinaryReadOptions,
         target?: MediatorSynchronizerState
     ): MediatorSynchronizerState {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string synchronizer_id */ 1:
                     message.synchronizerId = reader.string()
@@ -3001,12 +3001,12 @@ class MediatorSynchronizerState$Type extends MessageType<MediatorSynchronizerSta
                     message.observers.push(reader.string())
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -3041,7 +3041,7 @@ class MediatorSynchronizerState$Type extends MessageType<MediatorSynchronizerSta
         /* repeated string observers = 5; */
         for (let i = 0; i < message.observers.length; i++)
             writer.tag(5, WireType.LengthDelimited).string(message.observers[i])
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -3112,10 +3112,10 @@ class SequencerSynchronizerState$Type extends MessageType<SequencerSynchronizerS
         options: BinaryReadOptions,
         target?: SequencerSynchronizerState
     ): SequencerSynchronizerState {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string synchronizer_id */ 1:
                     message.synchronizerId = reader.string()
@@ -3130,12 +3130,12 @@ class SequencerSynchronizerState$Type extends MessageType<SequencerSynchronizerS
                     message.observers.push(reader.string())
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -3167,7 +3167,7 @@ class SequencerSynchronizerState$Type extends MessageType<SequencerSynchronizerS
         /* repeated string observers = 4; */
         for (let i = 0; i < message.observers.length; i++)
             writer.tag(4, WireType.LengthDelimited).string(message.observers[i])
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -3220,10 +3220,10 @@ class PurgeTopologyTransaction$Type extends MessageType<PurgeTopologyTransaction
         options: BinaryReadOptions,
         target?: PurgeTopologyTransaction
     ): PurgeTopologyTransaction {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string synchronizer_id */ 1:
                     message.synchronizerId = reader.string()
@@ -3238,12 +3238,12 @@ class PurgeTopologyTransaction$Type extends MessageType<PurgeTopologyTransaction
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -3273,7 +3273,7 @@ class PurgeTopologyTransaction$Type extends MessageType<PurgeTopologyTransaction
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -3334,10 +3334,10 @@ class SynchronizerUpgradeAnnouncement$Type extends MessageType<SynchronizerUpgra
         options: BinaryReadOptions,
         target?: SynchronizerUpgradeAnnouncement
     ): SynchronizerUpgradeAnnouncement {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string physical_synchronizer_id */ 1:
                     message.physicalSynchronizerId = reader.string()
@@ -3354,12 +3354,12 @@ class SynchronizerUpgradeAnnouncement$Type extends MessageType<SynchronizerUpgra
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -3394,7 +3394,7 @@ class SynchronizerUpgradeAnnouncement$Type extends MessageType<SynchronizerUpgra
                 writer.tag(3, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -3456,10 +3456,10 @@ class SequencerConnectionSuccessor$Type extends MessageType<SequencerConnectionS
         options: BinaryReadOptions,
         target?: SequencerConnectionSuccessor
     ): SequencerConnectionSuccessor {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string sequencer_id */ 1:
                     message.sequencerId = reader.string()
@@ -3477,12 +3477,12 @@ class SequencerConnectionSuccessor$Type extends MessageType<SequencerConnectionS
                         )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -3515,7 +3515,7 @@ class SequencerConnectionSuccessor$Type extends MessageType<SequencerConnectionS
                 writer.tag(3, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -3566,10 +3566,10 @@ class SequencerConnectionSuccessor_SequencerConnection$Type extends MessageType<
         options: BinaryReadOptions,
         target?: SequencerConnectionSuccessor_SequencerConnection
     ): SequencerConnectionSuccessor_SequencerConnection {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* com.digitalasset.canton.protocol.v30.SequencerConnectionSuccessor.SequencerConnection.Grpc grpc */ 1:
                     message.connectionType = {
@@ -3583,12 +3583,12 @@ class SequencerConnectionSuccessor_SequencerConnection$Type extends MessageType<
                     }
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -3613,7 +3613,7 @@ class SequencerConnectionSuccessor_SequencerConnection$Type extends MessageType<
                 writer.tag(1, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -3670,10 +3670,10 @@ class SequencerConnectionSuccessor_SequencerConnection_Grpc$Type extends Message
         options: BinaryReadOptions,
         target?: SequencerConnectionSuccessor_SequencerConnection_Grpc
     ): SequencerConnectionSuccessor_SequencerConnection_Grpc {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* repeated string endpoints */ 1:
                     message.endpoints.push(reader.string())
@@ -3682,12 +3682,12 @@ class SequencerConnectionSuccessor_SequencerConnection_Grpc$Type extends Message
                     message.customTrustCertificates = reader.bytes()
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -3713,7 +3713,7 @@ class SequencerConnectionSuccessor_SequencerConnection_Grpc$Type extends Message
             writer
                 .tag(2, WireType.LengthDelimited)
                 .bytes(message.customTrustCertificates)
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -3859,10 +3859,10 @@ class TopologyMapping$Type extends MessageType<TopologyMapping> {
         options: BinaryReadOptions,
         target?: TopologyMapping
     ): TopologyMapping {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* com.digitalasset.canton.protocol.v30.NamespaceDelegation namespace_delegation */ 1:
                     message.mapping = {
@@ -4062,12 +4062,12 @@ class TopologyMapping$Type extends MessageType<TopologyMapping> {
                     }
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -4197,7 +4197,7 @@ class TopologyMapping$Type extends MessageType<TopologyMapping> {
                 writer.tag(18, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -4263,10 +4263,10 @@ class TopologyTransaction$Type extends MessageType<TopologyTransaction> {
         options: BinaryReadOptions,
         target?: TopologyTransaction
     ): TopologyTransaction {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* com.digitalasset.canton.protocol.v30.Enums.TopologyChangeOp operation */ 1:
                     message.operation = reader.int32()
@@ -4283,12 +4283,12 @@ class TopologyTransaction$Type extends MessageType<TopologyTransaction> {
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -4319,7 +4319,7 @@ class TopologyTransaction$Type extends MessageType<TopologyTransaction> {
                 writer.tag(3, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -4376,10 +4376,10 @@ class MultiTransactionSignatures$Type extends MessageType<MultiTransactionSignat
         options: BinaryReadOptions,
         target?: MultiTransactionSignatures
     ): MultiTransactionSignatures {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* repeated bytes transaction_hashes */ 1:
                     message.transactionHashes.push(reader.bytes())
@@ -4394,12 +4394,12 @@ class MultiTransactionSignatures$Type extends MessageType<MultiTransactionSignat
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -4429,7 +4429,7 @@ class MultiTransactionSignatures$Type extends MessageType<MultiTransactionSignat
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -4507,10 +4507,10 @@ class SignedTopologyTransaction$Type extends MessageType<SignedTopologyTransacti
         options: BinaryReadOptions,
         target?: SignedTopologyTransaction
     ): SignedTopologyTransaction {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* bytes transaction */ 1:
                     message.transaction = reader.bytes()
@@ -4537,12 +4537,12 @@ class SignedTopologyTransaction$Type extends MessageType<SignedTopologyTransacti
                     )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -4580,7 +4580,7 @@ class SignedTopologyTransaction$Type extends MessageType<SignedTopologyTransacti
                 writer.tag(4, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -4636,21 +4636,21 @@ class SignedTopologyTransactions$Type extends MessageType<SignedTopologyTransact
         options: BinaryReadOptions,
         target?: SignedTopologyTransactions
     ): SignedTopologyTransactions {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* repeated bytes signed_transaction */ 1:
                     message.signedTransaction.push(reader.bytes())
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -4673,7 +4673,7 @@ class SignedTopologyTransactions$Type extends MessageType<SignedTopologyTransact
             writer
                 .tag(1, WireType.LengthDelimited)
                 .bytes(message.signedTransaction[i])
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -4734,10 +4734,10 @@ class TopologyTransactionsBroadcast$Type extends MessageType<TopologyTransaction
         options: BinaryReadOptions,
         target?: TopologyTransactionsBroadcast
     ): TopologyTransactionsBroadcast {
-        const message = target ?? this.create(),
+        let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            const [fieldNo, wireType] = reader.tag()
+            let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string physical_synchronizer_id */ 1:
                     message.physicalSynchronizerId = reader.string()
@@ -4752,12 +4752,12 @@ class TopologyTransactionsBroadcast$Type extends MessageType<TopologyTransaction
                         )
                     break
                 default:
-                    const u = options.readUnknownField
+                    let u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    const d = reader.skip(wireType)
+                    let d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -4787,7 +4787,7 @@ class TopologyTransactionsBroadcast$Type extends MessageType<TopologyTransaction
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        const u = options.writeUnknownFields
+        let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
