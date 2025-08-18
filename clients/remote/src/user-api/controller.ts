@@ -8,7 +8,6 @@ import {
     SigningAlgorithmSpec,
     MultiTransactionSignatures,
     SignedTopologyTransaction,
-    GenerateTransactionsResponse,
     GenerateTransactionsResponse_GeneratedTransaction,
 } from 'core-ledger-client'
 import buildController from './rpc-gen/index.js'
