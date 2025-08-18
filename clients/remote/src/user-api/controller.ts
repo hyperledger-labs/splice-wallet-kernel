@@ -94,7 +94,7 @@ async function signingDriverCreate(
                 ledgerClientAdmin
             )
 
-            const key = await driver.controller(authContext).createKey({
+            const key = await driver.controller(authContext.userId).createKey({
                 name: partyHint,
             })
             const namespace = TopologyWriteService.createFingerprintFromKey(
@@ -117,7 +117,7 @@ async function signingDriverCreate(
             const combinedHash = TopologyWriteService.combineHashes(txHashes)
 
             const { signature } = await driver
-                .controller(authContext)
+                .controller(authContext.userId)
                 .signTransaction({
                     tx: '',
                     txHash: Buffer.from(combinedHash, 'hex').toString('base64'),
