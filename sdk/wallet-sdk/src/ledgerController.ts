@@ -3,7 +3,7 @@ import { v4 } from 'uuid'
 import { pino } from 'pino'
 
 export interface ledgerController {
-    SetPartyId(partyId: string): LedgerController
+    setPartyId(partyId: string): LedgerController
     setSynchronizerId(synchronizerId: string): LedgerController
 
     prepareSubmission(
@@ -33,7 +33,7 @@ export class LedgerController implements ledgerController {
         return this
     }
 
-    SetPartyId(partyId: string): LedgerController {
+    setPartyId(partyId: string): LedgerController {
         this.partyId = partyId
         return this
     }
