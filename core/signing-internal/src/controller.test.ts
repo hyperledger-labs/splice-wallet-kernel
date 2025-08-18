@@ -26,7 +26,7 @@ interface TestValues {
 
 async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     const signingDriver = new InternalSigningDriver()
-    const controller = signingDriver.controller(authContext)
+    const controller = signingDriver.controller(authContext.userId)
     const key = await controller.createKey({ name: keyName })
     return {
         signingDriver,
