@@ -431,10 +431,10 @@ class Hmac$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* com.digitalasset.canton.crypto.v30.HmacAlgorithm algorithm */ 1:
                     message.algorithm = reader.int32()
@@ -443,12 +443,12 @@ class Hmac$Type extends MessageType {
                     message.hmac = reader.bytes()
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -468,7 +468,7 @@ class Hmac$Type extends MessageType {
         /* bytes hmac = 2; */
         if (message.hmac.length)
             writer.tag(2, WireType.LengthDelimited).bytes(message.hmac)
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -508,10 +508,10 @@ class Salt$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* com.digitalasset.canton.crypto.v30.HmacAlgorithm hmac */ 1:
                     message.algorithm = {
@@ -523,12 +523,12 @@ class Salt$Type extends MessageType {
                     message.salt = reader.bytes()
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -548,7 +548,7 @@ class Salt$Type extends MessageType {
         /* bytes salt = 2; */
         if (message.salt.length)
             writer.tag(2, WireType.LengthDelimited).bytes(message.salt)
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -616,10 +616,10 @@ class Signature$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* com.digitalasset.canton.crypto.v30.SignatureFormat format */ 1:
                     message.format = reader.int32()
@@ -643,12 +643,12 @@ class Signature$Type extends MessageType {
                         )
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -681,7 +681,7 @@ class Signature$Type extends MessageType {
                 writer.tag(5, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -769,10 +769,10 @@ class SignatureDelegation$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* bytes session_key */ 1:
                     message.sessionKey = reader.bytes()
@@ -798,12 +798,12 @@ class SignatureDelegation$Type extends MessageType {
                     message.signingAlgorithmSpec = reader.int32()
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -842,7 +842,7 @@ class SignatureDelegation$Type extends MessageType {
         /* com.digitalasset.canton.crypto.v30.SigningAlgorithmSpec signing_algorithm_spec = 7; */
         if (message.signingAlgorithmSpec !== 0)
             writer.tag(7, WireType.Varint).int32(message.signingAlgorithmSpec)
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -883,10 +883,10 @@ class PublicKey$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* com.digitalasset.canton.crypto.v30.SigningPublicKey signing_public_key */ 1:
                     message.key = {
@@ -912,12 +912,12 @@ class PublicKey$Type extends MessageType {
                     }
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -945,7 +945,7 @@ class PublicKey$Type extends MessageType {
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -974,10 +974,10 @@ class PublicKeyWithName$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* com.digitalasset.canton.crypto.v30.PublicKey public_key */ 1:
                     message.publicKey = PublicKey.internalBinaryRead(
@@ -991,12 +991,12 @@ class PublicKeyWithName$Type extends MessageType {
                     message.name = reader.string()
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1020,7 +1020,7 @@ class PublicKeyWithName$Type extends MessageType {
         /* string name = 2; */
         if (message.name !== '')
             writer.tag(2, WireType.LengthDelimited).string(message.name)
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1061,10 +1061,10 @@ class PrivateKey$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* com.digitalasset.canton.crypto.v30.SigningPrivateKey signing_private_key */ 1:
                     message.key = {
@@ -1090,12 +1090,12 @@ class PrivateKey$Type extends MessageType {
                     }
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1123,7 +1123,7 @@ class PrivateKey$Type extends MessageType {
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1201,10 +1201,10 @@ class SigningPublicKey$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* com.digitalasset.canton.crypto.v30.CryptoKeyFormat format */ 2:
                     message.format = reader.int32()
@@ -1229,12 +1229,12 @@ class SigningPublicKey$Type extends MessageType {
                     message.keySpec = reader.int32()
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1267,7 +1267,7 @@ class SigningPublicKey$Type extends MessageType {
         /* com.digitalasset.canton.crypto.v30.SigningKeySpec key_spec = 6; */
         if (message.keySpec !== 0)
             writer.tag(6, WireType.Varint).int32(message.keySpec)
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1347,10 +1347,10 @@ class SigningPrivateKey$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string id */ 1:
                     message.id = reader.string()
@@ -1378,12 +1378,12 @@ class SigningPrivateKey$Type extends MessageType {
                     message.keySpec = reader.int32()
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1419,7 +1419,7 @@ class SigningPrivateKey$Type extends MessageType {
         /* com.digitalasset.canton.crypto.v30.SigningKeySpec key_spec = 6; */
         if (message.keySpec !== 0)
             writer.tag(6, WireType.Varint).int32(message.keySpec)
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1457,10 +1457,10 @@ class SigningKeyPair$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* com.digitalasset.canton.crypto.v30.SigningPublicKey public_key */ 1:
                     message.publicKey = SigningPublicKey.internalBinaryRead(
@@ -1479,12 +1479,12 @@ class SigningKeyPair$Type extends MessageType {
                     )
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1512,7 +1512,7 @@ class SigningKeyPair$Type extends MessageType {
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1562,10 +1562,10 @@ class RequiredSigningSpecs$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* repeated com.digitalasset.canton.crypto.v30.SigningAlgorithmSpec algorithms */ 1:
                     if (wireType === WireType.LengthDelimited)
@@ -1588,12 +1588,12 @@ class RequiredSigningSpecs$Type extends MessageType {
                     else message.keys.push(reader.int32())
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1621,7 +1621,7 @@ class RequiredSigningSpecs$Type extends MessageType {
                 writer.int32(message.keys[i])
             writer.join()
         }
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1687,10 +1687,10 @@ class EncryptionPublicKey$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* com.digitalasset.canton.crypto.v30.CryptoKeyFormat format */ 2:
                     message.format = reader.int32()
@@ -1705,12 +1705,12 @@ class EncryptionPublicKey$Type extends MessageType {
                     message.keySpec = reader.int32()
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1736,7 +1736,7 @@ class EncryptionPublicKey$Type extends MessageType {
         /* com.digitalasset.canton.crypto.v30.EncryptionKeySpec key_spec = 5; */
         if (message.keySpec !== 0)
             writer.tag(5, WireType.Varint).int32(message.keySpec)
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1804,10 +1804,10 @@ class EncryptionPrivateKey$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string id */ 1:
                     message.id = reader.string()
@@ -1825,12 +1825,12 @@ class EncryptionPrivateKey$Type extends MessageType {
                     message.keySpec = reader.int32()
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1859,7 +1859,7 @@ class EncryptionPrivateKey$Type extends MessageType {
         /* com.digitalasset.canton.crypto.v30.EncryptionKeySpec key_spec = 5; */
         if (message.keySpec !== 0)
             writer.tag(5, WireType.Varint).int32(message.keySpec)
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -1897,10 +1897,10 @@ class EncryptionKeyPair$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* com.digitalasset.canton.crypto.v30.EncryptionPublicKey public_key */ 1:
                     message.publicKey = EncryptionPublicKey.internalBinaryRead(
@@ -1920,12 +1920,12 @@ class EncryptionKeyPair$Type extends MessageType {
                         )
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -1953,7 +1953,7 @@ class EncryptionKeyPair$Type extends MessageType {
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2003,10 +2003,10 @@ class RequiredEncryptionSpecs$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* repeated com.digitalasset.canton.crypto.v30.EncryptionAlgorithmSpec algorithms */ 1:
                     if (wireType === WireType.LengthDelimited)
@@ -2029,12 +2029,12 @@ class RequiredEncryptionSpecs$Type extends MessageType {
                     else message.keys.push(reader.int32())
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2062,7 +2062,7 @@ class RequiredEncryptionSpecs$Type extends MessageType {
                 writer.int32(message.keys[i])
             writer.join()
         }
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2103,10 +2103,10 @@ class CryptoKeyPair$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* com.digitalasset.canton.crypto.v30.SigningKeyPair signing_key_pair */ 1:
                     message.pair = {
@@ -2131,12 +2131,12 @@ class CryptoKeyPair$Type extends MessageType {
                     }
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2164,7 +2164,7 @@ class CryptoKeyPair$Type extends MessageType {
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2229,10 +2229,10 @@ class SymmetricKey$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* com.digitalasset.canton.crypto.v30.CryptoKeyFormat format */ 1:
                     message.format = reader.int32()
@@ -2244,12 +2244,12 @@ class SymmetricKey$Type extends MessageType {
                     message.scheme = reader.int32()
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2272,7 +2272,7 @@ class SymmetricKey$Type extends MessageType {
         /* com.digitalasset.canton.crypto.v30.SymmetricKeyScheme scheme = 3; */
         if (message.scheme !== 0)
             writer.tag(3, WireType.Varint).int32(message.scheme)
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2329,10 +2329,10 @@ class PasswordBasedEncrypted$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* bytes ciphertext */ 1:
                     message.ciphertext = reader.bytes()
@@ -2347,12 +2347,12 @@ class PasswordBasedEncrypted$Type extends MessageType {
                     message.salt = reader.bytes()
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2378,7 +2378,7 @@ class PasswordBasedEncrypted$Type extends MessageType {
         /* bytes salt = 4; */
         if (message.salt.length)
             writer.tag(4, WireType.LengthDelimited).bytes(message.salt)
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,
@@ -2429,10 +2429,10 @@ class AsymmetricEncrypted$Type extends MessageType {
         return message
     }
     internalBinaryRead(reader, length, options, target) {
-        let message = target ?? this.create(),
+        const message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
+            const [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* bytes ciphertext */ 1:
                     message.ciphertext = reader.bytes()
@@ -2444,12 +2444,12 @@ class AsymmetricEncrypted$Type extends MessageType {
                     message.fingerprint = reader.string()
                     break
                 default:
-                    let u = options.readUnknownField
+                    const u = options.readUnknownField
                     if (u === 'throw')
                         throw new globalThis.Error(
                             `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
                         )
-                    let d = reader.skip(wireType)
+                    const d = reader.skip(wireType)
                     if (u !== false)
                         (u === true ? UnknownFieldHandler.onRead : u)(
                             this.typeName,
@@ -2474,7 +2474,7 @@ class AsymmetricEncrypted$Type extends MessageType {
         /* string fingerprint = 3; */
         if (message.fingerprint !== '')
             writer.tag(3, WireType.LengthDelimited).string(message.fingerprint)
-        let u = options.writeUnknownFields
+        const u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
                 this.typeName,

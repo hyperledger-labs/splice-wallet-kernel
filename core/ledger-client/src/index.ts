@@ -1,2 +1,5 @@
 export * from './LedgerClient.js'
+export * from './TopologyWriteService.js'
 export * from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
+export * from './_proto/com/digitalasset/canton/crypto/v30/crypto.js'
+export * from './_proto/com/digitalasset/canton/protocol/v30/topology.js'
