@@ -15,6 +15,7 @@
     "license": "Apache-2.0",
     "dependencies": {
         "core-ledger-client": "workspace:^",
+        "core-signing-lib": "workspace:^",
         "pino": "^9.7.0",
         "uuid": "^11.1.0"
     },
