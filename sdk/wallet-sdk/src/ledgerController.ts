@@ -1,4 +1,4 @@
-import { LedgerClient, PostResponse } from 'core-ledger-client'
+import { LedgerClient, PostResponse, GetResponse } from 'core-ledger-client'
 import { signTransactionHash } from 'core-signing-lib'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
@@ -47,7 +47,7 @@ export class LedgerController implements ledgerController {
     async prepareSignAndExecuteTransaction(
         commands: unknown,
         privateKey: string,
-        commandId?: string
+        commandId: string
     ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
         const prepared = await this.prepareSubmission(commands, commandId)
 
@@ -85,18 +85,36 @@ export class LedgerController implements ledgerController {
     async executeSubmission(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
         signature: string,
-        submissionId?: string
+        submissionId: string
     ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
+        if (prepared.preparedTransaction === undefined) {
+            throw new Error('preparedTransaction is undefined')
+        }
+        const transaction: string = prepared.preparedTransaction
+
         const request = {
-            ...prepared,
-            partySignature: signature,
             userId: this.userId,
-            actAs: [this.partyId],
-            readAs: [],
-            synchronizerId: this.synchronizerId,
-            submissionId: submissionId || v4(),
+            preparedTransaction: transaction,
+            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
+            submissionId: submissionId,
             deduplicationPeriod: {
-                DeduplicationDuration: { value: { seconds: 30, nanos: 0 } },
+                Empty: {},
+            },
+            partySignatures: {
+                signatures: [
+                    {
+                        party: this.partyId,
+                        signatures: [
+                            {
+                                signature,
+                                signedBy: this.userId,
+                                format: 'SIGNATURE_FORMAT_RAW',
+                                signingAlgorithmSpec:
+                                    'SIGNING_ALGORITHM_SPEC_ED25519',
+                            },
+                        ],
+                    },
+                ],
             },
         }
 
@@ -104,5 +122,9 @@ export class LedgerController implements ledgerController {
             '/v2/interactive-submission/execute',
             request
         )
+    }
+
+    async listWallets(): Promise<GetResponse<'/v2/parties'>> {
+        return await this.client.get('/v2/parties', {})
     }
 }
