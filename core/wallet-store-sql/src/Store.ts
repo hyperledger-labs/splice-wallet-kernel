@@ -1,199 +1,27 @@
 import { Logger } from 'pino'
 import { AuthContext, UserId, AuthAware } from 'core-wallet-auth'
 import {
-    Store,
+    Store as BaseStore,
     Wallet,
     PartyId,
     Session,
     WalletFilter,
     Transaction,
     Network,
-    Auth,
+    StoreConfig,
 } from 'core-wallet-store'
-import { Kysely, SqliteDialect } from 'kysely'
+import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely'
 import Database from 'better-sqlite3'
+import {
+    DB,
+    fromAuth,
+    fromNetwork,
+    fromWallet,
+    toNetwork,
+    toWallet,
+} from './schema.js'
 
-interface AuthTable {
-    identityProviderId: string
-    type: string
-    issuer: string
-    configUrl: string
-    audience: string
-    tokenUrl: string
-    grantType: string
-    scope: string
-    clientId: string
-    clientSecret: string
-    adminClientId: string
-    adminClientSecret: string
-}
-
-interface NetworkTable {
-    name: string
-    chainId: string
-    synchronizerId: string
-    description: string
-    ledgerApiBaseUrl: string
-    ledgerApiAdminGrpcUrl: string
-    userId: UserId | undefined // global if undefined
-    identityProviderId: string
-}
-
-interface WalletTable extends Wallet {
-    userId: UserId
-}
-
-interface TransactionTable extends Transaction {
-    userId: UserId
-}
-
-interface SessionTable extends Session {
-    userId: UserId
-}
-
-export interface DB {
-    auths: AuthTable
-    networks: NetworkTable
-    wallets: WalletTable
-    transactions: TransactionTable
-    sessions: SessionTable
-}
-
-const toAuth = (table: AuthTable): Auth => {
-    switch (table.type) {
-        case 'password':
-            return {
-                identityProviderId: table.identityProviderId,
-                type: table.type,
-                issuer: table.issuer,
-                configUrl: table.configUrl,
-                audience: table.audience,
-                tokenUrl: table.tokenUrl,
-                grantType: table.grantType,
-                scope: table.scope,
-                clientId: table.clientId,
-                admin: {
-                    clientId: table.adminClientId,
-                    clientSecret: table.adminClientSecret,
-                },
-            }
-        case 'implicit':
-            return {
-                identityProviderId: table.identityProviderId,
-                type: table.type,
-                issuer: table.issuer,
-                configUrl: table.configUrl,
-                audience: table.audience,
-                scope: table.scope,
-                clientId: table.clientId,
-                admin: {
-                    clientId: table.adminClientId,
-                    clientSecret: table.adminClientSecret,
-                },
-            }
-        case 'client_credentials':
-            return {
-                identityProviderId: table.identityProviderId,
-                type: table.type,
-                issuer: table.issuer,
-                configUrl: table.configUrl,
-                audience: table.audience,
-                scope: table.scope,
-                clientId: table.clientId,
-                clientSecret: table.clientSecret,
-                admin: {
-                    clientId: table.adminClientId,
-                    clientSecret: table.adminClientSecret,
-                },
-            }
-        default:
-            throw new Error(`Unknown auth type: ${table.type}`)
-    }
-}
-
-const fromAuth = (auth: Auth): AuthTable => {
-    switch (auth.type) {
-        case 'password':
-            return {
-                identityProviderId: auth.identityProviderId,
-                type: auth.type,
-                issuer: auth.issuer,
-                configUrl: auth.configUrl,
-                audience: auth.audience,
-                tokenUrl: auth.tokenUrl,
-                grantType: auth.grantType,
-                scope: auth.scope,
-                clientId: auth.clientId,
-                clientSecret: '',
-                adminClientId: auth.admin?.clientId || '',
-                adminClientSecret: auth.admin?.clientSecret || '',
-            }
-        case 'implicit':
-            return {
-                identityProviderId: auth.identityProviderId,
-                type: auth.type,
-                issuer: auth.issuer,
-                configUrl: auth.configUrl,
-                audience: auth.audience,
-                tokenUrl: '',
-                grantType: '',
-                scope: auth.scope,
-                clientId: auth.clientId,
-                clientSecret: '',
-                adminClientId: auth.admin?.clientId || '',
-                adminClientSecret: auth.admin?.clientSecret || '',
-            }
-        case 'client_credentials':
-            return {
-                identityProviderId: auth.identityProviderId,
-                type: auth.type,
-                issuer: auth.issuer,
-                configUrl: auth.configUrl,
-                audience: auth.audience,
-                tokenUrl: '',
-                grantType: '',
-                scope: auth.scope,
-                clientId: auth.clientId,
-                clientSecret: auth.clientSecret,
-                adminClientId: auth.admin?.clientId || '',
-                adminClientSecret: auth.admin?.clientSecret || '',
-            }
-        default:
-            throw new Error(`Unknown auth type`)
-    }
-}
-
-const toNetwork = (table: NetworkTable, authTable?: AuthTable): Network => {
-    if (!authTable) {
-        throw new Error(`Missing auth table for network: ${table.name}`)
-    }
-    return {
-        name: table.name,
-        chainId: table.chainId,
-        synchronizerId: table.synchronizerId,
-        description: table.description,
-        ledgerApi: {
-            baseUrl: table.ledgerApiBaseUrl,
-            adminGrpcUrl: table.ledgerApiAdminGrpcUrl,
-        },
-        auth: toAuth(authTable),
-    }
-}
-
-const fromNetwork = (network: Network, userId: UserId): NetworkTable => {
-    return {
-        name: network.name,
-        chainId: network.chainId,
-        synchronizerId: network.synchronizerId,
-        description: network.description,
-        ledgerApiBaseUrl: network.ledgerApi.baseUrl,
-        ledgerApiAdminGrpcUrl: network.ledgerApi.adminGrpcUrl,
-        userId: userId,
-        identityProviderId: network.auth.identityProviderId,
-    }
-}
-
-export class StoreSql implements Store, AuthAware<StoreSql> {
+export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     authContext: AuthContext | undefined
 
     constructor(
@@ -234,15 +62,17 @@ export class StoreSql implements Store, AuthAware<StoreSql> {
             .where('userId', '=', userId)
             .execute()
 
-        return wallets.filter((wallet) => {
-            const matchedChainIds = chainIdSet
-                ? chainIdSet.has(wallet.chainId)
-                : true
-            const matchedStorageProviderIdS = signingProviderIdSet
-                ? signingProviderIdSet.has(wallet.signingProviderId)
-                : true
-            return matchedChainIds && matchedStorageProviderIdS
-        })
+        return wallets
+            .filter((wallet) => {
+                const matchedChainIds = chainIdSet
+                    ? chainIdSet.has(wallet.chainId)
+                    : true
+                const matchedStorageProviderIdS = signingProviderIdSet
+                    ? signingProviderIdSet.has(wallet.signingProviderId)
+                    : true
+                return matchedChainIds && matchedStorageProviderIdS
+            })
+            .map((table) => toWallet(table))
     }
 
     async getPrimaryWallet(): Promise<Wallet | undefined> {
@@ -262,13 +92,13 @@ export class StoreSql implements Store, AuthAware<StoreSql> {
             if (primary) {
                 await trx
                     .updateTable('wallets')
-                    .set({ primary: false })
+                    .set({ primary: 0 })
                     .where('partyId', '=', primary.partyId)
                     .execute()
             }
             await trx
                 .updateTable('wallets')
-                .set({ primary: true })
+                .set({ primary: 1 })
                 .where('partyId', '=', partyId)
                 .execute()
         })
@@ -294,10 +124,10 @@ export class StoreSql implements Store, AuthAware<StoreSql> {
                 // If the new wallet is primary, set all others to non-primary
                 await trx
                     .updateTable('wallets')
-                    .set({ primary: false })
+                    .set({ primary: 0 })
                     .where((eb) =>
                         eb.and([
-                            eb('primary', '=', true),
+                            eb('primary', '=', 1),
                             eb('userId', '=', userId),
                         ])
                     )
@@ -305,7 +135,7 @@ export class StoreSql implements Store, AuthAware<StoreSql> {
             }
             await trx
                 .insertInto('wallets')
-                .values({ ...wallet, userId })
+                .values(fromWallet(wallet, userId))
                 .execute()
         })
     }
@@ -387,10 +217,8 @@ export class StoreSql implements Store, AuthAware<StoreSql> {
         }
 
         const networks = await query.execute()
-        const auths = await this.db.selectFrom('auths').selectAll().execute()
-        const idpMap = new Map(
-            auths.map((auth) => [auth.identityProviderId, auth])
-        )
+        const idps = await this.db.selectFrom('idps').selectAll().execute()
+        const idpMap = new Map(idps.map((idp) => [idp.identityProviderId, idp]))
         return networks.map((table) =>
             toNetwork(table, idpMap.get(table.identityProviderId))
         )
@@ -405,7 +233,7 @@ export class StoreSql implements Store, AuthAware<StoreSql> {
                 .where('chainId', '=', network.chainId)
                 .execute()
             await this.db
-                .updateTable('auths')
+                .updateTable('idps')
                 .set(fromAuth(network.auth))
                 .where(
                     'identityProviderId',
@@ -417,7 +245,7 @@ export class StoreSql implements Store, AuthAware<StoreSql> {
     }
 
     async addNetwork(network: Network): Promise<void> {
-        const userId = this.assertConnected()
+        const userId = this.authContext?.userId
         await this.db.transaction().execute(async (trx) => {
             const networkAlreadyExists = await trx
                 .selectFrom('networks')
@@ -428,7 +256,7 @@ export class StoreSql implements Store, AuthAware<StoreSql> {
                 throw new Error(`Network ${network.chainId} already exists`)
             } else {
                 await trx
-                    .insertInto('auths')
+                    .insertInto('idps')
                     .values(fromAuth(network.auth))
                     .execute()
                 await trx
@@ -460,7 +288,7 @@ export class StoreSql implements Store, AuthAware<StoreSql> {
                 .where('chainId', '=', chainId)
                 .execute()
             await trx
-                .deleteFrom('auths')
+                .deleteFrom('idps')
                 .where('identityProviderId', '=', network.identityProviderId)
                 .execute()
         })
@@ -491,8 +319,25 @@ export class StoreSql implements Store, AuthAware<StoreSql> {
     }
 }
 
-export const StoreSqlite = new Kysely<DB>({
-    dialect: new SqliteDialect({
-        database: new Database('store.sqlite'),
-    }),
-})
+export const connection = (config: StoreConfig) => {
+    switch (config.connection.type) {
+        case 'sqlite':
+            return new Kysely<DB>({
+                dialect: new SqliteDialect({
+                    database: new Database(config.connection.database),
+                }),
+                plugins: [new CamelCasePlugin()],
+            })
+        case 'memory':
+            return new Kysely<DB>({
+                dialect: new SqliteDialect({
+                    database: new Database(':memory:'),
+                }),
+                plugins: [new CamelCasePlugin()],
+            })
+        default:
+            throw new Error(
+                `Unsupported database type: ${config.connection.type}`
+            )
+    }
+}

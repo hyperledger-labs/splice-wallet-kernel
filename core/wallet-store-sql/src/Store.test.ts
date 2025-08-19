@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, test } from '@jest/globals'
 
-import { StoreSql, DB } from './StoreSql'
+import { connection, StoreSql } from './Store'
+import { DB } from './schema'
 import {
     Wallet,
     Session,
-    Store,
     LedgerApi,
     Network,
     PasswordAuth,
@@ -12,36 +12,38 @@ import {
 import { AuthContext } from 'core-wallet-auth'
 import { pino, Logger } from 'pino'
 import { sink } from 'pino-test'
-import { Kysely, SqliteDialect } from 'kysely'
-import Database from 'better-sqlite3'
-
-export function createTestDb() {
-    return new Kysely<DB>({
-        dialect: new SqliteDialect({
-            database: new Database(':memory:'),
-        }),
-    })
-}
+import { Kysely } from 'kysely'
 
 const authContextMock: AuthContext = {
     userId: 'test-user-id',
     accessToken: 'test-access-token',
 }
 
+const storeConfig = {
+    connection: {
+        type: 'memory' as const,
+    },
+    networks: [],
+}
+
 type StoreCtor = new (
     db: Kysely<DB>,
     logger: Logger,
     authContext?: AuthContext
-) => Store
+) => StoreSql
 
 const implementations: Array<[string, StoreCtor]> = [['StoreSql', StoreSql]]
 
 implementations.forEach(([name, StoreImpl]) => {
     describe(name, () => {
-        let store: Store
+        let store: StoreSql
 
         beforeEach(() => {
-            store = new StoreImpl(createTestDb(), pino(sink()), authContextMock)
+            store = new StoreImpl(
+                connection(storeConfig),
+                pino(sink()),
+                authContextMock
+            )
         })
 
         test('should add and retrieve wallets', async () => {
@@ -151,6 +153,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 adminGrpcUrl: 'http://grpc',
             }
             const auth: PasswordAuth = {
+                identityProviderId: 'idp1',
                 type: 'password',
                 issuer: 'http://auth',
                 configUrl: 'http://auth/.well-known/openid-configuration',

@@ -16,6 +16,7 @@ describe('AdminAuthService', () => {
         },
         auth: {
             type: 'implicit',
+            identityProviderId: 'idp2',
             issuer: 'http://idp',
             configUrl: 'http://idp/.well-known/openid-configuration',
             audience: 'aud',

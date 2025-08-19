@@ -62,6 +62,23 @@ export const networkSchema = z.object({
 })
 
 export const storeConfigSchema = z.object({
+    connection: z.discriminatedUnion('type', [
+        z.object({
+            type: z.literal('memory'),
+        }),
+        z.object({
+            type: z.literal('sqlite'),
+            database: z.string(),
+        }),
+        z.object({
+            type: z.literal('postgres'),
+            host: z.string(),
+            port: z.number(),
+            user: z.string(),
+            password: z.string(),
+            database: z.string(),
+        }),
+    ]),
     networks: z.array(networkSchema),
 })
 

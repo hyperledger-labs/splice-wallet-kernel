@@ -12,7 +12,8 @@
         "build": "tsc -b",
         "dev": "tsc -b --watch",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
+        "test": "yarn node --experimental-vm-modules $(yarn bin jest)",
+        "migrate": "tsx ./src/migrate.ts"
     },
     "dependencies": {
         "better-sqlite3": "^12.2.0",
@@ -21,6 +22,7 @@
         "core-wallet-store": "workspace:^",
         "kysely": "^0.28.5",
         "pino": "^9.7.0",
+        "umzug": "^3.8.2",
         "zod": "^3.25.64"
     },
     "devDependencies": {
@@ -33,6 +35,7 @@
         "pino-test": "^1.1.0",
         "ts-jest": "^29.4.0",
         "ts-jest-resolver": "^2.0.1",
+        "tsx": "^4.20.4",
         "typescript": "^5.8.3"
     }
 }

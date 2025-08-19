@@ -148,6 +148,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 adminGrpcUrl: 'http://grpc',
             }
             const auth: PasswordAuth = {
+                identityProviderId: 'idp1',
                 type: 'password',
                 issuer: 'http://auth',
                 configUrl: 'http://auth/.well-known/openid-configuration',

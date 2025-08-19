@@ -1,1 +1,1 @@
-export * from './StoreSql.js'
+export * from './Store.js'
