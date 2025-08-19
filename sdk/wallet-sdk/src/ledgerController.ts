@@ -128,3 +128,10 @@ export class LedgerController implements ledgerController {
         return await this.client.get('/v2/parties', {})
     }
 }
+
+export const localLedgerDefault = (
+    userId: string,
+    token: string
+): LedgerController => {
+    return new LedgerController(userId, 'http://localhost:8080', token)
+}
