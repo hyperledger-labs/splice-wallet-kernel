@@ -39,12 +39,12 @@ export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton/bootstrap.canton')
 export const API_SPECS_PATH = path.join(repoRoot, 'api-specs')
 
 // Canton versions
-export const DAML_RELEASE_VERSION = '3.4.0-snapshot.20250625.0'
-export const CANTON_VERSION = '3.4.0-snapshot.20250617.16217.0.vbdf62919'
+export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20250603.0'
+export const CANTON_VERSION = '3.3.0-snapshot.20250530.15919.0.v3e7a341c'
 export const SPLICE_ARCHIVE_HASH =
     'b5d16a4caa9b0996e5e4d6ff35382cdd359c544b0302b928153f7add6fabdbda'
 export const CANTON_ARCHIVE_HASH =
-    '5f1bf64d5d3bf50c4dd379bca44d46069e6ece43377177a6e09b4ff0979f640d'
+    '7c88d6096701612dc628b6804c16d572c6c6a8cabe3f0ee32ab22afaa39c1eda'
 export const SPLICE_VERSION = '0.4.10'
 
 export function findJsonKeyPosition(
