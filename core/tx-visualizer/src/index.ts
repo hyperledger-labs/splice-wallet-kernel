@@ -1,4 +1,4 @@
-import { PreparedTransaction } from './_gen/com/daml/ledger/api/v2/interactive/interactive_submission_service'
+import { PreparedTransaction } from 'core-ledger-client'
 import { computePreparedTransaction } from './hashing_scheme_v2'
 import { fromBase64, toBase64, toHex } from './utils'
 
