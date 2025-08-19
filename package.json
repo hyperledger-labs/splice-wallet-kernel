@@ -48,6 +48,7 @@
         "grpc-tools": "^1.13.0",
         "husky": "^9.1.7",
         "lint-staged": "^16.1.0",
+        "nx": "21.3.11",
         "oauth2-mock-server": "^8.1.0",
         "pm2": "^6.0.8",
         "prettier": "^3.5.3",
@@ -60,5 +61,9 @@
         "*": "prettier --write --ignore-unknown",
         "*.ts": "eslint"
     },
-    "packageManager": "yarn@4.9.2"
+    "packageManager": "yarn@4.9.2",
+    "dependencies": {
+        "@nx/js": "^21.3.11",
+        "nx": "^21.3.11"
+    }
 }
