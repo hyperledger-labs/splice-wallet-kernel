@@ -124,7 +124,7 @@ export class LedgerController implements ledgerController {
         )
     }
 
-    async listWallet(): Promise<GetResponse<'/v2/parties'>> {
+    async listWallets(): Promise<GetResponse<'/v2/parties'>> {
         return await this.client.get('/v2/parties', {})
     }
 }
