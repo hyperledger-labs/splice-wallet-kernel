@@ -6,20 +6,15 @@ import {
     Metadata,
     Metadata_InputContract,
     PreparedTransaction,
-} from './_gen/com/daml/ledger/api/v2/interactive/interactive_submission_service'
-import {
-    Create,
-    Exercise,
-    Fetch,
-    Rollback,
-} from './_gen/com/daml/ledger/api/v2/interactive/transaction/v1/interactive_submission_data'
+} from 'core-ledger-client'
+import { Create, Exercise, Fetch, Rollback } from 'core-ledger-client'
 import {
     GenMap_Entry,
     Identifier,
     RecordField,
     TextMap_Entry,
     Value,
-} from './_gen/com/daml/ledger/api/v2/value'
+} from 'core-ledger-client'
 import { mkByteArray, sha256 } from './utils'
 
 // Hash purpose reserved for prepared transaction

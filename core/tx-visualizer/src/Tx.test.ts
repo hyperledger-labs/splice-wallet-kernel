@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals'
-import { PreparedTransaction } from './_gen/com/daml/ledger/api/v2/interactive/interactive_submission_service'
+import { PreparedTransaction } from 'core-ledger-client'
 import * as path from 'path'
 import { readFileSync } from 'fs'
 import { decodePreparedTransaction } from '.'

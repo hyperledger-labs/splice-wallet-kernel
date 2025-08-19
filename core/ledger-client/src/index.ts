@@ -14,18 +14,18 @@ export {
     Metadata,
     Metadata_InputContract,
     PreparedTransaction,
-} from './_proto/com/daml/ledger/api/v2/interactive/interactive_submission_service'
+} from './_proto/com/daml/ledger/api/v2/interactive/interactive_submission_service.js'
 
 export {
     Create,
     Exercise,
     Fetch,
     Rollback,
-} from './_proto/com/daml/ledger/api/v2/interactive/transaction/v1/interactive_submission_data'
+} from './_proto/com/daml/ledger/api/v2/interactive/transaction/v1/interactive_submission_data.js'
 export {
     GenMap_Entry,
     Identifier,
     RecordField,
     TextMap_Entry,
     Value,
-} from './_proto/com/daml/ledger/api/v2/value'
+} from './_proto/com/daml/ledger/api/v2/value.js'
