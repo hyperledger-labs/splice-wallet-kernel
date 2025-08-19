@@ -32,7 +32,8 @@
         "example-scripts",
         "sdk/*",
         "scripts",
-        "mock-oauth2"
+        "mock-oauth2",
+        "docs/wallet-integration-guide/examples"
     ],
     "devDependencies": {
         "@eslint/compat": "^1.2.9",

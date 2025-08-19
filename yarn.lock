@@ -12540,7 +12540,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"splice-sdk-wallet@workspace:sdk/wallet-sdk":
+"splice-sdk-wallet@workspace:^, splice-sdk-wallet@workspace:sdk/wallet-sdk":
   version: 0.0.0-use.local
   resolution: "splice-sdk-wallet@workspace:sdk/wallet-sdk"
   dependencies:
@@ -13729,6 +13729,16 @@ __metadata:
   checksum: 10c0/a17e037bccd3ca8a25a80cb850903facdfed0de4864bd8728f1782370715d679fa72e0a0f5da7c1c1379365159901e5935f35be531229da53bbfc0efdabdb48e
   languageName: node
   linkType: hard
+
+"wallet-integration-guide-examples@workspace:docs/wallet-integration-guide/examples":
+  version: 0.0.0-use.local
+  resolution: "wallet-integration-guide-examples@workspace:docs/wallet-integration-guide/examples"
+  dependencies:
+    splice-sdk-wallet: "workspace:^"
+    tsx: "npm:^4.20.3"
+    typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
 
 "watchpack@npm:2.4.4":
   version: 2.4.4

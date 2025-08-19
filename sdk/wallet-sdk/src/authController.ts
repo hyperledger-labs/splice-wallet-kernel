@@ -13,6 +13,11 @@ export interface AuthController {
     getAdminToken(): Promise<AdminAuthToken>
 }
 
+//TODO: Combine this with the one in the clients/remote
+export interface OIDCConfig {
+    token_endpoint: string
+}
+
 export class ClientCredentialOAuthController implements AuthController {
     set audience(value: string | undefined) {
         this._audience = value
@@ -52,7 +57,11 @@ export class ClientCredentialOAuthController implements AuthController {
         if (this._configUrl === undefined)
             throw new Error('configUrl is not defined.')
 
-        const response = await fetch(this._configUrl, {
+        console.log('retrieving oidc config from', this._configUrl)
+        const oidcConfig = await this.getOIDCConfig(this._configUrl)
+
+        console.log('retrieving user token for userId:', this._userId)
+        const response = await fetch(oidcConfig.token_endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -60,6 +69,7 @@ export class ClientCredentialOAuthController implements AuthController {
             body: this.params(this._userId, this._userSecret).toString(),
         })
 
+        console.log(response)
         if (!response.ok) {
             throw new Error(
                 `Failed to fetch user token: ${response.status} ${response.statusText}`
@@ -82,7 +92,10 @@ export class ClientCredentialOAuthController implements AuthController {
         if (this._configUrl === undefined)
             throw new Error('configUrl is not defined.')
 
-        const response = await fetch(this._configUrl, {
+        console.log('retrieving oidc config from', this._configUrl)
+        const oidcConfig = await this.getOIDCConfig(this._configUrl)
+
+        const response = await fetch(oidcConfig.token_endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -112,6 +125,21 @@ export class ClientCredentialOAuthController implements AuthController {
             scope: this._scope || '',
             audience: this._audience || '',
         })
+    }
+
+    private async getOIDCConfig(url: string): Promise<OIDCConfig> {
+        const res = await fetch(url)
+        if (!res.ok) {
+            const text = await res.text()
+            console.log(
+                { status: res.status, statusText: res.statusText, body: text },
+                'Failed to fetch OIDC config'
+            )
+            throw new Error(
+                `OIDC config error: ${res.status} ${res.statusText}`
+            )
+        }
+        return res.json()
     }
 }
 
