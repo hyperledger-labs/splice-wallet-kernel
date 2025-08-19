@@ -70,6 +70,10 @@ export class LedgerService {
         return svc
     }
 
+    public get isOperator() {
+        return Boolean(this.party && this.party.startsWith('operator:'))
+    }
+
     private async getUserById(
         userId: string
     ): Promise<GetResponse<'/v2/users/{user-id}'>> {
@@ -79,6 +83,22 @@ export class LedgerService {
     }
 
     private async init(login: string): Promise<void> {
+        const partiesThatCanBeActedAs = await this.fetchRightToActAsParty()
+        // @ts-expect-error reason tbs
+        const loginMatchingPartyRight = partiesThatCanBeActedAs.find((right) =>
+            right?.kind?.CanActAs?.value?.party?.startsWith?.(login)
+        )
+        // @ts-expect-error reason tbs
+        if (loginMatchingPartyRight?.kind?.CanActAs?.value?.party) {
+            this.userId = 'operator'
+            // @ts-expect-error reason tbs
+            this.party = loginMatchingPartyRight.kind.CanActAs.value.party
+        } else {
+            throw new Error(`No right to act as party ${login}`)
+        }
+    }
+
+    private async fetchRightToActAsParty() {
         const rights = await this.ledgerClient.get(
             '/v2/users/{user-id}/rights',
             {
@@ -87,18 +107,17 @@ export class LedgerService {
                 },
             }
         )
-        // @ts-expect-error reason tbs
-        const partyRight = rights.rights
-            .filter((right) => 'CanActAs' in right.kind)
-            .find((right) => right.kind.CanActAs.value.party.startsWith(login))
-        // @ts-expect-error reason tbs
-        if (partyRight.kind.CanActAs.value.party) {
-            this.userId = 'operator'
-            // @ts-expect-error reason tbs
-            this.party = partyRight.kind.CanActAs.value.party
-        }
 
-        await this.fetchTransferFactories()
+        // TODO add null checks
+        // @ts-expect-error reason tbs
+        return rights.rights.filter((right) => 'CanActAs' in right.kind)
+    }
+
+    public async fetchParties() {
+        // TODO error handling
+        const actAsRights = await this.fetchRightToActAsParty()
+        // @ts-expect-error reason tbs
+        return actAsRights.map((right) => right?.kind?.CanActAs?.value?.party)
     }
 
     private mapTransferFactoriesResponseData(
@@ -140,6 +159,7 @@ export class LedgerService {
             .map((entry) => {
                 const event =
                     entry?.contractEntry?.JsActiveContract?.createdEvent
+
                 interface IHoldingCreateArgument {
                     owner: string
                     dso: string
@@ -152,6 +172,7 @@ export class LedgerService {
                         values: Record<string, unknown>
                     }
                 }
+
                 if (!event || !event?.createArgument) return null
                 const arg = event?.createArgument as IHoldingCreateArgument
 
@@ -179,9 +200,11 @@ export class LedgerService {
             .map((entry) => {
                 const event =
                     entry?.contractEntry?.JsActiveContract?.createdEvent
+
                 interface ITransferInstructionCreateArgument {
                     transfer: Transfer
                 }
+
                 if (!event || !event?.createArgument) return null
                 const arg =
                     event?.createArgument as ITransferInstructionCreateArgument
@@ -441,6 +464,60 @@ export class LedgerService {
                 {
                     CreateCommand: {
                         templateId: TokenTransferFactory.templateId,
+                        createArguments: args,
+                    },
+                },
+            ],
+        }
+
+        return this.submitAndWaitPost(requestBody)
+    }
+
+    public async createHolding(
+        receiver: string,
+        instrumentId: {
+            admin: string
+            id: string
+        },
+        amount: string
+    ): Promise<PostResponse<'/v2/commands/submit-and-wait'>> {
+        if (!this.isOperator) {
+            throw new Error('Not allowed to mint tokens')
+        }
+        type CreateArgs = {
+            owner: string
+            dso: string
+            amount: string
+            instrumentId: {
+                admin: string
+                id: string
+            }
+            meta: {
+                values: Record<string, unknown>
+            }
+        }
+
+        if (!this.party) {
+            throw new Error(`Party not found`)
+        }
+
+        const args: CreateArgs = {
+            owner: receiver,
+            dso: this.party,
+            instrumentId: instrumentId,
+            amount: amount,
+            meta: { values: {} },
+        }
+
+        // @ts-expect-error reason TBS
+        const requestBody: PostRequest<'/v2/commands/submit-and-wait'> = {
+            actAs: [this.party],
+            userId: this.userId,
+            commandId: crypto.randomUUID(),
+            commands: [
+                {
+                    CreateCommand: {
+                        templateId: TokenHolding.templateId,
                         createArguments: args,
                     },
                 },
