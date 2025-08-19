@@ -2,8 +2,12 @@
 
 import { execFileSync } from 'child_process'
 import fs from 'fs'
-import { ensureDir, getRepoRoot, traverseDirectory } from './utils.js'
-import * as path from 'path'
+import {
+    ensureDir,
+    getRepoRoot,
+    traverseDirectory,
+    getAllFilesWithExtension,
+} from './utils.js'
 
 const repoRoot = getRepoRoot()
 
@@ -38,49 +42,17 @@ function generateProtos() {
     }
 }
 
-function listFilesInDirectoryWithExtension(
-    dirPath: string,
-    extension: string
-): string[] {
-    let filesFound: string[] = []
-
-    try {
-        const items = fs.readdirSync(dirPath)
-
-        for (const item of items) {
-            const itemPath = path.join(dirPath, item)
-            const stats = fs.statSync(itemPath)
-
-            if (stats.isFile()) {
-                if (
-                    path.extname(itemPath).toLowerCase() ===
-                    extension.toLowerCase()
-                ) {
-                    filesFound.push(itemPath)
-                }
-            } else if (stats.isDirectory()) {
-                filesFound = filesFound.concat(
-                    listFilesInDirectoryWithExtension(itemPath, extension)
-                )
-            }
-        }
-    } catch (error) {
-        console.error(`Error reading directory ${dirPath}:`, error)
-    }
-
-    return filesFound
-}
-
 function generateProtosWithPlugin() {
     const ledgerApiRoot = `${repoRoot}/.canton/protobuf/ledger-api`
     const libRoot = `${repoRoot}/.canton/protobuf/lib`
 
-    const ledgerApiFiles = listFilesInDirectoryWithExtension(
+    const ledgerApiFiles = getAllFilesWithExtension(
         ledgerApiRoot,
-        '.proto'
+        '.proto',
+        true
     )
 
-    const libFiles = listFilesInDirectoryWithExtension(libRoot, '.proto')
+    const libFiles = getAllFilesWithExtension(libRoot, '.proto', true)
 
     const protoRoots = [ledgerApiRoot, libRoot]
 

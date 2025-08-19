@@ -65,9 +65,6 @@ export const validateAuthorizedPartyIds = (
     }
 
     const results: ValidationResult = {}
-
-    // first check metadata
-    //   results = { ...results, checkPartyList(results, preparedTx.metadata?.submitterInfo?.actAs || [], authorizedPartyIds, "metadata.submitterInfo.actAs")};
     preparedTx.metadata?.submitterInfo?.actAs.forEach((party) => {
         results[party] = {
             isAuthorized: authorizedPartyIds.includes(party),
