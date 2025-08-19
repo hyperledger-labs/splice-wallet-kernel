@@ -24,12 +24,6 @@ generated/
 !.yarn/sdks
 !.yarn/versions
 
-# Playwright
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-
 .nx/cache
 .nx/workspace-data
 .cursor/rules/nx-rules.mdc
