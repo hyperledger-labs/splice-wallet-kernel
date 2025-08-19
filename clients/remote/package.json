@@ -5,10 +5,15 @@
     "main": "dist/index.js",
     "scripts": {
         "build": "tsc -b; tsc -b tsconfig.frontend.json",
-        "clean": "tsc -b --clean && rm -rf ./dist",
+        "clean": "tsx ./src/scripts/db.ts reset && tsx ./src/scripts/db.ts bootstrap && tsc -b --clean && rm -rf ./dist",
         "dev": "tsx watch src/index.ts | pino-pretty",
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)",
-        "start": "yarn node dist/index.js"
+        "start": "yarn node dist/index.js",
+        "db:bootstrap": "tsx ./src/scripts/db.ts bootstrap",
+        "db:migrate:up": "tsx ./src/scripts/db.ts up",
+        "db:migrate:down": "tsx ./src/scripts/db.ts down",
+        "db:migrate:status": "tsx ./src/scripts/db.ts status",
+        "db:migrate:reset": "tsx ./src/scripts/db.ts reset"
     },
     "keywords": [],
     "author": "",

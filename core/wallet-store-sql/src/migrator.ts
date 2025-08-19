@@ -1,6 +1,4 @@
-import { StoreConfig } from 'core-wallet-store'
 import { Umzug, MigrationMeta, UmzugStorage } from 'umzug'
-import { connection } from './Store'
 import { Kysely } from 'kysely'
 import { DB } from './schema'
 
@@ -42,11 +40,11 @@ class KyselyStorage implements UmzugStorage {
     }
 }
 
-const migrator = (config: StoreConfig) => {
-    const db = connection(config)
+export const migrator = (db: Kysely<DB>) => {
+    const glob = new URL('./migrations/*.js', import.meta.url).pathname
     return new Umzug({
         migrations: {
-            glob: './src/migrations/*.ts',
+            glob: glob,
             resolve: ({ name, path, context }) => {
                 // Dynamic import for ESM
                 return {
@@ -66,13 +64,4 @@ const migrator = (config: StoreConfig) => {
         storage: new KyselyStorage(db),
         logger: console,
     })
-}
-
-// Helper functions
-export const runMigrations = async (config: StoreConfig) => {
-    await migrator(config).up()
-}
-
-export const rollbackLast = async (config: StoreConfig) => {
-    await migrator(config).down()
 }

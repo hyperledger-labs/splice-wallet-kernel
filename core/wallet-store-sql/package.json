@@ -12,11 +12,11 @@
         "build": "tsc -b",
         "dev": "tsc -b --watch",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "yarn node --experimental-vm-modules $(yarn bin jest)",
-        "migrate": "tsx ./src/migrate.ts"
+        "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
     },
     "dependencies": {
         "better-sqlite3": "^12.2.0",
+        "commander": "^14.0.0",
         "core-ledger-client": "workspace:^",
         "core-wallet-auth": "workspace:^",
         "core-wallet-store": "workspace:^",

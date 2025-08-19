@@ -6011,6 +6011,7 @@ __metadata:
     "@types/better-sqlite3": "npm:^7.6.13"
     "@types/jest": "npm:^30.0.0"
     better-sqlite3: "npm:^12.2.0"
+    commander: "npm:^14.0.0"
     core-ledger-client: "workspace:^"
     core-wallet-auth: "workspace:^"
     core-wallet-store: "workspace:^"

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from '@jest/globals'
 
-import { connection, StoreSql } from './Store'
+import { connection, StoreSql } from './store-sql'
 import { DB } from './schema'
 import {
     Wallet,
