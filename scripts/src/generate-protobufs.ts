@@ -72,10 +72,6 @@ function listFilesInDirectoryWithExtension(
 }
 
 function generateProtosWithPlugin() {
-    const roots2 = [
-        `${repoRoot}/.canton/protobuf/ledger-api`,
-        `${repoRoot}/.canton/protobuf/lib`,
-    ]
     const ledgerApiRoot = `${repoRoot}/.canton/protobuf/ledger-api`
     const libRoot = `${repoRoot}/.canton/protobuf/lib`
 
@@ -83,13 +79,16 @@ function generateProtosWithPlugin() {
         ledgerApiRoot,
         '.proto'
     )
+
     const libFiles = listFilesInDirectoryWithExtension(libRoot, '.proto')
+
+    const protoRoots = [ledgerApiRoot, libRoot]
 
     const protocArgs = [
         '--plugin=protoc-gen-ts_proto=$(yarn bin protoc-gen-ts_proto)',
         `--ts_out=${outdir}`,
         '--ts_opt=generate_dependencies',
-        ...roots2.map((root) => `-I${root}`),
+        ...protoRoots.map((root) => `-I${root}`),
         ...libFiles,
         ...ledgerApiFiles,
     ]
