@@ -96,3 +96,11 @@ export class ClientCredentialsService {
         return res.json()
     }
 }
+
+export const clientCredentialsService = (
+    configUrl: string,
+    logger: Logger | undefined
+) => ({
+    fetchToken: async (credentials: ClientCredentials) =>
+        new ClientCredentialsService(configUrl, logger).fetchToken(credentials),
+})

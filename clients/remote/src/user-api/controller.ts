@@ -15,10 +15,9 @@ import {
 import { Store, Auth, Transaction } from 'core-wallet-store'
 import { Logger } from 'pino'
 import { NotificationService } from '../notification/NotificationService.js'
-import { AuthContext } from 'core-wallet-auth'
+import { AuthContext, clientCredentialsService } from 'core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
 import { SigningDriverInterface, SigningProvider } from 'core-signing-lib'
-import { adminAuthService } from '../auth/admin-auth-service.js'
 import {
     AllocatedParty,
     PartyAllocationService,
@@ -105,10 +104,15 @@ export const userController = (
                 throw new Error('Unauthenticated context')
             }
 
-            const adminToken = await adminAuthService(
-                store,
+            const adminToken = await clientCredentialsService(
+                network.auth.configUrl,
                 logger
-            ).fetchToken()
+            ).fetchToken({
+                clientId: network.auth.admin.clientId,
+                clientSecret: network.auth.admin.clientSecret,
+                scope: network.auth.scope,
+                audience: network.auth.audience,
+            })
 
             const partyAllocator = new PartyAllocationService(
                 network.synchronizerId,
