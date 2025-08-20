@@ -2,18 +2,12 @@ import {
     LedgerClient,
     PostResponse,
     TopologyWriteService,
-    GenerateTransactionsResponse_GeneratedTransaction,
 } from 'core-ledger-client'
 import { signTransactionHash } from 'core-signing-lib'
 import { pino } from 'pino'
 
-export type PartyTransaction = {
-    txRaw: Uint8Array<ArrayBufferLike>
-    txHash: Buffer<ArrayBuffer>
-}
-
 export type PreparedParty = {
-    partyTransactions: PartyTransaction[]
+    partyTransactions: Uint8Array<ArrayBufferLike>[]
     combinedHash: string
     txHashes: Buffer<ArrayBuffer>[]
     namespace: string
@@ -72,15 +66,6 @@ export class TopologyController implements topologyController {
         return this
     }
 
-    toPartyTransaction(
-        tx: GenerateTransactionsResponse_GeneratedTransaction
-    ): PartyTransaction {
-        const txHash = Buffer.from(tx.transactionHash)
-        const txRaw = tx.serializedTransaction
-
-        return { txRaw, txHash }
-    }
-
     async prepareExternalPartyTopology(
         publicKey: string,
         partyHint?: string
@@ -101,7 +86,7 @@ export class TopologyController implements topologyController {
         )
 
         const partyTransactions = transactions.map((tx) =>
-            this.toPartyTransaction(tx)
+            Buffer.from(tx.serializedTransaction)
         )
 
         const combinedHash = TopologyWriteService.combineHashes(txHashes)
@@ -125,7 +110,7 @@ export class TopologyController implements topologyController {
             (transaction) =>
                 TopologyWriteService.toSignedTopologyTransaction(
                     preparedParty.txHashes,
-                    transaction.txRaw,
+                    transaction,
                     signedHash,
                     preparedParty.namespace
                 )
