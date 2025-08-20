@@ -85,8 +85,8 @@ export class TopologyController implements topologyController {
             Buffer.from(tx.transactionHash)
         )
 
-        const partyTransactions = transactions.map((tx) =>
-            Buffer.from(tx.serializedTransaction)
+        const partyTransactions = transactions.map(
+            (tx) => tx.serializedTransaction
         )
 
         const combinedHash = TopologyWriteService.combineHashes(txHashes)
