@@ -1,5 +1,5 @@
 {
-    "name": "core-wallet-store-inmemory",
+    "name": "@splice/core-wallet-store-inmemory",
     "version": "1.0.0",
     "description": "In-memory implementation of the Store API.",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
@@ -15,9 +15,9 @@
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
     },
     "dependencies": {
-        "core-ledger-client": "workspace:^",
-        "core-wallet-auth": "workspace:^",
-        "core-wallet-store": "workspace:^",
+        "@splice/core-ledger-client": "workspace:^",
+        "@splice/core-wallet-auth": "workspace:^",
+        "@splice/core-wallet-store": "workspace:^",
         "pino": "^9.7.0",
         "zod": "^3.25.64"
     },

@@ -6,7 +6,7 @@ import {
     SigningAlgorithmSpec,
     MultiTransactionSignatures,
     SignedTopologyTransaction,
-} from 'core-ledger-client'
+} from '@splice/core-ledger-client'
 import { Logger } from 'pino'
 
 export type AllocatedParty = {

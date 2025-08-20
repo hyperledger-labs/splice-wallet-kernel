@@ -7,7 +7,7 @@ import {
     SigningProvider,
     signTransactionHash,
     createKeyPair,
-} from 'core-signing-lib'
+} from '@splice/core-signing-lib'
 
 import {
     SignTransactionParams,
@@ -25,9 +25,9 @@ import {
     SubscribeTransactionsResult,
     SetConfigurationResult,
     Transaction,
-} from 'core-signing-lib'
+} from '@splice/core-signing-lib'
 import { randomUUID } from 'node:crypto'
-import { AuthContext } from 'core-wallet-auth'
+import { AuthContext } from '@splice/core-wallet-auth'
 
 interface InternalKey {
     id: string

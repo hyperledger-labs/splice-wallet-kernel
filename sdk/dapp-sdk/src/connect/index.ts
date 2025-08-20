@@ -1,9 +1,12 @@
-import { discover, popupHref } from 'core-wallet-ui-components'
-import { injectSpliceProvider, ProviderType } from 'core-splice-provider'
-import * as dappAPI from 'core-wallet-dapp-rpc-client'
+import { discover, popupHref } from '@splice/core-wallet-ui-components'
+import {
+    injectSpliceProvider,
+    ProviderType,
+} from '@splice/core-splice-provider'
+import * as dappAPI from '@splice/core-wallet-dapp-rpc-client'
 import * as storage from '../storage'
-import { DiscoverResult, SpliceMessage, WalletEvent } from 'core-types'
-export * from 'core-splice-provider'
+import { DiscoverResult, SpliceMessage, WalletEvent } from '@splice/core-types'
+export * from '@splice/core-splice-provider'
 
 const injectProvider = ({ walletType, url }: DiscoverResult) => {
     if (walletType === 'remote') {

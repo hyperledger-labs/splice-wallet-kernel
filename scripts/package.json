@@ -1,5 +1,6 @@
 {
-    "name": "scripts",
+    "name": "@splice/scripts",
+    "private": true,
     "version": "1.0.0",
     "description": "Various scripts for the Wallet Kernel Project.",
     "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",

@@ -3,14 +3,17 @@ import { userController } from './controller.js'
 import { pino } from 'pino'
 import { jsonRpcHandler } from '../middleware/jsonRpcHandler.js'
 import { Methods } from './rpc-gen/index.js'
-import { Store } from 'core-wallet-store'
-import { AuthService, AuthAware } from 'core-wallet-auth'
+import { Store } from '@splice/core-wallet-store'
+import { AuthService, AuthAware } from '@splice/core-wallet-auth'
 import { jwtAuth } from '../middleware/jwtAuth.js'
 import { rpcRateLimit } from '../middleware/rateLimit.js'
 import cors from 'cors'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo } from '../config/Config.js'
-import { SigningDriverInterface, SigningProvider } from 'core-signing-lib'
+import {
+    SigningDriverInterface,
+    SigningProvider,
+} from '@splice/core-signing-lib'
 
 const logger = pino({ name: 'main', level: 'debug' })
 

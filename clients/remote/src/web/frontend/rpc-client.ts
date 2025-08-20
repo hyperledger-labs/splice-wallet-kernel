@@ -1,6 +1,6 @@
-import { HttpTransport } from 'core-types'
+import { HttpTransport } from '@splice/core-types'
 
-import UserApiClient from 'core-wallet-user-rpc-client'
+import UserApiClient from '@splice/core-wallet-user-rpc-client'
 import { config } from './config'
 import { stateManager } from './state-manager'
 

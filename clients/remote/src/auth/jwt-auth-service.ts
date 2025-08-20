@@ -1,7 +1,7 @@
 import { Logger } from 'pino'
 import { createRemoteJWKSet, decodeJwt, jwtVerify } from 'jose'
-import { AuthService } from 'core-wallet-auth'
-import { Auth, Store } from 'core-wallet-store'
+import { AuthService } from '@splice/core-wallet-auth'
+import { Auth, Store } from '@splice/core-wallet-store'
 
 /**
  * Creates an AuthService that verifies JWT tokens using a remote JWK set.

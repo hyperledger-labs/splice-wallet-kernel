@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals'
 import { pino } from 'pino'
-import { Network } from 'core-wallet-store'
+import { Network } from '@splice/core-wallet-store'
 import { sink } from 'pino-test'
 
 type AsyncFn = () => Promise<unknown>
@@ -28,7 +28,7 @@ MockTopologyWriteService.combineHashes = jest
     .fn()
     .mockReturnValue('combinedhash')
 
-jest.unstable_mockModule('core-ledger-client', () => ({
+jest.unstable_mockModule('@splice/core-ledger-client', () => ({
     Signature: jest.fn(),
     SignatureFormat: jest.fn(),
     SigningAlgorithmSpec: jest.fn(),
