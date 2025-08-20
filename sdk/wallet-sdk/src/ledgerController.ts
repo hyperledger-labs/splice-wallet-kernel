@@ -1,7 +1,13 @@
-import { LedgerClient, PostResponse, GetResponse } from 'core-ledger-client'
-import { signTransactionHash } from 'core-signing-lib'
+import {
+    LedgerClient,
+    PostResponse,
+    GetResponse,
+    TopologyWriteService,
+} from 'core-ledger-client'
+import { signTransactionHash, getPublicKeyFromPrivate } from 'core-signing-lib'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
+import { SigningPublicKey } from 'core-ledger-client/src/_proto/com/digitalasset/canton/crypto/v30/crypto'
 
 export interface ledgerController {
     setPartyId(partyId: string): LedgerController
@@ -15,6 +21,7 @@ export interface ledgerController {
     executeSubmission(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
         signature: string,
+        publicKey: SigningPublicKey | string,
         submissionId?: string
     ): Promise<PostResponse<'/v2/interactive-submission/execute'>>
 }
@@ -55,8 +62,9 @@ export class LedgerController implements ledgerController {
             prepared.preparedTransactionHash,
             privateKey
         )
+        const publicKey = getPublicKeyFromPrivate(privateKey)
 
-        return this.executeSubmission(prepared, signature, commandId)
+        return this.executeSubmission(prepared, signature, publicKey, commandId)
     }
 
     async prepareSubmission(
@@ -85,6 +93,7 @@ export class LedgerController implements ledgerController {
     async executeSubmission(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
         signature: string,
+        publicKey: SigningPublicKey | string,
         submissionId: string
     ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
         if (prepared.preparedTransaction === undefined) {
@@ -107,7 +116,10 @@ export class LedgerController implements ledgerController {
                         signatures: [
                             {
                                 signature,
-                                signedBy: this.userId,
+                                signedBy:
+                                    this.createFingerPrintFromPublicKey(
+                                        publicKey
+                                    ),
                                 format: 'SIGNATURE_FORMAT_RAW',
                                 signingAlgorithmSpec:
                                     'SIGNING_ALGORITHM_SPEC_ED25519',
@@ -126,6 +138,12 @@ export class LedgerController implements ledgerController {
 
     async listWallets(): Promise<GetResponse<'/v2/parties'>> {
         return await this.client.get('/v2/parties', {})
+    }
+
+    createFingerPrintFromPublicKey(
+        publicKey: SigningPublicKey | string
+    ): string {
+        return TopologyWriteService.createFingerprintFromKey(publicKey)
     }
 }
 

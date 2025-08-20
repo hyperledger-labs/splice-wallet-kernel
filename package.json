@@ -48,6 +48,7 @@
         "oauth2-mock-server": "^8.1.0",
         "pm2": "^6.0.8",
         "prettier": "^3.5.3",
+        "ts-proto": "^2.7.7",
         "tsx": "^4.20.3",
         "typescript": "^5.8.3",
         "typescript-eslint": "^8.33.1"

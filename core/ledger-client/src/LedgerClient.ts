@@ -1,4 +1,4 @@
-import { paths } from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
+import { paths } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from 'pino'
 
