@@ -4,6 +4,7 @@ import { AuthContext, ClientCredentialsService } from '@splice/core-wallet-auth'
 export interface AuthController {
     getUserToken(): Promise<AuthContext>
     getAdminToken(): Promise<AuthContext>
+    userId: string | undefined
 }
 
 export class ClientCredentialOAuthController implements AuthController {

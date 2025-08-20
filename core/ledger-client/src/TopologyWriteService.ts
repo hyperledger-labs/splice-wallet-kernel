@@ -4,6 +4,9 @@ import {
     SigningKeyScheme,
     SigningKeySpec,
     SigningPublicKey,
+    Signature,
+    SignatureFormat,
+    SigningAlgorithmSpec,
 } from './_proto/com/digitalasset/canton/crypto/v30/crypto.js'
 import {
     StoreId,
@@ -18,6 +21,7 @@ import {
     PartyToParticipant_HostingParticipant,
     SignedTopologyTransaction,
     TopologyMapping,
+    MultiTransactionSignatures,
 } from './_proto/com/digitalasset/canton/protocol/v30/topology.js'
 import {
     AddTransactionsRequest,
@@ -143,6 +147,32 @@ export class TopologyWriteService {
 
         // Implementation for creating a fingerprint from the public key
         return computeSha256CantonHash(hashPurpose, key.publicKey)
+    }
+
+    static toSignedTopologyTransaction(
+        txHashes: Buffer<ArrayBuffer>[],
+        serializedTransaction: Uint8Array<ArrayBufferLike>,
+        signature: string,
+        namespace: string
+    ): SignedTopologyTransaction {
+        return SignedTopologyTransaction.create({
+            transaction: serializedTransaction,
+            proposal: true,
+            signatures: [],
+            multiTransactionSignatures: [
+                MultiTransactionSignatures.create({
+                    transactionHashes: txHashes,
+                    signatures: [
+                        Signature.create({
+                            format: SignatureFormat.RAW,
+                            signature: Buffer.from(signature, 'base64'),
+                            signedBy: namespace,
+                            signingAlgorithmSpec: SigningAlgorithmSpec.ED25519,
+                        }),
+                    ],
+                }),
+            ],
+        })
     }
 
     private generateTransactionsRequest(
