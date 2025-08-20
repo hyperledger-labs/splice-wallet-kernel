@@ -1549,6 +1549,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@commitlint/config-nx-scopes@npm:^19.8.1":
+  version: 19.8.1
+  resolution: "@commitlint/config-nx-scopes@npm:19.8.1"
+  dependencies:
+    "@commitlint/types": "npm:^19.8.1"
+  peerDependencies:
+    nx: ">=14.0.0"
+  peerDependenciesMeta:
+    nx:
+      optional: true
+  checksum: 10c0/a90cd83d10dc8fbab81040f92118e8f695db36f6130cf6bfeae770747e8f3b2a0f49819e5a2dfbd36e054e1b599c1a8c4ddc1fb64d6324dedfcfc33abd440376
+  languageName: node
+  linkType: hard
+
 "@commitlint/config-validator@npm:^19.8.1":
   version: 19.8.1
   resolution: "@commitlint/config-validator@npm:19.8.1"
@@ -14857,6 +14871,7 @@ __metadata:
   resolution: "splice-wallet-kernel@workspace:."
   dependencies:
     "@commitlint/config-conventional": "npm:^19.8.1"
+    "@commitlint/config-nx-scopes": "npm:^19.8.1"
     "@eslint/compat": "npm:^1.2.9"
     "@eslint/js": "npm:^9.28.0"
     "@nx/js": "npm:^21.3.11"
