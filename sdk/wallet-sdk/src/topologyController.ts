@@ -150,7 +150,6 @@ export class TopologyController implements topologyController {
     }
 
     async prepareSignAndSubmitExternalParty(
-        userId: string,
         partyHint: string,
         publicKey: string,
         privateKey: string
