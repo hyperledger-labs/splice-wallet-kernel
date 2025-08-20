@@ -1,5 +1,5 @@
-import { Logger } from 'core-types'
-import { AuthContext, ClientCredentialsService } from 'core-wallet-auth'
+import { Logger } from '@splice/core-types'
+import { AuthContext, ClientCredentialsService } from '@splice/core-wallet-auth'
 
 export interface AuthController {
     getUserToken(): Promise<AuthContext>

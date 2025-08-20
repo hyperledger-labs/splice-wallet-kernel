@@ -1,6 +1,9 @@
 import { LedgerController, localLedgerDefault } from './ledgerController.js'
 import { AuthController, localAuthDefault } from './authController.js'
-import { Logger } from 'core-types'
+import { Logger } from '@splice/core-types'
+
+export * from './ledgerController.js'
+export * from './authController.js'
 
 export interface Config {
     createAuth?: () => AuthController

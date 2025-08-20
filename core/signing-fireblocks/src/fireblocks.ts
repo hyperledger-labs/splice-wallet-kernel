@@ -132,7 +132,7 @@ export class FireblocksHandler {
                 }
             }
         } catch (error) {
-            logger.error('Error fetching vault accounts:', error)
+            logger.error(error, 'Error fetching vault accounts:')
             throw error
         }
         return keys
@@ -296,7 +296,7 @@ export class FireblocksHandler {
                 // there will be no transactions to fetch
             } while (fetchedLength > 0)
         } catch (error) {
-            logger.error('Error fetching signatures', error)
+            logger.error(error, 'Error fetching signatures')
             throw error
         }
     }
@@ -364,7 +364,7 @@ export class FireblocksHandler {
                 derivationPath: key.derivationPath,
             }
         } catch (error) {
-            logger.error('Error signing transaction:', error)
+            logger.error(error, 'Error signing transaction:')
             throw error
         }
     }

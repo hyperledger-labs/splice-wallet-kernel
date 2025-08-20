@@ -1,6 +1,8 @@
-import { WalletSDKImpl } from 'splice-sdk-wallet'
-import { localAuthDefault } from 'splice-sdk-wallet/dist/authController.js'
-import { localLedgerDefault } from 'splice-sdk-wallet/dist/ledgerController.js'
+import {
+    localAuthDefault,
+    localLedgerDefault,
+    WalletSDKImpl,
+} from '@splice/sdk-wallet'
 
 const sdk = new WalletSDKImpl().configure({
     logger: console,

@@ -16,6 +16,6 @@
         "typescript": "^5.8.3"
     },
     "dependencies": {
-        "splice-sdk-wallet": "workspace:^"
+        "@splice/sdk-wallet": "workspace:^"
     }
 }
