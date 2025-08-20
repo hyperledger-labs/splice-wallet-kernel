@@ -19,13 +19,15 @@ export class WalletSDKImpl implements WalletSDK {
         adminApiUrl: string,
         baseUrl: string,
         userId: string,
-        userAdminToken: string
+        userAdminToken: string,
+        synchronizerId: string
     ): WalletSDK {
         this.topology = new TopologyController(
             adminApiUrl,
             baseUrl,
             userId,
-            userAdminToken
+            userAdminToken,
+            synchronizerId
         )
         return this
     }
