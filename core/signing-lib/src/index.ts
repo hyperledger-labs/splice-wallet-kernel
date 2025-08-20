@@ -46,6 +46,13 @@ export const signTransactionHash = (
     )
 }
 
+export const getPublicKeyFromPrivate = (privateKey: string): string => {
+    const secretKey = naclUtil.decodeBase64(privateKey)
+    // The public key is the last 32 bytes of the secretKey for Ed25519
+    const publicKey = secretKey.slice(32)
+    return naclUtil.encodeBase64(publicKey)
+}
+
 export const createKeyPair = (): KeyPair => {
     const key = nacl.sign.keyPair()
     const publicKey = naclUtil.encodeBase64(key.publicKey)
