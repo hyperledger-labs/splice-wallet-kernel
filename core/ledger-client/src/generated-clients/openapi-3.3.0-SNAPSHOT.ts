@@ -143,10 +143,6 @@ export interface paths {
         /** @description Update  user. */
         patch: operations['patchV2UsersUser-id']
     }
-    '/v2/authenticated-user': {
-        /** @description Get current user details (uses user for JWT). */
-        get: operations['getV2Authenticated-user']
-    }
     '/v2/users/{user-id}/rights': {
         /** @description List user rights. */
         get: operations['getV2UsersUser-idRights']
@@ -214,19 +210,6 @@ export interface components {
              * Optional, if not set, assume the party is managed by the default identity provider or party is not hosted by the participant.
              */
             identityProviderId: string
-            /**
-             * @description The synchronizer, on which the party should be allocated.
-             * For backwards compatibility, this field may be omitted, if the participant is connected to only one synchronizer.
-             * Otherwise a synchronizer must be specified.
-             * Optional
-             */
-            synchronizerId: string
-            /**
-             * @description The user who will get the act_as rights to the newly allocated party.
-             * If set to an empty string (the default), no user will get rights to the party.
-             * Optional
-             */
-            userId: string
         }
         /** AllocatePartyResponse */
         AllocatePartyResponse: {
@@ -4304,9 +4287,6 @@ export interface operations {
     /** @description Get user details. */
     'getV2UsersUser-id': {
         parameters: {
-            query?: {
-                'identity-provider-id'?: string
-            }
             path: {
                 'user-id': string
             }
@@ -4317,7 +4297,7 @@ export interface operations {
                     'application/json': components['schemas']['GetUserResponse']
                 }
             }
-            /** @description Invalid value for: query parameter identity-provider-id, Invalid value for: headers */
+            /** @description Invalid value for: headers */
             400: {
                 content: {
                     'text/plain': string
@@ -4375,32 +4355,6 @@ export interface operations {
                 }
             }
             /** @description Invalid value for: body, Invalid value for: headers */
-            400: {
-                content: {
-                    'text/plain': string
-                }
-            }
-            default: {
-                content: {
-                    'application/json': components['schemas']['JsCantonError']
-                }
-            }
-        }
-    }
-    /** @description Get current user details (uses user for JWT). */
-    'getV2Authenticated-user': {
-        parameters: {
-            query?: {
-                'identity-provider-id'?: string
-            }
-        }
-        responses: {
-            200: {
-                content: {
-                    'application/json': components['schemas']['GetUserResponse']
-                }
-            }
-            /** @description Invalid value for: query parameter identity-provider-id, Invalid value for: headers */
             400: {
                 content: {
                     'text/plain': string

@@ -88,10 +88,8 @@ export class PartyAllocationService {
         )
 
         const res = await this.ledgerClient.post('/v2/parties', {
-            userId,
             partyIdHint: hint,
             identityProviderId: '',
-            synchronizerId: this.synchronizerId,
         })
 
         if (!res.partyDetails?.party) {
