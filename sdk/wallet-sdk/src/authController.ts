@@ -1,32 +1,31 @@
-export interface UserAuthToken {
-    userId: string
-    token: string
-}
-
-export interface AdminAuthToken {
-    adminId: string
-    token: string
-}
+import { Logger } from 'core-types'
+import { AuthContext, ClientCredentialsService } from 'core-wallet-auth'
 
 export interface AuthController {
-    getUserToken(): Promise<UserAuthToken>
-    getAdminToken(): Promise<AdminAuthToken>
-}
-
-//TODO: Combine this with the one in the clients/remote
-export interface OIDCConfig {
-    token_endpoint: string
+    getUserToken(): Promise<AuthContext>
+    getAdminToken(): Promise<AuthContext>
 }
 
 export class ClientCredentialOAuthController implements AuthController {
-    set audience(value: string | undefined) {
+    set logger(value: Logger) {
+        this._logger = value
+        this.service = new ClientCredentialsService(
+            this._configUrl,
+            this._logger
+        )
+    }
+    set audience(value: string) {
         this._audience = value
     }
-    set scope(value: string | undefined) {
+    set scope(value: string) {
         this._scope = value
     }
     set configUrl(value: string) {
         this._configUrl = value
+        this.service = new ClientCredentialsService(
+            this._configUrl,
+            this._logger
+        )
     }
     set adminSecret(value: string) {
         this._adminSecret = value
@@ -41,117 +40,87 @@ export class ClientCredentialOAuthController implements AuthController {
         this._userId = value
     }
 
+    private service: ClientCredentialsService
+    private _logger: Logger
+    private _configUrl: string
     private _userId: string | undefined
     private _userSecret: string | undefined
     private _adminId: string | undefined
     private _adminSecret: string | undefined
-    private _configUrl: string | undefined
     private _scope: string | undefined
     private _audience: string | undefined
 
-    async getUserToken(): Promise<UserAuthToken> {
+    constructor(
+        configUrl: string,
+        logger: Logger,
+        userId?: string,
+        userSecret?: string,
+        adminId?: string,
+        adminSecret?: string,
+        scope?: string,
+        audience?: string
+    ) {
+        this.service = new ClientCredentialsService(configUrl, logger)
+        this._configUrl = configUrl
+        this._logger = logger
+        this._userId = userId
+        this._userSecret = userSecret
+        this._adminId = adminId
+        this._adminSecret = adminSecret
+        this._scope = scope
+        this._audience = audience
+    }
+
+    async getUserToken(): Promise<AuthContext> {
         if (this._userId === undefined)
             throw new Error('UserId is not defined.')
         if (this._userSecret === undefined)
             throw new Error('UserSecret is not defined.')
-        if (this._configUrl === undefined)
-            throw new Error('configUrl is not defined.')
 
-        console.log('retrieving oidc config from', this._configUrl)
-        const oidcConfig = await this.getOIDCConfig(this._configUrl)
-
-        console.log('retrieving user token for userId:', this._userId)
-        const response = await fetch(oidcConfig.token_endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: this.params(this._userId, this._userSecret).toString(),
+        const accessToken = await this.service.fetchToken({
+            clientId: this._userId!,
+            clientSecret: this._userSecret!,
+            scope: this._scope,
+            audience: this._audience,
         })
-
-        console.log(response)
-        if (!response.ok) {
-            throw new Error(
-                `Failed to fetch user token: ${response.status} ${response.statusText}`
-            )
-        }
-
-        const json = await response.json()
 
         return {
             userId: this._userId!,
-            token: json.access_token,
+            accessToken,
         }
     }
 
-    async getAdminToken(): Promise<AdminAuthToken> {
+    async getAdminToken(): Promise<AuthContext> {
         if (this._adminId === undefined)
-            throw new Error('UserId is not defined.')
+            throw new Error('AdminId is not defined.')
         if (this._adminSecret === undefined)
-            throw new Error('UserSecret is not defined.')
-        if (this._configUrl === undefined)
-            throw new Error('configUrl is not defined.')
+            throw new Error('AdminSecret is not defined.')
 
-        console.log('retrieving oidc config from', this._configUrl)
-        const oidcConfig = await this.getOIDCConfig(this._configUrl)
-
-        const response = await fetch(oidcConfig.token_endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: this.params(this._adminId, this._adminSecret).toString(),
+        const accessToken = await this.service.fetchToken({
+            clientId: this._adminId!,
+            clientSecret: this._adminSecret!,
+            scope: this._scope,
+            audience: this._audience,
         })
-
-        if (!response.ok) {
-            throw new Error(
-                `Failed to fetch user token: ${response.status} ${response.statusText}`
-            )
-        }
-
-        const json = await response.json()
 
         return {
-            adminId: this._userId!,
-            token: json.access_token,
+            userId: this._userId!,
+            accessToken,
         }
-    }
-
-    private params(userId: string, userSecret: string): URLSearchParams {
-        return new URLSearchParams({
-            grant_type: 'client_credentials',
-            client_id: userId,
-            client_secret: userSecret,
-            scope: this._scope || '',
-            audience: this._audience || '',
-        })
-    }
-
-    private async getOIDCConfig(url: string): Promise<OIDCConfig> {
-        const res = await fetch(url)
-        if (!res.ok) {
-            const text = await res.text()
-            console.log(
-                { status: res.status, statusText: res.statusText, body: text },
-                'Failed to fetch OIDC config'
-            )
-            throw new Error(
-                `OIDC config error: ${res.status} ${res.statusText}`
-            )
-        }
-        return res.json()
     }
 }
 
 export const LocalAuthDefault = (): AuthController => {
-    const controller = new ClientCredentialOAuthController()
+    const controller = new ClientCredentialOAuthController(
+        'http://127.0.0.1:8889/.well-known/openid-configuration',
+        console
+    )
     // keep these values aligned with client/test/config.json
     //TODO: Dynamically load these values
     controller.userId = 'operator'
     controller.userSecret = 'your-client-secret'
     controller.adminId = 'participant_admin'
     controller.adminSecret = 'admin-client-secret'
-    controller.configUrl =
-        'http://127.0.0.1:8889/.well-known/openid-configuration'
+
     return controller
 }

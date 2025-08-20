@@ -2,6 +2,7 @@ import { WalletSDKImpl } from 'splice-sdk-wallet'
 
 const sdk = new WalletSDKImpl()
 
+console.log('SDK initialized')
 console.log(sdk)
 
 sdk.ledger

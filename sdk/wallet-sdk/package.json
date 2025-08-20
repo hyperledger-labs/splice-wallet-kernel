@@ -16,6 +16,8 @@
     "dependencies": {
         "core-ledger-client": "workspace:^",
         "core-signing-lib": "workspace:^",
+        "core-types": "workspace:^",
+        "core-wallet-auth": "workspace:^",
         "pino": "^9.7.0",
         "uuid": "^11.1.0"
     },

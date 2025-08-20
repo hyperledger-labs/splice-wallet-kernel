@@ -12,9 +12,12 @@ export class WalletSDKImpl implements WalletSDK {
 
     constructor() {
         this.auth = LocalAuthDefault()
-        this.auth.getUserToken().then((token) => {
-            console.log('User token received:', token)
-            this.ledger = localLedgerDefault(token.userId, token.token)
+        this.auth.getUserToken().then((context) => {
+            console.log('User token received:', context)
+            this.ledger = localLedgerDefault(
+                context.userId,
+                context.accessToken
+            )
         })
         while (this.ledger === undefined) {
             // Wait for the ledger to be initialized
