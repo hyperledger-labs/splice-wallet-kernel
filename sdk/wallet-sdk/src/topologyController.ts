@@ -47,10 +47,11 @@ export class TopologyController implements topologyController {
         adminApiUrl: string,
         baseUrl: string,
         userId: string,
-        userAdminToken: string
+        userAdminToken: string,
+        synchronizerId: string
     ) {
         this.client = new LedgerClient(baseUrl, userAdminToken, this.logger)
-        this.synchronizerId = ''
+        this.synchronizerId = synchronizerId
         this.userId = userId
         this.topologyClient = new TopologyWriteService(
             this.synchronizerId,
@@ -159,6 +160,7 @@ export const localTopologyDefault = (
         'http://127.0.0.1:5012',
         'http://127.0.0.1:5003',
         userId,
-        userAdminToken
+        userAdminToken,
+        'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd'
     )
 }
