@@ -3,12 +3,12 @@ import { TopologyController } from './topologyController'
 
 export interface WalletSDK {
     ledger: LedgerController | undefined
-    topologyWriter: TopologyController | undefined
+    topology: TopologyController | undefined
 }
 
 export class WalletSDKImpl implements WalletSDK {
     ledger: LedgerController | undefined
-    topologyWriter: TopologyController | undefined
+    topology: TopologyController | undefined
 
     connectLedger(userId: string, baseUrl: string, token: string): WalletSDK {
         this.ledger = new LedgerController(userId, baseUrl, token)
@@ -21,7 +21,7 @@ export class WalletSDKImpl implements WalletSDK {
         userId: string,
         userAdminToken: string
     ): WalletSDK {
-        this.topologyWriter = new TopologyController(
+        this.topology = new TopologyController(
             adminApiUrl,
             baseUrl,
             userId,

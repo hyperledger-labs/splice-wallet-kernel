@@ -150,3 +150,15 @@ export class TopologyController implements topologyController {
         return await this.submitExternalPartyTopology(signedHash, preparedParty)
     }
 }
+
+export const localTopologyDefault = (
+    userId: string,
+    userAdminToken: string
+): TopologyController => {
+    return new TopologyController(
+        'http://127.0.0.1:5012',
+        'http://127.0.0.1:5003',
+        userId,
+        userAdminToken
+    )
+}
