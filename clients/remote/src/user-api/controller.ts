@@ -17,7 +17,10 @@ import { Logger } from 'pino'
 import { NotificationService } from '../notification/NotificationService.js'
 import { AuthContext, clientCredentialsService } from '@splice/core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
-import { SigningDriverInterface, SigningProvider } from '@splice/core-signing-lib'
+import {
+    SigningDriverInterface,
+    SigningProvider,
+} from '@splice/core-signing-lib'
 import {
     AllocatedParty,
     PartyAllocationService,
