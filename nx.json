@@ -1,7 +1,13 @@
 {
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
     "release": {
-        "projectsRelationship": "independent"
+        "projectsRelationship": "independent",
+        "version": {
+            "conventionalCommits": true
+        },
+        "changelog": {
+            "projectChangelogs": true
+        }
     },
     "targetDefaults": {
         "build": {

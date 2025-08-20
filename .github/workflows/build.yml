@@ -25,6 +25,7 @@ jobs:
 
             - name: Validate current commit with commitlint
               run: yarn commitlint --last --verbose
+
             - name: prettier code
               run: yarn run prettier . --check
 
