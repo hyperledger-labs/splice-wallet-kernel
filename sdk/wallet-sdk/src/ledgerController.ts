@@ -162,3 +162,10 @@ export class LedgerController implements ledgerController {
         return TopologyWriteService.createFingerprintFromKey(publicKey)
     }
 }
+
+export const localLedgerDefault = (
+    userId: string,
+    token: string
+): LedgerController => {
+    return new LedgerController(userId, 'http://127.0.0.1:5003', token)
+}

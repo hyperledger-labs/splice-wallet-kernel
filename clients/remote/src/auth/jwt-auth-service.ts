@@ -16,7 +16,7 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
         }
 
         const jwt = accessToken.split(' ')[1]
-        logger.debug(jwt, 'Verifying JWT token')
+        logger.debug({ jwt }, 'Verifying JWT token')
 
         try {
             const iss = decodeJwt(jwt).iss
