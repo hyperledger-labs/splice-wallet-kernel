@@ -41,7 +41,7 @@ export class ClientCredentialOAuthController implements AuthController {
     }
 
     private service: ClientCredentialsService
-    private _logger: Logger
+    private _logger: Logger | undefined
     private _configUrl: string
     private _userId: string | undefined
     private _userSecret: string | undefined
@@ -52,7 +52,7 @@ export class ClientCredentialOAuthController implements AuthController {
 
     constructor(
         configUrl: string,
-        logger: Logger,
+        logger?: Logger,
         userId?: string,
         userSecret?: string,
         adminId?: string,
@@ -104,16 +104,16 @@ export class ClientCredentialOAuthController implements AuthController {
         })
 
         return {
-            userId: this._userId!,
+            userId: this._adminId!,
             accessToken,
         }
     }
 }
 
-export const LocalAuthDefault = (): AuthController => {
+export const localAuthDefault = (logger?: Logger): AuthController => {
     const controller = new ClientCredentialOAuthController(
         'http://127.0.0.1:8889/.well-known/openid-configuration',
-        console
+        logger
     )
     // keep these values aligned with client/test/config.json
     //TODO: Dynamically load these values

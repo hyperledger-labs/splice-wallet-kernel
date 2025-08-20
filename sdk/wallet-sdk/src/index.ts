@@ -1,8 +1,11 @@
 import { LedgerController, localLedgerDefault } from './ledgerController.js'
-import { AuthController, LocalAuthDefault } from './authController.js'
+import { AuthController, localAuthDefault } from './authController.js'
+import { Logger } from 'core-types'
 
 export interface Config {
-    createLedger: (userId: string, token: string) => LedgerController
+    createAuth?: () => AuthController
+    createLedger?: (userId: string, token: string) => LedgerController
+    logger?: Logger
 }
 
 export interface WalletSDK {
@@ -15,11 +18,11 @@ export interface WalletSDK {
 export class WalletSDKImpl implements WalletSDK {
     auth: AuthController
 
-    private config: Config | undefined
     private createLedger: (userId: string, token: string) => LedgerController
+    private logger: Logger | undefined
 
     constructor(
-        auth: AuthController = LocalAuthDefault(),
+        auth: AuthController = localAuthDefault(),
         createLedger: (
             userId: string,
             token: string
@@ -30,17 +33,21 @@ export class WalletSDKImpl implements WalletSDK {
     }
 
     configure(config: Config): WalletSDK {
-        this.config = config
+        if (config.logger) this.logger = config.logger
+        if (config.createAuth) this.auth = config.createAuth()
+        if (config.createLedger) this.createLedger = config.createLedger
         return this
     }
 
     async connect(): Promise<LedgerController> {
         const { userId, accessToken } = await this.auth.getUserToken()
+        this.logger?.info(`Connecting user ${userId} with token ${accessToken}`)
         return this.createLedger(userId, accessToken)
     }
 
     async connectAdmin(): Promise<LedgerController> {
         const { userId, accessToken } = await this.auth.getAdminToken()
+        this.logger?.info(`Connecting user ${userId} with token ${accessToken}`)
         return this.createLedger(userId, accessToken)
     }
 }
