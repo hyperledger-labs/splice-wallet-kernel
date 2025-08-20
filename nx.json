@@ -1,5 +1,11 @@
 {
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "release": {
+        "projectsRelationship": "independent",
+        "version": {
+            "conventionalCommits": true
+        }
+    },
     "targetDefaults": {
         "build": {
             "outputs": ["{projectRoot}/dist"],
