@@ -2,8 +2,8 @@ import {
     LedgerClient,
     PostResponse,
     TopologyWriteService,
-} from 'core-ledger-client'
-import { signTransactionHash } from 'core-signing-lib'
+} from '@splice/core-ledger-client'
+import { signTransactionHash } from '@splice/core-signing-lib'
 import { pino } from 'pino'
 
 export type PreparedParty = {
