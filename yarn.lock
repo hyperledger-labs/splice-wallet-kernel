@@ -2561,6 +2561,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@playwright/browser-chromium@npm:^1.55.0":
+  version: 1.55.0
+  resolution: "@playwright/browser-chromium@npm:1.55.0"
+  dependencies:
+    playwright-core: "npm:1.55.0"
+  checksum: 10c0/a2c4e0a957221683bbec2156f1bac4fd1e6918ecbf3d6268fc5c713c8459bea921320dac1ed2ef6fd30589ee40261f153719631a275cce46b1bc8a25bab326c5
+  languageName: node
+  linkType: hard
+
+"@playwright/browser-firefox@npm:^1.55.0":
+  version: 1.55.0
+  resolution: "@playwright/browser-firefox@npm:1.55.0"
+  dependencies:
+    playwright-core: "npm:1.55.0"
+  checksum: 10c0/00b641cd366a5203caa92a5d4810f4d7104b222a4b53c2d8294e04ea1bd5db29c1ebad3a3d0910cd5bda6db914c1d74527a833778f7ec134a47e68f9811d9621
+  languageName: node
+  linkType: hard
+
 "@playwright/test@npm:^1.54.2":
   version: 1.54.2
   resolution: "@playwright/test@npm:1.54.2"
@@ -3485,6 +3503,8 @@ __metadata:
   resolution: "@splice/example@workspace:example"
   dependencies:
     "@eslint/js": "npm:^9.25.0"
+    "@playwright/browser-chromium": "npm:^1.55.0"
+    "@playwright/browser-firefox": "npm:^1.55.0"
     "@playwright/test": "npm:^1.54.2"
     "@splice/sdk-dapp": "workspace:^"
     "@types/node": "npm:^24.3.0"
@@ -11567,6 +11587,15 @@ __metadata:
   bin:
     playwright-core: cli.js
   checksum: 10c0/44850e20bf35237c8c3dedf1096c655f8af939dde53c5469f72cae3dd744966858a302419b909a73d7a2093323123e7ebcc0fdd55151b4193afb7812c1fd2c88
+  languageName: node
+  linkType: hard
+
+"playwright-core@npm:1.55.0":
+  version: 1.55.0
+  resolution: "playwright-core@npm:1.55.0"
+  bin:
+    playwright-core: cli.js
+  checksum: 10c0/c39d6aa30e7a4e73965942ca5e13405ae05c9cb49f755a35f04248c864c0b24cf662d9767f1797b3ec48d1cf4e54774dce4a19c16534bd5cfd2aa3da81c9dc3a
   languageName: node
   linkType: hard
 

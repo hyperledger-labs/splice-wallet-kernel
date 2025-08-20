@@ -16,6 +16,8 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.25.0",
+        "@playwright/browser-chromium": "^1.55.0",
+        "@playwright/browser-firefox": "^1.55.0",
         "@playwright/test": "^1.54.2",
         "@types/node": "^24.3.0",
         "@types/react": "^19.1.2",
