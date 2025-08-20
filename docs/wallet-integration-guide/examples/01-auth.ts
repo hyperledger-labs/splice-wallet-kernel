@@ -29,7 +29,7 @@ await sdk.userLedger
 await sdk.connectAdmin()
 console.log('Connected to admin ledger')
 
-await sdk.userLedger
+await sdk.adminLedger
     ?.listWallets()
     .then((wallets) => {
         console.log('Wallets:', wallets)
