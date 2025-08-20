@@ -16,8 +16,12 @@ import { LedgerClient } from 'core-ledger-client'
 import pino from 'pino'
 
 const logger = pino({ name: 'token-standard-example', level: 'debug' })
+import { RegistryService } from './registry.service'
 
 const PROXY_URL = 'http://localhost:8000/'
+const REGISTRY_SERVICE_URL = 'http://localhost:8002/'
+
+// const PROXY_URL = 'http://localhost:8000/'
 
 export function createLedgerApiClient(authToken: string): LedgerClient {
     return new LedgerClient(PROXY_URL, authToken, logger)
@@ -54,7 +58,8 @@ export interface ITokenTransferInstruction {
 export class LedgerService {
     private constructor(
         public readonly login: string,
-        private readonly ledgerClient: LedgerClient
+        private readonly ledgerClient: LedgerClient,
+        private readonly registryService: RegistryService
     ) {}
 
     public userId?: string
@@ -65,7 +70,8 @@ export class LedgerService {
         sessionToken: string
     ): Promise<LedgerService> {
         const client = createLedgerApiClient(sessionToken)
-        const svc = new LedgerService(login, client)
+        const registryService = new RegistryService(REGISTRY_SERVICE_URL)
+        const svc = new LedgerService(login, client, registryService)
         await svc.init(login)
         return svc
     }
@@ -84,8 +90,8 @@ export class LedgerService {
 
     private async init(login: string): Promise<void> {
         const partiesThatCanBeActedAs = await this.fetchRightToActAsParty()
-        // @ts-expect-error reason tbs
         const loginMatchingPartyRight = partiesThatCanBeActedAs.find((right) =>
+            // @ts-expect-error reason tbs
             right?.kind?.CanActAs?.value?.party?.startsWith?.(login)
         )
         // @ts-expect-error reason tbs
@@ -377,6 +383,14 @@ export class LedgerService {
     ): Promise<PostResponse<'/v2/commands/submit-and-wait'>> {
         return this.ledgerClient.post('/v2/commands/submit-and-wait', req)
     }
+    private submitAndWaitForTransactionPost(
+        req: PostRequest<'/v2/commands/submit-and-wait-for-transaction'>
+    ): Promise<PostResponse<'/v2/commands/submit-and-wait-for-transaction'>> {
+        return this.ledgerClient.post(
+            '/v2/commands/submit-and-wait-for-transaction',
+            req
+        )
+    }
 
     public async createTransfer(
         receiver: string,
@@ -436,9 +450,9 @@ export class LedgerService {
         return this.submitAndWaitPost(requestBody)
     }
 
-    public async createTransferFactory(
+    private async createTransferFactory(
         symbol: string
-    ): Promise<PostResponse<'/v2/commands/submit-and-wait'>> {
+    ): Promise<PostResponse<'/v2/commands/submit-and-wait-for-transaction'>> {
         type CreateArgs = {
             admin: string // PartyId
             meta: { values: Record<string, string> }
@@ -455,22 +469,61 @@ export class LedgerService {
             observers: [],
         }
 
-        // @ts-expect-error reason TBS
-        const requestBody: PostRequest<'/v2/commands/submit-and-wait'> = {
-            actAs: [this.party],
-            userId: this.userId,
-            commandId: crypto.randomUUID(),
-            commands: [
-                {
-                    CreateCommand: {
-                        templateId: TokenTransferFactory.templateId,
-                        createArguments: args,
-                    },
+        const requestBody: PostRequest<'/v2/commands/submit-and-wait-for-transaction'> =
+            {
+                commands: {
+                    actAs: [this.party],
+                    userId: this.userId as string,
+                    commandId: crypto.randomUUID(),
+                    commands: [
+                        {
+                            CreateCommand: {
+                                templateId: TokenTransferFactory.templateId,
+                                createArguments: args,
+                            },
+                        },
+                    ],
+                    // disclosedContracts: [...]   // if/when you add them
                 },
-            ],
-        }
+                // Optional, but useful to control what comes back
+                transactionFormat: {
+                    eventFormat: {
+                        filtersByParty: { [this.party]: {} }, // wildcard filter for your party
+                        verbose: false,
+                    },
+                    transactionShape: 'TRANSACTION_SHAPE_ACS_DELTA',
+                },
+            }
 
-        return this.submitAndWaitPost(requestBody)
+        return this.submitAndWaitForTransactionPost(requestBody)
+    }
+
+    public async createAndRegisterTransferFactory(
+        symbol: string
+    ): Promise<PostResponse<'/v2/commands/submit-and-wait-for-transaction'>> {
+        const response = await this.createTransferFactory(symbol)
+        const events = response?.transaction?.events ?? []
+        const created = events.find(
+            // TODO e doesn't infer type from array
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (e: any) =>
+                e?.CreatedEvent?.templateId?.endsWith?.(
+                    `:TokenTransfer:TokenTransferFactory`
+                )
+        )?.CreatedEvent
+
+        const factoryCid = created?.contractId as string | undefined
+        if (!factoryCid)
+            throw new Error(
+                'Factory contractId not found in transaction response'
+            )
+
+        this.registryService.upsertTransferFactory({
+            admin: this.party as string,
+            id: symbol,
+            factoryId: factoryCid,
+        })
+        return response
     }
 
     public async createHolding(

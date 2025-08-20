@@ -22,7 +22,7 @@ export class TokenTransferForm extends LitElement {
     private recipient = ''
 
     @state()
-    private tokenType = 'BTC'
+    private selectedInstrumentKey: string = ''
 
     @state()
     private amount = ''
@@ -30,9 +30,40 @@ export class TokenTransferForm extends LitElement {
     @state()
     private inputHoldingCids: string[] = []
 
+    get instruments(): Record<string, { admin: string; id: string }> {
+        const map: Record<string, { admin: string; id: string }> = {}
+        for (const holding of this.holdings) {
+            const admin = holding.instrumentId?.admin
+            const id = holding.instrumentId?.id
+            if (!admin || !id) continue
+            const key = this.getInstrumentKey(admin, id)
+            if (!(key in map)) map[key] = { admin, id } // keep first dedupe
+        }
+        return map
+    }
+
+    get selectedInstrument(): { admin: string; id: string } | undefined {
+        return this.instruments[this.selectedInstrumentKey]
+    }
+
+    // Holdings filtered to the currently selected instrument
+    get instrumentHoldings(): ITokenHolding[] {
+        const instr = this.selectedInstrument
+        if (!instr) return []
+        return this.holdings.filter(
+            (h) =>
+                h.instrumentId?.admin === instr.admin &&
+                h.instrumentId?.id === instr.id
+        )
+    }
+
+    private getInstrumentKey(admin: string, id: string) {
+        return `${admin}::${id}`
+    }
+
     public clearForm() {
         this.recipient = ''
-        this.tokenType = 'BTC'
+        this.selectedInstrumentKey = ''
         this.amount = ''
         this.inputHoldingCids = []
     }
@@ -43,7 +74,7 @@ export class TokenTransferForm extends LitElement {
             new CustomEvent('submit-transfer', {
                 detail: {
                     recipient: this.recipient,
-                    token: this.tokenType,
+                    instrumentId: this.selectedInstrument,
                     amount: this.amount,
                     inputHoldingCids: this.inputHoldingCids,
                 },
@@ -54,6 +85,8 @@ export class TokenTransferForm extends LitElement {
     }
 
     render() {
+        const instrumentEntries = Object.entries(this.instruments)
+
         return html`
             <h2>Transfer holdings</h2>
             <form @submit=${this.handleSubmit}>
@@ -70,17 +103,23 @@ export class TokenTransferForm extends LitElement {
                 </label>
 
                 <label>
-                    Token Type:
+                    Instrument:
                     <select
-                        .value=${this.tokenType}
+                        .value=${this.selectedInstrumentKey}
                         @change=${(e: Event) => {
-                            const target = e.target as HTMLSelectElement
-                            this.tokenType = target?.value
-                            this.inputHoldingCids = []
+                            this.selectedInstrumentKey = (
+                                e.target as HTMLSelectElement
+                            ).value
+                            this.inputHoldingCids = [] // clear selection when instrument changes
                         }}
                     >
-                        <option value="BTC">BTC</option>
-                        <option value="ETH">ETH</option>
+                        <option value="" disabled hidden>Select holding</option>
+                        ${instrumentEntries.map(
+                            ([key, instr]) =>
+                                html` <option value=${key}>
+                                    ${instr.id} — ${instr.admin}
+                                </option>`
+                        )}
                     </select>
                 </label>
 
@@ -98,41 +137,35 @@ export class TokenTransferForm extends LitElement {
                     />
                 </label>
 
-                <fieldset>
-                    <legend>Select Holdings to Use:</legend>
-                    ${this.holdings
-                        .filter((h) => h.instrumentId.id === this.tokenType)
-                        .map((h) => {
-                            const checked = this.inputHoldingCids.includes(
-                                h.contractId
-                            )
-                            return html`
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        .value=${h.contractId}
-                                        ?checked=${checked}
-                                        @change=${(e: Event) => {
-                                            const target =
-                                                e.target as HTMLInputElement
-                                            if (target.checked) {
-                                                this.inputHoldingCids = [
-                                                    ...this.inputHoldingCids,
-                                                    target.value,
-                                                ]
-                                            } else {
-                                                this.inputHoldingCids =
-                                                    this.inputHoldingCids.filter(
-                                                        (cid) =>
-                                                            cid !== target.value
-                                                    )
-                                            }
-                                        }}
-                                    />
-                                    ${h.instrumentId.id} - ${h.amount}
-                                </label>
-                            `
-                        })}
+                <fieldset ?disabled=${!this.selectedInstrument}>
+                    <legend>Select Holdings to use:</legend>
+                    ${this.instrumentHoldings.map((h) => {
+                        const checked = this.inputHoldingCids.includes(
+                            h.contractId
+                        )
+                        return html`
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    .value=${h.contractId}
+                                    ?checked=${checked}
+                                    @change=${(e: Event) => {
+                                        const v = (e.target as HTMLInputElement)
+                                            .value
+                                        this.inputHoldingCids = (
+                                            e.target as HTMLInputElement
+                                        ).checked
+                                            ? [...this.inputHoldingCids, v]
+                                            : this.inputHoldingCids.filter(
+                                                  (cid) => cid !== v
+                                              )
+                                    }}
+                                />
+                                ${h.instrumentId.id} — ${h.amount} (cid:
+                                ${h.contractId})
+                            </label>
+                        `
+                    })}
                 </fieldset>
 
                 <button type="submit">Transfer</button>

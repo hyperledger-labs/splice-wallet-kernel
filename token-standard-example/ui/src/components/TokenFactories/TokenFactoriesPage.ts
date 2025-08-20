@@ -29,9 +29,10 @@ export class TokenFactoriesPage extends LitElement {
     }
 
     private async onSubmitFactory(e: CustomEvent) {
-        console.log('on submit factory in page')
         try {
-            await this.ledgerService.createTransferFactory(e.detail.symbol)
+            await this.ledgerService.createAndRegisterTransferFactory(
+                e.detail.symbol
+            )
             this.clearForm()
         } catch (error) {
             console.log(error)

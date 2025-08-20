@@ -52,7 +52,7 @@ export class TokenTransfersPage extends LitElement {
         try {
             await this.ledgerService.createTransfer(
                 e.detail.recipient,
-                e.detail.token,
+                e.detail.instrumentId,
                 e.detail.amount,
                 e.detail.inputHoldingCids
             )
