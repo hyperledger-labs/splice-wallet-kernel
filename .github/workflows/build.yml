@@ -23,6 +23,8 @@ jobs:
             - name: Install dependencies
               run: yarn install --immutable
 
+            - name: Validate current commit with commitlint
+              run: yarn commitlint --last --verbose
             - name: prettier code
               run: yarn run prettier . --check
 
