@@ -1,12 +1,4 @@
-import {
-    LedgerClient,
-    TopologyWriteService,
-    Signature,
-    SignatureFormat,
-    SigningAlgorithmSpec,
-    MultiTransactionSignatures,
-    SignedTopologyTransaction,
-} from '@splice/core-ledger-client'
+import { LedgerClient, TopologyWriteService } from '@splice/core-ledger-client'
 import { Logger } from 'pino'
 
 export type AllocatedParty = {
@@ -124,25 +116,12 @@ export class PartyAllocationService {
         )
 
         const signedTopologyTxs = transactions.map((transaction) =>
-            SignedTopologyTransaction.create({
-                transaction: transaction.serializedTransaction,
-                proposal: true,
-                signatures: [],
-                multiTransactionSignatures: [
-                    MultiTransactionSignatures.create({
-                        transactionHashes: txHashes,
-                        signatures: [
-                            Signature.create({
-                                format: SignatureFormat.RAW,
-                                signature: Buffer.from(signature, 'base64'),
-                                signedBy: namespace,
-                                signingAlgorithmSpec:
-                                    SigningAlgorithmSpec.ED25519,
-                            }),
-                        ],
-                    }),
-                ],
-            })
+            TopologyWriteService.toSignedTopologyTransaction(
+                txHashes,
+                transaction.serializedTransaction,
+                signature,
+                namespace
+            )
         )
 
         await this.topologyClient.addTransactions(signedTopologyTxs)

@@ -7,8 +7,13 @@ export interface WalletSDK {
 export class WalletSDKImpl implements WalletSDK {
     ledger: LedgerController | undefined
 
-    connectLedger(userId: string, baseUrl: string, token: string): WalletSDK {
-        this.ledger = new LedgerController(userId, baseUrl, token)
+    connectLedger(
+        userId: string,
+        baseUrl: string,
+        adminApiUrl: string,
+        token: string
+    ): WalletSDK {
+        this.ledger = new LedgerController(userId, baseUrl, adminApiUrl, token)
         return this
     }
 }
