@@ -1,12 +1,12 @@
-const express = require('express')
-const cors = require('cors')
-const { createProxyMiddleware } = require('http-proxy-middleware')
-const url = require('url')
+import express from 'express'
+import cors from 'cors'
+import { createProxyMiddleware } from 'http-proxy-middleware'
+import url from 'url'
 
 const app = express()
 app.use(cors())
 
-const httpJsonDevUrl = 'http://127.0.0.1:7575'
+const httpJsonDevUrl = 'http://127.0.0.1:5003'
 
 app.use(
     createProxyMiddleware({
@@ -54,5 +54,5 @@ app.use(
 )
 
 app.listen(8000, () => {
-    console.log('Proxy running at http://localhost:8000')
+    console.log('Proxy running at http://localhost:5003')
 })

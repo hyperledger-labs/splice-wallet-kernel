@@ -7,7 +7,8 @@
         "dev": "vite",
         "build": "tsc -b && vite build",
         "lint": "eslint .",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "proxy": "node ./setupProxy.js"
     },
     "dependencies": {
         "@daml.js/exercise-app": "file:daml-codegen/exercise-app-0.1.0",
@@ -30,8 +31,11 @@
         "@types/react": "^19.1.2",
         "@types/react-dom": "^19.1.2",
         "@vitejs/plugin-react": "^4.4.1",
+        "cors": "^2.8.5",
         "eslint": "^9.25.0",
+        "express": "^5.1.0",
         "globals": "^16.0.0",
+        "http-proxy-middleware": "^3.0.5",
         "typescript": "~5.8.3",
         "typescript-eslint": "^8.30.1",
         "vite": "^6.3.5"

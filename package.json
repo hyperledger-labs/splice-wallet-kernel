@@ -29,7 +29,7 @@
         "core/**",
         "example",
         "example-scripts",
-        "token-standard-example/ui",
+        "token-standard-example/*",
         "sdk/*",
         "scripts",
         "mock-oauth2"
