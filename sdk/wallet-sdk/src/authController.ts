@@ -40,6 +40,9 @@ export class ClientCredentialOAuthController implements AuthController {
     set userId(value: string) {
         this._userId = value
     }
+    get userId(): string | undefined {
+        return this._userId
+    }
 
     private service: ClientCredentialsService
     private _logger: Logger | undefined
