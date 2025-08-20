@@ -44,6 +44,14 @@ jobs:
             - name: Run unit tests
               run: yarn test:all
 
+            - name: Cache Playwright Browsers
+              uses: actions/cache@v4
+              with:
+                  path: example/node_modules/.cache/ms-playwright
+                  key: playwright-browsers-${{ runner.os }}-${{ hashFiles('example/package-lock.json', 'example/yarn.lock') }}
+                  restore-keys: |
+                      playwright-browsers-${{ runner.os }}-
+
             - name: Install Playwright Browsers
               run: yarn workspace example playwright install --with-deps
 
