@@ -43,6 +43,7 @@
         "@eslint/js": "^9.28.0",
         "@open-rpc/generator": "^2.0.0",
         "@protobuf-ts/plugin": "^2.11.1",
+        "commitlint": "^19.8.1",
         "eslint": "^9.28.0",
         "globals": "^16.2.0",
         "grpc-tools": "^1.13.0",
