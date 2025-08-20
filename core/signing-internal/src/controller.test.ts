@@ -2,11 +2,16 @@ import { expect, test } from '@jest/globals'
 
 // import request from 'supertest'
 import { InternalSigningDriver } from './controller.js'
-import { CreateKeyResult, isRpcError, Key, Transaction } from 'core-signing-lib'
+import {
+    CreateKeyResult,
+    isRpcError,
+    Key,
+    Transaction,
+} from '@splice/core-signing-lib'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
-import { Methods } from 'core-signing-lib/dist/rpc-gen/index.js'
-import { AuthContext } from 'core-wallet-auth'
+import { Methods } from '@splice/core-signing-lib/dist/rpc-gen/index.js'
+import { AuthContext } from '@splice/core-wallet-auth'
 
 const TEST_KEY_NAME = 'test-key-name'
 const TEST_TRANSACTION = 'test-tx'

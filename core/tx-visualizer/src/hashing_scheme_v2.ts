@@ -6,15 +6,15 @@ import {
     Metadata,
     Metadata_InputContract,
     PreparedTransaction,
-} from 'core-ledger-client'
-import { Create, Exercise, Fetch, Rollback } from 'core-ledger-client'
+} from '@splice/core-ledger-client'
+import { Create, Exercise, Fetch, Rollback } from '@splice/core-ledger-client'
 import {
     GenMap_Entry,
     Identifier,
     RecordField,
     TextMap_Entry,
     Value,
-} from 'core-ledger-client'
+} from '@splice/core-ledger-client'
 import { mkByteArray, sha256 } from './utils'
 
 // Hash purpose reserved for prepared transaction

@@ -1,5 +1,5 @@
 {
-    "name": "core-wallet-auth",
+    "name": "@splice/core-wallet-auth",
     "version": "1.0.0",
     "description": "Provides authentcation middleware and user management for the wallet kernel.",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",

@@ -1,9 +1,10 @@
 {
-    "name": "core-wallet-user-rpc-client",
+    "name": "@splice/core-wallet-user-rpc-client",
     "version": "1.0.0",
     "description": "",
     "type": "module",
-    "main": "build/index.js",
+    "types": "dist/index.d.ts",
+    "main": "dist/index.js",
     "scripts": {
         "build": "tsc && typedoc src/index.ts --out docs --excludeExternals --excludePrivate --hideGenerator --readme none",
         "dev": "tsc -b --watch",
@@ -11,24 +12,24 @@
         "lint": "eslint src/**/*.ts"
     },
     "files": [
-        "build/*"
+        "dist/*"
     ],
     "author": "",
     "license": "Apache-2.0",
     "dependencies": {
-        "core-types": "workspace:^",
+        "@splice/core-types": "workspace:^",
         "lodash": "^4.17.15"
     },
     "devDependencies": {
         "@eslint/js": "9.21.0",
+        "@typescript-eslint/eslint-plugin": "^8.25.0",
+        "eslint-config-prettier": "^10.0.1",
+        "eslint-plugin-prettier": "^5.2.3",
         "@types/isomorphic-fetch": "^0.0.39",
         "@types/jest": "^29.5.12",
         "@types/json-schema": "7.0.3",
         "@types/lodash": "^4.14.149",
         "@types/ws": "^6.0.1",
-        "@typescript-eslint/eslint-plugin": "^8.25.0",
-        "eslint-config-prettier": "^10.0.1",
-        "eslint-plugin-prettier": "^5.2.3",
         "globals": "^16.0.0",
         "prettier": "^3.5.2",
         "typedoc": "^0.27.9",

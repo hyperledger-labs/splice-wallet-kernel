@@ -1,4 +1,4 @@
-import type { AuthContext } from 'core-wallet-auth'
+import type { AuthContext } from '@splice/core-wallet-auth'
 
 // Augments the global `Express` namespace
 declare global {

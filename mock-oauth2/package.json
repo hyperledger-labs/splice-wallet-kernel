@@ -1,6 +1,7 @@
 {
-    "name": "mock-oauth2",
+    "name": "@splice/mock-oauth2",
     "version": "1.0.0",
+    "private": true,
     "description": "Creates mock oauth2 server",
     "license": "Apache-2.0",
     "packageManager": "yarn@4.9.2",

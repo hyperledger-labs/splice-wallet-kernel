@@ -9,8 +9,8 @@ import {
     Network,
     PasswordAuth,
     StoreConfig,
-} from 'core-wallet-store'
-import { AuthContext } from 'core-wallet-auth'
+} from '@splice/core-wallet-store'
+import { AuthContext } from '@splice/core-wallet-auth'
 import { pino, Logger } from 'pino'
 import { sink } from 'pino-test'
 
