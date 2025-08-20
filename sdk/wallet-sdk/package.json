@@ -1,7 +1,7 @@
 {
     "name": "@splice/sdk-wallet",
     "type": "module",
-    "version": "0.0.1",
+    "version": "0.0.0",
     "description": "Simplified connecting your Wallet provider service to a validator",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
