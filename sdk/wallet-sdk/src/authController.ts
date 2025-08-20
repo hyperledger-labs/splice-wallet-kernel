@@ -121,6 +121,9 @@ export const localAuthDefault = (logger?: Logger): AuthController => {
     controller.userSecret = 'your-client-secret'
     controller.adminId = 'participant_admin'
     controller.adminSecret = 'admin-client-secret'
+    controller.audience =
+        'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424'
+    controller.scope = 'openid daml_ledger_api offline_access'
 
     return controller
 }
