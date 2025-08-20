@@ -29,7 +29,6 @@
         "@protobuf-ts/runtime-rpc": "^2.11.1",
         "@swc/core": "^1.13.3",
         "@types/node": "^22.15.30",
-        "build": "^0.1.4",
         "camelcase-keys": "^9.1.3",
         "rxjs": "^7.8.2"
     }
