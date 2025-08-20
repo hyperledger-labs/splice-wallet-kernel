@@ -27,6 +27,10 @@ export interface ledgerController {
         publicKey: SigningPublicKey | string,
         submissionId?: string
     ): Promise<PostResponse<'/v2/interactive-submission/execute'>>
+
+    allocateInternalParty(
+        partyHint?: string
+    ): Promise<PostResponse<'/v2/parties'>>
 }
 
 export class LedgerController implements ledgerController {
@@ -68,6 +72,15 @@ export class LedgerController implements ledgerController {
         const publicKey = getPublicKeyFromPrivate(privateKey)
 
         return this.executeSubmission(prepared, signature, publicKey, commandId)
+    }
+
+    async allocateInternalParty(
+        partyHint?: string
+    ): Promise<PostResponse<'/v2/parties'>> {
+        return await this.client.post('/v2/parties', {
+            partyIdHint: partyHint || v4(),
+            identityProviderId: '',
+        })
     }
 
     async prepareSubmission(
