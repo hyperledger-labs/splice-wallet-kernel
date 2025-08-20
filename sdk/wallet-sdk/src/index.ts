@@ -1,36 +1,46 @@
 import { LedgerController, localLedgerDefault } from './ledgerController.js'
 import { AuthController, LocalAuthDefault } from './authController.js'
 
+export interface Config {
+    createLedger: (userId: string, token: string) => LedgerController
+}
+
 export interface WalletSDK {
-    ledger: LedgerController
     auth: AuthController
+    configure(config: Config): WalletSDK
+    connect(): Promise<LedgerController>
+    connectAdmin(): Promise<LedgerController>
 }
 
 export class WalletSDKImpl implements WalletSDK {
-    ledger!: LedgerController
-    auth!: AuthController
+    auth: AuthController
 
-    constructor() {
-        this.auth = LocalAuthDefault()
-        this.auth.getUserToken().then((context) => {
-            console.log('User token received:', context)
-            this.ledger = localLedgerDefault(
-                context.userId,
-                context.accessToken
-            )
-        })
-        while (this.ledger === undefined) {
-            // Wait for the ledger to be initialized
-        }
+    private config: Config | undefined
+    private createLedger: (userId: string, token: string) => LedgerController
+
+    constructor(
+        auth: AuthController = LocalAuthDefault(),
+        createLedger: (
+            userId: string,
+            token: string
+        ) => LedgerController = localLedgerDefault
+    ) {
+        this.auth = auth
+        this.createLedger = createLedger
     }
 
-    setupAuthController(controller: AuthController): WalletSDK {
-        this.auth = controller
+    configure(config: Config): WalletSDK {
+        this.config = config
         return this
     }
 
-    connectLedger(userId: string, baseUrl: string, token: string): WalletSDK {
-        this.ledger = new LedgerController(userId, baseUrl, token)
-        return this
+    async connect(): Promise<LedgerController> {
+        const { userId, accessToken } = await this.auth.getUserToken()
+        return this.createLedger(userId, accessToken)
+    }
+
+    async connectAdmin(): Promise<LedgerController> {
+        const { userId, accessToken } = await this.auth.getAdminToken()
+        return this.createLedger(userId, accessToken)
     }
 }
