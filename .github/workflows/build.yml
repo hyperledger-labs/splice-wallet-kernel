@@ -61,7 +61,7 @@ jobs:
 #            - name: Start Canton
 #              run: yarn start:canton &
 #
-#            - run: yarn workspace clients-remote run start &
+#            - run: yarn workspace @splice/clients-remote run start &
 #
 #            - run: yarn workspace example run dev &
 #

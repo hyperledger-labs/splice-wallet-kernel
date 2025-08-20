@@ -3,11 +3,14 @@ import {
     PostResponse,
     GetResponse,
     TopologyWriteService,
-} from 'core-ledger-client'
-import { signTransactionHash, getPublicKeyFromPrivate } from 'core-signing-lib'
+} from '@splice/core-ledger-client'
+import {
+    signTransactionHash,
+    getPublicKeyFromPrivate,
+} from '@splice/core-signing-lib'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
-import { SigningPublicKey } from 'core-ledger-client/src/_proto/com/digitalasset/canton/crypto/v30/crypto'
+import { SigningPublicKey } from '@splice/core-ledger-client/src/_proto/com/digitalasset/canton/crypto/v30/crypto'
 
 export interface ledgerController {
     setPartyId(partyId: string): LedgerController

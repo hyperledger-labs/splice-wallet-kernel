@@ -1,7 +1,11 @@
 import { NextFunction, Request, Response } from 'express'
 import { Logger } from 'pino'
 import { rpcErrors } from '@metamask/rpc-errors'
-import { ErrorResponse, JsonRpcRequest, jsonRpcResponse } from 'core-types'
+import {
+    ErrorResponse,
+    JsonRpcRequest,
+    jsonRpcResponse,
+} from '@splice/core-types'
 
 interface JsonRpcHttpOptions<T> {
     logger: Logger

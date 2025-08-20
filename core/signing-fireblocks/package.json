@@ -1,6 +1,5 @@
 {
-    "name": "core-signing-fireblocks",
-    "private": true,
+    "name": "@splice/core-signing-fireblocks",
     "packageManager": "yarn@4.9.2",
     "scripts": {
         "build": "tsc -b",
@@ -8,11 +7,13 @@
         "test": "jest"
     },
     "type": "module",
+    "types": "dist/index.d.ts",
+    "main": "dist/index.js",
     "dependencies": {
         "@fireblocks/ts-sdk": "^10.2.0",
+        "@splice/core-signing-lib": "workspace:^",
+        "@splice/core-wallet-auth": "workspace:^",
         "async-mutex": "^0.5.0",
-        "core-signing-lib": "workspace:^",
-        "core-wallet-auth": "workspace:^",
         "fs-extra": "^11.3.0",
         "lodash": "^4.17.21",
         "pino": "^9.7.0",

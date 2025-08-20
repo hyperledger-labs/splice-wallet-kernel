@@ -1,4 +1,8 @@
-import { SpliceMessage, SpliceMessageEvent, WalletEvent } from 'core-types'
+import {
+    SpliceMessage,
+    SpliceMessageEvent,
+    WalletEvent,
+} from '@splice/core-types'
 import Browser from 'webextension-polyfill'
 
 // Handle incoming RPC requests from the dapp,

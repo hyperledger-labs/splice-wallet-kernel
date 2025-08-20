@@ -12,8 +12,8 @@ import {
     SignTransactionParams,
     SignTransactionResult,
     SubscribeTransactionsResult,
-} from 'core-signing-lib'
-import { AuthContext } from 'core-wallet-auth'
+} from '@splice/core-signing-lib'
+import { AuthContext } from '@splice/core-wallet-auth'
 import { randomUUID } from 'node:crypto'
 
 export class ParticipantSigningDriver implements SigningDriverInterface {

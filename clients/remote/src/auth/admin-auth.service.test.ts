@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals'
 import { pino } from 'pino'
-import { Auth, Network, Store } from 'core-wallet-store'
+import { Auth, Network, Store } from '@splice/core-wallet-store'
 import { AdminAuthService, OIDCConfig } from './admin-auth-service.js'
 import { sink } from 'pino-test'
 

@@ -3,7 +3,7 @@ import {
     RequestPayload,
     ResponsePayload,
     RpcTransport,
-} from 'core-types'
+} from '@splice/core-types'
 import { v4 as uuidv4 } from 'uuid'
 
 export class HttpTransport implements RpcTransport {
