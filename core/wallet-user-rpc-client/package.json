@@ -1,6 +1,6 @@
 {
     "name": "@splice/core-wallet-user-rpc-client",
-    "version": "1.0.0",
+    "version": "0.0.0",
     "description": "",
     "type": "module",
     "types": "dist/index.d.ts",

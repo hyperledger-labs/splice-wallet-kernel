@@ -1,6 +1,6 @@
 {
     "name": "@splice/core-token-standard",
-    "version": "0.0.1",
+    "version": "0.0.0",
     "description": "daml codegen js for core token standard",
     "type": "module",
     "main": "dist/index.js",
