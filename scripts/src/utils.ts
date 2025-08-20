@@ -45,7 +45,7 @@ export const SPLICE_ARCHIVE_HASH =
     'b5d16a4caa9b0996e5e4d6ff35382cdd359c544b0302b928153f7add6fabdbda'
 export const CANTON_ARCHIVE_HASH =
     '7c88d6096701612dc628b6804c16d572c6c6a8cabe3f0ee32ab22afaa39c1eda'
-export const SPLICE_VERSION = '0.4.10'
+export const SPLICE_VERSION = '0.4.11'
 
 export function findJsonKeyPosition(
     jsonContent: string,
