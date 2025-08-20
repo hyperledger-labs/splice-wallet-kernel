@@ -18,6 +18,7 @@ import {
     fromNetwork,
     fromWallet,
     toNetwork,
+    toTransaction,
     toWallet,
 } from './schema.js'
 
@@ -315,7 +316,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                 ])
             )
             .executeTakeFirst()
-        return transaction
+        return transaction ? toTransaction(transaction) : undefined
     }
 }
 

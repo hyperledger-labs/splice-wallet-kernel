@@ -43,7 +43,12 @@ interface WalletTable {
     userId: UserId
 }
 
-interface TransactionTable extends Transaction {
+interface TransactionTable {
+    status: string
+    commandId: string
+    preparedTransaction: string
+    preparedTransactionHash: string
+    payload?: unknown
     userId: UserId
 }
 
@@ -212,5 +217,12 @@ export const toWallet = (table: WalletTable): Wallet => {
     return {
         ...table,
         primary: table.primary === 1,
+    }
+}
+
+export const toTransaction = (table: TransactionTable): Transaction => {
+    return {
+        ...table,
+        status: table.status as 'pending' | 'signed' | 'executed' | 'failed',
     }
 }
