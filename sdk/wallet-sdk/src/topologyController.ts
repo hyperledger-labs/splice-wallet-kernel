@@ -18,25 +18,7 @@ export type AllocatedParty = {
     partyId: string
 }
 
-export interface topologyController {
-    setSynchronizerId(synchronizerId: string): TopologyController
-
-    allocateInternalParty(
-        partyHint: string
-    ): Promise<PostResponse<'/v2/parties'>>
-
-    prepareExternalPartyTopology(
-        publicKey: string,
-        partyHint?: string
-    ): Promise<PreparedParty>
-
-    submitExternalPartyTopology(
-        signedHash: string,
-        preparedParty: PreparedParty
-    ): Promise<AllocatedParty>
-}
-
-export class TopologyController implements topologyController {
+export class TopologyController {
     private topologyClient: TopologyWriteService
     private client: LedgerClient
     private synchronizerId: string
