@@ -9,6 +9,8 @@ import { Logger } from '@splice/core-types'
 export * from './ledgerController.js'
 export * from './authController.js'
 
+export const Test = 'test'
+
 type AuthFactory = () => AuthController
 type LedgerFactory = (userId: string, token: string) => LedgerController
 type TopologyFactory = (
