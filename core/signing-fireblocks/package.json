@@ -1,14 +1,15 @@
 {
     "name": "@splice/core-signing-fireblocks",
+    "version": "0.0.0",
     "packageManager": "yarn@4.9.2",
     "scripts": {
         "build": "tsc -b",
         "clean": "tsc -b --clean && rm -rf ./dist",
         "test": "jest"
     },
-    "type": "module",
-    "types": "dist/index.d.ts",
     "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "type": "module",
     "dependencies": {
         "@fireblocks/ts-sdk": "^10.2.0",
         "@splice/core-signing-lib": "workspace:^",

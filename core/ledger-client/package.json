@@ -1,6 +1,6 @@
 {
     "name": "@splice/core-ledger-client",
-    "version": "1.0.0",
+    "version": "0.0.0",
     "description": "Provides ledger client for the wallet kernel.",
     "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
     "license": "Apache-2.0",

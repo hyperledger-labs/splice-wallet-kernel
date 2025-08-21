@@ -18,6 +18,24 @@ In this repo, we use Husky to automatically configure a git hook to do this for 
 
 It is also recommended (but not required) to add a gpg key: https://docs.github.com/en/authentication/managing-commit-signature-verification/adding-a-gpg-key-to-your-github-account
 
+### conventional commits
+
+We use [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) to track version changes for packages and create informative changelogs. Our linter automatically checks that the commit scope matches an `nx` project name. Some common commit types are:
+
+- feat -- this results in a minor version bump for the scoped package (`feat(pkg): ...`) when a release is cut
+- fix -- this results in a patch version bump for the scoped package (`fix(pkg): ...`) when a release is cut
+- build
+- chore
+- ci
+- docs
+- perf
+- refactor
+- revert
+- style
+- test
+
+major version bumps are triggered by adding an exclamation after the scope (`feat(pkg)!: breaking change`) or by including a `BREAKING CHANGE: ...` trailer at the end of the commit message.
+
 ## Running
 
 ### building

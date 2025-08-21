@@ -39,10 +39,13 @@
         "docs/wallet-integration-guide/examples"
     ],
     "devDependencies": {
+        "@commitlint/config-conventional": "^19.8.1",
+        "@commitlint/config-nx-scopes": "^19.8.1",
         "@eslint/compat": "^1.2.9",
         "@eslint/js": "^9.28.0",
         "@open-rpc/generator": "^2.0.0",
         "@protobuf-ts/plugin": "^2.11.1",
+        "commitlint": "^19.8.1",
         "eslint": "^9.28.0",
         "globals": "^16.2.0",
         "grpc-tools": "^1.13.0",
@@ -60,5 +63,9 @@
         "*": "prettier --write --ignore-unknown",
         "*.ts": "eslint"
     },
-    "packageManager": "yarn@4.9.2"
+    "packageManager": "yarn@4.9.2",
+    "dependencies": {
+        "@nx/js": "^21.3.11",
+        "nx": "^21.3.11"
+    }
 }
