@@ -6,8 +6,8 @@
     "main": "dist/index.js",
     "type": "module",
     "scripts": {
-        "build": "tsc -b; tsc -b tsconfig.frontend.json",
-        "clean": "yarn db:migrate:reset && yarn db:bootstrap && tsc -b --clean && rm -rf ./dist",
+        "build": "tsc -b; tsc -b tsconfig.frontend.json && yarn db:migrate:reset && yarn db:bootstrap",
+        "clean": "tsc -b --clean && rm -rf ./dist && rm ./store.sqlite || true",
         "dev": "tsx watch src/index.ts | pino-pretty",
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)",
         "start": "yarn node dist/index.js",
