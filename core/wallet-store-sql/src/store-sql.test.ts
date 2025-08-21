@@ -35,17 +35,41 @@ type StoreCtor = new (
 
 const implementations: Array<[string, StoreCtor]> = [['StoreSql', StoreSql]]
 
+const ledgerApi: LedgerApi = {
+    baseUrl: 'http://api',
+    adminGrpcUrl: 'http://grpc',
+}
+const auth: PasswordAuth = {
+    identityProviderId: 'idp1',
+    type: 'password',
+    issuer: 'http://auth',
+    configUrl: 'http://auth/.well-known/openid-configuration',
+    tokenUrl: 'http://auth',
+    grantType: 'password',
+    clientId: 'cid',
+    scope: 'scope',
+    audience: 'aud',
+}
+const network: Network = {
+    name: 'testnet',
+    chainId: 'network1',
+    synchronizerId: 'sync1::fingerprint',
+    description: 'Test Network',
+    ledgerApi,
+    auth,
+}
+
 implementations.forEach(([name, StoreImpl]) => {
     describe(name, () => {
         let db: Kysely<DB>
 
-        beforeAll(async () => {
+        beforeEach(async () => {
             db = connection(storeConfig)
             const umzug = migrator(db)
             await umzug.up()
         })
 
-        afterAll(async () => {
+        afterEach(async () => {
             await db.destroy()
         })
 
@@ -60,17 +84,37 @@ implementations.forEach(([name, StoreImpl]) => {
                 chainId: 'network1',
             }
             const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addNetwork(network)
             await store.addWallet(wallet)
             const wallets = await store.getWallets()
             expect(wallets).toHaveLength(1)
         })
 
         test('should filter wallets', async () => {
+            const auth2: PasswordAuth = {
+                identityProviderId: 'idp2',
+                type: 'password',
+                issuer: 'http://auth',
+                configUrl: 'http://auth/.well-known/openid-configuration',
+                tokenUrl: 'http://auth',
+                grantType: 'password',
+                clientId: 'cid',
+                scope: 'scope',
+                audience: 'aud',
+            }
+            const network2: Network = {
+                name: 'testnet',
+                chainId: 'network2',
+                synchronizerId: 'sync1::fingerprint',
+                description: 'Test Network',
+                ledgerApi,
+                auth: auth2,
+            }
             const wallet1: Wallet = {
                 primary: false,
                 partyId: 'party1',
                 hint: 'hint1',
-                signingProviderId: 'internal1',
+                signingProviderId: 'idp1',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
                 chainId: 'network1',
@@ -79,7 +123,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 primary: false,
                 partyId: 'party2',
                 hint: 'hint2',
-                signingProviderId: 'internal2',
+                signingProviderId: 'idp1',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
                 chainId: 'network1',
@@ -88,12 +132,14 @@ implementations.forEach(([name, StoreImpl]) => {
                 primary: false,
                 partyId: 'party3',
                 hint: 'hint3',
-                signingProviderId: 'internal2',
+                signingProviderId: 'idp2',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
                 chainId: 'network2',
             }
             const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addNetwork(network)
+            await store.addNetwork(network2)
             await store.addWallet(wallet1)
             await store.addWallet(wallet2)
             await store.addWallet(wallet3)
@@ -102,17 +148,17 @@ implementations.forEach(([name, StoreImpl]) => {
                 chainIds: ['network1'],
             })
             const getWalletsBySigningProviderId = await store.getWallets({
-                signingProviderIds: ['internal2'],
+                signingProviderIds: ['idp1'],
             })
             const getWalletsByChainIdAndSigningProviderId =
                 await store.getWallets({
                     chainIds: ['network1'],
-                    signingProviderIds: ['internal2'],
+                    signingProviderIds: ['idp1'],
                 })
             expect(getAllWallets).toHaveLength(3)
             expect(getWalletsByChainId).toHaveLength(2)
             expect(getWalletsBySigningProviderId).toHaveLength(2)
-            expect(getWalletsByChainIdAndSigningProviderId).toHaveLength(1)
+            expect(getWalletsByChainIdAndSigningProviderId).toHaveLength(2)
         })
 
         test('should set and get primary wallet', async () => {
@@ -120,7 +166,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 primary: false,
                 partyId: 'party1',
                 hint: 'hint1',
-                signingProviderId: 'internal',
+                signingProviderId: 'idp1',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
                 chainId: 'network1',
@@ -129,12 +175,13 @@ implementations.forEach(([name, StoreImpl]) => {
                 primary: false,
                 partyId: 'party2',
                 hint: 'hint2',
-                signingProviderId: 'internal',
+                signingProviderId: 'idp1',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
                 chainId: 'network1',
             }
             const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addNetwork(network)
             await store.addWallet(wallet1)
             await store.addWallet(wallet2)
             await store.setPrimaryWallet('party2')
@@ -145,40 +192,26 @@ implementations.forEach(([name, StoreImpl]) => {
 
         test('should set and get session', async () => {
             const store = new StoreImpl(db, pino(sink()), authContextMock)
-            const session: Session = { network: 'net', accessToken: 'token' }
+            await store.addNetwork(network)
+            const session: Session = {
+                network: 'network1',
+                accessToken: 'token',
+            }
             await store.setSession(session)
             const result = await store.getSession()
-            expect(result).toEqual(session)
+            expect(result).toEqual({
+                ...session,
+                userId: authContextMock.userId,
+            })
             await store.removeSession()
             const removed = await store.getSession()
             expect(removed).toBeUndefined()
         })
 
         test('should add, list, get, update, and remove networks', async () => {
-            const ledgerApi: LedgerApi = {
-                baseUrl: 'http://api',
-                adminGrpcUrl: 'http://grpc',
-            }
-            const auth: PasswordAuth = {
-                identityProviderId: 'idp1',
-                type: 'password',
-                issuer: 'http://auth',
-                configUrl: 'http://auth/.well-known/openid-configuration',
-                tokenUrl: 'http://auth',
-                grantType: 'password',
-                clientId: 'cid',
-                scope: 'scope',
-                audience: 'aud',
-            }
-            const network: Network = {
-                name: 'testnet',
-                chainId: 'network1',
-                synchronizerId: 'sync1::fingerprint',
-                description: 'Test Network',
-                ledgerApi,
-                auth,
-            }
             const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addNetwork(network)
+
             await store.updateNetwork(network)
             const listed = await store.listNetworks()
             expect(listed).toHaveLength(1)

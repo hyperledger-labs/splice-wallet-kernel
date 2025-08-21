@@ -231,7 +231,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         await this.db.transaction().execute(async (trx) => {
             await trx
                 .updateTable('networks')
-                .set({ ...network, userId })
+                .set(fromNetwork(network, userId))
                 .where('chainId', '=', network.chainId)
                 .execute()
             await this.db
