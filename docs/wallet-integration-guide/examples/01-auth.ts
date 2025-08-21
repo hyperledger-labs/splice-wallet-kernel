@@ -1,4 +1,5 @@
 import { createKeyPair, signTransactionHash } from '@splice/core-signing-lib'
+import { v4 } from 'uuid'
 import {
     localAuthDefault,
     localLedgerDefault,
@@ -43,15 +44,11 @@ await sdk.connectTopology()
 console.log('Connected to topology')
 
 const keyPair = createKeyPair()
-console.log('public key is:  ' + keyPair.publicKey)
-console.log('Created keypair')
+
 const preparedParty = await sdk.topology?.prepareExternalPartyTopology(
     keyPair.publicKey,
-    'my-test-party1'
+    v4()
 )
-
-console.log('namspace is,' + preparedParty?.namespace)
-console.log('Prepared external party topology')
 
 if (preparedParty) {
     const base64StringCombinedHash = Buffer.from(
