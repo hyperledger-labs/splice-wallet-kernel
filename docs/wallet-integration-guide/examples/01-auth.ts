@@ -43,13 +43,23 @@ await sdk.connectTopology()
 console.log('Connected to topology')
 
 const keyPair = createKeyPair()
+console.log('public key is:  ' + keyPair.publicKey)
+console.log('Created keypair')
 const preparedParty = await sdk.topology?.prepareExternalPartyTopology(
-    keyPair.publicKey
+    keyPair.publicKey,
+    'my-test-party1'
 )
 
+console.log('namspace is,' + preparedParty?.namespace)
+console.log('Prepared external party topology')
+
 if (preparedParty) {
-    const signedHash = signTransactionHash(
+    const base64StringCombinedHash = Buffer.from(
         preparedParty?.combinedHash,
+        'hex'
+    ).toString('base64')
+    const signedHash = signTransactionHash(
+        base64StringCombinedHash,
         keyPair.privateKey
     )
 

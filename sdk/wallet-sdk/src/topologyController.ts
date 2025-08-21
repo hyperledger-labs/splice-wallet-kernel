@@ -56,6 +56,7 @@ export class TopologyController {
         const namespace =
             TopologyWriteService.createFingerprintFromKey(publicKey)
 
+        //can't use base64 encoded public key because it has invalid charcters
         const partyId = partyHint
             ? `${partyHint}::${namespace}`
             : `${publicKey}::${namespace}`
@@ -152,7 +153,7 @@ export const localTopologyDefault = (
     userAdminToken: string
 ): TopologyController => {
     return new TopologyController(
-        'http://127.0.0.1:5012',
+        '127.0.0.1:5012',
         'http://127.0.0.1:5003',
         userId,
         userAdminToken,
