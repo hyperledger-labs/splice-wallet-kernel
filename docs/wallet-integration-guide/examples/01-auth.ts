@@ -75,14 +75,15 @@ if (preparedParty) {
     console.error('Error creating prepared party.')
 }
 
-const createPingCommand = (party: string) => [
+console.log('Create ping command')
+const createPingCommand = [
     {
         CreateCommand: {
             templateId: '#AdminWorkflows:Canton.Internal.Ping:Ping',
             createArguments: {
-                id: 'my-test',
-                initiator: party,
-                responder: party,
+                id: v4(),
+                initiator: preparedParty!.partyId!,
+                responder: preparedParty!.partyId!,
             },
         },
     },
@@ -91,15 +92,21 @@ const createPingCommand = (party: string) => [
 sdk.userLedger?.setPartyId(preparedParty!.partyId!)
 
 const commandId = v4()
+
+console.log('Prepare command submission for ping create command')
 const prepareResponse = await sdk.userLedger?.prepareSubmission(
-    createPingCommand(preparedParty!.partyId!),
+    createPingCommand,
     v4()
 )
+
+console.log('Sign transaction hash')
 
 const signedCommandHash = signTransactionHash(
     prepareResponse!.preparedTransactionHash!,
     keyPair.privateKey
 )
+
+console.log('Submit command')
 
 sdk.userLedger?.executeSubmission(
     prepareResponse!,
