@@ -212,13 +212,17 @@ implementations.forEach(([name, StoreImpl]) => {
             const store = new StoreImpl(db, pino(sink()), authContextMock)
             await store.addNetwork(network)
 
-            await store.updateNetwork(network)
             const listed = await store.listNetworks()
             expect(listed).toHaveLength(1)
-            expect(listed[0].name).toBe('testnet')
+            expect(listed[0].description).toBe('Test Network')
+
+            await store.updateNetwork({
+                ...network,
+                description: 'Updated Network',
+            })
 
             const fetched = await store.getNetwork('network1')
-            expect(fetched.description).toBe('Test Network')
+            expect(fetched.description).toBe('Updated Network')
 
             await store.removeNetwork('network1')
             const afterRemove = await store.listNetworks()

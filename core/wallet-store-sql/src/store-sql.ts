@@ -234,7 +234,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                 .set(fromNetwork(network, userId))
                 .where('chainId', '=', network.chainId)
                 .execute()
-            await this.db
+            await trx
                 .updateTable('idps')
                 .set(fromAuth(network.auth))
                 .where(
