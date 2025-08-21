@@ -1,6 +1,6 @@
 {
     "name": "@splice/core-signing-fireblocks",
-    "version": "0.0.0",
+    "version": "0.0.2",
     "packageManager": "yarn@4.9.2",
     "scripts": {
         "build": "tsc -b",

@@ -1,7 +1,7 @@
 {
     "packageManager": "yarn@4.9.2",
     "name": "@splice/core-signing-internal",
-    "version": "0.0.0",
+    "version": "0.0.2",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
