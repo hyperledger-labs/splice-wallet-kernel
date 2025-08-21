@@ -1,0 +1,31 @@
+name: Conventional Commits
+run-name: Validating PR title
+on:
+    pull_request:
+        types: [opened, reopened, synchronize, edited]
+permissions:
+    contents: read
+
+jobs:
+    validate:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Enable Corepack
+              run: corepack enable
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 'v22.16.0'
+                  cache: 'yarn'
+
+            - name: Install dependencies
+              run: yarn install --immutable
+
+            - name: Validate current PR title with commitlint
+              run: echo "$TITLE" | yarn commitlint --verbose
+              env:
+                  TITLE: ${{ github.event.pull_request.title }}
