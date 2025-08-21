@@ -45,20 +45,26 @@ console.log('Connected to topology')
 
 const keyPair = createKeyPair()
 
+console.log('generated keypair')
 const preparedParty = await sdk.topology?.prepareExternalPartyTopology(
     keyPair.publicKey,
     v4()
 )
 
+console.log('Prepared external topology')
+
 if (preparedParty) {
+    console.log('Signing the hash')
     const base64StringCombinedHash = Buffer.from(
         preparedParty?.combinedHash,
         'hex'
     ).toString('base64')
+
     const signedHash = signTransactionHash(
         base64StringCombinedHash,
         keyPair.privateKey
     )
+    console.log('Signed the hash for partyId: ' + preparedParty.partyId)
 
     await sdk.topology
         ?.submitExternalPartyTopology(signedHash, preparedParty)

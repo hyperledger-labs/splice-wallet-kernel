@@ -102,7 +102,7 @@ export class TopologyController {
 
         await this.topologyClient.addTransactions(signedTopologyTxs)
         await this.topologyClient.authorizePartyToParticipant(
-            preparedParty.namespace
+            preparedParty.partyId
         )
         await this.client.grantUserRights(this.userId, preparedParty.partyId)
 
