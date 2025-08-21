@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { execFileSync } from 'child_process'
 import path from 'path'
 import { getRepoRoot, SPLICE_VERSION } from './utils.js'
 
@@ -31,9 +31,9 @@ const composeBase = [
 const env = { ...process.env, IMAGE_TAG: SPLICE_VERSION }
 
 if (command === 'start') {
-    execSync([...composeBase, 'up', '-d'].join(' '), { stdio: 'inherit', env })
+    execFileSync(composeBase[0], [...composeBase.slice(1), 'up', '-d'], { stdio: 'inherit', env })
 } else if (command === 'stop') {
-    execSync([...composeBase, 'down', '-v'].join(' '), {
+    execFileSync(composeBase[0], [...composeBase.slice(1), 'down', '-v'], {
         stdio: 'inherit',
         env,
     })
