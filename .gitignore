@@ -10,6 +10,7 @@ npm-debug.log
 
 .canton/
 .splice/
+.localnet/
 log/
 
 generated/

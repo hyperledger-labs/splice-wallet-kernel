@@ -2,11 +2,17 @@
 
 import { execFileSync } from 'child_process'
 import fs from 'fs'
-import { ensureDir, getRepoRoot, traverseDirectory } from './utils.js'
+import {
+    ensureDir,
+    getRepoRoot,
+    traverseDirectory,
+    getAllFilesWithExtension,
+} from './utils.js'
 
 const repoRoot = getRepoRoot()
 
-const outdir = `${repoRoot}/clients/remote/src/_proto`
+const outdir = `${repoRoot}/core/ledger-client/src/_proto`
+
 const roots = [
     `${repoRoot}/.canton/protobuf/community`,
     `${repoRoot}/.canton/protobuf/lib`,
@@ -25,6 +31,38 @@ function generateProtos() {
         '--ts_opt=generate_dependencies',
         ...roots.map((root) => `-I${root}`),
         ...protos,
+    ]
+
+    try {
+        execFileSync('grpc_tools_node_protoc', protocArgs, { stdio: 'inherit' })
+        console.log('Protobuf files generated successfully.')
+    } catch (error) {
+        console.error('Error generating protobuf files:', error)
+        process.exit(1)
+    }
+}
+
+function generateProtosWithPlugin() {
+    const ledgerApiRoot = `${repoRoot}/.canton/protobuf/ledger-api`
+    const libRoot = `${repoRoot}/.canton/protobuf/lib`
+
+    const ledgerApiFiles = getAllFilesWithExtension(
+        ledgerApiRoot,
+        '.proto',
+        true
+    )
+
+    const libFiles = getAllFilesWithExtension(libRoot, '.proto', true)
+
+    const protoRoots = [ledgerApiRoot, libRoot]
+
+    const protocArgs = [
+        '--plugin=protoc-gen-ts_proto=$(yarn bin protoc-gen-ts_proto)',
+        `--ts_out=${outdir}`,
+        '--ts_opt=generate_dependencies',
+        ...protoRoots.map((root) => `-I${root}`),
+        ...libFiles,
+        ...ledgerApiFiles,
     ]
 
     try {
@@ -56,6 +94,7 @@ function rewriteImports() {
 async function main() {
     await ensureDir(outdir)
     generateProtos()
+    generateProtosWithPlugin()
     rewriteImports()
 }
 

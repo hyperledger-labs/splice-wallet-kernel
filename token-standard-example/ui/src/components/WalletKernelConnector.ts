@@ -1,6 +1,6 @@
 import { LitElement, html, nothing } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
-import * as sdk from 'splice-sdk-dapp'
+import * as sdk from '@splice/sdk-dapp'
 
 @customElement('wallet-kernel-connector')
 export class WalletKernelConnector extends LitElement {

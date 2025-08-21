@@ -2,15 +2,13 @@ import { expect, test, jest } from '@jest/globals'
 
 import request from 'supertest'
 import { dapp } from './server.js'
-import { StoreInternal } from 'core-wallet-store-inmemory'
-import { AuthService } from 'core-wallet-auth'
+import { StoreInternal } from '@splice/core-wallet-store-inmemory'
+import { AuthService } from '@splice/core-wallet-auth'
 import { ConfigUtils } from '../config/ConfigUtils.js'
 import { Notifier } from '../notification/NotificationService.js'
 import { configSchema } from '../config/Config.js'
 import { pino } from 'pino'
 import { sink } from 'pino-test'
-
-jest.mock('core-ledger-client')
 
 const authService: AuthService = {
     verifyToken: async () => {

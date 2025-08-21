@@ -1,5 +1,5 @@
-import 'core-wallet-ui-components'
-import { Auth } from 'core-wallet-store'
+import '@splice/core-wallet-ui-components'
+import { Auth } from '@splice/core-wallet-store'
 import { LitElement, html } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { userClient } from '../rpc-client'
@@ -7,7 +7,7 @@ import {
     Network,
     RemoveNetworkParams,
     Session,
-} from 'core-wallet-user-rpc-client'
+} from '@splice/core-wallet-user-rpc-client'
 
 import '../index'
 

@@ -3,18 +3,19 @@
     "version": "1.0.0",
     "description": "",
     "type": "module",
-    "main": "build/index.js",
+    "types": "dist/index.d.ts",
+    "main": "dist/index.js",
     "scripts": {
         "build": "tsc && typedoc src/index.ts --out docs --excludeExternals --excludePrivate --hideGenerator --readme none",
         "dev": "tsc -b --watch",
         "clean": "tsc -b --clean; rm -rf dist",
         "lint": "eslint src/**/*.ts"
     },
-    "files": ["build/*"],
+    "files": ["dist/*"],
     "author": "",
     "license": "Apache-2.0",
     "dependencies": {
-        "core-types": "workspace:^",
+        "@splice/core-types": "workspace:^",
         "lodash": "^4.17.15"
     },
     "devDependencies": {

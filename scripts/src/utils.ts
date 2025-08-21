@@ -1,15 +1,107 @@
+import zlib from 'zlib'
+import tar from 'tar-fs'
+import { pipeline } from 'stream/promises'
+import crypto from 'crypto'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as process from 'process'
-import { white, green, italic, red, yellow } from 'yoctocolors'
+import { white, green, italic, red, yellow, bold } from 'yoctocolors'
 import * as jsonc from 'jsonc-parser'
 
 export const info = (message: string): string => italic(white(message))
-export const warn = (message: string): string => yellow(message)
-export const error = (message: string): string => red(message)
+export const warn = (message: string): string => bold(yellow(message))
+export const error = (message: string): string => bold(red(message))
 export const success = (message: string): string => green(message)
 export const trimNewline = (message: string): string =>
     message.replace(/\n$/, '')
+
+const repoRoot = getRepoRoot()
+export const CANTON_PATH = path.join(repoRoot, '.canton')
+export const SPLICE_PATH = path.join(repoRoot, '.splice')
+export const CANTON_BIN = path.join(CANTON_PATH, 'bin/canton')
+export const CANTON_CONF = path.join(repoRoot, 'canton/canton.conf')
+export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton/bootstrap.canton')
+export const API_SPECS_PATH = path.join(repoRoot, 'api-specs')
+// Canton versions
+export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20250603.0'
+export const CANTON_VERSION = '3.3.0-snapshot.20250530.15919.0.v3e7a341c'
+export const SPLICE_ARCHIVE_HASH =
+    'dd80fb524b75221ec677c7e7a9c0a83589458f294b88b26fe5ca78dfc011dfd8'
+export const CANTON_ARCHIVE_HASH =
+    '7c88d6096701612dc628b6804c16d572c6c6a8cabe3f0ee32ab22afaa39c1eda'
+export const SPLICE_VERSION = '0.4.11'
+
+export async function downloadAndUnpackTarball(
+    url: string,
+    tarfile: string,
+    unpackDir: string,
+    options?: { hash?: string; strip?: number }
+) {
+    let shouldDownload = true
+    const algo = 'sha256'
+    if (fs.existsSync(tarfile) && options?.hash) {
+        // File exists, check hash
+        const existingHash = crypto
+            .createHash(algo)
+            .update(fs.readFileSync(tarfile))
+            .digest('hex')
+        if (existingHash === options.hash) {
+            console.log(
+                success(
+                    `${algo.toUpperCase()} checksum verified for existing file.`
+                )
+            )
+            shouldDownload = false
+        } else {
+            console.log(
+                warn(
+                    `Existing file hash mismatch, deleting ${tarfile} and re-downloading...`
+                )
+            )
+            fs.unlinkSync(tarfile)
+        }
+    }
+
+    if (shouldDownload) {
+        console.log(info(`Downloading tarball from ${url} to ${tarfile}...`))
+        const res = await fetch(url)
+        if (!res.ok || !res.body) {
+            throw new Error(`Failed to download: ${url}`)
+        }
+        await pipeline(res.body, fs.createWriteStream(tarfile))
+        console.log(success('Download complete.'))
+
+        if (options?.hash) {
+            const downloadedHash = crypto
+                .createHash(algo)
+                .update(fs.readFileSync(tarfile))
+                .digest('hex')
+            if (downloadedHash !== options.hash) {
+                // Remove the bad file
+                fs.unlinkSync(tarfile)
+                throw new Error(
+                    error(
+                        `Checksum mismatch for downloaded tarball.\n\tExpected: ${options.hash}\n\tReceived: ${downloadedHash}`
+                    )
+                )
+            } else {
+                console.log(
+                    success(
+                        `${algo.toUpperCase()} checksum verified successfully.`
+                    )
+                )
+            }
+        }
+    }
+
+    console.log(info(`Unpacking tarball into ${unpackDir}...`))
+    await pipeline(
+        fs.createReadStream(tarfile),
+        zlib.createGunzip(),
+        tar.extract(unpackDir, { strip: options?.strip ?? 1 })
+    )
+    console.log(success(`Unpacked tarball into ${unpackDir}`))
+}
 // Get the root of the current repository
 // Assumption: the root of the repository is the closest
 //     ancestor directory of the CWD that contains a .git directory
@@ -29,23 +121,6 @@ export function getRepoRoot(): string {
     )
     process.exit(1)
 }
-
-const repoRoot = getRepoRoot()
-export const CANTON_PATH = path.join(repoRoot, '.canton')
-export const SPLICE_PATH = path.join(repoRoot, '.splice')
-export const CANTON_BIN = path.join(CANTON_PATH, 'bin/canton')
-export const CANTON_CONF = path.join(repoRoot, 'canton/canton.conf')
-export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton/bootstrap.canton')
-export const API_SPECS_PATH = path.join(repoRoot, 'api-specs')
-
-// Canton versions
-export const DAML_RELEASE_VERSION = '3.4.0-snapshot.20250625.0'
-export const CANTON_VERSION = '3.4.0-snapshot.20250617.16217.0.vbdf62919'
-export const SPLICE_ARCHIVE_HASH =
-    'b5d16a4caa9b0996e5e4d6ff35382cdd359c544b0302b928153f7add6fabdbda'
-export const CANTON_ARCHIVE_HASH =
-    '5f1bf64d5d3bf50c4dd379bca44d46069e6ece43377177a6e09b4ff0979f640d'
-export const SPLICE_VERSION = '0.4.10'
 
 export function findJsonKeyPosition(
     jsonContent: string,

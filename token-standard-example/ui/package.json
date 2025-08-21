@@ -17,14 +17,14 @@
         "@daml.js/token-standard-transfer-instruction": "file:daml-codegen/splice-api-token-transfer-instruction-v1-1.0.0",
         "@daml/ledger": "3.3.0-snapshot.20250502.13767.0.v2fc6c7e2",
         "@daml/types": "3.3.0-snapshot.20250502.13767.0.v2fc6c7e2",
-        "core-ledger-client": "workspace:^",
+        "@splice/core-ledger-client": "workspace:^",
+        "@splice/sdk-dapp": "workspace:^",
         "jose": "^6.0.12",
         "jwt-simple": "^0.5.6",
         "lit": "^3.3.1",
         "pino": "^9.7.0",
         "react": "^19.1.0",
-        "react-dom": "^19.1.0",
-        "splice-sdk-dapp": "workspace:^"
+        "react-dom": "^19.1.0"
     },
     "devDependencies": {
         "@eslint/js": "^9.25.0",

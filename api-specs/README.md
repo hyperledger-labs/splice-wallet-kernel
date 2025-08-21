@@ -17,9 +17,9 @@ This project comes with an OpenRPC Mock Server to test against the Wallet Kernel
 Start either of the servers (from the repository root):
 
 ```sh
-yarn workspace splice-wallet-api-specs dapp-mock-server
-yarn workspace splice-wallet-api-specs user-mock-server
-yarn workspace splice-wallet-api-specs signing-mock-server
+yarn workspace @splice/api-specs dapp-mock-server
+yarn workspace @splice/api-specs user-mock-server
+yarn workspace @splice/api-specs signing-mock-server
 ```
 
 The server now runs on [localhost:3333](http://localhost:3333/).

@@ -5,9 +5,9 @@ import {
     PartyMode,
     SigningDriverInterface,
     SigningProvider,
-} from 'core-signing-lib'
-import nacl from 'tweetnacl'
-import naclUtil from 'tweetnacl-util'
+    signTransactionHash,
+    createKeyPair,
+} from '@splice/core-signing-lib'
 
 import {
     SignTransactionParams,
@@ -25,9 +25,9 @@ import {
     SubscribeTransactionsResult,
     SetConfigurationResult,
     Transaction,
-} from 'core-signing-lib'
+} from '@splice/core-signing-lib'
 import { randomUUID } from 'node:crypto'
-import { AuthContext } from 'core-wallet-auth'
+import { AuthContext } from '@splice/core-wallet-auth'
 
 interface InternalKey {
     id: string
@@ -60,7 +60,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
     public partyMode = PartyMode.EXTERNAL
     public signingProvider = SigningProvider.WALLET_KERNEL
 
-    public controller = (_authContext: AuthContext | undefined) =>
+    public controller = (_userId: AuthContext['userId'] | undefined) =>
         buildController({
             signTransaction: async (
                 params: SignTransactionParams
@@ -70,12 +70,9 @@ export class InternalSigningDriver implements SigningDriverInterface {
                 const key = this.signerByPublicKey.get(params.publicKey)
                 if (key) {
                     const txId = randomUUID()
-                    const decodedKey = naclUtil.decodeBase64(key.privateKey)
-                    const signature = naclUtil.encodeBase64(
-                        nacl.sign.detached(
-                            naclUtil.decodeBase64(params.txHash),
-                            decodedKey
-                        )
+                    const signature = signTransactionHash(
+                        params.txHash,
+                        key.privateKey
                     )
 
                     const internalTransaction: InternalTransaction = {
@@ -158,10 +155,8 @@ export class InternalSigningDriver implements SigningDriverInterface {
             createKey: async (
                 params: CreateKeyParams
             ): Promise<CreateKeyResult> => {
-                const key = nacl.sign.keyPair()
+                const { publicKey, privateKey } = createKeyPair()
                 const id = randomUUID()
-                const publicKey = naclUtil.encodeBase64(key.publicKey)
-                const privateKey = naclUtil.encodeBase64(key.secretKey)
 
                 const internalKey: InternalKey = {
                     id,

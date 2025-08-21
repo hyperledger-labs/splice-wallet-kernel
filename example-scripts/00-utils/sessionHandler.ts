@@ -1,4 +1,4 @@
-import UserApiClient, { Network } from 'core-wallet-user-rpc-client'
+import UserApiClient, { Network } from '@splice/core-wallet-user-rpc-client'
 
 export async function addSession(
     userClient: UserApiClient,

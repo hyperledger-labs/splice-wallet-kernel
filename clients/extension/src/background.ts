@@ -6,7 +6,7 @@ import {
     ResponsePayload,
     SpliceMessage,
     WalletEvent,
-} from 'core-types'
+} from '@splice/core-types'
 import { rpcErrors } from '@metamask/rpc-errors'
 
 const controller = dappController()

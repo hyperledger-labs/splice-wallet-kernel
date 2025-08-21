@@ -14,7 +14,7 @@ export default defineConfig([
         '**/dist/',
         '**/build/',
         '.pnp.*',
-        'clients/remote/src/_proto',
+        '**/_proto',
         'core/wallet-dapp-rpc-client',
         'core/wallet-user-rpc-client',
         'core/ledger-client/src/generated-clients',

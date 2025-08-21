@@ -1,7 +1,7 @@
 import { expect, test } from '@jest/globals'
 
 import { ParticipantSigningDriver } from './controller.js'
-import { AuthContext } from 'core-wallet-auth'
+import { AuthContext } from '@splice/core-wallet-auth'
 
 const TEST_TRANSACTION = 'test-tx'
 const TEST_TRANSACTION_HASH =
@@ -20,10 +20,12 @@ test('driver properties', async () => {
 
 test('transaction signature', async () => {
     const signingDriver = new ParticipantSigningDriver()
-    const tx = await signingDriver.controller(authContext).signTransaction({
-        tx: TEST_TRANSACTION,
-        txHash: TEST_TRANSACTION_HASH,
-        publicKey: '',
-    })
+    const tx = await signingDriver
+        .controller(authContext.userId)
+        .signTransaction({
+            tx: TEST_TRANSACTION,
+            txHash: TEST_TRANSACTION_HASH,
+            publicKey: '',
+        })
     expect(tx.status).toBe('signed')
 })

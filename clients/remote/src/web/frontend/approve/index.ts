@@ -1,8 +1,8 @@
 import { html, LitElement } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
-import 'core-wallet-ui-components'
+import '@splice/core-wallet-ui-components'
 import { userClient } from '../rpc-client'
-import { ExecuteParams } from 'core-wallet-user-rpc-client'
+import { ExecuteParams, SignParams } from '@splice/core-wallet-user-rpc-client'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends LitElement {
@@ -12,26 +12,46 @@ export class ApproveUi extends LitElement {
     @state()
     accessor commandId = ''
 
+    @state()
+    accessor partyId = ''
+
+    @state()
+    accessor txHash = ''
+
+    @state()
+    accessor tx = ''
+
     connectedCallback(): void {
         super.connectedCallback()
-
         const url = new URL(window.location.href)
+
         this.commandId = url.searchParams.get('commandId') || ''
+        this.partyId = url.searchParams.get('partyId') || ''
+        this.txHash = decodeURIComponent(url.searchParams.get('txHash') || '')
+        this.tx = decodeURIComponent(url.searchParams.get('tx') || '')
     }
 
     private async handleExecute() {
         this.loading = true
 
-        const body: ExecuteParams = {
+        const signRequest: SignParams = {
             commandId: this.commandId,
-
-            // TODO: use results from the `sign` request
-            partyId: '???',
-            signature: '???',
-            signedBy: '???',
+            partyId: this.partyId,
+            preparedTransactionHash: this.txHash,
+            preparedTransaction: this.tx,
         }
+        const { signature, signedBy } = await userClient.request(
+            'sign',
+            signRequest
+        )
 
-        await userClient.request('execute', body)
+        const executeRequest: ExecuteParams = {
+            signature,
+            signedBy,
+            commandId: this.commandId,
+            partyId: this.partyId,
+        }
+        await userClient.request('execute', executeRequest)
 
         if (window.opener) {
             // If this is a popup, close itself after execution
