@@ -91,13 +91,9 @@ const createPingCommand = [
 
 sdk.userLedger?.setPartyId(preparedParty!.partyId!)
 
-const commandId = v4()
-
 console.log('Prepare command submission for ping create command')
-const prepareResponse = await sdk.userLedger?.prepareSubmission(
-    createPingCommand,
-    v4()
-)
+const prepareResponse =
+    await sdk.userLedger?.prepareSubmission(createPingCommand)
 
 console.log('Sign transaction hash')
 
@@ -108,9 +104,19 @@ const signedCommandHash = signTransactionHash(
 
 console.log('Submit command')
 
-sdk.userLedger?.executeSubmission(
-    prepareResponse!,
-    signedCommandHash,
-    keyPair.publicKey,
-    commandId
-)
+sdk.userLedger
+    ?.executeSubmission(
+        prepareResponse!,
+        signedCommandHash,
+        keyPair.publicKey,
+        v4()
+    )
+    .then((executeSubmissionResponse) => {
+        console.log(
+            'Executed command submission succeeded',
+            executeSubmissionResponse
+        )
+    })
+    .catch((error) =>
+        console.error('Failed to submit command with error %d', error)
+    )
