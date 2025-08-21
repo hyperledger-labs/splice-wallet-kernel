@@ -114,7 +114,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 primary: false,
                 partyId: 'party1',
                 hint: 'hint1',
-                signingProviderId: 'idp1',
+                signingProviderId: 'internal',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
                 chainId: 'network1',
@@ -123,7 +123,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 primary: false,
                 partyId: 'party2',
                 hint: 'hint2',
-                signingProviderId: 'idp1',
+                signingProviderId: 'internal',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
                 chainId: 'network1',
@@ -132,7 +132,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 primary: false,
                 partyId: 'party3',
                 hint: 'hint3',
-                signingProviderId: 'idp2',
+                signingProviderId: 'internal',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
                 chainId: 'network2',
@@ -148,16 +148,16 @@ implementations.forEach(([name, StoreImpl]) => {
                 chainIds: ['network1'],
             })
             const getWalletsBySigningProviderId = await store.getWallets({
-                signingProviderIds: ['idp1'],
+                signingProviderIds: ['internal'],
             })
             const getWalletsByChainIdAndSigningProviderId =
                 await store.getWallets({
                     chainIds: ['network1'],
-                    signingProviderIds: ['idp1'],
+                    signingProviderIds: ['internal'],
                 })
             expect(getAllWallets).toHaveLength(3)
             expect(getWalletsByChainId).toHaveLength(2)
-            expect(getWalletsBySigningProviderId).toHaveLength(2)
+            expect(getWalletsBySigningProviderId).toHaveLength(3)
             expect(getWalletsByChainIdAndSigningProviderId).toHaveLength(2)
         })
 
@@ -166,7 +166,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 primary: false,
                 partyId: 'party1',
                 hint: 'hint1',
-                signingProviderId: 'idp1',
+                signingProviderId: 'internal',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
                 chainId: 'network1',
@@ -175,7 +175,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 primary: false,
                 partyId: 'party2',
                 hint: 'hint2',
-                signingProviderId: 'idp1',
+                signingProviderId: 'internal',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
                 chainId: 'network1',
