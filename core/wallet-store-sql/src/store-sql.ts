@@ -16,6 +16,7 @@ import {
     DB,
     fromAuth,
     fromNetwork,
+    fromTransaction,
     fromWallet,
     toNetwork,
     toTransaction,
@@ -301,7 +302,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         const userId = this.assertConnected()
         await this.db
             .insertInto('transactions')
-            .values({ ...transaction, userId })
+            .values(fromTransaction(transaction, userId))
             .execute()
     }
 

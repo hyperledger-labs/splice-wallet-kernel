@@ -54,7 +54,7 @@ interface TransactionTable {
     commandId: string
     preparedTransaction: string
     preparedTransactionHash: string
-    payload?: unknown
+    payload: string | undefined
     userId: UserId
 }
 
@@ -226,9 +226,23 @@ export const toWallet = (table: WalletTable): Wallet => {
     }
 }
 
+export const fromTransaction = (
+    transaction: Transaction,
+    userId: UserId
+): TransactionTable => {
+    return {
+        ...transaction,
+        payload: transaction.payload
+            ? JSON.stringify(transaction.payload)
+            : undefined,
+        userId: userId,
+    }
+}
+
 export const toTransaction = (table: TransactionTable): Transaction => {
     return {
         ...table,
         status: table.status as 'pending' | 'signed' | 'executed' | 'failed',
+        payload: table.payload ? JSON.parse(table.payload) : undefined,
     }
 }
