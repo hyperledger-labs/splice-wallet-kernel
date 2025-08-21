@@ -3,10 +3,14 @@
     "release": {
         "projectsRelationship": "independent",
         "version": {
-            "conventionalCommits": true
+            "conventionalCommits": true,
+            "fallbackCurrentVersionResolver": "disk"
         },
         "changelog": {
-            "projectChangelogs": true
+            "projectChangelogs": {
+                "createRelease": "github",
+                "file": false
+            }
         }
     },
     "targetDefaults": {
