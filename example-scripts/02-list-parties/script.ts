@@ -1,4 +1,4 @@
-import UserApiClient from 'core-wallet-user-rpc-client'
+import UserApiClient from '@splice/core-wallet-user-rpc-client'
 import { HttpTransport } from '../00-utils/httpTransport'
 import { auth } from '../00-utils/auth'
 

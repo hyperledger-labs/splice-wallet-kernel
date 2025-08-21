@@ -1,6 +1,7 @@
 {
-    "name": "clients-extension",
+    "name": "@splice/clients-extension",
     "version": "1.0.0",
+    "private": true,
     "description": "Web extension for the wallet kernel",
     "author": "Alex Matson <alex.matson@digitalasset.com>",
     "license": "Apache-2.0",
@@ -23,9 +24,9 @@
     },
     "dependencies": {
         "@metamask/rpc-errors": "^7.0.2",
-        "core-types": "workspace:^",
-        "core-wallet-store": "workspace:^",
-        "core-wallet-ui-components": "workspace:^",
+        "@splice/core-types": "workspace:^",
+        "@splice/core-wallet-store": "workspace:^",
+        "@splice/core-wallet-ui-components": "workspace:^",
         "lit": "^3.3.0",
         "webextension-polyfill": "^0.12.0"
     }

@@ -1,6 +1,5 @@
 {
-    "name": "core-signing-participant",
-    "private": true,
+    "name": "@splice/core-signing-participant",
     "packageManager": "yarn@4.9.2",
     "type": "module",
     "main": "dist/index.js",
@@ -11,9 +10,9 @@
         "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
     },
     "dependencies": {
-        "core-ledger-client": "workspace:^",
-        "core-signing-lib": "workspace:^",
-        "core-wallet-auth": "workspace:^"
+        "@splice/core-ledger-client": "workspace:^",
+        "@splice/core-signing-lib": "workspace:^",
+        "@splice/core-wallet-auth": "workspace:^"
     },
     "devDependencies": {
         "@jest/globals": "^29.0.0",

@@ -1,5 +1,5 @@
 {
-    "name": "core-wallet-store-sql",
+    "name": "@splice/core-wallet-store-sql",
     "version": "1.0.0",
     "description": "SQL implementation of the Store API.",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
@@ -15,11 +15,11 @@
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
     },
     "dependencies": {
+        "@splice/core-ledger-client": "workspace:^",
+        "@splice/core-wallet-auth": "workspace:^",
+        "@splice/core-wallet-store": "workspace:^",
         "better-sqlite3": "^12.2.0",
         "commander": "^14.0.0",
-        "core-ledger-client": "workspace:^",
-        "core-wallet-auth": "workspace:^",
-        "core-wallet-store": "workspace:^",
         "kysely": "^0.28.5",
         "pino": "^9.7.0",
         "umzug": "^3.8.2",

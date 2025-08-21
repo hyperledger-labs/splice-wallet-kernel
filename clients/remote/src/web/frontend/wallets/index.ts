@@ -1,12 +1,12 @@
 import { css, html, LitElement } from 'lit'
 import { customElement, query, state } from 'lit/decorators.js'
 
-import 'core-wallet-ui-components'
+import '@splice/core-wallet-ui-components'
 
-import { Wallet } from 'core-wallet-store'
+import { Wallet } from '@splice/core-wallet-store'
 import { userClient } from '../rpc-client'
-import { CreateWalletParams } from 'core-wallet-user-rpc-client'
-import { SigningProvider } from 'core-signing-lib'
+import { CreateWalletParams } from '@splice/core-wallet-user-rpc-client'
+import { SigningProvider } from '@splice/core-signing-lib'
 
 import '../index'
 

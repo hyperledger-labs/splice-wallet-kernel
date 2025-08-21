@@ -4,14 +4,14 @@
     "components": [
         {
             "type": "custom",
-            "name": "core-wallet-dapp-rpc-client",
+            "name": "@splice/core-wallet-dapp-rpc-client",
             "language": "typescript",
             "outPath": "./core/wallet-dapp-rpc-client",
             "customComponent": "./core/rpc-generator/dist/components/client.js"
         },
         {
             "type": "custom",
-            "name": "wallet-dapp-rpc-server",
+            "name": "@splice/wallet-dapp-rpc-server",
             "language": "typescript",
             "openRPCPath": null,
             "outPath": "./clients/remote/src/dapp-api/rpc-gen",
@@ -20,7 +20,7 @@
         },
         {
             "type": "custom",
-            "name": "wallet-dapp-rpc-extension",
+            "name": "@splice/wallet-dapp-rpc-extension",
             "language": "typescript",
             "openRPCPath": null,
             "outPath": "./clients/extension/src/dapp-api/rpc-gen",

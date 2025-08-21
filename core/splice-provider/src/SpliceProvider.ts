@@ -1,4 +1,4 @@
-import { RequestPayload } from 'core-types'
+import { RequestPayload } from '@splice/core-types'
 
 export type EventListener<T> = (...args: T[]) => void
 

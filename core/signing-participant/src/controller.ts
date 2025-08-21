@@ -12,8 +12,8 @@ import {
     SignTransactionParams,
     SignTransactionResult,
     SubscribeTransactionsResult,
-} from 'core-signing-lib'
-import { AuthContext } from 'core-wallet-auth'
+} from '@splice/core-signing-lib'
+import { AuthContext } from '@splice/core-wallet-auth'
 import { randomUUID } from 'node:crypto'
 
 export class ParticipantSigningDriver implements SigningDriverInterface {
@@ -21,7 +21,7 @@ export class ParticipantSigningDriver implements SigningDriverInterface {
     public signingProvider = SigningProvider.PARTICIPANT
 
     public controller = (
-        _authContext: AuthContext | undefined // eslint-disable-line @typescript-eslint/no-unused-vars
+        _userId: AuthContext['userId'] | undefined // eslint-disable-line @typescript-eslint/no-unused-vars
     ) =>
         buildController({
             signTransaction: async (

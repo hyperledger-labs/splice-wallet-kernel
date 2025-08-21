@@ -1,5 +1,6 @@
 {
-    "name": "splice-wallet-api-specs",
+    "name": "@splice/api-specs",
+    "private": true,
     "version": "1.0.0",
     "description": "Splice Wallet Kernel API specifications",
     "type": "module",

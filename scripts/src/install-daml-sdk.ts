@@ -12,6 +12,7 @@ import {
 } from './utils.js'
 import { pipeline } from 'stream/promises'
 import { Readable } from 'stream'
+import { ReadableStream } from 'stream/web'
 
 //this is done for comparison, the DAML_RELEASE_VERSION uses snapshot releases but the installed sdk included commit and might have a different minor version.
 function compareDamlVersionWithInstalledSDK(daml_version: string): boolean {
@@ -103,7 +104,7 @@ export async function installDamlSDK() {
             process.exit(1)
         }
         await pipeline(
-            Readable.fromWeb(response.body as globalThis.ReadableStream),
+            Readable.fromWeb(response.body as ReadableStream),
             fs.createWriteStream(tarball)
         )
         console.log(
