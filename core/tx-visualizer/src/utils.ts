@@ -35,7 +35,7 @@ export async function sha256(
             : message
 
     return crypto.subtle
-        .digest('SHA-256', msg)
+        .digest('SHA-256', new Uint8Array(msg))
         .then((hash) => new Uint8Array(hash))
 }
 

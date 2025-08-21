@@ -7,9 +7,9 @@
         "target": "ES2022",
         "strict": true,
         "sourceMap": true,
-        "outDir": "build",
+        "outDir": "dist",
         "rootDir": "src",
-        "declarationDir": "build",
+        "declarationDir": "dist",
         "declaration": true,
         "resolveJsonModule": true,
         "moduleResolution": "bundler",
@@ -23,7 +23,7 @@
         "exclude": [
             "node_modules",
             "docs",
-            "build",
+            "dist",
             "jest.config.js",
             "src/*.test.ts",
             "src/**/*.test.ts"

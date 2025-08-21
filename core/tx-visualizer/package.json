@@ -1,5 +1,5 @@
 {
-    "name": "core-tx-visualizer",
+    "name": "@splice/core-tx-visualizer",
     "version": "1.0.0",
     "license": "Apache-2.0",
     "packageManager": "yarn@4.9.2",
@@ -14,9 +14,9 @@
     },
     "devDependencies": {
         "@jest/globals": "^29.0.0",
+        "@splice/core-ledger-client": "workspace:^",
         "@swc/jest": "^0.2.38",
         "@types/jest": "^30.0.0",
-        "core-ledger-client": "workspace:^",
         "globals": "^16.0.0",
         "jest": "^30.0.0",
         "ts-jest": "^29.4.0",

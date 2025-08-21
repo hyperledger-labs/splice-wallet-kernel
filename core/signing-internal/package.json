@@ -1,6 +1,5 @@
 {
-    "name": "core-signing-internal",
-    "private": true,
+    "name": "@splice/core-signing-internal",
     "packageManager": "yarn@4.9.2",
     "type": "module",
     "main": "dist/index.js",
@@ -11,8 +10,8 @@
         "test": "jest"
     },
     "dependencies": {
-        "core-signing-lib": "workspace:^",
-        "core-wallet-auth": "workspace:^",
+        "@splice/core-signing-lib": "workspace:^",
+        "@splice/core-wallet-auth": "workspace:^",
         "fs-extra": "^11.3.0",
         "lodash": "^4.17.21"
     },

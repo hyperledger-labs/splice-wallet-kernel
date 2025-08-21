@@ -1,5 +1,5 @@
 {
-    "name": "core-rpc-generator",
+    "name": "@splice/core-rpc-generator",
     "private": true,
     "packageManager": "yarn@4.9.2",
     "scripts": {

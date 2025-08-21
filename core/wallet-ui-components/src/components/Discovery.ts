@@ -1,4 +1,4 @@
-import { DiscoverResult, SpliceMessageEvent } from 'core-types'
+import { DiscoverResult, SpliceMessageEvent } from '@splice/core-types'
 
 /**
  * Discovery implements the view of the Wallet Kernel selection window.

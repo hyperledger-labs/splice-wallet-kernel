@@ -1,0 +1,22 @@
+{
+    "name": "docs-wallet-integration-guide-examples",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Example typescripts to be used in combination with the wallet integration guide.",
+    "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
+    "license": "Apache-2.0",
+    "packageManager": "yarn@4.9.2",
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b",
+        "clean": "tsc -b --clean",
+        "run-01": "tsx ./01-auth.ts"
+    },
+    "devDependencies": {
+        "tsx": "^4.20.3",
+        "typescript": "^5.8.3"
+    },
+    "dependencies": {
+        "@splice/sdk-wallet": "workspace:^"
+    }
+}

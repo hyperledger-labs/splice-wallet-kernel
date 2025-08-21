@@ -1,5 +1,5 @@
 {
-    "name": "core-wallet-ui-components",
+    "name": "@splice/core-wallet-ui-components",
     "version": "1.0.0",
     "description": "Reusable UI components for the Splice wallet",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
@@ -24,9 +24,10 @@
     },
     "packageManager": "yarn@4.9.2",
     "dependencies": {
+        "@popperjs/core": "^2.11.8",
+        "@splice/core-types": "workspace:^",
+        "@splice/core-wallet-store": "workspace:^",
         "bootstrap": "^5.3.7",
-        "core-types": "workspace:^",
-        "core-wallet-store": "workspace:^",
         "lit": "^3.3.0"
     }
 }

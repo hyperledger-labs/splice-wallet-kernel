@@ -1,6 +1,6 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { LedgerClient } from 'core-ledger-client'
+import { LedgerClient } from '@splice/core-ledger-client'
 import buildController from './rpc-gen/index.js'
 import {
     AddNetworkParams,
@@ -12,13 +12,15 @@ import {
     ListSessionsResult,
     SetPrimaryWalletParams,
 } from './rpc-gen/typings.js'
-import { Store, Auth, Transaction } from 'core-wallet-store'
+import { Store, Auth, Transaction } from '@splice/core-wallet-store'
 import { Logger } from 'pino'
 import { NotificationService } from '../notification/NotificationService.js'
-import { AuthContext } from 'core-wallet-auth'
+import { AuthContext, clientCredentialsService } from '@splice/core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
-import { SigningDriverInterface, SigningProvider } from 'core-signing-lib'
-import { adminAuthService } from '../auth/admin-auth-service.js'
+import {
+    SigningDriverInterface,
+    SigningProvider,
+} from '@splice/core-signing-lib'
 import {
     AllocatedParty,
     PartyAllocationService,
@@ -105,10 +107,15 @@ export const userController = (
                 throw new Error('Unauthenticated context')
             }
 
-            const adminToken = await adminAuthService(
-                store,
+            const adminToken = await clientCredentialsService(
+                network.auth.configUrl,
                 logger
-            ).fetchToken()
+            ).fetchToken({
+                clientId: network.auth.admin.clientId,
+                clientSecret: network.auth.admin.clientSecret,
+                scope: network.auth.scope,
+                audience: network.auth.audience,
+            })
 
             const partyAllocator = new PartyAllocationService(
                 network.synchronizerId,

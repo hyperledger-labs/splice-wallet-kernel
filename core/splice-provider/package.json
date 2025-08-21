@@ -1,5 +1,5 @@
 {
-    "name": "core-splice-provider",
+    "name": "@splice/core-splice-provider",
     "version": "1.0.0",
     "description": "A JavaScript Splice Provider API (EIP-1193 compliant).",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
@@ -17,8 +17,8 @@
         "typescript": "^5.8.3"
     },
     "dependencies": {
-        "core-types": "workspace:^",
-        "core-wallet-ui-components": "workspace:^",
+        "@splice/core-types": "workspace:^",
+        "@splice/core-wallet-ui-components": "workspace:^",
         "socket.io-client": "^4.8.1"
     }
 }

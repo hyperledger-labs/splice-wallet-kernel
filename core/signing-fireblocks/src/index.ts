@@ -5,7 +5,7 @@ import {
     PartyMode,
     SigningDriverInterface,
     SigningProvider,
-} from 'core-signing-lib'
+} from '@splice/core-signing-lib'
 
 import {
     SignTransactionParams,
@@ -23,11 +23,11 @@ import {
     SubscribeTransactionsResult,
     SetConfigurationResult,
     Transaction,
-} from 'core-signing-lib'
+} from '@splice/core-signing-lib'
 import { FireblocksHandler, FireblocksApiKeyInfo } from './fireblocks.js'
 import _ from 'lodash'
 import { z } from 'zod'
-import { AuthContext } from 'core-wallet-auth'
+import { AuthContext } from '@splice/core-wallet-auth'
 
 export interface FireblocksConfig {
     defaultKeyInfo?: FireblocksApiKeyInfo

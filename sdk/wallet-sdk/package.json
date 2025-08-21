@@ -1,5 +1,5 @@
 {
-    "name": "splice-sdk-wallet",
+    "name": "@splice/sdk-wallet",
     "type": "module",
     "version": "0.0.1",
     "description": "Simplified connecting your Wallet provider service to a validator",
@@ -14,12 +14,15 @@
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
     "dependencies": {
-        "core-ledger-client": "workspace:^",
-        "core-signing-lib": "workspace:^",
+        "@splice/core-ledger-client": "workspace:^",
+        "@splice/core-signing-lib": "workspace:^",
+        "@splice/core-types": "workspace:^",
+        "@splice/core-wallet-auth": "workspace:^",
         "pino": "^9.7.0",
         "uuid": "^11.1.0"
     },
     "devDependencies": {
+        "@types/node": "^24.3.0",
         "typescript": "^5.8.3"
     }
 }

@@ -3,11 +3,14 @@ import {
     PostResponse,
     GetResponse,
     TopologyWriteService,
-} from 'core-ledger-client'
-import { signTransactionHash, getPublicKeyFromPrivate } from 'core-signing-lib'
+} from '@splice/core-ledger-client'
+import {
+    signTransactionHash,
+    getPublicKeyFromPrivate,
+} from '@splice/core-signing-lib'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
-import { SigningPublicKey } from 'core-ledger-client/src/_proto/com/digitalasset/canton/crypto/v30/crypto'
+import { SigningPublicKey } from '@splice/core-ledger-client/src/_proto/com/digitalasset/canton/crypto/v30/crypto'
 
 export interface ledgerController {
     setPartyId(partyId: string): LedgerController
@@ -24,6 +27,10 @@ export interface ledgerController {
         publicKey: SigningPublicKey | string,
         submissionId?: string
     ): Promise<PostResponse<'/v2/interactive-submission/execute'>>
+
+    allocateInternalParty(
+        partyHint?: string
+    ): Promise<PostResponse<'/v2/parties'>>
 }
 
 export class LedgerController implements ledgerController {
@@ -65,6 +72,15 @@ export class LedgerController implements ledgerController {
         const publicKey = getPublicKeyFromPrivate(privateKey)
 
         return this.executeSubmission(prepared, signature, publicKey, commandId)
+    }
+
+    async allocateInternalParty(
+        partyHint?: string
+    ): Promise<PostResponse<'/v2/parties'>> {
+        return await this.client.post('/v2/parties', {
+            partyIdHint: partyHint || v4(),
+            identityProviderId: '',
+        })
     }
 
     async prepareSubmission(
@@ -145,4 +161,11 @@ export class LedgerController implements ledgerController {
     ): string {
         return TopologyWriteService.createFingerprintFromKey(publicKey)
     }
+}
+
+export const localLedgerDefault = (
+    userId: string,
+    token: string
+): LedgerController => {
+    return new LedgerController(userId, 'http://127.0.0.1:5003', token)
 }
