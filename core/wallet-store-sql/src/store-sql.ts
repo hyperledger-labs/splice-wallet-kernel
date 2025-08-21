@@ -1,5 +1,5 @@
 import { Logger } from 'pino'
-import { AuthContext, UserId, AuthAware } from 'core-wallet-auth'
+import { AuthContext, UserId, AuthAware } from '@splice/core-wallet-auth'
 import {
     Store as BaseStore,
     Wallet,
@@ -9,7 +9,7 @@ import {
     Transaction,
     Network,
     StoreConfig,
-} from 'core-wallet-store'
+} from '@splice/core-wallet-store'
 import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely'
 import Database from 'better-sqlite3'
 import {
@@ -227,6 +227,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
 
     async updateNetwork(network: Network): Promise<void> {
         const userId = this.assertConnected()
+        // todo: check and compare userid of existing network
         await this.db.transaction().execute(async (trx) => {
             await trx
                 .updateTable('networks')

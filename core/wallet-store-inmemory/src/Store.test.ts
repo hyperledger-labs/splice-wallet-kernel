@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from '@jest/globals'
 
-import { StoreInternal } from './StoreInternal'
+import { StoreInternal, StoreInternalConfig } from './StoreInternal'
 import {
     Wallet,
     Session,
@@ -8,7 +8,6 @@ import {
     LedgerApi,
     Network,
     PasswordAuth,
-    StoreConfig,
 } from '@splice/core-wallet-store'
 import { AuthContext } from '@splice/core-wallet-auth'
 import { pino, Logger } from 'pino'
@@ -19,12 +18,12 @@ const authContextMock: AuthContext = {
     accessToken: 'test-access-token',
 }
 
-const storeConfig: StoreConfig = {
+const storeConfig: StoreInternalConfig = {
     networks: [],
 }
 
 type StoreCtor = new (
-    config: StoreConfig,
+    config: StoreInternalConfig,
     logger: Logger,
     authContext?: AuthContext
 ) => Store

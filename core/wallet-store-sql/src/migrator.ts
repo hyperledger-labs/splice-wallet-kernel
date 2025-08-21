@@ -41,7 +41,8 @@ class KyselyStorage implements UmzugStorage {
 }
 
 export const migrator = (db: Kysely<DB>) => {
-    const glob = new URL('./migrations/*.js', import.meta.url).pathname
+    const ext = import.meta.url.endsWith('.ts') ? 'ts' : 'js'
+    const glob = new URL(`./migrations/*.${ext}`, import.meta.url).pathname
     return new Umzug({
         migrations: {
             glob: glob,
@@ -50,6 +51,7 @@ export const migrator = (db: Kysely<DB>) => {
                 return {
                     name,
                     up: async () => {
+                        console.log(path)
                         const { up } = await import(path!)
                         return up(context)
                     },

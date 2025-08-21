@@ -1,18 +1,19 @@
-import { beforeEach, describe, expect, test } from '@jest/globals'
+import { describe, expect, test } from '@jest/globals'
 
-import { connection, StoreSql } from './store-sql'
-import { DB } from './schema'
+import { AuthContext } from '@splice/core-wallet-auth'
 import {
-    Wallet,
-    Session,
     LedgerApi,
     Network,
     PasswordAuth,
-} from 'core-wallet-store'
-import { AuthContext } from 'core-wallet-auth'
-import { pino, Logger } from 'pino'
-import { sink } from 'pino-test'
+    Session,
+    Wallet,
+} from '@splice/core-wallet-store'
 import { Kysely } from 'kysely'
+import { Logger, pino } from 'pino'
+import { sink } from 'pino-test'
+import { migrator } from './migrator'
+import { DB } from './schema'
+import { connection, StoreSql } from './store-sql'
 
 const authContextMock: AuthContext = {
     userId: 'test-user-id',
@@ -36,14 +37,16 @@ const implementations: Array<[string, StoreCtor]> = [['StoreSql', StoreSql]]
 
 implementations.forEach(([name, StoreImpl]) => {
     describe(name, () => {
-        let store: StoreSql
+        let db: Kysely<DB>
 
-        beforeEach(() => {
-            store = new StoreImpl(
-                connection(storeConfig),
-                pino(sink()),
-                authContextMock
-            )
+        beforeAll(async () => {
+            db = connection(storeConfig)
+            const umzug = migrator(db)
+            await umzug.up()
+        })
+
+        afterAll(async () => {
+            await db.destroy()
         })
 
         test('should add and retrieve wallets', async () => {
@@ -56,6 +59,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 namespace: 'namespace',
                 chainId: 'network1',
             }
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
             await store.addWallet(wallet)
             const wallets = await store.getWallets()
             expect(wallets).toHaveLength(1)
@@ -89,6 +93,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 namespace: 'namespace',
                 chainId: 'network2',
             }
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
             await store.addWallet(wallet1)
             await store.addWallet(wallet2)
             await store.addWallet(wallet3)
@@ -129,6 +134,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 namespace: 'namespace',
                 chainId: 'network1',
             }
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
             await store.addWallet(wallet1)
             await store.addWallet(wallet2)
             await store.setPrimaryWallet('party2')
@@ -138,6 +144,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should set and get session', async () => {
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
             const session: Session = { network: 'net', accessToken: 'token' }
             await store.setSession(session)
             const result = await store.getSession()
@@ -171,6 +178,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 ledgerApi,
                 auth,
             }
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
             await store.updateNetwork(network)
             const listed = await store.listNetworks()
             expect(listed).toHaveLength(1)
@@ -185,10 +193,12 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should throw when getting a non-existent network', async () => {
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
             await expect(store.getNetwork('doesnotexist')).rejects.toThrow()
         })
 
         test('should throw when getting current network if none set', async () => {
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
             await expect(store.getCurrentNetwork()).rejects.toThrow()
         })
     })

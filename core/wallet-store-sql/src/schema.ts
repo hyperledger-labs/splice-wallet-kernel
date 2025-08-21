@@ -1,5 +1,11 @@
-import { UserId } from 'core-wallet-auth'
-import { Wallet, Transaction, Session, Auth, Network } from 'core-wallet-store'
+import { UserId } from '@splice/core-wallet-auth'
+import {
+    Wallet,
+    Transaction,
+    Session,
+    Auth,
+    Network,
+} from '@splice/core-wallet-store'
 
 interface MigrationTable {
     name: string

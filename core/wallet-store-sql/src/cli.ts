@@ -1,7 +1,7 @@
 import { Command } from 'commander'
 import { connection, StoreSql } from './store-sql.js'
 import { migrator } from './migrator.js'
-import type { StoreConfig } from 'core-wallet-store'
+import type { StoreConfig } from '@splice/core-wallet-store'
 import { pino } from 'pino'
 
 const logger = pino({ name: 'main', level: 'debug' })
