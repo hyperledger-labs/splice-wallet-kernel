@@ -55,6 +55,7 @@ describe('PartyAllocationService', () => {
             adminGrpcUrl: 'http://ledger/admin',
         },
         auth: {
+            identityProviderId: 'idp',
             type: 'implicit',
             issuer: 'http://idp',
             configUrl: 'http://idp/.well-known/openid-configuration',

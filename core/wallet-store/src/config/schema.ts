@@ -11,6 +11,7 @@ const clientCredentials = z.object({
 })
 
 const passwordAuthSchema = z.object({
+    identityProviderId: z.string(),
     type: z.literal('password'),
     issuer: z.string(),
     configUrl: z.string(),
@@ -23,6 +24,7 @@ const passwordAuthSchema = z.object({
 })
 
 const implicitAuthSchema = z.object({
+    identityProviderId: z.string(),
     type: z.literal('implicit'),
     issuer: z.string(),
     configUrl: z.string(),
@@ -33,6 +35,7 @@ const implicitAuthSchema = z.object({
 })
 
 const clientCredentialAuthSchema = z.object({
+    identityProviderId: z.string(),
     type: z.literal('client_credentials'),
     issuer: z.string(),
     configUrl: z.string(),
@@ -59,6 +62,23 @@ export const networkSchema = z.object({
 })
 
 export const storeConfigSchema = z.object({
+    connection: z.discriminatedUnion('type', [
+        z.object({
+            type: z.literal('memory'),
+        }),
+        z.object({
+            type: z.literal('sqlite'),
+            database: z.string(),
+        }),
+        z.object({
+            type: z.literal('postgres'),
+            host: z.string(),
+            port: z.number(),
+            user: z.string(),
+            password: z.string(),
+            database: z.string(),
+        }),
+    ]),
     networks: z.array(networkSchema),
 })
 

@@ -5,6 +5,10 @@
         "url": "http://localhost:3000/rpc"
     },
     "store": {
+        "connection": {
+            "type": "sqlite",
+            "database": "store.sqlite"
+        },
         "networks": [
             {
                 "name": "Local (password IDP)",
@@ -16,6 +20,7 @@
                     "adminGrpcUrl": "localhost:5012"
                 },
                 "auth": {
+                    "identityProviderId": "idp1",
                     "type": "password",
                     "issuer": "http://127.0.0.1:8889",
                     "configUrl": "http://127.0.0.1:8889/.well-known/openid-configuration",
@@ -40,6 +45,7 @@
                     "adminGrpcUrl": "localhost:5012"
                 },
                 "auth": {
+                    "identityProviderId": "idp2",
                     "type": "implicit",
                     "issuer": "http://127.0.0.1:8889",
                     "configUrl": "http://127.0.0.1:8889/.well-known/openid-configuration",
@@ -54,7 +60,7 @@
             },
             {
                 "name": "Local (OAuth IDP - Client Credentials)",
-                "chainId": "canton:local-oauth",
+                "chainId": "canton:local-oauth-client-credentials",
                 "synchronizerId": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
                 "description": "Mock OAuth IDP (Client Credentials)",
                 "ledgerApi": {
@@ -62,6 +68,7 @@
                     "adminGrpcUrl": "localhost:5012"
                 },
                 "auth": {
+                    "identityProviderId": "idp3",
                     "type": "client_credentials",
                     "issuer": "http://127.0.0.1:8889",
                     "configUrl": "http://127.0.0.1:8889/.well-known/openid-configuration",

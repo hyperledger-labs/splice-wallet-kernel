@@ -49,6 +49,7 @@ export const userController = (
             if (network.auth.type === 'implicit') {
                 auth = {
                     type: 'implicit',
+                    identityProviderId: network.auth.identityProviderId,
                     issuer: network.auth.issuer ?? '',
                     configUrl: network.auth.configUrl ?? '',
                     audience: network.auth.audience ?? '',
@@ -58,6 +59,7 @@ export const userController = (
             } else {
                 auth = {
                     type: 'password',
+                    identityProviderId: network.auth.identityProviderId,
                     issuer: network.auth.issuer ?? '',
                     configUrl: network.auth.configUrl ?? '',
                     tokenUrl: network.auth.tokenUrl ?? '',

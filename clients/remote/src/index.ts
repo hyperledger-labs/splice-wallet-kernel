@@ -3,7 +3,7 @@ import { user } from './user-api/server.js'
 import { web } from './web/server.js'
 import { pino } from 'pino'
 import ViteExpress from 'vite-express'
-import { StoreInternal } from '@splice/core-wallet-store-inmemory'
+import { StoreSql, connection } from '@splice/core-wallet-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
 import { configSchema } from './config/Config.js'
 import { Notifier } from './notification/NotificationService.js'
@@ -48,7 +48,7 @@ const notificationService = new NotificationService()
 const configPath = process.env.NETWORK_CONFIG_PATH || '../test/config.json'
 const configFile = ConfigUtils.loadConfigFile(configPath)
 const config = configSchema.parse(configFile)
-const store = new StoreInternal(config.store, logger)
+const store = new StoreSql(connection(config.store), logger)
 const authService = jwtAuthService(store, logger)
 
 const drivers = {
