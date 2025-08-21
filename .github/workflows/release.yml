@@ -6,7 +6,7 @@ on:
             - latest
             - alex/tweak-release-config
 permissions:
-    contents: read
+    contents: write
 jobs:
     release:
         runs-on: ubuntu-latest
@@ -29,10 +29,10 @@ jobs:
             - name: Install dependencies
               run: yarn install --immutable
 
-            - run: git tag
+            - run: git config --global user.name github-actions
+            - run: git config --global user.email github-actions@github.com
 
             - name: Release
-              run: yarn nx release --dry-run --skip-publish # Skip publish until we get an NPM token setup
+              run: yarn nx release --skip-publish # Skip publish until we get an NPM token setup
 
-
-            # - run: git push --tags
+            - run: git push --tags
