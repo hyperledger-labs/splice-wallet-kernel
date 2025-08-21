@@ -1,6 +1,6 @@
 {
     "name": "@splice/core-wallet-store",
-    "version": "0.0.0",
+    "version": "0.0.2",
     "description": "The Store API provides persistency for the wallet kernel.",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
