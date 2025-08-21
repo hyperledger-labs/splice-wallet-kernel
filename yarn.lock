@@ -3184,6 +3184,7 @@ __metadata:
     "@splice/core-wallet-auth": "workspace:^"
     "@splice/core-wallet-dapp-rpc-client": "workspace:^"
     "@splice/core-wallet-store": "workspace:^"
+    "@splice/core-wallet-store-inmemory": "workspace:^"
     "@splice/core-wallet-store-sql": "workspace:^"
     "@splice/core-wallet-ui-components": "workspace:^"
     "@splice/core-wallet-user-rpc-client": "workspace:^"
@@ -3436,7 +3437,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@splice/core-wallet-store-inmemory@workspace:core/wallet-store-inmemory":
+"@splice/core-wallet-store-inmemory@workspace:^, @splice/core-wallet-store-inmemory@workspace:core/wallet-store-inmemory":
   version: 0.0.0-use.local
   resolution: "@splice/core-wallet-store-inmemory@workspace:core/wallet-store-inmemory"
   dependencies:
