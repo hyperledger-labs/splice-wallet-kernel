@@ -1,6 +1,6 @@
 {
     "name": "@splice/core-signing-lib",
-    "version": "0.0.0",
+    "version": "0.0.2",
     "packageManager": "yarn@4.9.2",
     "type": "module",
     "main": "dist/index.js",
