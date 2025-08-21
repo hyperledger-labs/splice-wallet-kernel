@@ -1,9 +1,10 @@
+import { createKeyPair, signTransactionHash } from '@splice/core-signing-lib'
 import {
     localAuthDefault,
     localLedgerDefault,
+    localTopologyDefault,
     WalletSDKImpl,
 } from '@splice/sdk-wallet'
-import { localTopologyDefault } from '@splice/sdk-wallet/dist/topologyController.js'
 
 const sdk = new WalletSDKImpl().configure({
     logger: console,
@@ -41,4 +42,22 @@ await sdk.adminLedger
 await sdk.connectTopology()
 console.log('Connected to topology')
 
-await sdk.topology?.prepareExternalPartyTopology('TODO')
+const keyPair = createKeyPair()
+const preparedParty = await sdk.topology?.prepareExternalPartyTopology(
+    keyPair.publicKey
+)
+
+if (preparedParty) {
+    const signedHash = signTransactionHash(
+        preparedParty?.combinedHash,
+        keyPair.privateKey
+    )
+
+    await sdk.topology
+        ?.submitExternalPartyTopology(signedHash, preparedParty)
+        .then((allocatedParty) =>
+            console.log('Alocated party ', allocatedParty.partyId)
+        )
+} else {
+    console.error('Error creating prepared party.')
+}

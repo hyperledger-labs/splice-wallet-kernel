@@ -8145,6 +8145,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "docs-wallet-integration-guide-examples@workspace:docs/wallet-integration-guide/examples"
   dependencies:
+    "@splice/core-signing-lib": "workspace:^"
     "@splice/sdk-wallet": "workspace:^"
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.8.3"

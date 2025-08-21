@@ -123,8 +123,8 @@ export class TopologyController {
         privateKey: string
     ): Promise<AllocatedParty> {
         const preparedParty = await this.prepareExternalPartyTopology(
-            partyHint,
-            publicKey
+            publicKey,
+            partyHint
         )
         const signedHash = signTransactionHash(
             preparedParty.combinedHash,
