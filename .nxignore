@@ -1,6 +1,7 @@
 api-specs
 core/rpc-generator
 core/token-standard/src
+docs
 example
 example-scripts
 mock-oauth2

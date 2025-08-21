@@ -1,6 +1,6 @@
 {
     "name": "@splice/core-types",
-    "version": "0.0.0",
+    "version": "0.1.0",
     "description": "Types and transport-agnostic parsers for data sent across Wallet components.",
     "type": "module",
     "main": "dist/index.js",

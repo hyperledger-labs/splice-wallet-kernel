@@ -1,6 +1,6 @@
 {
     "name": "@splice/core-wallet-store-sql",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "description": "SQL implementation of the Store API.",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
