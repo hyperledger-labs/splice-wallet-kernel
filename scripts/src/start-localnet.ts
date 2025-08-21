@@ -31,7 +31,10 @@ const composeBase = [
 const env = { ...process.env, IMAGE_TAG: SPLICE_VERSION }
 
 if (command === 'start') {
-    execFileSync(composeBase[0], [...composeBase.slice(1), 'up', '-d'], { stdio: 'inherit', env })
+    execFileSync(composeBase[0], [...composeBase.slice(1), 'up', '-d'], {
+        stdio: 'inherit',
+        env,
+    })
 } else if (command === 'stop') {
     execFileSync(composeBase[0], [...composeBase.slice(1), 'down', '-v'], {
         stdio: 'inherit',
