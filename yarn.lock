@@ -593,9 +593,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
+  languageName: node
+  linkType: hard
+
 "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example%25252540workspace%2525253Atoken-standard-example%2525252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example%25252540workspace%2525253Atoken-standard-example%2525252Fui"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
   checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
@@ -611,9 +629,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Ftoken-standard-transfer-instruction%2540file%253Adaml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D3d7fdc%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Ftoken-standard-transfer-instruction%2540file%253Adaml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D3d7fdc%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
+  languageName: node
+  linkType: hard
+
 "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example%252540workspace%25253Atoken-standard-example%25252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example%252540workspace%25253Atoken-standard-example%25252Fui"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
   checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
@@ -629,9 +665,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
+  languageName: node
+  linkType: hard
+
 "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253D0f4170%252526locator%25253D%25252540daml.js%2525252Fexercise-app%25252540file%2525253Adaml-codegen%2525252Fexercise-app-0.1.0%25252523daml-codegen%2525252Fexercise-app-0.1.0%2525253A%2525253Ahash%2525253Daec13b%25252526locator%2525253Dtoken-standard-example%2525252540workspace%252525253Atoken-standard-example%252525252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253D0f4170%252526locator%25253D%25252540daml.js%2525252Fexercise-app%25252540file%2525253Adaml-codegen%2525252Fexercise-app-0.1.0%25252523daml-codegen%2525252Fexercise-app-0.1.0%2525253A%2525253Ahash%2525253Daec13b%25252526locator%2525253Dtoken-standard-example%2525252540workspace%252525253Atoken-standard-example%252525252Fui"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253D0f4170%252526locator%25253D%25252540daml.js%2525252Fexercise-app%25252540file%2525253Adaml-codegen%2525252Fexercise-app-0.1.0%25252523daml-codegen%2525252Fexercise-app-0.1.0%2525253A%2525253Ahash%2525253Daec13b%25252526locator%2525253Dtoken-standard-example-be%2525252540workspace%252525253Atoken-standard-example%252525252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253D0f4170%252526locator%25253D%25252540daml.js%2525252Fexercise-app%25252540file%2525253Adaml-codegen%2525252Fexercise-app-0.1.0%25252523daml-codegen%2525252Fexercise-app-0.1.0%2525253A%2525253Ahash%2525253Daec13b%25252526locator%2525253Dtoken-standard-example-be%2525252540workspace%252525253Atoken-standard-example%252525252Fbackend"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
   checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
@@ -647,9 +701,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Ftoken-standard-transfer-instruction%252540file%25253Adaml-codegen%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523daml-codegen%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253D3d7fdc%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Ftoken-standard-transfer-instruction%252540file%25253Adaml-codegen%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523daml-codegen%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253D3d7fdc%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
+  languageName: node
+  linkType: hard
+
 "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example%25252540workspace%2525253Atoken-standard-example%2525252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example%25252540workspace%2525253Atoken-standard-example%2525252Fui"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
   checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
@@ -665,9 +737,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Ftoken-standard-holding%2540file%253Adaml-codegen%252Fsplice-api-token-holding-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D844bfe%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Ftoken-standard-holding%2540file%253Adaml-codegen%252Fsplice-api-token-holding-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D844bfe%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
+  languageName: node
+  linkType: hard
+
 "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Ftoken-standard-transfer-instruction%2540file%253Adaml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D3d7fdc%2526locator%253Dtoken-standard-example%252540workspace%25253Atoken-standard-example%25252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Ftoken-standard-transfer-instruction%2540file%253Adaml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D3d7fdc%2526locator%253Dtoken-standard-example%252540workspace%25253Atoken-standard-example%25252Fui"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Ftoken-standard-transfer-instruction%2540file%253Adaml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D3d7fdc%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Ftoken-standard-transfer-instruction%2540file%253Adaml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D3d7fdc%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
   checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
@@ -683,9 +773,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Ftoken-standard-holding%40file%3Adaml-codegen%2Fsplice-api-token-holding-v1-1.0.0%23daml-codegen%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D844bfe%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Ftoken-standard-holding%40file%3Adaml-codegen%2Fsplice-api-token-holding-v1-1.0.0%23daml-codegen%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D844bfe%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
+  languageName: node
+  linkType: hard
+
 "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Ftoken-standard-metadata%40file%3Adaml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%23daml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dfbcf94%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Ftoken-standard-metadata%40file%3Adaml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%23daml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dfbcf94%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Ftoken-standard-metadata%40file%3Adaml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%23daml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dfbcf94%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=e3c00e&locator=%40daml.js%2Ftoken-standard-metadata%40file%3Adaml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%23daml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dfbcf94%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
   checksum: 10c0/de6f3c9c06eab8e7d213cd7b99b5f32b77e78488d7391bdf5d648d827c5fbf613ea5f91e9cb843a5e3308e760c7e635f566e1f8315d3213e5ed76f0fe219df13
@@ -731,9 +839,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/exercise-app@file:daml-codegen/exercise-app-0.1.0::locator=token-standard-example-be%40workspace%3Atoken-standard-example%2Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/exercise-app@file:daml-codegen/exercise-app-0.1.0#daml-codegen/exercise-app-0.1.0::hash=aec13b&locator=token-standard-example-be%40workspace%3Atoken-standard-example%2Fbackend"
+  dependencies:
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-holding-v1-1.0.0": "file:../splice-api-token-holding-v1-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@daml.js/splice-api-token-transfer-instruction-v1-1.0.0": "file:../splice-api-token-transfer-instruction-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/0d38e3e1f46a67c554b1d6bd9be34d963d25747e5b9229f622fbe7d4ebfd8639724ed1e6e9e990f7cbffa384ac91fd70fb11cb945a82bbf210d61ddab828e473
+  languageName: node
+  linkType: hard
+
 "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fexercise-app%40file%3Adaml-codegen%2Fexercise-app-0.1.0%23daml-codegen%2Fexercise-app-0.1.0%3A%3Ahash%3Daec13b%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fexercise-app%40file%3Adaml-codegen%2Fexercise-app-0.1.0%23daml-codegen%2Fexercise-app-0.1.0%3A%3Ahash%3Daec13b%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fexercise-app%40file%3Adaml-codegen%2Fexercise-app-0.1.0%23daml-codegen%2Fexercise-app-0.1.0%3A%3Ahash%3Daec13b%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fexercise-app%40file%3Adaml-codegen%2Fexercise-app-0.1.0%23daml-codegen%2Fexercise-app-0.1.0%3A%3Ahash%3Daec13b%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
   checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
@@ -749,9 +879,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
+  languageName: node
+  linkType: hard
+
 "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example%25252540workspace%2525253Atoken-standard-example%2525252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example%25252540workspace%2525253Atoken-standard-example%2525252Fui"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
   checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
@@ -767,9 +915,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Ftoken-standard-transfer-instruction%2540file%253Adaml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D3d7fdc%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Ftoken-standard-transfer-instruction%2540file%253Adaml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D3d7fdc%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
+  languageName: node
+  linkType: hard
+
 "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example%252540workspace%25253Atoken-standard-example%25252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example%252540workspace%25253Atoken-standard-example%25252Fui"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
   checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
@@ -785,9 +951,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
+  languageName: node
+  linkType: hard
+
 "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253D0f4170%252526locator%25253D%25252540daml.js%2525252Fexercise-app%25252540file%2525253Adaml-codegen%2525252Fexercise-app-0.1.0%25252523daml-codegen%2525252Fexercise-app-0.1.0%2525253A%2525253Ahash%2525253Daec13b%25252526locator%2525253Dtoken-standard-example%2525252540workspace%252525253Atoken-standard-example%252525252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253D0f4170%252526locator%25253D%25252540daml.js%2525252Fexercise-app%25252540file%2525253Adaml-codegen%2525252Fexercise-app-0.1.0%25252523daml-codegen%2525252Fexercise-app-0.1.0%2525253A%2525253Ahash%2525253Daec13b%25252526locator%2525253Dtoken-standard-example%2525252540workspace%252525253Atoken-standard-example%252525252Fui"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253D0f4170%252526locator%25253D%25252540daml.js%2525252Fexercise-app%25252540file%2525253Adaml-codegen%2525252Fexercise-app-0.1.0%25252523daml-codegen%2525252Fexercise-app-0.1.0%2525253A%2525253Ahash%2525253Daec13b%25252526locator%2525253Dtoken-standard-example-be%2525252540workspace%252525253Atoken-standard-example%252525252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253D0f4170%252526locator%25253D%25252540daml.js%2525252Fexercise-app%25252540file%2525253Adaml-codegen%2525252Fexercise-app-0.1.0%25252523daml-codegen%2525252Fexercise-app-0.1.0%2525253A%2525253Ahash%2525253Daec13b%25252526locator%2525253Dtoken-standard-example-be%2525252540workspace%252525253Atoken-standard-example%252525252Fbackend"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
   checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
@@ -803,9 +987,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Ftoken-standard-transfer-instruction%252540file%25253Adaml-codegen%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523daml-codegen%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253D3d7fdc%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D23611e%2526locator%253D%252540daml.js%25252Ftoken-standard-transfer-instruction%252540file%25253Adaml-codegen%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523daml-codegen%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253D3d7fdc%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
+  languageName: node
+  linkType: hard
+
 "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example%25252540workspace%2525253Atoken-standard-example%2525252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example%25252540workspace%2525253Atoken-standard-example%2525252Fui"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
   checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
@@ -821,9 +1023,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Ftoken-standard-holding%2540file%253Adaml-codegen%252Fsplice-api-token-holding-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D844bfe%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Ftoken-standard-holding%2540file%253Adaml-codegen%252Fsplice-api-token-holding-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D844bfe%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
+  languageName: node
+  linkType: hard
+
 "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Ftoken-standard-transfer-instruction%2540file%253Adaml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D3d7fdc%2526locator%253Dtoken-standard-example%252540workspace%25253Atoken-standard-example%25252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Ftoken-standard-transfer-instruction%2540file%253Adaml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D3d7fdc%2526locator%253Dtoken-standard-example%252540workspace%25253Atoken-standard-example%25252Fui"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Ftoken-standard-transfer-instruction%2540file%253Adaml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D3d7fdc%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dd7b91c%26locator%3D%2540daml.js%252Ftoken-standard-transfer-instruction%2540file%253Adaml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D3d7fdc%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
   checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
@@ -839,6 +1059,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D0f4170%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D0f4170%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
+  languageName: node
+  linkType: hard
+
 "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Ftoken-standard-holding%40file%3Adaml-codegen%2Fsplice-api-token-holding-v1-1.0.0%23daml-codegen%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D844bfe%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Ftoken-standard-holding%40file%3Adaml-codegen%2Fsplice-api-token-holding-v1-1.0.0%23daml-codegen%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D844bfe%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui"
@@ -848,9 +1077,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Ftoken-standard-holding%40file%3Adaml-codegen%2Fsplice-api-token-holding-v1-1.0.0%23daml-codegen%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D844bfe%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Ftoken-standard-holding%40file%3Adaml-codegen%2Fsplice-api-token-holding-v1-1.0.0%23daml-codegen%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D844bfe%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
+  languageName: node
+  linkType: hard
+
 "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Ftoken-standard-metadata%40file%3Adaml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%23daml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dfbcf94%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Ftoken-standard-metadata%40file%3Adaml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%23daml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dfbcf94%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Ftoken-standard-metadata%40file%3Adaml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%23daml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dfbcf94%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Ftoken-standard-metadata%40file%3Adaml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%23daml-codegen%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3Dfbcf94%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
   checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
@@ -869,6 +1116,15 @@ __metadata:
 "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Ftoken-standard-transfer-instruction%40file%3Adaml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23daml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D3d7fdc%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Ftoken-standard-transfer-instruction%40file%3Adaml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23daml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D3d7fdc%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Ftoken-standard-transfer-instruction%40file%3Adaml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23daml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D3d7fdc%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=2bb2bb&locator=%40daml.js%2Ftoken-standard-transfer-instruction%40file%3Adaml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23daml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D3d7fdc%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
   checksum: 10c0/bcb98eab142ec3cbe2a23f593a1964f1c8829109e49d027781a39d77d05bb41f8cde87b35bc86073ae57944d846699d8aee31c7029e325b64fe0307afb26eab0
@@ -895,9 +1151,33 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0::locator=%40daml.js%2Fexercise-app%40file%3Adaml-codegen%2Fexercise-app-0.1.0%23daml-codegen%2Fexercise-app-0.1.0%3A%3Ahash%3Daec13b%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0#../splice-api-token-holding-v1-1.0.0::hash=23611e&locator=%40daml.js%2Fexercise-app%40file%3Adaml-codegen%2Fexercise-app-0.1.0%23daml-codegen%2Fexercise-app-0.1.0%3A%3Ahash%3Daec13b%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/53043cd350fb73617a6923fcea93eb81b520c6d8e66791fc2f485c68be79363f4a7a8b8f60871855c7861c52d35f23842564723a7f7de9644e407aec24ca78dc
+  languageName: node
+  linkType: hard
+
 "@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D0f4170%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example%252540workspace%25253Atoken-standard-example%25252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0#../splice-api-token-holding-v1-1.0.0::hash=23611e&locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D0f4170%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example%252540workspace%25253Atoken-standard-example%25252Fui"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/53043cd350fb73617a6923fcea93eb81b520c6d8e66791fc2f485c68be79363f4a7a8b8f60871855c7861c52d35f23842564723a7f7de9644e407aec24ca78dc
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D0f4170%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0#../splice-api-token-holding-v1-1.0.0::hash=23611e&locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D0f4170%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend"
   dependencies:
     "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
     "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
@@ -919,9 +1199,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0::locator=%40daml.js%2Ftoken-standard-transfer-instruction%40file%3Adaml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23daml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D3d7fdc%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0#../splice-api-token-holding-v1-1.0.0::hash=23611e&locator=%40daml.js%2Ftoken-standard-transfer-instruction%40file%3Adaml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23daml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D3d7fdc%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/53043cd350fb73617a6923fcea93eb81b520c6d8e66791fc2f485c68be79363f4a7a8b8f60871855c7861c52d35f23842564723a7f7de9644e407aec24ca78dc
+  languageName: node
+  linkType: hard
+
 "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fexercise-app%40file%3Adaml-codegen%2Fexercise-app-0.1.0%23daml-codegen%2Fexercise-app-0.1.0%3A%3Ahash%3Daec13b%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=d7b91c&locator=%40daml.js%2Fexercise-app%40file%3Adaml-codegen%2Fexercise-app-0.1.0%23daml-codegen%2Fexercise-app-0.1.0%3A%3Ahash%3Daec13b%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/e1a2a464360337977983df06d9f06bc8bd5c61c8d5a98ae0f21d2cef07f8fe1c678f45f464ea415f411c104f825ad57686f29a7d7b7527eeddc0e341b7a6ade3
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fexercise-app%40file%3Adaml-codegen%2Fexercise-app-0.1.0%23daml-codegen%2Fexercise-app-0.1.0%3A%3Ahash%3Daec13b%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=d7b91c&locator=%40daml.js%2Fexercise-app%40file%3Adaml-codegen%2Fexercise-app-0.1.0%23daml-codegen%2Fexercise-app-0.1.0%3A%3Ahash%3Daec13b%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend"
   dependencies:
     "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
     "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
@@ -941,9 +1244,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=d7b91c&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/e1a2a464360337977983df06d9f06bc8bd5c61c8d5a98ae0f21d2cef07f8fe1c678f45f464ea415f411c104f825ad57686f29a7d7b7527eeddc0e341b7a6ade3
+  languageName: node
+  linkType: hard
+
 "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example%25252540workspace%2525253Atoken-standard-example%2525252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=d7b91c&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example%25252540workspace%2525253Atoken-standard-example%2525252Fui"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/e1a2a464360337977983df06d9f06bc8bd5c61c8d5a98ae0f21d2cef07f8fe1c678f45f464ea415f411c104f825ad57686f29a7d7b7527eeddc0e341b7a6ade3
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=d7b91c&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D0f4170%2526locator%253D%252540daml.js%25252Fexercise-app%252540file%25253Adaml-codegen%25252Fexercise-app-0.1.0%252523daml-codegen%25252Fexercise-app-0.1.0%25253A%25253Ahash%25253Daec13b%252526locator%25253Dtoken-standard-example-be%25252540workspace%2525253Atoken-standard-example%2525252Fbackend"
   dependencies:
     "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
     "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
@@ -963,9 +1288,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Ftoken-standard-transfer-instruction%2540file%253Adaml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D3d7fdc%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=d7b91c&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D23611e%26locator%3D%2540daml.js%252Ftoken-standard-transfer-instruction%2540file%253Adaml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523daml-codegen%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253D3d7fdc%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/e1a2a464360337977983df06d9f06bc8bd5c61c8d5a98ae0f21d2cef07f8fe1c678f45f464ea415f411c104f825ad57686f29a7d7b7527eeddc0e341b7a6ade3
+  languageName: node
+  linkType: hard
+
 "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D0f4170%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example%252540workspace%25253Atoken-standard-example%25252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=d7b91c&locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D0f4170%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example%252540workspace%25253Atoken-standard-example%25252Fui"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/e1a2a464360337977983df06d9f06bc8bd5c61c8d5a98ae0f21d2cef07f8fe1c678f45f464ea415f411c104f825ad57686f29a7d7b7527eeddc0e341b7a6ade3
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D0f4170%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=d7b91c&locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D0f4170%26locator%3D%2540daml.js%252Fexercise-app%2540file%253Adaml-codegen%252Fexercise-app-0.1.0%2523daml-codegen%252Fexercise-app-0.1.0%253A%253Ahash%253Daec13b%2526locator%253Dtoken-standard-example-be%252540workspace%25253Atoken-standard-example%25252Fbackend"
   dependencies:
     "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
     "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
@@ -985,6 +1332,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Ftoken-standard-holding%40file%3Adaml-codegen%2Fsplice-api-token-holding-v1-1.0.0%23daml-codegen%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D844bfe%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=d7b91c&locator=%40daml.js%2Ftoken-standard-holding%40file%3Adaml-codegen%2Fsplice-api-token-holding-v1-1.0.0%23daml-codegen%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D844bfe%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/e1a2a464360337977983df06d9f06bc8bd5c61c8d5a98ae0f21d2cef07f8fe1c678f45f464ea415f411c104f825ad57686f29a7d7b7527eeddc0e341b7a6ade3
+  languageName: node
+  linkType: hard
+
 "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Ftoken-standard-transfer-instruction%40file%3Adaml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23daml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D3d7fdc%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=d7b91c&locator=%40daml.js%2Ftoken-standard-transfer-instruction%40file%3Adaml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23daml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D3d7fdc%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui"
@@ -996,9 +1354,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Ftoken-standard-transfer-instruction%40file%3Adaml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23daml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D3d7fdc%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=d7b91c&locator=%40daml.js%2Ftoken-standard-transfer-instruction%40file%3Adaml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23daml-codegen%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3D3d7fdc%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/e1a2a464360337977983df06d9f06bc8bd5c61c8d5a98ae0f21d2cef07f8fe1c678f45f464ea415f411c104f825ad57686f29a7d7b7527eeddc0e341b7a6ade3
+  languageName: node
+  linkType: hard
+
 "@daml.js/splice-api-token-transfer-instruction-v1-1.0.0@file:../splice-api-token-transfer-instruction-v1-1.0.0::locator=%40daml.js%2Fexercise-app%40file%3Adaml-codegen%2Fexercise-app-0.1.0%23daml-codegen%2Fexercise-app-0.1.0%3A%3Ahash%3Daec13b%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/splice-api-token-transfer-instruction-v1-1.0.0@file:../splice-api-token-transfer-instruction-v1-1.0.0#../splice-api-token-transfer-instruction-v1-1.0.0::hash=0f4170&locator=%40daml.js%2Fexercise-app%40file%3Adaml-codegen%2Fexercise-app-0.1.0%23daml-codegen%2Fexercise-app-0.1.0%3A%3Ahash%3Daec13b%26locator%3Dtoken-standard-example%2540workspace%253Atoken-standard-example%252Fui"
+  dependencies:
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-holding-v1-1.0.0": "file:../splice-api-token-holding-v1-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/c681f72dc69b321945b0f1bb946a2740eab2f3e76c73a6de30697f8bf41cf6fc7cf58f21b59212dd33ac2bd655b8ec80b21b1e48652758c8355e54a3890b54f6
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-transfer-instruction-v1-1.0.0@file:../splice-api-token-transfer-instruction-v1-1.0.0::locator=%40daml.js%2Fexercise-app%40file%3Adaml-codegen%2Fexercise-app-0.1.0%23daml-codegen%2Fexercise-app-0.1.0%3A%3Ahash%3Daec13b%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/splice-api-token-transfer-instruction-v1-1.0.0@file:../splice-api-token-transfer-instruction-v1-1.0.0#../splice-api-token-transfer-instruction-v1-1.0.0::hash=0f4170&locator=%40daml.js%2Fexercise-app%40file%3Adaml-codegen%2Fexercise-app-0.1.0%23daml-codegen%2Fexercise-app-0.1.0%3A%3Ahash%3Daec13b%26locator%3Dtoken-standard-example-be%2540workspace%253Atoken-standard-example%252Fbackend"
   dependencies:
     "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
     "@daml.js/splice-api-token-holding-v1-1.0.0": "file:../splice-api-token-holding-v1-1.0.0"
@@ -1020,9 +1401,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@daml.js/token-standard-holding@file:daml-codegen/splice-api-token-holding-v1-1.0.0::locator=token-standard-example-be%40workspace%3Atoken-standard-example%2Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/token-standard-holding@file:daml-codegen/splice-api-token-holding-v1-1.0.0#daml-codegen/splice-api-token-holding-v1-1.0.0::hash=844bfe&locator=token-standard-example-be%40workspace%3Atoken-standard-example%2Fbackend"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/d28891bf6478934d887eb588ec867d20a6270ab71abdeec2c2ed93196a6f4b0044c63b0e760d750fe498fabc03c3d3c3d70217e9edf645264bd3f2fcac0d8eb1
+  languageName: node
+  linkType: hard
+
 "@daml.js/token-standard-metadata@file:daml-codegen/splice-api-token-metadata-v1-1.0.0::locator=token-standard-example%40workspace%3Atoken-standard-example%2Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/token-standard-metadata@file:daml-codegen/splice-api-token-metadata-v1-1.0.0#daml-codegen/splice-api-token-metadata-v1-1.0.0::hash=fbcf94&locator=token-standard-example%40workspace%3Atoken-standard-example%2Fui"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/403fd44179e82667f6006cd3212ed71d6abd8de4d636e6f15d3b9748633a0ef08382f1ee2d403144b921d5eeb1d1d8fd8254fe1a87a02414aeb305e1c65670c8
+  languageName: node
+  linkType: hard
+
+"@daml.js/token-standard-metadata@file:daml-codegen/splice-api-token-metadata-v1-1.0.0::locator=token-standard-example-be%40workspace%3Atoken-standard-example%2Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/token-standard-metadata@file:daml-codegen/splice-api-token-metadata-v1-1.0.0#daml-codegen/splice-api-token-metadata-v1-1.0.0::hash=fbcf94&locator=token-standard-example-be%40workspace%3Atoken-standard-example%2Fbackend"
   dependencies:
     "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
     "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
@@ -1044,6 +1448,18 @@ __metadata:
 "@daml.js/token-standard-transfer-instruction@file:daml-codegen/splice-api-token-transfer-instruction-v1-1.0.0::locator=token-standard-example%40workspace%3Atoken-standard-example%2Fui":
   version: 3.3.0-snapshot.20250507.0
   resolution: "@daml.js/token-standard-transfer-instruction@file:daml-codegen/splice-api-token-transfer-instruction-v1-1.0.0#daml-codegen/splice-api-token-transfer-instruction-v1-1.0.0::hash=3d7fdc&locator=token-standard-example%40workspace%3Atoken-standard-example%2Fui"
+  dependencies:
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-holding-v1-1.0.0": "file:../splice-api-token-holding-v1-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1b84344fa579b31772a9f61b2abd2b301059e4db459b2be819d07b9e5c3711bdf24cb5abf087f46dd80f16dcc82caa854cbc34363a3cc56f8ef0808d8cdc58cc
+  languageName: node
+  linkType: hard
+
+"@daml.js/token-standard-transfer-instruction@file:daml-codegen/splice-api-token-transfer-instruction-v1-1.0.0::locator=token-standard-example-be%40workspace%3Atoken-standard-example%2Fbackend":
+  version: 3.3.0-snapshot.20250507.0
+  resolution: "@daml.js/token-standard-transfer-instruction@file:daml-codegen/splice-api-token-transfer-instruction-v1-1.0.0#daml-codegen/splice-api-token-transfer-instruction-v1-1.0.0::hash=3d7fdc&locator=token-standard-example-be%40workspace%3Atoken-standard-example%2Fbackend"
   dependencies:
     "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
     "@daml.js/splice-api-token-holding-v1-1.0.0": "file:../splice-api-token-holding-v1-1.0.0"
@@ -4332,6 +4748,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/express-session@npm:^1.18.2":
+  version: 1.18.2
+  resolution: "@types/express-session@npm:1.18.2"
+  dependencies:
+    "@types/express": "npm:*"
+  checksum: 10c0/5d5aa134ce8990920b35f2dd0aa55168af44faaf14789b6921d361ce016c43bdc66feba287753981a2fee33fd95b8a829c4418c3ca480b03961724b8bc13e453
+  languageName: node
+  linkType: hard
+
+"@types/express@npm:*, @types/express@npm:^5.0.2, @types/express@npm:^5.0.3":
+  version: 5.0.3
+  resolution: "@types/express@npm:5.0.3"
+  dependencies:
+    "@types/body-parser": "npm:*"
+    "@types/express-serve-static-core": "npm:^5.0.0"
+    "@types/serve-static": "npm:*"
+  checksum: 10c0/f0fbc8daa7f40070b103cf4d020ff1dd08503477d866d1134b87c0390bba71d5d7949cb8b4e719a81ccba89294d8e1573414e6dcbb5bb1d097a7b820928ebdef
+  languageName: node
+  linkType: hard
+
 "@types/express@npm:^4.17.21":
   version: 4.17.23
   resolution: "@types/express@npm:4.17.23"
@@ -4341,17 +4777,6 @@ __metadata:
     "@types/qs": "npm:*"
     "@types/serve-static": "npm:*"
   checksum: 10c0/60490cd4f73085007247e7d4fafad0a7abdafa34fa3caba2757512564ca5e094ece7459f0f324030a63d513f967bb86579a8682af76ae2fd718e889b0a2a4fe8
-  languageName: node
-  linkType: hard
-
-"@types/express@npm:^5.0.2":
-  version: 5.0.3
-  resolution: "@types/express@npm:5.0.3"
-  dependencies:
-    "@types/body-parser": "npm:*"
-    "@types/express-serve-static-core": "npm:^5.0.0"
-    "@types/serve-static": "npm:*"
-  checksum: 10c0/f0fbc8daa7f40070b103cf4d020ff1dd08503477d866d1134b87c0390bba71d5d7949cb8b4e719a81ccba89294d8e1573414e6dcbb5bb1d097a7b820928ebdef
   languageName: node
   linkType: hard
 
@@ -4506,15 +4931,6 @@ __metadata:
   version: 3.0.5
   resolution: "@types/minimatch@npm:3.0.5"
   checksum: 10c0/a1a19ba342d6f39b569510f621ae4bbe972dc9378d15e9a5e47904c440ee60744f5b09225bc73be1c6490e3a9c938eee69eb53debf55ce1f15761201aa965f97
-  languageName: node
-  linkType: hard
-
-"@types/morgan@npm:^1.9.9":
-  version: 1.9.10
-  resolution: "@types/morgan@npm:1.9.10"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10c0/419f3fdefd89771f4935b690d7e49954ef8e1e3dd4a050a4b53daa363911df987c14e6d5f4fcba07a931a32c5a6ef1b318b6927c1b390cfb8ec900e84a230c02
   languageName: node
   linkType: hard
 
@@ -6447,6 +6863,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cookie-signature@npm:1.0.7":
+  version: 1.0.7
+  resolution: "cookie-signature@npm:1.0.7"
+  checksum: 10c0/e7731ad2995ae2efeed6435ec1e22cdd21afef29d300c27281438b1eab2bae04ef0d1a203928c0afec2cee72aa36540b8747406ebe308ad23c8e8cc3c26c9c51
+  languageName: node
+  linkType: hard
+
 "cookie-signature@npm:^1.2.1":
   version: 1.2.2
   resolution: "cookie-signature@npm:1.2.2"
@@ -6461,7 +6884,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cookie@npm:^0.7.1, cookie@npm:~0.7.2":
+"cookie@npm:0.7.2, cookie@npm:^0.7.1, cookie@npm:~0.7.2":
   version: 0.7.2
   resolution: "cookie@npm:0.7.2"
   checksum: 10c0/9596e8ccdbf1a3a88ae02cf5ee80c1c50959423e1022e4e60b91dd87c622af1da309253d8abdb258fb5e3eacb4f08e579dc58b4897b8087574eee0fd35dfa5d2
@@ -6761,7 +7184,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"depd@npm:2.0.0, depd@npm:^2.0.0":
+"depd@npm:2.0.0, depd@npm:^2.0.0, depd@npm:~2.0.0":
   version: 2.0.0
   resolution: "depd@npm:2.0.0"
   checksum: 10c0/58bd06ec20e19529b06f7ad07ddab60e504d9e0faca4bd23079fac2d279c3594334d736508dc350e06e510aba5e22e4594483b3a6562ce7c17dd797f4cc4ad2c
@@ -7688,6 +8111,22 @@ __metadata:
   peerDependencies:
     express: ">= 4.11"
   checksum: 10c0/b07de84d700a2c07c4bf2f040e7558ed5a1f660f03ed5f30bf8ff7b51e98ba7a85215640e70fc48cbbb9151066ea51239d9a1b41febc9b84d98c7915b0186161
+  languageName: node
+  linkType: hard
+
+"express-session@npm:^1.18.2":
+  version: 1.18.2
+  resolution: "express-session@npm:1.18.2"
+  dependencies:
+    cookie: "npm:0.7.2"
+    cookie-signature: "npm:1.0.7"
+    debug: "npm:2.6.9"
+    depd: "npm:~2.0.0"
+    on-headers: "npm:~1.1.0"
+    parseurl: "npm:~1.3.3"
+    safe-buffer: "npm:5.2.1"
+    uid-safe: "npm:~2.1.5"
+  checksum: 10c0/27e17c3d365e3543ba7c1315ff14916b8347a2fd28f94817c6d2e2425923e61fa97fc23e0933015981c3358ba6f11964666249f046c4f93d22015fe2a95140ac
   languageName: node
   linkType: hard
 
@@ -11398,6 +11837,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"on-headers@npm:~1.1.0":
+  version: 1.1.0
+  resolution: "on-headers@npm:1.1.0"
+  checksum: 10c0/2c3b6b0d68ec9adbd561dc2d61c9b14da8ac03d8a2f0fd9e97bdf0600c887d5d97f664ff3be6876cf40cda6e3c587d73a4745e10b426ac50c7664fc5a0dfc0a1
+  languageName: node
+  linkType: hard
+
 "once@npm:^1.3.0, once@npm:^1.3.1, once@npm:^1.4.0":
   version: 1.4.0
   resolution: "once@npm:1.4.0"
@@ -12321,6 +12767,13 @@ __metadata:
   version: 6.1.2
   resolution: "quick-lru@npm:6.1.2"
   checksum: 10c0/f499f07bd276eec460c4d7d2ee286c519f3bd189cbbb5ddf3eb929e2182e4997f66b951ea8d24b3f3cee8ed5ac9f0006bf40636f082acd1b38c050a4cbf07ed3
+  languageName: node
+  linkType: hard
+
+"random-bytes@npm:~1.0.0":
+  version: 1.0.0
+  resolution: "random-bytes@npm:1.0.0"
+  checksum: 10c0/71e7a600e0976e9ebc269793a0577d47b965fa678fcc9e9623e427f909d1b3669db5b3a178dbf61229f0724ea23dba64db389f0be0ba675c6a6b837c02f29b8f
   languageName: node
   linkType: hard
 
@@ -13688,11 +14141,36 @@ __metadata:
   dependencies:
     "@types/cors": "npm:^2.8.17"
     "@types/express": "npm:^4.17.21"
-    "@types/morgan": "npm:^1.9.9"
     "@types/node": "npm:^20.12.7"
     cors: "npm:^2.8.5"
     eslint: "npm:^8.57.0"
     express: "npm:^4.19.2"
+    ts-node-dev: "npm:^2.0.0"
+    typescript: "npm:^5.4.5"
+    zod: "npm:^3.23.8"
+  languageName: unknown
+  linkType: soft
+
+"token-standard-example-be@workspace:token-standard-example/backend":
+  version: 0.0.0-use.local
+  resolution: "token-standard-example-be@workspace:token-standard-example/backend"
+  dependencies:
+    "@daml.js/exercise-app": "file:daml-codegen/exercise-app-0.1.0"
+    "@daml.js/token-standard-holding": "file:daml-codegen/splice-api-token-holding-v1-1.0.0"
+    "@daml.js/token-standard-metadata": "file:daml-codegen/splice-api-token-metadata-v1-1.0.0"
+    "@daml.js/token-standard-transfer-instruction": "file:daml-codegen/splice-api-token-transfer-instruction-v1-1.0.0"
+    "@daml/ledger": "npm:3.3.0-snapshot.20250502.13767.0.v2fc6c7e2"
+    "@daml/types": "npm:3.3.0-snapshot.20250502.13767.0.v2fc6c7e2"
+    "@splice/core-ledger-client": "workspace:^"
+    "@types/cors": "npm:^2.8.17"
+    "@types/express": "npm:^5.0.3"
+    "@types/express-session": "npm:^1.18.2"
+    "@types/node": "npm:^20.12.7"
+    cors: "npm:^2.8.5"
+    eslint: "npm:^8.57.0"
+    express: "npm:^4.19.2"
+    express-session: "npm:^1.18.2"
+    pino: "npm:^9.7.0"
     ts-node-dev: "npm:^2.0.0"
     typescript: "npm:^5.4.5"
     zod: "npm:^3.23.8"
@@ -13710,7 +14188,6 @@ __metadata:
     "@daml/ledger": "npm:3.3.0-snapshot.20250502.13767.0.v2fc6c7e2"
     "@daml/types": "npm:3.3.0-snapshot.20250502.13767.0.v2fc6c7e2"
     "@eslint/js": "npm:^9.25.0"
-    "@splice/core-ledger-client": "workspace:^"
     "@splice/sdk-dapp": "workspace:^"
     "@types/react": "npm:^19.1.2"
     "@types/react-dom": "npm:^19.1.2"
@@ -14172,6 +14649,15 @@ __metadata:
   bin:
     uglifyjs: bin/uglifyjs
   checksum: 10c0/83b0a90eca35f778e07cad9622b80c448b6aad457c9ff8e568afed978212b42930a95f9e1be943a1ffa4258a3340fbb899f41461131c05bb1d0a9c303aed8479
+  languageName: node
+  linkType: hard
+
+"uid-safe@npm:~2.1.5":
+  version: 2.1.5
+  resolution: "uid-safe@npm:2.1.5"
+  dependencies:
+    random-bytes: "npm:~1.0.0"
+  checksum: 10c0/ec96862e859fd12175f3da7fda9d1359a2cf412fd521e10837cbdc6d554774079ce252f366981df9401283841c8924782f6dbee8f82a3a81f805ed8a8584595d
   languageName: node
   linkType: hard
 

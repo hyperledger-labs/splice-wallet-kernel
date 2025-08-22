@@ -9,7 +9,7 @@ export class WalletKernelConnector extends LitElement {
     @state() accessor error = ''
     @state() accessor messages: string[] = []
     @state() accessor primaryParty: string | undefined = undefined
-    @state() accessor accounts: sdk.dappAPI.RequestAccountsResult[] = []
+    @state() accessor accounts: sdk.dappAPI.RequestAccountsResult = []
     @state() accessor isConnected: boolean = false
     @state() accessor sessionToken: string | undefined = undefined
 
@@ -32,16 +32,21 @@ export class WalletKernelConnector extends LitElement {
             `chain: ${result.chainId}`
     }
 
-    private onAccountsChanged = (
-        wallets: sdk.dappAPI.AccountsChangedEvent[]
-    ) => {
+    private emitAccounts() {
+        this.dispatchEvent(
+            new CustomEvent('accountsChanged', {
+                detail: { accounts: this.accounts },
+            })
+        )
+    }
+
+    private onAccountsChanged = (wallets: sdk.dappAPI.AccountsChangedEvent) => {
         console.log('onAccountsChanged', wallets)
         this.accounts = wallets
         this.messageListener(wallets)
+        this.emitAccounts()
         if (wallets.length > 0) {
-            // @ts-expect-error reason TBS
             const primaryWallet = wallets.find((w) => w.primary)
-            // @ts-expect-error reason TBS
             this.primaryParty = primaryWallet?.partyId
         } else {
             this.primaryParty = undefined
@@ -72,14 +77,13 @@ export class WalletKernelConnector extends LitElement {
                 method: 'requestAccounts',
             })
             const requestedAccounts =
-                wallets as sdk.dappAPI.RequestAccountsResult[]
-            console.log('initial set accounts', requestedAccounts)
+                wallets as sdk.dappAPI.RequestAccountsResult
+
             this.accounts = requestedAccounts
+            this.emitAccounts()
 
             if (requestedAccounts?.length > 0) {
-                // @ts-expect-error reason TBS
                 const primaryWallet = requestedAccounts.find((w) => w.primary)
-                // @ts-expect-error reason TBS
                 this.primaryParty = primaryWallet?.partyId
             } else {
                 this.primaryParty = undefined

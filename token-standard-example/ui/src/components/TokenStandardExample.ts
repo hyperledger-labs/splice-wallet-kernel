@@ -3,12 +3,13 @@ import { customElement, property, state } from 'lit/decorators.js'
 import './LoginForm'
 import './LoggedInView'
 import { LedgerService } from '../ledger.service'
+import * as sdk from '@splice/sdk-dapp'
 
 @customElement('token-standard-example')
 export class TokenStandardExample extends LitElement {
-    // TODO create an interface for it and use for props
     @state() ledgerService: LedgerService | null = null
     @property() sessionToken: string | undefined = undefined
+    @property() accounts: sdk.dappAPI.RequestAccountsResult = []
 
     get isLoggedIn(): boolean {
         return !!this.ledgerService
@@ -39,6 +40,7 @@ export class TokenStandardExample extends LitElement {
                       .ledgerService=${this.ledgerService}
                   ></logged-in-view>`
                 : html` <login-form
+                      .accounts=${this.accounts}
                       @login-submit=${this.handleLoginSubmit}
                   ></login-form>`}
         `

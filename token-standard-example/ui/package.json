@@ -17,7 +17,6 @@
         "@daml.js/token-standard-transfer-instruction": "file:daml-codegen/splice-api-token-transfer-instruction-v1-1.0.0",
         "@daml/ledger": "3.3.0-snapshot.20250502.13767.0.v2fc6c7e2",
         "@daml/types": "3.3.0-snapshot.20250502.13767.0.v2fc6c7e2",
-        "@splice/core-ledger-client": "workspace:^",
         "@splice/sdk-dapp": "workspace:^",
         "jose": "^6.0.12",
         "jwt-simple": "^0.5.6",
