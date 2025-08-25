@@ -153,23 +153,6 @@ export interface AllocatePartyRequest {
      * @generated from protobuf field: string identity_provider_id = 4
      */
     identityProviderId: string
-    /**
-     * The synchronizer, on which the party should be allocated.
-     * For backwards compatibility, this field may be omitted, if the participant is connected to only one synchronizer.
-     * Otherwise a synchronizer must be specified.
-     * Optional
-     *
-     * @generated from protobuf field: string synchronizer_id = 5
-     */
-    synchronizerId: string
-    /**
-     * The user who will get the act_as rights to the newly allocated party.
-     * If set to an empty string (the default), no user will get rights to the party.
-     * Optional
-     *
-     * @generated from protobuf field: string user_id = 6
-     */
-    userId: string
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.admin.AllocatePartyResponse
@@ -859,26 +842,12 @@ class AllocatePartyRequest$Type extends MessageType<AllocatePartyRequest> {
                 kind: 'scalar',
                 T: 9 /*ScalarType.STRING*/,
             },
-            {
-                no: 5,
-                name: 'synchronizer_id',
-                kind: 'scalar',
-                T: 9 /*ScalarType.STRING*/,
-            },
-            {
-                no: 6,
-                name: 'user_id',
-                kind: 'scalar',
-                T: 9 /*ScalarType.STRING*/,
-            },
         ])
     }
     create(value?: PartialMessage<AllocatePartyRequest>): AllocatePartyRequest {
         const message = globalThis.Object.create(this.messagePrototype!)
         message.partyIdHint = ''
         message.identityProviderId = ''
-        message.synchronizerId = ''
-        message.userId = ''
         if (value !== undefined)
             reflectionMergePartial<AllocatePartyRequest>(this, message, value)
         return message
@@ -907,12 +876,6 @@ class AllocatePartyRequest$Type extends MessageType<AllocatePartyRequest> {
                     break
                 case /* string identity_provider_id */ 4:
                     message.identityProviderId = reader.string()
-                    break
-                case /* string synchronizer_id */ 5:
-                    message.synchronizerId = reader.string()
-                    break
-                case /* string user_id */ 6:
-                    message.userId = reader.string()
                     break
                 default:
                     let u = options.readUnknownField
@@ -953,14 +916,6 @@ class AllocatePartyRequest$Type extends MessageType<AllocatePartyRequest> {
             writer
                 .tag(4, WireType.LengthDelimited)
                 .string(message.identityProviderId)
-        /* string synchronizer_id = 5; */
-        if (message.synchronizerId !== '')
-            writer
-                .tag(5, WireType.LengthDelimited)
-                .string(message.synchronizerId)
-        /* string user_id = 6; */
-        if (message.userId !== '')
-            writer.tag(6, WireType.LengthDelimited).string(message.userId)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(

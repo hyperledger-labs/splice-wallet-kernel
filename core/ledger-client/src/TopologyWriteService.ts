@@ -98,7 +98,7 @@ export class TopologyWriteService {
             store: {
                 oneofKind: 'synchronizer',
                 synchronizer: StoreId_Synchronizer.create({
-                    kind: { oneofKind: 'id', id: synchronizerId },
+                    id: synchronizerId,
                 }),
             },
         })
@@ -240,6 +240,14 @@ export class TopologyWriteService {
         })
     }
 
+    async submitExternalPartyTopology(
+        signedTopologyTxs: SignedTopologyTransaction[],
+        partyId: string
+    ) {
+        await this.addTransactions(signedTopologyTxs)
+        await this.authorizePartyToParticipant(partyId)
+    }
+
     async generateTransactions(
         publicKey: string,
         partyId: string
@@ -266,7 +274,7 @@ export class TopologyWriteService {
         }).response
     }
 
-    async addTransactions(
+    private async addTransactions(
         signedTopologyTxs: SignedTopologyTransaction[]
     ): Promise<AddTransactionsResponse> {
         const request = AddTransactionsRequest.create({
@@ -318,7 +326,7 @@ export class TopologyWriteService {
         })
     }
 
-    async authorizePartyToParticipant(
+    private async authorizePartyToParticipant(
         partyId: string
     ): Promise<AuthorizeResponse> {
         const hash = await this.waitForPartyToParticipantProposal(partyId)

@@ -5,6 +5,7 @@ import {
 } from '@splice/core-ledger-client'
 import { signTransactionHash } from '@splice/core-signing-lib'
 import { pino } from 'pino'
+import { v4 } from 'uuid'
 
 export type PreparedParty = {
     partyTransactions: Uint8Array<ArrayBufferLike>[]
@@ -58,7 +59,7 @@ export class TopologyController {
 
         const partyId = partyHint
             ? `${partyHint}::${namespace}`
-            : `${publicKey}::${namespace}`
+            : `${namespace.slice(0, 5)}::${namespace}`
 
         const transactions = await this.topologyClient
             .generateTransactions(publicKey, partyId)
@@ -85,6 +86,21 @@ export class TopologyController {
         return Promise.resolve(result)
     }
 
+    createPingCommand(partyId: string) {
+        return [
+            {
+                CreateCommand: {
+                    templateId: '#AdminWorkflows:Canton.Internal.Ping:Ping',
+                    createArguments: {
+                        id: v4(),
+                        initiator: partyId,
+                        responder: partyId,
+                    },
+                },
+            },
+        ]
+    }
+
     async submitExternalPartyTopology(
         signedHash: string,
         preparedParty: PreparedParty
@@ -99,9 +115,9 @@ export class TopologyController {
                 )
         )
 
-        await this.topologyClient.addTransactions(signedTopologyTxs)
-        await this.topologyClient.authorizePartyToParticipant(
-            preparedParty.namespace
+        await this.topologyClient.submitExternalPartyTopology(
+            signedTopologyTxs,
+            preparedParty.partyId
         )
         await this.client.grantUserRights(this.userId, preparedParty.partyId)
 
@@ -123,8 +139,8 @@ export class TopologyController {
         privateKey: string
     ): Promise<AllocatedParty> {
         const preparedParty = await this.prepareExternalPartyTopology(
-            partyHint,
-            publicKey
+            publicKey,
+            partyHint
         )
         const signedHash = signTransactionHash(
             preparedParty.combinedHash,
@@ -134,12 +150,25 @@ export class TopologyController {
     }
 }
 
+export const localNetTopologyDefault = (
+    userId: string,
+    userAdminToken: string
+): TopologyController => {
+    return new TopologyController(
+        '127.0.0.1:2902',
+        'http://127.0.0.1:2975',
+        userId,
+        userAdminToken,
+        'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd'
+    )
+}
+
 export const localTopologyDefault = (
     userId: string,
     userAdminToken: string
 ): TopologyController => {
     return new TopologyController(
-        'http://127.0.0.1:5012',
+        '127.0.0.1:5012',
         'http://127.0.0.1:5003',
         userId,
         userAdminToken,

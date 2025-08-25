@@ -220,9 +220,9 @@ export interface SetTrafficPurchasedMessage {
      */
     totalTrafficPurchased: bigint
     /**
-     * @generated from protobuf field: string physical_synchronizer_id = 5
+     * @generated from protobuf field: string synchronizer_id = 5
      */
-    physicalSynchronizerId: string
+    synchronizerId: string
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class TrafficControlParameters$Type extends MessageType<TrafficControlParameters> {
@@ -273,7 +273,7 @@ class TrafficControlParameters$Type extends MessageType<TrafficControlParameters
             {
                 'scalapb.message': {
                     companionExtends: [
-                        'com.digitalasset.canton.version.AlphaProtoVersion',
+                        'com.digitalasset.canton.version.StableProtoVersion',
                     ],
                 },
             }
@@ -432,7 +432,7 @@ class TrafficReceipt$Type extends MessageType<TrafficReceipt> {
             {
                 'scalapb.message': {
                     companionExtends: [
-                        'com.digitalasset.canton.version.AlphaProtoVersion',
+                        'com.digitalasset.canton.version.StableProtoVersion',
                     ],
                 },
             }
@@ -558,7 +558,7 @@ class TrafficConsumed$Type extends MessageType<TrafficConsumed> {
             {
                 'scalapb.message': {
                     companionExtends: [
-                        'com.digitalasset.canton.version.AlphaProtoVersion',
+                        'com.digitalasset.canton.version.StableProtoVersion',
                     ],
                 },
             }
@@ -690,7 +690,7 @@ class TrafficPurchased$Type extends MessageType<TrafficPurchased> {
             {
                 'scalapb.message': {
                     companionExtends: [
-                        'com.digitalasset.canton.version.AlphaProtoVersion',
+                        'com.digitalasset.canton.version.StableProtoVersion',
                     ],
                 },
             }
@@ -950,7 +950,7 @@ class SetTrafficPurchasedMessage$Type extends MessageType<SetTrafficPurchasedMes
                 },
                 {
                     no: 5,
-                    name: 'physical_synchronizer_id',
+                    name: 'synchronizer_id',
                     kind: 'scalar',
                     T: 9 /*ScalarType.STRING*/,
                 },
@@ -958,7 +958,7 @@ class SetTrafficPurchasedMessage$Type extends MessageType<SetTrafficPurchasedMes
             {
                 'scalapb.message': {
                     companionExtends: [
-                        'com.digitalasset.canton.version.AlphaProtoVersion',
+                        'com.digitalasset.canton.version.StableProtoVersion',
                     ],
                 },
             }
@@ -971,7 +971,7 @@ class SetTrafficPurchasedMessage$Type extends MessageType<SetTrafficPurchasedMes
         message.member = ''
         message.serial = 0
         message.totalTrafficPurchased = 0n
-        message.physicalSynchronizerId = ''
+        message.synchronizerId = ''
         if (value !== undefined)
             reflectionMergePartial<SetTrafficPurchasedMessage>(
                 this,
@@ -1000,8 +1000,8 @@ class SetTrafficPurchasedMessage$Type extends MessageType<SetTrafficPurchasedMes
                 case /* uint64 total_traffic_purchased */ 4:
                     message.totalTrafficPurchased = reader.uint64().toBigInt()
                     break
-                case /* string physical_synchronizer_id */ 5:
-                    message.physicalSynchronizerId = reader.string()
+                case /* string synchronizer_id */ 5:
+                    message.synchronizerId = reader.string()
                     break
                 default:
                     let u = options.readUnknownField
@@ -1036,11 +1036,11 @@ class SetTrafficPurchasedMessage$Type extends MessageType<SetTrafficPurchasedMes
         /* uint64 total_traffic_purchased = 4; */
         if (message.totalTrafficPurchased !== 0n)
             writer.tag(4, WireType.Varint).uint64(message.totalTrafficPurchased)
-        /* string physical_synchronizer_id = 5; */
-        if (message.physicalSynchronizerId !== '')
+        /* string synchronizer_id = 5; */
+        if (message.synchronizerId !== '')
             writer
                 .tag(5, WireType.LengthDelimited)
-                .string(message.physicalSynchronizerId)
+                .string(message.synchronizerId)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
