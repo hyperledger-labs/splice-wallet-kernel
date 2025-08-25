@@ -427,7 +427,7 @@ class DynamicSynchronizerParameters$Type extends MessageType<DynamicSynchronizer
             {
                 'scalapb.message': {
                     companionExtends: [
-                        'com.digitalasset.canton.version.AlphaProtoVersion',
+                        'com.digitalasset.canton.version.StableProtoVersion',
                     ],
                 },
             }

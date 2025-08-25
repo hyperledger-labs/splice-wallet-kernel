@@ -169,3 +169,10 @@ export const localLedgerDefault = (
 ): LedgerController => {
     return new LedgerController(userId, 'http://127.0.0.1:5003', token)
 }
+
+export const localNetLedgerDefault = (
+    userId: string,
+    token: string
+): LedgerController => {
+    return new LedgerController(userId, 'http://127.0.0.1:2975', token)
+}

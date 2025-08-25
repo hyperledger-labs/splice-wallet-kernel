@@ -1,3 +1,4 @@
+import { SignJWT } from 'jose'
 import { Logger } from '@splice/core-types'
 import { AuthContext, ClientCredentialsService } from '@splice/core-wallet-auth'
 
@@ -112,6 +113,53 @@ export class ClientCredentialOAuthController implements AuthController {
             accessToken,
         }
     }
+}
+
+export class UnsafeAuthController implements AuthController {
+    userId: string | undefined
+    adminId: string | undefined
+    audience: string | undefined
+    unsafeSecret: string | undefined
+
+    private _logger: Logger | undefined
+
+    constructor(logger?: Logger) {
+        this._logger = logger
+    }
+    async getAdminToken(): Promise<AuthContext> {
+        return this._createJwtToken(this.adminId || 'admin')
+    }
+
+    async getUserToken(): Promise<AuthContext> {
+        return this._createJwtToken(this.userId || 'user')
+    }
+
+    private async _createJwtToken(sub: string): Promise<AuthContext> {
+        if (!this.unsafeSecret) throw new Error('unsafeSecret is not set')
+        const secret = new TextEncoder().encode(this.unsafeSecret)
+        const now = Math.floor(Date.now() / 1000)
+        const jwt = await new SignJWT({
+            sub,
+            aud: this.audience || '',
+            iat: now,
+            exp: now + 60 * 60, // 1 hour expiry
+            iss: 'unsafe-auth',
+        })
+            .setProtectedHeader({ alg: 'HS256' })
+            .sign(secret)
+        return { userId: sub, accessToken: jwt }
+    }
+}
+
+export const localNetAuthDefault = (logger?: Logger): AuthController => {
+    const controller = new UnsafeAuthController(logger)
+
+    controller.userId = 'ledger-api-user'
+    controller.adminId = 'ledger-api-user'
+    controller.audience = 'https://canton.network.global'
+    controller.unsafeSecret = 'unsafe'
+
+    return controller
 }
 
 export const localAuthDefault = (logger?: Logger): AuthController => {

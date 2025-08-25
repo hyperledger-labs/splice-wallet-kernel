@@ -18,6 +18,7 @@
         "@splice/core-signing-lib": "workspace:^",
         "@splice/core-types": "workspace:^",
         "@splice/core-wallet-auth": "workspace:^",
+        "jose": "^5.2.4",
         "pino": "^9.7.0",
         "uuid": "^11.1.0"
     },

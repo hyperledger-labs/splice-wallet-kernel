@@ -134,6 +134,19 @@ export class TopologyController {
     }
 }
 
+export const localNetTopologyDefault = (
+    userId: string,
+    userAdminToken: string
+): TopologyController => {
+    return new TopologyController(
+        '127.0.0.1:2902',
+        'http://127.0.0.1:2975',
+        userId,
+        userAdminToken,
+        'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd'
+    )
+}
+
 export const localTopologyDefault = (
     userId: string,
     userAdminToken: string

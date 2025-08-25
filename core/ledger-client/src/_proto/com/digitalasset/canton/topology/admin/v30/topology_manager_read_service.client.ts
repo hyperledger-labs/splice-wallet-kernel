@@ -17,10 +17,6 @@ import type { ListAllResponse } from './topology_manager_read_service.js'
 import type { ListAllRequest } from './topology_manager_read_service.js'
 import type { ListAvailableStoresResponse } from './topology_manager_read_service.js'
 import type { ListAvailableStoresRequest } from './topology_manager_read_service.js'
-import type { ListSequencerConnectionSuccessorResponse } from './topology_manager_read_service.js'
-import type { ListSequencerConnectionSuccessorRequest } from './topology_manager_read_service.js'
-import type { ListSynchronizerUpgradeAnnouncementResponse } from './topology_manager_read_service.js'
-import type { ListSynchronizerUpgradeAnnouncementRequest } from './topology_manager_read_service.js'
 import type { ListPurgeTopologyTransactionResponse } from './topology_manager_read_service.js'
 import type { ListPurgeTopologyTransactionRequest } from './topology_manager_read_service.js'
 import type { ListSequencerSynchronizerStateResponse } from './topology_manager_read_service.js'
@@ -168,26 +164,6 @@ export interface ITopologyManagerReadServiceClient {
     ): UnaryCall<
         ListPurgeTopologyTransactionRequest,
         ListPurgeTopologyTransactionResponse
-    >
-    /**
-     * @generated from protobuf rpc: ListSynchronizerUpgradeAnnouncement
-     */
-    listSynchronizerUpgradeAnnouncement(
-        input: ListSynchronizerUpgradeAnnouncementRequest,
-        options?: RpcOptions
-    ): UnaryCall<
-        ListSynchronizerUpgradeAnnouncementRequest,
-        ListSynchronizerUpgradeAnnouncementResponse
-    >
-    /**
-     * @generated from protobuf rpc: ListSequencerConnectionSuccessor
-     */
-    listSequencerConnectionSuccessor(
-        input: ListSequencerConnectionSuccessorRequest,
-        options?: RpcOptions
-    ): UnaryCall<
-        ListSequencerConnectionSuccessorRequest,
-        ListSequencerConnectionSuccessorResponse
     >
     /**
      * @generated from protobuf rpc: ListAvailableStores
@@ -447,47 +423,13 @@ export class TopologyManagerReadServiceClient
         >('unary', this._transport, method, opt, input)
     }
     /**
-     * @generated from protobuf rpc: ListSynchronizerUpgradeAnnouncement
-     */
-    listSynchronizerUpgradeAnnouncement(
-        input: ListSynchronizerUpgradeAnnouncementRequest,
-        options?: RpcOptions
-    ): UnaryCall<
-        ListSynchronizerUpgradeAnnouncementRequest,
-        ListSynchronizerUpgradeAnnouncementResponse
-    > {
-        const method = this.methods[13],
-            opt = this._transport.mergeOptions(options)
-        return stackIntercept<
-            ListSynchronizerUpgradeAnnouncementRequest,
-            ListSynchronizerUpgradeAnnouncementResponse
-        >('unary', this._transport, method, opt, input)
-    }
-    /**
-     * @generated from protobuf rpc: ListSequencerConnectionSuccessor
-     */
-    listSequencerConnectionSuccessor(
-        input: ListSequencerConnectionSuccessorRequest,
-        options?: RpcOptions
-    ): UnaryCall<
-        ListSequencerConnectionSuccessorRequest,
-        ListSequencerConnectionSuccessorResponse
-    > {
-        const method = this.methods[14],
-            opt = this._transport.mergeOptions(options)
-        return stackIntercept<
-            ListSequencerConnectionSuccessorRequest,
-            ListSequencerConnectionSuccessorResponse
-        >('unary', this._transport, method, opt, input)
-    }
-    /**
      * @generated from protobuf rpc: ListAvailableStores
      */
     listAvailableStores(
         input: ListAvailableStoresRequest,
         options?: RpcOptions
     ): UnaryCall<ListAvailableStoresRequest, ListAvailableStoresResponse> {
-        const method = this.methods[15],
+        const method = this.methods[13],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             ListAvailableStoresRequest,
@@ -501,7 +443,7 @@ export class TopologyManagerReadServiceClient
         input: ListAllRequest,
         options?: RpcOptions
     ): UnaryCall<ListAllRequest, ListAllResponse> {
-        const method = this.methods[16],
+        const method = this.methods[14],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<ListAllRequest, ListAllResponse>(
             'unary',
@@ -521,7 +463,7 @@ export class TopologyManagerReadServiceClient
         ExportTopologySnapshotRequest,
         ExportTopologySnapshotResponse
     > {
-        const method = this.methods[17],
+        const method = this.methods[15],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             ExportTopologySnapshotRequest,
@@ -538,7 +480,7 @@ export class TopologyManagerReadServiceClient
         input: GenesisStateRequest,
         options?: RpcOptions
     ): ServerStreamingCall<GenesisStateRequest, GenesisStateResponse> {
-        const method = this.methods[18],
+        const method = this.methods[16],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<GenesisStateRequest, GenesisStateResponse>(
             'serverStreaming',

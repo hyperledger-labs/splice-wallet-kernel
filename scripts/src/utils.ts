@@ -25,6 +25,7 @@ export const API_SPECS_PATH = path.join(repoRoot, 'api-specs')
 // Canton versions
 export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20250603.0'
 export const CANTON_VERSION = '3.3.0-snapshot.20250530.15919.0.v3e7a341c'
+
 export const SPLICE_ARCHIVE_HASH =
     'dd80fb524b75221ec677c7e7a9c0a83589458f294b88b26fe5ca78dfc011dfd8'
 export const CANTON_ARCHIVE_HASH =
