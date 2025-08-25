@@ -57,10 +57,9 @@ export class TopologyController {
         const namespace =
             TopologyWriteService.createFingerprintFromKey(publicKey)
 
-        //can't use base64 encoded public key because it has invalid charcters
         const partyId = partyHint
             ? `${partyHint}::${namespace}`
-            : `${publicKey}::${namespace}`
+            : `${namespace}::${namespace}`
 
         const transactions = await this.topologyClient
             .generateTransactions(publicKey, partyId)
