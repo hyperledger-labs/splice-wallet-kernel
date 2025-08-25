@@ -1,0 +1,22 @@
+[project]
+name = "wallet-integration-guide"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "", email = "no-reply@digitalasset.com"}
+]
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.13"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+sphinx = "^8.2.3"
+sphinx-autobuild = "^2024.10.3"
+
