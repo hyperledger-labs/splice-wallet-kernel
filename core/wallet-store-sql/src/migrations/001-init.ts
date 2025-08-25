@@ -51,7 +51,7 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .addColumn('namespace', 'text', (col) => col.notNull())
         .addColumn('user_id', 'text', (col) => col.notNull())
         .addColumn('chain_id', 'text', (col) =>
-            col.references('networks.chain_id')
+            col.references('networks.chain_id').onDelete('cascade')
         )
         .addColumn('signing_provider_id', 'text', (col) => col.notNull())
         .execute()
@@ -79,9 +79,9 @@ export async function up(db: Kysely<DB>): Promise<void> {
 }
 
 export async function down(db: Kysely<DB>): Promise<void> {
-    await db.schema.dropTable('idps').ifExists().execute()
-    await db.schema.dropTable('networks').ifExists().execute()
-    await db.schema.dropTable('wallets').ifExists().execute()
-    await db.schema.dropTable('sessions').ifExists().execute()
     await db.schema.dropTable('transactions').ifExists().execute()
+    await db.schema.dropTable('sessions').ifExists().execute()
+    await db.schema.dropTable('wallets').ifExists().execute()
+    await db.schema.dropTable('networks').ifExists().execute()
+    await db.schema.dropTable('idps').ifExists().execute()
 }

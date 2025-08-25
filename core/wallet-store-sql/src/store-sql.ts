@@ -300,10 +300,20 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     // Transaction methods
     async setTransaction(transaction: Transaction): Promise<void> {
         const userId = this.assertConnected()
-        await this.db
-            .insertInto('transactions')
-            .values(fromTransaction(transaction, userId))
-            .execute()
+
+        const existing = await this.getTransaction(transaction.commandId)
+        if (existing) {
+            await this.db
+                .updateTable('transactions')
+                .set(fromTransaction(transaction, userId))
+                .where('commandId', '=', transaction.commandId)
+                .execute()
+        } else {
+            await this.db
+                .insertInto('transactions')
+                .values(fromTransaction(transaction, userId))
+                .execute()
+        }
     }
 
     async getTransaction(commandId: string): Promise<Transaction | undefined> {
