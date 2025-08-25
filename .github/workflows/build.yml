@@ -1,6 +1,9 @@
-name: CI on PRs (Splice Contributors)
+name: CI on PRs
 run-name: ${{ github.actor }} is perfoming a Pull Request
-on: [push, workflow_dispatch]
+
+on:
+    pull_request:
+        types: [opened, reopened, synchronize, edited]
 permissions:
     contents: read
 
@@ -22,6 +25,11 @@ jobs:
 
             - name: Install dependencies
               run: yarn install --immutable
+
+            - name: Validate current PR title with commitlint
+              run: echo "$TITLE" | yarn commitlint --verbose
+              env:
+                  TITLE: ${{ github.event.pull_request.title }}
 
             - name: prettier code
               run: yarn run prettier . --check
