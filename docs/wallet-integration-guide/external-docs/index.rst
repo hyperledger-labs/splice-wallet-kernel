@@ -5,7 +5,7 @@ Wallet Integration Guide
    :maxdepth: 2
    :caption: Contents:
 
-   about-canton-network/index
+   canton-network-overview/index
    integrating-with-canton-network/index
    party-management/index
    finding-and-reading-data/index
