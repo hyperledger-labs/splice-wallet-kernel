@@ -11,6 +11,8 @@ export * from './authController.js'
 export * from './topologyController.js'
 export { signTransactionHash, createKeyPair } from '@splice/core-signing-lib'
 
+export const Test = 'test'
+
 type AuthFactory = () => AuthController
 type LedgerFactory = (userId: string, token: string) => LedgerController
 type TopologyFactory = (
