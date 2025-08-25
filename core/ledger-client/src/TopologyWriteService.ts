@@ -8,9 +8,8 @@ import {
     SignatureFormat,
     SigningAlgorithmSpec,
     TopologyManagerWriteServiceClient,
-} from '@splice/core-ledger-proto'
-import { StoreId, StoreId_Synchronizer } from '@splice/core-ledger-proto'
-import {
+    StoreId,
+    StoreId_Synchronizer,
     Enums_ParticipantPermission,
     Enums_TopologyChangeOp,
     NamespaceDelegation,
@@ -20,8 +19,6 @@ import {
     SignedTopologyTransaction,
     TopologyMapping,
     MultiTransactionSignatures,
-} from '@splice/core-ledger-proto'
-import {
     AddTransactionsRequest,
     AddTransactionsResponse,
     AuthorizeRequest,
@@ -32,11 +29,11 @@ import {
     BaseQuery,
     ListPartyToParticipantRequest,
     Empty,
+    TopologyManagerReadServiceClient,
 } from '@splice/core-ledger-proto'
 import { GrpcTransport } from '@protobuf-ts/grpc-transport'
 import { ChannelCredentials } from '@grpc/grpc-js'
 import { createHash } from 'node:crypto'
-import { TopologyManagerReadServiceClient } from '@splice/core-ledger-proto'
 
 function prefixedInt(value: number, bytes: Buffer | Uint8Array): Buffer {
     const buffer = Buffer.alloc(4 + bytes.length)
