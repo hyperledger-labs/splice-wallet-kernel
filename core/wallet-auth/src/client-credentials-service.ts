@@ -1,5 +1,4 @@
 import { Logger } from '@splice/core-types'
-import { createTransport } from '@splice/core-types'
 
 export interface OIDCConfig {
     token_endpoint: string
@@ -63,56 +62,38 @@ export class ClientCredentialsService {
             audience: credentials.audience ?? '',
         })
 
-        const transport = createTransport(tokenEndpoint)
-        const res = await transport.request(tokenEndpoint, {
+        const res = await fetch(tokenEndpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: params.toString(),
         })
-        if (res instanceof Response) {
-            if (!res.ok) {
-                this.logger?.error(
-                    { status: res.status, statusText: res.statusText },
-                    'Token endpoint error'
-                )
-                throw new Error(
-                    `Token endpoint error: ${res.status} ${res.statusText}`
-                )
-            }
-            return res
-        } else if (typeof res === 'string') {
-            // TCP fallback: assume string is JSON and return a mock Response-like object
-            return new Response(res)
-        } else {
-            throw new Error('Unknown response type from transport')
+
+        if (!res.ok) {
+            this.logger?.error(
+                { status: res.status, statusText: res.statusText },
+                'Token endpoint error'
+            )
+            throw new Error(
+                `Token endpoint error: ${res.status} ${res.statusText}`
+            )
         }
+
+        return res
     }
 
     async getOIDCConfig(url: string): Promise<OIDCConfig> {
-        const transport = createTransport(url)
-        const res = await transport.request(url)
-        if (res instanceof Response) {
-            if (!res.ok) {
-                const text = await res.text()
-                this.logger?.error(
-                    {
-                        status: res.status,
-                        statusText: res.statusText,
-                        body: text,
-                    },
-                    'Failed to fetch OIDC config'
-                )
-                throw new Error(
-                    `OIDC config error: ${res.status} ${res.statusText}`
-                )
-            }
-            return res.json()
-        } else if (typeof res === 'string') {
-            // TCP fallback: assume string is JSON
-            return JSON.parse(res)
-        } else {
-            throw new Error('Unknown response type from transport')
+        const res = await fetch(url)
+        if (!res.ok) {
+            const text = await res.text()
+            this.logger?.error(
+                { status: res.status, statusText: res.statusText, body: text },
+                'Failed to fetch OIDC config'
+            )
+            throw new Error(
+                `OIDC config error: ${res.status} ${res.statusText}`
+            )
         }
+        return res.json()
     }
 }
 
