@@ -13,8 +13,10 @@
         "run-01": "tsx ./01-auth.ts"
     },
     "devDependencies": {
+        "@types/node": "^24.3.0",
         "tsx": "^4.20.3",
-        "typescript": "^5.8.3"
+        "typescript": "^5.8.3",
+        "uuid": "^11.1.0"
     },
     "dependencies": {
         "@splice/sdk-wallet": "workspace:^"

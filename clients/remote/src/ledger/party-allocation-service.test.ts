@@ -18,6 +18,7 @@ const MockTopologyWriteService: jest.MockedClass<any> = jest
         }),
         addTransactions: jest.fn<AsyncFn>(),
         authorizePartyToParticipant: jest.fn<AsyncFn>(),
+        submitExternalPartyTopology: jest.fn<AsyncFn>(),
     }))
 
 // Add static method to the mock class

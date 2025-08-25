@@ -8146,8 +8146,10 @@ __metadata:
   resolution: "docs-wallet-integration-guide-examples@workspace:docs/wallet-integration-guide/examples"
   dependencies:
     "@splice/sdk-wallet": "workspace:^"
+    "@types/node": "npm:^24.3.0"
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.8.3"
+    uuid: "npm:^11.1.0"
   languageName: unknown
   linkType: soft
 
