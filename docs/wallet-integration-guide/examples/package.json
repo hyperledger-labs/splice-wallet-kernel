@@ -19,7 +19,6 @@
         "uuid": "^11.1.0"
     },
     "dependencies": {
-        "@splice/core-signing-lib": "workspace:^",
         "@splice/sdk-wallet": "workspace:^"
     }
 }

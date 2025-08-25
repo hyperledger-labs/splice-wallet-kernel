@@ -1,10 +1,11 @@
-import { createKeyPair, signTransactionHash } from '@splice/core-signing-lib'
 import { v4 } from 'uuid'
 import {
     localAuthDefault,
     localLedgerDefault,
     localTopologyDefault,
     WalletSDKImpl,
+    createKeyPair,
+    signTransactionHash,
 } from '@splice/sdk-wallet'
 
 const sdk = new WalletSDKImpl().configure({
