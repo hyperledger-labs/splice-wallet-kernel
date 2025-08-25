@@ -6,11 +6,16 @@
     "main": "dist/index.js",
     "type": "module",
     "scripts": {
-        "build": "tsc -b; tsc -b tsconfig.frontend.json",
-        "clean": "tsc -b --clean && rm -rf ./dist",
+        "build": "tsc -b; tsc -b tsconfig.frontend.json && yarn db:migrate:reset && yarn db:bootstrap",
+        "clean": "tsc -b --clean && rm -rf ./dist && rm ./store.sqlite || true",
         "dev": "tsx watch src/index.ts | pino-pretty",
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)",
-        "start": "yarn node dist/index.js"
+        "start": "yarn node dist/index.js",
+        "db:bootstrap": "tsx ./src/scripts/db.ts bootstrap",
+        "db:migrate:up": "tsx ./src/scripts/db.ts up",
+        "db:migrate:down": "tsx ./src/scripts/db.ts down",
+        "db:migrate:status": "tsx ./src/scripts/db.ts status",
+        "db:migrate:reset": "tsx ./src/scripts/db.ts reset"
     },
     "keywords": [],
     "author": "",
@@ -29,7 +34,7 @@
         "@splice/core-wallet-auth": "workspace:^",
         "@splice/core-wallet-dapp-rpc-client": "workspace:^",
         "@splice/core-wallet-store": "workspace:^",
-        "@splice/core-wallet-store-inmemory": "workspace:^",
+        "@splice/core-wallet-store-sql": "workspace:^",
         "@splice/core-wallet-ui-components": "workspace:^",
         "@splice/core-wallet-user-rpc-client": "workspace:^",
         "cors": "^2.8.5",
@@ -46,6 +51,7 @@
     },
     "devDependencies": {
         "@jest/globals": "^29.0.0",
+        "@splice/core-wallet-store-inmemory": "workspace:^",
         "@swc/core": "^1.11.31",
         "@swc/jest": "^0.2.38",
         "@types/cors": "^2",
