@@ -79,11 +79,11 @@ const createPingCommand = await sdk.topology?.createPingCommand(
     preparedParty!.partyId!
 )
 
-sdk.userLedger?.setPartyId(preparedParty!.partyId!)
+sdk.adminLedger?.setPartyId(preparedParty!.partyId!)
 
 console.log('Prepare command submission for ping create command')
 const prepareResponse =
-    await sdk.userLedger?.prepareSubmission(createPingCommand)
+    await sdk.adminLedger?.prepareSubmission(createPingCommand)
 
 console.log('Sign transaction hash')
 
@@ -94,7 +94,7 @@ const signedCommandHash = signTransactionHash(
 
 console.log('Submit command')
 
-sdk.userLedger
+sdk.adminLedger
     ?.executeSubmission(
         prepareResponse!,
         signedCommandHash,
