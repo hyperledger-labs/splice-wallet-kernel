@@ -98,7 +98,7 @@ export class TopologyWriteService {
             store: {
                 oneofKind: 'synchronizer',
                 synchronizer: StoreId_Synchronizer.create({
-                    kind: { oneofKind: 'id', id: synchronizerId },
+                    id: synchronizerId,
                 }),
             },
         })

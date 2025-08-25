@@ -2829,7 +2829,7 @@ class SymmetricKey$Type extends MessageType<SymmetricKey> {
             {
                 'scalapb.message': {
                     companionExtends: [
-                        'com.digitalasset.canton.version.AlphaProtoVersion',
+                        'com.digitalasset.canton.version.StableProtoVersion',
                     ],
                 },
             }

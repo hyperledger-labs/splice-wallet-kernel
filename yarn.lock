@@ -4603,11 +4603,13 @@ __metadata:
     "@types/node": "npm:^24.0.4"
     "@types/webextension-polyfill": "npm:^0.12.0"
     esbuild: "npm:^0.25.5"
+    isomorphic-ws: "npm:^5.0.0"
     lit: "npm:^3.3.0"
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.8.3"
     web-ext: "npm:^8.8.0"
     webextension-polyfill: "npm:^0.12.0"
+    ws: "npm:^8.16.0"
   languageName: unknown
   linkType: soft
 
@@ -4672,6 +4674,7 @@ __metadata:
     "@protobuf-ts/grpc-transport": "npm:^2.11.1"
     "@protobuf-ts/runtime": "npm:^2.11.1"
     "@protobuf-ts/runtime-rpc": "npm:^2.11.1"
+    "@splice/core-types": "workspace:^"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"
     "@types/jest": "npm:^30.0.0"
@@ -4837,8 +4840,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@splice/core-types@workspace:core/types"
   dependencies:
+    "@types/node": "npm:^24.0.4"
+    isomorphic-ws: "npm:^5.0.0"
     typescript: "npm:^5.8.3"
     uuid: "npm:^11.1.0"
+    ws: "npm:^8.16.0"
     zod: "npm:^3.25.67"
   languageName: unknown
   linkType: soft
@@ -4869,15 +4875,16 @@ __metadata:
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
     "@types/lodash": "npm:^4.14.149"
-    "@types/ws": "npm:^6.0.1"
     "@typescript-eslint/eslint-plugin": "npm:^8.25.0"
     eslint-config-prettier: "npm:^10.0.1"
     eslint-plugin-prettier: "npm:^5.2.3"
     globals: "npm:^16.0.0"
+    isomorphic-ws: "npm:^5.0.0"
     lodash: "npm:^4.17.15"
     prettier: "npm:^3.5.2"
     typedoc: "npm:^0.27.9"
     typescript: "npm:^5.0.0"
+    ws: "npm:^8.16.0"
   languageName: unknown
   linkType: soft
 
@@ -4943,15 +4950,16 @@ __metadata:
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
     "@types/lodash": "npm:^4.14.149"
-    "@types/ws": "npm:^6.0.1"
     "@typescript-eslint/eslint-plugin": "npm:^8.25.0"
     eslint-config-prettier: "npm:^10.0.1"
     eslint-plugin-prettier: "npm:^5.2.3"
     globals: "npm:^16.0.0"
+    isomorphic-ws: "npm:^5.0.0"
     lodash: "npm:^4.17.15"
     prettier: "npm:^3.5.2"
     typedoc: "npm:^0.27.9"
     typescript: "npm:^5.0.0"
+    ws: "npm:^8.16.0"
   languageName: unknown
   linkType: soft
 
@@ -4995,11 +5003,13 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-react-refresh: "npm:^0.4.19"
     globals: "npm:^16.0.0"
+    isomorphic-ws: "npm:^5.0.0"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
     typescript: "npm:~5.8.3"
     typescript-eslint: "npm:^8.30.1"
     vite: "npm:^6.3.5"
+    ws: "npm:^8.16.0"
   languageName: unknown
   linkType: soft
 
@@ -5057,6 +5067,7 @@ __metadata:
     "@splice/core-types": "workspace:^"
     "@splice/core-wallet-auth": "workspace:^"
     "@types/node": "npm:^24.3.0"
+    jose: "npm:^5.2.4"
     pino: "npm:^9.7.0"
     typescript: "npm:^5.8.3"
     uuid: "npm:^11.1.0"
@@ -5751,15 +5762,6 @@ __metadata:
   version: 3.0.0
   resolution: "@types/wrap-ansi@npm:3.0.0"
   checksum: 10c0/8d8f53363f360f38135301a06b596c295433ad01debd082078c33c6ed98b05a5c8fe8853a88265432126096084f4a135ec1564e3daad631b83296905509f90b3
-  languageName: node
-  linkType: hard
-
-"@types/ws@npm:^6.0.1":
-  version: 6.0.4
-  resolution: "@types/ws@npm:6.0.4"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10c0/fa958e64596ca9487c3ed6012834de70b47f25d971f1950cfb8e6a99cb77ff340ae82ac7627744e01b58010674ef8ede07d5a2ac29ca9ad0d67a430fcc69ae14
   languageName: node
   linkType: hard
 
@@ -8145,6 +8147,7 @@ __metadata:
   resolution: "docs-wallet-integration-guide-examples@workspace:docs/wallet-integration-guide/examples"
   dependencies:
     "@splice/sdk-wallet": "workspace:^"
+    "@types/node": "npm:^24.3.0"
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.8.3"
   languageName: unknown
@@ -10477,6 +10480,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"isomorphic-ws@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "isomorphic-ws@npm:5.0.0"
+  peerDependencies:
+    ws: "*"
+  checksum: 10c0/a058ac8b5e6efe9e46252cb0bc67fd325005d7216451d1a51238bc62d7da8486f828ef017df54ddf742e0fffcbe4b1bcc2a66cc115b027ed0180334cd18df252
+  languageName: node
+  linkType: hard
+
 "istanbul-lib-coverage@npm:^3.0.0, istanbul-lib-coverage@npm:^3.2.0":
   version: 3.2.2
   resolution: "istanbul-lib-coverage@npm:3.2.2"
@@ -11458,6 +11470,13 @@ __metadata:
   version: 5.9.6
   resolution: "jose@npm:5.9.6"
   checksum: 10c0/d6bcd8c7d655b5cda8e182952a76f0c093347f5476d74795405bb91563f7ab676f61540310dd4b1531c60d685335ceb600571a409551d2cbd2ab3e9f9fbf1e4d
+  languageName: node
+  linkType: hard
+
+"jose@npm:^5.2.4":
+  version: 5.10.0
+  resolution: "jose@npm:5.10.0"
+  checksum: 10c0/e20d9fc58d7e402f2e5f04e824b8897d5579aae60e64cb88ebdea1395311c24537bf4892f7de413fab1acf11e922797fb1b42269bc8fc65089a3749265ccb7b0
   languageName: node
   linkType: hard
 
@@ -14882,6 +14901,7 @@ __metadata:
     globals: "npm:^16.2.0"
     grpc-tools: "npm:^1.13.0"
     husky: "npm:^9.1.7"
+    isomorphic-ws: "npm:^5.0.0"
     lint-staged: "npm:^16.1.0"
     nx: "npm:^21.3.11"
     oauth2-mock-server: "npm:^8.1.0"
@@ -14891,6 +14911,7 @@ __metadata:
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.8.3"
     typescript-eslint: "npm:^8.33.1"
+    ws: "npm:^8.16.0"
   languageName: unknown
   linkType: soft
 
@@ -16447,7 +16468,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.0.0":
+"ws@npm:^8.0.0, ws@npm:^8.16.0":
   version: 8.18.3
   resolution: "ws@npm:8.18.3"
   peerDependencies:

@@ -102,26 +102,9 @@ export interface StoreId_Authorized {}
  */
 export interface StoreId_Synchronizer {
     /**
-     * @generated from protobuf oneof: kind
+     * @generated from protobuf field: string id = 1
      */
-    kind:
-        | {
-              oneofKind: 'id'
-              /**
-               * @generated from protobuf field: string id = 1
-               */
-              id: string
-          }
-        | {
-              oneofKind: 'physicalId'
-              /**
-               * @generated from protobuf field: string physical_id = 2
-               */
-              physicalId: string
-          }
-        | {
-              oneofKind: undefined
-          }
+    id: string
 }
 /**
  * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.StoreId.Temporary
@@ -586,27 +569,12 @@ class StoreId_Synchronizer$Type extends MessageType<StoreId_Synchronizer> {
     constructor() {
         super(
             'com.digitalasset.canton.topology.admin.v30.StoreId.Synchronizer',
-            [
-                {
-                    no: 1,
-                    name: 'id',
-                    kind: 'scalar',
-                    oneof: 'kind',
-                    T: 9 /*ScalarType.STRING*/,
-                },
-                {
-                    no: 2,
-                    name: 'physical_id',
-                    kind: 'scalar',
-                    oneof: 'kind',
-                    T: 9 /*ScalarType.STRING*/,
-                },
-            ]
+            [{ no: 1, name: 'id', kind: 'scalar', T: 9 /*ScalarType.STRING*/ }]
         )
     }
     create(value?: PartialMessage<StoreId_Synchronizer>): StoreId_Synchronizer {
         const message = globalThis.Object.create(this.messagePrototype!)
-        message.kind = { oneofKind: undefined }
+        message.id = ''
         if (value !== undefined)
             reflectionMergePartial<StoreId_Synchronizer>(this, message, value)
         return message
@@ -623,16 +591,7 @@ class StoreId_Synchronizer$Type extends MessageType<StoreId_Synchronizer> {
             let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
                 case /* string id */ 1:
-                    message.kind = {
-                        oneofKind: 'id',
-                        id: reader.string(),
-                    }
-                    break
-                case /* string physical_id */ 2:
-                    message.kind = {
-                        oneofKind: 'physicalId',
-                        physicalId: reader.string(),
-                    }
+                    message.id = reader.string()
                     break
                 default:
                     let u = options.readUnknownField
@@ -659,13 +618,8 @@ class StoreId_Synchronizer$Type extends MessageType<StoreId_Synchronizer> {
         options: BinaryWriteOptions
     ): IBinaryWriter {
         /* string id = 1; */
-        if (message.kind.oneofKind === 'id')
-            writer.tag(1, WireType.LengthDelimited).string(message.kind.id)
-        /* string physical_id = 2; */
-        if (message.kind.oneofKind === 'physicalId')
-            writer
-                .tag(2, WireType.LengthDelimited)
-                .string(message.kind.physicalId)
+        if (message.id !== '')
+            writer.tag(1, WireType.LengthDelimited).string(message.id)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(

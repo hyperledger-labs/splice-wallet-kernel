@@ -8,6 +8,7 @@ import { Logger } from '@splice/core-types'
 
 export * from './ledgerController.js'
 export * from './authController.js'
+export * from './topologyController.js'
 
 type AuthFactory = () => AuthController
 type LedgerFactory = (userId: string, token: string) => LedgerController
@@ -76,11 +77,9 @@ export class WalletSDKImpl implements WalletSDK {
     async connectTopology(): Promise<WalletSDK> {
         if (this.auth.userId === undefined)
             throw new Error('UserId is not defined in AuthController.')
-        const { accessToken } = await this.auth.getAdminToken()
-        this.logger?.info(
-            `Connecting user ${this.auth.userId} with token ${accessToken}`
-        )
-        this.topology = this.topologyFactory(this.auth.userId, accessToken)
+        const { userId, accessToken } = await this.auth.getAdminToken()
+        this.logger?.info(`Connecting user ${userId} with token ${accessToken}`)
+        this.topology = this.topologyFactory(userId, accessToken)
         return this
     }
 }
