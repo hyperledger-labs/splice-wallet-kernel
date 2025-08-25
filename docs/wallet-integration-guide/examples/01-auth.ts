@@ -76,18 +76,9 @@ if (preparedParty) {
 }
 
 console.log('Create ping command')
-const createPingCommand = [
-    {
-        CreateCommand: {
-            templateId: '#AdminWorkflows:Canton.Internal.Ping:Ping',
-            createArguments: {
-                id: v4(),
-                initiator: preparedParty!.partyId!,
-                responder: preparedParty!.partyId!,
-            },
-        },
-    },
-]
+const createPingCommand = await sdk.topology?.createPingCommand(
+    preparedParty!.partyId!
+)
 
 sdk.userLedger?.setPartyId(preparedParty!.partyId!)
 

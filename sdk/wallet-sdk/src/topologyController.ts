@@ -5,6 +5,7 @@ import {
 } from '@splice/core-ledger-client'
 import { signTransactionHash } from '@splice/core-signing-lib'
 import { pino } from 'pino'
+import { v4 } from 'uuid'
 
 export type PreparedParty = {
     partyTransactions: Uint8Array<ArrayBufferLike>[]
@@ -84,6 +85,21 @@ export class TopologyController {
         }
 
         return Promise.resolve(result)
+    }
+
+    createPingCommand(partyId: string) {
+        return [
+            {
+                CreateCommand: {
+                    templateId: '#AdminWorkflows:Canton.Internal.Ping:Ping',
+                    createArguments: {
+                        id: v4(),
+                        initiator: partyId,
+                        responder: partyId,
+                    },
+                },
+            },
+        ]
     }
 
     async submitExternalPartyTopology(
