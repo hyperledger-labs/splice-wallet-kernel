@@ -1,10 +1,18 @@
 import {
     LedgerClient,
-    PostResponse,
+    PreparedTransaction,
+    SigningPublicKey,
     TopologyWriteService,
 } from '@splice/core-ledger-client'
-import { signTransactionHash } from '@splice/core-signing-lib'
+import {
+    createKeyPair,
+    getPublicKeyFromPrivate,
+    signTransactionHash,
+    KeyPair,
+} from '@splice/core-signing-lib'
 import { pino } from 'pino'
+import { hashPreparedTransaction } from '@splice/core-tx-visualizer'
+
 import { v4 } from 'uuid'
 
 export type PreparedParty = {
@@ -19,12 +27,16 @@ export type AllocatedParty = {
     partyId: string
 }
 
+/**
+ * TopologyController handles topology management tasks involving administrating external parties.
+ * Since these parties require topology transactions to be signed by an admin user, this controller
+ * requires an admin token to be provided.
+ */
 export class TopologyController {
-    private topologyClient: TopologyWriteService
-    private client: LedgerClient
-    private synchronizerId: string
-    private userId: string
-    private logger = pino({ name: 'TopologyController', level: 'debug' })
+    private readonly topologyClient: TopologyWriteService
+    private readonly client: LedgerClient
+    private readonly userId: string
+    private logger = pino({ name: 'TopologyController', level: 'info' })
 
     constructor(
         adminApiUrl: string,
@@ -34,10 +46,9 @@ export class TopologyController {
         synchronizerId: string
     ) {
         this.client = new LedgerClient(baseUrl, userAdminToken, this.logger)
-        this.synchronizerId = synchronizerId
         this.userId = userId
         this.topologyClient = new TopologyWriteService(
-            this.synchronizerId,
+            synchronizerId,
             adminApiUrl,
             userAdminToken,
             this.client
@@ -45,17 +56,45 @@ export class TopologyController {
         return this
     }
 
-    setSynchronizerId(synchronizerId: string): TopologyController {
-        this.synchronizerId = synchronizerId
-        return this
+    /** Creates a new Key pair of public and private key that can be used to allocate a new external party
+     * @return KeyPair
+     */
+    static createNewKeyPair(): KeyPair {
+        return createKeyPair()
     }
 
+    /** Creates a transactionHash from a prepared transaction.
+     * This is a utility function that uses the same hashing scheme as the ledger.
+     * @param preparedTransaction
+     */
+    static createTransactionHash(
+        preparedTransaction: string | PreparedTransaction
+    ): Promise<string> {
+        return hashPreparedTransaction(preparedTransaction, 'base64')
+    }
+
+    /** Creates a fingerprint from a public key.
+     * This is a utility function that uses the same fingerprinting scheme as the ledger.
+     * @param publicKey
+     */
+    static createFingerprintFromPublicKey(
+        publicKey: SigningPublicKey | string
+    ): string {
+        return TopologyWriteService.createFingerprintFromKey(publicKey)
+    }
+
+    /** Creates a prepared topology transaction that can be signed and submitted in order th create a new external party.
+     *
+     * @param publicKey
+     * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
+     * @returns A PreparedParty object containing the prepared transactions.
+     */
     async prepareExternalPartyTopology(
         publicKey: string,
         partyHint?: string
     ): Promise<PreparedParty> {
         const namespace =
-            TopologyWriteService.createFingerprintFromKey(publicKey)
+            TopologyController.createFingerprintFromPublicKey(publicKey)
 
         const partyId = partyHint
             ? `${partyHint}::${namespace}`
@@ -86,6 +125,10 @@ export class TopologyController {
         return Promise.resolve(result)
     }
 
+    /**
+     * This creates a simple Ping command, useful for testing signing and onboarding
+     * @param partyId the party to receive the ping
+     */
     createPingCommand(partyId: string) {
         return [
             {
@@ -101,6 +144,12 @@ export class TopologyController {
         ]
     }
 
+    /** Submits a prepared and signed external party topology to the ledger.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param signedHash The signed combined hash of the prepared transactions.
+     * @param preparedParty The prepared party object from prepareExternalPartyTopology.
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
     async submitExternalPartyTopology(
         signedHash: string,
         preparedParty: PreparedParty
@@ -124,22 +173,18 @@ export class TopologyController {
         return { partyId: preparedParty.partyId }
     }
 
-    async allocateInternalParty(
-        partyHint: string
-    ): Promise<PostResponse<'/v2/parties'>> {
-        return await this.client.post('/v2/parties', {
-            partyIdHint: partyHint,
-            identityProviderId: '',
-        })
-    }
-
+    /** Prepares, signs and submits a new external party topology in one step.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param privateKey The private key of the new external party, used to sign the topology transactions.
+     * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
     async prepareSignAndSubmitExternalParty(
-        partyHint: string,
-        publicKey: string,
-        privateKey: string
+        privateKey: string,
+        partyHint?: string
     ): Promise<AllocatedParty> {
         const preparedParty = await this.prepareExternalPartyTopology(
-            publicKey,
+            getPublicKeyFromPrivate(privateKey),
             partyHint
         )
         const signedHash = signTransactionHash(
@@ -150,6 +195,10 @@ export class TopologyController {
     }
 }
 
+/**
+ * A default factory function used for running against a local net initialized via docker.
+ * This uses unsafe-auth and is started with the 'yarn start:localnet' or docker compose from localNet setup.
+ */
 export const localNetTopologyDefault = (
     userId: string,
     userAdminToken: string
@@ -159,10 +208,15 @@ export const localNetTopologyDefault = (
         'http://127.0.0.1:2975',
         userId,
         userAdminToken,
-        'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd'
+        //TODO: fetch this from a localnet API endpoint
+        'global-domain::1220b4ab8fb52056a98c919dd17fb09ff1cf2ca6dcd6ae8915e56889d545a2cc8a5e'
     )
 }
 
+/**
+ * A default factory function used for running against a local validator node.
+ * This uses mock-auth and is started with the 'yarn start:canton'
+ */
 export const localTopologyDefault = (
     userId: string,
     userAdminToken: string

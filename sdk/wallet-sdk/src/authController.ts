@@ -3,11 +3,28 @@ import { Logger } from '@splice/core-types'
 import { AuthContext, ClientCredentialsService } from '@splice/core-wallet-auth'
 
 export interface AuthController {
+    /** gets an auth context correlating to the admin user provided.
+     */
     getUserToken(): Promise<AuthContext>
+
+    /** gets an auth context correlating to the non-admin user provided.
+     */
     getAdminToken(): Promise<AuthContext>
     userId: string | undefined
 }
 
+/**
+ * ClientCredentialOAuthController handles authentication using the OAuth2 M2M.
+ * To have a working version it is required to set the following properties:
+ * - userId
+ * - userSecret
+ * - scope
+ * - audience
+ * some functionality requires admin access (like topology management) and for that
+ * the following properties are also required:
+ * - adminId
+ * - adminSecret
+ */
 export class ClientCredentialOAuthController implements AuthController {
     set logger(value: Logger) {
         this._logger = value
@@ -115,6 +132,19 @@ export class ClientCredentialOAuthController implements AuthController {
     }
 }
 
+/**
+ * UnsafeAuthController is a simple implementation of AuthController that generates
+ * JWT tokens using a shared secret. This is insecure and should only be used for
+ * local development or testing purposes.
+ * To have a working version it is required to set the following properties:
+ * - userId
+ * - audience
+ * - unsafeSecret
+ *
+ * some functionality requires admin access (like topology management) and for that
+ * the following properties are also required:
+ * - adminId
+ */
 export class UnsafeAuthController implements AuthController {
     userId: string | undefined
     adminId: string | undefined
@@ -126,6 +156,7 @@ export class UnsafeAuthController implements AuthController {
     constructor(logger?: Logger) {
         this._logger = logger
     }
+
     async getAdminToken(): Promise<AuthContext> {
         return this._createJwtToken(this.adminId || 'admin')
     }
@@ -151,6 +182,10 @@ export class UnsafeAuthController implements AuthController {
     }
 }
 
+/**
+ * A default factory function used for running against a local net initialized via docker.
+ * This uses unsafe-auth and is started with the 'yarn start:localnet' or docker compose from localNet setup.
+ */
 export const localNetAuthDefault = (logger?: Logger): AuthController => {
     const controller = new UnsafeAuthController(logger)
 
@@ -162,6 +197,10 @@ export const localNetAuthDefault = (logger?: Logger): AuthController => {
     return controller
 }
 
+/**
+ * A default factory function used for running against a local net initialized via docker.
+ * This uses unsafe-auth and is started with the 'yarn start:localnet' or docker compose from localNet setup.
+ */
 export const localAuthDefault = (logger?: Logger): AuthController => {
     const controller = new ClientCredentialOAuthController(
         'http://127.0.0.1:8889/.well-known/openid-configuration',
