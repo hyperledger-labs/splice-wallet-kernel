@@ -1,0 +1,13 @@
+To preview the docs:
+
+Run this once from the `docs/wallet-integration-guide` directory:
+
+```sh
+poetry install
+```
+
+Run this to start the docs server:
+
+```sh
+poetry run sphinx-autobuild -c . src build
+```
