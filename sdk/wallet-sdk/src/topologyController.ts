@@ -59,7 +59,7 @@ export class TopologyController {
 
         const partyId = partyHint
             ? `${partyHint}::${namespace}`
-            : `${namespace}::${namespace}`
+            : `${namespace.slice(0, 5)}::${namespace}`
 
         const transactions = await this.topologyClient
             .generateTransactions(publicKey, partyId)
