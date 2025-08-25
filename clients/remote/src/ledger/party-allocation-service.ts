@@ -124,8 +124,10 @@ export class PartyAllocationService {
             )
         )
 
-        await this.topologyClient.addTransactions(signedTopologyTxs)
-        await this.topologyClient.authorizePartyToParticipant(partyId)
+        await this.topologyClient.submitExternalPartyTopology(
+            signedTopologyTxs,
+            partyId
+        )
         await this.ledgerClient.grantUserRights(userId, partyId)
 
         return { hint, partyId, namespace }

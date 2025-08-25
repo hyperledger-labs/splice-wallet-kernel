@@ -116,8 +116,8 @@ export class TopologyController {
                 )
         )
 
-        await this.topologyClient.addTransactions(signedTopologyTxs)
-        await this.topologyClient.authorizePartyToParticipant(
+        await this.topologyClient.submitExternalPartyTopology(
+            signedTopologyTxs,
             preparedParty.partyId
         )
         await this.client.grantUserRights(this.userId, preparedParty.partyId)
