@@ -14,7 +14,7 @@
     },
     "devDependencies": {
         "@jest/globals": "^29.0.0",
-        "@splice/core-ledger-client": "workspace:^",
+        "@splice/core-ledger-proto": "workspace:^",
         "@swc/jest": "^0.2.38",
         "@types/jest": "^30.0.0",
         "globals": "^16.0.0",
