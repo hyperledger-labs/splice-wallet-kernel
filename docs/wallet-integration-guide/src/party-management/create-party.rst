@@ -17,44 +17,43 @@ Using the wallet SDK you can quickly allocate a party using the following code s
 
 .. tabs::
 
-   .. tab:: Default (using Oauth)
+    .. tab:: Quick using Splice LocalNet
 
-      .. literalinclude:: ../../examples/01-auth.ts
-         :language: typescript
-         :dedent:
+        .. literalinclude:: ../../examples/snippets/allocate-party.ts
+            :language: typescript
+            :dedent:
 
-   .. tab:: Localnet By Splice
+    .. tab:: Comprehensive using OAuth
 
-      .. literalinclude:: ../../examples/02-auth-localnet.ts
-         :language: javascript
-         :dedent:
+        .. literalinclude:: ../../examples/01-auth.ts
+            :language: typescript
+            :dedent:
+
+    .. tab:: Comprehensive using Splice LocalNet
+
+        .. literalinclude:: ../../examples/02-auth-localnet.ts
+            :language: typescript
+            :dedent:
 
 Create the key Pair
 -------------------
 Creating key follow standard encryption practices similarly to other blockchains. The full details of supported cryptographic algorithms can be found `Here <https://docs.daml.com/canton/usermanual/security.html#common-node-keys>`_.
 by default a **Ed25519** is used. There exists many libraries that can be used to generate such a key pair, you can do it simply with the WalletSDK using:
 
-.. code-block:: javascript
-
-   import { TopologyController } from "@splice/wallet-sdk";
-    // static method call
-    const {publicKey, privateKey } = TopologyController.createNewKeyPair()
-
+.. literalinclude:: ../../examples/snippets/create-key-pair.ts
+   :language: typescript
+   :dedent:
 
 Generate the fingerprint
 --------------------------------
-A party is defined as ${partyHint}::${fingerprint} where the fingerprint is a sha256 hash of the public key prefixed with '12' (as indicated by the `hash purpose <https://github.com/digital-asset/canton/blob/8ee65155e7f866e1f420703c376c867336b75088/community/base/src/main/scala/com/digitalasset/canton/crypto/HashPurpose.scala#L63>`_).
+A party is defined as **${partyHint}::${fingerprint}** where the fingerprint is a sha256 hash of the public key prefixed with '12' (as indicated by the `hash purpose <https://github.com/digital-asset/canton/blob/8ee65155e7f866e1f420703c376c867336b75088/community/base/src/main/scala/com/digitalasset/canton/crypto/HashPurpose.scala#L63>`_).
 The partyHint is a user friendly name for the party and can be anything that is unique for the fingerprint, e.g. "alice", "bob" or "my-wallet-1".
 
 The wallet SDK has fingerprint generation built in:
 
-.. code-block:: javascript
-
-   import { TopologyController } from "@splice/wallet-sdk";
-    // static method call
-    const fingerPrint = TopologyController.createFingerprintFromPublicKey(publicKey)
-
-
+.. literalinclude:: ../../examples/snippets/generate-fingerprint.ts
+   :language: typescript
+   :dedent:
 
 Generating the topology transactions
 ------------------------------------
@@ -68,68 +67,25 @@ The three transactions that needs to be generated are:
 Once all the transactions are build they can be combined into a single hash and submitted as part of a single signature.
 The wallet SDK has helper functions to generate these transactions:
 
-.. code-block:: javascript
-
-    import { WalletSDKImpl, TopologyController } from "@splice/wallet-sdk";
-
-    // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
-    const sdk = new WalletSDKImpl().configure({
-        logger: console,
-        authFactory: localAuthDefault, // or use your specific configuarion
-        ledgerFactory: localLedgerDefault, // or use your specific configuarion
-        topologyFactory: localTopologyDefault, // or use your specific configuarion
-    })
-
-    const {publicKey, privateKey } = TopologyController.createNewKeyPair()
-    //partyHint is optional but recommended to make it easier to identify the party
-    const partyHint = "my-wallet-1"
-    const preparedParty = await sdk.topology?.prepareExternalPartyTopology(publicKey, partyHint)
-
-
-preparedParty will have the following structure:
-
-.. code-block:: javascript
-
-    export type PreparedParty = {
-    partyTransactions: Uint8Array<ArrayBufferLike>[] // Array of the three topology transactions
-    combinedHash: string // sha256 hash of the three transactions that needs to be signed
-    txHashes: Buffer<ArrayBuffer>[] // Array of the three transaction hashes
-    namespace: string // the namespace of the party
-    partyId: string // the partyId as defined by ${partyHint}::${fingerprint}
-    }
+.. literalinclude:: ../../examples/snippets/create-topology-transactions.ts
+   :language: typescript
+   :dedent:
 
 Sign multi-hash
 -----------------
 Since the topology transactions need to be submitted together the combined hash needs to be signed.
 The wallet SDK has a helper function to sign the combined hash:
 
-.. code-block:: javascript
-
-    import { signTransactionHash } from "@splice/wallet-sdk";
-
-    const signature = await signTransactionHash(preparedParty.combinedHash, privateKey)
+.. literalinclude:: ../../examples/snippets/sign-transaction-hash.ts
+   :language: typescript
+   :dedent:
 
 Submit the topology transactions
 ---------------------------------
 Once the signature is generated the topology transactions can be submitted to the validator.
 The wallet SDK has a helper function to submit the transactions:
 
-.. code-block:: javascript
 
-    import { WalletSDKImpl, TopologyController } from "@splice/wallet-sdk";
-
-
-    // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
-    const sdk = new WalletSDKImpl().configure({
-        logger: console,
-        authFactory: localAuthDefault, // or use your specific configuarion
-        ledgerFactory: localLedgerDefault, // or use your specific configuarion
-        topologyFactory: localTopologyDefault, // or use your specific configuarion
-    })
-
-
-    sdk.topology?.submitExternalPartyTopology(
-        signature
-        preparedParty
-    )
-
+.. literalinclude:: ../../examples/snippets/submit-signed-topology-transaction.ts
+   :language: typescript
+   :dedent:

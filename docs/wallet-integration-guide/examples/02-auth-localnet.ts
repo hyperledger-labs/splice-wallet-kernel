@@ -8,6 +8,7 @@ import {
 } from '@splice/sdk-wallet'
 import { v4 } from 'uuid'
 
+// it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
     logger: console,
     authFactory: localNetAuthDefault,
