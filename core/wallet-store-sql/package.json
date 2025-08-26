@@ -1,0 +1,41 @@
+{
+    "name": "@splice/core-wallet-store-sql",
+    "version": "0.0.1",
+    "description": "SQL implementation of the Store API.",
+    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
+    "license": "Apache-2.0",
+    "packageManager": "yarn@4.9.2",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b",
+        "dev": "tsc -b --watch",
+        "clean": "tsc -b --clean; rm -rf dist",
+        "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
+    },
+    "dependencies": {
+        "@splice/core-ledger-client": "workspace:^",
+        "@splice/core-wallet-auth": "workspace:^",
+        "@splice/core-wallet-store": "workspace:^",
+        "better-sqlite3": "^12.2.0",
+        "commander": "^14.0.0",
+        "kysely": "^0.28.5",
+        "pino": "^9.7.0",
+        "umzug": "^3.8.2",
+        "zod": "^3.25.64"
+    },
+    "devDependencies": {
+        "@jest/globals": "^29.0.0",
+        "@swc/core": "^1.11.31",
+        "@swc/jest": "^0.2.38",
+        "@types/better-sqlite3": "^7.6.13",
+        "@types/jest": "^30.0.0",
+        "jest": "^30.0.0",
+        "pino-test": "^1.1.0",
+        "ts-jest": "^29.4.0",
+        "ts-jest-resolver": "^2.0.1",
+        "tsx": "^4.20.4",
+        "typescript": "^5.8.3"
+    }
+}

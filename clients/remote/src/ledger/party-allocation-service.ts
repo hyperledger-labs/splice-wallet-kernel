@@ -87,6 +87,7 @@ export class PartyAllocationService {
         if (!res.partyDetails?.party) {
             throw new Error('Failed to allocate party')
         }
+        await this.ledgerClient.grantUserRights(userId, res.partyDetails.party)
 
         return { hint, namespace, partyId: res.partyDetails.party }
     }

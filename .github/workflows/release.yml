@@ -4,6 +4,7 @@ on:
     push:
         branches:
             - latest
+            - release/**
 permissions:
     contents: read
 jobs:
