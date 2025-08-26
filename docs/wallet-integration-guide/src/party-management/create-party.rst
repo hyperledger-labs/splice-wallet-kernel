@@ -14,18 +14,24 @@ externally and a signature is required alongside the transaction to authorize th
 How do i quickly allocate a party?
 -----------------------------------
 Using the wallet SDK you can quickly allocate a party using the following code snippet:
-.. literalinclude:: ../examples/01-auth.ts
-   :language: js
-   :dedent:
-if you are running with a localnet setup (https://docs.dev.sync.global/app_dev/testing/localnet.html) you can use this snippet instead:
-.. literalinclude:: ../examples/01-auth-localnet.ts
-   :laguage: js
-   :dedent:
 
+.. tabs::
+
+   .. tab:: Default (using Oauth)
+
+      .. literalinclude:: ../../examples/01-auth.ts
+         :language: typescript
+         :dedent:
+
+   .. tab:: Localnet By Splice
+
+      .. literalinclude:: ../../examples/02-auth-localnet.ts
+         :language: javascript
+         :dedent:
 
 Create the key Pair
 -------------------
-Creating key follow standard encryption practices similarly to other blockchains. The full details of supported cryptographic algorithms can be found https://docs.daml.com/canton/usermanual/security.html#common-node-keys.
+Creating key follow standard encryption practices similarly to other blockchains. The full details of supported cryptographic algorithms can be found `Here <https://docs.daml.com/canton/usermanual/security.html#common-node-keys>`_.
 by default a **Ed25519** is used. There exists many libraries that can be used to generate such a key pair, you can do it simply with the WalletSDK using:
 
 .. code-block:: javascript
@@ -37,10 +43,11 @@ by default a **Ed25519** is used. There exists many libraries that can be used t
 
 Generate the fingerprint
 --------------------------------
-A party is defined as ${partyHint}::${fingerprint} where the fingerprint is a sha256 hash of the public key prefixed with '12' (as indicated by the hash purpose: https://github.com/digital-asset/canton/blob/8ee65155e7f866e1f420703c376c867336b75088/community/base/src/main/scala/com/digitalasset/canton/crypto/HashPurpose.scala#L63 ).
+A party is defined as ${partyHint}::${fingerprint} where the fingerprint is a sha256 hash of the public key prefixed with '12' (as indicated by the `hash purpose <https://github.com/digital-asset/canton/blob/8ee65155e7f866e1f420703c376c867336b75088/community/base/src/main/scala/com/digitalasset/canton/crypto/HashPurpose.scala#L63>`_).
 The partyHint is a user friendly name for the party and can be anything that is unique for the fingerprint, e.g. "alice", "bob" or "my-wallet-1".
 
 The wallet SDK has fingerprint generation built in:
+
 .. code-block:: javascript
 
    import { TopologyController } from "@splice/wallet-sdk";
@@ -60,7 +67,9 @@ The three transactions that needs to be generated are:
 
 Once all the transactions are build they can be combined into a single hash and submitted as part of a single signature.
 The wallet SDK has helper functions to generate these transactions:
+
 .. code-block:: javascript
+
     import { WalletSDKImpl, TopologyController } from "@splice/wallet-sdk";
 
     // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
@@ -78,7 +87,9 @@ The wallet SDK has helper functions to generate these transactions:
 
 
 preparedParty will have the following structure:
+
 .. code-block:: javascript
+
     export type PreparedParty = {
     partyTransactions: Uint8Array<ArrayBufferLike>[] // Array of the three topology transactions
     combinedHash: string // sha256 hash of the three transactions that needs to be signed
@@ -91,7 +102,9 @@ Sign multi-hash
 -----------------
 Since the topology transactions need to be submitted together the combined hash needs to be signed.
 The wallet SDK has a helper function to sign the combined hash:
+
 .. code-block:: javascript
+
     import { signTransactionHash } from "@splice/wallet-sdk";
 
     const signature = await signTransactionHash(preparedParty.combinedHash, privateKey)
@@ -100,7 +113,9 @@ Submit the topology transactions
 ---------------------------------
 Once the signature is generated the topology transactions can be submitted to the validator.
 The wallet SDK has a helper function to submit the transactions:
+
 .. code-block:: javascript
+
     import { WalletSDKImpl, TopologyController } from "@splice/wallet-sdk";
 
 
