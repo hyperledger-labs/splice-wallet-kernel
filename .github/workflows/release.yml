@@ -4,8 +4,6 @@ on:
     push:
         branches:
             - latest
-            - release/**
-            - alex/tweak-release-config
 permissions:
     contents: write
     pull-requests: write
@@ -45,7 +43,8 @@ jobs:
             - name: Release
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: yarn nx release --skip-publish # Skip publish until we get an NPM token setup
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+              run: yarn nx release --skip-publish # Skip publish until we finalize package scope
 
             - name: Open Release PR
               env:
