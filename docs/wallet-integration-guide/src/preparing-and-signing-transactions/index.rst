@@ -1,7 +1,7 @@
 Preparing and Signing Transactions Using External Wallets
 ==========================================================
 
-trust assumptions
+Trust Assumptions
 -----------------
 
 

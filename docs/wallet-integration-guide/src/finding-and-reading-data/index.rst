@@ -4,7 +4,11 @@ Finding and Reading Data
 
 Reading from ledger
 -------------------
-Parties and synchronizers are considered core on the ledger API and therefore a filters on most requests. To facility this change easy the ledger controller
+
+.. todo:: improve writing of the text below
+
+Parties and synchronizers are considered core on the Ledger API and therefore a filter on most requests.
+To facilitate this change easily, the ledger controller
 in the Wallet SDK allows you to change these, but forces them to be required for certain operations.
 This is to ensure that you always have the correct context when reading data from the ledger.
 
@@ -50,4 +54,4 @@ to the UTXO mode of unspent and spent. Active contracts are contracts that are u
 Visualizing a Transaction
 -------------------------
 
-.. todo :: write section about using the transaction visualizer to represent a created event blob.
+.. todo:: write section about using the transaction visualizer to represent a created event blob.

@@ -4,14 +4,15 @@ Create an External Party (Wallet)
 Overview
 --------
 This document describes the steps required to create a new party (wallet/address) on a validator.
-Parties represent acting entites in the network and all transaction happens between one or more parties. parties comes in two forms, internal and external.
+Parties represent acting entites in the network and all transaction happens between one or more parties.
+Parties come in two forms, internal and external.
 An internal party is created and signed using the Validators own internal keys for signing (and thereby the validator operator has full control of everything that happens on the party).
 The alternative is to create an external party, an external party is similar to how node interactions happens on other networks. In this case the signing key can be held
 externally and a signature is required alongside the transaction to authorize the action. For external parties the base flow follows three steps: Prepare a transaction, sign the transaction and submit the transaction.
 
 *This document focuses on the steps required to create an external party using the Wallet SDK.*
 
-How do i quickly allocate a party?
+How do I quickly allocate a party?
 -----------------------------------
 Using the wallet SDK you can quickly allocate a party using the following code snippet:
 
