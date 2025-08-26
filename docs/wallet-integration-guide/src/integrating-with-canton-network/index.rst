@@ -5,11 +5,40 @@ Integrating with the Canton Network
 How to install the Wallet SDK
 -----------------------------
 
-The Wallet SDK is available as an npm package. You can install it using npm or similar build tool under the alias ``@splice/wallet-sdk``.
+The Wallet SDK is available as a package on the NPM registry. You can install it using your preferred package manager.
 
-Alternatively to do dApp only development instead can the dApp SDK be used, which has a smaller bundle size and is optimized for browser usage. The dApp SDK can be found under the alias ``@splice/dapp-sdk``.
+.. tabs::
+    .. group-tab:: npm
+        .. code:: shell
 
-Both of them uses the same underlying core packages and in case where only partial code is needed (like for transaction visualization or hash verification) those packages can be used independently.
+            npm install @splice/wallet-sdk
+    .. group-tab:: yarn
+        .. code:: shell
+
+            yarn add @splice/wallet-sdk
+    .. group-tab:: pnpm
+        .. code:: shell
+
+            pnpm add @splice/wallet-sdk
+
+Alternatively to do dApp only development instead can the dApp SDK be used, which has a smaller bundle size and is optimized for browser usage.
+The dApp SDK can be installed with:
+
+.. tabs::
+    .. group-tab:: npm
+        .. code:: shell
+
+            npm install @splice/dapp-sdk
+    .. group-tab:: yarn
+        .. code:: shell
+
+            yarn add @splice/dapp-sdk
+    .. group-tab:: pnpm
+        .. code:: shell
+
+            pnpm add @splice/dapp-sdk
+
+Both SDKs use the same underlying core packages and in case where only partial code is needed (like for transaction visualization or hash verification) those packages can be used independently.
 
 Hosting a Validator
 -------------------
