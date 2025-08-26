@@ -10,54 +10,85 @@ Key Features:
 * It uniquely balances the decentralization of public blockchains with the privacy and controls required for financial markets.
 * It enables real-time, secure synchronization and settlement across multiple asset classes on a shared, interoperable infrastructure.
 * It allows assets and data to move across applications with real-time synchronization and guaranteed privacy.
-**Technology:** The Canton Network is designed as a "network of networks," where each participating institution maintains its own sub-ledger while connecting with others via a shared synchronization layer.
+**Technology:** The Canton Network is designed as a "network of networks," where each participating institution maintains its own sub-ledger 
+while connecting with others via a shared synchronization layer.
 **Governance:** The Global Synchronizer Foundation (GSF), an independent, non-profit body under the Linux Foundation, governs the global synchronizer.
-**Participants:** Canton Network was launched in May 2023 by a group of major institutions, and continues to be backed by the world's largest financial and crypto institutions alike. Participants include Goldman Sachs, HSBC and BNP Paribas, market infrastructure providers like DTCC and Deutsche Börse, and (crypto) trading firms like DRW and QCP.
+**Participants:** Canton Network was launched in May 2023 by a group of major institutions, and continues to be backed by the world's 
+largest financial and crypto institutions alike. Participants include Goldman Sachs, HSBC and BNP Paribas, market infrastructure providers 
+like DTCC and Deutsche Börse, and (crypto) trading firms like DRW and QCP.
 
-Canton's Architecture
+Canton's High-level architecture
 ---------------------
-Expand on the below:
-
-* Nodes run consensus via synchronizers.
-* Synchronizers distribute encrypted messages.
-* Tx data is distributed on a need to know basis.
-* Thus wallets are associated with nodes - they are “hosted”.
-* You have to get the data for a wallet from a node hosting that wallet.
-* As a wallet provider/exchange you therefore need to run a node - a validator node to be precise.
-  * Because the network upgrades regularly, the node operator community asks that you run nodes in all three environments, DevNet, TestNet, and MainNet.
-  * There are multiple node as a service providers that can provide a node to you.
+Nodes and Consensus
+^^^^^^^^^^^^^^^^^^^
+The Canton network is composed of **nodes** known as "validators" that achieve consensus through **synchronizers**. 
+Validator nodes are responsible for storing contract data and executing smart contract code. 
+The synchronizers, in turn, distribute encrypted messages and facilitate transaction coordination. 
+Transaction data is only distributed on a **need-to-know basis** to maintain confidentiality. This is the key delta to other chains:
+* In most other chains, all state and transactions get replicated to all nodes/validators.
+* In Canton, state and transactions get distributed only to nodes/validators that are specified in the smart contracts.
 
 Parties
--------
-Expand on the below:
-* Wallets in Canton are called parties. These are equivalent to addresses in other chains.
-* They have this format: name::fingerprint.
-* You can generate the fingerprint from a private key.
-* To use a party, you have to onboard it, which includes setting up the party hosting.
-* To authorize a node to host a party, you need a “topology transaction” that says “this node may host my private data and participate in consensus for my wallet”.
-* The node needs to write a matching transaction that says “I'm happy to host that wallet”.
+^^^^^^^
+In Canton, **parties** are the core on-ledger identities, and are the wallet addresses, similar to an address or Externally Owned Account 
+(EOA) on other blockchains. They are central to how **permissions** and **privacy** are managed within the network.
 
-Smart Contracts
----------------
-Expand on the below:
-* Canton smart contracts are UTXO based.
-* UTXOs are typed and have annotations which determine who validates transactions acting on them, who sees them, and who can act on them. These annotations are Parties, and via the hosting relationship determines which nodes are involved in transactions.
-* The types of UTXOs are from smart contract packages distributed as DAR files. To interact with a smart contract, a node needs to install the smart contract code.
-* All nodes come pre-installed with the code for Canton Coin.
+### Party Permissions and Roles
 
-Token Standard Tokens
----------------------
-Expand on the below
-* Every token in canton has a special wallet associated with it called the “admin” or sometimes “registry” of that token. It’s the wallets that created the mint for that token.
-* By default, tokens in Canton have two types of UTXOs:
-  * Holdings
-    * Validated by and visible to the owner and the admin parties.
-    * Controlled by the owner party.
-    * Transferable to a new owner with their authorization.
-  * Reference data
-    * Validated by and visible to the admin party.
-    * Shared with wallets/owners through regular APIs.
-* Thus the admin sees the entire state of a given token.
-* Owners see their holdings in all tokens.
-* To display the holdings for a specific owner, wallets must query a node which hosts that owner..
-* Thus as a wallet provider/exchange you use your node for most read operations.
+Smart contracts specify permissions for different parties, dictating what they can and can't do. Depending on their role, parties:
+* **Validate** specific transactions, such as a transfer of assets.
+* **Control** certain actions, like initiating transfers.
+* **See** specific state and transactions, such as a record of their holdings.
+
+Privacy is maintained at the party level, meaning transaction and state data is only shared with the parties who need to see it, 
+ensuring a high degree of confidentiality.
+
+**Onboarding and Format**
+
+Parties are formatted as `name::fingerprint`, where the **fingerprint** is a unique identifier which can be generated from a public key (and thus also from a private key).
+
+To use a party, you must **onboard** it by submitting a topology transaction that authorizes a node to host it. 
+The designated node must then submit a matching transaction to officially accept the hosting request. Instructions on how to do that can be found here.
+.. TODO: Add link to 'here'
+
+**Party Hosting**
+
+Since not every user wants to host a node, parties are associated with validator nodes. These validators "host" parties by:
+* Storing the party's private data and making it available through an RPC (Remote Procedure Call) interface.
+* Participating in consensus on the party's behalf.
+
+Crucially, even though a validator hosts a party, the party retains ultimate control by holding its own independent **signing keys** externally to the participant.
+
+To participate in the network, a party must designate one or more validator nodes to host their data. This relationship, 
+known as **Party Hosting**, is established through a **topology transaction**.
+.. TODO: Add link to topology transaction
+
+Consequences & Implications
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+### Reading Data and Validator State
+A key implication of Canton's architecture for providing privacy, is how you read data. Unlike other blockchains where nodes are often ephemeral and 
+interchangeable, in Canton, **validators have state**. This means that to access a party's or user's data, you must specifically connect to 
+the **validator that hosts that party**. There is no single, all-encompassing blockchain RPC endpoint you can call to retrieve all data. 
+Instead, you'll need to use your node's RPC for private data ("Ledger API") and potentially an app provider's API for their data (e.g., a "Scan API").
+
+**Advantages and Consequences**
+
+The design of the Canton Network leads to several significant advantages:
+
+* **Privacy:** It enables true confidentiality at the smart contract level, as data is only distributed to the parties who have a legitimate need to see it.
+* **Light Node Footprint:** Nodes only process their own transactions, not the entire network's, which keeps them lightweight and efficient.
+* **Scalability:** The network can be scaled by simply adding more nodes.
+
+However, this architecture has the consequence of decentralized data access, as previously mentioned.
+
+### Implications for Wallet Providers
+
+To offer services on the Canton Network, you will need a **validator node to host your parties and your customers' parties**.
+You have two options for this: you can **self-host** a node or use a  `node-as-a-service provider <https://sync.global/current-validators-offering-nodes/>`__.
+
+For **wallets and custodians**, this means your role extends beyond just safekeeping assets; you are also responsible for 
+**safekeeping your customers' data** and preserving their privacy.
+
+The Canton Network is designed to be agile and undergoes frequent upgrades. Node operators are asked to run nodes in three different environments: 
+**DevNet, TestNet, and MainNet**. If you choose to self-host, be prepared to spin up and maintain nodes for all three environments. 
+To stay informed and get support, it's highly recommended that self-hosting node operators join the validator node operator community on Slack.
