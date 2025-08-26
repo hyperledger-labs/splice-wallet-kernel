@@ -18,7 +18,7 @@
         "typescript": "^5.8.3"
     },
     "dependencies": {
-        "@splice/sdk-wallet": "workspace:^",
+        "@splice/wallet-sdk": "workspace:^",
         "@types/node": "^24.3.0",
         "uuid": "^11.1.0"
     }

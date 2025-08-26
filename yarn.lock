@@ -4894,13 +4894,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@splice/dapp-sdk@workspace:^, @splice/dapp-sdk@workspace:sdk/dapp-sdk":
+  version: 0.0.0-use.local
+  resolution: "@splice/dapp-sdk@workspace:sdk/dapp-sdk"
+  dependencies:
+    "@splice/core-splice-provider": "workspace:^"
+    "@splice/core-types": "workspace:^"
+    "@splice/core-wallet-dapp-rpc-client": "workspace:^"
+    "@splice/core-wallet-ui-components": "workspace:^"
+    typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
+
 "@splice/example@workspace:example":
   version: 0.0.0-use.local
   resolution: "@splice/example@workspace:example"
   dependencies:
     "@eslint/js": "npm:^9.25.0"
     "@playwright/test": "npm:^1.54.2"
-    "@splice/sdk-dapp": "workspace:^"
+    "@splice/dapp-sdk": "workspace:^"
     "@types/node": "npm:^24.3.0"
     "@types/react": "npm:^19.1.2"
     "@types/react-dom": "npm:^19.1.2"
@@ -4950,21 +4962,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@splice/sdk-dapp@workspace:^, @splice/sdk-dapp@workspace:sdk/dapp-sdk":
+"@splice/wallet-sdk@workspace:^, @splice/wallet-sdk@workspace:sdk/wallet-sdk":
   version: 0.0.0-use.local
-  resolution: "@splice/sdk-dapp@workspace:sdk/dapp-sdk"
-  dependencies:
-    "@splice/core-splice-provider": "workspace:^"
-    "@splice/core-types": "workspace:^"
-    "@splice/core-wallet-dapp-rpc-client": "workspace:^"
-    "@splice/core-wallet-ui-components": "workspace:^"
-    typescript: "npm:^5.8.3"
-  languageName: unknown
-  linkType: soft
-
-"@splice/sdk-wallet@workspace:^, @splice/sdk-wallet@workspace:sdk/wallet-sdk":
-  version: 0.0.0-use.local
-  resolution: "@splice/sdk-wallet@workspace:sdk/wallet-sdk"
+  resolution: "@splice/wallet-sdk@workspace:sdk/wallet-sdk"
   dependencies:
     "@splice/core-ledger-client": "workspace:^"
     "@splice/core-signing-lib": "workspace:^"
@@ -8123,7 +8123,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "docs-wallet-integration-guide-examples@workspace:docs/wallet-integration-guide/examples"
   dependencies:
-    "@splice/sdk-wallet": "workspace:^"
+    "@splice/wallet-sdk": "workspace:^"
     "@types/node": "npm:^24.3.0"
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.8.3"
