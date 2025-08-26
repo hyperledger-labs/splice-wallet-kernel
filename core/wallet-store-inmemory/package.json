@@ -1,6 +1,6 @@
 {
     "name": "@splice/core-wallet-store-inmemory",
-    "version": "0.1.0",
+    "version": "0.0.0",
     "description": "In-memory implementation of the Store API.",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",

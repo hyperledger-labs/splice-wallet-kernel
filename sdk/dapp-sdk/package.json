@@ -1,7 +1,7 @@
 {
     "name": "@splice/sdk-dapp",
     "type": "module",
-    "version": "0.1.0",
+    "version": "0.0.0",
     "description": "Connects your splice dApp to Wallet Client users",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
