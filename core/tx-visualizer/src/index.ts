@@ -1,6 +1,6 @@
 import { PreparedTransaction } from '@splice/core-ledger-client'
-import { computePreparedTransaction } from './hashing_scheme_v2'
-import { fromBase64, toBase64, toHex } from './utils'
+import { computePreparedTransaction } from './hashing_scheme_v2.js'
+import { fromBase64, toBase64, toHex } from './utils.js'
 
 /**
  * Decodes a base64 encoded prepared transaction into a well-typed data model, generated directly from Protobuf definitions.

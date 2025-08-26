@@ -4712,7 +4712,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@splice/core-tx-visualizer@workspace:core/tx-visualizer":
+"@splice/core-tx-visualizer@workspace:^, @splice/core-tx-visualizer@workspace:core/tx-visualizer":
   version: 0.0.0-use.local
   resolution: "@splice/core-tx-visualizer@workspace:core/tx-visualizer"
   dependencies:
@@ -4983,6 +4983,7 @@ __metadata:
   dependencies:
     "@splice/core-ledger-client": "workspace:^"
     "@splice/core-signing-lib": "workspace:^"
+    "@splice/core-tx-visualizer": "workspace:^"
     "@splice/core-types": "workspace:^"
     "@splice/core-wallet-auth": "workspace:^"
     "@types/node": "npm:^24.3.0"
