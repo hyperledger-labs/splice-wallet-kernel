@@ -510,6 +510,7 @@ export class TransactionParser {
         }
 
         let result: ParsedKnownExercisedEvent | null = null
+
         switch (exercisedEvent.exerciseResult.output.tag) {
             case 'TransferInstructionResult_Failed':
             case 'TransferInstructionResult_Pending':
@@ -581,7 +582,7 @@ export class TransactionParser {
                 const holdingView = ensureInterfaceViewIsPresent(
                     selfEvent.created.createdEvent,
                     HoldingInterface
-                ).viewValue
+                ).viewValue as Holding
                 mutatingResult.archives.push({
                     amount: holdingView.amount,
                     instrumentId: holdingView.instrumentId,
@@ -604,7 +605,7 @@ export class TransactionParser {
                     interfaceView &&
                     HoldingInterface.matches(interfaceView.interfaceId)
                 ) {
-                    const holdingView = interfaceView.viewValue
+                    const holdingView = interfaceView.viewValue as Holding
                     mutatingResult.creates.push({
                         amount: holdingView.amount,
                         instrumentId: holdingView.instrumentId,
@@ -628,7 +629,7 @@ export class TransactionParser {
                     const holdingView = ensureInterfaceViewIsPresent(
                         contractEvents.created?.createdEvent,
                         HoldingInterface
-                    ).viewValue
+                    ).viewValue as Holding
                     mutatingResult.archives.push({
                         amount: holdingView.amount,
                         instrumentId: holdingView.instrumentId,
