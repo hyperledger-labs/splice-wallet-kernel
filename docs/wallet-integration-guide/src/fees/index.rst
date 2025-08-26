@@ -175,3 +175,9 @@ the validator app will
 
 For configuring the built-in top-up automation, please refer to the :ref:`validator deployment guide <helm_validator_topup>`.
 Configuring alternative methods for buying traffic, e.g., using third-party services, exceeds the scope of this documentation.
+
+
+How to determine the traffic cost of a transaction?
+---------------------------------------------------
+
+Follow this `FAQ entry in the Splice documentation <https://docs.dev.sync.global/faq.html#term-How-do-I-determine-the-traffic-used-for-a-specific-transaction>`_.

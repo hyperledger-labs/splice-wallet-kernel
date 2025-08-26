@@ -14,7 +14,7 @@ Key Features:
 
 **Technology:** The Canton Network is designed as a "network of networks," where each participating institution maintains its own sub-ledger while connecting with others via a shared synchronization layer.
 
-**Governance:** The Global Synchronizer Foundation (GSF), an independent, non-profit body under the Linux Foundation, governs the global synchronizer.
+**Governance:** The `Global Synchronizer Foundation (GSF) <https://sync.global/>`_, an independent, non-profit body under the Linux Foundation, governs the global synchronizer.
 
 **Participants:** Canton Network was launched in May 2023 by a group of major institutions, and continues to be backed by the world's largest financial and crypto institutions alike. Participants include Goldman Sachs, HSBC and BNP Paribas, market infrastructure providers like DTCC and Deutsche Börse, and (crypto) trading firms like DRW and QCP.
 
@@ -28,6 +28,7 @@ Expand on the below:
 * Thus wallets are associated with nodes - they are “hosted”.
 * You have to get the data for a wallet from a node hosting that wallet.
 * As a wallet provider/exchange you therefore need to run a node - a validator node to be precise.
+
   * Because the network upgrades regularly, the node operator community asks that you run nodes in all three environments, DevNet, TestNet, and MainNet.
   * There are multiple node as a service providers that can provide a node to you.
 
@@ -36,7 +37,7 @@ Parties
 Expand on the below:
 
 * Wallets in Canton are called parties. These are equivalent to addresses in other chains.
-* They have this format: name::fingerprint.
+* They have this format: ``name::fingerprint``.
 * You can generate the fingerprint from a private key.
 * To use a party, you have to onboard it, which includes setting up the party hosting.
 * To authorize a node to host a party, you need a “topology transaction” that says “this node may host my private data and participate in consensus for my wallet”.
@@ -66,5 +67,5 @@ Expand on the below:
         * Shared with wallets/owners through regular APIs.
 * Thus the admin sees the entire state of a given token.
 * Owners see their holdings in all tokens.
-* To display the holdings for a specific owner, wallets must query a node which hosts that owner..
+* To display the holdings for a specific owner, wallets must query a node which hosts that owner.
 * Thus as a wallet provider/exchange you use your node for most read operations.
