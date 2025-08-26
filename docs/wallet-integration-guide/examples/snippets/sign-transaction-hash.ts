@@ -1,6 +1,15 @@
 import { signTransactionHash } from '@splice/sdk-wallet'
 
-const preparedParty = { combinedHash: 'combined-hash-here' }
+const transaction = {
+    preparedTransaction: 'encoded-transaction-bytes-base64',
+    preparedTransactionHash:
+        'hash-of-the-encoded-transaction-that-needs-to-be-signed',
+    hashingSchemeVersion: 'hashing-scheme-version',
+}
+
 const privateKey = 'your-private-key-here'
 
-const signature = signTransactionHash(preparedParty.combinedHash, privateKey)
+const signature = signTransactionHash(
+    transaction.preparedTransactionHash,
+    privateKey
+)

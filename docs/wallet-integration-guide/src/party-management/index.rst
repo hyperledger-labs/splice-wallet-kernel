@@ -76,7 +76,7 @@ Sign multi-hash
 Since the topology transactions need to be submitted together the combined hash needs to be signed.
 The wallet SDK has a helper function to sign the combined hash:
 
-.. literalinclude:: ../../examples/snippets/sign-transaction-hash.ts
+.. literalinclude:: ../../examples/snippets/sign-party-transaction-hash.ts
    :language: typescript
    :dedent:
 
