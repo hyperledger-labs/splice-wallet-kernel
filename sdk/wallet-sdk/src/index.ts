@@ -21,7 +21,7 @@ type TopologyFactory = (
 export interface Config {
     authFactory: AuthFactory
     ledgerFactory: LedgerFactory
-    topologyFactory: TopologyFactory
+    topologyFactory: TopologyFactory | undefined
     logger?: Logger
 }
 
