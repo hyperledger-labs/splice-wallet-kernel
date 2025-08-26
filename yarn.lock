@@ -4516,16 +4516,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@splice/clients-remote@workspace:clients/remote"
   dependencies:
-    "@grpc/grpc-js": "npm:^1.13.4"
     "@jest/globals": "npm:^29.0.0"
     "@metamask/rpc-errors": "npm:^7.0.2"
-    "@protobuf-ts/grpc-transport": "npm:^2.11.1"
-    "@protobuf-ts/runtime": "npm:^2.11.1"
-    "@protobuf-ts/runtime-rpc": "npm:^2.11.1"
     "@splice/core-ledger-client": "workspace:^"
     "@splice/core-signing-internal": "workspace:^"
     "@splice/core-signing-lib": "workspace:^"
     "@splice/core-signing-participant": "workspace:^"
+    "@splice/core-tx-visualizer": "workspace:^"
     "@splice/core-types": "workspace:^"
     "@splice/core-wallet-auth": "workspace:^"
     "@splice/core-wallet-dapp-rpc-client": "workspace:^"
@@ -4574,6 +4571,7 @@ __metadata:
     "@protobuf-ts/grpc-transport": "npm:^2.11.1"
     "@protobuf-ts/runtime": "npm:^2.11.1"
     "@protobuf-ts/runtime-rpc": "npm:^2.11.1"
+    "@splice/core-ledger-proto": "workspace:^"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"
     "@types/jest": "npm:^30.0.0"
@@ -4584,6 +4582,18 @@ __metadata:
     pino: "npm:^9.7.0"
     ts-jest: "npm:^29.4.0"
     ts-jest-resolver: "npm:^2.0.1"
+    typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
+
+"@splice/core-ledger-proto@workspace:^, @splice/core-ledger-proto@workspace:core/ledger-proto":
+  version: 0.0.0-use.local
+  resolution: "@splice/core-ledger-proto@workspace:core/ledger-proto"
+  dependencies:
+    "@protobuf-ts/runtime": "npm:^2.11.1"
+    "@protobuf-ts/runtime-rpc": "npm:^2.11.1"
+    "@swc/core": "npm:^1.11.31"
+    "@types/node": "npm:^22.15.30"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -4719,7 +4729,7 @@ __metadata:
     "@jest/globals": "npm:^29.0.0"
     "@protobuf-ts/runtime": "npm:^2.11.1"
     "@protobuf-ts/runtime-rpc": "npm:^2.11.1"
-    "@splice/core-ledger-client": "workspace:^"
+    "@splice/core-ledger-proto": "workspace:^"
     "@swc/core": "npm:^1.13.3"
     "@swc/jest": "npm:^0.2.38"
     "@types/jest": "npm:^30.0.0"
