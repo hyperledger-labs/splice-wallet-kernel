@@ -49,8 +49,10 @@ export function filtersByParty(
                         ? [
                               {
                                   identifierFilter: {
-                                      WildcardFilter: {
+                                      InterfaceFilter: {
                                           value: {
+                                              interfaceId: '*',
+                                              includeInterfaceView: false,
                                               includeCreatedEventBlob: true,
                                           },
                                       },
@@ -134,15 +136,24 @@ export function ensureInterfaceViewIsPresent(
 type Meta = { values: { [key: string]: string } } | undefined
 
 export function mergeMetas(event: ExercisedEvent): Meta {
+    // Add a type assertion to help TypeScript understand the shape of choiceArgument
+    const choiceArgument = event.choiceArgument as
+        | {
+              transfer?: { meta?: Meta }
+              extraArgs?: { meta?: Meta }
+              meta?: Meta
+          }
+        | undefined
+
     const lastWriteWins = [
-        event.choiceArgument?.transfer?.meta,
-        event.choiceArgument?.extraArgs?.meta,
-        event.choiceArgument?.meta,
-        event.exerciseResult?.meta,
+        choiceArgument?.transfer?.meta,
+        choiceArgument?.extraArgs?.meta,
+        choiceArgument?.meta,
+        (event.exerciseResult as { meta?: Meta } | undefined)?.meta,
     ]
     const result: { [key: string]: string } = {}
     lastWriteWins.forEach((meta) => {
-        const values: { [key: string]: string } = meta?.values || []
+        const values: { [key: string]: string } = meta?.values || {}
         Object.entries(values).forEach(([k, v]) => {
             result[k] = v
         })
@@ -337,12 +348,14 @@ function signTransaction(
 interface Completion {
     updateId: string
     // the openAPI definition claims these two can be null
-    synchronizerId?: string
-    recordTime?: string
+    synchronizerId: string | undefined
+    recordTime: string | undefined
 }
 
-const COMPLETIONS_LIMIT = 100
-const COMPLETIONS_STREAM_IDLE_TIMEOUT_MS = 1000
+// TODO: awaitCompletion loop
+// const COMPLETIONS_LIMIT = 100
+// const COMPLETIONS_STREAM_IDLE_TIMEOUT_MS = 1000
+
 /**
  * Polls the completions endpoint until
  * the completion with the given (userId, commandId, submissionId) is returned.
@@ -356,22 +369,19 @@ async function awaitCompletion(
     commandId: string,
     submissionId: string
 ): Promise<Completion> {
-    const responses = await ledgerClient.post(
-        '/v2/commands/completions',
-        {
-            userId,
-            parties: [partyId],
-            beginExclusive: ledgerEnd,
-        },
-        COMPLETIONS_LIMIT,
-        COMPLETIONS_STREAM_IDLE_TIMEOUT_MS
-    )
+    const responses = await ledgerClient.post('/v2/commands/completions', {
+        userId,
+        parties: [partyId],
+        beginExclusive: ledgerEnd,
+    })
+
     const completions = responses.filter(
         (response) => !!response.completionResponse.Completion
     )
 
     const wantedCompletion = completions.find((response) => {
         const completion = response.completionResponse.Completion
+        if (!completion) return false
         return (
             completion.value.userId === userId &&
             completion.value.commandId === commandId &&
@@ -380,28 +390,23 @@ async function awaitCompletion(
     })
 
     if (wantedCompletion) {
-        const status =
-            wantedCompletion.completionResponse.Completion.value.status
+        const completion = wantedCompletion.completionResponse.Completion!
+        const status = completion.value.status
         if (status && status.code !== 0) {
             // status.code is 0 for success
             throw new Error(
-                `Command failed with status: ${JSON.stringify(wantedCompletion.completionResponse.Completion.value.status)}`
+                `Command failed with status: ${JSON.stringify(status)}`
             )
         }
         return {
-            synchronizerId:
-                wantedCompletion.completionResponse.Completion.value
-                    .synchronizerTime?.synchronizerId,
-            recordTime:
-                wantedCompletion.completionResponse.Completion.value
-                    .synchronizerTime?.recordTime,
-            updateId:
-                wantedCompletion.completionResponse.Completion.value.updateId,
+            synchronizerId: completion.value.synchronizerTime?.synchronizerId,
+            recordTime: completion.value.synchronizerTime?.recordTime,
+            updateId: completion.value.updateId,
         }
     } else {
         const lastCompletion = completions[completions.length - 1]
         const newLedgerEnd =
-            lastCompletion?.completionResponse.Completion.value.offset
+            lastCompletion?.completionResponse.Completion!.value.offset
         return awaitCompletion(
             ledgerClient,
             newLedgerEnd || ledgerEnd, // !newLedgerEnd implies response was empty
