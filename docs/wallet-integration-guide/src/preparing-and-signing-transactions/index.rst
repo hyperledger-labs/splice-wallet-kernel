@@ -56,7 +56,7 @@ preparing the Transaction
 Now that we have a command we need to prepare the transaction against the ledger. A transaction is a collection of commands that are atomic, meaning that either all commands
 succeed or none of them do. To prepare a transaction we need to send the commands to the ledger:
 
-.. literalinclude:: ../../examples/snippets/prepare-ping-command.ts
+.. literalinclude:: ../../examples/snippets/prepare-ping-transaction.ts
     :language: typescript
     :dedent:
 
