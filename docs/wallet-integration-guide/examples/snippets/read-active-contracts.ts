@@ -13,11 +13,11 @@ const sdk = new WalletSDKImpl().configure({
 
 const offset = 100 // you can use the sdk.userLedger.ledgerEnd() to get the latest offset
 
-const allActiveContracts = await sdk.userLedger.activeContracts({ offset })
+const allActiveContracts = await sdk.userLedger?.activeContracts({ offset })
 
 const myTemplateId = 'your-template-id-here'
 
-const allActiveContractOfMyTemplate = await sdk.userLedger.activeContracts({
+const allActiveContractOfMyTemplate = await sdk.userLedger?.activeContracts({
     offset,
     templateIds: [myTemplateId],
 })

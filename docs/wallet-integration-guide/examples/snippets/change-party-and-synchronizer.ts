@@ -11,5 +11,5 @@ const sdk = new WalletSDKImpl().configure({
     topologyFactory: undefined, //these calls require no topology changes
 })
 
-sdk.userLedger.setPartyId('my-wallet-1')
-sdk.userLedger.setSynchronizerId('synchronizer-1')
+sdk.userLedger?.setPartyId('my-wallet-1')
+sdk.userLedger?.setSynchronizerId('synchronizer-1')

@@ -11,4 +11,4 @@ const sdk = new WalletSDKImpl().configure({
     topologyFactory: undefined, //these calls require no topology changes
 })
 
-const ledgerEnd = await sdk.userLedger.ledgerEnd()
+const ledgerEnd = await sdk.userLedger?.ledgerEnd()
