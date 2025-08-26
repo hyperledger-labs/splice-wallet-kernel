@@ -92,9 +92,9 @@ Sign multi-hash
 Since the topology transactions need to be submitted together the combined hash needs to be signed.
 The wallet SDK has a helper function to sign the combined hash:
 .. code-block:: javascript
-    import { SignTransactionHash } from "@splice/wallet-sdk";
+    import { signTransactionHash } from "@splice/wallet-sdk";
 
-    const signature = await SignTransactionHash(preparedParty.combinedHash, privateKey)
+    const signature = await signTransactionHash(preparedParty.combinedHash, privateKey)
 
 Submit the topology transactions
 ---------------------------------
