@@ -11,6 +11,7 @@ import {
 } from './constants'
 import { components } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import { LedgerClient } from './LedgerClient'
+import { Holding, TransferInstructionView } from './txparse/types'
 
 type TransactionFilter = components['schemas']['TransactionFilter']
 type CreatedEvent = components['schemas']['CreatedEvent']
@@ -81,10 +82,9 @@ export function getInterfaceView(
     return (interfaceViews && interfaceViews[0]) || null
 }
 
-export type KnownInterfaceView = {
-    type: 'Holding' | 'TransferInstruction'
-    viewValue: unknown
-}
+export type KnownInterfaceView =
+    | { type: 'Holding'; viewValue: Holding }
+    | { type: 'TransferInstruction'; viewValue: TransferInstructionView }
 
 export function getKnownInterfaceView(
     createdEvent: CreatedEvent
@@ -93,13 +93,16 @@ export function getKnownInterfaceView(
     if (!interfaceView) {
         return null
     } else if (HoldingInterface.matches(interfaceView.interfaceId)) {
-        return { type: 'Holding', viewValue: interfaceView.viewValue }
+        return {
+            type: 'Holding',
+            viewValue: interfaceView.viewValue as Holding,
+        }
     } else if (
         TransferInstructionInterface.matches(interfaceView.interfaceId)
     ) {
         return {
             type: 'TransferInstruction',
-            viewValue: interfaceView.viewValue,
+            viewValue: interfaceView.viewValue as TransferInstructionView,
         }
     } else {
         return null

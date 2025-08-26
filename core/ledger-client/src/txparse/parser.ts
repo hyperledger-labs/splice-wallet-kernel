@@ -498,7 +498,7 @@ export class TransactionParser {
         const transferInstructionView = ensureInterfaceViewIsPresent(
             transferInstructionEvents.created.createdEvent,
             TransferInstructionInterface
-        ).viewValue
+        ).viewValue as TransferInstructionView
         const transferInstruction: TransferInstructionView = {
             originalInstructionCid:
                 transferInstructionView.originalInstructionCid,
