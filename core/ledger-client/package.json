@@ -33,6 +33,8 @@
     "dependencies": {
         "@protobuf-ts/runtime": "^2.11.1",
         "@protobuf-ts/runtime-rpc": "^2.11.1",
+        "bignumber.js": "^9.2.1",
+        "dayjs": "^1.11.13",
         "openapi-fetch": "^0.14.0",
         "pino": "^9.7.0"
     }

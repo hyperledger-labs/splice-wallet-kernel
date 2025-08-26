@@ -4578,6 +4578,8 @@ __metadata:
     "@swc/jest": "npm:^0.2.38"
     "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:^22.15.30"
+    bignumber.js: "npm:^9.2.1"
+    dayjs: "npm:^1.11.13"
     jest: "npm:^30.0.0"
     openapi-fetch: "npm:^0.14.0"
     openapi-typescript: "npm:^7.8.0"
@@ -6829,6 +6831,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bignumber.js@npm:^9.2.1":
+  version: 9.3.1
+  resolution: "bignumber.js@npm:9.3.1"
+  checksum: 10c0/61342ba5fe1c10887f0ecf5be02ff6709271481aff48631f86b4d37d55a99b87ce441cfd54df3d16d10ee07ceab7e272fc0be430c657ffafbbbf7b7d631efb75
+  languageName: node
+  linkType: hard
+
 "binary-extensions@npm:^2.0.0":
   version: 2.3.0
   resolution: "binary-extensions@npm:2.3.0"
@@ -7875,7 +7884,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dayjs@npm:~1.11.13":
+"dayjs@npm:^1.11.13, dayjs@npm:~1.11.13":
   version: 1.11.13
   resolution: "dayjs@npm:1.11.13"
   checksum: 10c0/a3caf6ac8363c7dade9d1ee797848ddcf25c1ace68d9fe8678ecf8ba0675825430de5d793672ec87b24a69bf04a1544b176547b2539982275d5542a7955f35b7
