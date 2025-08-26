@@ -1,0 +1,91 @@
+Create a Party / Address
+========================
+
+Overview
+--------
+This document describes the steps required to create a new party (wallet/address) on a validator.
+Parties represent acting entites in the network and all transaction happens between one or more parties. parties comes in two forms, internal and external.
+An internal party is created and signed using the Validators own internal keys for signing (and thereby the validator operator has full control of everything that happens on the party).
+The alternative is to create an external party, an external party is similar to how node interactions happens on other networks. In this case the signing key can be held
+externally and a signature is required alongside the transaction to authorize the action. For external parties the base flow follows three steps: Prepare a transaction, sign the transaction and submit the transaction.
+
+*This document focuses on the steps required to create an external party using the Wallet SDK.*
+
+How do i quickly allocate a party?
+-----------------------------------
+Using the wallet SDK you can quickly allocate a party using the following code snippet:
+
+.. tabs::
+
+    .. tab:: Quick using Splice LocalNet
+
+        .. literalinclude:: ../../examples/snippets/allocate-party.ts
+            :language: typescript
+            :dedent:
+
+    .. tab:: Comprehensive using OAuth
+
+        .. literalinclude:: ../../examples/01-auth.ts
+            :language: typescript
+            :dedent:
+
+    .. tab:: Comprehensive using Splice LocalNet
+
+        .. literalinclude:: ../../examples/02-auth-localnet.ts
+            :language: typescript
+            :dedent:
+
+Create the key Pair
+-------------------
+Creating key follow standard encryption practices similarly to other blockchains. The full details of supported cryptographic algorithms can be found `Here <https://docs.daml.com/canton/usermanual/security.html#common-node-keys>`_.
+by default a **Ed25519** is used. There exists many libraries that can be used to generate such a key pair, you can do it simply with the WalletSDK using:
+
+.. literalinclude:: ../../examples/snippets/create-key-pair.ts
+   :language: typescript
+   :dedent:
+
+Generate the fingerprint
+--------------------------------
+A party is defined as **${partyHint}::${fingerprint}** where the fingerprint is a sha256 hash of the public key prefixed with '12' (as indicated by the `hash purpose <https://github.com/digital-asset/canton/blob/8ee65155e7f866e1f420703c376c867336b75088/community/base/src/main/scala/com/digitalasset/canton/crypto/HashPurpose.scala#L63>`_).
+The partyHint is a user friendly name for the party and can be anything that is unique for the fingerprint, e.g. "alice", "bob" or "my-wallet-1".
+
+The wallet SDK has fingerprint generation built in:
+
+.. literalinclude:: ../../examples/snippets/generate-fingerprint.ts
+   :language: typescript
+   :dedent:
+
+Generating the topology transactions
+------------------------------------
+When onboarding using external signing, multiple topology transactions are required to be generated and signed in order to facilitate this.
+This is because both the keyHolder (the party) and the node (the validator) needs to agree on the hosting relationship.
+The three transactions that needs to be generated are:
+- PartyToParticipant: This transaction indicates that the party agrees to be hosted by the participant (validator).
+- ParticipantToParty: This transaction indicates that the participant (validator) agrees to host the party.
+- KeyToParty: This transaction indicates that the key (public key) is associated with the party.
+
+Once all the transactions are build they can be combined into a single hash and submitted as part of a single signature.
+The wallet SDK has helper functions to generate these transactions:
+
+.. literalinclude:: ../../examples/snippets/create-topology-transactions.ts
+   :language: typescript
+   :dedent:
+
+Sign multi-hash
+-----------------
+Since the topology transactions need to be submitted together the combined hash needs to be signed.
+The wallet SDK has a helper function to sign the combined hash:
+
+.. literalinclude:: ../../examples/snippets/sign-transaction-hash.ts
+   :language: typescript
+   :dedent:
+
+Submit the topology transactions
+---------------------------------
+Once the signature is generated the topology transactions can be submitted to the validator.
+The wallet SDK has a helper function to submit the transactions:
+
+
+.. literalinclude:: ../../examples/snippets/submit-signed-topology-transaction.ts
+   :language: typescript
+   :dedent:
