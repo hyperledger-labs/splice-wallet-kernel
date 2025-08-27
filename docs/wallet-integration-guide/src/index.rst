@@ -13,3 +13,4 @@ Wallet Integration Guide
    signing-transactions-from-dapps/index
    fees/index
    canton-coin-rewards/index
+   exchange-integration/index

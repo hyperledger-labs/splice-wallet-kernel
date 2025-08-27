@@ -2,7 +2,7 @@ import {
     WalletSDKImpl,
     localNetAuthDefault,
     localNetLedgerDefault,
-} from '@splice/sdk-wallet'
+} from '@splice/wallet-sdk'
 
 const sdk = new WalletSDKImpl().configure({
     logger: console,

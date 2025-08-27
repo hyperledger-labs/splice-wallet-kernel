@@ -33,6 +33,7 @@
     "dependencies": {
         "@protobuf-ts/runtime": "^2.11.1",
         "@protobuf-ts/runtime-rpc": "^2.11.1",
+        "@splice/core-ledger-proto": "workspace:^",
         "openapi-fetch": "^0.14.0",
         "pino": "^9.7.0"
     }
