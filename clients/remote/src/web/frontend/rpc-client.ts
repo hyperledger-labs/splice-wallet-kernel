@@ -1,4 +1,4 @@
-import { HttpTransport } from '@splice/core-types'
+import { HttpTransport } from '@hyperledger-labs/core-types'
 
 import UserApiClient from '@splice/core-wallet-user-rpc-client'
 import { config } from './config'

@@ -1,4 +1,4 @@
-import { RequestPayload, WindowTransport } from '@splice/core-types'
+import { RequestPayload, WindowTransport } from '@hyperledger-labs/core-types'
 import { SpliceProviderBase } from './SpliceProvider.js'
 
 export class SpliceProviderWindow extends SpliceProviderBase {

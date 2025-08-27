@@ -6,7 +6,7 @@ import {
     ResponsePayload,
     SpliceMessage,
     WalletEvent,
-} from '@splice/core-types'
+} from '@hyperledger-labs/core-types'
 import { rpcErrors } from '@metamask/rpc-errors'
 
 const controller = dappController()

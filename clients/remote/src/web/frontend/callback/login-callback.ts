@@ -1,4 +1,4 @@
-import { WalletEvent } from '@splice/core-types'
+import { WalletEvent } from '@hyperledger-labs/core-types'
 import { LitElement, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { userClient } from '../rpc-client'

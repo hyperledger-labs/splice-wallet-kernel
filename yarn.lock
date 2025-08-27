@@ -2490,6 +2490,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@hyperledger-labs/core-types@workspace:^, @hyperledger-labs/core-types@workspace:core/types":
+  version: 0.0.0-use.local
+  resolution: "@hyperledger-labs/core-types@workspace:core/types"
+  dependencies:
+    typescript: "npm:^5.8.3"
+    uuid: "npm:^11.1.0"
+    zod: "npm:^3.25.67"
+  languageName: unknown
+  linkType: soft
+
 "@iarna/toml@npm:^2.2.5":
   version: 2.2.5
   resolution: "@iarna/toml@npm:2.2.5"
@@ -4791,8 +4801,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@splice/clients-extension@workspace:clients/extension"
   dependencies:
+    "@hyperledger-labs/core-types": "workspace:^"
     "@metamask/rpc-errors": "npm:^7.0.2"
-    "@splice/core-types": "workspace:^"
     "@splice/core-wallet-store": "workspace:^"
     "@splice/core-wallet-ui-components": "workspace:^"
     "@types/node": "npm:^24.0.4"
@@ -4810,6 +4820,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@splice/clients-remote@workspace:clients/remote"
   dependencies:
+    "@hyperledger-labs/core-types": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
     "@metamask/rpc-errors": "npm:^7.0.2"
     "@splice/core-ledger-client": "workspace:^"
@@ -4817,7 +4828,6 @@ __metadata:
     "@splice/core-signing-lib": "workspace:^"
     "@splice/core-signing-participant": "workspace:^"
     "@splice/core-tx-visualizer": "workspace:^"
-    "@splice/core-types": "workspace:^"
     "@splice/core-wallet-auth": "workspace:^"
     "@splice/core-wallet-dapp-rpc-client": "workspace:^"
     "@splice/core-wallet-store": "workspace:^"
@@ -4999,7 +5009,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@splice/core-splice-provider@workspace:core/splice-provider"
   dependencies:
-    "@splice/core-types": "workspace:^"
+    "@hyperledger-labs/core-types": "workspace:^"
     "@splice/core-wallet-ui-components": "workspace:^"
     socket.io-client: "npm:^4.8.1"
     typescript: "npm:^5.8.3"
@@ -5039,22 +5049,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@splice/core-types@workspace:^, @splice/core-types@workspace:core/types":
-  version: 0.0.0-use.local
-  resolution: "@splice/core-types@workspace:core/types"
-  dependencies:
-    typescript: "npm:^5.8.3"
-    uuid: "npm:^11.1.0"
-    zod: "npm:^3.25.67"
-  languageName: unknown
-  linkType: soft
-
 "@splice/core-wallet-auth@workspace:^, @splice/core-wallet-auth@workspace:core/wallet-auth":
   version: 0.0.0-use.local
   resolution: "@splice/core-wallet-auth@workspace:core/wallet-auth"
   dependencies:
+    "@hyperledger-labs/core-types": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
-    "@splice/core-types": "workspace:^"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"
     "@types/jest": "npm:^30.0.0"
@@ -5070,7 +5070,7 @@ __metadata:
   resolution: "@splice/core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client"
   dependencies:
     "@eslint/js": "npm:9.21.0"
-    "@splice/core-types": "workspace:^"
+    "@hyperledger-labs/core-types": "workspace:^"
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
@@ -5155,8 +5155,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@splice/core-wallet-ui-components@workspace:core/wallet-ui-components"
   dependencies:
+    "@hyperledger-labs/core-types": "workspace:^"
     "@popperjs/core": "npm:^2.11.8"
-    "@splice/core-types": "workspace:^"
     "@splice/core-wallet-store": "workspace:^"
     "@types/bootstrap": "npm:^5"
     bootstrap: "npm:^5.3.7"
@@ -5171,7 +5171,7 @@ __metadata:
   resolution: "@splice/core-wallet-user-rpc-client@workspace:core/wallet-user-rpc-client"
   dependencies:
     "@eslint/js": "npm:9.21.0"
-    "@splice/core-types": "workspace:^"
+    "@hyperledger-labs/core-types": "workspace:^"
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
@@ -5192,8 +5192,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@splice/dapp-sdk@workspace:sdk/dapp-sdk"
   dependencies:
+    "@hyperledger-labs/core-types": "workspace:^"
     "@splice/core-splice-provider": "workspace:^"
-    "@splice/core-types": "workspace:^"
     "@splice/core-wallet-dapp-rpc-client": "workspace:^"
     "@splice/core-wallet-ui-components": "workspace:^"
     typescript: "npm:^5.8.3"
@@ -5260,10 +5260,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@splice/wallet-sdk@workspace:sdk/wallet-sdk"
   dependencies:
+    "@hyperledger-labs/core-types": "workspace:^"
     "@splice/core-ledger-client": "workspace:^"
     "@splice/core-signing-lib": "workspace:^"
     "@splice/core-tx-visualizer": "workspace:^"
-    "@splice/core-types": "workspace:^"
     "@splice/core-wallet-auth": "workspace:^"
     "@types/node": "npm:^24.3.0"
     jose: "npm:^5.2.4"

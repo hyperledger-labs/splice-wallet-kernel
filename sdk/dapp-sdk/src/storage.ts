@@ -1,4 +1,4 @@
-import { DiscoverResult } from '@splice/core-types'
+import { DiscoverResult } from '@hyperledger-labs/core-types'
 import * as dappAPI from '@splice/core-wallet-dapp-rpc-client'
 
 enum LOCAL_STORAGE {

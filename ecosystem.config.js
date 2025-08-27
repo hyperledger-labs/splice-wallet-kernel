@@ -66,7 +66,7 @@ export const apps = [
     },
     {
         name: 'core-types',
-        script: 'yarn workspace @splice/core-types dev',
+        script: 'yarn workspace @hyperledger-labs/core-types dev',
         env_development: sharedEnvDevelopment,
     },
 ]

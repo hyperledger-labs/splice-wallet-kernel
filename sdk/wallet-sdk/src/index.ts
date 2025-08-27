@@ -4,7 +4,7 @@ import {
     localTopologyDefault,
     TopologyController,
 } from './topologyController.js'
-import { Logger } from '@splice/core-types'
+import { Logger } from '@hyperledger-labs/core-types'
 
 export * from './ledgerController.js'
 export * from './authController.js'

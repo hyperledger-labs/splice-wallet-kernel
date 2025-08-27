@@ -5,7 +5,7 @@ import {
     ErrorResponse,
     JsonRpcRequest,
     jsonRpcResponse,
-} from '@splice/core-types'
+} from '@hyperledger-labs/core-types'
 
 interface JsonRpcHttpOptions<T> {
     logger: Logger

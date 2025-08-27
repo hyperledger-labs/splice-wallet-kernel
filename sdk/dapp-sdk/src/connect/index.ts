@@ -5,7 +5,11 @@ import {
 } from '@splice/core-splice-provider'
 import * as dappAPI from '@splice/core-wallet-dapp-rpc-client'
 import * as storage from '../storage'
-import { DiscoverResult, SpliceMessage, WalletEvent } from '@splice/core-types'
+import {
+    DiscoverResult,
+    SpliceMessage,
+    WalletEvent,
+} from '@hyperledger-labs/core-types'
 export * from '@splice/core-splice-provider'
 
 const injectProvider = ({ walletType, url }: DiscoverResult) => {

@@ -17,7 +17,7 @@
         "typescript": "^5.8.3"
     },
     "dependencies": {
-        "@splice/core-types": "workspace:^",
+        "@hyperledger-labs/core-types": "workspace:^",
         "@splice/core-wallet-ui-components": "workspace:^",
         "socket.io-client": "^4.8.1"
     }

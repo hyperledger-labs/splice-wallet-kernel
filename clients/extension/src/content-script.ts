@@ -2,7 +2,7 @@ import {
     SpliceMessage,
     SpliceMessageEvent,
     WalletEvent,
-} from '@splice/core-types'
+} from '@hyperledger-labs/core-types'
 import Browser from 'webextension-polyfill'
 
 // Handle incoming RPC requests from the dapp,

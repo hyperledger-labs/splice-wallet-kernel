@@ -1,5 +1,5 @@
 import { SignJWT } from 'jose'
-import { Logger } from '@splice/core-types'
+import { Logger } from '@hyperledger-labs/core-types'
 import { AuthContext, ClientCredentialsService } from '@splice/core-wallet-auth'
 
 export interface AuthController {

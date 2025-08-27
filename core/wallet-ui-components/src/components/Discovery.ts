@@ -1,4 +1,7 @@
-import { DiscoverResult, SpliceMessageEvent } from '@splice/core-types'
+import {
+    DiscoverResult,
+    SpliceMessageEvent,
+} from '@hyperledger-labs/core-types'
 
 /**
  * Discovery implements the view of the Wallet Kernel selection window.

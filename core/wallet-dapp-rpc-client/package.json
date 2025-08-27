@@ -17,7 +17,7 @@
     "author": "",
     "license": "Apache-2.0",
     "dependencies": {
-        "@splice/core-types": "workspace:^",
+        "@hyperledger-labs/core-types": "workspace:^",
         "lodash": "^4.17.15"
     },
     "devDependencies": {
