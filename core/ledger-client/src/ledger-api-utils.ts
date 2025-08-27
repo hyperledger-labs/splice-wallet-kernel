@@ -348,7 +348,7 @@ function signTransaction(
     }
 }
 
-interface Completion {
+export interface Completion {
     updateId: string
     // the openAPI definition claims these two can be null
     synchronizerId: string | undefined
