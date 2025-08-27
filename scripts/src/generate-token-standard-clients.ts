@@ -21,6 +21,7 @@ const OUTPUT_CLIENTS_DIR = path.join(
     getRepoRoot(),
     'core',
     'token-standard',
+    'src',
     'generated-clients'
 )
 
