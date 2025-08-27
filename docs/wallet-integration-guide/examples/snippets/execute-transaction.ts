@@ -1,9 +1,8 @@
 import {
     localNetAuthDefault,
     localNetLedgerDefault,
-    signTransactionHash,
     WalletSDKImpl,
-} from '@splice/sdk-wallet'
+} from '@splice/wallet-sdk'
 import { v4 } from 'uuid'
 
 const sdk = new WalletSDKImpl().configure({

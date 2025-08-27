@@ -3,8 +3,7 @@ import {
     localNetAuthDefault,
     localNetLedgerDefault,
     TopologyController,
-} from '@splice/sdk-wallet'
-import { v4 } from 'uuid'
+} from '@splice/wallet-sdk'
 
 const sdk = new WalletSDKImpl().configure({
     logger: console,
