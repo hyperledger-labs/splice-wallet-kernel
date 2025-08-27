@@ -4967,6 +4967,7 @@ __metadata:
   resolution: "@splice/wallet-sdk@workspace:sdk/wallet-sdk"
   dependencies:
     "@splice/core-ledger-client": "workspace:^"
+    "@splice/core-ledger-proto": "workspace:^"
     "@splice/core-signing-lib": "workspace:^"
     "@splice/core-tx-visualizer": "workspace:^"
     "@splice/core-types": "workspace:^"
