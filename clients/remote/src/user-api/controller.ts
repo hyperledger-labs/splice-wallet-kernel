@@ -1,6 +1,6 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { LedgerClient } from '@splice/core-ledger-client'
+import { LedgerClient } from '@canton-network/core-ledger-client'
 import buildController from './rpc-gen/index.js'
 import {
     AddNetworkParams,
@@ -12,15 +12,18 @@ import {
     ListSessionsResult,
     SetPrimaryWalletParams,
 } from './rpc-gen/typings.js'
-import { Store, Auth, Transaction } from '@splice/core-wallet-store'
+import { Store, Auth, Transaction } from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'
 import { NotificationService } from '../notification/NotificationService.js'
-import { AuthContext, clientCredentialsService } from '@splice/core-wallet-auth'
+import {
+    AuthContext,
+    clientCredentialsService,
+} from '@canton-network/core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
 import {
     SigningDriverInterface,
     SigningProvider,
-} from '@splice/core-signing-lib'
+} from '@canton-network/core-signing-lib'
 import {
     AllocatedParty,
     PartyAllocationService,

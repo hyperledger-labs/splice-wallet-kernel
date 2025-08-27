@@ -1,6 +1,9 @@
 import { SignJWT } from 'jose'
-import { Logger } from '@splice/core-types'
-import { AuthContext, ClientCredentialsService } from '@splice/core-wallet-auth'
+import { Logger } from '@canton-network/core-types'
+import {
+    AuthContext,
+    ClientCredentialsService,
+} from '@canton-network/core-wallet-auth'
 
 export interface AuthController {
     /** gets an auth context correlating to the admin user provided.

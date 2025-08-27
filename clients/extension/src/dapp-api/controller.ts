@@ -10,7 +10,7 @@ import {
     PrepareReturnParams,
 } from './rpc-gen/typings.js'
 
-import { Store } from '@splice/core-wallet-store'
+import { Store } from '@canton-network/core-wallet-store'
 
 const kernelInfo: KernelInfo = {
     id: 'default-kernel-id',

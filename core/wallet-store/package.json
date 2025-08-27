@@ -1,5 +1,5 @@
 {
-    "name": "@splice/core-wallet-store",
+    "name": "@canton-network/core-wallet-store",
     "version": "0.0.0",
     "description": "The Store API provides persistency for the wallet kernel.",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",

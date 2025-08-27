@@ -1,5 +1,5 @@
 {
-    "name": "@splice/core-ledger-proto",
+    "name": "@canton-network/core-ledger-proto",
     "version": "0.0.0",
     "description": "Provides typescript generated from the canton protobufs.",
     "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",

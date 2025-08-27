@@ -10,10 +10,10 @@ import {
     Transaction,
     Error as RpcError,
     CC_COIN_TYPE,
-} from '@splice/core-signing-lib'
+} from '@canton-network/core-signing-lib'
 import { PublicKeyInformationAlgorithmEnum } from '@fireblocks/ts-sdk'
-import { AuthContext } from '@splice/core-wallet-auth'
-import { Methods } from '@splice/core-signing-lib'
+import { AuthContext } from '@canton-network/core-wallet-auth'
+import { Methods } from '@canton-network/core-signing-lib'
 import { FireblocksApiKeyInfo, FireblocksTransaction } from './fireblocks.js'
 
 const TEST_KEY_NAME = 'test-key-name'

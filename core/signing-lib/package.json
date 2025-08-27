@@ -1,5 +1,5 @@
 {
-    "name": "@splice/core-signing-lib",
+    "name": "@canton-network/core-signing-lib",
     "version": "0.0.0",
     "packageManager": "yarn@4.9.2",
     "type": "module",
@@ -10,7 +10,7 @@
         "clean": "tsc -b --clean && rm -rf ./dist"
     },
     "dependencies": {
-        "@splice/core-wallet-auth": "workspace:^",
+        "@canton-network/core-wallet-auth": "workspace:^",
         "fs-extra": "^11.3.0",
         "lodash": "^4.17.21",
         "tweetnacl": "^1.0.3",

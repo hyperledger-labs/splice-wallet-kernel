@@ -5,7 +5,7 @@ import {
     PartyMode,
     SigningDriverInterface,
     SigningProvider,
-} from '@splice/core-signing-lib'
+} from '@canton-network/core-signing-lib'
 
 import {
     SignTransactionParams,
@@ -23,11 +23,11 @@ import {
     SubscribeTransactionsResult,
     SetConfigurationResult,
     Transaction,
-} from '@splice/core-signing-lib'
+} from '@canton-network/core-signing-lib'
 import { FireblocksHandler, FireblocksApiKeyInfo } from './fireblocks.js'
 import _ from 'lodash'
 import { z } from 'zod'
-import { AuthContext } from '@splice/core-wallet-auth'
+import { AuthContext } from '@canton-network/core-wallet-auth'
 
 export interface FireblocksConfig {
     defaultKeyInfo?: FireblocksApiKeyInfo

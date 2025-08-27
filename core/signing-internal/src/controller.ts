@@ -7,7 +7,7 @@ import {
     SigningProvider,
     signTransactionHash,
     createKeyPair,
-} from '@splice/core-signing-lib'
+} from '@canton-network/core-signing-lib'
 
 import {
     SignTransactionParams,
@@ -25,9 +25,9 @@ import {
     SubscribeTransactionsResult,
     SetConfigurationResult,
     Transaction,
-} from '@splice/core-signing-lib'
+} from '@canton-network/core-signing-lib'
 import { randomUUID } from 'node:crypto'
-import { AuthContext } from '@splice/core-wallet-auth'
+import { AuthContext } from '@canton-network/core-wallet-auth'
 
 interface InternalKey {
     id: string

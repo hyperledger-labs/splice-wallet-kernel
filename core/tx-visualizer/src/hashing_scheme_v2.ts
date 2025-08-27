@@ -6,15 +6,20 @@ import {
     Metadata,
     Metadata_InputContract,
     PreparedTransaction,
-} from '@splice/core-ledger-proto'
-import { Create, Exercise, Fetch, Rollback } from '@splice/core-ledger-proto'
+} from '@canton-network/core-ledger-proto'
+import {
+    Create,
+    Exercise,
+    Fetch,
+    Rollback,
+} from '@canton-network/core-ledger-proto'
 import {
     GenMap_Entry,
     Identifier,
     RecordField,
     TextMap_Entry,
     Value,
-} from '@splice/core-ledger-proto'
+} from '@canton-network/core-ledger-proto'
 import { mkByteArray, sha256 } from './utils.js'
 
 // Hash purpose reserved for prepared transaction

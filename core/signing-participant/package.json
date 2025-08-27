@@ -1,5 +1,5 @@
 {
-    "name": "@splice/core-signing-participant",
+    "name": "@canton-network/core-signing-participant",
     "version": "0.0.0",
     "packageManager": "yarn@4.9.2",
     "type": "module",
@@ -11,9 +11,9 @@
         "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
     },
     "dependencies": {
-        "@splice/core-ledger-client": "workspace:^",
-        "@splice/core-signing-lib": "workspace:^",
-        "@splice/core-wallet-auth": "workspace:^"
+        "@canton-network/core-ledger-client": "workspace:^",
+        "@canton-network/core-signing-lib": "workspace:^",
+        "@canton-network/core-wallet-auth": "workspace:^"
     },
     "devDependencies": {
         "@jest/globals": "^29.0.0",

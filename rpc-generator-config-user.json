@@ -4,14 +4,14 @@
     "components": [
         {
             "type": "custom",
-            "name": "@splice/core-wallet-user-rpc-client",
+            "name": "@canton-network/core-wallet-user-rpc-client",
             "language": "typescript",
             "outPath": "./core/wallet-user-rpc-client",
             "customComponent": "./core/rpc-generator/dist/components/client.js"
         },
         {
             "type": "custom",
-            "name": "@splice/wallet-user-rpc-server",
+            "name": "@canton-network/wallet-user-rpc-server",
             "language": "typescript",
             "openRPCPath": null,
             "outPath": "./clients/remote/src/user-api/rpc-gen",

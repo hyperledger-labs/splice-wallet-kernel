@@ -1,5 +1,5 @@
 {
-    "name": "@splice/wallet-sdk",
+    "name": "@canton-network/wallet-sdk",
     "type": "module",
     "version": "0.0.0",
     "description": "Simplified connecting your Wallet provider service to a validator",
@@ -14,12 +14,12 @@
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
     "dependencies": {
-        "@splice/core-ledger-client": "workspace:^",
-        "@splice/core-ledger-proto": "workspace:^",
-        "@splice/core-signing-lib": "workspace:^",
-        "@splice/core-tx-visualizer": "workspace:^",
-        "@splice/core-types": "workspace:^",
-        "@splice/core-wallet-auth": "workspace:^",
+        "@canton-network/core-ledger-client": "workspace:^",
+        "@canton-network/core-ledger-proto": "workspace:^",
+        "@canton-network/core-signing-lib": "workspace:^",
+        "@canton-network/core-tx-visualizer": "workspace:^",
+        "@canton-network/core-types": "workspace:^",
+        "@canton-network/core-wallet-auth": "workspace:^",
         "jose": "^5.2.4",
         "pino": "^9.7.0",
         "uuid": "^11.1.0"

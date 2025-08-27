@@ -1,4 +1,4 @@
-import { DiscoverResult } from '@splice/core-types'
+import { DiscoverResult } from '@canton-network/core-types'
 import { Discovery } from '../components/Discovery.js'
 import { popup } from './popup.js'
 

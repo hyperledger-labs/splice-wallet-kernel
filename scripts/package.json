@@ -1,5 +1,5 @@
 {
-    "name": "@splice/scripts",
+    "name": "@canton-network/scripts",
     "private": true,
     "version": "1.0.0",
     "description": "Various scripts for the Wallet Kernel Project.",
