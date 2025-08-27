@@ -1,5 +1,5 @@
 Finding and Reading Data
-=======================
+========================
 
 
 Reading from ledger
@@ -12,7 +12,7 @@ To facilitate this change easily, the ledger controller
 in the Wallet SDK allows you to change these, but forces them to be required for certain operations.
 This is to ensure that you always have the correct context when reading data from the ledger.
 
-.. literalinclude:: ../../examples/snippets/change-party-and-syncrhonizer.ts
+.. literalinclude:: ../../examples/snippets/change-party-and-synchronizer.ts
     :language: typescript
     :dedent:
 
