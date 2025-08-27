@@ -2,6 +2,45 @@
 Integration Architecture
 ========================
 
+.. _architecture-high-level-overview:
+
+High-Level Overview
+-------------------
+
+.. todo:: merge, link, align this brief summary with the overview in the wallet integration guide
+
+Very likely you have already integrated your exchange with BTC and other UTXO-based chains.
+The architecture presented here should align well with your existing architecture; and you
+should thus be able to reuse many components and ideas using the following mapping of concepts.
+
+* Transactions are identified in Canton using their globally unique **update-id**.
+* Each transaction is committed at specific **record time** that is assigned by the synchronizer
+  used to commit the transaction.
+* Blockheight in BTC can be mapped to record time on the Global Synchronizer in Canton.
+* BTC UTXOs map to what are usually called **active contracts** in Canton.
+  Every Canton contract carries data of a specific Daml template type.
+  For ease of understanding, we often refer to active contracts as "UTXOs" in this guide.
+* BTC addresses map to **parties** in Canton.
+* Validator nodes host parties and store their private data. Validator nodes also
+  expose the **Ledger API**, which can be used by an owner of a party to
+  read their party's state and transactions.
+* Canton is designed as a network-of-networks and
+  validator nodes can thus be connected to multiple synchronizers.
+  Validator nodes merge the data streams from all connected synchronizers into a single logical stream,
+  which is why they assign a local **Ledger API offset** to every transaction.
+  These offsets are not comparable across validator nodes, but update-ids and record times are.
+* Transactions in Canton have a hierarchical structure that reflects the nested execution and visibility of Daml choices.
+  Different validator nodes may see different sub-trees of the same transaction depending on which parties they host.
+* **Memos** are stored in the transfer metadata using the ``splice.lfdecentralizedtrust.org/reason`` key.
+  The Canton Network Token Standard defines this key and a way to parse these memo tags and other transfer information from transactions.
+
+This guide provides a sample architecture and workflows for how you can integrate your exchange with Canton.
+The expectation is that the integration components are reasonably thin wrappers
+over the functionality provided by the wallet SDK.
+The guide expects you to build these components, as they should be mostly concerned
+with how to integrate with your exchange's internal systems and requirements.
+
+
 Component Overview
 ------------------
 
@@ -33,11 +72,16 @@ Canton Integration Components
 
 There are five Canton integration components:
 
-* The **Exchange Validator Node** is a :ref:`Splice validator node <validator_nodes>` operated by the exchange. It hosts
+* The **Exchange Validator Node** is a :ref:`Splice validator node <validator_nodes>` that hosts
   the ``treasuryParty`` that controls the funds of the exchange, receives deposits, and
   executes transfers for withdrawals.
+  You are not expected to build this node, but you are expected to either operate it yourself
+  or use a node-as-a-service provider to operate it for you.
 * The **Canton Integration DB** is used to keep track of the state of withdrawals and
   the customer-attribution of the funds held by the ``treasuryParty``.
+  It is shown as a separate component in the diagram, but it could well be part of your
+  existing databases. The best choice how to build this component depends on your existing
+  architecture.
 * The **Tx History Ingestion** service uses the JSON Ledger API exposed by the
   Exchange Validator Node to read Daml transactions affecting the ``treasuryParty``.
   It parses these transactions and updates the Canton Integration DB
@@ -48,6 +92,14 @@ There are five Canton integration components:
   transfers from customers to their exchange accounts for CN tokens that do not
   support direct transfers. It is not necessary for an integration with Canton Coin,
   which does support direct, 1-step transfers.
+
+So concretely, you are expected to build the three services listed above and provide them
+with some DB where they can store their state in a way that makes it accessible for querying by the Exchange Internal Systems.
+As explained in the :ref:`architecture-high-level-overview`, you should be able to
+build these services as thin wrappers over the functionality provided by the wallet SDK
+and reuse the DB schemas from your existing UTXO-based integrations.
+We explain the expected functionality of the services and the state they store in the Canton Integration DB
+in the :ref:`integration-workflows` section.
 
 
 Third-Party Components
@@ -74,8 +126,8 @@ in the context of the Canton integration:
   is part of the Canton Network Token Standard.
 
 
-Information Flow
-----------------
+Information Flows
+-----------------
 
 The following diagram shows the information flows between the components.
 The main information flows of the Canton integration are highlighted using bold arrows.
