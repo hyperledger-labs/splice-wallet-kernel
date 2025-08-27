@@ -32,6 +32,7 @@ import {
     TokenStandardChoice,
     TransferInstructionView,
 } from './types.js'
+import { TransferInstructionV1 } from '@splice/core-token-standard'
 
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
 import { LedgerClient } from '../ledger-client'
@@ -60,74 +61,74 @@ export class TransactionParser {
         this.transaction = transaction
     }
 
-    // async parseTransaction(): Promise<Transaction> {
-    //     const tx = this.transaction
-    //     const events = await this.parseEvents([...(tx.events || [])].reverse())
-    //     return {
-    //         updateId: tx.updateId,
-    //         offset: tx.offset,
-    //         recordTime: tx.recordTime,
-    //         synchronizerId: tx.synchronizerId,
-    //         events,
-    //     }
-    // }
+    async parseTransaction(): Promise<Transaction> {
+        const tx = this.transaction
+        const events = await this.parseEvents([...(tx.events || [])].reverse())
+        return {
+            updateId: tx.updateId,
+            offset: tx.offset,
+            recordTime: tx.recordTime,
+            synchronizerId: tx.synchronizerId,
+            events,
+        }
+    }
 
-    // private async parseEvents(
-    //     eventsStack: Event[]
-    // ): Promise<TokenStandardEvent[]> {
-    //     let callStack: Array<{
-    //         parentChoiceName: string
-    //         untilNodeId: number
-    //     }> = []
-    //     let continueAfterNodeId = -1
-    //     const result: TokenStandardEvent[] = []
-    //     while (eventsStack.length > 0) {
-    //         const currentEvent = eventsStack.pop()!
+    private async parseEvents(
+        eventsStack: Event[]
+    ): Promise<TokenStandardEvent[]> {
+        let callStack: Array<{
+            parentChoiceName: string
+            untilNodeId: number
+        }> = []
+        let continueAfterNodeId = -1
+        const result: TokenStandardEvent[] = []
+        while (eventsStack.length > 0) {
+            const currentEvent = eventsStack.pop()!
 
-    //         const { nodeId, createdEvent, archivedEvent, exercisedEvent } =
-    //             getNodeIdAndEvent(currentEvent)
-    //         callStack = callStack.filter((s) => s.untilNodeId <= nodeId)
-    //         const parentChoice =
-    //             (callStack[callStack.length - 1] &&
-    //                 callStack[callStack.length - 1].parentChoiceName) ||
-    //             'none (root node)'
+            const { nodeId, createdEvent, archivedEvent, exercisedEvent } =
+                getNodeIdAndEvent(currentEvent)
+            callStack = callStack.filter((s) => s.untilNodeId <= nodeId)
+            const parentChoice =
+                (callStack[callStack.length - 1] &&
+                    callStack[callStack.length - 1].parentChoiceName) ||
+                'none (root node)'
 
-    //         let parsed: EventParseResult | null
-    //         if (nodeId <= continueAfterNodeId) {
-    //             parsed = null
-    //         } else if (createdEvent) {
-    //             parsed = this.parseRawCreate(createdEvent, parentChoice)
-    //         } else if (archivedEvent) {
-    //             parsed = await this.parseRawArchive(archivedEvent, parentChoice)
-    //         } else if (exercisedEvent) {
-    //             parsed = await this.parseExercise(exercisedEvent)
-    //         } else {
-    //             throw new Error(
-    //                 `Impossible event: ${JSON.stringify(currentEvent)}`
-    //             )
-    //         }
+            let parsed: EventParseResult | null
+            if (nodeId <= continueAfterNodeId) {
+                parsed = null
+            } else if (createdEvent) {
+                parsed = this.parseRawCreate(createdEvent, parentChoice)
+            } else if (archivedEvent) {
+                parsed = await this.parseRawArchive(archivedEvent, parentChoice)
+            } else if (exercisedEvent) {
+                parsed = await this.parseExercise(exercisedEvent)
+            } else {
+                throw new Error(
+                    `Impossible event: ${JSON.stringify(currentEvent)}`
+                )
+            }
 
-    //         if (parsed && isLeafEventNode(parsed)) {
-    //             // Exclude events where nothing happened
-    //             if (holdingChangesNonEmpty(parsed.event)) {
-    //                 result.push({
-    //                     ...parsed.event,
-    //                     label: {
-    //                         ...parsed.event.label,
-    //                         meta: removeParsedMetaKeys(parsed.event.label.meta),
-    //                     },
-    //                 })
-    //             }
-    //             continueAfterNodeId = parsed.continueAfterNodeId
-    //         } else if (parsed) {
-    //             callStack.push({
-    //                 parentChoiceName: parsed.parentChoiceName,
-    //                 untilNodeId: parsed.lastDescendantNodeId,
-    //             })
-    //         }
-    //     }
-    //     return result
-    // }
+            if (parsed && isLeafEventNode(parsed)) {
+                // Exclude events where nothing happened
+                if (holdingChangesNonEmpty(parsed.event)) {
+                    result.push({
+                        ...parsed.event,
+                        label: {
+                            ...parsed.event.label,
+                            meta: removeParsedMetaKeys(parsed.event.label.meta),
+                        },
+                    })
+                }
+                continueAfterNodeId = parsed.continueAfterNodeId
+            } else if (parsed) {
+                callStack.push({
+                    parentChoiceName: parsed.parentChoiceName,
+                    untilNodeId: parsed.lastDescendantNodeId,
+                })
+            }
+        }
+        return result
+    }
 
     private parseRawCreate(
         create: CreatedEvent,
@@ -267,188 +268,194 @@ export class TransactionParser {
         )
     }
 
-    // private async parseExercise(
-    //     exercise: ExercisedEvent
-    // ): Promise<EventParseResult | null> {
-    //     let result: ParsedKnownExercisedEvent | null = null
-    //     const tokenStandardChoice = {
-    //         name: exercise.choice,
-    //         choiceArgument: exercise.choiceArgument,
-    //         exerciseResult: exercise.exerciseResult,
-    //     }
-    //     switch (exercise.choice) {
-    //         case 'TransferFactory_Transfer':
-    //             result = await this.buildTransfer(exercise, tokenStandardChoice)
-    //             break
-    //         case 'TransferInstruction_Accept':
-    //         case 'TransferInstruction_Reject':
-    //         case 'TransferInstruction_Withdraw':
-    //         case 'TransferInstruction_Update':
-    //             result = await this.buildFromTransferInstructionExercise(
-    //                 exercise,
-    //                 tokenStandardChoice
-    //             )
-    //             break
-    //         case 'BurnMintFactory_BurnMint':
-    //             result = await this.buildMergeSplit(
-    //                 exercise,
-    //                 tokenStandardChoice
-    //             )
-    //             break
-    //         default: {
-    //             const meta = mergeMetas(exercise)
-    //             const txKind = getMetaKeyValue(TxKindMetaKey, meta)
-    //             if (txKind) {
-    //                 result = await this.parseViaTxKind(exercise, txKind)
-    //             }
-    //             break
-    //         }
-    //     }
-    //     if (!result) {
-    //         return {
-    //             lastDescendantNodeId: exercise.lastDescendantNodeId,
-    //             parentChoiceName: exercise.choice,
-    //         }
-    //     } else {
-    //         // only this.partyId's holdings should be included in the response
-    //         const lockedHoldingsChange: HoldingsChange = {
-    //             creates: result.children.creates.filter(
-    //                 (h) => !!h.lock && h.owner === this.partyId
-    //             ),
-    //             archives: result.children.archives.filter(
-    //                 (h) => !!h.lock && h.owner === this.partyId
-    //             ),
-    //         }
-    //         const unlockedHoldingsChange: HoldingsChange = {
-    //             creates: result.children.creates.filter(
-    //                 (h) => !h.lock && h.owner === this.partyId
-    //             ),
-    //             archives: result.children.archives.filter(
-    //                 (h) => !h.lock && h.owner === this.partyId
-    //             ),
-    //         }
-    //         return {
-    //             event: {
-    //                 label: result.label,
-    //                 lockedHoldingsChange,
-    //                 lockedHoldingsChangeSummary: computeSummary(
-    //                     lockedHoldingsChange,
-    //                     this.partyId
-    //                 ),
-    //                 unlockedHoldingsChange,
-    //                 unlockedHoldingsChangeSummary: computeSummary(
-    //                     unlockedHoldingsChange,
-    //                     this.partyId
-    //                 ),
-    //                 transferInstruction: result.transferInstruction,
-    //             },
-    //             continueAfterNodeId: exercise.lastDescendantNodeId,
-    //         }
-    //     }
-    // }
+    private async parseExercise(
+        exercise: ExercisedEvent
+    ): Promise<EventParseResult | null> {
+        let result: ParsedKnownExercisedEvent | null = null
+        const tokenStandardChoice = {
+            name: exercise.choice,
+            choiceArgument: exercise.choiceArgument,
+            exerciseResult: exercise.exerciseResult,
+        }
+        switch (exercise.choice) {
+            case 'TransferFactory_Transfer':
+                result = await this.buildTransfer(exercise, tokenStandardChoice)
+                break
+            case 'TransferInstruction_Accept':
+            case 'TransferInstruction_Reject':
+            case 'TransferInstruction_Withdraw':
+            case 'TransferInstruction_Update':
+                result = await this.buildFromTransferInstructionExercise(
+                    exercise,
+                    tokenStandardChoice
+                )
+                break
+            case 'BurnMintFactory_BurnMint':
+                result = await this.buildMergeSplit(
+                    exercise,
+                    tokenStandardChoice
+                )
+                break
+            default: {
+                const meta = mergeMetas(exercise)
+                const txKind = getMetaKeyValue(TxKindMetaKey, meta)
+                if (txKind) {
+                    result = await this.parseViaTxKind(exercise, txKind)
+                }
+                break
+            }
+        }
+        if (!result) {
+            return {
+                lastDescendantNodeId: exercise.lastDescendantNodeId,
+                parentChoiceName: exercise.choice,
+            }
+        } else {
+            // only this.partyId's holdings should be included in the response
+            const lockedHoldingsChange: HoldingsChange = {
+                creates: result.children.creates.filter(
+                    (h) => !!h.lock && h.owner === this.partyId
+                ),
+                archives: result.children.archives.filter(
+                    (h) => !!h.lock && h.owner === this.partyId
+                ),
+            }
+            const unlockedHoldingsChange: HoldingsChange = {
+                creates: result.children.creates.filter(
+                    (h) => !h.lock && h.owner === this.partyId
+                ),
+                archives: result.children.archives.filter(
+                    (h) => !h.lock && h.owner === this.partyId
+                ),
+            }
+            return {
+                event: {
+                    label: result.label,
+                    lockedHoldingsChange,
+                    lockedHoldingsChangeSummary: computeSummary(
+                        lockedHoldingsChange,
+                        this.partyId
+                    ),
+                    unlockedHoldingsChange,
+                    unlockedHoldingsChangeSummary: computeSummary(
+                        unlockedHoldingsChange,
+                        this.partyId
+                    ),
+                    transferInstruction: result.transferInstruction,
+                },
+                continueAfterNodeId: exercise.lastDescendantNodeId,
+            }
+        }
+    }
 
-    // private async parseViaTxKind(
-    //     exercisedEvent: ExercisedEvent,
-    //     txKind: string
-    // ): Promise<ParsedKnownExercisedEvent | null> {
-    //     switch (txKind) {
-    //         case 'transfer':
-    //             return await this.buildTransfer(exercisedEvent, null)
-    //         case 'merge-split':
-    //         case 'burn':
-    //         case 'mint':
-    //             return await this.buildMergeSplit(exercisedEvent, null)
-    //         case 'unlock':
-    //             return await this.buildBasic(exercisedEvent, 'Unlock', null)
-    //         case 'expire-dust':
-    //             return await this.buildBasic(exercisedEvent, 'ExpireDust', null)
-    //         default:
-    //             throw new Error(
-    //                 `Unknown tx-kind '${txKind}' in ${JSON.stringify(exercisedEvent)}`
-    //             )
-    //     }
-    // }
+    private async parseViaTxKind(
+        exercisedEvent: ExercisedEvent,
+        txKind: string
+    ): Promise<ParsedKnownExercisedEvent | null> {
+        switch (txKind) {
+            case 'transfer':
+                return await this.buildTransfer(exercisedEvent, null)
+            case 'merge-split':
+            case 'burn':
+            case 'mint':
+                return await this.buildMergeSplit(exercisedEvent, null)
+            case 'unlock':
+                return await this.buildBasic(exercisedEvent, 'Unlock', null)
+            case 'expire-dust':
+                return await this.buildBasic(exercisedEvent, 'ExpireDust', null)
+            default:
+                throw new Error(
+                    `Unknown tx-kind '${txKind}' in ${JSON.stringify(exercisedEvent)}`
+                )
+        }
+    }
 
-    // private async buildTransfer(
-    //     exercisedEvent: ExercisedEvent,
-    //     tokenStandardChoice: TokenStandardChoice | null,
-    //     senderFromTransferInstruction?: string
-    // ): Promise<ParsedKnownExercisedEvent | null> {
-    //     const meta = mergeMetas(exercisedEvent)
-    //     const reason = getMetaKeyValue(ReasonMetaKey, meta)
-    //     const sender: string =
-    //         senderFromTransferInstruction ||
-    //         getMetaKeyValue(SenderMetaKey, meta) ||
-    //         exercisedEvent.choiceArgument.transfer.sender
-    //     if (!sender) {
-    //         console.error(
-    //             `Malformed transfer didn't contain sender. Will instead attempt to parse the children.
-    //     Transfer: ${JSON.stringify(exercisedEvent)}`
-    //         )
-    //         return null
-    //     }
+    private async buildTransfer(
+        exercisedEvent: ExercisedEvent,
+        tokenStandardChoice: TokenStandardChoice | null,
+        senderFromTransferInstruction?: string
+    ): Promise<ParsedKnownExercisedEvent | null> {
+        const meta = mergeMetas(exercisedEvent)
+        const reason = getMetaKeyValue(ReasonMetaKey, meta)
+        const choiceArgumentTransfer = (
+            exercisedEvent.choiceArgument as {
+                transfer: TransferInstructionV1.Transfer
+            }
+        ).transfer
 
-    //     const children = await this.getChildren(exercisedEvent)
-    //     const receiverAmounts = new Map<string, BigNumber>()
-    //     children.creates
-    //         .filter((h) => h.owner !== sender)
-    //         .forEach((holding) =>
-    //             receiverAmounts.set(
-    //                 holding.owner,
-    //                 (receiverAmounts.get(holding.owner) || BigNumber('0')).plus(
-    //                     BigNumber(holding.amount)
-    //                 )
-    //             )
-    //         )
-    //     const amountChanges = computeAmountChanges(children, meta, this.partyId)
+        const sender: string =
+            senderFromTransferInstruction ||
+            getMetaKeyValue(SenderMetaKey, meta) ||
+            choiceArgumentTransfer.sender
+        if (!sender) {
+            console.error(
+                `Malformed transfer didn't contain sender. Will instead attempt to parse the children.
+        Transfer: ${JSON.stringify(exercisedEvent)}`
+            )
+            return null
+        }
 
-    //     let label: Label
-    //     if (receiverAmounts.size === 0) {
-    //         label = {
-    //             ...amountChanges,
-    //             type: 'MergeSplit',
-    //             tokenStandardChoice,
-    //             reason,
-    //             meta,
-    //         }
-    //     } else if (sender === this.partyId) {
-    //         label = {
-    //             ...amountChanges,
-    //             type: 'TransferOut',
-    //             receiverAmounts: [...receiverAmounts].map(([k, v]) => {
-    //                 return { receiver: k, amount: v.toString() }
-    //             }),
-    //             tokenStandardChoice,
-    //             reason,
-    //             meta,
-    //         }
-    //     } else {
-    //         label = {
-    //             type: 'TransferIn',
-    //             // for Transfers, the burn/mint is always 0 for the receiving party (i.e., 0 for TransferIn)
-    //             burnAmount: '0',
-    //             mintAmount: '0',
-    //             sender,
-    //             tokenStandardChoice,
-    //             reason,
-    //             meta,
-    //         }
-    //     }
-    //     const transferInstruction: TransferInstructionView = {
-    //         originalInstructionCid: null,
-    //         transfer: exercisedEvent.choiceArgument.transfer,
-    //         status: {
-    //             before: null,
-    //         },
-    //         meta: null,
-    //     }
+        const children = await this.getChildren(exercisedEvent)
+        const receiverAmounts = new Map<string, BigNumber>()
+        children.creates
+            .filter((h) => h.owner !== sender)
+            .forEach((holding) =>
+                receiverAmounts.set(
+                    holding.owner,
+                    (receiverAmounts.get(holding.owner) || BigNumber('0')).plus(
+                        BigNumber(holding.amount)
+                    )
+                )
+            )
+        const amountChanges = computeAmountChanges(children, meta, this.partyId)
 
-    //     return {
-    //         label,
-    //         children,
-    //         transferInstruction,
-    //     }
-    // }
+        let label: Label
+        if (receiverAmounts.size === 0) {
+            label = {
+                ...amountChanges,
+                type: 'MergeSplit',
+                tokenStandardChoice,
+                reason,
+                meta,
+            }
+        } else if (sender === this.partyId) {
+            label = {
+                ...amountChanges,
+                type: 'TransferOut',
+                receiverAmounts: [...receiverAmounts].map(([k, v]) => {
+                    return { receiver: k, amount: v.toString() }
+                }),
+                tokenStandardChoice,
+                reason,
+                meta,
+            }
+        } else {
+            label = {
+                type: 'TransferIn',
+                // for Transfers, the burn/mint is always 0 for the receiving party (i.e., 0 for TransferIn)
+                burnAmount: '0',
+                mintAmount: '0',
+                sender,
+                tokenStandardChoice,
+                reason,
+                meta,
+            }
+        }
+        const transferInstruction: TransferInstructionView = {
+            originalInstructionCid: null,
+            transfer: choiceArgumentTransfer,
+            status: {
+                before: null,
+            },
+            meta: null,
+        }
+
+        return {
+            label,
+            children,
+            transferInstruction,
+        }
+    }
 
     private async buildMergeSplit(
         exercisedEvent: ExercisedEvent,
@@ -485,61 +492,65 @@ export class TransactionParser {
         }
     }
 
-    // private async buildFromTransferInstructionExercise(
-    //     exercisedEvent: ExercisedEvent,
-    //     tokenStandardChoice: TokenStandardChoice
-    // ): Promise<ParsedKnownExercisedEvent | null> {
-    //     const transferInstructionEvents =
-    //         await this.getEventsForArchive(exercisedEvent)
-    //     if (!transferInstructionEvents) {
-    //         // This will happen when the party observes the archive but is not a stakeholder.
-    //         // For example, for Amulet, a validator will see a TransferInstruction_Reject/Withdraw
-    //         // but will not see the create of a TransferInstruction.
-    //         return null
-    //     }
-    //     const transferInstructionView = ensureInterfaceViewIsPresent(
-    //         transferInstructionEvents.created.createdEvent,
-    //         TransferInstructionInterface
-    //     ).viewValue as TransferInstructionView
-    //     const transferInstruction: TransferInstructionView = {
-    //         originalInstructionCid:
-    //             transferInstructionView.originalInstructionCid,
-    //         transfer: transferInstructionView.transfer,
-    //         meta: transferInstructionView.meta,
-    //         status: {
-    //             before: transferInstructionView.status,
-    //         },
-    //     }
+    private async buildFromTransferInstructionExercise(
+        exercisedEvent: ExercisedEvent,
+        tokenStandardChoice: TokenStandardChoice
+    ): Promise<ParsedKnownExercisedEvent | null> {
+        const transferInstructionEvents =
+            await this.getEventsForArchive(exercisedEvent)
+        if (!transferInstructionEvents) {
+            // This will happen when the party observes the archive but is not a stakeholder.
+            // For example, for Amulet, a validator will see a TransferInstruction_Reject/Withdraw
+            // but will not see the create of a TransferInstruction.
+            return null
+        }
+        const transferInstructionView = ensureInterfaceViewIsPresent(
+            transferInstructionEvents.created.createdEvent,
+            TransferInstructionInterface
+        ).viewValue as TransferInstructionView
+        const transferInstruction: TransferInstructionView = {
+            originalInstructionCid:
+                transferInstructionView.originalInstructionCid,
+            transfer: transferInstructionView.transfer,
+            meta: transferInstructionView.meta,
+            status: {
+                before: transferInstructionView.status,
+            },
+        }
+        const exerciseResultOutputTag = (
+            exercisedEvent.exerciseResult as {
+                output: TransferInstructionV1.TransferInstructionResult_Output
+            }
+        ).output.tag
+        let result: ParsedKnownExercisedEvent | null = null
 
-    //     let result: ParsedKnownExercisedEvent | null = null
-
-    //     switch (exercisedEvent.exerciseResult.output.tag) {
-    //         case 'TransferInstructionResult_Failed':
-    //         case 'TransferInstructionResult_Pending':
-    //             result = await this.buildMergeSplit(
-    //                 exercisedEvent,
-    //                 tokenStandardChoice
-    //             )
-    //             break
-    //         case 'TransferInstructionResult_Completed':
-    //             result = await this.buildTransfer(
-    //                 exercisedEvent,
-    //                 tokenStandardChoice,
-    //                 transferInstruction.transfer.sender
-    //             )
-    //             break
-    //         default:
-    //             throw new Error(
-    //                 `Unknown TransferInstructionResult: ${exercisedEvent.exerciseResult.output.tag}`
-    //             )
-    //     }
-    //     return (
-    //         result && {
-    //             ...result,
-    //             transferInstruction,
-    //         }
-    //     )
-    // }
+        switch (exerciseResultOutputTag) {
+            case 'TransferInstructionResult_Failed':
+            case 'TransferInstructionResult_Pending':
+                result = await this.buildMergeSplit(
+                    exercisedEvent,
+                    tokenStandardChoice
+                )
+                break
+            case 'TransferInstructionResult_Completed':
+                result = await this.buildTransfer(
+                    exercisedEvent,
+                    tokenStandardChoice,
+                    transferInstruction.transfer.sender
+                )
+                break
+            default:
+                throw new Error(
+                    `Unknown TransferInstructionResult: ${exerciseResultOutputTag}`
+                )
+        }
+        return (
+            result && {
+                ...result,
+                transferInstruction,
+            }
+        )
+    }
 
     private async buildBasic(
         exercisedEvent: ExercisedEvent,
