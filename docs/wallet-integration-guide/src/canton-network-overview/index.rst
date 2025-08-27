@@ -20,7 +20,7 @@ largest financial and crypto institutions alike. Participants include Goldman Sa
 like DTCC and Deutsche Börse, and (crypto) trading firms like DRW and QCP.
 
 Canton's High-level architecture
----------------------
+--------------------------------
 Nodes and Consensus
 ^^^^^^^^^^^^^^^^^^^
 The Canton network is composed of nodes known as **validators** that achieve consensus through **synchronizers**. 
@@ -32,6 +32,7 @@ Transaction data is only distributed on a **need-to-know basis** to maintain con
 * In Canton, state and transactions get distributed only to nodes/validators that are specified in the smart contracts.
 
 .. _parties:
+
 Parties
 ^^^^^^^
 In Canton, **parties** are the core on-ledger identities, and are the wallet addresses, similar to an address or Externally Owned Account 
