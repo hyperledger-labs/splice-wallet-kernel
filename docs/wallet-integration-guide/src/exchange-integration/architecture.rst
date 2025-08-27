@@ -88,7 +88,7 @@ There are five Canton integration components:
   with the effect of these transactions (e.g. a successful deposit to a customer account).
 * The **Withdrawal Automation** service is responsible for executing withdrawals
   requested by the Exchange Internal Systems via the Canton Integration DB.
-* The **2-Step Deposit Automation** service is responsible for accepting or rejecting
+* The **Multi-Step Deposit Automation** service is responsible for accepting or rejecting
   transfers from customers to their exchange accounts for CN tokens that do not
   support direct transfers. It is not necessary for an integration with Canton Coin,
   which does support direct, 1-step transfers.
@@ -153,7 +153,7 @@ There are three main information flows:
    However using a micro-services architecture, the Exchange Internal Systems would typically access the Canton Integration DB through a dedicated API layer.
    Choose whatever architecture best fits your exchange's needs.
 
-   .. This data is also used by the 2-Step Deposit Automation service
+   .. This data is also used by the Multi-Step Deposit Automation service
       to drive its actions (Arrow 3.a).
 
 #. **Withdrawal Automation**:
@@ -162,44 +162,21 @@ There are three main information flows:
    a Canton Network Token standard transfer corresponding to the withdrawal request using the Ledger API (Arrow 2.c).
    Note that the status of transfers becomes visible in the transaction history ingested by the Tx History Ingestion service;
    and is communicated to both the Exchange Internal Systems and the Withdrawal Automation service via the Canton Integration DB.
+   Note also that the Withdrawal Automation may write back to the Canton Integration DB to mark a withdrawal as failed.
 
-#. **2-Step Deposit Automation**:
+#. **Multi-Step Deposit Automation**:
    is required to support offer-and-accept style transfers for tokens that do not support direct transfers.
    It relies on the Tx Ingestion Service to ingest transfer offers as part of Arrow 1.c.
 
-   The workflow starts with the 2-Step Deposit Automation service querying the Canton Integration DB to see whether
+   The workflow starts with the Multi-Step Deposit Automation service querying the Canton Integration DB to see whether
    there are pending transfers for deposits from customers (Arrow 3.a).
    The service then checks whether the deposit address specified in the transfer is known.
    If yes, it prepares, signs, and executes an accept transaction using the Ledger API (Arrow 3.b).
    If no, then it takes no action, and lets the transfer offer expire or be withdrawn by the sender.
 
+   Note that the Multi-Step Deposit Automation may write back to the Canton Integration DB to store
+   that the transaction to accept the deposit could not be committed even after retrying multiple times.
+
 The other information flows interact with the main flows as part of a deposit or withdrawal.
-We explain them in the context of the workflows below.
+We explain them in the :ref:`integration-workflows` section.
 
-
-Key Workflows
--------------
-
-1-Step Deposit Flow
-^^^^^^^^^^^^^^^^^^^
-
-
-1-Step Withdrawal Flow
-^^^^^^^^^^^^^^^^^^^^^^
-
-2-Step Deposit Flow
-^^^^^^^^^^^^^^^^^^^
-
-2-Step Withdrawal Flow
-^^^^^^^^^^^^^^^^^^^^^^
-
-
-Administrative Workflows
-------------------------
-
-UTXO Merging and Splitting
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-Canton Network Token Onboarding
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
