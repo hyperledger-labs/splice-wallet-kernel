@@ -10,6 +10,8 @@ export * from './ledgerController.js'
 export * from './authController.js'
 export * from './topologyController.js'
 export { signTransactionHash, createKeyPair } from '@splice/core-signing-lib'
+export { decodePreparedTransaction } from '@splice/core-tx-visualizer'
+export { PreparedTransaction } from '@splice/core-ledger-proto'
 
 type AuthFactory = () => AuthController
 type LedgerFactory = (userId: string, token: string) => LedgerController

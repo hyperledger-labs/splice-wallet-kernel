@@ -15,6 +15,7 @@
     "license": "Apache-2.0",
     "dependencies": {
         "@splice/core-ledger-client": "workspace:^",
+        "@splice/core-ledger-proto": "workspace:^",
         "@splice/core-signing-lib": "workspace:^",
         "@splice/core-tx-visualizer": "workspace:^",
         "@splice/core-types": "workspace:^",
