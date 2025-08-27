@@ -8,10 +8,10 @@ import {
     HoldingInterface,
     InterfaceId,
     TransferInstructionInterface,
-} from './constants'
+} from './constants.js'
 import { components } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
-import { LedgerClient } from './ledger-client'
-import { Holding, TransferInstructionView } from './txparse/types'
+import { LedgerClient } from './ledger-client.js'
+import { Holding, TransferInstructionView } from './txparse/types.js'
 
 type TransactionFilter = components['schemas']['TransactionFilter']
 type CreatedEvent = components['schemas']['CreatedEvent']

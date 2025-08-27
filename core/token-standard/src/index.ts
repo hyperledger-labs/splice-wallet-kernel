@@ -1,1 +1,1 @@
-export * from './token-standard-client'
+export * from './token-standard-client.js'
