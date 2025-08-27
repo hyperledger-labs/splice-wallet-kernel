@@ -26,13 +26,13 @@ Using the wallet SDK you can quickly allocate a party using the following code s
 
     .. tab:: Comprehensive using OAuth
 
-        .. literalinclude:: ../../examples/01-auth.ts
+        .. literalinclude:: ../../examples/scripts/01-auth.ts
             :language: typescript
             :dedent:
 
     .. tab:: Comprehensive using Splice LocalNet
 
-        .. literalinclude:: ../../examples/02-auth-localnet.ts
+        .. literalinclude:: ../../examples/scripts/02-auth-localnet.ts
             :language: typescript
             :dedent:
 

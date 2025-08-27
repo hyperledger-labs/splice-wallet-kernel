@@ -10,7 +10,7 @@ How do i quickly execute a ping Command?
 
 Here is how to quickly execute a ping command against yourself on Splice LocalNet:
 
-.. literalinclude:: ../../examples/03-ping-localnet.ts
+.. literalinclude:: ../../examples/scripts/03-ping-localnet.ts
     :language: typescript
     :dedent:
 
@@ -97,4 +97,3 @@ Once the transaction is signed it can be executed on the validator:
 .. TODO showcase exercise of the pong choice
 
 .. TODO Observe the transaction until it is committed
-
