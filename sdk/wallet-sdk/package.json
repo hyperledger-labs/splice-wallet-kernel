@@ -1,5 +1,5 @@
 {
-    "name": "@splice/sdk-wallet",
+    "name": "@splice/wallet-sdk",
     "type": "module",
     "version": "0.0.0",
     "description": "Simplified connecting your Wallet provider service to a validator",
@@ -16,6 +16,7 @@
     "dependencies": {
         "@splice/core-ledger-client": "workspace:^",
         "@splice/core-signing-lib": "workspace:^",
+        "@splice/core-tx-visualizer": "workspace:^",
         "@splice/core-types": "workspace:^",
         "@splice/core-wallet-auth": "workspace:^",
         "jose": "^5.2.4",

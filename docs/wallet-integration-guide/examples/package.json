@@ -10,15 +10,16 @@
     "scripts": {
         "build": "tsc -b",
         "clean": "tsc -b --clean",
-        "run-01": "tsx ./01-auth.ts"
+        "run-01": "tsx ./01-auth.ts",
+        "run-02": "tsx ./02-auth-localnet.ts"
     },
     "devDependencies": {
-        "@types/node": "^24.3.0",
         "tsx": "^4.20.3",
-        "typescript": "^5.8.3",
-        "uuid": "^11.1.0"
+        "typescript": "^5.8.3"
     },
     "dependencies": {
-        "@splice/sdk-wallet": "workspace:^"
+        "@splice/wallet-sdk": "workspace:^",
+        "@types/node": "^24.3.0",
+        "uuid": "^11.1.0"
     }
 }

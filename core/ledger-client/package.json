@@ -33,6 +33,7 @@
     "dependencies": {
         "@protobuf-ts/runtime": "^2.11.1",
         "@protobuf-ts/runtime-rpc": "^2.11.1",
+        "@splice/core-ledger-proto": "workspace:^",
         "@splice/core-token-standard": "workspace:^",
         "@splice/core-types": "workspace:^",
         "bignumber.js": "^9.2.1",

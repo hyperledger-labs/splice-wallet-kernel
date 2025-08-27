@@ -1,0 +1,23 @@
+{
+    "name": "@splice/core-ledger-proto",
+    "version": "0.0.0",
+    "description": "Provides typescript generated from the canton protobufs.",
+    "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
+    "license": "Apache-2.0",
+    "packageManager": "yarn@4.9.2",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b",
+        "dev": "tsc -b --watch",
+        "clean": "tsc -b --clean; rm -rf dist"
+    },
+    "devDependencies": {
+        "@protobuf-ts/runtime": "^2.11.1",
+        "@protobuf-ts/runtime-rpc": "^2.11.1",
+        "@swc/core": "^1.11.31",
+        "@types/node": "^22.15.30",
+        "typescript": "^5.8.3"
+    }
+}

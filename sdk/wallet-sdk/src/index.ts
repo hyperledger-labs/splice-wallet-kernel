@@ -21,7 +21,7 @@ type TopologyFactory = (
 export interface Config {
     authFactory: AuthFactory
     ledgerFactory: LedgerFactory
-    topologyFactory: TopologyFactory
+    topologyFactory: TopologyFactory | undefined
     logger?: Logger
 }
 
@@ -36,6 +36,11 @@ export interface WalletSDK {
     topology: TopologyController | undefined
 }
 
+/**
+ * WalletSDKImpl is the main entry point for interacting with the wallet SDK.
+ * It provides the overall control and connectivity through different components.
+ * Some components are optional and can be configured as needed.
+ */
 export class WalletSDKImpl implements WalletSDK {
     auth: AuthController
 
@@ -52,6 +57,11 @@ export class WalletSDKImpl implements WalletSDK {
         this.auth = this.authFactory()
     }
 
+    /**
+     * Configures the SDK with the provided configuration.
+     * @param config
+     * @returns The configured WalletSDK instance.
+     */
     configure(config: Config): WalletSDK {
         if (config.logger) this.logger = config.logger
         if (config.authFactory) this.auth = config.authFactory()
@@ -61,6 +71,11 @@ export class WalletSDKImpl implements WalletSDK {
         return this
     }
 
+    /**
+     * Connects to the ledger using user credentials.
+     * Initializes the userLedger property.
+     * @returns A promise that resolves to the WalletSDK instance.
+     */
     async connect(): Promise<WalletSDK> {
         const { userId, accessToken } = await this.auth.getUserToken()
         this.logger?.info(`Connecting user ${userId} with token ${accessToken}`)
@@ -68,6 +83,9 @@ export class WalletSDKImpl implements WalletSDK {
         return this
     }
 
+    /** Connects to the ledger using admin credentials.
+     * @returns A promise that resolves to the WalletSDK instance.
+     */
     async connectAdmin(): Promise<WalletSDK> {
         const { userId, accessToken } = await this.auth.getAdminToken()
         this.logger?.info(`Connecting user ${userId} with token ${accessToken}`)
@@ -75,6 +93,9 @@ export class WalletSDKImpl implements WalletSDK {
         return this
     }
 
+    /** Connects to the topology service using admin credentials.
+     * @returns A promise that resolves to the WalletSDK instance.
+     */
     async connectTopology(): Promise<WalletSDK> {
         if (this.auth.userId === undefined)
             throw new Error('UserId is not defined in AuthController.')

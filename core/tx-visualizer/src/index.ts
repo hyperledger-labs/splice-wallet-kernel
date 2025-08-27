@@ -1,4 +1,4 @@
-import { PreparedTransaction } from '@splice/core-ledger-client'
+import { PreparedTransaction } from '@splice/core-ledger-proto'
 import { computePreparedTransaction } from './hashing_scheme_v2'
 import { fromBase64, toBase64, toHex } from './utils'
 

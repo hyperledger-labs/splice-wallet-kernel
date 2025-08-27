@@ -19,6 +19,7 @@ export default defineConfig([
         'core/wallet-user-rpc-client',
         'core/ledger-client/src/generated-clients',
         'core/token-standard/src/*',
+        'docs/wallet-integration-guide/examples/**',
     ]),
     {
         files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],

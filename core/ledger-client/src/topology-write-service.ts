@@ -7,12 +7,9 @@ import {
     Signature,
     SignatureFormat,
     SigningAlgorithmSpec,
-} from './_proto/com/digitalasset/canton/crypto/v30/crypto.js'
-import {
+    TopologyManagerWriteServiceClient,
     StoreId,
     StoreId_Synchronizer,
-} from './_proto/com/digitalasset/canton/topology/admin/v30/common.js'
-import {
     Enums_ParticipantPermission,
     Enums_TopologyChangeOp,
     NamespaceDelegation,
@@ -22,8 +19,6 @@ import {
     SignedTopologyTransaction,
     TopologyMapping,
     MultiTransactionSignatures,
-} from './_proto/com/digitalasset/canton/protocol/v30/topology.js'
-import {
     AddTransactionsRequest,
     AddTransactionsResponse,
     AuthorizeRequest,
@@ -31,17 +26,14 @@ import {
     GenerateTransactionsRequest,
     GenerateTransactionsRequest_Proposal,
     GenerateTransactionsResponse,
-} from './_proto/com/digitalasset/canton/topology/admin/v30/topology_manager_write_service.js'
-import { TopologyManagerWriteServiceClient } from './_proto/com/digitalasset/canton/topology/admin/v30/topology_manager_write_service.client.js'
+    BaseQuery,
+    ListPartyToParticipantRequest,
+    Empty,
+    TopologyManagerReadServiceClient,
+} from '@splice/core-ledger-proto'
 import { GrpcTransport } from '@protobuf-ts/grpc-transport'
 import { ChannelCredentials } from '@grpc/grpc-js'
 import { createHash } from 'node:crypto'
-import { TopologyManagerReadServiceClient } from './_proto/com/digitalasset/canton/topology/admin/v30/topology_manager_read_service.client.js'
-import {
-    BaseQuery,
-    ListPartyToParticipantRequest,
-} from './_proto/com/digitalasset/canton/topology/admin/v30/topology_manager_read_service.js'
-import { Empty } from './_proto/google/protobuf/empty.js'
 
 function prefixedInt(value: number, bytes: Buffer | Uint8Array): Buffer {
     const buffer = Buffer.alloc(4 + bytes.length)

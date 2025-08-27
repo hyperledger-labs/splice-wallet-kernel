@@ -3,6 +3,7 @@ import { customElement, state } from 'lit/decorators.js'
 import '@splice/core-wallet-ui-components'
 import { userClient } from '../rpc-client'
 import { ExecuteParams, SignParams } from '@splice/core-wallet-user-rpc-client'
+import { decodePreparedTransaction } from '@splice/core-tx-visualizer'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends LitElement {
@@ -20,6 +21,14 @@ export class ApproveUi extends LitElement {
 
     @state()
     accessor tx = ''
+
+    private decode(tx: string) {
+        const t = decodePreparedTransaction(tx)
+
+        return JSON.stringify(t, (key, value) =>
+            typeof value === 'bigint' ? value.toString() : value
+        )
+    }
 
     connectedCallback(): void {
         super.connectedCallback()
@@ -64,6 +73,12 @@ export class ApproveUi extends LitElement {
             <h1>Pending Transaction Request</h1>
             <div>
                 <h2>Transaction</h2>
+                <h3>Base64 encoded transaction</h3>
+                <p>${this.tx}</p>
+                <h3>Decoded Transaction</h3>
+                <p>${this.decode(this.tx)}</p>
+                <h3>Transaction Hash</h3>
+                <p>${this.txHash}</p>
                 <p>Command Id: ${this.commandId}</p>
             </div>
             <button ?disabled=${this.loading} @click=${this.handleExecute}>

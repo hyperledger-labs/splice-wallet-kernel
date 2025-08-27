@@ -1,5 +1,10 @@
-Preparing and Signing Transactions In-Platform
-==============================================
+Preparing and Signing Transactions Using External Wallets
+==========================================================
+
+Trust Assumptions
+-----------------
+
+
 
 .. toctree::
    :maxdepth: 1

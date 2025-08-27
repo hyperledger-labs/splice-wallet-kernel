@@ -11,7 +11,7 @@ import {
 
 const repoRoot = getRepoRoot()
 
-const outdir = `${repoRoot}/core/ledger-client/src/_proto`
+const outdir = `${repoRoot}/core/ledger-proto/src/_proto`
 
 const roots = [
     `${repoRoot}/.canton/protobuf/community`,
