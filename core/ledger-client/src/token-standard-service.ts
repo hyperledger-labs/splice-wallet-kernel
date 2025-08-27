@@ -1,18 +1,18 @@
 import { TokenStandardClient } from '@splice/core-token-standard'
 import { Logger } from '@splice/core-types'
-import { LedgerClient } from './ledger-client'
+import { LedgerClient } from './ledger-client.js'
 import {
     HoldingInterface,
     InterfaceId,
     TokenStandardTransactionInterfaces,
     TransferInstructionInterface,
-} from './constants'
+} from './constants.js'
 import { components } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import {
     Completion,
     filtersByParty,
     submitExerciseCommand,
-} from './ledger-api-utils'
+} from './ledger-api-utils.js'
 
 type ExerciseCommand = components['schemas']['ExerciseCommand']
 type JsGetActiveContractsResponse =

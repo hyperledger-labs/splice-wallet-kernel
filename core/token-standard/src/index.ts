@@ -1,4 +1,4 @@
-export * from './token-standard-client'
+export * from './token-standard-client.js'
 export {
     AllocationInstructionV1,
     AllocationRequestV1,

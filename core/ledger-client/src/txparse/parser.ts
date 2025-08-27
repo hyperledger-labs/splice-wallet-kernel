@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Copyright (c) 2024 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
@@ -10,7 +11,7 @@ import {
     hasInterface,
     mergeMetas,
     removeParsedMetaKeys,
-} from '../ledger-api-utils'
+} from '../ledger-api-utils.js'
 import {
     BurnedMetaKey,
     HoldingInterface,
@@ -18,7 +19,7 @@ import {
     SenderMetaKey,
     TransferInstructionInterface,
     TxKindMetaKey,
-} from '../constants'
+} from '../constants.js'
 import {
     Holding,
     HoldingsChangeSummary,
@@ -30,7 +31,7 @@ import {
     EmptyHoldingsChangeSummary,
     TokenStandardChoice,
     TransferInstructionView,
-} from './types'
+} from './types.js'
 import { TransferInstructionV1 } from '@splice/core-token-standard'
 
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
@@ -44,6 +45,7 @@ type Event = components['schemas']['Event']
 type JsTransaction = components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =
     components['schemas']['JsGetEventsByContractIdResponse']
+
 export class TransactionParser {
     private readonly ledgerClient: LedgerClient
     private readonly partyId: string
