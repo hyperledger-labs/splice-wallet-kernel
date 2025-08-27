@@ -31,6 +31,10 @@ import {
     TokenStandardChoice,
     TransferInstructionView,
 } from './types'
+import {
+    Transfer,
+    TransferInstructionResult_Output,
+} from '@splice/core-token-standard/src/token-standard-models-1.0.0/lib/Splice/Api/Token/TransferInstructionV1/index'
 
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
 import { LedgerClient } from '../ledger-client'
@@ -374,10 +378,14 @@ export class TransactionParser {
     ): Promise<ParsedKnownExercisedEvent | null> {
         const meta = mergeMetas(exercisedEvent)
         const reason = getMetaKeyValue(ReasonMetaKey, meta)
+        const choiceArgumentTransfer = (
+            exercisedEvent.choiceArgument as { transfer: Transfer }
+        ).transfer
+
         const sender: string =
             senderFromTransferInstruction ||
             getMetaKeyValue(SenderMetaKey, meta) ||
-            exercisedEvent.choiceArgument.transfer.sender
+            choiceArgumentTransfer.sender
         if (!sender) {
             console.error(
                 `Malformed transfer didn't contain sender. Will instead attempt to parse the children.
@@ -434,7 +442,7 @@ export class TransactionParser {
         }
         const transferInstruction: TransferInstructionView = {
             originalInstructionCid: null,
-            transfer: exercisedEvent.choiceArgument.transfer,
+            transfer: choiceArgumentTransfer,
             status: {
                 before: null,
             },
@@ -508,10 +516,14 @@ export class TransactionParser {
                 before: transferInstructionView.status,
             },
         }
-
+        const exerciseResultOutputTag = (
+            exercisedEvent.exerciseResult as {
+                output: TransferInstructionResult_Output
+            }
+        ).output.tag
         let result: ParsedKnownExercisedEvent | null = null
 
-        switch (exercisedEvent.exerciseResult.output.tag) {
+        switch (exerciseResultOutputTag) {
             case 'TransferInstructionResult_Failed':
             case 'TransferInstructionResult_Pending':
                 result = await this.buildMergeSplit(
@@ -528,7 +540,7 @@ export class TransactionParser {
                 break
             default:
                 throw new Error(
-                    `Unknown TransferInstructionResult: ${exercisedEvent.exerciseResult.output.tag}`
+                    `Unknown TransferInstructionResult: ${exerciseResultOutputTag}`
                 )
         }
         return (
