@@ -5,5 +5,5 @@
         "module": "nodenext",
         "noEmit": true
     },
-    "include": ["01-auth.ts", "02-auth-localnet.ts", "snippets/*.ts"]
+    "include": ["scripts/*.ts", "snippets/*.ts"]
 }
