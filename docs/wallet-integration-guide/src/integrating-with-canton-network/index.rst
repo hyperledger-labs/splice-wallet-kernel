@@ -40,6 +40,8 @@ The dApp SDK can be installed with:
 
 Both SDKs use the same underlying core packages and in case where only partial code is needed (like for transaction visualization or hash verification) those packages can be used independently.
 
+.. _validator_nodes:
+
 Hosting a Validator
 -------------------
 
