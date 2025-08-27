@@ -45,7 +45,7 @@ ensuring a high degree of confidentiality.
 
 **Onboarding and Format**
 
-Parties are formatted as `name::fingerprint`, where the **fingerprint** is a unique identifier which can be generated from a public key (and thus also from a private key).
+Parties are formatted as ``name::fingerprint``, where the **fingerprint** is a unique identifier which can be generated from a public key (and thus also from a private key).
 
 To use a party, you must **onboard** it by submitting a topology transaction that authorizes a node to host it. 
 The designated node must then submit a matching transaction to officially accept the hosting request. Instructions on how to do that can be found here.
