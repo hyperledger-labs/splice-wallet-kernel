@@ -13,10 +13,12 @@ const sdk = new WalletSDKImpl().configure({
     ledgerFactory: localNetLedgerDefault, // or use your specific configuration
     topologyFactory: localNetTopologyDefault, // or use your specific configuration
 })
+await sdk.connectTopology()
 
 const { publicKey, privateKey } = TopologyController.createNewKeyPair()
 //partyHint is optional but recommended to make it easier to identify the party
 const partyHint = 'my-wallet-1'
+
 const allocatedParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
     publicKey,
     partyHint

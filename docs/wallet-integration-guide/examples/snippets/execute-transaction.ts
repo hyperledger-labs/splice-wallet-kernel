@@ -12,6 +12,8 @@ const sdk = new WalletSDKImpl().configure({
     topologyFactory: undefined, //these calls require no topology changes
 })
 
+await sdk.connect()
+
 const transaction = {
     preparedTransaction: 'encoded-transaction-bytes-base64',
     preparedTransactionHash:

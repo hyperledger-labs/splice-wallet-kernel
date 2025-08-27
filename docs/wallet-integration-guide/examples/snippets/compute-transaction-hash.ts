@@ -1,16 +1,4 @@
-import {
-    WalletSDKImpl,
-    localNetAuthDefault,
-    localNetLedgerDefault,
-    TopologyController,
-} from '@splice/wallet-sdk'
-
-const sdk = new WalletSDKImpl().configure({
-    logger: console,
-    authFactory: localNetAuthDefault,
-    ledgerFactory: localNetLedgerDefault,
-    topologyFactory: undefined, //these calls require no topology changes
-})
+import { TopologyController } from '@splice/wallet-sdk'
 
 const transaction = {
     preparedTransaction: 'encoded-transaction-bytes-base64',

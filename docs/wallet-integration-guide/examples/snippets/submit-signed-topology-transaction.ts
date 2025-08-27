@@ -12,6 +12,7 @@ const sdk = new WalletSDKImpl().configure({
     ledgerFactory: localNetLedgerDefault, // or use your specific configuration
     topologyFactory: localNetTopologyDefault, // or use your specific configuration
 })
+await sdk.connectTopology()
 
 const preparedParty = {
     partyTransactions: [], // array of topology transactions
