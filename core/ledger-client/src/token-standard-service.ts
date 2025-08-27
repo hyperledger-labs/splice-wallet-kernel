@@ -1,7 +1,9 @@
+import { TokenStandardClient } from '@splice/core-token-standard'
 import { LedgerClient } from './LedgerClient'
 import { TransferInstructionInterface } from './constants'
 import { components } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import { submitExerciseCommand } from './ledger-api-utils'
+import { Logger } from '@splice/core-types'
 
 type ExerciseCommand = components['schemas']['ExerciseCommand']
 
@@ -15,7 +17,14 @@ interface AcceptTransferInstructionCommandOptions {
 }
 
 export class TokenStandardService {
-    constructor(private ledgerClient: LedgerClient) {}
+    constructor(
+        private ledgerClient: LedgerClient,
+        private readonly logger: Logger
+    ) {}
+
+    private tokenStandardClient(registryUrl: string): TokenStandardClient {
+        return new TokenStandardClient(registryUrl, this.logger, undefined)
+    }
 
     async acceptTransferInstruction(
         transferInstructionCid: string,
@@ -29,21 +38,17 @@ export class TokenStandardService {
                 userId,
                 transferFactoryRegistryUrl,
             } = opts
-            const transferRegistryConfig = createConfiguration({
-                baseServer: new ServerConfiguration(
-                    transferFactoryRegistryUrl,
-                    {}
-                ),
-            })
-            const transferRegistryClient = new TransferFactoryAPI(
-                transferRegistryConfig
-            )
 
-            const choiceContext =
-                await transferRegistryClient.getTransferInstructionAcceptContext(
-                    transferInstructionCid,
-                    {}
-                )
+            const client = this.tokenStandardClient(transferFactoryRegistryUrl)
+            const choiceContext = await client.post(
+                '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/accept',
+                {},
+                {
+                    path: {
+                        transferInstructionId: transferInstructionCid,
+                    },
+                }
+            )
 
             const exercise: ExerciseCommand = {
                 templateId: TransferInstructionInterface.toString(),

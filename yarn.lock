@@ -4575,6 +4575,7 @@ __metadata:
     "@protobuf-ts/runtime": "npm:^2.11.1"
     "@protobuf-ts/runtime-rpc": "npm:^2.11.1"
     "@splice/core-token-standard": "workspace:^"
+    "@splice/core-types": "workspace:^"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"
     "@types/jest": "npm:^30.0.0"
@@ -4709,8 +4710,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@splice/core-token-standard@workspace:core/token-standard"
   dependencies:
+    "@splice/core-types": "workspace:^"
     openapi-fetch: "npm:^0.14.0"
-    pino: "npm:^9.7.0"
     typescript: "npm:^5.8.3"
     uuid: "npm:^11.1.0"
     zod: "npm:^3.25.67"

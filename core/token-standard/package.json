@@ -12,8 +12,8 @@
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
+        "@splice/core-types": "workspace:^",
         "openapi-fetch": "^0.14.0",
-        "pino": "^9.7.0",
         "uuid": "^11.1.0",
         "zod": "^3.25.67"
     },

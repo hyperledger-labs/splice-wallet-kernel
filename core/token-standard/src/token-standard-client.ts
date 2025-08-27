@@ -3,9 +3,9 @@ import { paths as metadata } from './generated-clients/splice-api-token-metadata
 import { paths as transferInstruction } from './generated-clients/splice-api-token-transfer-instruction-v1/transfer-instruction-v1'
 import { paths as allocationInstruction } from './generated-clients/splice-api-token-allocation-instruction-v1/allocation-instruction-v1'
 import createClient, { Client } from 'openapi-fetch'
-import { Logger } from 'pino'
+import { Logger } from '@splice/core-types'
 
-type paths = allocation | metadata | transferInstruction | allocationInstruction
+type paths = allocation & metadata & transferInstruction & allocationInstruction
 
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional
@@ -51,8 +51,8 @@ export class TokenStandardClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
 
-    constructor(baseUrl: string, token: string, _logger: Logger) {
-        this.logger = _logger.child({ component: 'TokenStandardClient' })
+    constructor(baseUrl: string, logger: Logger, token?: string) {
+        this.logger = logger
         this.client = createClient<paths>({
             baseUrl,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
@@ -60,7 +60,7 @@ export class TokenStandardClient {
                     ...options,
                     headers: {
                         ...(options.headers || {}),
-                        Authorization: `Bearer ${token}`,
+                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
                     },
                 })
             },
