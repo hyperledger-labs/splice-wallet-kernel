@@ -33,7 +33,7 @@ import {
 } from './types'
 
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
-import { LedgerClient } from '../LedgerClient'
+import { LedgerClient } from '../ledger-client'
 import BigNumber from 'bignumber.js'
 
 type ArchivedEvent = components['schemas']['ArchivedEvent']

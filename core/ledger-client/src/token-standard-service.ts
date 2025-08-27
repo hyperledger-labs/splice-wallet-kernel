@@ -1,6 +1,6 @@
 import { TokenStandardClient } from '@splice/core-token-standard'
 import { Logger } from '@splice/core-types'
-import { LedgerClient } from './LedgerClient'
+import { LedgerClient } from './ledger-client'
 import {
     HoldingInterface,
     InterfaceId,

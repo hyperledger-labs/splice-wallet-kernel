@@ -10,7 +10,7 @@ import {
     TransferInstructionInterface,
 } from './constants'
 import { components } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
-import { LedgerClient } from './LedgerClient'
+import { LedgerClient } from './ledger-client'
 import { Holding, TransferInstructionView } from './txparse/types'
 
 type TransactionFilter = components['schemas']['TransactionFilter']
