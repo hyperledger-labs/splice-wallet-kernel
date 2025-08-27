@@ -1,6 +1,11 @@
-import { paths } from './generated-clients/splice-api-token-transfer-instruction-v1/transfer-instruction-v1'
+import { paths as allocation } from './generated-clients/splice-api-token-allocation-v1/allocation-v1'
+import { paths as metadata } from './generated-clients/splice-api-token-metadata-v1/token-metadata-v1'
+import { paths as transferInstruction } from './generated-clients/splice-api-token-transfer-instruction-v1/transfer-instruction-v1'
+import { paths as allocationInstruction } from './generated-clients/splice-api-token-allocation-instruction-v1/allocation-instruction-v1'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from 'pino'
+
+type paths = allocation | metadata | transferInstruction | allocationInstruction
 
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional
