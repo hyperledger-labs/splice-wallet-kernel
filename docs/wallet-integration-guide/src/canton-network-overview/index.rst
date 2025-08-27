@@ -7,9 +7,11 @@ High-level Overview
 Canton Network is a public layer 1 blockchain network with privacy. It is designed for financial institutions and DeFi alike to facilitate secure, interoperable, and privacy-preserving transactions and drive the confluence of TradFi and DeFi.
 
 Key Features:
+
 * It uniquely balances the decentralization of public blockchains with the privacy and controls required for financial markets.
 * It enables real-time, secure synchronization and settlement across multiple asset classes on a shared, interoperable infrastructure.
 * It allows assets and data to move across applications with real-time synchronization and guaranteed privacy.
+
 **Technology:** The Canton Network is designed as a "network of networks," where each participating institution maintains its own sub-ledger 
 while connecting with others via a shared synchronization layer.
 **Governance:** The Global Synchronizer Foundation (GSF), an independent, non-profit body under the Linux Foundation, governs the global synchronizer.

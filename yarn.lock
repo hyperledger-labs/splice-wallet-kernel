@@ -4516,16 +4516,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@splice/clients-remote@workspace:clients/remote"
   dependencies:
-    "@grpc/grpc-js": "npm:^1.13.4"
     "@jest/globals": "npm:^29.0.0"
     "@metamask/rpc-errors": "npm:^7.0.2"
-    "@protobuf-ts/grpc-transport": "npm:^2.11.1"
-    "@protobuf-ts/runtime": "npm:^2.11.1"
-    "@protobuf-ts/runtime-rpc": "npm:^2.11.1"
     "@splice/core-ledger-client": "workspace:^"
     "@splice/core-signing-internal": "workspace:^"
     "@splice/core-signing-lib": "workspace:^"
     "@splice/core-signing-participant": "workspace:^"
+    "@splice/core-tx-visualizer": "workspace:^"
     "@splice/core-types": "workspace:^"
     "@splice/core-wallet-auth": "workspace:^"
     "@splice/core-wallet-dapp-rpc-client": "workspace:^"
@@ -4574,6 +4571,7 @@ __metadata:
     "@protobuf-ts/grpc-transport": "npm:^2.11.1"
     "@protobuf-ts/runtime": "npm:^2.11.1"
     "@protobuf-ts/runtime-rpc": "npm:^2.11.1"
+    "@splice/core-ledger-proto": "workspace:^"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"
     "@types/jest": "npm:^30.0.0"
@@ -4584,6 +4582,18 @@ __metadata:
     pino: "npm:^9.7.0"
     ts-jest: "npm:^29.4.0"
     ts-jest-resolver: "npm:^2.0.1"
+    typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
+
+"@splice/core-ledger-proto@workspace:^, @splice/core-ledger-proto@workspace:core/ledger-proto":
+  version: 0.0.0-use.local
+  resolution: "@splice/core-ledger-proto@workspace:core/ledger-proto"
+  dependencies:
+    "@protobuf-ts/runtime": "npm:^2.11.1"
+    "@protobuf-ts/runtime-rpc": "npm:^2.11.1"
+    "@swc/core": "npm:^1.11.31"
+    "@types/node": "npm:^22.15.30"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -4719,7 +4729,7 @@ __metadata:
     "@jest/globals": "npm:^29.0.0"
     "@protobuf-ts/runtime": "npm:^2.11.1"
     "@protobuf-ts/runtime-rpc": "npm:^2.11.1"
-    "@splice/core-ledger-client": "workspace:^"
+    "@splice/core-ledger-proto": "workspace:^"
     "@swc/core": "npm:^1.13.3"
     "@swc/jest": "npm:^0.2.38"
     "@types/jest": "npm:^30.0.0"
@@ -4884,28 +4894,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@splice/example-scripts@workspace:example-scripts":
+"@splice/dapp-sdk@workspace:^, @splice/dapp-sdk@workspace:sdk/dapp-sdk":
   version: 0.0.0-use.local
-  resolution: "@splice/example-scripts@workspace:example-scripts"
+  resolution: "@splice/dapp-sdk@workspace:sdk/dapp-sdk"
   dependencies:
-    "@metamask/rpc-errors": "npm:^7.0.2"
-    "@splice/core-ledger-client": "workspace:^"
+    "@splice/core-splice-provider": "workspace:^"
     "@splice/core-types": "workspace:^"
-    "@splice/core-wallet-auth": "workspace:^"
     "@splice/core-wallet-dapp-rpc-client": "workspace:^"
-    "@splice/core-wallet-user-rpc-client": "workspace:^"
-    axios: "npm:^1.11.0"
-    cors: "npm:^2.8.5"
-    express: "npm:^5.1.0"
-    lit: "npm:^3.3.0"
-    pino: "npm:^9.7.0"
-    qs: "npm:^6.14.0"
-    socket.io: "npm:^4.8.1"
-    tsx: "npm:^4.20.3"
+    "@splice/core-wallet-ui-components": "workspace:^"
     typescript: "npm:^5.8.3"
-    uuid: "npm:^11.1.0"
-    vite-express: "npm:^0.21.1"
-    zod: "npm:^3.25.64"
   languageName: unknown
   linkType: soft
 
@@ -4915,7 +4912,7 @@ __metadata:
   dependencies:
     "@eslint/js": "npm:^9.25.0"
     "@playwright/test": "npm:^1.54.2"
-    "@splice/sdk-dapp": "workspace:^"
+    "@splice/dapp-sdk": "workspace:^"
     "@types/node": "npm:^24.3.0"
     "@types/react": "npm:^19.1.2"
     "@types/react-dom": "npm:^19.1.2"
@@ -4965,21 +4962,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@splice/sdk-dapp@workspace:^, @splice/sdk-dapp@workspace:sdk/dapp-sdk":
+"@splice/wallet-sdk@workspace:^, @splice/wallet-sdk@workspace:sdk/wallet-sdk":
   version: 0.0.0-use.local
-  resolution: "@splice/sdk-dapp@workspace:sdk/dapp-sdk"
-  dependencies:
-    "@splice/core-splice-provider": "workspace:^"
-    "@splice/core-types": "workspace:^"
-    "@splice/core-wallet-dapp-rpc-client": "workspace:^"
-    "@splice/core-wallet-ui-components": "workspace:^"
-    typescript: "npm:^5.8.3"
-  languageName: unknown
-  linkType: soft
-
-"@splice/sdk-wallet@workspace:^, @splice/sdk-wallet@workspace:sdk/wallet-sdk":
-  version: 0.0.0-use.local
-  resolution: "@splice/sdk-wallet@workspace:sdk/wallet-sdk"
+  resolution: "@splice/wallet-sdk@workspace:sdk/wallet-sdk"
   dependencies:
     "@splice/core-ledger-client": "workspace:^"
     "@splice/core-signing-lib": "workspace:^"
@@ -8138,7 +8123,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "docs-wallet-integration-guide-examples@workspace:docs/wallet-integration-guide/examples"
   dependencies:
-    "@splice/sdk-wallet": "workspace:^"
+    "@splice/wallet-sdk": "workspace:^"
     "@types/node": "npm:^24.3.0"
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.8.3"
