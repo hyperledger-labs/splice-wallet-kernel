@@ -31,10 +31,7 @@ import {
     TokenStandardChoice,
     TransferInstructionView,
 } from './types'
-import {
-    Transfer,
-    TransferInstructionResult_Output,
-} from '@splice/core-token-standard/src/token-standard-models-1.0.0/lib/Splice/Api/Token/TransferInstructionV1/index'
+import { TransferInstructionV1 } from '@splice/core-token-standard'
 
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
 import { LedgerClient } from '../ledger-client'
@@ -379,7 +376,9 @@ export class TransactionParser {
         const meta = mergeMetas(exercisedEvent)
         const reason = getMetaKeyValue(ReasonMetaKey, meta)
         const choiceArgumentTransfer = (
-            exercisedEvent.choiceArgument as { transfer: Transfer }
+            exercisedEvent.choiceArgument as {
+                transfer: TransferInstructionV1.Transfer
+            }
         ).transfer
 
         const sender: string =
@@ -518,7 +517,7 @@ export class TransactionParser {
         }
         const exerciseResultOutputTag = (
             exercisedEvent.exerciseResult as {
-                output: TransferInstructionResult_Output
+                output: TransferInstructionV1.TransferInstructionResult_Output
             }
         ).output.tag
         let result: ParsedKnownExercisedEvent | null = null
