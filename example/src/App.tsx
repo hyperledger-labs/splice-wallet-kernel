@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import * as sdk from '@splice/sdk-dapp'
+import * as sdk from '@splice/dapp-sdk'
 import { createPingCommand } from './commands/createPingCommand'
 
 function App() {

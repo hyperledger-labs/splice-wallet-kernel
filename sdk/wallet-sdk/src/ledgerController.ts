@@ -175,6 +175,25 @@ export class LedgerController {
     }
 
     /**
+     * This creates a simple Ping command, useful for testing signing and onboarding
+     * @param partyId the party to receive the ping
+     */
+    createPingCommand(partyId: string) {
+        return [
+            {
+                CreateCommand: {
+                    templateId: '#AdminWorkflows:Canton.Internal.Ping:Ping',
+                    createArguments: {
+                        id: v4(),
+                        initiator: this.partyId,
+                        responder: partyId,
+                    },
+                },
+            },
+        ]
+    }
+
+    /**
      * Lists all wallets (parties) the user has access to.
      * use a pageToken from a previous request to query the next page.
      * @param options Optional query parameters: pageSize, pageToken, identityProviderId

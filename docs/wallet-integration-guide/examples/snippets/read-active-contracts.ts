@@ -2,7 +2,7 @@ import {
     WalletSDKImpl,
     localNetAuthDefault,
     localNetLedgerDefault,
-} from '@splice/sdk-wallet'
+} from '@splice/wallet-sdk'
 
 const sdk = new WalletSDKImpl().configure({
     logger: console,
@@ -19,5 +19,5 @@ const myTemplateId = 'your-template-id-here'
 
 const allActiveContractOfMyTemplate = await sdk.userLedger?.activeContracts({
     offset,
-    templateIds: [myTemplateId],
+    templateIds: [myTemplateId], //this is optional for if you want to filter by template id
 })

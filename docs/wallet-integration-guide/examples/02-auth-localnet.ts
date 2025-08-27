@@ -5,7 +5,7 @@ import {
     localNetTopologyDefault,
     createKeyPair,
     signTransactionHash,
-} from '@splice/sdk-wallet'
+} from '@splice/wallet-sdk'
 import { v4 } from 'uuid'
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
@@ -76,7 +76,7 @@ if (preparedParty) {
 }
 
 console.log('Create ping command')
-const createPingCommand = await sdk.topology?.createPingCommand(
+const createPingCommand = await sdk.userLedger?.createPingCommand(
     preparedParty!.partyId!
 )
 
