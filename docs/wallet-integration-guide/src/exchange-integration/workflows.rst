@@ -76,7 +76,7 @@ Example flow:
       and queries Canton Coin Scan to retrieve registry-specific
       ``TransferFactory`` and extra transfer context. The returned data
       includes the ``TransferPreapproval`` for the ``treasuryParty``.
-   b. Customer wallet submits the command to exercise
+   b. Customer wallet submits the command to exercise the
       ``TransferFactory_Transfer`` choice together with the extra
       transfer context. The resulting transaction archives the funding
       CC ``Holding`` UTXOs and creates a CC ``Holding`` UTXO with
@@ -249,7 +249,133 @@ All examples assume that:
 Multi-Step Deposit Workflow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. TODO: add diagram, and flow description
+.. image:: images/multi-step_deposit.png
+  :alt: Multi-Step Deposit Workflow Diagram
+
+Example flow: deposit offer and acceptance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The flow uses essentially the same initial three steps as
+the :ref:`one-step-deposit-workflow` above.
+We list them in full for completeness.
+
+1. Customer uses Exchange UI to retrieve ``treasuryParty`` and deposit
+   account-id “abc123” to use for the deposit.
+
+2. Customer uses Customer Wallet to initiate a token standard transfer of
+   100 AcmeToken to ``treasuryParty`` with metadata key
+   ``splice.lfdecentralizedtrust.org/reason`` set to “abc123”.
+
+   a. Customer Wallet selects AcmeToken ``Holding`` UTXOs to fund the transfer
+      and queries Acme's Registry API Server to retrieve registry-specific
+      ``TransferFactory`` and extra transfer context. The URL for this server
+      was configured in the Customer Wallet as part of :ref:`token-onboarding`.
+   b. Customer wallet submits the command to exercise the
+      ``TransferFactory_Transfer`` choice together with the extra
+      transfer context. The resulting transaction archives the funding
+      AcmeToken ``Holding`` UTXOs and creates a locked 100 AcmeToken ``Holding`` UTXO with
+      contract-id ``coid234`` owned by the ``customerParty`` and
+      another AcmeToken ``Holding`` UTXO for the change owned by the Customer.
+      The transaction also creates a ``TransferInstruction`` UTXO with contract-id
+      ``coid567``, which represents the transfer offer to the Exchange.
+   c. The resulting transaction gets committed across the Customer,
+      Exchange, and Acme validator nodes. It is assigned an
+      update-id ``upd567`` and a record time ``t1`` by the Global
+      Synchronizer. It is assigned offset ``off1`` by the Exchange
+      Validator Node.
+
+3. Tx History Ingestion observes ``upd567`` at ``t1`` with offset
+   ``off1`` and updates the Canton Integration DB as follows.
+
+   a. Tx History Ingestion parses ``upd567`` using the token standard tx
+      history parser from the Wallet SDK to determine:
+
+      * The deposit amount of 100 AcmeToken.
+      * The deposit account “abc123” from the
+        ``splice.lfdecentralizedtrust.org/reason`` metadata value.
+      * The ``TransferInstruction`` UTXO ``coid567`` representing the
+        transfer offer for the deposit.
+
+   b. Tx History ingestion writes the following in a single, atomic
+      transaction to the Canton Integration DB
+
+      * The latest ingested update-id ``upd567`` its record time ``t1``
+        and offset ``off1``.
+      * The ``TransferInstruction`` UTXO ``coid567`` representing the
+        transfer offer from ``customerParty`` for a deposit of 100 AcmeToken in account "abc123".
+
+4. Customer Wallet ingests update ``upd567`` and Customer observes the pending transfer offer for the deposit in the Customer Wallet.
+   Customer also sees the 100 AcmeToken ``Holding`` UTXO ``coid234`` locked to the deposit.
+
+This is where the main difference to the :ref:`one-step-deposit-workflow` starts.
+The Multi-Step Deposit Automation service will now auto-accept the transfer offer.
+
+5. The Multi-Step Deposit Automation regularly queries for pending transfer offers for known
+   deposit accounts. It thus observs the pending transfer offer ``coid567`` and accepts it as follows.
+
+    a. Multi-Step Deposit Automation retrieves the URL for Acme's Registry API Server
+       from the Canton Integration DB.
+    b. Multi-Step Deposit Automation queries Acme's Registry API Server to retrieve the
+       extra context to exercise the ``TransferInstruction_Accept`` choice on
+       ``coid567``.
+    c. Multi-Step Deposit Automation prepares, signs, and submits the command to
+       exercise the ``TransferInstruction_Accept`` choice on ``coid567``.
+    d. The resulting transaction gets committed across the Customer,
+       Exchange, and Acme validator nodes. It is assigned an
+       update-id ``upd789`` and a record time ``t2``
+       the Global Synchronizer. It is assigned ``off3`` by the Exchange
+       Validator Node.
+       The resulting transaction has the following effects:
+
+       * It archives the ``TransferInstruction`` UTXO ``coid567``.
+       * It archives the locked 100 AcmeToken ``Holding`` UTXO ``coid234`` owned
+         by the ``customerParty``.
+       * It creates a 100 AcmeToken ``Holding`` UTXO ``coid999`` owned by
+         the ``treasuryParty``.
+
+At this point the workflow again proceeds the same way as the :ref:`one-step-deposit-workflow`.
+
+6. Tx History Ingestion observes ``upd789`` at ``t2`` with offset
+   ``off3`` and updates the Canton Integration DB as follows.
+
+   a. Tx History Ingestion parses ``upd789`` using the token standard tx
+      history parser from the Wallet SDK to determine:
+
+      * The deposit amount of 100 AcmeToken.
+      * The deposit account “abc123” from the
+        ``splice.lfdecentralizedtrust.org/reason`` metadata value.
+
+   b. Tx History ingestion writes the following in a single, atomic
+      transaction to the Canton Integration DB
+
+      * The latest ingested update-id ``upd789``, its record time
+        ``t2`` and offset ``off3``.
+      * The new AcmeToken ``Holding`` UTXO ``coid999`` for the 100 AcmeToken that was
+        received.
+      * The credit of 100 AcmeToken on the Customer's account at the exchange.
+
+7. Customer Wallet observes ``upd789`` at ``t2`` on
+   the Customer Validator Node, parses it using the token standard tx
+   history parser and updates its UI as follows:
+
+   * Its tx history shows the successful transfer of 100 AcmeToken to ``exchangeParty``
+     with “Reason” ``wid123`` that was committed as update ``upd789``
+     at ``t2``.
+
+8. Customer observes the successful deposit in their Exchange UI,
+   whose data is retrieved from the Canton Integration DB via the Exchange Internal Systems.
+
+Example: handling deposits with unknown deposit accounts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To minimize traffic cost, we recommend not acting on deposits with unknown deposit accounts.
+The sender can use their wallet to withdraw the offer.
+
+Ingesting deposit offers with unknown deposit accounts is still valuable
+to allow the exchange's support team to handle customer inquiries about
+these transfers.
+
+
 
 
 .. _multi-step-withdrawal-workflow:
@@ -260,11 +386,12 @@ Multi-Step Withdrawal Workflow
 .. image:: images/multi-step_withdrawal.png
    :alt: Multi-Step Withdrawal Workflow
 
-Example flow: successful offer and acceptance
+Example flow: withdrawal offer and acceptance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The flow shares most of its first step with the :ref:`one-step-withdrawal-workflow`
-above. We list the full step below for completeness.
+The flow uses essentially the same initial six steps as
+the :ref:`one-step-withdrawal-workflow` above.
+We list them in full for completeness.
 
 1. Customer requests withdrawal of 100 AcmeToken to ``customerParty`` using
    the Exchange UI.
@@ -328,6 +455,8 @@ above. We list the full step below for completeness.
          ``treasuryParty``.
        * The new  AcmeToken ``Holding`` UTXO ``coid789`` owned by the
          ``treasuryParty``
+       * The ``TransferInstruction`` UTXO ``coid567`` representing the
+         transfer offer for the withdrawal.
 
     b. Tx History ingestion writes the following in a single, atomic
        transaction to the Canton Integration DB:
@@ -354,7 +483,7 @@ above. We list the full step below for completeness.
        from ``exchangeParty`` with “Reason” ``wid123`` that was
        committed as update ``upd567`` at ``t1``.
 
-This is where the main difference the the :ref:`one-step-withdrawal-workflow` starts.
+This is where the main difference to the :ref:`one-step-withdrawal-workflow` starts.
 The customer has a choice whether to accept or reject the transfer offer.
 Here they choose to accept it.
 
