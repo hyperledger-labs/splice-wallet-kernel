@@ -14,8 +14,11 @@ export class TokenStandardController {
     private client: LedgerClient
     private service: TokenStandardService
     private userId: string
-    private partyId: string
-    private synchronizerId: string
+    private partyId: string = ''
+    private synchronizerId: string = ''
+    private transferFactoryRegistryUrl: string = ''
+    private instrumentAdmin: string = ''
+    private instrumentId: string = ''
 
     /** Creates a new instance of the LedgerController.
      *
@@ -27,8 +30,6 @@ export class TokenStandardController {
         this.client = new LedgerClient(baseUrl, token, this.logger)
         this.service = new TokenStandardService(this.client, this.logger)
         this.userId = userId
-        this.partyId = ''
-        this.synchronizerId = ''
         return this
     }
 
@@ -50,6 +51,31 @@ export class TokenStandardController {
         return this
     }
 
+    /**
+     * Sets the transferFactoryRegistryUrl that the TokenStandardController will use for requests.
+     * @param transferFactoryRegistryUrl
+     */
+    setTransferFactoryRegistryUrl(
+        transferFactoryRegistryUrl: string
+    ): TokenStandardController {
+        this.transferFactoryRegistryUrl = transferFactoryRegistryUrl
+        return this
+    }
+
+    /**
+     * Sets the instrument that the TokenStandardController will use for requests.
+     * @param instrumentId
+     * @param instrumentAdmin
+     */
+    setInstrument(
+        instrumentId: string,
+        instrumentAdmin: string
+    ): TokenStandardController {
+        this.instrumentId = instrumentId
+        this.instrumentAdmin = instrumentAdmin
+        return this
+    }
+
     /** Lists all holdings for the current party.
      * @param afterOffset optional pagination offset.
      * @returns A promise that resolves to an array of holdings.
@@ -60,6 +86,21 @@ export class TokenStandardController {
         return await this.service.listHoldingTransactions(
             this.partyId,
             afterOffset
+        )
+    }
+
+    async createTransfer(
+        sender: string,
+        receiver: string,
+        amount: string
+    ): Promise<void> {
+        await this.service.createTransfer(
+            sender,
+            receiver,
+            amount,
+            this.instrumentAdmin,
+            this.instrumentId,
+            this.transferFactoryRegistryUrl
         )
     }
 }
