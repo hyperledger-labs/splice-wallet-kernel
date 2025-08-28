@@ -78,7 +78,7 @@ if (preparedParty) {
 }
 
 console.log('Create ping command')
-const createPingCommand = sdk.topology?.createPingCommand(
+const createPingCommand = await sdk.userLedger?.createPingCommand(
     preparedParty!.partyId!
 )
 

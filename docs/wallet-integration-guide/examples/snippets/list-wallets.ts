@@ -10,4 +10,6 @@ const sdk = new WalletSDKImpl().configure({
     ledgerFactory: localNetLedgerDefault,
 })
 
+await sdk.connect()
+
 const wallets = await sdk.userLedger?.listWallets()

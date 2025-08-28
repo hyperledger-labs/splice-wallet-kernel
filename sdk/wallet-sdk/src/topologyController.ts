@@ -13,8 +13,6 @@ import {
 import { pino } from 'pino'
 import { hashPreparedTransaction } from '@splice/core-tx-visualizer'
 
-import { v4 } from 'uuid'
-
 export type PreparedParty = {
     partyTransactions: Uint8Array<ArrayBufferLike>[]
     combinedHash: string
@@ -123,25 +121,6 @@ export class TopologyController {
         }
 
         return Promise.resolve(result)
-    }
-
-    /**
-     * This creates a simple Ping command, useful for testing signing and onboarding
-     * @param partyId the party to receive the ping
-     */
-    createPingCommand(partyId: string) {
-        return [
-            {
-                CreateCommand: {
-                    templateId: '#AdminWorkflows:Canton.Internal.Ping:Ping',
-                    createArguments: {
-                        id: v4(),
-                        initiator: partyId,
-                        responder: partyId,
-                    },
-                },
-            },
-        ]
     }
 
     /** Submits a prepared and signed external party topology to the ledger.

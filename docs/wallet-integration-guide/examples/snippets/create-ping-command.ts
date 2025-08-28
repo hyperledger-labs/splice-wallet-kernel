@@ -8,7 +8,10 @@ const sdk = new WalletSDKImpl().configure({
     logger: console,
     authFactory: localNetAuthDefault,
     ledgerFactory: localNetLedgerDefault,
+    topologyFactory: undefined, //these calls require no topology changes
 })
 await sdk.connect()
 
-const ledgerEnd = await sdk.userLedger?.ledgerEnd()
+const receiver = 'target-of-ping-party'
+
+const command = sdk.userLedger?.createPingCommand(receiver)

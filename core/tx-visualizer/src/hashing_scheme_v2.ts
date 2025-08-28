@@ -15,7 +15,7 @@ import {
     TextMap_Entry,
     Value,
 } from '@splice/core-ledger-proto'
-import { mkByteArray, sha256 } from './utils'
+import { mkByteArray, sha256 } from './utils.js'
 
 // Hash purpose reserved for prepared transaction
 const PREPARED_TRANSACTION_HASH_PURPOSE = Uint8Array.from([

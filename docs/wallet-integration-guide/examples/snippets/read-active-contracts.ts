@@ -9,6 +9,7 @@ const sdk = new WalletSDKImpl().configure({
     authFactory: localNetAuthDefault,
     ledgerFactory: localNetLedgerDefault,
 })
+await sdk.connect()
 
 const offset = 100 // you can use the sdk.userLedger.ledgerEnd() to get the latest offset
 
@@ -18,5 +19,5 @@ const myTemplateId = 'your-template-id-here'
 
 const allActiveContractOfMyTemplate = await sdk.userLedger?.activeContracts({
     offset,
-    templateIds: [myTemplateId],
+    templateIds: [myTemplateId], //this is optional for if you want to filter by template id
 })

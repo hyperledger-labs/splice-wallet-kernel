@@ -9,6 +9,7 @@ const sdk = new WalletSDKImpl().configure({
     authFactory: localNetAuthDefault,
     ledgerFactory: localNetLedgerDefault,
 })
+await sdk.connect()
 
 sdk.userLedger?.setPartyId('my-wallet-1')
 sdk.userLedger?.setSynchronizerId('synchronizer-1')

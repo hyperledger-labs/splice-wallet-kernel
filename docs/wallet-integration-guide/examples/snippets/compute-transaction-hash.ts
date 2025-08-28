@@ -1,4 +1,4 @@
-import { signTransactionHash } from '@splice/wallet-sdk'
+import { TopologyController } from '@splice/wallet-sdk'
 
 const transaction = {
     preparedTransaction: 'encoded-transaction-bytes-base64',
@@ -7,9 +7,6 @@ const transaction = {
     hashingSchemeVersion: 'hashing-scheme-version',
 }
 
-const privateKey = 'your-private-key-here'
-
-const signature = signTransactionHash(
-    transaction.preparedTransactionHash,
-    privateKey
+const hash = TopologyController.createTransactionHash(
+    transaction.preparedTransaction
 )

@@ -1,5 +1,5 @@
 Finding and Reading Data
-=======================
+========================
 
 
 Reading from ledger
@@ -12,7 +12,7 @@ To facilitate this change easily, the ledger controller
 in the Wallet SDK allows you to change these, but forces them to be required for certain operations.
 This is to ensure that you always have the correct context when reading data from the ledger.
 
-.. literalinclude:: ../../examples/snippets/change-party-and-syncrhonizer.ts
+.. literalinclude:: ../../examples/snippets/change-party-and-synchronizer.ts
     :language: typescript
     :dedent:
 
@@ -38,11 +38,12 @@ When doing reconciliation for transactions with partners or other members of a s
 
 Ledger end can easily be derived from with the wallet SDK:
 
-.. literalinclude:: ../../examples/snippets/list-wallets.ts
+.. literalinclude:: ../../examples/snippets/read-ledger-end.ts
     :language: typescript
     :dedent:
 
 **Reading Active Contracts**
+
 Using the above ledger time we can figure out what the current state of all active contracts are. Contracts can be in two states, active and archived which correlates
 to the UTXO mode of unspent and spent. Active contracts are contracts that are unspent and thereby can be used in new transactions or to exercise choices.
 
