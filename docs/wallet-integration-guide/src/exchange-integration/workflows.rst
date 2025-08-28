@@ -98,7 +98,7 @@ Example flow:
       * The deposit account “abc123” from the
         ``splice.lfdecentralizedtrust.org/reason`` metadata value.
       * The new ``Holding`` UTXO ``coid234`` owned by the
-        ``treasuryPary``
+        ``treasuryParty``
 
    b. Tx History ingestion writes the following in a single, atomic
       transaction to the Canton Integration DB
