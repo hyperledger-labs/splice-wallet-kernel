@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-ledger-proto",
-    "version": "0.0.0",
+    "version": "0.1.0",
     "description": "Provides typescript generated from the canton protobufs.",
     "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
     "license": "Apache-2.0",
