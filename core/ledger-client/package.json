@@ -1,6 +1,6 @@
 {
-    "name": "@splice/core-ledger-client",
-    "version": "0.0.0",
+    "name": "@canton-network/core-ledger-client",
+    "version": "0.1.0",
     "description": "Provides ledger client for the wallet kernel.",
     "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
     "license": "Apache-2.0",
@@ -31,14 +31,20 @@
         "typescript": "^5.8.3"
     },
     "dependencies": {
+        "@canton-network/core-ledger-proto": "workspace:^",
+        "@canton-network/core-token-standard": "workspace:^",
+        "@canton-network/core-types": "workspace:^",
         "@protobuf-ts/runtime": "^2.11.1",
         "@protobuf-ts/runtime-rpc": "^2.11.1",
-        "@splice/core-ledger-proto": "workspace:^",
-        "@splice/core-token-standard": "workspace:^",
-        "@splice/core-types": "workspace:^",
         "bignumber.js": "^9.2.1",
         "dayjs": "^1.11.13",
         "openapi-fetch": "^0.14.0",
         "pino": "^9.7.0"
+    },
+    "files": [
+        "dist/*"
+    ],
+    "publishConfig": {
+        "access": "public"
     }
 }

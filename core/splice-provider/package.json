@@ -1,6 +1,6 @@
 {
-    "name": "@splice/core-splice-provider",
-    "version": "0.0.0",
+    "name": "@canton-network/core-splice-provider",
+    "version": "0.1.0",
     "description": "A JavaScript Splice Provider API (EIP-1193 compliant).",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
@@ -17,8 +17,14 @@
         "typescript": "^5.8.3"
     },
     "dependencies": {
-        "@splice/core-types": "workspace:^",
-        "@splice/core-wallet-ui-components": "workspace:^",
+        "@canton-network/core-types": "workspace:^",
+        "@canton-network/core-wallet-ui-components": "workspace:^",
         "socket.io-client": "^4.8.1"
+    },
+    "files": [
+        "dist/*"
+    ],
+    "publishConfig": {
+        "access": "public"
     }
 }

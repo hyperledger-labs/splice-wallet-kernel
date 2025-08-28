@@ -1,7 +1,7 @@
 import { expect, test } from '@jest/globals'
 
 import { ParticipantSigningDriver } from './controller.js'
-import { AuthContext } from '@splice/core-wallet-auth'
+import { AuthContext } from '@canton-network/core-wallet-auth'
 
 const TEST_TRANSACTION = 'test-tx'
 const TEST_TRANSACTION_HASH =

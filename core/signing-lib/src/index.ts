@@ -1,4 +1,4 @@
-import { AuthContext } from '@splice/core-wallet-auth'
+import { AuthContext } from '@canton-network/core-wallet-auth'
 import { Methods } from './rpc-gen/index.js'
 import { Error as RpcError } from './rpc-gen/typings.js'
 import nacl from 'tweetnacl'

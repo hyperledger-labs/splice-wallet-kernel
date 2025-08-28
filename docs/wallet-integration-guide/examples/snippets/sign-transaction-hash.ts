@@ -1,4 +1,4 @@
-import { signTransactionHash } from '@splice/wallet-sdk'
+import { signTransactionHash } from '@canton-network/wallet-sdk'
 
 const transaction = {
     preparedTransaction: 'encoded-transaction-bytes-base64',

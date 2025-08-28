@@ -1,6 +1,6 @@
 {
-    "name": "@splice/core-signing-lib",
-    "version": "0.0.0",
+    "name": "@canton-network/core-signing-lib",
+    "version": "0.1.0",
     "packageManager": "yarn@4.9.2",
     "type": "module",
     "main": "dist/index.js",
@@ -10,7 +10,7 @@
         "clean": "tsc -b --clean && rm -rf ./dist"
     },
     "dependencies": {
-        "@splice/core-wallet-auth": "workspace:^",
+        "@canton-network/core-wallet-auth": "workspace:^",
         "fs-extra": "^11.3.0",
         "lodash": "^4.17.21",
         "tweetnacl": "^1.0.3",
@@ -21,5 +21,11 @@
         "@types/lodash": "^4.17.17",
         "@types/node": "^22.15.29",
         "typescript": "^5.8.3"
+    },
+    "files": [
+        "dist/*"
+    ],
+    "publishConfig": {
+        "access": "public"
     }
 }

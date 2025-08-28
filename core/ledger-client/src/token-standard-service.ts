@@ -1,5 +1,5 @@
-import { TokenStandardClient } from '@splice/core-token-standard'
-import { Logger } from '@splice/core-types'
+import { TokenStandardClient } from '@canton-network/core-token-standard'
+import { Logger } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
 import {
     HoldingInterface,

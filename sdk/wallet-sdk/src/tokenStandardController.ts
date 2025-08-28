@@ -1,4 +1,7 @@
-import { LedgerClient, TokenStandardService } from '@splice/core-ledger-client'
+import {
+    LedgerClient,
+    TokenStandardService,
+} from '@canton-network/core-ledger-client'
 import { pino } from 'pino'
 
 /**

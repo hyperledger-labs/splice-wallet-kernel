@@ -4,10 +4,7 @@ import {
     localNetLedgerDefault,
     localNetTopologyDefault,
     localNetTokenStandardDefault,
-    createKeyPair,
-    signTransactionHash,
-} from '@splice/wallet-sdk'
-import { v4 } from 'uuid'
+} from '@canton-network/wallet-sdk'
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({

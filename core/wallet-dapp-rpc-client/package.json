@@ -1,6 +1,6 @@
 {
-    "name": "@splice/core-wallet-dapp-rpc-client",
-    "version": "1.0.0",
+    "name": "@canton-network/core-wallet-dapp-rpc-client",
+    "version": "1.1.0",
     "description": "",
     "type": "module",
     "types": "dist/index.d.ts",
@@ -17,7 +17,7 @@
     "author": "",
     "license": "Apache-2.0",
     "dependencies": {
-        "@splice/core-types": "workspace:^",
+        "@canton-network/core-types": "workspace:^",
         "lodash": "^4.17.15"
     },
     "devDependencies": {

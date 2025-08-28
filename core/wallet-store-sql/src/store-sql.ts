@@ -1,5 +1,9 @@
 import { Logger } from 'pino'
-import { AuthContext, UserId, AuthAware } from '@splice/core-wallet-auth'
+import {
+    AuthContext,
+    UserId,
+    AuthAware,
+} from '@canton-network/core-wallet-auth'
 import {
     Store as BaseStore,
     Wallet,
@@ -9,7 +13,7 @@ import {
     Transaction,
     Network,
     StoreConfig,
-} from '@splice/core-wallet-store'
+} from '@canton-network/core-wallet-store'
 import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely'
 import Database from 'better-sqlite3'
 import {

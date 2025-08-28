@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals'
-import { PreparedTransaction } from '@splice/core-ledger-proto'
+import { PreparedTransaction } from '@canton-network/core-ledger-proto'
 import * as path from 'path'
 import { readFileSync } from 'fs'
 import { decodePreparedTransaction } from '.'

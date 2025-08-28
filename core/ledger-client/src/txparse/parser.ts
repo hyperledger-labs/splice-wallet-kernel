@@ -32,7 +32,7 @@ import {
     TokenStandardChoice,
     TransferInstructionView,
 } from './types.js'
-import { TransferInstructionV1 } from '@splice/core-token-standard'
+import { TransferInstructionV1 } from '@canton-network/core-token-standard'
 
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
 import { LedgerClient } from '../ledger-client'

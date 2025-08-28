@@ -126,6 +126,8 @@ in the context of the Canton integration:
   is part of the Canton Network Token Standard.
 
 
+.. _information-flows:
+
 Information Flows
 -----------------
 

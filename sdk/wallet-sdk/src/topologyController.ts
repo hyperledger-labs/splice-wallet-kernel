@@ -3,15 +3,15 @@ import {
     PreparedTransaction,
     SigningPublicKey,
     TopologyWriteService,
-} from '@splice/core-ledger-client'
+} from '@canton-network/core-ledger-client'
 import {
     createKeyPair,
     getPublicKeyFromPrivate,
     signTransactionHash,
     KeyPair,
-} from '@splice/core-signing-lib'
+} from '@canton-network/core-signing-lib'
 import { pino } from 'pino'
-import { hashPreparedTransaction } from '@splice/core-tx-visualizer'
+import { hashPreparedTransaction } from '@canton-network/core-tx-visualizer'
 
 export type PreparedParty = {
     partyTransactions: Uint8Array<ArrayBufferLike>[]

@@ -4,7 +4,7 @@
     "components": [
         {
             "type": "custom",
-            "name": "@splice/wallet-signing-library",
+            "name": "@canton-network/wallet-signing-library",
             "language": "typescript",
             "openRPCPath": null,
             "outPath": "./core/signing-lib/src/rpc-gen",

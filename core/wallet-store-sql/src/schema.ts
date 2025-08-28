@@ -1,11 +1,11 @@
-import { UserId } from '@splice/core-wallet-auth'
+import { UserId } from '@canton-network/core-wallet-auth'
 import {
     Wallet,
     Transaction,
     Session,
     Auth,
     Network,
-} from '@splice/core-wallet-store'
+} from '@canton-network/core-wallet-store'
 
 interface MigrationTable {
     name: string

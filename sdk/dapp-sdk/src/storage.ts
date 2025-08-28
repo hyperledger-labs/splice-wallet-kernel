@@ -1,5 +1,5 @@
-import { DiscoverResult } from '@splice/core-types'
-import * as dappAPI from '@splice/core-wallet-dapp-rpc-client'
+import { DiscoverResult } from '@canton-network/core-types'
+import * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'
 
 enum LOCAL_STORAGE {
     KERNEL_DISCOVERY = 'splice_wallet_kernel_discovery',

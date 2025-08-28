@@ -5,7 +5,7 @@ import {
     ErrorResponse,
     JsonRpcRequest,
     jsonRpcResponse,
-} from '@splice/core-types'
+} from '@canton-network/core-types'
 
 interface JsonRpcHttpOptions<T> {
     logger: Logger

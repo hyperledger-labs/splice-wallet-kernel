@@ -3,14 +3,14 @@ import {
     PostResponse,
     PostRequest,
     GetResponse,
-} from '@splice/core-ledger-client'
+} from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
     getPublicKeyFromPrivate,
-} from '@splice/core-signing-lib'
+} from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
-import { SigningPublicKey } from '@splice/core-ledger-client/src/_proto/com/digitalasset/canton/crypto/v30/crypto'
+import { SigningPublicKey } from '@canton-network/core-ledger-client/src/_proto/com/digitalasset/canton/crypto/v30/crypto'
 import { TopologyController } from './topologyController.js'
 
 /**
