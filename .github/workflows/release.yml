@@ -44,7 +44,7 @@ jobs:
             - name: Release
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: yarn nx release
+              run: yarn nx release --yes
 
             - name: Open Release PR
               env:
