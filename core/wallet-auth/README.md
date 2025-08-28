@@ -8,13 +8,13 @@ It provides abstractions for authentication services, user identity management, 
 This package requires [NodeJS](https://nodejs.org/) v16 or higher and can be added to your project using:
 
 ```sh
-npm install @splice/core-wallet-auth --save
+npm install @canton-network/core-wallet-auth --save
 ```
 
 or
 
 ```sh
-yarn add @splice/core-wallet-auth
+yarn add @canton-network/core-wallet-auth
 ```
 
 ## Interfaces

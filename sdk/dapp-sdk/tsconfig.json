@@ -6,10 +6,12 @@
         "moduleResolution": "node",
         "baseUrl": "./",
         "paths": {
-            "@splice/core-wallet-dapp-rpc-client": [
+            "@canton-network/core-wallet-dapp-rpc-client": [
                 "../core/wallet-dapp-rpc-client/src"
             ],
-            "@splice/core-splice-provider": ["../core/splice-provider/src"]
+            "@canton-network/core-splice-provider": [
+                "../core/splice-provider/src"
+            ]
         }
     },
     "include": ["src"],

@@ -4,7 +4,7 @@ import {
     localNetLedgerDefault,
     signTransactionHash,
     TopologyController,
-} from '@splice/wallet-sdk'
+} from '@canton-network/wallet-sdk'
 import { v4 } from 'uuid'
 
 const sdk = new WalletSDKImpl().configure({

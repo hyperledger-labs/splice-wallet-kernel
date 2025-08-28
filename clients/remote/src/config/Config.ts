@@ -1,4 +1,4 @@
-import { storeConfigSchema } from '@splice/core-wallet-store'
+import { storeConfigSchema } from '@canton-network/core-wallet-store'
 import { z } from 'zod'
 
 export const kernelInfoSchema = z.object({

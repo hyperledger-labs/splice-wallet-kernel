@@ -1,9 +1,12 @@
 import { html, LitElement } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
-import '@splice/core-wallet-ui-components'
+import '@canton-network/core-wallet-ui-components'
 import { userClient } from '../rpc-client'
-import { ExecuteParams, SignParams } from '@splice/core-wallet-user-rpc-client'
-import { decodePreparedTransaction } from '@splice/core-tx-visualizer'
+import {
+    ExecuteParams,
+    SignParams,
+} from '@canton-network/core-wallet-user-rpc-client'
+import { decodePreparedTransaction } from '@canton-network/core-tx-visualizer'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends LitElement {

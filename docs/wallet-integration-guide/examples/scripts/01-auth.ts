@@ -6,7 +6,7 @@ import {
     WalletSDKImpl,
     createKeyPair,
     signTransactionHash,
-} from '@splice/wallet-sdk'
+} from '@canton-network/wallet-sdk'
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({

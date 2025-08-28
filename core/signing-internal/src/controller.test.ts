@@ -7,11 +7,11 @@ import {
     isRpcError,
     Key,
     Transaction,
-} from '@splice/core-signing-lib'
+} from '@canton-network/core-signing-lib'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
-import { Methods } from '@splice/core-signing-lib/dist/rpc-gen/index.js'
-import { AuthContext } from '@splice/core-wallet-auth'
+import { Methods } from '@canton-network/core-signing-lib/dist/rpc-gen/index.js'
+import { AuthContext } from '@canton-network/core-wallet-auth'
 
 const TEST_KEY_NAME = 'test-key-name'
 const TEST_TRANSACTION = 'test-tx'

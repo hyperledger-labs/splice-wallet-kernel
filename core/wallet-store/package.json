@@ -1,6 +1,6 @@
 {
-    "name": "@splice/core-wallet-store",
-    "version": "0.0.0",
+    "name": "@canton-network/core-wallet-store",
+    "version": "0.1.0",
     "description": "The Store API provides persistency for the wallet kernel.",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
@@ -26,5 +26,11 @@
         "ts-jest": "^29.4.0",
         "ts-jest-resolver": "^2.0.1",
         "typescript": "^5.8.3"
+    },
+    "files": [
+        "dist/*"
+    ],
+    "publishConfig": {
+        "access": "public"
     }
 }

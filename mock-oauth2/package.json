@@ -1,5 +1,5 @@
 {
-    "name": "@splice/mock-oauth2",
+    "name": "@canton-network/mock-oauth2",
     "version": "1.0.0",
     "private": true,
     "description": "Creates mock oauth2 server",
