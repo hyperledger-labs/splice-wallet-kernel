@@ -6,7 +6,7 @@ import {
     ResponsePayload,
     SpliceMessage,
     WalletEvent,
-} from '@splice/core-types'
+} from '@canton-network/core-types'
 import { rpcErrors } from '@metamask/rpc-errors'
 
 const controller = dappController()

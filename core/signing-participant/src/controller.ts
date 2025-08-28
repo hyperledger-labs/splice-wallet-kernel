@@ -12,8 +12,8 @@ import {
     SignTransactionParams,
     SignTransactionResult,
     SubscribeTransactionsResult,
-} from '@splice/core-signing-lib'
-import { AuthContext } from '@splice/core-wallet-auth'
+} from '@canton-network/core-signing-lib'
+import { AuthContext } from '@canton-network/core-wallet-auth'
 import { randomUUID } from 'node:crypto'
 
 export class ParticipantSigningDriver implements SigningDriverInterface {

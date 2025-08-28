@@ -5,7 +5,7 @@ import {
     VaultAccount,
 } from '@fireblocks/ts-sdk'
 import { pino } from 'pino'
-import { SigningStatus, CC_COIN_TYPE } from '@splice/core-signing-lib'
+import { SigningStatus, CC_COIN_TYPE } from '@canton-network/core-signing-lib'
 import { z } from 'zod'
 
 const RawMessageSchema = z.object({

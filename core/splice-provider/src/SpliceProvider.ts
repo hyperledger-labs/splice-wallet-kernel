@@ -1,4 +1,4 @@
-import { RequestPayload } from '@splice/core-types'
+import { RequestPayload } from '@canton-network/core-types'
 
 export type EventListener<T> = (...args: T[]) => void
 

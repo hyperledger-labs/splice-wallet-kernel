@@ -10,11 +10,11 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            '@splice/core-wallet-ui-components': resolve(
+            '@canton-network/core-wallet-ui-components': resolve(
                 import.meta.dirname,
                 '../../core/wallet-ui-components'
             ),
-            '@splice/core-wallet-user-rpc-client': resolve(
+            '@canton-network/core-wallet-user-rpc-client': resolve(
                 import.meta.dirname,
                 '../../core/wallet-user-rpc-client'
             ),

@@ -1,5 +1,5 @@
 {
-    "name": "@splice/core-ledger-proto",
+    "name": "@canton-network/core-ledger-proto",
     "version": "0.0.0",
     "description": "Provides typescript generated from the canton protobufs.",
     "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
@@ -19,5 +19,11 @@
         "@swc/core": "^1.11.31",
         "@types/node": "^22.15.30",
         "typescript": "^5.8.3"
+    },
+    "files": [
+        "dist/*"
+    ],
+    "publishConfig": {
+        "access": "public"
     }
 }

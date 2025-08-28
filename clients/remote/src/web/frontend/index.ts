@@ -2,7 +2,7 @@ import { css, html, LitElement } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { classMap } from 'lit/directives/class-map.js'
 
-import '@splice/core-wallet-ui-components'
+import '@canton-network/core-wallet-ui-components'
 import '/style.css'
 import { stateManager } from './state-manager'
 

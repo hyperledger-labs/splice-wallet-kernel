@@ -1,12 +1,16 @@
-import { discover, popupHref } from '@splice/core-wallet-ui-components'
+import { discover, popupHref } from '@canton-network/core-wallet-ui-components'
 import {
     injectSpliceProvider,
     ProviderType,
-} from '@splice/core-splice-provider'
-import * as dappAPI from '@splice/core-wallet-dapp-rpc-client'
+} from '@canton-network/core-splice-provider'
+import * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'
 import * as storage from '../storage'
-import { DiscoverResult, SpliceMessage, WalletEvent } from '@splice/core-types'
-export * from '@splice/core-splice-provider'
+import {
+    DiscoverResult,
+    SpliceMessage,
+    WalletEvent,
+} from '@canton-network/core-types'
+export * from '@canton-network/core-splice-provider'
 
 const injectProvider = ({ walletType, url }: DiscoverResult) => {
     if (walletType === 'remote') {

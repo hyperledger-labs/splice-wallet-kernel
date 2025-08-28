@@ -1,5 +1,5 @@
-import '@splice/core-wallet-ui-components'
-import { Auth } from '@splice/core-wallet-store'
+import '@canton-network/core-wallet-ui-components'
+import { Auth } from '@canton-network/core-wallet-store'
 import { LitElement, html } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { userClient } from '../rpc-client'
@@ -7,7 +7,7 @@ import {
     Network,
     RemoveNetworkParams,
     Session,
-} from '@splice/core-wallet-user-rpc-client'
+} from '@canton-network/core-wallet-user-rpc-client'
 
 import '../index'
 

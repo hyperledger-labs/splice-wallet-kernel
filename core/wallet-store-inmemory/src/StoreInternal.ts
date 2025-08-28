@@ -1,5 +1,9 @@
 import { Logger } from 'pino'
-import { AuthContext, UserId, AuthAware } from '@splice/core-wallet-auth'
+import {
+    AuthContext,
+    UserId,
+    AuthAware,
+} from '@canton-network/core-wallet-auth'
 import {
     Store,
     Wallet,
@@ -8,8 +12,8 @@ import {
     WalletFilter,
     Transaction,
     Network,
-} from '@splice/core-wallet-store'
-import { LedgerClient } from '@splice/core-ledger-client'
+} from '@canton-network/core-wallet-store'
+import { LedgerClient } from '@canton-network/core-ledger-client'
 
 interface UserStorage {
     wallets: Array<Wallet>

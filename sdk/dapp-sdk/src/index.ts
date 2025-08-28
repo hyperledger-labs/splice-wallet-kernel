@@ -1,2 +1,2 @@
 export * from './connect'
-export * as dappAPI from '@splice/core-wallet-dapp-rpc-client'
+export * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'

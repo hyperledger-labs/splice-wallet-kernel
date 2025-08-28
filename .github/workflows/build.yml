@@ -58,11 +58,11 @@ jobs:
             - name: Start Canton
               run: yarn start:canton &
 
-            - run: yarn workspace @splice/clients-remote run start &
+            - run: yarn workspace @canton-network/clients-remote run start &
 
-            - run: yarn workspace @splice/example run dev &
+            - run: yarn workspace @canton-network/example run dev &
 
-            - run: yarn workspace @splice/mock-oauth2 start &
+            - run: yarn workspace @canton-network/mock-oauth2 start &
 
             # Figures out the version of playwright that's installed.
             # 1. Because we don't know what version yarn will resolve it to, we have
@@ -105,10 +105,10 @@ jobs:
             # playwright to install everything for us.
             - name: Install Playwright's dependencies
               if: steps.playwright-cache.outputs.cache-hit != 'true'
-              run: yarn workspace @splice/example run playwright install --with-deps
+              run: yarn workspace @canton-network/example run playwright install --with-deps
 
             - name: Run example e2e
-              run: yarn workspace @splice/example run playwright test
+              run: yarn workspace @canton-network/example run playwright test
 
             - uses: actions/upload-artifact@v4
               if: ${{ !cancelled() }}

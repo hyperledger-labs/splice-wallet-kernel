@@ -11,15 +11,15 @@ The Wallet SDK is available as a package on the NPM registry. You can install it
     .. group-tab:: npm
         .. code:: shell
 
-            npm install @splice/wallet-sdk
+            npm install @canton-network/wallet-sdk
     .. group-tab:: yarn
         .. code:: shell
 
-            yarn add @splice/wallet-sdk
+            yarn add @canton-network/wallet-sdk
     .. group-tab:: pnpm
         .. code:: shell
 
-            pnpm add @splice/wallet-sdk
+            pnpm add @canton-network/wallet-sdk
 
 Alternatively, to do dApp development only, the dApp SDK can be used which has a smaller bundle size and is optimized for browser usage.
 The dApp SDK can be installed with:
@@ -28,15 +28,15 @@ The dApp SDK can be installed with:
     .. group-tab:: npm
         .. code:: shell
 
-            npm install @splice/dapp-sdk
+            npm install @canton-network/dapp-sdk
     .. group-tab:: yarn
         .. code:: shell
 
-            yarn add @splice/dapp-sdk
+            yarn add @canton-network/dapp-sdk
     .. group-tab:: pnpm
         .. code:: shell
 
-            pnpm add @splice/dapp-sdk
+            pnpm add @canton-network/dapp-sdk
 
 Both SDKs use the same underlying core packages and where only partial code is needed (like for transaction visualization or hash verification) those packages can be used independently.
 

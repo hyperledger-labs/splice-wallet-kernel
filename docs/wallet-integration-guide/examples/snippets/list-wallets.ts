@@ -2,7 +2,7 @@ import {
     WalletSDKImpl,
     localNetAuthDefault,
     localNetLedgerDefault,
-} from '@splice/wallet-sdk'
+} from '@canton-network/wallet-sdk'
 
 const sdk = new WalletSDKImpl().configure({
     logger: console,
