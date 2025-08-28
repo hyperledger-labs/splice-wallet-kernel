@@ -1,8 +1,11 @@
 {
     "name": "@canton-network/core-types",
     "version": "0.1.0",
-    "description": "Types and transport-agnostic parsers for data sent across Wallet components.",
     "type": "module",
+    "description": "Types and transport-agnostic parsers for data sent across Wallet components.",
+    "repository": "github:hyperledger-labs/splice-wallet-kernel",
+    "license": "Apache-2.0",
+    "author": "Alex Matson <alex.matson@digitalasset.com>",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "packageManager": "yarn@4.9.4",

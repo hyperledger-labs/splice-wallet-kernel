@@ -1,13 +1,14 @@
 {
     "name": "@canton-network/core-ledger-proto",
     "version": "0.1.0",
-    "description": "Provides typescript generated from the canton protobufs.",
-    "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
+    "type": "module",
+    "description": "Provides TypeScript protobuf bindings for Canton",
+    "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
+    "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
     "packageManager": "yarn@4.9.4",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "type": "module",
     "scripts": {
         "build": "tsc -b",
         "dev": "tsc -b --watch",

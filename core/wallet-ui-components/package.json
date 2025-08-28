@@ -1,10 +1,11 @@
 {
     "name": "@canton-network/core-wallet-ui-components",
     "version": "0.1.0",
-    "description": "Reusable UI components for the Splice wallet",
-    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
-    "license": "Apache-2.0",
     "type": "module",
+    "description": "Reusable UI components for the Splice wallet",
+    "repository": "github:hyperledger-labs/splice-wallet-kernel",
+    "license": "Apache-2.0",
+    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {

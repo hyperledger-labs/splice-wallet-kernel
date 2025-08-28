@@ -1,13 +1,14 @@
 {
     "name": "@canton-network/core-wallet-store-sql",
     "version": "0.1.0",
-    "description": "SQL implementation of the Store API.",
-    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
+    "type": "module",
+    "repository": "github:hyperledger-labs/splice-wallet-kernel",
+    "description": "SQL implementation of the Store API",
     "license": "Apache-2.0",
+    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "packageManager": "yarn@4.9.4",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "type": "module",
     "scripts": {
         "build": "tsc -b",
         "dev": "tsc -b --watch",

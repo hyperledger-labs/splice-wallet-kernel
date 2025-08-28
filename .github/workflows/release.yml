@@ -39,12 +39,11 @@ jobs:
 
             - name: Build
               run: yarn build:all
-            - name: Authenticate npm
-              run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN_DA }}" > ~/.npmrc
+
             - name: Release
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: yarn nx release --yes
+              run: yarn nx release --skip-publish
 
             - name: Open Release PR
               env:
@@ -67,3 +66,10 @@ jobs:
                   git push origin $BRANCH_NAME
 
                   gh pr create -f -a ${{ github.actor }} -B main
+
+            # NX does not currently support publishing through yarn: https://github.com/nrwl/nx/issues/29242
+            # So we publish all workspaces through yarn directly
+            - name: Publish
+              run: |
+                  yarn config set npmAuthToken ${{ secrets.NPM_TOKEN_DA }}
+                  yarn workspaces foreach --no-private -t -A --include 'core/*' --include 'sdk/*' npm publish --tolerate-republish

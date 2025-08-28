@@ -2,7 +2,10 @@
     "name": "@canton-network/dapp-sdk",
     "type": "module",
     "version": "0.1.0",
-    "description": "Connects your splice dApp to Wallet Client users",
+    "description": "Browser SDK for dApp development on the Canton Network",
+    "repository": "github:hyperledger-labs/splice-wallet-kernel",
+    "license": "Apache-2.0",
+    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
@@ -11,8 +14,6 @@
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "echo \"Warning: no test specified\""
     },
-    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
-    "license": "Apache-2.0",
     "dependencies": {
         "@canton-network/core-splice-provider": "workspace:^",
         "@canton-network/core-types": "workspace:^",
