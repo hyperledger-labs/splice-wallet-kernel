@@ -30,8 +30,8 @@ type TokenStandardFactory = (
 export interface Config {
     authFactory: AuthFactory
     ledgerFactory: LedgerFactory
-    topologyFactory: TopologyFactory | undefined
-    tokenStandardFactory: TokenStandardFactory | undefined
+    topologyFactory?: TopologyFactory
+    tokenStandardFactory?: TokenStandardFactory
     logger?: Logger
 }
 

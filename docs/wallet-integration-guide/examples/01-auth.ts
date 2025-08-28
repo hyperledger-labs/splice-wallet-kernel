@@ -6,6 +6,7 @@ import {
     WalletSDKImpl,
     createKeyPair,
     signTransactionHash,
+    localTokenStandardDefault,
 } from '@splice/wallet-sdk'
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
@@ -14,6 +15,7 @@ const sdk = new WalletSDKImpl().configure({
     authFactory: localAuthDefault,
     ledgerFactory: localLedgerDefault,
     topologyFactory: localTopologyDefault,
+    tokenStandardFactory: localTokenStandardDefault,
 })
 
 console.log('SDK initialized')
