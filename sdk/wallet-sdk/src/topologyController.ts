@@ -188,7 +188,7 @@ export const localNetTopologyDefault = (
         userId,
         userAdminToken,
         //TODO: fetch this from a localnet API endpoint
-        'global-domain::1220b4ab8fb52056a98c919dd17fb09ff1cf2ca6dcd6ae8915e56889d545a2cc8a5e'
+        'global-domain::122098544e6d707a02edee40ff295792b2b526fa30fa7a284a477041eb23d1d26763'
     )
 }
 
