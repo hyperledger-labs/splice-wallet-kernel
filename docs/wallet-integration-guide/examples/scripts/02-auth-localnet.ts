@@ -50,6 +50,7 @@ console.log('Connected to topology')
 const keyPair = createKeyPair()
 
 console.log('generated keypair')
+console.log(keyPair)
 const preparedParty = await sdk.topology?.prepareExternalPartyTopology(
     keyPair.publicKey
 )
@@ -71,18 +72,18 @@ if (preparedParty) {
     await sdk.topology
         ?.submitExternalPartyTopology(signedHash, preparedParty)
         .then((allocatedParty) => {
-            console.log('Alocated party ', allocatedParty.partyId)
+            sdk.userLedger?.setPartyId(preparedParty!.partyId!)
+            sdk.adminLedger?.setPartyId(preparedParty!.partyId!)
+            console.log('Allocated party ', allocatedParty.partyId)
         })
 } else {
     console.error('Error creating prepared party.')
 }
 
-console.log('Create ping command')
-const createPingCommand = await sdk.userLedger?.createPingCommand(
+console.log('Create ping command for party:', preparedParty!.partyId!)
+const createPingCommand = sdk.userLedger?.createPingCommand(
     preparedParty!.partyId!
 )
-
-sdk.adminLedger?.setPartyId(preparedParty!.partyId!)
 
 console.log('Prepare command submission for ping create command')
 const prepareResponse =

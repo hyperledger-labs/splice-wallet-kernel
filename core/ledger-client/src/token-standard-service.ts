@@ -113,10 +113,12 @@ export class TokenStandardService {
         afterOffset?: string
     ): Promise<JsGetUpdatesResponse[]> {
         try {
+            this.logger.debug('Set or query offset')
             const afterOffsetOrLatest =
                 Number(afterOffset) ||
                 (await this.ledgerClient.get('/v2/state/latest-pruned-offsets'))
                     .participantPrunedUpToInclusive
+            this.logger.debug(afterOffsetOrLatest, 'Using offset')
             const updates = await this.ledgerClient.post('/v2/updates/flats', {
                 updateFormat: {
                     includeTransactions: {

@@ -6,7 +6,7 @@ import { pino } from 'pino'
  * This controller requires a userId and token.
  */
 export class TokenStandardController {
-    private logger = pino({ name: 'TokenStandardController', level: 'info' })
+    private logger = pino({ name: 'TokenStandardController', level: 'debug' })
     private client: LedgerClient
     private service: TokenStandardService
     private userId: string
@@ -21,10 +21,7 @@ export class TokenStandardController {
      */
     constructor(userId: string, baseUrl: string, token: string) {
         this.client = new LedgerClient(baseUrl, token, this.logger)
-        this.service = new TokenStandardService(
-            this.client,
-            this.logger.child({ service: 'TokenStandardService' })
-        )
+        this.service = new TokenStandardService(this.client, this.logger)
         this.userId = userId
         this.partyId = ''
         this.synchronizerId = ''
