@@ -26,42 +26,38 @@ type DeduplicationPeriod2 = components['schemas']['DeduplicationPeriod2']
 
 export function filtersByParty(
     party: string,
-    interfaceNames: InterfaceId[],
-    includeWildcard: boolean
+    interfaceNames: InterfaceId[]
 ): TransactionFilter['filtersByParty'] {
     return {
         [party]: {
-            cumulative: interfaceNames
-                .map((interfaceName) => {
-                    return {
-                        identifierFilter: {
-                            InterfaceFilter: {
-                                value: {
-                                    interfaceId: interfaceName.toString(),
-                                    includeInterfaceView: true,
-                                    includeCreatedEventBlob: true,
-                                },
+            cumulative: interfaceNames.map((interfaceName) => {
+                return {
+                    identifierFilter: {
+                        InterfaceFilter: {
+                            value: {
+                                interfaceId: interfaceName.toString(),
+                                includeInterfaceView: true,
+                                includeCreatedEventBlob: true,
                             },
                         },
-                    }
-                })
-                .concat(
-                    includeWildcard
-                        ? [
-                              {
-                                  identifierFilter: {
-                                      InterfaceFilter: {
-                                          value: {
-                                              interfaceId: '*',
-                                              includeInterfaceView: false,
-                                              includeCreatedEventBlob: true,
-                                          },
-                                      },
-                                  },
-                              },
-                          ]
-                        : []
-                ),
+                    },
+                }
+            }),
+            // .concat(
+            //     includeWildcard
+            //         ? [
+            //             {
+            //                 identifierFilter: {
+            //                     WildcardFilter: {
+            //                         value: {
+            //                             includeCreatedEventBlob: true,
+            //                         },
+            //                     },
+            //                 },
+            //             },
+            //         ]
+            //         : [],
+            // ),
         },
     }
 }

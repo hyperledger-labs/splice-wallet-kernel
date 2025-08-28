@@ -29,7 +29,7 @@ const keypair = {
         'oahT1plqyQxgbb27fsy6ix2881d3+aSvSRhaITGftAOx6qgBBhPkZBlTzHhY4SCnmNp372dUDxppGfwbQg6hqA==',
 }
 const partyId =
-    '1220c::1220cc4e539de29867b7afb76a605ae136577da01e52c87f613c4a99d0fe67d8861'
+    '1220c::1220cc4e539de29867b7afb76a605ae136577da01e52c87f613c4a99d0fe67d88617'
 const synchronizerId =
     'global-domain::122098544e6d707a02edee40ff295792b2b526fa30fa7a284a477041eb23d1d26763'
 
@@ -47,17 +47,17 @@ await sdk.userLedger
         console.error('Error listing wallets:', error)
     })
 
-await sdk.connectAdmin()
-console.log('Connected to admin ledger')
+// await sdk.connectAdmin()
+// console.log('Connected to admin ledger')
 
-await sdk.adminLedger
-    ?.listWallets()
-    .then((wallets) => {
-        console.log('Wallets:', wallets)
-    })
-    .catch((error) => {
-        console.error('Error listing wallets:', error)
-    })
+// await sdk.adminLedger
+//     ?.listWallets()
+//     .then((wallets) => {
+//         console.log('Wallets:', wallets)
+//     })
+//     .catch((error) => {
+//         console.error('Error listing wallets:', error)
+//     })
 
 await sdk.connectTopology()
 console.log('Connected to topology')
