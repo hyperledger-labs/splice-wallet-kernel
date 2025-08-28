@@ -6,7 +6,7 @@
     "author": "Alex Matson <alex.matson@digitalasset.com>",
     "license": "Apache-2.0",
     "type": "module",
-    "packageManager": "yarn@4.9.2",
+    "packageManager": "yarn@4.9.4",
     "scripts": {
         "build": "tsx esbuild.mts",
         "dev": "WATCH=1 && tsx esbuild.mts",

@@ -5,7 +5,7 @@
     "description": "Various scripts for the Wallet Kernel Project.",
     "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
     "license": "Apache-2.0",
-    "packageManager": "yarn@4.9.2",
+    "packageManager": "yarn@4.9.4",
     "type": "module",
     "scripts": {
         "test": "tsc -b",
