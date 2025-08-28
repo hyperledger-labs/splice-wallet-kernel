@@ -413,7 +413,7 @@ such that
   * the customer account is credited back the 100 AcmeToken, potentially minus
     a fee for the failed withdrawal.
 
-And the user will ultimately see in both the Exchagne UI and the Customer Wallet
+And the user will ultimately see in both the Exchange UI and the Customer Wallet
 that the transfer was offered, but rejected by them.
 
 
