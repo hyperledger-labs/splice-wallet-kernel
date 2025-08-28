@@ -1,13 +1,53 @@
-# SDK
+# Wallet SDK
 
-One-stop shop for all connectivity and ease of use cases against a splice validator ledger api.
+This package provides a TypeScript SDK for interacting with the Canton Network, with the aim of making wallet integrations easy. Currently the SDK only supports NodeJS environments.
 
-Primarily focused on integration from a wallets perspective.
+## Features
 
-## Build
+- Authenticate & connect to a synchronizer
+- Allocate parties with an external keypair
+- Read active contracts on the ledger
+- Decode and validate prepared transactions
+- Sign and submit transactions
 
-Generate the client code and build the SDK:
+## Installation
 
-```sh
-yarn build
+Install the SDK with your package manager of choice
+
+```shell
+$ npm install @canton-network/wallet-sdk
 ```
+
+or
+
+```shell
+$ yarn add @canton-network/wallet-sdk
+```
+
+## Getting Started
+
+Import and configure the SDK:
+
+```ts
+import {
+    localAuthDefault,
+    localLedgerDefault,
+    localTopologyDefault,
+    localTokenStandardDefault,
+    WalletSDKImpl,
+} from '@canton-network/wallet-sdk'
+
+const sdk = new WalletSDKImpl().configure({
+    logger: console,
+    authFactory: localAuthDefault,
+    ledgerFactory: localLedgerDefault,
+    topologyFactory: localTopologyDefault,
+    tokenStandardFactory: localTokenStandardDefault,
+})
+
+console.log('SDK initialized')
+
+await sdk.connect()
+```
+
+For more examples and code snippets, see the [docs](https://github.com/hyperledger-labs/splice-wallet-kernel/tree/main/docs/wallet-integration-guide/src).
