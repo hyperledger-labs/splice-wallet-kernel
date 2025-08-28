@@ -1,5 +1,5 @@
 {
-    "packageManager": "yarn@4.9.2",
+    "packageManager": "yarn@4.9.4",
     "name": "@canton-network/core-signing-internal",
     "version": "0.1.0",
     "type": "module",

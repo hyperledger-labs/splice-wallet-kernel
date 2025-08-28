@@ -4,7 +4,7 @@
     "description": "In-memory implementation of the Store API.",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
-    "packageManager": "yarn@4.9.2",
+    "packageManager": "yarn@4.9.4",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "type": "module",

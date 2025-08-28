@@ -22,7 +22,7 @@
         "typescript": "^5.8.3",
         "vite": "^6.3.5"
     },
-    "packageManager": "yarn@4.9.2",
+    "packageManager": "yarn@4.9.4",
     "dependencies": {
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-store": "workspace:^",
