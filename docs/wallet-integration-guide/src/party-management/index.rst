@@ -49,13 +49,13 @@ By default an **Ed25519** encryption is used. There exists many libraries that c
 
     .. tab:: Python
       
-      .. literalinclude:: ../../examples/snippets/create-key-pair.py
+      .. literalinclude:: ../../examples/snippets/python/create-key-pair.py
          :language: python
          :dedent:
 
     .. tab:: Bash
       
-      .. literalinclude:: ../../examples/snippets/create-key-pair.sh
+      .. literalinclude:: ../../examples/snippets/bash/create-key-pair.sh
          :language: bash
          :dedent:
 
@@ -80,13 +80,13 @@ Below are examples of how to generate the fingerprint.
 
     .. tab:: Python
 
-      .. literalinclude:: ../../examples/snippets/generate-fingerprint.py
+      .. literalinclude:: ../../examples/snippets/python/generate-fingerprint.py
          :language: python
          :dedent:
 
     .. tab:: Bash
 
-      .. literalinclude:: ../../examples/snippets/generate-fingerprint.sh
+      .. literalinclude:: ../../examples/snippets/bash/generate-fingerprint.sh
          :language: bash
          :dedent:
 
@@ -113,7 +113,7 @@ Below are examples of how to generate the topology transactions:
 
     .. tab:: Python
 
-      .. literalinclude:: ../../examples/snippets/create-topology-transactions.py
+      .. literalinclude:: ../../examples/snippets/python/create-topology-transactions.py
          :language: python
          :dedent:
 
@@ -135,7 +135,7 @@ The wallet SDK has a helper function to sign the combined hash:
 
     .. tab:: Python
 
-      .. literalinclude:: ../../examples/snippets/sign-party-transaction-hash.py
+      .. literalinclude:: ../../examples/snippets/python/sign-party-transaction-hash.py
          :language: python
          :dedent:
 
@@ -157,7 +157,7 @@ The wallet SDK has a helper function to submit the transactions:
 
     .. tab:: Python
 
-      .. literalinclude:: ../../examples/snippets/submit-signed-topology-transaction.py
+      .. literalinclude:: ../../examples/snippets/python/submit-signed-topology-transaction.py
          :language: python
          :dedent:
 
