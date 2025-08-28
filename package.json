@@ -41,7 +41,6 @@
     ],
     "devDependencies": {
         "@commitlint/config-conventional": "^19.8.1",
-        "@commitlint/config-nx-scopes": "^19.8.1",
         "@eslint/compat": "^1.2.9",
         "@eslint/js": "^9.28.0",
         "@open-rpc/generator": "^2.0.0",
