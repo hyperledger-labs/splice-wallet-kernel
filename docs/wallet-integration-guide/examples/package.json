@@ -11,7 +11,8 @@
         "build": "tsc -b",
         "clean": "tsc -b --clean",
         "run-01": "tsx ./scripts/01-auth.ts",
-        "run-02": "tsx ./scripts/02-auth-localnet.ts"
+        "run-02": "tsx ./scripts/02-auth-localnet.ts",
+        "run-04": "tsx ./scripts/04-token-standard-localnet.ts"
     },
     "devDependencies": {
         "tsx": "^4.20.3",

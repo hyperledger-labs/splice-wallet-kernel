@@ -3,6 +3,7 @@ import {
     localNetAuthDefault,
     localNetLedgerDefault,
     localNetTopologyDefault,
+    localNetTokenStandardDefault,
     createKeyPair,
     signTransactionHash,
 } from '@canton-network/wallet-sdk'
@@ -14,6 +15,7 @@ const sdk = new WalletSDKImpl().configure({
     authFactory: localNetAuthDefault,
     ledgerFactory: localNetLedgerDefault,
     topologyFactory: localNetTopologyDefault,
+    tokenStandardFactory: localNetTokenStandardDefault,
 })
 
 console.log('SDK initialized')
@@ -48,6 +50,7 @@ console.log('Connected to topology')
 const keyPair = createKeyPair()
 
 console.log('generated keypair')
+console.log(keyPair)
 const preparedParty = await sdk.topology?.prepareExternalPartyTopology(
     keyPair.publicKey
 )
@@ -69,18 +72,18 @@ if (preparedParty) {
     await sdk.topology
         ?.submitExternalPartyTopology(signedHash, preparedParty)
         .then((allocatedParty) => {
-            console.log('Alocated party ', allocatedParty.partyId)
+            sdk.userLedger?.setPartyId(preparedParty!.partyId!)
+            sdk.adminLedger?.setPartyId(preparedParty!.partyId!)
+            console.log('Allocated party ', allocatedParty.partyId)
         })
 } else {
     console.error('Error creating prepared party.')
 }
 
-console.log('Create ping command')
-const createPingCommand = await sdk.userLedger?.createPingCommand(
+console.log('Create ping command for party:', preparedParty!.partyId!)
+const createPingCommand = sdk.userLedger?.createPingCommand(
     preparedParty!.partyId!
 )
-
-sdk.adminLedger?.setPartyId(preparedParty!.partyId!)
 
 console.log('Prepare command submission for ping create command')
 const prepareResponse =
@@ -111,3 +114,16 @@ sdk.adminLedger
     .catch((error) =>
         console.error('Failed to submit command with error %d', error)
     )
+
+console.log('List Token Standard Holding Transactions')
+await sdk.tokenStandard
+    ?.listHoldingTransactions()
+    .then((transactions) => {
+        console.log('Token Standard Holding Transactions:', transactions)
+    })
+    .catch((error) => {
+        console.error(
+            'Error listing token standard holding transactions:',
+            error
+        )
+    })
