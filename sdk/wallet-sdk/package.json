@@ -2,7 +2,10 @@
     "name": "@canton-network/wallet-sdk",
     "type": "module",
     "version": "0.1.0",
-    "description": "Simplified connecting your Wallet provider service to a validator",
+    "description": "Node/browser SDK for integrating with Canton Network",
+    "repository": "github:hyperledger-labs/splice-wallet-kernel",
+    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
+    "license": "Apache-2.0",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
@@ -11,8 +14,6 @@
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "echo \"Warning: no test specified\""
     },
-    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
-    "license": "Apache-2.0",
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
         "@canton-network/core-ledger-proto": "workspace:^",

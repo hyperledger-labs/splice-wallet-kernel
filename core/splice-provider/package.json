@@ -1,13 +1,14 @@
 {
     "name": "@canton-network/core-splice-provider",
     "version": "0.1.0",
+    "type": "module",
     "description": "A JavaScript Splice Provider API (EIP-1193 compliant).",
-    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
+    "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
+    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "packageManager": "yarn@4.9.4",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "type": "module",
     "scripts": {
         "build": "tsc -b",
         "dev": "tsc -b --watch",

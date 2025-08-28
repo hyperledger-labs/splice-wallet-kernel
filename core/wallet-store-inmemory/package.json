@@ -1,13 +1,14 @@
 {
     "name": "@canton-network/core-wallet-store-inmemory",
     "version": "0.1.0",
-    "description": "In-memory implementation of the Store API.",
+    "type": "module",
+    "description": "In-memory implementation of the Store API",
+    "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
     "packageManager": "yarn@4.9.4",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "type": "module",
     "scripts": {
         "build": "tsc -b",
         "dev": "tsc -b --watch",
