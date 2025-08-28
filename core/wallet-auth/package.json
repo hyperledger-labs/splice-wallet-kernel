@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-auth",
-    "version": "0.0.0",
+    "version": "0.1.0",
     "description": "Provides authentcation middleware and user management for the wallet kernel.",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
