@@ -30,7 +30,7 @@ import {
     ListPartyToParticipantRequest,
     Empty,
     TopologyManagerReadServiceClient,
-} from '@splice/core-ledger-proto'
+} from '@canton-network/core-ledger-proto'
 import { GrpcTransport } from '@protobuf-ts/grpc-transport'
 import { ChannelCredentials } from '@grpc/grpc-js'
 import { createHash } from 'node:crypto'

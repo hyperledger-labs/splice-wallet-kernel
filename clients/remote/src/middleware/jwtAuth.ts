@@ -1,6 +1,6 @@
 // middleware/jwtAuth.ts
 import type { Request, Response, NextFunction } from 'express'
-import { AuthService } from '@splice/core-wallet-auth'
+import { AuthService } from '@canton-network/core-wallet-auth'
 import { Logger } from 'pino'
 
 export function jwtAuth(authService: AuthService, logger: Logger) {

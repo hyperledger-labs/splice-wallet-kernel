@@ -1,4 +1,4 @@
-import { Logger } from '@splice/core-types'
+import { Logger } from '@canton-network/core-types'
 
 export interface OIDCConfig {
     token_endpoint: string

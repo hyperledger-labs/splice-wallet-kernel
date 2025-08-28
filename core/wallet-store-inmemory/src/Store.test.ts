@@ -8,8 +8,8 @@ import {
     LedgerApi,
     Network,
     PasswordAuth,
-} from '@splice/core-wallet-store'
-import { AuthContext } from '@splice/core-wallet-auth'
+} from '@canton-network/core-wallet-store'
+import { AuthContext } from '@canton-network/core-wallet-auth'
 import { pino, Logger } from 'pino'
 import { sink } from 'pino-test'
 

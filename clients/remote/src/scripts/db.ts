@@ -1,4 +1,4 @@
-import { createCLI } from '@splice/core-wallet-store-sql'
+import { createCLI } from '@canton-network/core-wallet-store-sql'
 import { ConfigUtils } from '../config/ConfigUtils.js'
 import { configSchema } from '../config/Config.js'
 

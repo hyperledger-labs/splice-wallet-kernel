@@ -1,4 +1,4 @@
-import { TopologyController } from '@splice/wallet-sdk'
+import { TopologyController } from '@canton-network/wallet-sdk'
 
 const transaction = {
     preparedTransaction: 'encoded-transaction-bytes-base64',

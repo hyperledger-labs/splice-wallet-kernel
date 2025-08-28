@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit'
 import { customElement } from 'lit/decorators.js'
 
-import '@splice/core-wallet-ui-components'
+import '@canton-network/core-wallet-ui-components'
 
 @customElement('user-ui')
 export class UserUI extends LitElement {

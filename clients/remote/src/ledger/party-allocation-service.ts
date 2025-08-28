@@ -1,4 +1,7 @@
-import { LedgerClient, TopologyWriteService } from '@splice/core-ledger-client'
+import {
+    LedgerClient,
+    TopologyWriteService,
+} from '@canton-network/core-ledger-client'
 import { Logger } from 'pino'
 
 export type AllocatedParty = {

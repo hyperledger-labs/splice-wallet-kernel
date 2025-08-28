@@ -1,4 +1,4 @@
-import { Network } from '@splice/core-wallet-store'
+import { Network } from '@canton-network/core-wallet-store'
 import { LitElement, html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 

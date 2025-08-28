@@ -1,7 +1,7 @@
 {
     "packageManager": "yarn@4.9.2",
-    "name": "@splice/core-signing-internal",
-    "version": "0.0.0",
+    "name": "@canton-network/core-signing-internal",
+    "version": "0.1.0",
     "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -11,8 +11,8 @@
         "test": "jest"
     },
     "dependencies": {
-        "@splice/core-signing-lib": "workspace:^",
-        "@splice/core-wallet-auth": "workspace:^",
+        "@canton-network/core-signing-lib": "workspace:^",
+        "@canton-network/core-wallet-auth": "workspace:^",
         "fs-extra": "^11.3.0",
         "lodash": "^4.17.21"
     },
@@ -29,5 +29,11 @@
         "tweetnacl": "^1.0.3",
         "tweetnacl-util": "^0.15.1",
         "typescript": "^5.8.3"
+    },
+    "files": [
+        "dist/*"
+    ],
+    "publishConfig": {
+        "access": "public"
     }
 }

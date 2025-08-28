@@ -1,12 +1,12 @@
 import { css, html, LitElement } from 'lit'
 import { customElement, query, state } from 'lit/decorators.js'
 
-import '@splice/core-wallet-ui-components'
+import '@canton-network/core-wallet-ui-components'
 
-import { Wallet } from '@splice/core-wallet-store'
+import { Wallet } from '@canton-network/core-wallet-store'
 import { userClient } from '../rpc-client'
-import { CreateWalletParams } from '@splice/core-wallet-user-rpc-client'
-import { SigningProvider } from '@splice/core-signing-lib'
+import { CreateWalletParams } from '@canton-network/core-wallet-user-rpc-client'
+import { SigningProvider } from '@canton-network/core-signing-lib'
 
 import '../index'
 

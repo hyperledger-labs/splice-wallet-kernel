@@ -19,13 +19,13 @@ Together, this package enables rapid development of wallet UIs with a consistent
 This package requires [NodeJS](https://nodejs.org/) v16 or higher and can be added to your project using:
 
 ```sh
-npm install @splice/core-wallet-ui-components --save
+npm install @canton-network/core-wallet-ui-components --save
 ```
 
 or
 
 ```sh
-yarn add @splice/core-wallet-ui-components
+yarn add @canton-network/core-wallet-ui-components
 ```
 
 ## Run

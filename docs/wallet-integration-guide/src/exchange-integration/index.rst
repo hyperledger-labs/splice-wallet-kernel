@@ -13,6 +13,7 @@ than exchanges that want to support deposits and withdrawals of Canton Network t
 
    architecture
    workflows
+   non-functionals
    node-operations
    testing
    extensions

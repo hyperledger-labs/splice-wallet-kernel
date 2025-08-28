@@ -3,10 +3,10 @@ import {
     isSpliceMessageEvent,
     RequestPayload,
     WalletEvent,
-} from '@splice/core-types'
+} from '@canton-network/core-types'
 import { SpliceProviderBase } from './SpliceProvider'
 import { io, Socket } from 'socket.io-client'
-import { popupHref } from '@splice/core-wallet-ui-components'
+import { popupHref } from '@canton-network/core-wallet-ui-components'
 
 export class SpliceProviderHttp extends SpliceProviderBase {
     private sessionToken?: string

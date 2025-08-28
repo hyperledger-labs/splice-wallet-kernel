@@ -1,14 +1,14 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { AuthContext } from '@splice/core-wallet-auth'
+import { AuthContext } from '@canton-network/core-wallet-auth'
 import buildController from './rpc-gen/index.js'
 import {
     LedgerApiParams,
     PrepareExecuteParams,
     PrepareReturnParams,
 } from './rpc-gen/typings.js'
-import { Store } from '@splice/core-wallet-store'
-import { LedgerClient, PostResponse } from '@splice/core-ledger-client'
+import { Store } from '@canton-network/core-wallet-store'
+import { LedgerClient, PostResponse } from '@canton-network/core-ledger-client'
 import { v4 } from 'uuid'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo as KernelInfoConfig } from '../config/Config.js'

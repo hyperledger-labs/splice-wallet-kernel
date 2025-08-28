@@ -1,13 +1,13 @@
 import { describe, expect, test } from '@jest/globals'
 
-import { AuthContext } from '@splice/core-wallet-auth'
+import { AuthContext } from '@canton-network/core-wallet-auth'
 import {
     LedgerApi,
     Network,
     PasswordAuth,
     Session,
     Wallet,
-} from '@splice/core-wallet-store'
+} from '@canton-network/core-wallet-store'
 import { Kysely } from 'kysely'
 import { Logger, pino } from 'pino'
 import { sink } from 'pino-test'
