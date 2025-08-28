@@ -2,7 +2,7 @@
     "openrpc": "1.2.6",
     "info": {
         "title": "Wallet JSON-RPC Signing API",
-        "version": "1.0.0",
+        "version": "0.1.0",
         "description": "An OpenRPC specification for the Signing API which allows the wallet kernel to interact with a Wallet Providers."
     },
     "methods": [

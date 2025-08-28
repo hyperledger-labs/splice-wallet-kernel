@@ -1,7 +1,7 @@
 {
     "name": "@canton-network/core-rpc-generator",
     "private": true,
-    "packageManager": "yarn@4.9.2",
+    "packageManager": "yarn@4.9.4",
     "scripts": {
         "build": "mkdir -p ./dist && tsc -b",
         "clean": "tsc -b --clean && rm -rf ./dist"

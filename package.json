@@ -65,7 +65,7 @@
         "*": "prettier --write --ignore-unknown",
         "*.ts": "eslint"
     },
-    "packageManager": "yarn@4.9.2",
+    "packageManager": "yarn@4.9.4",
     "dependencies": {
         "@nx/js": "^21.3.11",
         "nx": "^21.3.11"

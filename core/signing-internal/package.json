@@ -1,8 +1,11 @@
 {
-    "packageManager": "yarn@4.9.2",
     "name": "@canton-network/core-signing-internal",
     "version": "0.1.0",
     "type": "module",
+    "description": "Wallet Kernel driver for offline Ed25519 keypairs",
+    "repository": "github:hyperledger-labs/splice-wallet-kernel",
+    "license": "Apache-2.0",
+    "packageManager": "yarn@4.9.4",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
