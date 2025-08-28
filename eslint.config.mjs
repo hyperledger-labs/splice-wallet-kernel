@@ -11,6 +11,7 @@ export default defineConfig([
     includeIgnoreFile(gitignorePath),
     globalIgnores([
         '.yarn/',
+        '.commitlintrc.js',
         '**/dist/',
         '**/build/',
         '.pnp.*',
