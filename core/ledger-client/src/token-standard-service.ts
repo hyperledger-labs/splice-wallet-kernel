@@ -8,27 +8,14 @@ import {
     TransferInstructionInterface,
 } from './constants.js'
 import { components } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
-import {
-    Completion,
-    filtersByParty,
-    submitExerciseCommand,
-} from './ledger-api-utils.js'
+import { filtersByParty } from './ledger-api-utils.js'
 
 type ExerciseCommand = components['schemas']['ExerciseCommand']
 type JsGetActiveContractsResponse =
     components['schemas']['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = components['schemas']['JsGetUpdatesResponse']
 
-interface AcceptTransferInstructionCommandOptions {
-    // paths to keys
-    publicKey: string
-    privateKey: string
-    transferFactoryRegistryUrl: string
-    party: string
-    userId: string
-}
-
-interface TransferCommandOptions {
+interface CreateTransferOptions {
     sender: string
     receiver: string
     amount: string
@@ -51,19 +38,11 @@ export class TokenStandardService {
         return new TokenStandardClient(registryUrl, this.logger, undefined)
     }
 
-    async acceptTransferInstruction(
+    async createAcceptTransferInstruction(
         transferInstructionCid: string,
-        opts: AcceptTransferInstructionCommandOptions
-    ): Promise<void> {
+        transferFactoryRegistryUrl: string
+    ): Promise<ExerciseCommand> {
         try {
-            const {
-                privateKey,
-                publicKey,
-                party,
-                userId,
-                transferFactoryRegistryUrl,
-            } = opts
-
             const client = this.tokenStandardClient(transferFactoryRegistryUrl)
             const choiceContext = await client.post(
                 '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/accept',
@@ -87,20 +66,13 @@ export class TokenStandardService {
                 },
             }
 
-            const completion = await submitExerciseCommand(
-                this.ledgerClient,
-                exercise,
-                choiceContext.disclosedContracts,
-                party,
-                userId,
-                publicKey,
-                privateKey
-            )
-            const result = { ...completion, status: 'success' }
-
-            console.log(JSON.stringify(result, null, 2))
+            return exercise
         } catch (e) {
-            console.error('Failed to accept transfer instruction:', e)
+            this.logger.error(
+                'Failed to create accept transfer instruction:',
+                e
+            )
+            throw e
         }
     }
 
@@ -128,7 +100,7 @@ export class TokenStandardService {
             )
             return responses
         } catch (err) {
-            console.error(
+            this.logger.error(
                 `Failed to list contracts of interface ${interfaceId.toString()}`,
                 err
             )
@@ -138,13 +110,11 @@ export class TokenStandardService {
 
     async listHoldingTransactions(
         partyId: string,
-        opts: {
-            afterOffset?: string
-        }
+        afterOffset?: string
     ): Promise<JsGetUpdatesResponse[]> {
         try {
             const afterOffsetOrLatest =
-                Number(opts.afterOffset) ||
+                Number(afterOffset) ||
                 (await this.ledgerClient.get('/v2/state/latest-pruned-offsets'))
                     .participantPrunedUpToInclusive
             const updates = await this.ledgerClient.post('/v2/updates/flats', {
@@ -166,20 +136,19 @@ export class TokenStandardService {
             })
             return updates
         } catch (err) {
-            console.error('Failed to list holding transactions.', err)
+            this.logger.error('Failed to list holding transactions.', err)
             throw err
         }
     }
 
-    async transfer(opts: TransferCommandOptions): Promise<Completion> {
+    async createTransfer(
+        opts: CreateTransferOptions
+    ): Promise<ExerciseCommand> {
         try {
             const {
                 sender,
                 receiver,
                 amount,
-                privateKey,
-                publicKey,
-                userId,
                 instrumentAdmin,
                 instrumentId,
                 transferFactoryRegistryUrl,
@@ -257,18 +226,9 @@ export class TokenStandardService {
                 choice: 'TransferFactory_Transfer',
                 choiceArgument: choiceArgs,
             }
-            const completion = await submitExerciseCommand(
-                this.ledgerClient,
-                exercise,
-                transferFactory.choiceContext.disclosedContracts,
-                sender,
-                userId,
-                publicKey,
-                privateKey
-            )
-            return completion
+            return exercise
         } catch (e) {
-            console.error('Failed to execute transfer:', e)
+            this.logger.error('Failed to execute transfer:', e)
             throw e
         }
     }

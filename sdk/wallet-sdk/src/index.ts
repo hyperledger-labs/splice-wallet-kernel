@@ -1,6 +1,10 @@
 import { AuthController, localAuthDefault } from './authController.js'
 import { LedgerController, localLedgerDefault } from './ledgerController.js'
 import {
+    localTokenStandardDefault,
+    TokenStandardController,
+} from './tokenStandardController.js'
+import {
     localTopologyDefault,
     TopologyController,
 } from './topologyController.js'
@@ -9,6 +13,7 @@ import { Logger } from '@splice/core-types'
 export * from './ledgerController.js'
 export * from './authController.js'
 export * from './topologyController.js'
+export * from './tokenStandardController.js'
 export { signTransactionHash, createKeyPair } from '@splice/core-signing-lib'
 
 type AuthFactory = () => AuthController
@@ -17,11 +22,16 @@ type TopologyFactory = (
     userId: string,
     adminAccessToken: string
 ) => TopologyController
+type TokenStandardFactory = (
+    userId: string,
+    token: string
+) => TokenStandardController
 
 export interface Config {
     authFactory: AuthFactory
     ledgerFactory: LedgerFactory
     topologyFactory: TopologyFactory | undefined
+    tokenStandardFactory: TokenStandardFactory | undefined
     logger?: Logger
 }
 
@@ -34,6 +44,7 @@ export interface WalletSDK {
     userLedger: LedgerController | undefined
     adminLedger: LedgerController | undefined
     topology: TopologyController | undefined
+    tokenStandard: TokenStandardController | undefined
 }
 
 /**
@@ -47,11 +58,14 @@ export class WalletSDKImpl implements WalletSDK {
     private authFactory: AuthFactory = localAuthDefault
     private ledgerFactory: LedgerFactory = localLedgerDefault
     private topologyFactory: TopologyFactory = localTopologyDefault
+    private tokenStandardFactory: TokenStandardFactory =
+        localTokenStandardDefault
 
     private logger: Logger | undefined
     userLedger: LedgerController | undefined
     adminLedger: LedgerController | undefined
     topology: TopologyController | undefined
+    tokenStandard: TokenStandardController | undefined
 
     constructor() {
         this.auth = this.authFactory()
@@ -68,6 +82,8 @@ export class WalletSDKImpl implements WalletSDK {
         if (config.ledgerFactory) this.ledgerFactory = config.ledgerFactory
         if (config.topologyFactory)
             this.topologyFactory = config.topologyFactory
+        if (config.tokenStandardFactory)
+            this.tokenStandardFactory = config.tokenStandardFactory
         return this
     }
 
@@ -80,6 +96,7 @@ export class WalletSDKImpl implements WalletSDK {
         const { userId, accessToken } = await this.auth.getUserToken()
         this.logger?.info(`Connecting user ${userId} with token ${accessToken}`)
         this.userLedger = this.ledgerFactory(userId, accessToken)
+        this.tokenStandard = this.tokenStandardFactory(userId, accessToken)
         return this
     }
 
