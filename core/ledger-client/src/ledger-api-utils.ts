@@ -26,7 +26,9 @@ type DeduplicationPeriod2 = components['schemas']['DeduplicationPeriod2']
 
 export function filtersByParty(
     party: string,
-    interfaceNames: InterfaceId[]
+    interfaceNames: InterfaceId[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    includeWildcard: boolean
 ): TransactionFilter['filtersByParty'] {
     return {
         [party]: {

@@ -47,23 +47,7 @@ await sdk.userLedger
         console.error('Error listing wallets:', error)
     })
 
-// await sdk.connectAdmin()
-// console.log('Connected to admin ledger')
-
-// await sdk.adminLedger
-//     ?.listWallets()
-//     .then((wallets) => {
-//         console.log('Wallets:', wallets)
-//     })
-//     .catch((error) => {
-//         console.error('Error listing wallets:', error)
-//     })
-
-await sdk.connectTopology()
-console.log('Connected to topology')
-
 sdk.userLedger?.setPartyId(partyId)
-sdk.adminLedger?.setPartyId(partyId)
 sdk.tokenStandard?.setPartyId(partyId)
 sdk.tokenStandard?.setSynchronizerId(synchronizerId)
 
