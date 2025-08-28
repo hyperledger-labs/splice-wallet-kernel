@@ -18,9 +18,8 @@ This is to ensure that you always have the correct context when reading data fro
 
 **Reading Available Parties**
 
-Reading all available parties to you can easily be done using the wallet SDK. It is worth noting that this is paginated however, it does not have
-any effect if you change the party or synchronizer you are using.
-.. What doesn't have any effect?
+Reading all available parties to you can easily be done using the wallet SDK as shown in the example below, and the result is paginated. 
+It's worth noting that the call to read all available parties doesn't use the the party and synchronizer fields therefore changing them has no effect on the result.
 
 .. literalinclude:: ../../examples/snippets/list-wallets.ts
     :language: typescript

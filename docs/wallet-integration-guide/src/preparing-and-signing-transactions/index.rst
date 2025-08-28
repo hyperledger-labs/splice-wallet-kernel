@@ -8,8 +8,9 @@ Preparing and Signing Transactions Using External Party
 How do I quickly execute a ping Command?
 ----------------------------------------
 
-Here is how to quickly execute a ping command against yourself on Splice LocalNet:
-.. Why would I want to execute a ping command? What's the use case here?
+The following example uses the Ping app which comes pre-installed with the validator and shows the whole transaction flow.
+
+Below shows how to quickly execute a ping command against yourself on Splice LocalNet:
 
 .. literalinclude:: ../../examples/03-ping-localnet.ts
     :language: typescript
@@ -43,7 +44,7 @@ the underlying code that creates the command is:
                     CreateCommand: { // we are performing a CreateCommand
                         templateId: '#AdminWorkflows:Canton.Internal.Ping:Ping', //template id of the ping contract
                         createArguments: { // the arguments to the ping contract
-                            id: v4(), // an unique id for the ping - what's the v4() here?
+                            id: v4(), // an unique id for the ping. Here we use the JS uuid library to generate a v4 UUID
                             initiator: this.partyId, //our party id
                             responder: partyId, //the party we are pinging
                         },
@@ -65,8 +66,7 @@ The return type is an unsigned transaction if the combination of the commands ar
 
 Validating the Transaction
 --------------------------
-The transaction is returned alongside with the hash that needed to be signed. If the validator is not controlled by you, then it might
-.. What exactly is returned here? A transaction and a hash? How are they returned? In the same JSON response?
+The transaction is returned alongside with the hash that needs to be signed. If the validator is not controlled by you, then it might
 be a good idea to validate that the transaction is what you expect it to be. You can use the Wallet SDK to visualize the transaction 
 as described in the :ref:`Visualizing a transaction section <visualizing-a-transaction>`.
 
@@ -79,7 +79,6 @@ The hash can be computed using the Wallet SDK:
     :dedent:
 
 You can then compare the `hash` with the `transaction.preparedTransactionHash` to ensure they match.
-.. Can we provide an example of this? Do we have a link to the API?
 
 Signing the Transaction
 -----------------------
