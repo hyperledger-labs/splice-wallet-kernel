@@ -4,6 +4,7 @@ on:
     push:
         branches:
             - latest
+            - alex/rename-scope-again
 permissions:
     contents: write
     pull-requests: write
@@ -39,31 +40,32 @@ jobs:
 
             - name: Build
               run: yarn build:all
-
+            - name: Authenticate npm
+              run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN_DA }}" > ~/.npmrc
             - name: Release
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-              run: yarn nx release --skip-publish # Skip publish until we finalize package scope
+              run: yarn nx release publish -p core-types # Skip publish until we finalize package scope
 
-            - name: Open Release PR
-              env:
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: |
-                  BRANCH_NAME=ci/${{ github.run_id }}
-                  RELEASE_COMMIT_HASH=$(git log --pretty=oneline | grep "chore(release)" | cut -d " " -f 1)
 
-                  if [[ -z $RELEASE_COMMIT_HASH ]]; then
-                      echo "No release commit found"
-                      exit 1
-                  fi
+            # - name: Open Release PR
+            #   env:
+            #       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            #   run: |
+            #       BRANCH_NAME=ci/${{ github.run_id }}
+            #       RELEASE_COMMIT_HASH=$(git log --pretty=oneline | grep "chore(release)" | cut -d " " -f 1)
 
-                  git checkout main
-                  git branch $BRANCH_NAME
+            #       if [[ -z $RELEASE_COMMIT_HASH ]]; then
+            #           echo "No release commit found"
+            #           exit 1
+            #       fi
 
-                  git checkout $BRANCH_NAME
-                  git cherry-pick $RELEASE_COMMIT_HASH
+            #       git checkout main
+            #       git branch $BRANCH_NAME
 
-                  git push origin $BRANCH_NAME
+            #       git checkout $BRANCH_NAME
+            #       git cherry-pick $RELEASE_COMMIT_HASH
 
-                  gh pr create -f -a ${{ github.actor }} -B main
+            #       git push origin $BRANCH_NAME
+
+            #       gh pr create -f -a ${{ github.actor }} -B main
