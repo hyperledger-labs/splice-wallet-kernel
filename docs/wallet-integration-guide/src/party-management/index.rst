@@ -7,10 +7,11 @@ This document describes the steps required to create a new party (wallet/address
 Parties represent acting entites in the network and all transaction happens between one or more parties.
 To understand more about parties see `Parties section here <parties>`_.
 
-*This document focuses on the steps required to create an external party using the Wallet SDK.*
+This shows the steps required to create an external party using examples from the Wallet SDK, and in python and back from the
+detailed External Signing Tutorial which can be seen `here <https://docs.digitalasset.com/build/3.3/tutorials/app-dev/external_signing_onboarding.html>`_.
 
-How do I quickly allocate a party?
------------------------------------
+Quickly allocating a party using the Wallet SDK
+-----------------------------------------------
 Using the wallet SDK you can quickly allocate a party using the following code snippet:
 
 .. tabs::
@@ -38,9 +39,25 @@ Create the key Pair
 The process for creating a key using standard encryption practices is similar that in other blockchains. The full details of supported cryptographic algorithms can be found `Here <https://docs.daml.com/canton/usermanual/security.html#common-node-keys>`_.
 By default an **Ed25519** encryption is used. There exists many libraries that can be used to generate such a key pair, you can do it simply with the WalletSDK using:
 
-.. literalinclude:: ../../examples/snippets/create-key-pair.ts
-   :language: typescript
-   :dedent:
+.. tabs::
+
+    .. tab:: JS SDK
+
+      .. literalinclude:: ../../examples/snippets/create-key-pair.ts
+         :language: typescript
+         :dedent:
+
+    .. tab:: Python
+      
+      .. literalinclude:: ../../examples/snippets/create-key-pair.py
+         :language: python
+         :dedent:
+
+    .. tab:: Bash
+      
+      .. literalinclude:: ../../examples/snippets/create-key-pair.sh
+         :language: bash
+         :dedent:
 
 Choosing a party hint
 ---------------------
@@ -51,11 +68,27 @@ If you want to be to derive your party IDs from the public key, you can use a st
 Generate the fingerprint
 ------------------------
 
-To generate the fingerprint the wallet SDK has a built in function:
+Below are examples of how to generate the fingerprint.
 
-.. literalinclude:: ../../examples/snippets/generate-fingerprint.ts
-   :language: typescript
-   :dedent:
+.. tabs::
+
+    .. tab:: JS SDK
+
+      .. literalinclude:: ../../examples/snippets/generate-fingerprint.ts
+         :language: typescript
+         :dedent:
+
+    .. tab:: Python
+
+      .. literalinclude:: ../../examples/snippets/generate-fingerprint.py
+         :language: python
+         :dedent:
+
+    .. tab:: Bash
+
+      .. literalinclude:: ../../examples/snippets/generate-fingerprint.sh
+         :language: bash
+         :dedent:
 
 Generating the topology transactions
 ------------------------------------
@@ -68,20 +101,45 @@ The three transactions that needs to be generated are:
 - KeyToParty: This transaction indicates that the key (public key) is associated with the party.
 
 Once all the transactions are built they can be combined into a single hash and submitted as part of a single signature.
-The wallet SDK has helper functions to generate these transactions:
+Below are examples of how to generate the topology transactions:
 
-.. literalinclude:: ../../examples/snippets/create-topology-transactions.ts
-   :language: typescript
-   :dedent:
+.. tabs::
+
+    .. tab:: JS SDK
+
+      .. literalinclude:: ../../examples/snippets/create-topology-transactions.ts
+         :language: typescript
+         :dedent:
+
+    .. tab:: Python
+
+      .. literalinclude:: ../../examples/snippets/create-topology-transactions.py
+         :language: python
+         :dedent:
+
+
+.. Do we have a bash example?
 
 Sign multi-hash
 -----------------
 Since the topology transactions need to be submitted together the combined hash needs to be signed.
 The wallet SDK has a helper function to sign the combined hash:
 
-.. literalinclude:: ../../examples/snippets/sign-party-transaction-hash.ts
-   :language: typescript
-   :dedent:
+.. tabs::
+
+    .. tab:: JS SDK
+
+      .. literalinclude:: ../../examples/snippets/sign-party-transaction-hash.ts
+         :language: typescript
+         :dedent:
+
+    .. tab:: Python
+
+      .. literalinclude:: ../../examples/snippets/sign-party-transaction-hash.py
+         :language: python
+         :dedent:
+
+.. Do we have a bash example?
 
 Submit the topology transactions
 ---------------------------------
@@ -89,6 +147,18 @@ Once the signature is generated, the topology transactions can be submitted to t
 The wallet SDK has a helper function to submit the transactions:
 
 
-.. literalinclude:: ../../examples/snippets/submit-signed-topology-transaction.ts
-   :language: typescript
-   :dedent:
+.. tabs::
+
+    .. tab:: JS SDK
+
+      .. literalinclude:: ../../examples/snippets/submit-signed-topology-transaction.ts
+         :language: typescript
+         :dedent:
+
+    .. tab:: Python
+
+      .. literalinclude:: ../../examples/snippets/submit-signed-topology-transaction.py
+         :language: python
+         :dedent:
+
+.. Again, do we have a bash example?
