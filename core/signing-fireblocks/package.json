@@ -33,5 +33,11 @@
         "jest": "^29.7.0",
         "ts-jest-resolver": "^2.0.1",
         "typescript": "^5.8.3"
+    },
+    "files": [
+        "dist/*"
+    ],
+    "publishConfig": {
+        "access": "public"
     }
 }

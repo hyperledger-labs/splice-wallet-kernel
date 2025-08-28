@@ -4,7 +4,6 @@ on:
     push:
         branches:
             - latest
-            - alex/rename-scope-again
 permissions:
     contents: write
     pull-requests: write
@@ -45,27 +44,26 @@ jobs:
             - name: Release
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: yarn nx release publish -p core-types # Skip publish until we finalize package scope
+              run: yarn nx release
 
+            - name: Open Release PR
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  BRANCH_NAME=ci/${{ github.run_id }}
+                  RELEASE_COMMIT_HASH=$(git log --pretty=oneline | grep "chore(release)" | cut -d " " -f 1)
 
-            # - name: Open Release PR
-            #   env:
-            #       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            #   run: |
-            #       BRANCH_NAME=ci/${{ github.run_id }}
-            #       RELEASE_COMMIT_HASH=$(git log --pretty=oneline | grep "chore(release)" | cut -d " " -f 1)
+                  if [[ -z $RELEASE_COMMIT_HASH ]]; then
+                      echo "No release commit found"
+                      exit 1
+                  fi
 
-            #       if [[ -z $RELEASE_COMMIT_HASH ]]; then
-            #           echo "No release commit found"
-            #           exit 1
-            #       fi
+                  git checkout main
+                  git branch $BRANCH_NAME
 
-            #       git checkout main
-            #       git branch $BRANCH_NAME
+                  git checkout $BRANCH_NAME
+                  git cherry-pick $RELEASE_COMMIT_HASH
 
-            #       git checkout $BRANCH_NAME
-            #       git cherry-pick $RELEASE_COMMIT_HASH
+                  git push origin $BRANCH_NAME
 
-            #       git push origin $BRANCH_NAME
-
-            #       gh pr create -f -a ${{ github.actor }} -B main
+                  gh pr create -f -a ${{ github.actor }} -B main

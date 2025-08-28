@@ -36,5 +36,11 @@
         "@protobuf-ts/runtime-rpc": "^2.11.1",
         "openapi-fetch": "^0.14.0",
         "pino": "^9.7.0"
+    },
+    "files": [
+        "dist/*"
+    ],
+    "publishConfig": {
+        "access": "public"
     }
 }

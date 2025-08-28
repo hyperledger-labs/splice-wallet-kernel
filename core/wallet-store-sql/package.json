@@ -37,5 +37,11 @@
         "ts-jest-resolver": "^2.0.1",
         "tsx": "^4.20.4",
         "typescript": "^5.8.3"
+    },
+    "files": [
+        "dist/*"
+    ],
+    "publishConfig": {
+        "access": "public"
     }
 }

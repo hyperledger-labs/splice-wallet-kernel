@@ -26,5 +26,11 @@
     },
     "dependencies": {
         "@canton-network/core-types": "workspace:^"
+    },
+    "files": [
+        "dist/*"
+    ],
+    "publishConfig": {
+        "access": "public"
     }
 }
