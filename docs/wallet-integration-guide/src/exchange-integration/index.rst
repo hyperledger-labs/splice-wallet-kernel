@@ -9,9 +9,10 @@ of tokens to and from the exchange. The guide can thus also be used for services
 than exchanges that want to support deposits and withdrawals of Canton Network tokens.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    architecture
+   workflows
    node-operations
    testing
    extensions
