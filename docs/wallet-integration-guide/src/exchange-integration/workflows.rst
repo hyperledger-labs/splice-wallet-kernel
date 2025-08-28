@@ -195,7 +195,7 @@ Example Flow:
 UTXO Selection and Management
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO: write this
+.. TODO: write this
 
 Handling Failures and Crashes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -232,13 +232,13 @@ MVP for all Canton Network Tokens
 Multi-Step Deposit Flow
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO: add diagram, and flow description
+.. TODO: add diagram, and flow description
 
 
 Multi-Step Withdrawal Flow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO: add diagram, polish write-up
+.. TODO: add diagram, polish write-up
 
 
 Canton Network Token Onboarding
