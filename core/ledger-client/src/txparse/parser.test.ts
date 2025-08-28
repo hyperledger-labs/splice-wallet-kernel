@@ -1,4 +1,4 @@
-import { jest, describe, it, expect } from '@jest/globals'
+import { jest, describe, it, expect, beforeEach } from '@jest/globals'
 
 import { TransactionParser } from './parser.js'
 import type { Transaction } from './types.js'
@@ -13,9 +13,11 @@ type JsGetEventsByContractIdResponse =
     components['schemas']['JsGetEventsByContractIdResponse']
 type CreatedEvent = components['schemas']['CreatedEvent']
 
-export function makeLedgerClientFromEventsResponses(
+const EVENTS_BY_CID_PATH = '/v2/events/events-by-contract-id' as const
+
+const makeLedgerClientFromEventsResponses = (
     responses: JsGetEventsByContractIdResponse[]
-): LedgerClient {
+): LedgerClient => {
     const responseByCid = new Map<string, JsGetEventsByContractIdResponse>(
         responses.map((response) => [
             (response.created.createdEvent as CreatedEvent).contractId,
@@ -24,13 +26,13 @@ export function makeLedgerClientFromEventsResponses(
     )
 
     const post = jest.fn(async (url: string, body: { contractId: string }) => {
-        if (url !== '/v2/events/events-by-contract-id') {
+        if (url !== EVENTS_BY_CID_PATH) {
             throw new Error(`Unexpected URL in mock LedgerClient: ${url}`)
         }
         const entry = responseByCid.get(body.contractId)
         if (!entry) {
             const err = new Error('Not Found')
-            err.code = 404 // TODO add test for how parser handles 404
+            err.code = 404
             throw err
         }
 
@@ -45,6 +47,9 @@ const mockLedgerClient: LedgerClient = makeLedgerClientFromEventsResponses(
 )
 
 describe('TransactionParser', () => {
+    beforeEach(() => {
+        jest.clearAllMocks()
+    })
     it('returns transaction header and no events when input has no events', async () => {
         const partyId = 'Alice'
 
@@ -87,5 +92,45 @@ describe('TransactionParser', () => {
 
         expect(actual).toEqual(txsExpected)
         expect(mockLedgerClient.post).toHaveBeenCalled()
+    })
+
+    it('skips an ArchivedEvent when ledger returns 404', async () => {
+        const partyId = 'alice::normalized'
+
+        // contractId not present in eventsByContractIdResponses that results in 404 from mock LedgerClient
+        const missingCid = 'MISSING'
+
+        const tx: JsTransaction = {
+            updateId: 'u-404',
+            offset: 100,
+            recordTime: '2025-01-01T00:00:00Z',
+            synchronizerId: 'sync-404',
+            events: [
+                {
+                    ArchivedEvent: {
+                        contractId: missingCid,
+                        nodeId: 1,
+                        offset: 100,
+                        packageName: 'pkg',
+                        templateId: 'Pkg:Temp:Id',
+                        witnessParties: [partyId], // ensures getEventsForArchive is attempted
+                    },
+                },
+            ],
+        }
+
+        const parser = new TransactionParser(tx, mockLedgerClient, partyId)
+        const parsed = await parser.parseTransaction()
+
+        expect(parsed.events).toEqual([])
+
+        // ensure we actually tried to fetch and got the 404 path
+        expect((mockLedgerClient.post as jest.Mock).mock.calls).toContainEqual([
+            EVENTS_BY_CID_PATH,
+            expect.objectContaining({ contractId: missingCid }),
+        ])
+        await expect(
+            (mockLedgerClient.post as jest.Mock).mock.results[0].value
+        ).rejects.toMatchObject({ code: 404 })
     })
 })
