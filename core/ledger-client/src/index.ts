@@ -30,3 +30,15 @@ export {
     TextMap_Entry,
     Value,
 } from './_proto/com/daml/ledger/api/v2/value.js'
+
+export type {
+    Transaction,
+    TokenStandardEvent,
+    Holding,
+    HoldingLock,
+    HoldingsChange,
+    HoldingsChangeSummary,
+    TransferInstructionView,
+    TokenStandardChoice,
+    PrettyTransactions,
+} from './txparse/types.js'
