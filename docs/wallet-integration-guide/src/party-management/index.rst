@@ -1,5 +1,7 @@
+.. _create-an-external-party:
+
 Create an External Party (Wallet)
-========================
+=================================
 
 Overview
 --------
