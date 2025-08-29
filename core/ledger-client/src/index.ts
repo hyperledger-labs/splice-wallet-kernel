@@ -42,3 +42,7 @@ export type {
     TokenStandardChoice,
     PrettyTransactions,
 } from './txparse/types.js'
+export {
+    DisclosedContract,
+    JsPrepareSubmissionRequest,
+} from './ledger-api-utils.js'
