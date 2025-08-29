@@ -14,8 +14,9 @@ export class TokenStandardController {
     private client: LedgerClient
     private service: TokenStandardService
     private userId: string
-    private partyId: string
-    private synchronizerId: string
+    private partyId: string = ''
+    private synchronizerId: string = ''
+    private transferFactoryRegistryUrl: string = ''
 
     /** Creates a new instance of the LedgerController.
      *
@@ -27,8 +28,6 @@ export class TokenStandardController {
         this.client = new LedgerClient(baseUrl, token, this.logger)
         this.service = new TokenStandardService(this.client, this.logger)
         this.userId = userId
-        this.partyId = ''
-        this.synchronizerId = ''
         return this
     }
 
@@ -50,6 +49,17 @@ export class TokenStandardController {
         return this
     }
 
+    /**
+     * Sets the transferFactoryRegistryUrl that the TokenStandardController will use for requests.
+     * @param transferFactoryRegistryUrl
+     */
+    setTransferFactoryRegistryUrl(
+        transferFactoryRegistryUrl: string
+    ): TokenStandardController {
+        this.transferFactoryRegistryUrl = transferFactoryRegistryUrl
+        return this
+    }
+
     /** Lists all holdings for the current party.
      * @param afterOffset optional pagination offset.
      * @returns A promise that resolves to an array of holdings.
@@ -61,6 +71,31 @@ export class TokenStandardController {
             this.partyId,
             afterOffset
         )
+    }
+
+    async createTransfer(
+        sender: string,
+        receiver: string,
+        amount: string,
+        instrument: {
+            instrumentId: string
+            instrumentAdmin: string
+        },
+        meta?: Record<string, never>
+    ): Promise<unknown> {
+        try {
+            return await this.service.createTransfer(
+                sender,
+                receiver,
+                amount,
+                instrument.instrumentAdmin,
+                instrument.instrumentId,
+                this.transferFactoryRegistryUrl,
+                meta
+            )
+        } catch (error) {
+            this.logger.error({ error }, 'Failed to create transfer')
+        }
     }
 }
 

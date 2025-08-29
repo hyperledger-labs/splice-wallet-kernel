@@ -27,19 +27,6 @@ type TransactionUpdate = {
     update: { Transaction: { value: JsTransaction } }
 }
 
-interface CreateTransferOptions {
-    sender: string
-    receiver: string
-    amount: string
-    // paths to keys
-    publicKey: string
-    privateKey: string
-    instrumentAdmin: string // TODO (#907): replace with registry call
-    instrumentId: string
-    transferFactoryRegistryUrl: string
-    userId: string
-}
-
 export class TokenStandardService {
     constructor(
         private ledgerClient: LedgerClient,
@@ -163,18 +150,15 @@ export class TokenStandardService {
     }
 
     async createTransfer(
-        opts: CreateTransferOptions
+        sender: string,
+        receiver: string,
+        amount: string,
+        instrumentAdmin: string, // TODO (#907): replace with registry call
+        instrumentId: string,
+        transferFactoryRegistryUrl: string,
+        meta?: Record<string, never>
     ): Promise<ExerciseCommand> {
         try {
-            const {
-                sender,
-                receiver,
-                amount,
-                instrumentAdmin,
-                instrumentId,
-                transferFactoryRegistryUrl,
-            } = opts
-
             const ledgerEndOffset = await this.ledgerClient.get(
                 '/v2/state/ledger-end'
             )
@@ -218,7 +202,7 @@ export class TokenStandardService {
                     requestedAt: now.toISOString(),
                     executeBefore: tomorrow.toISOString(),
                     inputHoldingCids,
-                    meta: { values: {} },
+                    meta: { values: meta || {} },
                 },
                 extraArgs: {
                     context: { values: {} },
@@ -226,11 +210,15 @@ export class TokenStandardService {
                 },
             }
 
+            this.logger.info('Creating transfer factory...')
+
             const transferFactory = await this.tokenStandardClient(
                 transferFactoryRegistryUrl
             ).post('/registry/transfer-instruction/v1/transfer-factory', {
                 choiceArguments: choiceArgs as unknown as Record<string, never>,
             })
+
+            this.logger.info('Transfer factory created:', transferFactory)
 
             choiceArgs.extraArgs.context = {
                 ...transferFactory.choiceContext.choiceContextData,
