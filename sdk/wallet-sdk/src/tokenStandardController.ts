@@ -17,8 +17,6 @@ export class TokenStandardController {
     private partyId: string = ''
     private synchronizerId: string = ''
     private transferFactoryRegistryUrl: string = ''
-    private instrumentAdmin: string = ''
-    private instrumentId: string = ''
 
     /** Creates a new instance of the LedgerController.
      *
@@ -62,20 +60,6 @@ export class TokenStandardController {
         return this
     }
 
-    /**
-     * Sets the instrument that the TokenStandardController will use for requests.
-     * @param instrumentId
-     * @param instrumentAdmin
-     */
-    setInstrument(
-        instrumentId: string,
-        instrumentAdmin: string
-    ): TokenStandardController {
-        this.instrumentId = instrumentId
-        this.instrumentAdmin = instrumentAdmin
-        return this
-    }
-
     /** Lists all holdings for the current party.
      * @param afterOffset optional pagination offset.
      * @returns A promise that resolves to an array of holdings.
@@ -92,16 +76,26 @@ export class TokenStandardController {
     async createTransfer(
         sender: string,
         receiver: string,
-        amount: string
-    ): Promise<void> {
-        await this.service.createTransfer(
-            sender,
-            receiver,
-            amount,
-            this.instrumentAdmin,
-            this.instrumentId,
-            this.transferFactoryRegistryUrl
-        )
+        amount: string,
+        instrument: {
+            instrumentId: string
+            instrumentAdmin: string
+        },
+        meta?: Record<string, never>
+    ): Promise<unknown> {
+        try {
+            return await this.service.createTransfer(
+                sender,
+                receiver,
+                amount,
+                instrument.instrumentAdmin,
+                instrument.instrumentId,
+                this.transferFactoryRegistryUrl,
+                meta
+            )
+        } catch (error) {
+            this.logger.error({ error }, 'Failed to create transfer')
+        }
     }
 }
 

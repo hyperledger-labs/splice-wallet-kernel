@@ -53,16 +53,50 @@ export class TokenStandardClient {
 
     constructor(baseUrl: string, logger: Logger, token?: string) {
         this.logger = logger
+        this.logger.debug({ baseUrl, token }, 'TokenStandardClient initialized')
         this.client = createClient<paths>({
             baseUrl,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
+                this.logger.debug({ url, options }, 'HTTP request')
                 return fetch(url, {
                     ...options,
                     headers: {
                         ...(options.headers || {}),
                         ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        'Content-Type': 'application/json',
                     },
                 })
+            },
+        })
+
+        this.client.use({
+            async onRequest({ request, options }) {
+                // log method + path
+                logger.info(
+                    {
+                        request: request,
+                        options: options,
+                    },
+                    'Outgoing request'
+                )
+
+                return request // must return the request object
+            },
+
+            async onResponse({ response }) {
+                logger.info(
+                    {
+                        status: response.status,
+                        url: response.url,
+                    },
+                    'Incoming response'
+                )
+                return response // must return the response
+            },
+
+            async onError({ error }) {
+                logger.error(error, 'Request failed')
+                throw error
             },
         })
     }
@@ -77,7 +111,7 @@ export class TokenStandardClient {
     ): Promise<PostResponse<Path>> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
         const options = { body, params } as any
-
+        this.logger.debug({ requestBody: body }, `POST ${path}`)
         const resp = await this.client.POST(path, options)
         this.logger.debug({ requestBody: body, response: resp }, `POST ${path}`)
         return this.valueOrError(resp)
