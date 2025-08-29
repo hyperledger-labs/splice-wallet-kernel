@@ -9,11 +9,23 @@ import {
 } from './constants.js'
 import { components } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import { filtersByParty } from './ledger-api-utils.js'
+import { TransactionParser } from './txparse/parser.js'
+import { renderTransaction } from './txparse/types.js'
+
+import type { PrettyTransactions, Transaction } from './txparse/types.js'
 
 type ExerciseCommand = components['schemas']['ExerciseCommand']
 type JsGetActiveContractsResponse =
     components['schemas']['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = components['schemas']['JsGetUpdatesResponse']
+type OffsetCheckpoint2 = components['schemas']['OffsetCheckpoint2']
+type JsTransaction = components['schemas']['JsTransaction']
+type OffsetCheckpointUpdate = {
+    update: { OffsetCheckpoint: OffsetCheckpoint2 }
+}
+type TransactionUpdate = {
+    update: { Transaction: { value: JsTransaction } }
+}
 
 interface CreateTransferOptions {
     sender: string
@@ -111,7 +123,7 @@ export class TokenStandardService {
     async listHoldingTransactions(
         partyId: string,
         afterOffset?: string
-    ): Promise<JsGetUpdatesResponse[]> {
+    ): Promise<PrettyTransactions> {
         try {
             this.logger.debug('Set or query offset')
             const afterOffsetOrLatest =
@@ -119,24 +131,31 @@ export class TokenStandardService {
                 (await this.ledgerClient.get('/v2/state/latest-pruned-offsets'))
                     .participantPrunedUpToInclusive
             this.logger.debug(afterOffsetOrLatest, 'Using offset')
-            const updates = await this.ledgerClient.post('/v2/updates/flats', {
-                updateFormat: {
-                    includeTransactions: {
-                        eventFormat: {
-                            filtersByParty: filtersByParty(
-                                partyId,
-                                TokenStandardTransactionInterfaces,
-                                true
-                            ),
-                            verbose: false,
+            const updatesResponse: JsGetUpdatesResponse[] =
+                await this.ledgerClient.post('/v2/updates/flats', {
+                    updateFormat: {
+                        includeTransactions: {
+                            eventFormat: {
+                                filtersByParty: filtersByParty(
+                                    partyId,
+                                    TokenStandardTransactionInterfaces,
+                                    true
+                                ),
+                                verbose: false,
+                            },
+                            transactionShape:
+                                'TRANSACTION_SHAPE_LEDGER_EFFECTS',
                         },
-                        transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
                     },
-                },
-                beginExclusive: afterOffsetOrLatest,
-                verbose: false,
-            })
-            return updates
+                    beginExclusive: afterOffsetOrLatest,
+                    verbose: false,
+                })
+
+            return this.toPrettyTransactions(
+                updatesResponse,
+                partyId,
+                this.ledgerClient
+            )
         } catch (err) {
             this.logger.error('Failed to list holding transactions.', err)
             throw err
@@ -232,6 +251,54 @@ export class TokenStandardService {
         } catch (e) {
             this.logger.error('Failed to execute transfer:', e)
             throw e
+        }
+    }
+
+    private async toPrettyTransactions(
+        updates: JsGetUpdatesResponse[],
+        partyId: string,
+        ledgerClient: LedgerClient
+    ): Promise<PrettyTransactions> {
+        // Runtime filters that also let TS know which of OneOfs types to check against
+        const isOffsetCheckpointUpdate = (
+            updateResponse: JsGetUpdatesResponse
+        ): updateResponse is OffsetCheckpointUpdate =>
+            !!updateResponse?.update?.OffsetCheckpoint
+        const isTransactionUpdate = (
+            updateResponse: JsGetUpdatesResponse
+        ): updateResponse is TransactionUpdate =>
+            !!updateResponse.update?.Transaction?.value
+
+        const offsetCheckpoints: number[] = updates
+            .filter(isOffsetCheckpointUpdate)
+            .map((update) => update.update.OffsetCheckpoint.value.offset)
+        const latestCheckpointOffset = Math.max(...offsetCheckpoints)
+
+        const transactions: Transaction[] = await Promise.all(
+            updates
+                // exclude OffsetCheckpoint, Reassignment, TopologyTransaction
+                .filter(isTransactionUpdate)
+                .map(async (update) => {
+                    const tx = update.update.Transaction.value
+                    const parser = new TransactionParser(
+                        tx,
+                        ledgerClient,
+                        partyId
+                    )
+
+                    return await parser.parseTransaction()
+                })
+        )
+
+        return {
+            // OffsetCheckpoint can be anywhere... or not at all, maybe
+            nextOffset: Math.max(
+                latestCheckpointOffset,
+                ...transactions.map((tx) => tx.offset)
+            ),
+            transactions: transactions
+                .filter((tx) => tx.events.length > 0)
+                .map(renderTransaction),
         }
     }
 }

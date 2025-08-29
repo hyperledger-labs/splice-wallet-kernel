@@ -3,6 +3,7 @@ import {
     TokenStandardService,
 } from '@canton-network/core-ledger-client'
 import { pino } from 'pino'
+import { PrettyTransactions } from '@canton-network/core-ledger-client'
 
 /**
  * TokenStandardController handles token standard management tasks.
@@ -53,8 +54,9 @@ export class TokenStandardController {
      * @param afterOffset optional pagination offset.
      * @returns A promise that resolves to an array of holdings.
      */
-    async listHoldingTransactions(afterOffset?: string): Promise<unknown[]> {
-        // TODO: parsing
+    async listHoldingTransactions(
+        afterOffset?: string
+    ): Promise<PrettyTransactions> {
         return await this.service.listHoldingTransactions(
             this.partyId,
             afterOffset
