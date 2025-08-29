@@ -1,3 +1,4 @@
+.. _integration-architecture:
 
 Integration Architecture
 ========================

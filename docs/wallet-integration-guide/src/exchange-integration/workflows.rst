@@ -242,7 +242,7 @@ We therefore recommend the following approach:
   withdrawals at the same time.
   Run a periodic background job to manage this pool using self-transfers.
     * From an implementation perspective, these self-transfers are a special kind of
-      withdrawal. We thus recommed to implement them using the same code path as withdrawals:
+      withdrawal. We thus recommend to implement them using the same code path as withdrawals:
       start with writing the self-transfer request into the Canton Integration DB and have
       the Withdrawal Automation execute it.
 
@@ -345,7 +345,7 @@ This is where the main difference to the :ref:`one-step-deposit-workflow` starts
 The Multi-Step Deposit Automation service will now auto-accept the transfer offer.
 
 5. The Multi-Step Deposit Automation regularly queries for pending transfer offers for known
-   deposit accounts. It thus observs the pending transfer offer ``coid567`` and accepts it as follows.
+   deposit accounts. It thus observes the pending transfer offer ``coid567`` and accepts it as follows.
 
     a. Multi-Step Deposit Automation retrieves the URL for Acme's Registry API Server
        from the Canton Integration DB.
@@ -607,7 +607,7 @@ At a high-level, the Canton-specific steps to onboarding a token are:
 2. Store the mapping from the token admin's ``adminParty`` id
    to the admin's Registry API Server URL in your Canton Integration DB
    (or another suitable place).
-3. In case the token is permisssioned, follow the token admin's
+3. In case the token is permissioned, follow the token admin's
    instructions to have your exchange's ``treasuryParty`` added to the
    token's allowlist.
 

@@ -46,3 +46,21 @@ Sketch wrt reading from Canton Coin Scan: choose one of
   * read from multiple canton coin scan instances in parallel and compare their responses (this is what validator proxy does for you)
 
 Note: the same approach should be used for other decentralized tokens.
+
+
+Backup and Restore of the Canton Integration DB
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sketch:
+
+* the loss of data affects only the data written by the exchange internal systems; i.e., the data
+  written in Step 2 of the :ref:`one-step-withdrawal-workflow`. Looking at that data we observe:
+
+  * withdrawal requests might be in-flight on Canton for which there is no entry in the integration DB
+  * ``Holding`` UTXOs might be marked as non-reserved, but they are actually spent by in-flight withdrawal transfers
+
+* ensure that history ingestion of ``TransferInstruction`` UTXOs for outgoing transfers also succeeds if the withdrawal id cannot be resolved; e.g. by creating a record
+  for them. Consider storing extra metadata in the ``Transfer`` record to be able to do so from the on-chain data only.
+* wait with reserving UTXOs until the Canton Integration DB has resynchronized with all in-flight
+  withdrawals; e.g., by waiting until you observe a record time larger than the largest target record time of in-flight withdrawals
+  (you should be able to estimate that using ``now + yourDefaultInFlightTimeout``).
