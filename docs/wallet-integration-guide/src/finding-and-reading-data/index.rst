@@ -7,9 +7,9 @@ Reading from ledger
 
 .. todo:: improve writing of the text below
 
-Parties and synchronizers are considered core on the Ledger API and therefore a filter on most requests.
-To facilitate this change easily, the ledger controller
-in the Wallet SDK allows you to change these, but forces them to be required for certain operations.
+Parties and synchronizers are considered a core component on the Ledger API and they are therefore a common filter on requests.
+To facilitate the party and synchronizer fields to be changed easily, the ledger controller in the Wallet SDK allows you to change
+the fields but requires them for certain operations. 
 This is to ensure that you always have the correct context when reading data from the ledger.
 
 .. literalinclude:: ../../examples/snippets/change-party-and-synchronizer.ts
@@ -18,8 +18,8 @@ This is to ensure that you always have the correct context when reading data fro
 
 **Reading Available Parties**
 
-Reading all available parties to you can easily be done using the wallet SDK, it is worth nothing that this is paginated however it does not have
-any effect if you change the party or syncrhonizer you are using.
+Reading all available parties to you can easily be done using the wallet SDK as shown in the example below, and the result is paginated. 
+It's worth noting that the call to read all available parties doesn't use the the party and synchronizer fields therefore changing them has no effect on the result.
 
 .. literalinclude:: ../../examples/snippets/list-wallets.ts
     :language: typescript
@@ -28,9 +28,9 @@ any effect if you change the party or syncrhonizer you are using.
 **Reading Ledger End**
 
 A lot of different requests will take a ledger offset to ensure the requested time correlates with ledger time. A Validator does not have a block height since
-there is no total state replication. There are two values that well correlate:
+there is no total state replication. There are two values that correlate:
 
-* ledger time - this is the time the ledger choose when computing a transaction prior to commit.
+* ledger time - this is the time the ledger chooses when computing a transaction prior to commit.
 * record time - this is the time assigned by the sequencer when registering the confirmation request.
 
 Ledger time should be used for all operations in your local environment (that does not affect partners).
@@ -44,14 +44,14 @@ Ledger end can easily be derived from with the wallet SDK:
 
 **Reading Active Contracts**
 
-Using the above ledger time we can figure out what the current state of all active contracts are. Contracts can be in two states, active and archived which correlates
+Using the above ledger time we can figure out what the current state of all active contracts are. Contracts can be in two states - active and archived - which correlates
 to the UTXO mode of unspent and spent. Active contracts are contracts that are unspent and thereby can be used in new transactions or to exercise choices.
 
 .. literalinclude:: ../../examples/snippets/read-active-contracts.ts
     :language: typescript
     :dedent:
 
-
+.. _visualizing-a-transaction:
 Visualizing a Transaction
 -------------------------
 
