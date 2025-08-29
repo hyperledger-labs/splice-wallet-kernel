@@ -83,11 +83,17 @@ const command = await sdk.tokenStandard?.createTransfer(
     {}
 )
 
+console.log('command is: ', command)
+sdk.userLedger?.setSynchronizerId(synchronizerId)
+
 await sdk.connectAdmin()
 sdk.adminLedger?.setPartyId(partyId)
 console.log('Connected to admin ledger')
 
-const prepared = await sdk.userLedger?.prepareSubmission([command])
+const exerciseCommand = {
+    ExerciseCommand: command,
+}
+const prepared = await sdk.userLedger?.prepareSubmission([exerciseCommand])
 console.log('Prepared command submission for token transfer command', prepared)
 
 // const result = await sdk.adminLedger?.prepareSignAndExecuteTransaction(
