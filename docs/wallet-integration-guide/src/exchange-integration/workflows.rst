@@ -211,7 +211,38 @@ Example flow:
 UTXO Selection and Management
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. TODO: write this
+Executing a withdrawal requires selecting ``Holding`` UTXOs to fund the withdrawal,
+as described for example in :ref:`one-step-withdrawal-workflow`. You likely already have a UTXO management strategy in place for your existing UTXO-chain integrations. Here some considerations to take into account when adapting your strategy to work with Canton:
+
+* Canton Coin charges a small holding fee of about $1 per year for each ``Holding`` UTXO to allow
+  archiving `dust coins <https://www.investopedia.com/terms/b/bitcoin-dust.asp>`_ once their holding fee surpasses their value.
+* Canton Coin limits the number of UTXOs for a single transfer to 100 ``Holding`` UTXOs to
+  avoid large transactions that are expensive to process.
+* Canton Coin transactions also merge all input ``Holding`` UTXOs and
+  return the change to the sender as a single ``Holding`` UTXO to allow batching the merging
+  of ``Holding`` UTXOs with transfers.
+* Other tokens are likely to follow similar strategies for the same rationale.
+* At the time of writing (2025-08-29), the Canton Network Token Standard recommends
+  to use self-transfers (i.e., ``sender`` = ``receiver``) to be used to merge
+  ``Holding`` UTXOs into two ``Holding`` UTXOs: one for the transferred ``amount`` and another one for the change.
+  It does not (yet) support requesting multiple ``Holding`` UTXOs to be created for the change.
+
+We therefore recommend the following approach:
+
+* Limit the number of input UTXOs to less than 100 UTXOs per transfer.
+  Thus staying with the Canton Coin limits and keeping
+  transaction size small, which also helps you to reduce your traffic spend
+  when having to retry transaction execution.
+* Consider using a UTXO selection strategy for withdrawals
+  that favors smaller UTXOs so that they
+  get merged automatically as part of executing transfers.
+* Consider keeping a pool of `k` large amount UTXOs to be able to execute up to `k`
+  withdrawals at the same time.
+  Run a periodic background job to manage this pool using self-transfers.
+    * From an implementation perspective, these self-transfers are a special kind of
+      withdrawal. We thus recommed to implement them using the same code path as withdrawals:
+      start with writing the self-transfer request into the Canton Integration DB and have
+      the Withdrawal Automation execute it.
 
 
 .. _mvp-for-cn-tokens:
