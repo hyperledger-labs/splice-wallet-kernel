@@ -57,7 +57,6 @@ export class TokenStandardClient {
         this.client = createClient<paths>({
             baseUrl,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
-                this.logger.debug({ url, options }, 'HTTP request')
                 return fetch(url, {
                     ...options,
                     headers: {
@@ -66,37 +65,6 @@ export class TokenStandardClient {
                         'Content-Type': 'application/json',
                     },
                 })
-            },
-        })
-
-        this.client.use({
-            async onRequest({ request, options }) {
-                // log method + path
-                logger.info(
-                    {
-                        request: request,
-                        options: options,
-                    },
-                    'Outgoing request'
-                )
-
-                return request // must return the request object
-            },
-
-            async onResponse({ response }) {
-                logger.info(
-                    {
-                        status: response.status,
-                        url: response.url,
-                    },
-                    'Incoming response'
-                )
-                return response // must return the response
-            },
-
-            async onError({ error }) {
-                logger.error(error, 'Request failed')
-                throw error
             },
         })
     }

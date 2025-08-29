@@ -71,6 +71,7 @@ await sdk.tokenStandard
 // Node cannot resolve subdomain.localhost, therefore add the following mapping to your /etc/hosts
 // 127.0.0.1   scan.localhost
 sdk.tokenStandard?.setTransferFactoryRegistryUrl('http://scan.localhost:4000')
+
 const command = await sdk.tokenStandard?.createTransfer(
     'marc::1220ee06a9947d6951889e3458a2e36f0421df008e750fd86187536b3d01bb63363c',
     partyId,
