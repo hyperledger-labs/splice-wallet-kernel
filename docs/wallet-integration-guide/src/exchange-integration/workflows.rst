@@ -54,6 +54,7 @@ MVP for Canton Coin
 1-Step Deposit Workflow
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+.. https://lucid.app/lucidchart/2a048991-c76c-4a72-8622-66e837f6e1ec/edit?viewport_loc=349%2C-1160%2C1950%2C2323%2C7R-KmMutUD5s&invitationId=inv_d2f23474-4e92-4b66-847a-0602e906795e
 .. image:: images/1-step_deposit.png
   :alt: 1-Step Deposit Workflow Diagram
 
@@ -118,6 +119,7 @@ Example flow:
 1-Step Withdrawal Workflow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. https://lucid.app/lucidchart/2a048991-c76c-4a72-8622-66e837f6e1ec/edit?viewport_loc=302%2C283%2C1570%2C1870%2CsQmLoChMZVeZ&invitationId=inv_d2f23474-4e92-4b66-847a-0602e906795e
 .. image:: images/1-step_withdrawal.png
   :alt: 1-Step Withdrawal Workflow Diagram
 
@@ -280,6 +282,7 @@ All examples assume that:
 Multi-Step Deposit Workflow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. https://lucid.app/lucidchart/2a048991-c76c-4a72-8622-66e837f6e1ec/edit?viewport_loc=289%2C440%2C1400%2C1668%2CDZFLA_xWcHF8&invitationId=inv_d2f23474-4e92-4b66-847a-0602e906795e
 .. image:: images/multi-step_deposit.png
   :alt: Multi-Step Deposit Workflow Diagram
 
@@ -405,8 +408,6 @@ The sender can use their wallet to withdraw the offer.
 Ingesting deposit offers with unknown deposit accounts is still valuable
 to allow the exchange's support team to handle customer inquiries about
 these transfers.
-
-
 
 
 .. _multi-step-withdrawal-workflow:
@@ -595,3 +596,35 @@ that the transfer was offered, but rejected by them.
 
 Canton Network Token Onboarding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You likely have exchange internal requirements and considerations for onboarding a token.
+In the following,
+we document the additional considerations that are specific to Canton.
+
+At a high-level, the Canton-specific steps to onboarding a token are:
+
+1. Upload the token admin's .dar files to your validator node.
+2. Store the mapping from the token admin's ``adminParty`` id
+   to the admin's Registry API Server URL in your Canton Integration DB
+   (or another suitable place).
+3. In case the token is permisssioned, follow the token admin's
+   instructions to have your exchange's ``treasuryParty`` added to the
+   token's allowlist.
+
+Make sure that you only upload .dar files from trusted token admins
+to avoid unwanted changes to the behavior of your existing contracts
+on-ledger.
+
+Many token admin's run a test instance of their token on TestNet.
+Consider using these test instances as part of your testing strategy.
+
+For example, Canton Coin also exist on TestNet and DevNet
+with different ``dsoParty`` ids.
+You can retrieve the ``dsoParty`` id for each network using the
+`CC Scan API <https://docs.dev.sync.global/app_dev/scan_api/index.html#app-dev-scan-api>`_
+served from the `SV nodes of that network <https://sync.global/sv-network/>`_:
+
+* Use `/v0/dso <https://docs.dev.sync.global/app_dev/scan_api/scan_openapi.html#get--v0-dso>`_
+  to query the ``dsoParty`` for the network you are connected to.
+* Use `/v0/splice-instance-names <https://docs.dev.sync.global/app_dev/scan_api/scan_openapi.html#get--v0-splice-instance-names>`_
+  to query the network name (DevNet, TestNet, or MainNet).
