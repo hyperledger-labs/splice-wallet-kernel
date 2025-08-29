@@ -99,6 +99,7 @@ export class LedgerController {
      * @remarks The returned prepared transaction must be signed and executed using the executeSubmission method.
      * @param commands the commands to be executed.
      * @param commandId an unique identifier used to track the transaction, if not provided a random UUID will be used.
+     * @param disclosedContracts additional contracts used to resolve contract & contract key lookups.
      */
     async prepareSubmission(
         commands: unknown,
