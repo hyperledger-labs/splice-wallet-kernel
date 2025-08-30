@@ -59,6 +59,7 @@ Exchange Components
 
 This guide assumes that there are **Exchange Internal Systems** that manage among other things
 the exchange's internal ledger of **Customer** balances.
+.. REVIEW: Grammar update: "This guide assumes that there are **Exchange Internal Systems** that manage, among other things, the exchange's internal ledger of **Customer** balances."
 These systems are in particular used to serve data to the **Exchange UI**,
 which is used by exchange customers to trade, observe their deposits,
 and request withdrawals of funds to their wallets.
@@ -78,6 +79,7 @@ There are five Canton integration components:
   executes transfers for withdrawals.
   You are not expected to build this node, but you are expected to either operate it yourself
   or use a node-as-a-service provider to operate it for you.
+  .. REVIEW: I'd explain what the treasuryParty is here and add a link to how to setup the treasuryParty. If you're reading this guide in order of the links, as I did, this term is sprung on you. - assuming I have it right, it's a party that you're suggesting that they set up to hold the funds of the exchange. That explains that it's not a core Canton concept, but rather something specific to the exchange's implementation.
 * The **Canton Integration DB** is used to keep track of the state of withdrawals and
   the customer-attribution of the funds held by the ``treasuryParty``.
   It is shown as a separate component in the diagram, but it could well be part of your
@@ -125,6 +127,7 @@ in the context of the Canton integration:
   which is why access is provided to it off-ledger. The
   `OpenAPI specification of the Registry API <https://docs.dev.sync.global/app_dev/token_standard/index.html#api-references>`_
   is part of the Canton Network Token Standard.
+  .. REVIEW: the link above goes to a paragraph with a link to the CPI - consider just linking directly to the CIP.
 
 
 .. _information-flows:
@@ -143,6 +146,7 @@ We explain them below.
 
 There are three main information flows:
 
+.. REVIEW: Grammar - missing period at the end of the first sentence.
 #. **Tx History Ingestion**: ingests the transactions
    affecting the ``treasuryParty`` from the Exchange Validator Node into the Canton Integration DB
    The transaction data is read using the ``/v2/updates/trees``
@@ -179,7 +183,11 @@ There are three main information flows:
 
    Note that the Multi-Step Deposit Automation may write back to the Canton Integration DB to store
    that the transaction to accept the deposit could not be committed even after retrying multiple times.
+   .. REVIEW: What's the point of this paragraph? Is it that the write transaction may fail?
 
 The other information flows interact with the main flows as part of a deposit or withdrawal.
 We explain them in the :ref:`integration-workflows` section.
+
+.. REVIEW: This page is really good. We need a similar one for the WIG. I don't think that it would take much to adjust this one, using the same diagrams for the wallet providers and explaining their flows.
+.. One thing that you don't mention so far is how they setup the treasuryParty. I'm assuming that this should be a local party so that they can automate transfers etc. We should explain that to them.
 

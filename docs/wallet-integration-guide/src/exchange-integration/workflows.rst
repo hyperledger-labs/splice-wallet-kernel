@@ -7,7 +7,8 @@ Overview
 --------
 
 The workflows below are grouped into two integration stages.
-
+.. REVIEW: My strong opinion is that we should remove the distinction and MVPs of supporting CC vs supporting the token standard. I believe that exchanges need to support 2 step transfers in both directions for CC anyway and that's the only distinction between the two. 
+.. We can cut this page in half and have exchanges support the token standard by having them support both 1step and 2 step transfers.
 * :ref:`mvp-for-cc` contains the minimum viable product (MVP) workflows for integrating Canton Coin (CC) into the exchange.
   It comes with the limitation that both the exchange and the customers need to set up a ``TransferPreapproval`` to
   enable 1-step transfers of CC.
@@ -47,7 +48,7 @@ MVP for Canton Coin
      that every SV operator runs. They serve the Registry API for CC.
      See :ref:`reading-from-canton-coin-scan` for more information about
      how to reliably read from multiple Canton Coin Scan instances.
-
+.. REVIEW: I'm not famniliar with the phrasing "Specialize". It could just be me... I'd use the phrase "adapt"
 
 .. _one-step-deposit-workflow:
 
@@ -64,6 +65,7 @@ Assumptions:
    ``treasuryParty`` as explained in :ref:`setup-treasury-party`.
 -  Exchange associated deposit account “abc123” with Customer in
    the Canton Integration DB.
+.. REVIEW: Small grammar suggestion to make the sentence flow easier "The Exchange has set up..." and "The Exchange has associated..."
 
 Example flow:
 
@@ -145,6 +147,7 @@ Example flow:
      using the ``coids`` UTXOs for funding ``wid123``. The ``coids``
      are considered to be reserved to funding this transfer until
      ``trecTgt`` has passed.
+.. REVIEW: The first sentence in the last paragraph reads funny.
 
 3. Withdrawal Automation observes the pending withdrawal ``wid123`` and
    commits the corresponding CC transfer as follows.
@@ -210,6 +213,7 @@ Example flow:
 
 .. _utxo-management:
 
+.. REVIEW: This section should be pulled out into the WIG at a higher level. This section is relevant to wallet integrators and exchanges. I'll look to suggest a place for this.
 UTXO Selection and Management
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -292,6 +296,7 @@ Example flow: deposit offer and acceptance
 The flow uses essentially the same initial three steps as
 the :ref:`one-step-deposit-workflow` above.
 We list them in full for completeness.
+.. REVIEW: I think that three should be changed to four since the statement "This is where the main difference..." sentence comes after point 4
 
 1. Customer uses Exchange UI to retrieve ``treasuryParty`` and deposit
    account-id “abc123” to use for the deposit.
@@ -408,6 +413,7 @@ The sender can use their wallet to withdraw the offer.
 Ingesting deposit offers with unknown deposit accounts is still valuable
 to allow the exchange's support team to handle customer inquiries about
 these transfers.
+.. REVIEW: Considering the section above, shouldn't there be a step in the multi-step deposit workflow process above for the 'Multi-Step Deposit Automation' to check for the deposit account?
 
 
 .. _multi-step-withdrawal-workflow:
@@ -591,7 +597,7 @@ that the transfer was offered, but rejected by them.
 
 
 
-
+.. REVIEW: This section should also go in the WIG. It should also be considered for wallet providers and there's only one place where the guidance is specific to exchanges.
 .. _token-onboarding:
 
 Canton Network Token Onboarding

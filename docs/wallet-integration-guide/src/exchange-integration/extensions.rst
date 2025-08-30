@@ -1,5 +1,5 @@
 .. _integration-extensions:
-
+.. REVIEW: This page should be a general page for wallet providers too, most of the info on this page is relevant to wallet providers too. The only sections which are specific to exchanges is potentially the advice to multi-host the treasury party but then again it's likely also relevant to wallet providers.
 Integration Extensions
 ----------------------
 

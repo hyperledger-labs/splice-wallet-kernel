@@ -34,7 +34,12 @@ The following dependency diagrams shows the work items and milestones, which we 
 .. image:: images/delivery_dependencies.png
   :alt: milestone and delivery dependency diagram
 
-
+.. REVIEW: Should we put the milestone of supporting all CN token standards first? 
+.. Based on Eric's argument that we'll only have exchanges attention once, and if they only support CC 
+.. then we won't get them back to support other tokens we should push them to support the token standard,
+.. and just include CC as part of that integration. It may however, require the rewriting of the guide to
+.. focus on the integration of the token standard and point out specifically what they need to do in addition,
+.. to support CC specifically.
 * **MVP for CC**: this MVP allows you to support deposits and withdrawals of Canton Coin (CC).
   It includes earning app rewards for all CC deposits.
   It comes with the limitation that users must setup a CC transfer preapproval to receive withdrawals.
@@ -47,6 +52,7 @@ The following dependency diagrams shows the work items and milestones, which we 
   * :ref:`Support restore from validator node backup <restore-from-validator-node-backup>`
   * :ref:`Support hard synchronizer migration <hard-synchronizer-migration>`
 
+.. REVIEW: Should the line below say "...withdrawals of all CN token standard tokens / assets?
 * **MVP for all CN Tokens**: this MVP allows you to support deposits and withdrawals of all CN tokens.
   It comes with the limitation that app rewards are only earned on deposits of CC, but not on deposits of other CN tokens.
   It depends on the MVP for CC and the following additional work items:
@@ -58,6 +64,7 @@ The following dependency diagrams shows the work items and milestones, which we 
 * **Earn app rewards for all CN tokens**: is an additional milestone that improves
   the profitability of your integration by implementing the changes required so that
   your exchange earns app rewards on both withdrawals and deposits of all CN tokens.
+  .. REVIEW: Should that say "...withdrawals of all CN token standard tokens / assets?
 
   * :ref:`deposit-app-rewards`
   * :ref:`withdrawal-app-rewards`

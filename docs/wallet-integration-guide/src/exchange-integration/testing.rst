@@ -1,6 +1,6 @@
 Integration Testing
 ===================
-
+.. REVIEW: This page should be a general page for wallet providers too
 .. _test-node-setup:
 
 Test Node Setup
