@@ -80,18 +80,19 @@ export class TokenStandardController {
 
     async tap(validatorApi: string, amount: number): Promise<void> {
         // http://wallet.localhost:2000/api/validator/v0/wallet/tap
-        const response = await fetch(`${validatorApi}/wallet/tap`, {
+        const response = await fetch(`${validatorApi}/v0/wallet/tap`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${this.accessToken}`,
             },
             body: JSON.stringify({
-                amount,
+                amount: amount.toString(),
             }),
         })
         if (!response.ok) {
-            this.logger.error({ response }, 'Failed to tap wallet')
+            const s = await response.text()
+            this.logger.error({ s }, 'Failed to tap wallet')
             throw new Error('Failed to tap wallet')
         }
         const responseData = await response.json()

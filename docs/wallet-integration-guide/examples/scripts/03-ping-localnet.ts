@@ -30,14 +30,15 @@ await sdk.userLedger
     })
 
 const keyPair = createKeyPair()
+await sdk.connectTopology()
 
 console.log('generated keypair')
 const allocatedParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
-    keyPair.publicKey
+    keyPair.privateKey
 )
-
+sdk.userLedger?.setPartyId(allocatedParty!.partyId)
 console.log('Create ping command')
-const createPingCommand = await sdk.userLedger?.createPingCommand(
+const createPingCommand = sdk.userLedger?.createPingCommand(
     allocatedParty!.partyId!
 )
 sdk.userLedger?.setPartyId(allocatedParty!.partyId!)

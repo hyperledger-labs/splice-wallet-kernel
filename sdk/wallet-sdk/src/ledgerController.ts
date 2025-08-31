@@ -223,6 +223,26 @@ export class LedgerController {
     }
 
     /**
+     * Lists all synchronizers the user has access to.
+     * @returns A list of connected synchronizers.
+     */
+    async listSynchronizers(): Promise<
+        GetResponse<'/v2/state/connected-synchronizers'>
+    > {
+        if (!this.partyId) {
+            throw new Error('partyId must be set before listing synchronizers')
+        }
+
+        const params: Record<string, unknown> = {
+            query: { party: this.partyId },
+        }
+        return await this.client.get(
+            '/v2/state/connected-synchronizers',
+            params
+        )
+    }
+
+    /**
      * Retrieves the current ledger end, useful for synchronization purposes.
      * @returns The current ledger end.
      */

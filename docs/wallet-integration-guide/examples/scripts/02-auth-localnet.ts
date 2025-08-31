@@ -50,7 +50,7 @@ console.log('Connected to topology')
 const keyPair = createKeyPair()
 
 console.log('generated keypair')
-console.log(keyPair)
+
 const preparedParty = await sdk.topology?.prepareExternalPartyTopology(
     keyPair.publicKey
 )
@@ -81,13 +81,14 @@ if (preparedParty) {
 }
 
 console.log('Create ping command for party:', preparedParty!.partyId!)
+
 const createPingCommand = sdk.userLedger?.createPingCommand(
     preparedParty!.partyId!
 )
 
 console.log('Prepare command submission for ping create command')
 const prepareResponse =
-    await sdk.adminLedger?.prepareSubmission(createPingCommand)
+    await sdk.userLedger?.prepareSubmission(createPingCommand)
 
 console.log('Sign transaction hash')
 
@@ -98,7 +99,7 @@ const signedCommandHash = signTransactionHash(
 
 console.log('Submit command')
 
-sdk.adminLedger
+sdk.userLedger
     ?.executeSubmission(
         prepareResponse!,
         signedCommandHash,
@@ -114,16 +115,3 @@ sdk.adminLedger
     .catch((error) =>
         console.error('Failed to submit command with error %d', error)
     )
-
-console.log('List Token Standard Holding Transactions')
-await sdk.tokenStandard
-    ?.listHoldingTransactions()
-    .then((transactions) => {
-        console.log('Token Standard Holding Transactions:', transactions)
-    })
-    .catch((error) => {
-        console.error(
-            'Error listing token standard holding transactions:',
-            error
-        )
-    })
