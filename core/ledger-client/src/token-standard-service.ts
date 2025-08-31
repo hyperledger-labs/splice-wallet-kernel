@@ -26,6 +26,7 @@ type OffsetCheckpointUpdate = {
 type TransactionUpdate = {
     update: { Transaction: { value: JsTransaction } }
 }
+type DisclosedContract = components['schemas']['DisclosedContract']
 
 export class TokenStandardService {
     constructor(
@@ -157,7 +158,7 @@ export class TokenStandardService {
         instrumentId: string,
         transferFactoryRegistryUrl: string,
         meta?: Record<string, never>
-    ): Promise<ExerciseCommand> {
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
             const ledgerEndOffset = await this.ledgerClient.get(
                 '/v2/state/ledger-end'
@@ -235,7 +236,7 @@ export class TokenStandardService {
                 choice: 'TransferFactory_Transfer',
                 choiceArgument: choiceArgs,
             }
-            return exercise
+            return [exercise, transferFactory.choiceContext.disclosedContracts]
         } catch (e) {
             this.logger.error('Failed to execute transfer:', e)
             throw e

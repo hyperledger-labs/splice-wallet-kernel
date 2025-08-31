@@ -1,4 +1,5 @@
 import {
+    DisclosedContract,
     LedgerClient,
     TokenStandardService,
 } from '@canton-network/core-ledger-client'
@@ -22,10 +23,14 @@ export class TokenStandardController {
      *
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
-     * @param token the access token from the user, usually provided by an auth controller.
+     * @param accessToken the access token from the user, usually provided by an auth controller.
      */
-    constructor(userId: string, baseUrl: string, token: string) {
-        this.client = new LedgerClient(baseUrl, token, this.logger)
+    constructor(
+        userId: string,
+        baseUrl: string,
+        private accessToken: string
+    ) {
+        this.client = new LedgerClient(baseUrl, accessToken, this.logger)
         this.service = new TokenStandardService(this.client, this.logger)
         this.userId = userId
         return this
@@ -73,6 +78,26 @@ export class TokenStandardController {
         )
     }
 
+    async tap(validatorApi: string, amount: number): Promise<void> {
+        // http://wallet.localhost:2000/api/validator/v0/wallet/tap
+        const response = await fetch(`${validatorApi}/wallet/tap`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${this.accessToken}`,
+            },
+            body: JSON.stringify({
+                amount,
+            }),
+        })
+        if (!response.ok) {
+            this.logger.error({ response }, 'Failed to tap wallet')
+            throw new Error('Failed to tap wallet')
+        }
+        const responseData = await response.json()
+        this.logger.info(`Tapped wallet with amount ${responseData}`)
+    }
+
     async createTransfer(
         sender: string,
         receiver: string,
@@ -82,7 +107,7 @@ export class TokenStandardController {
             instrumentAdmin: string
         },
         meta?: Record<string, never>
-    ): Promise<unknown> {
+    ): Promise<[unknown, DisclosedContract[]]> {
         try {
             return await this.service.createTransfer(
                 sender,
@@ -95,6 +120,7 @@ export class TokenStandardController {
             )
         } catch (error) {
             this.logger.error({ error }, 'Failed to create transfer')
+            throw error
         }
     }
 }

@@ -67,9 +67,14 @@ export class LedgerController {
     async prepareSignAndExecuteTransaction(
         commands: unknown,
         privateKey: string,
-        commandId: string
+        commandId: string,
+        disclosedContracts?: DisclosedContract[]
     ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
-        const prepared = await this.prepareSubmission(commands, commandId)
+        const prepared = await this.prepareSubmission(
+            commands,
+            commandId,
+            disclosedContracts
+        )
 
         const signature = signTransactionHash(
             prepared.preparedTransactionHash,
