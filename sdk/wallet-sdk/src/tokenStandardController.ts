@@ -99,6 +99,14 @@ export class TokenStandardController {
         this.logger.info(`Tapped wallet with amount ${responseData}`)
     }
 
+    createTap(
+        contracts: DisclosedContract[],
+        receiver: string,
+        amount: string
+    ): unknown {
+        return this.service.createTap(contracts, receiver, amount)
+    }
+
     async createTransfer(
         sender: string,
         receiver: string,

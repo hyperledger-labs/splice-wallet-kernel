@@ -75,10 +75,10 @@ await sdk.tokenStandard
 // 127.0.0.1   scan.localhost
 sdk.tokenStandard?.setTransferFactoryRegistryUrl('http://scan.localhost:4000')
 
-await sdk.tokenStandard?.tap(
-    'http://wallet.localhost:2000/api/validator',
-    1000000
-)
+// await sdk.tokenStandard?.tap(
+//     'http://wallet.localhost:2000/api/validator',
+//     1000000
+// )
 
 const createTransfer = await sdk.tokenStandard?.createTransfer(
     party!.partyId,
@@ -95,19 +95,31 @@ const createTransfer = await sdk.tokenStandard?.createTransfer(
 if (!createTransfer) {
     throw new Error('Failed to create transfer command')
 }
-const [command, disclosedContracts] = createTransfer
+const [transferCommand, disclosedContracts] = createTransfer
 
-console.log('command is: ', command)
+const tapCommand = sdk.tokenStandard?.createTap(
+    disclosedContracts,
+    party!.partyId,
+    '2000000'
+)
 
-const exerciseCommand = {
-    ExerciseCommand: command,
-}
-// const prepared = await sdk.userLedger?.prepareSubmission([exerciseCommand], v4(), disclosedContracts)
-// console.log('Prepared command submission for token transfer command', prepared)
+console.log('command is: ', tapCommand)
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
-    [exerciseCommand],
+    [{ ExerciseCommand: tapCommand }],
     keyPair.privateKey,
     v4(),
     disclosedContracts
 )
+
+console.log('command is: ', transferCommand)
+
+const exerciseCommand =
+    // const prepared = await sdk.userLedger?.prepareSubmission([exerciseCommand], v4(), disclosedContracts)
+    // console.log('Prepared command submission for token transfer command', prepared)
+    await sdk.userLedger?.prepareSignAndExecuteTransaction(
+        [{ ExerciseCommand: transferCommand }],
+        keyPair.privateKey,
+        v4(),
+        disclosedContracts
+    )

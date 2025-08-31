@@ -177,11 +177,11 @@ export class TokenStandardService {
                     activeAtOffset: ledgerEndOffset.offset,
                 }
             )
-            if (senderHoldings.length === 0) {
-                throw new Error(
-                    "Sender has no holdings, so transfer can't be executed."
-                )
-            }
+            // if (senderHoldings.length === 0) {
+            //     throw new Error(
+            //         "Sender has no holdings, so transfer can't be executed."
+            //     )
+            // }
             const holdings = senderHoldings.map(
                 (h) => h['contractEntry']['JsActiveContract']
             )
@@ -240,6 +240,36 @@ export class TokenStandardService {
         } catch (e) {
             this.logger.error('Failed to execute transfer:', e)
             throw e
+        }
+    }
+
+    // TODO: replace with scan lookup
+    createTap(
+        contracts: DisclosedContract[],
+        receiver: string,
+        amount: string
+    ): ExerciseCommand {
+        const amuletRules = contracts.find((c) =>
+            c.templateId?.endsWith('Splice.AmuletRules:AmuletRules')
+        )
+        if (!amuletRules) {
+            throw new Error('AmuletRules contract not found')
+        }
+        const openMiningRounds = contracts.find((c) =>
+            c.templateId?.endsWith('Splice.Round:OpenMiningRound')
+        )
+        if (!openMiningRounds) {
+            throw new Error('OpenMiningRound contract not found')
+        }
+        return {
+            templateId: amuletRules.templateId!,
+            contractId: amuletRules.contractId,
+            choice: 'AmuletRules_DevNet_Tap',
+            choiceArgument: {
+                receiver: receiver,
+                amount: amount,
+                openRound: openMiningRounds.contractId,
+            },
         }
     }
 
