@@ -166,8 +166,13 @@ export class TopologyController {
             getPublicKeyFromPrivate(privateKey),
             partyHint
         )
+        const base64StringCombinedHash = Buffer.from(
+            preparedParty?.combinedHash,
+            'hex'
+        ).toString('base64')
+
         const signedHash = signTransactionHash(
-            preparedParty.combinedHash,
+            base64StringCombinedHash,
             privateKey
         )
         return await this.submitExternalPartyTopology(signedHash, preparedParty)
@@ -188,7 +193,7 @@ export const localNetTopologyDefault = (
         userId,
         userAdminToken,
         //TODO: fetch this from a localnet API endpoint
-        'global-domain::12200901488a1b3ff2d4d9ed3aac14af530811522e16f8819e56c41ec937dbcaec92'
+        'global-domain::1220b4ab8fb52056a98c919dd17fb09ff1cf2ca6dcd6ae8915e56889d545a2cc8a5e'
     )
 }
 

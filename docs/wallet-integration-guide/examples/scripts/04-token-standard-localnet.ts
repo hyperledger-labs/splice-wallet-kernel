@@ -4,6 +4,7 @@ import {
     localNetLedgerDefault,
     localNetTopologyDefault,
     localNetTokenStandardDefault,
+    createKeyPair,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
@@ -24,20 +25,24 @@ logger.info('SDK initialized')
 await sdk.connect()
 logger.info('Connected to ledger')
 
-const keypair = {
-    publicKey: 'seqoAQYT5GQZU8x4WOEgp5jad+9nVA8aaRn8G0IOoag=',
-    privateKey:
-        'oahT1plqyQxgbb27fsy6ix2881d3+aSvSRhaITGftAOx6qgBBhPkZBlTzHhY4SCnmNp372dUDxppGfwbQg6hqA==',
-}
-const partyId =
-    '1220c::1220cc4e539de29867b7afb76a605ae136577da01e52c87f613c4a99d0fe67d88617'
-const synchronizerId =
-    'global-domain::122098544e6d707a02edee40ff295792b2b526fa30fa7a284a477041eb23d1d26763'
+const keyPair = createKeyPair()
 
-logger.info('SDK initialized')
+await sdk.connectAdmin()
+await sdk.connectTopology()
 
-await sdk.connect()
-logger.info('Connected to ledger')
+const party = await sdk.topology?.prepareSignAndSubmitExternalParty(
+    keyPair.privateKey,
+    'alice'
+)
+
+logger.info('created party: ' + party!.partyId)
+sdk.userLedger?.setPartyId(party!.partyId)
+sdk.tokenStandard?.setPartyId(party!.partyId)
+
+const synchronizers = await sdk.userLedger?.listSynchronizers()
+
+// @ts-ignore
+const synchonizerId = synchronizers!.connectedSynchronizers[0].synchronizerId
 
 await sdk.userLedger
     ?.listWallets()
@@ -48,9 +53,7 @@ await sdk.userLedger
         console.error('Error listing wallets:', error)
     })
 
-sdk.userLedger?.setPartyId(partyId)
-sdk.tokenStandard?.setPartyId(partyId)
-sdk.tokenStandard?.setSynchronizerId(synchronizerId)
+sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 
 logger.info('List Token Standard Holding Transactions')
 await sdk.tokenStandard
@@ -72,10 +75,13 @@ await sdk.tokenStandard
 // 127.0.0.1   scan.localhost
 sdk.tokenStandard?.setTransferFactoryRegistryUrl('http://scan.localhost:4000')
 
-// await sdk.tokenStandard?.tap('http://wallet.localhost:2000/api/validator', 1000000)
+await sdk.tokenStandard?.tap(
+    'http://wallet.localhost:2000/api/validator',
+    1000000
+)
 
 const createTransfer = await sdk.tokenStandard?.createTransfer(
-    partyId,
+    party!.partyId,
     'marc::1220ee06a9947d6951889e3458a2e36f0421df008e750fd86187536b3d01bb63363c',
     '100',
     {
@@ -92,7 +98,6 @@ if (!createTransfer) {
 const [command, disclosedContracts] = createTransfer
 
 console.log('command is: ', command)
-sdk.userLedger?.setSynchronizerId(synchronizerId)
 
 const exerciseCommand = {
     ExerciseCommand: command,
@@ -102,7 +107,7 @@ const exerciseCommand = {
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
     [exerciseCommand],
-    keypair.privateKey,
+    keyPair.privateKey,
     v4(),
     disclosedContracts
 )
