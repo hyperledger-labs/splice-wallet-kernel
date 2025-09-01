@@ -5,9 +5,12 @@ Create an External Party (Wallet)
 
 Overview
 --------
+
 This document describes the steps required to create a new party (wallet/address) on a validator.
 Parties represent acting entites in the network and all transaction happens between one or more parties.
 To understand more about parties see `Parties section here <parties>`_.
+
+A detailed tutorial of the steps below can be seen in the External Signing Tutorial `here <https://docs.digitalasset.com/build/3.3/tutorials/app-dev/external_signing_onboarding.html>`_ using python example scripts.
 
 *This document focuses on the steps required to create an external party using the Wallet SDK.*
 
