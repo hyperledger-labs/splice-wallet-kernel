@@ -32,8 +32,7 @@ Getting more traffic
 * Anyone can burn Canton Coin to get traffic for any node.
     * You can buy your own traffic.
     * You can sign up with a service like the `Denex Gas Station <https://denex.io/gasstation>`_ to buy your traffic.
-* The validator node has automation to keep traffic topped up. As long as you keep CC in your validator party, it'll stay available. 
-See `here <https://docs.sync.global/validator_operator/validator_helm.html#configuring-automatic-traffic-purchases>`_ for how to configure automatic traffic purchases.
+* The validator node has automation to keep traffic topped up. As long as you keep CC in your validator party, it'll stay available. See `here <https://docs.sync.global/validator_operator/validator_helm.html#configuring-automatic-traffic-purchases>`_ for how to configure automatic traffic purchases.
 
 Obtaining CC
 ------------
