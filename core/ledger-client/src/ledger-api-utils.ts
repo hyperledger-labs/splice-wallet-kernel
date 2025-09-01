@@ -131,7 +131,7 @@ export function ensureInterfaceViewIsPresent(
     }
     if (!matchInterfaceIds(interfaceId, interfaceView.interfaceId)) {
         throw new Error(
-            `Not a ${interfaceId.toString()} but a ${
+            `Not a ${interfaceId} but a ${
                 interfaceView.interfaceId
             }: ${JSON.stringify(createdEvent)}`
         )

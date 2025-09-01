@@ -81,7 +81,7 @@ export class TokenStandardService {
             )
 
             const exercise: ExerciseCommand = {
-                templateId: TransferInstructionInterface.toString(),
+                templateId: TransferInstructionInterface,
                 contractId: transferInstructionCid,
                 choice: 'TransferInstruction_Accept',
                 choiceArgument: {
@@ -146,7 +146,7 @@ export class TokenStandardService {
             )
         } catch (err) {
             this.logger.error(
-                `Failed to list contracts of interface ${interfaceId.toString()}`,
+                `Failed to list contracts of interface ${interfaceId}`,
                 err
             )
             throw err
