@@ -245,10 +245,11 @@ We therefore recommend the following approach:
 * Consider keeping a pool of `k` large amount UTXOs to be able to execute up to `k`
   withdrawals at the same time.
   Run a periodic background job to manage this pool using self-transfers.
-    * From an implementation perspective, these self-transfers are a special kind of
-      withdrawal. We thus recommend to implement them using the same code path as withdrawals:
-      start with writing the self-transfer request into the Canton Integration DB and have
-      the Withdrawal Automation execute it.
+
+  * From an implementation perspective, these self-transfers are a special kind of
+    withdrawal. We thus recommend to implement them using the same code path as withdrawals:
+    start with writing the self-transfer request into the Canton Integration DB and have
+    the Withdrawal Automation execute it.
 
 
 .. _mvp-for-cn-tokens:
