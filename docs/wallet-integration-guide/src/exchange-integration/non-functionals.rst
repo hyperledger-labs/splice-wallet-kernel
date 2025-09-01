@@ -1,8 +1,7 @@
 Fault Tolerance
 ===============
 
-.. REVIEW: I'd add the architecture diagram at the top of this page - you refrence components from it so it would be good to use as a reference.
-.. What is "sketch" use below for? Is this a 'todo' to sketch a diagram or are these sections just notes?
+.. TODO: I'd add the architecture diagram at the top of this page - you refrence components from it so it would be good to use as a reference.
 
 Handling Crashes
 ^^^^^^^^^^^^^^^^
@@ -12,8 +11,7 @@ Sketch for crashes and restarts:
 * Tx History Ingestion restarts and continues from the last ingested offset.
   If none is set, then that means it never ingested any transaction.
   It starts from the beginning of the transaction history, which is always as offset ``0``.
-* withdrawal automation is stateless, so just restarts
-.. REVIEW: Small grammar issue - need a capital W
+* Withdrawal automation is stateless, so just restarts
 
 Handling RPC Errors
 ^^^^^^^^^^^^^^^^^^^
@@ -26,12 +24,11 @@ Sketch for retries:
   A withdrawal is considered definitely failed once its target record time ``trecTgt`` is below
   the last ingested record time.
 
-   * Note: Canton participant nodes regularly (every 30' by default) requesting time-proofs from the sequencer
+   * Note: Canton participant nodes regularly (every 30' by default) request time-proofs from the sequencer
      to ensure that they observe time progressing even if there's no activity.
      They expose this information to Ledger API clients
      via ``OffsetCheckpoints`` (`docs <https://docs.digitalasset-staging.com/build/3.3/reference/lapi-proto-docs.html#com-daml-ledger-api-v2-offsetcheckpoint>`_).
 
-.. REVIEW: Small grammar issue - "...regularly (every 30' by default) request"
 
 .. _reading-from-canton-coin-scan:
 
@@ -43,13 +40,11 @@ Reading from Canton Coin Scan
 
 Sketch wrt reading from Canton Coin Scan: choose one of
 
-  * read from validator proxy or
+  * read from validator proxy (recommended) or
   * choose a random canton coin scan instance on every retry
   * read from multiple canton coin scan instances in parallel and compare their responses (this is what validator proxy does for you)
 
 Note: the same approach should be used for other decentralized tokens.
-
-.. REVIEW: Which one would I choose for which reasons?
 
 
 Backup and Restore of the Canton Integration DB

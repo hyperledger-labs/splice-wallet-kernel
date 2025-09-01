@@ -1,6 +1,7 @@
 Validator Node Operations
 =========================
-.. REVIEW: This page should be a general page for wallet providers too, the only exchange specific info is the party name.
+
+
 Reward Minting and Traffic Funding
 ----------------------------------
 
