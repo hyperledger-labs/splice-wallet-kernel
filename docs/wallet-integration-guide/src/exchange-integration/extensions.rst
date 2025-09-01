@@ -49,6 +49,17 @@ Sketch:
 * note history tx parser should deal with this properly and just ignore the extra wrapper. So no further change required
 
 
+.. _share-rewards-with-customers:
+
+Sharing App Rewards with your Customers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sketch:
+
+* use the benefeciary feature of app rewards to share some of the rewards with your customers
+
+  * see https://hyperledger-labs.github.io/splice/background/tokenomics/feat_app_act_marker_tokenomics.html#creating-a-featured-application-activity-marker
+
 
 Sharding the Treasury
 ~~~~~~~~~~~~~~~~~~~~~

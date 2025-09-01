@@ -1,6 +1,7 @@
 Validator Node Operations
 =========================
 
+
 Reward Minting and Traffic Funding
 ----------------------------------
 

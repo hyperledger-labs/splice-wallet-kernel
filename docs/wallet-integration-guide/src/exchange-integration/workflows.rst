@@ -36,8 +36,8 @@ MVP for Canton Coin
 
 .. note::
 
-   The diagrams in the sections below specialize the diagram from the :ref:`information-flows`
-   section to the case for Canton Coin (CC). The specializations are:
+   The diagrams in the sections below adapt the diagram from the :ref:`information-flows`
+   section to the case for Canton Coin (CC). The adaptations are:
 
    * The role of the ``adminParty`` is taken over by the ``dsoParty``, which is the token admin for CC.
      The ``dsoParty`` is a decentralized party that is hosted on the validator
@@ -47,7 +47,6 @@ MVP for Canton Coin
      that every SV operator runs. They serve the Registry API for CC.
      See :ref:`reading-from-canton-coin-scan` for more information about
      how to reliably read from multiple Canton Coin Scan instances.
-
 
 .. _one-step-deposit-workflow:
 
@@ -60,9 +59,9 @@ MVP for Canton Coin
 
 Assumptions:
 
--  Exchange set up a CC ``TransferPreapproval`` for their
+-  The Exchange has set up a CC ``TransferPreapproval`` for their
    ``treasuryParty`` as explained in :ref:`setup-treasury-party`.
--  Exchange associated deposit account “abc123” with Customer in
+-  The Exchange has associated deposit account “abc123” with Customer in
    the Canton Integration DB.
 
 Example flow:
@@ -141,10 +140,9 @@ Example flow:
    * The CC ``Holding`` UTXOs ``coids`` to use to fund the transfer to
      ``customerParty`` for ``wid123``. See :ref:`utxo-management` for more information.
    * The target record time ``trecTgt`` on the Global Synchronizer
-     until which the transaction for the CC transfer must be committed
-     using the ``coids`` UTXOs for funding ``wid123``. The ``coids``
-     are considered to be reserved to funding this transfer until
-     ``trecTgt`` has passed.
+     until which the transaction for the CC transfer must be committed.
+     The ``coids`` are considered to be reserved for funding the transfer
+     for withdrawal ``wid123`` until ``trecTgt`` has passed.
 
 3. Withdrawal Automation observes the pending withdrawal ``wid123`` and
    commits the corresponding CC transfer as follows.
@@ -290,7 +288,7 @@ Multi-Step Deposit Workflow
 Example flow: deposit offer and acceptance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The flow uses essentially the same initial three steps as
+The flow uses essentially the same initial four steps as
 the :ref:`one-step-deposit-workflow` above.
 We list them in full for completeness.
 
@@ -587,10 +585,6 @@ that the transfer was offered, but rejected by them.
   (`code <https://github.com/hyperledger-labs/splice/blob/3fb1eb1c3bcde53e157be13cd497fdb439835d38/token-standard/splice-api-token-transfer-instruction-v1/daml/Splice/Api/Token/TransferInstructionV1.daml#L108-L168>`_)
   and its ``TransferInstructionResult.output`` value clearly tells whether the instruction
   completed with a successful transfer, failed, or is still pending an action by one of the stakeholders.
-
-
-
-
 
 
 .. _token-onboarding:
