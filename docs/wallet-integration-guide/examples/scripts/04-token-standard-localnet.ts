@@ -25,19 +25,25 @@ logger.info('SDK initialized')
 await sdk.connect()
 logger.info('Connected to ledger')
 
-const keyPair = createKeyPair()
+const keyPairSender = createKeyPair()
+const keyPairReceiver = createKeyPair()
 
 await sdk.connectAdmin()
 await sdk.connectTopology()
 
-const party = await sdk.topology?.prepareSignAndSubmitExternalParty(
-    keyPair.privateKey,
+const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
+    keyPairSender.privateKey,
     'alice'
 )
+logger.info(`Created party: ${sender!.partyId}`)
+sdk.userLedger?.setPartyId(sender!.partyId)
+sdk.tokenStandard?.setPartyId(sender!.partyId)
 
-logger.info('created party: ' + party!.partyId)
-sdk.userLedger?.setPartyId(party!.partyId)
-sdk.tokenStandard?.setPartyId(party!.partyId)
+const receiver = await sdk.topology?.prepareSignAndSubmitExternalParty(
+    keyPairReceiver.privateKey,
+    'bob'
+)
+logger.info(`Created party: ${receiver!.partyId}`)
 
 const synchronizers = await sdk.userLedger?.listSynchronizers()
 
@@ -60,7 +66,7 @@ sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 sdk.tokenStandard?.setTransferFactoryRegistryUrl('http://scan.localhost:4000')
 
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
-    party!.partyId,
+    sender!.partyId,
     '2000000',
     {
         instrumentId: 'Amulet',
@@ -71,7 +77,7 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
     [{ ExerciseCommand: tapCommand }],
-    keyPair.privateKey,
+    keyPairSender.privateKey,
     v4(),
     disclosedContracts
 )
@@ -96,8 +102,8 @@ logger.info('Creating transfer transaction')
 
 const [transferCommand, disclosedContracts2] =
     await sdk.tokenStandard!.createTransfer(
-        party!.partyId,
-        'marc::1220ee06a9947d6951889e3458a2e36f0421df008e750fd86187536b3d01bb63363c',
+        sender!.partyId,
+        receiver!.partyId,
         '100',
         {
             instrumentId: 'Amulet',
@@ -109,7 +115,7 @@ const [transferCommand, disclosedContracts2] =
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
     [{ ExerciseCommand: transferCommand }],
-    keyPair.privateKey,
+    keyPairSender.privateKey,
     v4(),
     disclosedContracts2
 )
