@@ -141,10 +141,13 @@ We explain them below.
 .. image:: images/information_flow_diagram.png
   :alt: Information flow diagram
 
+.. REVIEW: This comes across as rather opinionated, positioning a DB as the only API between existing code and new Canton-specific code.
+
 There are three main information flows:
 
 #. **Tx History Ingestion**: ingests the transactions
    affecting the ``treasuryParty`` from the Exchange Validator Node into the Canton Integration DB
+   .. REVIEW: Change API according to JSON API team's recommendation.
    The transaction data is read using the ``/v2/updates/trees``
    `Ledger API endpoint <https://github.com/digital-asset/canton/blob/92339b6f98faaecbe3adbfb71293ed9cbfb30204/community/ledger/ledger-json-api/src/test/resources/json-api-docs/openapi.yaml#L845>`_
    (Arrow 1.a).
