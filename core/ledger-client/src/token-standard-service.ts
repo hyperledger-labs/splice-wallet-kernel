@@ -8,9 +8,12 @@ import {
     TransferInstructionInterface,
 } from './constants.js'
 import { components } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
-import { filtersByParty } from './ledger-api-utils.js'
+import {
+    ensureInterfaceViewIsPresent,
+    filtersByParty,
+} from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
-import { renderTransaction } from './txparse/types.js'
+import { PrettyContract, renderTransaction } from './txparse/types.js'
 
 import type { PrettyTransactions, Transaction } from './txparse/types.js'
 
@@ -20,11 +23,20 @@ type JsGetActiveContractsResponse =
 type JsGetUpdatesResponse = components['schemas']['JsGetUpdatesResponse']
 type OffsetCheckpoint2 = components['schemas']['OffsetCheckpoint2']
 type JsTransaction = components['schemas']['JsTransaction']
+type ViewValue = components['schemas']['JsInterfaceView']['viewValue']
+
 type OffsetCheckpointUpdate = {
     update: { OffsetCheckpoint: OffsetCheckpoint2 }
 }
 type TransactionUpdate = {
     update: { Transaction: { value: JsTransaction } }
+}
+type JsActiveContractEntryResponse = JsGetActiveContractsResponse & {
+    contractEntry: {
+        JsActiveContract: {
+            createdEvent: components['schemas']['CreatedEvent']
+        }
+    }
 }
 
 interface CreateTransferOptions {
@@ -88,17 +100,18 @@ export class TokenStandardService {
         }
     }
 
-    async listContractsByInterface(
+    // <T> is shape of viewValue related to queried interface.
+    // i.e. when querying by TransferInstruction interfaceId, <T> would be TransferInstructionView from daml codegen
+    async listContractsByInterface<T = ViewValue>(
         interfaceId: InterfaceId,
         partyId: string
-    ): Promise<JsGetActiveContractsResponse[]> {
+    ): Promise<PrettyContract<T>[]> {
         try {
             const ledgerEnd = await this.ledgerClient.get(
                 '/v2/state/ledger-end'
             )
-            const responses = await this.ledgerClient.post(
-                '/v2/state/active-contracts',
-                {
+            const acsResponses: JsGetActiveContractsResponse[] =
+                await this.ledgerClient.post('/v2/state/active-contracts', {
                     filter: {
                         filtersByParty: filtersByParty(
                             partyId,
@@ -108,9 +121,27 @@ export class TokenStandardService {
                     },
                     verbose: false,
                     activeAtOffset: ledgerEnd.offset,
-                }
+                })
+
+            /*  This filters out responses with entries of:
+                - JsEmpty
+                - JsIncompleteAssigned
+                - JsIncompleteUnassigned
+                while leaving JsActiveContract
+                Those removed entries should not affect returned contracts output, nor trigger error
+             */
+            const isActiveContractEntry = (
+                acsResponse: JsGetActiveContractsResponse
+            ): acsResponse is JsActiveContractEntryResponse =>
+                !!acsResponse.contractEntry.JsActiveContract?.createdEvent
+
+            const activeContractEntries = acsResponses.filter(
+                isActiveContractEntry
             )
-            return responses
+            return activeContractEntries.map(
+                (response: JsActiveContractEntryResponse) =>
+                    this.toPrettyContract<T>(interfaceId, response)
+            )
         } catch (err) {
             this.logger.error(
                 `Failed to list contracts of interface ${interfaceId.toString()}`,
@@ -299,6 +330,20 @@ export class TokenStandardService {
             transactions: transactions
                 .filter((tx) => tx.events.length > 0)
                 .map(renderTransaction),
+        }
+    }
+
+    // Make them nicer to show by excluding stuff useless to users such as the createdEventBlob
+    private toPrettyContract<T>(
+        interfaceId: InterfaceId,
+        response: JsActiveContractEntryResponse
+    ): PrettyContract<T> {
+        const createdEvent =
+            response.contractEntry.JsActiveContract.createdEvent
+        return {
+            contractId: createdEvent.contractId,
+            payload: ensureInterfaceViewIsPresent(createdEvent, interfaceId)
+                .viewValue as T,
         }
     }
 }
