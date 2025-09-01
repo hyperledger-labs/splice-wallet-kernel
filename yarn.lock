@@ -8319,6 +8319,8 @@ __metadata:
   dependencies:
     "@canton-network/wallet-sdk": "workspace:^"
     "@types/node": "npm:^24.3.0"
+    pino: "npm:9.7.0"
+    pino-pretty: "npm:^13.0.0"
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.8.3"
     uuid: "npm:^11.1.0"
