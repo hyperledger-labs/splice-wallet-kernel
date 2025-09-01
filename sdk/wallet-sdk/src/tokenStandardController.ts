@@ -1,4 +1,5 @@
 import {
+    DisclosedContract,
     LedgerClient,
     TokenStandardService,
 } from '@canton-network/core-ledger-client'
@@ -14,25 +15,28 @@ import {
  * This controller requires a userId and token.
  */
 export class TokenStandardController {
-    private logger = pino({ name: 'TokenStandardController', level: 'debug' })
+    private logger = pino({ name: 'TokenStandardController', level: 'info' })
     private client: LedgerClient
     private service: TokenStandardService
     private userId: string
-    private partyId: string
-    private synchronizerId: string
+    private partyId: string = ''
+    private synchronizerId: string = ''
+    private transferFactoryRegistryUrl: string = ''
 
     /** Creates a new instance of the LedgerController.
      *
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
-     * @param token the access token from the user, usually provided by an auth controller.
+     * @param accessToken the access token from the user, usually provided by an auth controller.
      */
-    constructor(userId: string, baseUrl: string, token: string) {
-        this.client = new LedgerClient(baseUrl, token, this.logger)
+    constructor(
+        userId: string,
+        baseUrl: string,
+        private accessToken: string
+    ) {
+        this.client = new LedgerClient(baseUrl, accessToken, this.logger)
         this.service = new TokenStandardService(this.client, this.logger)
         this.userId = userId
-        this.partyId = ''
-        this.synchronizerId = ''
         return this
     }
 
@@ -51,6 +55,17 @@ export class TokenStandardController {
      */
     setSynchronizerId(synchronizerId: string): TokenStandardController {
         this.synchronizerId = synchronizerId
+        return this
+    }
+
+    /**
+     * Sets the transferFactoryRegistryUrl that the TokenStandardController will use for requests.
+     * @param transferFactoryRegistryUrl
+     */
+    setTransferFactoryRegistryUrl(
+        transferFactoryRegistryUrl: string
+    ): TokenStandardController {
+        this.transferFactoryRegistryUrl = transferFactoryRegistryUrl
         return this
     }
 
@@ -80,6 +95,49 @@ export class TokenStandardController {
             interfaceId,
             this.partyId
         )
+    }
+
+    async createTap(
+        receiver: string,
+        amount: string,
+        instrument: {
+            instrumentId: string
+            instrumentAdmin: string
+        }
+    ): Promise<[unknown, DisclosedContract[]]> {
+        return this.service.createTap(
+            receiver,
+            amount,
+            instrument.instrumentAdmin,
+            instrument.instrumentId,
+            this.transferFactoryRegistryUrl
+        )
+    }
+
+    async createTransfer(
+        sender: string,
+        receiver: string,
+        amount: string,
+        instrument: {
+            instrumentId: string
+            instrumentAdmin: string
+        },
+        meta?: Record<string, never>
+    ): Promise<[unknown, DisclosedContract[]]> {
+        try {
+            return await this.service.createTransfer(
+                sender,
+                receiver,
+                amount,
+                instrument.instrumentAdmin,
+                instrument.instrumentId,
+                this.transferFactoryRegistryUrl,
+                meta
+            )
+        } catch (error) {
+            this.logger.error({ error }, 'Failed to create transfer')
+            throw error
+        }
     }
 }
 

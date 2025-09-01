@@ -166,8 +166,13 @@ export class TopologyController {
             getPublicKeyFromPrivate(privateKey),
             partyHint
         )
+        const base64StringCombinedHash = Buffer.from(
+            preparedParty?.combinedHash,
+            'hex'
+        ).toString('base64')
+
         const signedHash = signTransactionHash(
-            preparedParty.combinedHash,
+            base64StringCombinedHash,
             privateKey
         )
         return await this.submitExternalPartyTopology(signedHash, preparedParty)
