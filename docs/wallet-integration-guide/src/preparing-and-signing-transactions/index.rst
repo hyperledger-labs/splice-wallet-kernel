@@ -48,8 +48,8 @@ See `here <https://github.com/global-synchronizer-foundation/cips/blob/main/cip-
 
 The general process for forming a transaction is:
 
-1. Call your own node’s RPC to get the current ledger end (think “latest block”)
-2. Call your own node’s RPC to get relevant private data at ledger end (e.g. wallet’s holdings)
+1. Call your own node's RPC to get the current ledger end (think “latest block”)
+2. Call your own node's RPC to get relevant private data at ledger end (e.g. wallet's holdings)
 3. Call app/token specific APIs to get context information (e.g. mining round contracts)
 4. Assemble the data into the full command using the OpenAPI/JSON or gRPC schemas.
 
@@ -150,12 +150,23 @@ You can then compare the `hash` with the `transaction.preparedTransactionHash` t
 
 Signing the Transaction
 -----------------------
-Once the transaction is validated it can be signed using the private key of the party.
-The Wallet SDK has built in support for signing:
+Once the transaction is validated, the hash retrieved from the prepare step can be signed using the private key of the party.
 
-.. literalinclude:: ../../examples/snippets/sign-transaction-hash.ts
-    :language: typescript
-    :dedent:
+Below shows an example in the Wallet SDK and using cURL commands:
+
+.. tabs::
+
+    .. tab:: SDK
+
+        .. literalinclude:: ../../examples/snippets/sign-transaction-hash.ts
+            :language: typescript
+            :dedent:
+
+    .. tab:: cURL
+
+        .. literalinclude:: ../../examples/bash/sign-transaction-hash.sh
+            :language: bash
+            :dedent:
 
 
 Submitting the Transaction
@@ -165,9 +176,20 @@ You can observe completions by seeing the committed transactions.
 If they don't appear on your ledger, you are guaranteed some response, and you can keep retrying; signed transactions are idempotent.
 Finality usually takes 3-10s.
 
-.. literalinclude:: ../../examples/snippets/execute-transaction.ts
-    :language: typescript
-    :dedent:
+.. tabs::
+
+    .. tab:: SDK
+
+        .. literalinclude:: ../../examples/snippets/execute-transaction.ts
+            :language: typescript
+            :dedent:
+
+    .. tab:: cURL
+
+        .. literalinclude:: ../../examples/bash/execute-transaction.sh
+            :language: bash
+            :dedent:
+
 
 .. Link to this afterwards - https://docs.digitalasset.com/operate/3.3/howtos/troubleshoot/troubleshooting_guide.html#key-knowledge
 
