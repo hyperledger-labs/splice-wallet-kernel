@@ -24,7 +24,7 @@ export class LedgerController {
     private userId: string
     private partyId: string
     private synchronizerId: string
-    private logger = pino({ name: 'LedgerController', level: 'debug' })
+    private logger = pino({ name: 'LedgerController', level: 'info' })
 
     /** Creates a new instance of the LedgerController.
      *

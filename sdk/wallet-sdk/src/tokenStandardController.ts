@@ -11,7 +11,7 @@ import { PrettyTransactions } from '@canton-network/core-ledger-client'
  * This controller requires a userId and token.
  */
 export class TokenStandardController {
-    private logger = pino({ name: 'TokenStandardController', level: 'debug' })
+    private logger = pino({ name: 'TokenStandardController', level: 'info' })
     private client: LedgerClient
     private service: TokenStandardService
     private userId: string
@@ -78,33 +78,21 @@ export class TokenStandardController {
         )
     }
 
-    async tap(validatorApi: string, amount: number): Promise<void> {
-        // http://wallet.localhost:2000/api/validator/v0/wallet/tap
-        const response = await fetch(`${validatorApi}/v0/wallet/tap`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${this.accessToken}`,
-            },
-            body: JSON.stringify({
-                amount: amount.toString(),
-            }),
-        })
-        if (!response.ok) {
-            const s = await response.text()
-            this.logger.error({ s }, 'Failed to tap wallet')
-            throw new Error('Failed to tap wallet')
-        }
-        const responseData = await response.json()
-        this.logger.info(`Tapped wallet with amount ${responseData}`)
-    }
-
-    createTap(
-        contracts: DisclosedContract[],
+    async createTap(
         receiver: string,
-        amount: string
-    ): unknown {
-        return this.service.createTap(contracts, receiver, amount)
+        amount: string,
+        instrument: {
+            instrumentId: string
+            instrumentAdmin: string
+        }
+    ): Promise<[unknown, DisclosedContract[]]> {
+        return this.service.createTap(
+            receiver,
+            amount,
+            instrument.instrumentAdmin,
+            instrument.instrumentId,
+            this.transferFactoryRegistryUrl
+        )
     }
 
     async createTransfer(

@@ -211,7 +211,7 @@ export class TokenStandardService {
                 },
             }
 
-            this.logger.info('Creating transfer factory...')
+            this.logger.debug('Creating transfer factory...')
 
             const transferFactory = await this.tokenStandardClient(
                 transferFactoryRegistryUrl
@@ -219,7 +219,7 @@ export class TokenStandardService {
                 choiceArguments: choiceArgs as unknown as Record<string, never>,
             })
 
-            this.logger.info('Transfer factory created:', transferFactory)
+            this.logger.debug(transferFactory, 'Transfer factory created')
 
             choiceArgs.extraArgs.context = {
                 ...transferFactory.choiceContext.choiceContextData,
@@ -243,34 +243,70 @@ export class TokenStandardService {
         }
     }
 
-    // TODO: replace with scan lookup
-    createTap(
-        contracts: DisclosedContract[],
+    async createTap(
         receiver: string,
-        amount: string
-    ): ExerciseCommand {
-        const amuletRules = contracts.find((c) =>
+        amount: string,
+        instrumentAdmin: string, // TODO (#907): replace with registry call
+        instrumentId: string,
+        transferFactoryRegistryUrl: string
+    ): Promise<[unknown, DisclosedContract[]]> {
+        // TODO: replace with correct scan lookup
+        const now = new Date()
+        const tomorrow = new Date(now)
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        const choiceArgs = {
+            expectedAdmin: instrumentAdmin,
+            transfer: {
+                sender: instrumentAdmin,
+                receiver,
+                amount,
+                instrumentId: { admin: instrumentAdmin, id: instrumentId },
+                lock: null,
+                requestedAt: now.toISOString(),
+                executeBefore: tomorrow.toISOString(),
+                inputHoldingCids: [],
+                meta: { values: {} },
+            },
+            extraArgs: {
+                context: { values: {} },
+                meta: { values: {} },
+            },
+        }
+
+        const transferFactory = await this.tokenStandardClient(
+            transferFactoryRegistryUrl
+        ).post('/registry/transfer-instruction/v1/transfer-factory', {
+            choiceArguments: choiceArgs as unknown as Record<string, never>,
+        })
+
+        const disclosedContracts =
+            transferFactory.choiceContext.disclosedContracts
+
+        const amuletRules = disclosedContracts.find((c) =>
             c.templateId?.endsWith('Splice.AmuletRules:AmuletRules')
         )
         if (!amuletRules) {
             throw new Error('AmuletRules contract not found')
         }
-        const openMiningRounds = contracts.find((c) =>
+        const openMiningRounds = disclosedContracts.find((c) =>
             c.templateId?.endsWith('Splice.Round:OpenMiningRound')
         )
         if (!openMiningRounds) {
             throw new Error('OpenMiningRound contract not found')
         }
-        return {
-            templateId: amuletRules.templateId!,
-            contractId: amuletRules.contractId,
-            choice: 'AmuletRules_DevNet_Tap',
-            choiceArgument: {
-                receiver: receiver,
-                amount: amount,
-                openRound: openMiningRounds.contractId,
+        return [
+            {
+                templateId: amuletRules.templateId!,
+                contractId: amuletRules.contractId,
+                choice: 'AmuletRules_DevNet_Tap',
+                choiceArgument: {
+                    receiver: receiver,
+                    amount: amount,
+                    openRound: openMiningRounds.contractId,
+                },
             },
-        }
+            disclosedContracts,
+        ]
     }
 
     private async toPrettyTransactions(
