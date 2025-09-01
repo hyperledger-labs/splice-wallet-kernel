@@ -177,11 +177,11 @@ export class TokenStandardService {
                     activeAtOffset: ledgerEndOffset.offset,
                 }
             )
-            // if (senderHoldings.length === 0) {
-            //     throw new Error(
-            //         "Sender has no holdings, so transfer can't be executed."
-            //     )
-            // }
+            if (senderHoldings.length === 0) {
+                throw new Error(
+                    "Sender has no holdings, so transfer can't be executed."
+                )
+            }
             const holdings = senderHoldings.map(
                 (h) => h['contractEntry']['JsActiveContract']
             )
