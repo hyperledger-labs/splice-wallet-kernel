@@ -215,7 +215,7 @@ Executing a withdrawal requires selecting ``Holding`` UTXOs to fund the withdraw
 as described for example in :ref:`one-step-withdrawal-workflow`. You likely already have a UTXO management strategy in place for your existing UTXO-chain integrations. Here some considerations to take into account when adapting your strategy to work with Canton:
 
 * Canton Coin charges a small holding fee of about $1 per year for each ``Holding`` UTXO to allow
-  archiving `dust coins <https://www.investopedia.com/terms/b/bitcoin-dust.asp>`_ once their holding fee surpasses their value.
+  archiving `dust coins <https://www.investopedia.com/terms/b/bitcoin-dust.asp>`__ once their holding fee surpasses their value.
 * Canton Coin limits the number of UTXOs for a single transfer to 100 ``Holding`` UTXOs to
   avoid large transactions that are expensive to process.
 * Canton Coin transactions also merge all input ``Holding`` UTXOs and
@@ -256,8 +256,8 @@ The key changes required are:
 
 * Change Tx History Ingestion to also ingest the ``TransferInstruction`` UTXOs, which are
   used by the Canton Network Token Standard to represent in-progress transfers (see
-  `docs <https://docs.dev.sync.global/app_dev/token_standard/index.html#transfer-instruction>`_,
-  `code <https://github.com/hyperledger-labs/splice/blob/2997dd9e55e5d7901e3f475bc10c3dc6ce95ab0c/token-standard/splice-api-token-transfer-instruction-v1/daml/Splice/Api/Token/TransferInstructionV1.daml#L93-L105>`_).
+  `docs <https://docs.dev.sync.global/app_dev/token_standard/index.html#transfer-instruction>`__,
+  `code <https://github.com/hyperledger-labs/splice/blob/2997dd9e55e5d7901e3f475bc10c3dc6ce95ab0c/token-standard/splice-api-token-transfer-instruction-v1/daml/Splice/Api/Token/TransferInstructionV1.daml#L93-L105>`__).
 * Adjust the Exchange UI to show the status of in-progress transfers.
 * Adjust the user funds tracking done as part of Tx History Ingestion to credit funds back to the user if they reject a withdrawal transfer.
   Consider deducting a fee for the failed withdrawal.
@@ -582,7 +582,7 @@ that the transfer was offered, but rejected by them.
   In most cases a ``TransferInstruction`` will be completed in a single extra step:
   the receiver either accepts or rejects the transfer, or the sender withdraws it.
   Each of these steps will manifest as one of the choices on the ``TransferInstruction`` interface
-  (`code <https://github.com/hyperledger-labs/splice/blob/3fb1eb1c3bcde53e157be13cd497fdb439835d38/token-standard/splice-api-token-transfer-instruction-v1/daml/Splice/Api/Token/TransferInstructionV1.daml#L108-L168>`_)
+  (`code <https://github.com/hyperledger-labs/splice/blob/3fb1eb1c3bcde53e157be13cd497fdb439835d38/token-standard/splice-api-token-transfer-instruction-v1/daml/Splice/Api/Token/TransferInstructionV1.daml#L108-L168>`__)
   and its ``TransferInstructionResult.output`` value clearly tells whether the instruction
   completed with a successful transfer, failed, or is still pending an action by one of the stakeholders.
 
@@ -616,10 +616,10 @@ Consider using these test instances as part of your testing strategy.
 For example, Canton Coin also exist on TestNet and DevNet
 with different ``dsoParty`` ids.
 You can retrieve the ``dsoParty`` id for each network using the
-`CC Scan API <https://docs.dev.sync.global/app_dev/scan_api/index.html#app-dev-scan-api>`_
-served from the `SV nodes of that network <https://sync.global/sv-network/>`_:
+`CC Scan API <https://docs.dev.sync.global/app_dev/scan_api/index.html#app-dev-scan-api>`__
+served from the `SV nodes of that network <https://sync.global/sv-network/>`__:
 
-* Use `/v0/dso <https://docs.dev.sync.global/app_dev/scan_api/scan_openapi.html#get--v0-dso>`_
+* Use `/v0/dso <https://docs.dev.sync.global/app_dev/scan_api/scan_openapi.html#get--v0-dso>`__
   to query the ``dsoParty`` for the network you are connected to.
-* Use `/v0/splice-instance-names <https://docs.dev.sync.global/app_dev/scan_api/scan_openapi.html#get--v0-splice-instance-names>`_
+* Use `/v0/splice-instance-names <https://docs.dev.sync.global/app_dev/scan_api/scan_openapi.html#get--v0-splice-instance-names>`__
   to query the network name (DevNet, TestNet, or MainNet).

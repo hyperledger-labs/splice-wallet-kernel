@@ -125,7 +125,7 @@ in the context of the Canton integration:
   which is why access is provided to it off-ledger. The
   OpenAPI specification of the Registry API is
   maintained as part the
-  `Canton Network Token Standard definitions <https://github.com/hyperledger-labs/splice/tree/main/token-standard>`_ in the Splice repository.
+  `Canton Network Token Standard definitions <https://github.com/hyperledger-labs/splice/tree/main/token-standard>`__ in the Splice repository.
 
 
 .. _information-flows:
@@ -147,8 +147,8 @@ There are three main information flows:
 #. **Tx History Ingestion**: ingests the transactions
    affecting the ``treasuryParty`` from the Exchange Validator Node into the Canton Integration DB.
    Arrow 1.a represents the transaction data being read using the ``/v2/updates/flats``
-   Ledger API endpoint using either `plain HTTP <https://github.com/digital-asset/canton/blob/92339b6f98faaecbe3adbfb71293ed9cbfb30204/community/ledger/ledger-json-api/src/test/resources/json-api-docs/openapi.yaml#L786>`_
-   or `websockets <https://github.com/digital-asset/canton/blob/92339b6f98faaecbe3adbfb71293ed9cbfb30204/community/ledger/ledger-json-api/src/test/resources/json-api-docs/asyncapi.yaml#L36>`_.
+   Ledger API endpoint using either `plain HTTP <https://github.com/digital-asset/canton/blob/92339b6f98faaecbe3adbfb71293ed9cbfb30204/community/ledger/ledger-json-api/src/test/resources/json-api-docs/openapi.yaml#L786>`__
+   or `websockets <https://github.com/digital-asset/canton/blob/92339b6f98faaecbe3adbfb71293ed9cbfb30204/community/ledger/ledger-json-api/src/test/resources/json-api-docs/asyncapi.yaml#L36>`__.
    It is parsed by the Tx History Ingestion service to update the status of
    funds, deposits, and withdrawals in the Canton Integration DB (Arrow 1.b).
 
