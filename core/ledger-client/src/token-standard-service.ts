@@ -13,7 +13,11 @@ import {
     filtersByParty,
 } from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
-import { PrettyContract, renderTransaction } from './txparse/types.js'
+import {
+    PrettyContract,
+    renderTransaction,
+    ViewValue,
+} from './txparse/types.js'
 
 import type { PrettyTransactions, Transaction } from './txparse/types.js'
 
@@ -23,7 +27,6 @@ type JsGetActiveContractsResponse =
 type JsGetUpdatesResponse = components['schemas']['JsGetUpdatesResponse']
 type OffsetCheckpoint2 = components['schemas']['OffsetCheckpoint2']
 type JsTransaction = components['schemas']['JsTransaction']
-type ViewValue = components['schemas']['JsInterfaceView']['viewValue']
 
 type OffsetCheckpointUpdate = {
     update: { OffsetCheckpoint: OffsetCheckpoint2 }

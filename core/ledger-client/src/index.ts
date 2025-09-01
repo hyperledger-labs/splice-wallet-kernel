@@ -41,6 +41,8 @@ export type {
     TransferInstructionView,
     TokenStandardChoice,
     PrettyTransactions,
+    PrettyContract,
+    ViewValue,
 } from './txparse/types.js'
 export {
     DisclosedContract,

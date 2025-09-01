@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
 
-type ViewValue = components['schemas']['JsInterfaceView']['viewValue'] // unknown | undefined
+export type ViewValue = components['schemas']['JsInterfaceView']['viewValue'] // unknown | undefined
 
 export interface Transaction {
     updateId: string
