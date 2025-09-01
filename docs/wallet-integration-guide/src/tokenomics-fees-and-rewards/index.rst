@@ -23,7 +23,7 @@ Traffic
 * If your node runs out of traffic it is unable to transact. It'll recover by itself thanks to the free trickle rate. However, you can buy more traffic. See the next section.
 
 
-Geeting more traffic
+Getting more traffic
 --------------------
 * Traffic is obtained by burning Canton Coin and it is always pre-purchased.
 * The conversion Canton Coin <> Bytes can be derived from on-chain parameters.
