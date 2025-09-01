@@ -27,7 +27,7 @@ Sketch for retries:
    * Note: Canton participant nodes regularly (every 30' by default) request time-proofs from the sequencer
      to ensure that they observe time progressing even if there's no activity.
      They expose this information to Ledger API clients
-     via ``OffsetCheckpoints`` (`docs <https://docs.digitalasset-staging.com/build/3.3/reference/lapi-proto-docs.html#com-daml-ledger-api-v2-offsetcheckpoint>`_).
+     via ``OffsetCheckpoints`` (`docs <https://docs.digitalasset-staging.com/build/3.3/reference/lapi-proto-docs.html#com-daml-ledger-api-v2-offsetcheckpoint>`__).
 
 
 .. _reading-from-canton-coin-scan:
