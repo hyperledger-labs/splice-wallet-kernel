@@ -15,6 +15,7 @@ import {
 import {
     BurnedMetaKey,
     HoldingInterface,
+    matchInterfaceIds,
     ReasonMetaKey,
     SenderMetaKey,
     TransferInstructionInterface,
@@ -616,7 +617,10 @@ export class TransactionParser {
                 const interfaceView = getInterfaceView(createdEvent)
                 if (
                     interfaceView &&
-                    HoldingInterface.matches(interfaceView.interfaceId)
+                    matchInterfaceIds(
+                        HoldingInterface,
+                        interfaceView.interfaceId
+                    )
                 ) {
                     const holdingView = interfaceView.viewValue as Holding
                     mutatingResult.creates.push({

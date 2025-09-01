@@ -3,7 +3,6 @@ import { Logger } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
 import {
     HoldingInterface,
-    InterfaceId,
     TokenStandardTransactionInterfaces,
     TransferInstructionInterface,
 } from './constants.js'
@@ -106,7 +105,7 @@ export class TokenStandardService {
     // <T> is shape of viewValue related to queried interface.
     // i.e. when querying by TransferInstruction interfaceId, <T> would be TransferInstructionView from daml codegen
     async listContractsByInterface<T = ViewValue>(
-        interfaceId: InterfaceId,
+        interfaceId: string,
         partyId: string
     ): Promise<PrettyContract<T>[]> {
         try {
@@ -338,7 +337,7 @@ export class TokenStandardService {
 
     // Make them nicer to show by excluding stuff useless to users such as the createdEventBlob
     private toPrettyContract<T>(
-        interfaceId: InterfaceId,
+        interfaceId: string,
         response: JsActiveContractEntryResponse
     ): PrettyContract<T> {
         const createdEvent =
