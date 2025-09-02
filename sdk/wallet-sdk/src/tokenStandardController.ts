@@ -150,7 +150,7 @@ export class TokenStandardController {
 
     async acceptTransferInstruction(
         transferInstructionCid: string
-    ): Promise<[unknown, DisclosedContract[]]> {
+    ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
         try {
             return await this.service.createAcceptTransferInstruction(
                 transferInstructionCid,
