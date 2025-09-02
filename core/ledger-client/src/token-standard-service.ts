@@ -55,7 +55,7 @@ export class TokenStandardService {
     async createAcceptTransferInstruction(
         transferInstructionCid: string,
         transferFactoryRegistryUrl: string
-    ): Promise<ExerciseCommand> {
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
             const client = this.tokenStandardClient(transferFactoryRegistryUrl)
             const choiceContext = await client.post(
@@ -80,7 +80,7 @@ export class TokenStandardService {
                 },
             }
 
-            return exercise
+            return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
             this.logger.error(
                 'Failed to create accept transfer instruction:',
@@ -270,6 +270,7 @@ export class TokenStandardService {
                 choice: 'TransferFactory_Transfer',
                 choiceArgument: choiceArgs,
             }
+
             return [exercise, transferFactory.choiceContext.disclosedContracts]
         } catch (e) {
             this.logger.error('Failed to execute transfer:', e)

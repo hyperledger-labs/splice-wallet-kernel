@@ -147,6 +147,23 @@ export class TokenStandardController {
             throw error
         }
     }
+
+    async acceptTransferInstruction(
+        transferInstructionCid: string
+    ): Promise<[unknown, DisclosedContract[]]> {
+        try {
+            return await this.service.createAcceptTransferInstruction(
+                transferInstructionCid,
+                this.transferFactoryRegistryUrl
+            )
+        } catch (error) {
+            this.logger.error(
+                { error },
+                'Failed to accept transfer instruction'
+            )
+            throw error
+        }
+    }
 }
 
 /**
