@@ -91,7 +91,7 @@ known as **Party Hosting**, is established through a **topology transaction**.
 Unlike Ethereum or Bitcoin addresses, creating parties has a cost associated to them and they create state on the validator node which means that they're not as ephemeral as on other chains.
 Therefore, it's suggested to avoid using parties for use cases such as “deposit addresses”.
 
-* For wallets, it's suggested aiming for one Party per wallet/key.
+* For wallets, it's suggested to aim for one Party per key pair to represent the wallet.
 * For custodians, it's suggested aiming for one Party per account/wallet.
 * For exchanges, it's suggested aiming for one, or few parties for the exchange vault and using memo tags for tracking deposits. See :ref:`here <deposits-into-exchanges>` for more information.
 
