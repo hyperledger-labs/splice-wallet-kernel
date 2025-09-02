@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs'
 import {
     AllKnownMetaKeys,
     HoldingInterface,
-    InterfaceId,
+    matchInterfaceIds,
     TransferInstructionInterface,
 } from './constants.js'
 import { LedgerClient } from './ledger-client.js'
@@ -26,7 +26,7 @@ type DeduplicationPeriod2 = Types['DeduplicationPeriod2']
 
 export function filtersByParty(
     party: string,
-    interfaceNames: InterfaceId[],
+    interfaceNames: string[],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     includeWildcard: boolean
 ): TransactionFilter['filtersByParty'] {
@@ -37,7 +37,7 @@ export function filtersByParty(
                     identifierFilter: {
                         InterfaceFilter: {
                             value: {
-                                interfaceId: interfaceName.toString(),
+                                interfaceId: interfaceName,
                                 includeInterfaceView: true,
                                 includeCreatedEventBlob: true,
                             },
@@ -65,11 +65,11 @@ export function filtersByParty(
 }
 
 export function hasInterface(
-    interfaceId: InterfaceId,
+    interfaceId: string,
     event: ExercisedEvent | ArchivedEvent
 ): boolean {
     return (event.implementedInterfaces || []).some((id) =>
-        interfaceId.matches(id)
+        matchInterfaceIds(id, interfaceId)
     )
 }
 
@@ -90,13 +90,16 @@ export function getKnownInterfaceView(
     const interfaceView = getInterfaceView(createdEvent)
     if (!interfaceView) {
         return null
-    } else if (HoldingInterface.matches(interfaceView.interfaceId)) {
+    } else if (matchInterfaceIds(HoldingInterface, interfaceView.interfaceId)) {
         return {
             type: 'Holding',
             viewValue: interfaceView.viewValue as Holding,
         }
     } else if (
-        TransferInstructionInterface.matches(interfaceView.interfaceId)
+        matchInterfaceIds(
+            TransferInstructionInterface,
+            interfaceView.interfaceId
+        )
     ) {
         return {
             type: 'TransferInstruction',
@@ -114,7 +117,7 @@ export function getKnownInterfaceView(
  */
 export function ensureInterfaceViewIsPresent(
     createdEvent: CreatedEvent,
-    interfaceId: InterfaceId
+    interfaceId: string
 ): JsInterfaceView {
     const interfaceView = getInterfaceView(createdEvent)
     if (!interfaceView) {
@@ -124,9 +127,9 @@ export function ensureInterfaceViewIsPresent(
             )}`
         )
     }
-    if (!interfaceId.matches(interfaceView.interfaceId)) {
+    if (!matchInterfaceIds(interfaceId, interfaceView.interfaceId)) {
         throw new Error(
-            `Not a ${interfaceId.toString()} but a ${
+            `Not a ${interfaceId} but a ${
                 interfaceView.interfaceId
             }: ${JSON.stringify(createdEvent)}`
         )

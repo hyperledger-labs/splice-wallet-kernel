@@ -3,13 +3,19 @@ import { Logger } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
 import {
     HoldingInterface,
-    InterfaceId,
     TokenStandardTransactionInterfaces,
     TransferInstructionInterface,
 } from './constants.js'
-import { filtersByParty } from './ledger-api-utils.js'
+import {
+    ensureInterfaceViewIsPresent,
+    filtersByParty,
+} from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
-import { renderTransaction } from './txparse/types.js'
+import {
+    PrettyContract,
+    renderTransaction,
+    ViewValue,
+} from './txparse/types.js'
 
 import type { PrettyTransactions, Transaction } from './txparse/types.js'
 import { Types } from './ledger-client.js'
@@ -27,6 +33,14 @@ type TransactionUpdate = {
     update: { Transaction: { value: JsTransaction } }
 }
 type DisclosedContract = Types['DisclosedContract']
+
+type JsActiveContractEntryResponse = JsGetActiveContractsResponse & {
+    contractEntry: {
+        JsActiveContract: {
+            createdEvent: Types['CreatedEvent']
+        }
+    }
+}
 
 export class TokenStandardService {
     constructor(
@@ -55,7 +69,7 @@ export class TokenStandardService {
             )
 
             const exercise: ExerciseCommand = {
-                templateId: TransferInstructionInterface.toString(),
+                templateId: TransferInstructionInterface,
                 contractId: transferInstructionCid,
                 choice: 'TransferInstruction_Accept',
                 choiceArgument: {
@@ -76,17 +90,18 @@ export class TokenStandardService {
         }
     }
 
-    async listContractsByInterface(
-        interfaceId: InterfaceId,
+    // <T> is shape of viewValue related to queried interface.
+    // i.e. when querying by TransferInstruction interfaceId, <T> would be TransferInstructionView from daml codegen
+    async listContractsByInterface<T = ViewValue>(
+        interfaceId: string,
         partyId: string
-    ): Promise<JsGetActiveContractsResponse[]> {
+    ): Promise<PrettyContract<T>[]> {
         try {
             const ledgerEnd = await this.ledgerClient.get(
                 '/v2/state/ledger-end'
             )
-            const responses = await this.ledgerClient.post(
-                '/v2/state/active-contracts',
-                {
+            const acsResponses: JsGetActiveContractsResponse[] =
+                await this.ledgerClient.post('/v2/state/active-contracts', {
                     filter: {
                         filtersByParty: filtersByParty(
                             partyId,
@@ -96,12 +111,31 @@ export class TokenStandardService {
                     },
                     verbose: false,
                     activeAtOffset: ledgerEnd.offset,
-                }
+                })
+
+            /*  This filters out responses with entries of:
+                - JsEmpty
+                - JsIncompleteAssigned
+                - JsIncompleteUnassigned
+                while leaving JsActiveContract.
+                It works fine only with single synchronizer
+                TODO (#353) add support for multiple synchronizers
+             */
+            const isActiveContractEntry = (
+                acsResponse: JsGetActiveContractsResponse
+            ): acsResponse is JsActiveContractEntryResponse =>
+                !!acsResponse.contractEntry.JsActiveContract?.createdEvent
+
+            const activeContractEntries = acsResponses.filter(
+                isActiveContractEntry
             )
-            return responses
+            return activeContractEntries.map(
+                (response: JsActiveContractEntryResponse) =>
+                    this.toPrettyContract<T>(interfaceId, response)
+            )
         } catch (err) {
             this.logger.error(
-                `Failed to list contracts of interface ${interfaceId.toString()}`,
+                `Failed to list contracts of interface ${interfaceId}`,
                 err
             )
             throw err
@@ -354,6 +388,23 @@ export class TokenStandardService {
             transactions: transactions
                 .filter((tx) => tx.events.length > 0)
                 .map(renderTransaction),
+        }
+    }
+
+    // returns object with JsActiveContract content
+    // and contractId and interface view value extracted from it as separate fields for convenience
+    private toPrettyContract<T>(
+        interfaceId: string,
+        response: JsActiveContractEntryResponse
+    ): PrettyContract<T> {
+        const activeContract = response.contractEntry.JsActiveContract
+        const { createdEvent } = activeContract
+        return {
+            contractId: createdEvent.contractId,
+            interfaceViewValue: ensureInterfaceViewIsPresent(
+                createdEvent,
+                interfaceId
+            ).viewValue as T,
         }
     }
 }

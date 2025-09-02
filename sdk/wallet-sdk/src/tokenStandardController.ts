@@ -4,7 +4,11 @@ import {
     TokenStandardService,
 } from '@canton-network/core-ledger-client'
 import { pino } from 'pino'
-import { PrettyTransactions } from '@canton-network/core-ledger-client'
+import {
+    PrettyTransactions,
+    PrettyContract,
+    ViewValue,
+} from '@canton-network/core-ledger-client'
 
 /**
  * TokenStandardController handles token standard management tasks.
@@ -77,6 +81,22 @@ export class TokenStandardController {
             afterOffset
         )
     }
+
+    /** Lists all active contracts' interface view values and cids,
+     *  filtered by an interface for the current party.
+     * @param interfaceId id of queried interface.
+     * @returns A promise that resolves to an array of
+     *  active contracts interface view values and cids.
+     */
+    async listContractsByInterface<T = ViewValue>(
+        interfaceId: string
+    ): Promise<PrettyContract<T>[]> {
+        return await this.service.listContractsByInterface<T>(
+            interfaceId,
+            this.partyId
+        )
+    }
+
     async createTap(
         receiver: string,
         amount: string,
