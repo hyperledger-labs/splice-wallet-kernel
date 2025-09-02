@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Copyright (c) 2024 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
@@ -15,6 +14,7 @@ import {
 import {
     BurnedMetaKey,
     HoldingInterface,
+    matchInterfaceIds,
     ReasonMetaKey,
     SenderMetaKey,
     TransferInstructionInterface,
@@ -616,7 +616,10 @@ export class TransactionParser {
                 const interfaceView = getInterfaceView(createdEvent)
                 if (
                     interfaceView &&
-                    HoldingInterface.matches(interfaceView.interfaceId)
+                    matchInterfaceIds(
+                        HoldingInterface,
+                        interfaceView.interfaceId
+                    )
                 ) {
                     const holdingView = interfaceView.viewValue as Holding
                     mutatingResult.creates.push({

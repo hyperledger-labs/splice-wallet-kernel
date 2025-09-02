@@ -69,7 +69,7 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     {
         instrumentId: 'Amulet',
         instrumentAdmin:
-            'DSO::122098544e6d707a02edee40ff295792b2b526fa30fa7a284a477041eb23d1d26763',
+            'DSO::12200901488a1b3ff2d4d9ed3aac14af530811522e16f8819e56c41ec937dbcaec92', //TODO: get this from scan
     }
 )
 
@@ -82,7 +82,8 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
 
 await new Promise((res) => setTimeout(res, 5000))
 
-logger.info('List Token Standard Holding Transactions')
+const utxos = await sdk.tokenStandard?.listHoldingUtxos()
+logger.info(utxos, 'List Token Standard Holding UTXOs')
 
 await sdk.tokenStandard
     ?.listHoldingTransactions()
@@ -106,7 +107,7 @@ const [transferCommand, disclosedContracts2] =
         {
             instrumentId: 'Amulet',
             instrumentAdmin:
-                'DSO::122098544e6d707a02edee40ff295792b2b526fa30fa7a284a477041eb23d1d26763',
+                'DSO::12200901488a1b3ff2d4d9ed3aac14af530811522e16f8819e56c41ec937dbcaec92', // todo: get from scan
         },
         {}
     )
@@ -117,5 +118,34 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
     v4(),
     disclosedContracts2
 )
-
 logger.info('Submitted transfer transaction')
+
+const holdings = await sdk.tokenStandard?.listHoldingTransactions()
+
+const transferCid = holdings!.transactions
+    .flatMap((object) =>
+        object.events.flatMap(
+            (t) =>
+                (t.label as any)?.tokenStandardChoice?.exerciseResult?.output
+                    ?.value?.transferInstructionCid
+        )
+    )
+    .find((v) => v !== undefined)
+
+sdk.userLedger?.setPartyId(receiver!.partyId)
+sdk.tokenStandard?.setPartyId(receiver!.partyId)
+
+const [acceptTransferCommand, disclosedContracts3] =
+    await sdk.tokenStandard!.exerciseTransferInstructionChoice(
+        transferCid,
+        'Accept'
+    )
+
+await sdk.userLedger?.prepareSignAndExecuteTransaction(
+    [{ ExerciseCommand: acceptTransferCommand }],
+    keyPairReceiver.privateKey,
+    v4(),
+    disclosedContracts3
+)
+
+console.log('Accepted transfer instruction')

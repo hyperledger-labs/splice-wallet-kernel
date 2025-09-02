@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Copyright (c) 2024 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
+import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
+
+export type ViewValue = components['schemas']['JsInterfaceView']['viewValue'] // unknown | undefined
+
 export interface Transaction {
     updateId: string
     offset: number
@@ -218,4 +222,9 @@ const renderHoldingsChange = (
 export interface PrettyTransactions {
     transactions: Transaction[]
     nextOffset: number
+}
+
+export interface PrettyContract<T = ViewValue> {
+    contractId: string
+    interfaceViewValue: T
 }
