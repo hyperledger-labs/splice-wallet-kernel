@@ -9,6 +9,7 @@ import {
     PrettyContract,
     ViewValue,
 } from '@canton-network/core-ledger-client'
+import { HoldingV1 } from '@canton-network/core-token-standard'
 
 /**
  * TokenStandardController handles token standard management tasks.
@@ -93,6 +94,13 @@ export class TokenStandardController {
     ): Promise<PrettyContract<T>[]> {
         return await this.service.listContractsByInterface<T>(
             interfaceId,
+            this.partyId
+        )
+    }
+
+    async listHoldingUtxos(): Promise<PrettyContract<HoldingV1.HoldingView>[]> {
+        return await this.service.listContractsByInterface<HoldingV1.HoldingView>(
+            '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding',
             this.partyId
         )
     }

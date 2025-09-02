@@ -82,7 +82,8 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
 
 await new Promise((res) => setTimeout(res, 5000))
 
-logger.info('List Token Standard Holding Transactions')
+const utxos = await sdk.tokenStandard?.listHoldingUtxos()
+logger.info(utxos, 'List Token Standard Holding UTXOs')
 
 await sdk.tokenStandard
     ?.listHoldingTransactions()
@@ -106,7 +107,7 @@ const [transferCommand, disclosedContracts2] =
         {
             instrumentId: 'Amulet',
             instrumentAdmin:
-                'DSO::122098544e6d707a02edee40ff295792b2b526fa30fa7a284a477041eb23d1d26763',
+                'DSO::122098544e6d707a02edee40ff295792b2b526fa30fa7a284a477041eb23d1d26763', // todo: get from scan
         },
         {}
     )

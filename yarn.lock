@@ -1925,6 +1925,7 @@ __metadata:
     "@canton-network/core-ledger-proto": "workspace:^"
     "@canton-network/core-scan-client": "workspace:^"
     "@canton-network/core-signing-lib": "workspace:^"
+    "@canton-network/core-token-standard": "workspace:^"
     "@canton-network/core-tx-visualizer": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
