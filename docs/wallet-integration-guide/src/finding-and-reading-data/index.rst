@@ -9,7 +9,7 @@ Reading from ledger
 
 Parties and synchronizers are considered a core component on the Ledger API and they are therefore a common filter on requests.
 To facilitate the party and synchronizer fields to be changed easily, the ledger controller in the Wallet SDK allows you to change
-the fields but requires them for certain operations. 
+the fields but requires them for certain operations.
 This is to ensure that you always have the correct context when reading data from the ledger.
 
 .. literalinclude:: ../../examples/snippets/change-party-and-synchronizer.ts
@@ -18,7 +18,7 @@ This is to ensure that you always have the correct context when reading data fro
 
 **Reading Available Parties**
 
-Reading all available parties to you can easily be done using the wallet SDK as shown in the example below, and the result is paginated. 
+Reading all available parties to you can easily be done using the wallet SDK as shown in the example below, and the result is paginated.
 It's worth noting that the call to read all available parties doesn't use the the party and synchronizer fields therefore changing them has no effect on the result.
 
 .. literalinclude:: ../../examples/snippets/list-wallets.ts
@@ -52,6 +52,7 @@ to the UTXO mode of unspent and spent. Active contracts are contracts that are u
     :dedent:
 
 .. _visualizing-a-transaction:
+
 Visualizing a Transaction
 -------------------------
 

@@ -11,6 +11,7 @@ Wallet Integration Guide
    finding-and-reading-data/index
    preparing-and-signing-transactions/index
    signing-transactions-from-dapps/index
-   fees/index
+   tokenomics-fees-and-rewards/index
    canton-coin-rewards/index
+   deposits-into-exchanges/index
    exchange-integration/index

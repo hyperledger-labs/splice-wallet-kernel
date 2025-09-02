@@ -36,8 +36,8 @@ MVP for Canton Coin
 
 .. note::
 
-   The diagrams in the sections below specialize the diagram from the :ref:`information-flows`
-   section to the case for Canton Coin (CC). The specializations are:
+   The diagrams in the sections below adapt the diagram from the :ref:`information-flows`
+   section to the case for Canton Coin (CC). The adaptations are:
 
    * The role of the ``adminParty`` is taken over by the ``dsoParty``, which is the token admin for CC.
      The ``dsoParty`` is a decentralized party that is hosted on the validator
@@ -47,7 +47,6 @@ MVP for Canton Coin
      that every SV operator runs. They serve the Registry API for CC.
      See :ref:`reading-from-canton-coin-scan` for more information about
      how to reliably read from multiple Canton Coin Scan instances.
-
 
 .. _one-step-deposit-workflow:
 
@@ -60,9 +59,9 @@ MVP for Canton Coin
 
 Assumptions:
 
--  Exchange set up a CC ``TransferPreapproval`` for their
+-  The Exchange has set up a CC ``TransferPreapproval`` for their
    ``treasuryParty`` as explained in :ref:`setup-treasury-party`.
--  Exchange associated deposit account “abc123” with Customer in
+-  The Exchange has associated deposit account “abc123” with Customer in
    the Canton Integration DB.
 
 Example flow:
@@ -141,10 +140,9 @@ Example flow:
    * The CC ``Holding`` UTXOs ``coids`` to use to fund the transfer to
      ``customerParty`` for ``wid123``. See :ref:`utxo-management` for more information.
    * The target record time ``trecTgt`` on the Global Synchronizer
-     until which the transaction for the CC transfer must be committed
-     using the ``coids`` UTXOs for funding ``wid123``. The ``coids``
-     are considered to be reserved to funding this transfer until
-     ``trecTgt`` has passed.
+     until which the transaction for the CC transfer must be committed.
+     The ``coids`` are considered to be reserved for funding the transfer
+     for withdrawal ``wid123`` until ``trecTgt`` has passed.
 
 3. Withdrawal Automation observes the pending withdrawal ``wid123`` and
    commits the corresponding CC transfer as follows.
@@ -217,7 +215,7 @@ Executing a withdrawal requires selecting ``Holding`` UTXOs to fund the withdraw
 as described for example in :ref:`one-step-withdrawal-workflow`. You likely already have a UTXO management strategy in place for your existing UTXO-chain integrations. Here some considerations to take into account when adapting your strategy to work with Canton:
 
 * Canton Coin charges a small holding fee of about $1 per year for each ``Holding`` UTXO to allow
-  archiving `dust coins <https://www.investopedia.com/terms/b/bitcoin-dust.asp>`_ once their holding fee surpasses their value.
+  archiving `dust coins <https://www.investopedia.com/terms/b/bitcoin-dust.asp>`__ once their holding fee surpasses their value.
 * Canton Coin limits the number of UTXOs for a single transfer to 100 ``Holding`` UTXOs to
   avoid large transactions that are expensive to process.
 * Canton Coin transactions also merge all input ``Holding`` UTXOs and
@@ -241,10 +239,11 @@ We therefore recommend the following approach:
 * Consider keeping a pool of `k` large amount UTXOs to be able to execute up to `k`
   withdrawals at the same time.
   Run a periodic background job to manage this pool using self-transfers.
-    * From an implementation perspective, these self-transfers are a special kind of
-      withdrawal. We thus recommed to implement them using the same code path as withdrawals:
-      start with writing the self-transfer request into the Canton Integration DB and have
-      the Withdrawal Automation execute it.
+
+  * From an implementation perspective, these self-transfers are a special kind of
+    withdrawal. We thus recommend to implement them using the same code path as withdrawals:
+    start with writing the self-transfer request into the Canton Integration DB and have
+    the Withdrawal Automation execute it.
 
 
 .. _mvp-for-cn-tokens:
@@ -257,8 +256,8 @@ The key changes required are:
 
 * Change Tx History Ingestion to also ingest the ``TransferInstruction`` UTXOs, which are
   used by the Canton Network Token Standard to represent in-progress transfers (see
-  `docs <https://docs.dev.sync.global/app_dev/token_standard/index.html#transfer-instruction>`_,
-  `code <https://github.com/hyperledger-labs/splice/blob/2997dd9e55e5d7901e3f475bc10c3dc6ce95ab0c/token-standard/splice-api-token-transfer-instruction-v1/daml/Splice/Api/Token/TransferInstructionV1.daml#L93-L105>`_).
+  `docs <https://docs.dev.sync.global/app_dev/token_standard/index.html#transfer-instruction>`__,
+  `code <https://github.com/hyperledger-labs/splice/blob/2997dd9e55e5d7901e3f475bc10c3dc6ce95ab0c/token-standard/splice-api-token-transfer-instruction-v1/daml/Splice/Api/Token/TransferInstructionV1.daml#L93-L105>`__).
 * Adjust the Exchange UI to show the status of in-progress transfers.
 * Adjust the user funds tracking done as part of Tx History Ingestion to credit funds back to the user if they reject a withdrawal transfer.
   Consider deducting a fee for the failed withdrawal.
@@ -289,7 +288,7 @@ Multi-Step Deposit Workflow
 Example flow: deposit offer and acceptance
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The flow uses essentially the same initial three steps as
+The flow uses essentially the same initial four steps as
 the :ref:`one-step-deposit-workflow` above.
 We list them in full for completeness.
 
@@ -345,7 +344,7 @@ This is where the main difference to the :ref:`one-step-deposit-workflow` starts
 The Multi-Step Deposit Automation service will now auto-accept the transfer offer.
 
 5. The Multi-Step Deposit Automation regularly queries for pending transfer offers for known
-   deposit accounts. It thus observs the pending transfer offer ``coid567`` and accepts it as follows.
+   deposit accounts. It thus observes the pending transfer offer ``coid567`` and accepts it as follows.
 
     a. Multi-Step Deposit Automation retrieves the URL for Acme's Registry API Server
        from the Canton Integration DB.
@@ -583,13 +582,9 @@ that the transfer was offered, but rejected by them.
   In most cases a ``TransferInstruction`` will be completed in a single extra step:
   the receiver either accepts or rejects the transfer, or the sender withdraws it.
   Each of these steps will manifest as one of the choices on the ``TransferInstruction`` interface
-  (`code <https://github.com/hyperledger-labs/splice/blob/3fb1eb1c3bcde53e157be13cd497fdb439835d38/token-standard/splice-api-token-transfer-instruction-v1/daml/Splice/Api/Token/TransferInstructionV1.daml#L108-L168>`_)
+  (`code <https://github.com/hyperledger-labs/splice/blob/3fb1eb1c3bcde53e157be13cd497fdb439835d38/token-standard/splice-api-token-transfer-instruction-v1/daml/Splice/Api/Token/TransferInstructionV1.daml#L108-L168>`__)
   and its ``TransferInstructionResult.output`` value clearly tells whether the instruction
   completed with a successful transfer, failed, or is still pending an action by one of the stakeholders.
-
-
-
-
 
 
 .. _token-onboarding:
@@ -607,7 +602,7 @@ At a high-level, the Canton-specific steps to onboarding a token are:
 2. Store the mapping from the token admin's ``adminParty`` id
    to the admin's Registry API Server URL in your Canton Integration DB
    (or another suitable place).
-3. In case the token is permisssioned, follow the token admin's
+3. In case the token is permissioned, follow the token admin's
    instructions to have your exchange's ``treasuryParty`` added to the
    token's allowlist.
 
@@ -621,10 +616,10 @@ Consider using these test instances as part of your testing strategy.
 For example, Canton Coin also exist on TestNet and DevNet
 with different ``dsoParty`` ids.
 You can retrieve the ``dsoParty`` id for each network using the
-`CC Scan API <https://docs.dev.sync.global/app_dev/scan_api/index.html#app-dev-scan-api>`_
-served from the `SV nodes of that network <https://sync.global/sv-network/>`_:
+`CC Scan API <https://docs.dev.sync.global/app_dev/scan_api/index.html#app-dev-scan-api>`__
+served from the `SV nodes of that network <https://sync.global/sv-network/>`__:
 
-* Use `/v0/dso <https://docs.dev.sync.global/app_dev/scan_api/scan_openapi.html#get--v0-dso>`_
+* Use `/v0/dso <https://docs.dev.sync.global/app_dev/scan_api/scan_openapi.html#get--v0-dso>`__
   to query the ``dsoParty`` for the network you are connected to.
-* Use `/v0/splice-instance-names <https://docs.dev.sync.global/app_dev/scan_api/scan_openapi.html#get--v0-splice-instance-names>`_
+* Use `/v0/splice-instance-names <https://docs.dev.sync.global/app_dev/scan_api/scan_openapi.html#get--v0-splice-instance-names>`__
   to query the network name (DevNet, TestNet, or MainNet).

@@ -1,11 +1,6 @@
-import { paths as allocation } from './generated-clients/splice-api-token-allocation-v1/allocation-v1'
-import { paths as metadata } from './generated-clients/splice-api-token-metadata-v1/token-metadata-v1'
-import { paths as transferInstruction } from './generated-clients/splice-api-token-transfer-instruction-v1/transfer-instruction-v1'
-import { paths as allocationInstruction } from './generated-clients/splice-api-token-allocation-instruction-v1/allocation-instruction-v1'
+import { paths } from './generated-clients/scan'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from '@canton-network/core-types'
-
-type paths = allocation & metadata & transferInstruction & allocationInstruction
 
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional
@@ -47,7 +42,7 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
     ? Res
     : never
 
-export class TokenStandardClient {
+export class ScanClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
 
@@ -112,5 +107,30 @@ export class TokenStandardClient {
         } else {
             return Promise.resolve(response.data)
         }
+    }
+
+    public async GetAmuletSynchronizerId(): Promise<string | undefined> {
+        const dsoInfo = await this.get('/v0/dso')
+
+        const payloadObj = JSON.parse(
+            JSON.stringify(dsoInfo.amulet_rules.contract.payload)
+        )
+
+        const initActiveSynchronizer =
+            payloadObj?.configSchedule?.initialValue?.decentralizedSynchronizer
+                ?.activeSynchronizer
+        const futureValues = payloadObj?.configSchedule?.futureValues as []
+
+        if (futureValues.length > 0) {
+            let updatedValue = undefined
+            for (const value of futureValues) {
+                const parsed = JSON.parse(JSON.stringify(value))
+                if (parsed?.decentralizedSynchronizer?.activeSynchronizer) {
+                    updatedValue =
+                        parsed.decentralizedSynchronizer.activeSynchronizer
+                }
+            }
+            return updatedValue ?? initActiveSynchronizer
+        } else return initActiveSynchronizer
     }
 }

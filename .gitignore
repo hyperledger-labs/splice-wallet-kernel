@@ -10,6 +10,7 @@ npm-debug.log
 
 .canton/
 .splice/
+.splice-spec/
 .localnet/
 log/
 
@@ -28,3 +29,6 @@ generated/
 .nx/workspace-data
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+# aspell
+*.bak

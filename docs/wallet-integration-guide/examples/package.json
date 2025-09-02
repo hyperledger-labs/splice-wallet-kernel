@@ -10,9 +10,10 @@
     "scripts": {
         "build": "tsc -b",
         "clean": "tsc -b --clean",
-        "run-01": "tsx ./scripts/01-auth.ts",
-        "run-02": "tsx ./scripts/02-auth-localnet.ts",
-        "run-04": "tsx ./scripts/04-token-standard-localnet.ts"
+        "run-01": "tsx ./scripts/01-auth.ts | pino-pretty",
+        "run-02": "tsx ./scripts/02-auth-localnet.ts | pino-pretty",
+        "run-03": "tsx ./scripts/03-ping-localnet.ts | pino-pretty",
+        "run-04": "tsx ./scripts/04-token-standard-localnet.ts | pino-pretty"
     },
     "devDependencies": {
         "tsx": "^4.20.3",
@@ -21,6 +22,8 @@
     "dependencies": {
         "@canton-network/wallet-sdk": "workspace:^",
         "@types/node": "^24.3.0",
+        "pino": "9.7.0",
+        "pino-pretty": "^13.0.0",
         "uuid": "^11.1.0"
     }
 }

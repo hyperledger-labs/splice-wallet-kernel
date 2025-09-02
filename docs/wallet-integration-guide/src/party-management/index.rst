@@ -1,11 +1,13 @@
+.. _create-an-external-party:
+
 Create an External Party (Wallet)
-========================
+=================================
 
 Overview
 --------
 This document describes the steps required to create a new party (wallet/address) on a validator.
 Parties represent acting entites in the network and all transaction happens between one or more parties.
-To understand more about parties see `Parties section here <parties>`_.
+To understand more about parties see `Parties section here <parties>`__.
 
 *This document focuses on the steps required to create an external party using the Wallet SDK.*
 
@@ -35,7 +37,7 @@ Using the wallet SDK you can quickly allocate a party using the following code s
 
 Create the key Pair
 -------------------
-The process for creating a key using standard encryption practices is similar that in other blockchains. The full details of supported cryptographic algorithms can be found `Here <https://docs.daml.com/canton/usermanual/security.html#common-node-keys>`_.
+The process for creating a key using standard encryption practices is similar that in other blockchains. The full details of supported cryptographic algorithms can be found `Here <https://docs.daml.com/canton/usermanual/security.html#common-node-keys>`__.
 By default an **Ed25519** encryption is used. There exists many libraries that can be used to generate such a key pair, you can do it simply with the WalletSDK using:
 
 .. literalinclude:: ../../examples/snippets/create-key-pair.ts

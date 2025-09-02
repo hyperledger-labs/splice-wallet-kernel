@@ -9,24 +9,24 @@ import {
 } from './constants.js'
 import { components } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import { filtersByParty } from './ledger-api-utils.js'
+import { TransactionParser } from './txparse/parser.js'
+import { renderTransaction } from './txparse/types.js'
+
+import type { PrettyTransactions, Transaction } from './txparse/types.js'
 
 type ExerciseCommand = components['schemas']['ExerciseCommand']
 type JsGetActiveContractsResponse =
     components['schemas']['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = components['schemas']['JsGetUpdatesResponse']
-
-interface CreateTransferOptions {
-    sender: string
-    receiver: string
-    amount: string
-    // paths to keys
-    publicKey: string
-    privateKey: string
-    instrumentAdmin: string // TODO (#907): replace with registry call
-    instrumentId: string
-    transferFactoryRegistryUrl: string
-    userId: string
+type OffsetCheckpoint2 = components['schemas']['OffsetCheckpoint2']
+type JsTransaction = components['schemas']['JsTransaction']
+type OffsetCheckpointUpdate = {
+    update: { OffsetCheckpoint: OffsetCheckpoint2 }
 }
+type TransactionUpdate = {
+    update: { Transaction: { value: JsTransaction } }
+}
+type DisclosedContract = components['schemas']['DisclosedContract']
 
 export class TokenStandardService {
     constructor(
@@ -111,7 +111,7 @@ export class TokenStandardService {
     async listHoldingTransactions(
         partyId: string,
         afterOffset?: string
-    ): Promise<JsGetUpdatesResponse[]> {
+    ): Promise<PrettyTransactions> {
         try {
             this.logger.debug('Set or query offset')
             const afterOffsetOrLatest =
@@ -119,24 +119,31 @@ export class TokenStandardService {
                 (await this.ledgerClient.get('/v2/state/latest-pruned-offsets'))
                     .participantPrunedUpToInclusive
             this.logger.debug(afterOffsetOrLatest, 'Using offset')
-            const updates = await this.ledgerClient.post('/v2/updates/flats', {
-                updateFormat: {
-                    includeTransactions: {
-                        eventFormat: {
-                            filtersByParty: filtersByParty(
-                                partyId,
-                                TokenStandardTransactionInterfaces,
-                                true
-                            ),
-                            verbose: false,
+            const updatesResponse: JsGetUpdatesResponse[] =
+                await this.ledgerClient.post('/v2/updates/flats', {
+                    updateFormat: {
+                        includeTransactions: {
+                            eventFormat: {
+                                filtersByParty: filtersByParty(
+                                    partyId,
+                                    TokenStandardTransactionInterfaces,
+                                    true
+                                ),
+                                verbose: false,
+                            },
+                            transactionShape:
+                                'TRANSACTION_SHAPE_LEDGER_EFFECTS',
                         },
-                        transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
                     },
-                },
-                beginExclusive: afterOffsetOrLatest,
-                verbose: false,
-            })
-            return updates
+                    beginExclusive: afterOffsetOrLatest,
+                    verbose: false,
+                })
+
+            return this.toPrettyTransactions(
+                updatesResponse,
+                partyId,
+                this.ledgerClient
+            )
         } catch (err) {
             this.logger.error('Failed to list holding transactions.', err)
             throw err
@@ -144,18 +151,15 @@ export class TokenStandardService {
     }
 
     async createTransfer(
-        opts: CreateTransferOptions
-    ): Promise<ExerciseCommand> {
+        sender: string,
+        receiver: string,
+        amount: string,
+        instrumentAdmin: string, // TODO (#907): replace with registry call
+        instrumentId: string,
+        transferFactoryRegistryUrl: string,
+        meta?: Record<string, never>
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const {
-                sender,
-                receiver,
-                amount,
-                instrumentAdmin,
-                instrumentId,
-                transferFactoryRegistryUrl,
-            } = opts
-
             const ledgerEndOffset = await this.ledgerClient.get(
                 '/v2/state/ledger-end'
             )
@@ -199,7 +203,7 @@ export class TokenStandardService {
                     requestedAt: now.toISOString(),
                     executeBefore: tomorrow.toISOString(),
                     inputHoldingCids,
-                    meta: { values: {} },
+                    meta: { values: meta || {} },
                 },
                 extraArgs: {
                     context: { values: {} },
@@ -207,11 +211,15 @@ export class TokenStandardService {
                 },
             }
 
+            this.logger.debug('Creating transfer factory...')
+
             const transferFactory = await this.tokenStandardClient(
                 transferFactoryRegistryUrl
             ).post('/registry/transfer-instruction/v1/transfer-factory', {
                 choiceArguments: choiceArgs as unknown as Record<string, never>,
             })
+
+            this.logger.debug(transferFactory, 'Transfer factory created')
 
             choiceArgs.extraArgs.context = {
                 ...transferFactory.choiceContext.choiceContextData,
@@ -228,10 +236,124 @@ export class TokenStandardService {
                 choice: 'TransferFactory_Transfer',
                 choiceArgument: choiceArgs,
             }
-            return exercise
+            return [exercise, transferFactory.choiceContext.disclosedContracts]
         } catch (e) {
             this.logger.error('Failed to execute transfer:', e)
             throw e
+        }
+    }
+
+    async createTap(
+        receiver: string,
+        amount: string,
+        instrumentAdmin: string, // TODO (#907): replace with registry call
+        instrumentId: string,
+        transferFactoryRegistryUrl: string
+    ): Promise<[unknown, DisclosedContract[]]> {
+        // TODO: replace with correct scan lookup
+        const now = new Date()
+        const tomorrow = new Date(now)
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        const choiceArgs = {
+            expectedAdmin: instrumentAdmin,
+            transfer: {
+                sender: instrumentAdmin,
+                receiver,
+                amount,
+                instrumentId: { admin: instrumentAdmin, id: instrumentId },
+                lock: null,
+                requestedAt: now.toISOString(),
+                executeBefore: tomorrow.toISOString(),
+                inputHoldingCids: [],
+                meta: { values: {} },
+            },
+            extraArgs: {
+                context: { values: {} },
+                meta: { values: {} },
+            },
+        }
+
+        const transferFactory = await this.tokenStandardClient(
+            transferFactoryRegistryUrl
+        ).post('/registry/transfer-instruction/v1/transfer-factory', {
+            choiceArguments: choiceArgs as unknown as Record<string, never>,
+        })
+
+        const disclosedContracts =
+            transferFactory.choiceContext.disclosedContracts
+
+        const amuletRules = disclosedContracts.find((c) =>
+            c.templateId?.endsWith('Splice.AmuletRules:AmuletRules')
+        )
+        if (!amuletRules) {
+            throw new Error('AmuletRules contract not found')
+        }
+        const openMiningRounds = disclosedContracts.find((c) =>
+            c.templateId?.endsWith('Splice.Round:OpenMiningRound')
+        )
+        if (!openMiningRounds) {
+            throw new Error('OpenMiningRound contract not found')
+        }
+        return [
+            {
+                templateId: amuletRules.templateId!,
+                contractId: amuletRules.contractId,
+                choice: 'AmuletRules_DevNet_Tap',
+                choiceArgument: {
+                    receiver: receiver,
+                    amount: amount,
+                    openRound: openMiningRounds.contractId,
+                },
+            },
+            disclosedContracts,
+        ]
+    }
+
+    private async toPrettyTransactions(
+        updates: JsGetUpdatesResponse[],
+        partyId: string,
+        ledgerClient: LedgerClient
+    ): Promise<PrettyTransactions> {
+        // Runtime filters that also let TS know which of OneOfs types to check against
+        const isOffsetCheckpointUpdate = (
+            updateResponse: JsGetUpdatesResponse
+        ): updateResponse is OffsetCheckpointUpdate =>
+            !!updateResponse?.update?.OffsetCheckpoint
+        const isTransactionUpdate = (
+            updateResponse: JsGetUpdatesResponse
+        ): updateResponse is TransactionUpdate =>
+            !!updateResponse.update?.Transaction?.value
+
+        const offsetCheckpoints: number[] = updates
+            .filter(isOffsetCheckpointUpdate)
+            .map((update) => update.update.OffsetCheckpoint.value.offset)
+        const latestCheckpointOffset = Math.max(...offsetCheckpoints)
+
+        const transactions: Transaction[] = await Promise.all(
+            updates
+                // exclude OffsetCheckpoint, Reassignment, TopologyTransaction
+                .filter(isTransactionUpdate)
+                .map(async (update) => {
+                    const tx = update.update.Transaction.value
+                    const parser = new TransactionParser(
+                        tx,
+                        ledgerClient,
+                        partyId
+                    )
+
+                    return await parser.parseTransaction()
+                })
+        )
+
+        return {
+            // OffsetCheckpoint can be anywhere... or not at all, maybe
+            nextOffset: Math.max(
+                latestCheckpointOffset,
+                ...transactions.map((tx) => tx.offset)
+            ),
+            transactions: transactions
+                .filter((tx) => tx.events.length > 0)
+                .map(renderTransaction),
         }
     }
 }
