@@ -1555,7 +1555,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-scan-client@workspace:core/scan-client":
+"@canton-network/core-scan-client@workspace:^, @canton-network/core-scan-client@workspace:core/scan-client":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-scan-client@workspace:core/scan-client"
   dependencies:
@@ -1923,6 +1923,7 @@ __metadata:
   dependencies:
     "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-ledger-proto": "workspace:^"
+    "@canton-network/core-scan-client": "workspace:^"
     "@canton-network/core-signing-lib": "workspace:^"
     "@canton-network/core-tx-visualizer": "workspace:^"
     "@canton-network/core-types": "workspace:^"
