@@ -6,7 +6,7 @@ import {
     createKeyPair,
 } from '@canton-network/wallet-sdk'
 import { v4 } from 'uuid'
-import { LOCALNET_SCAN_API } from '../config.js'
+import { LOCALNET_SCAN_API_URL } from '../config.js'
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
@@ -31,7 +31,7 @@ await sdk.userLedger
     })
 
 const keyPair = createKeyPair()
-await sdk.connectTopology(LOCALNET_SCAN_API)
+await sdk.connectTopology(LOCALNET_SCAN_API_URL)
 
 console.log('generated keypair')
 const allocatedParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
