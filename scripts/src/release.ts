@@ -1,10 +1,26 @@
-// Generate a release for all packages. Performs a version bump and opens a PR against `latest`
+// Generate a release for all packages. Performs a version bump and opens a PR against `main`
 
 import { promisify } from 'util'
 import { exec, spawn } from 'child_process'
 import readline from 'readline'
 
 const ex = promisify(exec)
+
+async function cmd(command: string): Promise<void> {
+    const [bin, ...args] = command.split(' ')
+    const child = spawn(bin, args, { stdio: 'inherit', shell: true })
+
+    await new Promise<void>((resolve, reject) => {
+        child.on('close', (code) => {
+            if (code !== 0) {
+                reject(new Error(`Command failed: ${command}`))
+                process.exit(code)
+            } else {
+                resolve()
+            }
+        })
+    })
+}
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -32,42 +48,15 @@ async function main() {
 
 async function runRelease() {
     const branch = `release/${Date.now()}`
-    await ex(`git checkout -b ${branch}`)
 
-    const pr = spawn(
-        'gh',
-        [
-            'pr',
-            'create',
-            '--base',
-            'main',
-            '--head',
-            branch,
-            '--title',
-            'chore: release',
-            '--body',
-            'Release PR',
-        ],
-        { stdio: ['inherit', 'pipe', 'inherit'] }
+    await cmd(`git checkout -b ${branch}`)
+    await cmd(`git push --set-upstream origin ${branch}`)
+
+    await cmd(`yarn nx release --skip-publish`)
+
+    await cmd(
+        `gh pr create --base main --head ${branch} --title 'chore: release' --body 'Release PR'`
     )
-
-    pr.on('close', (code) => {
-        if (code !== 0) {
-            console.error(`PR creation failed with code ${code}`)
-            process.exit(code)
-        }
-
-        const cmd = spawn(
-            'yarn',
-            ['nx', 'release', '--dry-run', '--skip-publish'],
-            { stdio: 'inherit' }
-        )
-
-        cmd.on('close', (code) => {
-            console.log(`child process exited with code ${code}`)
-            process.exit(code)
-        })
-    })
 }
 
 async function checkGitHubCli() {
