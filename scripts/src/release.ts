@@ -11,10 +11,10 @@ const rl = readline.createInterface({
     output: process.stdout,
 })
 
-async function run() {
-    checkGit()
-    checkGitHubCli()
-    checkBranchIsReady()
+async function main() {
+    await checkGit()
+    await checkGitHubCli()
+    await checkBranchIsReady()
 
     rl.question(
         'This will push new version tags to git for all packages, and open a release PR. Continue? (y/n) ',
@@ -24,16 +24,51 @@ async function run() {
                 rl.close()
                 return
             }
+            runRelease()
             rl.close()
         }
     )
-
-    spawn('yarn nx release --dry-run --skip-publish', {
-        stdio: ['inherit', 'pipe', 'inherit'],
-    })
 }
 
-run()
+async function runRelease() {
+    const branch = `release/${Date.now()}`
+    await ex(`git checkout -b ${branch}`)
+
+    const pr = spawn(
+        'gh',
+        [
+            'pr',
+            'create',
+            '--base',
+            'main',
+            '--head',
+            branch,
+            '--title',
+            'chore: release',
+            '--body',
+            'Release PR',
+        ],
+        { stdio: ['inherit', 'pipe', 'inherit'] }
+    )
+
+    pr.on('close', (code) => {
+        if (code !== 0) {
+            console.error(`PR creation failed with code ${code}`)
+            process.exit(code)
+        }
+
+        const cmd = spawn(
+            'yarn',
+            ['nx', 'release', '--dry-run', '--skip-publish'],
+            { stdio: 'inherit' }
+        )
+
+        cmd.on('close', (code) => {
+            console.log(`child process exited with code ${code}`)
+            process.exit(code)
+        })
+    })
+}
 
 async function checkGitHubCli() {
     return ex('gh --version').catch(() => {
@@ -75,14 +110,4 @@ async function checkBranchIsReady() {
     }
 }
 
-// async function checkoutReleaseBranch() {
-//     const branch = `release/${Date.now()}`
-//     return ex(`git checkout -b ${branch}`)
-// }
-
-// async function createReleasePR() {
-//     return spawn(
-//         'gh pr create --base main --head release --title "chore: release" --body "Release PR"',
-//         { stdio: ['inherit', 'pipe', 'inherit'] }
-//     )
-// }
+main()
