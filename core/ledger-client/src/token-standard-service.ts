@@ -7,26 +7,26 @@ import {
     TokenStandardTransactionInterfaces,
     TransferInstructionInterface,
 } from './constants.js'
-import { components } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import { filtersByParty } from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
 import { renderTransaction } from './txparse/types.js'
 
 import type { PrettyTransactions, Transaction } from './txparse/types.js'
+import { Types } from './ledger-client.js'
 
-type ExerciseCommand = components['schemas']['ExerciseCommand']
-type JsGetActiveContractsResponse =
-    components['schemas']['JsGetActiveContractsResponse']
-type JsGetUpdatesResponse = components['schemas']['JsGetUpdatesResponse']
-type OffsetCheckpoint2 = components['schemas']['OffsetCheckpoint2']
-type JsTransaction = components['schemas']['JsTransaction']
+type ExerciseCommand = Types['ExerciseCommand']
+type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
+type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
+type OffsetCheckpoint2 = Types['OffsetCheckpoint2']
+type JsTransaction = Types['JsTransaction']
+
 type OffsetCheckpointUpdate = {
     update: { OffsetCheckpoint: OffsetCheckpoint2 }
 }
 type TransactionUpdate = {
     update: { Transaction: { value: JsTransaction } }
 }
-type DisclosedContract = components['schemas']['DisclosedContract']
+type DisclosedContract = Types['DisclosedContract']
 
 export class TokenStandardService {
     constructor(
@@ -249,7 +249,7 @@ export class TokenStandardService {
         instrumentAdmin: string, // TODO (#907): replace with registry call
         instrumentId: string,
         transferFactoryRegistryUrl: string
-    ): Promise<[unknown, DisclosedContract[]]> {
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         // TODO: replace with correct scan lookup
         const now = new Date()
         const tomorrow = new Date(now)
