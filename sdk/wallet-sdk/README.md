@@ -50,4 +50,4 @@ console.log('SDK initialized')
 await sdk.connect()
 ```
 
-For more examples and code snippets, see the [docs](https://github.com/hyperledger-labs/splice-wallet-kernel/tree/main/docs/wallet-integration-guide/src).
+For more guides, examples and code snippets, see the [docs](https://docs.digitalasset.com/integrate/devnet/index.html).
