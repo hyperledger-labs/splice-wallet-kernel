@@ -117,8 +117,9 @@ export class TokenStandardService {
                 - JsEmpty
                 - JsIncompleteAssigned
                 - JsIncompleteUnassigned
-                while leaving JsActiveContract
-                Those removed entries should not affect returned contracts output, nor trigger error
+                while leaving JsActiveContract.
+                It works fine only with single synchronizer
+                TODO (#353) add support for multiple synchronizers
              */
             const isActiveContractEntry = (
                 acsResponse: JsGetActiveContractsResponse
@@ -390,17 +391,20 @@ export class TokenStandardService {
         }
     }
 
-    // Make them nicer to show by excluding stuff useless to users such as the createdEventBlob
+    // returns object with JsActiveContract content
+    // and contractId and interface view value extracted from it as separate fields for convenience
     private toPrettyContract<T>(
         interfaceId: string,
         response: JsActiveContractEntryResponse
     ): PrettyContract<T> {
-        const createdEvent =
-            response.contractEntry.JsActiveContract.createdEvent
+        const activeContract = response.contractEntry.JsActiveContract
+        const { createdEvent } = activeContract
         return {
             contractId: createdEvent.contractId,
-            payload: ensureInterfaceViewIsPresent(createdEvent, interfaceId)
-                .viewValue as T,
+            interfaceViewValue: ensureInterfaceViewIsPresent(
+                createdEvent,
+                interfaceId
+            ).viewValue as T,
         }
     }
 }

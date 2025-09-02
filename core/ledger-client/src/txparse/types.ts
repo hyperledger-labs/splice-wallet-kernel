@@ -226,5 +226,5 @@ export interface PrettyTransactions {
 
 export interface PrettyContract<T = ViewValue> {
     contractId: string
-    payload: T
+    interfaceViewValue: T
 }
