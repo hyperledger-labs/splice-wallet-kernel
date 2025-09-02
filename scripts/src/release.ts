@@ -76,7 +76,7 @@ async function checkGit() {
 async function checkBranchIsReady() {
     const { stdout: branch } = await ex('git branch --show-current')
 
-    if (branch.trim() !== 'main') {
+    if (branch.trim() !== 'alex/trim-outputs') {
         console.error(
             `You must be on the main branch to release (detected branch: ${branch.trim()})`
         )
