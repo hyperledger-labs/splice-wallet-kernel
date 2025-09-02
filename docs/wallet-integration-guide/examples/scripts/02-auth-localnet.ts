@@ -7,7 +7,7 @@ import {
     createKeyPair,
     signTransactionHash,
 } from '@canton-network/wallet-sdk'
-import { LOCALNET_SCAN_API } from '../config.js'
+import { LOCALNET_SCAN_API_URL } from '../config.js'
 import { v4 } from 'uuid'
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
@@ -45,7 +45,7 @@ await sdk.adminLedger
         console.error('Error listing wallets:', error)
     })
 
-await sdk.connectTopology(LOCALNET_SCAN_API)
+await sdk.connectTopology(LOCALNET_SCAN_API_URL)
 console.log('Connected to topology')
 
 const keyPair = createKeyPair()

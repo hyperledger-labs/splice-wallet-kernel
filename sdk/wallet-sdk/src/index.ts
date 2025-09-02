@@ -10,7 +10,6 @@ import {
     TopologyController,
 } from './topologyController.js'
 import { Logger } from '@canton-network/core-types'
-
 export * from './ledgerController.js'
 export * from './authController.js'
 export * from './topologyController.js'
@@ -47,7 +46,7 @@ export interface WalletSDK {
     configure(config: Config): WalletSDK
     connect(): Promise<WalletSDK>
     connectAdmin(): Promise<WalletSDK>
-    connectTopology(synchronizer: string | ScanClient): Promise<WalletSDK>
+    connectTopology(synchronizer: string | URL): Promise<WalletSDK>
     userLedger: LedgerController | undefined
     adminLedger: LedgerController | undefined
     topology: TopologyController | undefined
@@ -118,9 +117,10 @@ export class WalletSDKImpl implements WalletSDK {
     }
 
     /** Connects to the topology service using admin credentials.
+     * @param synchronizer either the synchronizerId or the base url of the scanClient.
      * @returns A promise that resolves to the WalletSDK instance.
      */
-    async connectTopology(synchronizer: string): Promise<WalletSDK> {
+    async connectTopology(synchronizer: string | URL): Promise<WalletSDK> {
         if (this.auth.userId === undefined)
             throw new Error('UserId is not defined in AuthController.')
         if (synchronizer === undefined)
@@ -130,11 +130,11 @@ export class WalletSDKImpl implements WalletSDK {
         const { userId, accessToken } = await this.auth.getAdminToken()
         this.logger?.info(`Connecting user ${userId} with token ${accessToken}`)
         let synchronizerId: string
-        if (synchronizer.includes('::')) {
+        if (typeof synchronizer === 'string') {
             synchronizerId = synchronizer
-        } else if (synchronizer.startsWith('http')) {
+        } else if (synchronizer instanceof URL) {
             const scanClient = new ScanClient(
-                synchronizer,
+                synchronizer.href,
                 this.logger!,
                 accessToken
             )
