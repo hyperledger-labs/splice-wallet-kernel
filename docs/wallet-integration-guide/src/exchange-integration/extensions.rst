@@ -8,7 +8,7 @@ Multi-Hosted Parties
 
 Sketch:
 
-* allocate the ``treasuryParty`` from the start as a `decentralized party <https://docs.digitalasset.com/operate/3.4/howtos/operate/parties/decentralized_parties.html>`_ on multiple validator nodes
+* allocate the ``treasuryParty`` from the start as a `decentralized party <https://docs.digitalasset.com/operate/3.4/howtos/operate/parties/decentralized_parties.html>`__ on multiple validator nodes
 
   * a common setup is to use two nodes with threshold two; thus both of them must confirm a tx for it to be committed
 
@@ -49,6 +49,17 @@ Sketch:
 * note history tx parser should deal with this properly and just ignore the extra wrapper. So no further change required
 
 
+.. _share-rewards-with-customers:
+
+Sharing App Rewards with your Customers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sketch:
+
+* use the benefeciary feature of app rewards to share some of the rewards with your customers
+
+  * see https://hyperledger-labs.github.io/splice/background/tokenomics/feat_app_act_marker_tokenomics.html#creating-a-featured-application-activity-marker
+
 
 Sharding the Treasury
 ~~~~~~~~~~~~~~~~~~~~~
@@ -68,4 +79,4 @@ Using the gRPC Ledger API
 
 Feel free to do so if you prefer using gRPC.
 It is functionally equivalent to the JSON Ledger API.
-See this `Ledger API overview <https://docs.digitalasset.com/build/3.3/explanations/ledger-api.html>`_ for more information.
+See this `Ledger API overview <https://docs.digitalasset.com/build/3.3/explanations/ledger-api.html>`__ for more information.

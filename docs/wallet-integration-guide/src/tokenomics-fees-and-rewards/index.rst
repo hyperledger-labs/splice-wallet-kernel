@@ -8,7 +8,7 @@
 Tokenomics Fees and Rewards
 ===========================
 
-Below is a high-level summary of the `Sycnrhonizer Traffic Fees page <https://docs.sync.global/deployment/traffic.html>`_ in the Splice Validator documentation.
+Below is a high-level summary of the `Sycnrhonizer Traffic Fees page <https://docs.sync.global/deployment/traffic.html>`__ in the Splice Validator documentation.
 For more detail on point, it's advised to read the that documenation.
 
 Traffic
@@ -31,8 +31,8 @@ Getting more traffic
     * Super Validators publish a traffic cost USD <> Bytes.
 * Anyone can burn Canton Coin to get traffic for any node.
     * You can buy your own traffic.
-    * You can sign up with a service like the `Denex Gas Station <https://denex.io/gasstation>`_ to buy your traffic.
-* The validator node has automation to keep traffic topped up. As long as you keep CC in your validator party, it'll stay available. See `here <https://docs.sync.global/validator_operator/validator_helm.html#configuring-automatic-traffic-purchases>`_ for how to configure automatic traffic purchases.
+    * You can sign up with a service like the `Denex Gas Station <https://denex.io/gasstation>`__ to buy your traffic.
+* The validator node has automation to keep traffic topped up. As long as you keep CC in your validator party, it'll stay available. See `here <https://docs.sync.global/validator_operator/validator_helm.html#configuring-automatic-traffic-purchases>`__ for how to configure automatic traffic purchases.
 
 Obtaining CC
 ------------
@@ -58,4 +58,4 @@ Gaining Application Rewards as a Wallet/Custodian/Exchange
 How to determine the traffic cost of a transaction?
 ---------------------------------------------------
 
-Follow this `FAQ entry in the Splice documentation <https://docs.dev.sync.global/faq.html#term-How-do-I-determine-the-traffic-used-for-a-specific-transaction>`_.
+Follow this `FAQ entry in the Splice documentation <https://docs.dev.sync.global/faq.html#term-How-do-I-determine-the-traffic-used-for-a-specific-transaction>`__.

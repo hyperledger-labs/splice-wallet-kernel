@@ -1,0 +1,31 @@
+{
+    "name": "@canton-network/core-scan-client",
+    "version": "0.1.0",
+    "type": "module",
+    "description": "Typescript Client for the Canton Network Scan API",
+    "repository": "github:hyperledger-labs/splice-wallet-kernel",
+    "license": "Apache-2.0",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "packageManager": "yarn@4.9.4",
+    "scripts": {
+        "build": "tsc -b",
+        "dev": "tsc -b --watch",
+        "clean": "tsc -b --clean; rm -rf dist"
+    },
+    "dependencies": {
+        "@canton-network/core-types": "workspace:^",
+        "openapi-fetch": "^0.14.0",
+        "uuid": "^11.1.0",
+        "zod": "^3.25.67"
+    },
+    "devDependencies": {
+        "typescript": "^5.8.3"
+    },
+    "files": [
+        "dist/*"
+    ],
+    "publishConfig": {
+        "access": "public"
+    }
+}
