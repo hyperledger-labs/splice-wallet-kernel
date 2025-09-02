@@ -1,6 +1,11 @@
-import { paths } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
+import {
+    components,
+    paths,
+} from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from 'pino'
+
+export type Types = components['schemas']
 
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional

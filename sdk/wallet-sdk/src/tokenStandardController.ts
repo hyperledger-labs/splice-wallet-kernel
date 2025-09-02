@@ -1,5 +1,5 @@
 import {
-    DisclosedContract,
+    Types,
     LedgerClient,
     TokenStandardService,
 } from '@canton-network/core-ledger-client'
@@ -104,7 +104,7 @@ export class TokenStandardController {
             instrumentId: string
             instrumentAdmin: string
         }
-    ): Promise<[unknown, DisclosedContract[]]> {
+    ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
         return this.service.createTap(
             receiver,
             amount,
@@ -123,7 +123,7 @@ export class TokenStandardController {
             instrumentAdmin: string
         },
         meta?: Record<string, never>
-    ): Promise<[unknown, DisclosedContract[]]> {
+    ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
         try {
             return await this.service.createTransfer(
                 sender,

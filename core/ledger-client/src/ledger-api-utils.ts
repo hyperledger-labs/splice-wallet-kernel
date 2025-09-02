@@ -9,22 +9,20 @@ import {
     matchInterfaceIds,
     TransferInstructionInterface,
 } from './constants.js'
-import { components } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import { LedgerClient } from './ledger-client.js'
 import { Holding, TransferInstructionView } from './txparse/types.js'
+import { Types } from './ledger-client.js'
 
-type TransactionFilter = components['schemas']['TransactionFilter']
-type CreatedEvent = components['schemas']['CreatedEvent']
-type ExercisedEvent = components['schemas']['ExercisedEvent']
-type ArchivedEvent = components['schemas']['ArchivedEvent']
-type ExerciseCommand = components['schemas']['ExerciseCommand']
-type JsInterfaceView = components['schemas']['JsInterfaceView']
-export type JsPrepareSubmissionRequest =
-    components['schemas']['JsPrepareSubmissionRequest']
-export type DisclosedContract = components['schemas']['DisclosedContract']
-type PartySignatures = components['schemas']['PartySignatures']
-type Command = components['schemas']['Command']
-type DeduplicationPeriod2 = components['schemas']['DeduplicationPeriod2']
+type TransactionFilter = Types['TransactionFilter']
+type CreatedEvent = Types['CreatedEvent']
+type ExercisedEvent = Types['ExercisedEvent']
+type ArchivedEvent = Types['ArchivedEvent']
+type ExerciseCommand = Types['ExerciseCommand']
+type JsInterfaceView = Types['JsInterfaceView']
+type DisclosedContract = Types['DisclosedContract']
+type PartySignatures = Types['PartySignatures']
+type Command = Types['Command']
+type DeduplicationPeriod2 = Types['DeduplicationPeriod2']
 
 export function filtersByParty(
     party: string,

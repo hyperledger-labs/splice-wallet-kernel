@@ -3,8 +3,7 @@ import {
     PostResponse,
     PostRequest,
     GetResponse,
-    JsPrepareSubmissionRequest,
-    DisclosedContract,
+    Types,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -68,7 +67,7 @@ export class LedgerController {
         commands: unknown,
         privateKey: string,
         commandId: string,
-        disclosedContracts?: DisclosedContract[]
+        disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
         const prepared = await this.prepareSubmission(
             commands,
@@ -109,9 +108,9 @@ export class LedgerController {
     async prepareSubmission(
         commands: unknown,
         commandId?: string,
-        disclosedContracts?: DisclosedContract[]
+        disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
-        const prepareParams: JsPrepareSubmissionRequest = {
+        const prepareParams: Types['JsPrepareSubmissionRequest'] = {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
             commands: commands as any,
             commandId: commandId || v4(),
