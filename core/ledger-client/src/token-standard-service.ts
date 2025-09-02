@@ -55,7 +55,7 @@ export class TokenStandardService {
     async createAcceptTransferInstruction(
         transferInstructionCid: string,
         transferFactoryRegistryUrl: string
-    ): Promise<ExerciseCommand> {
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
             const client = this.tokenStandardClient(transferFactoryRegistryUrl)
             const choiceContext = await client.post(
@@ -80,10 +80,48 @@ export class TokenStandardService {
                 },
             }
 
-            return exercise
+            return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
             this.logger.error(
                 'Failed to create accept transfer instruction:',
+                e
+            )
+            throw e
+        }
+    }
+
+    async createRejectTransferInstruction(
+        transferInstructionCid: string,
+        transferFactoryRegistryUrl: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
+            const client = this.tokenStandardClient(transferFactoryRegistryUrl)
+            const choiceContext = await client.post(
+                '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/reject',
+                {},
+                {
+                    path: {
+                        transferInstructionId: transferInstructionCid,
+                    },
+                }
+            )
+
+            const exercise: ExerciseCommand = {
+                templateId: TransferInstructionInterface,
+                contractId: transferInstructionCid,
+                choice: 'TransferInstruction_Reject',
+                choiceArgument: {
+                    extraArgs: {
+                        context: choiceContext.choiceContextData,
+                        meta: { values: {} },
+                    },
+                },
+            }
+
+            return [exercise, choiceContext.disclosedContracts]
+        } catch (e) {
+            this.logger.error(
+                'Failed to create reject transfer instruction:',
                 e
             )
             throw e
@@ -270,6 +308,7 @@ export class TokenStandardService {
                 choice: 'TransferFactory_Transfer',
                 choiceArgument: choiceArgs,
             }
+
             return [exercise, transferFactory.choiceContext.disclosedContracts]
         } catch (e) {
             this.logger.error('Failed to execute transfer:', e)
