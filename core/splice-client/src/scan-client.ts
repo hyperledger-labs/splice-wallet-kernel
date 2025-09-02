@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { paths } from './generated-clients/scan'
+import { components, paths } from './generated-clients/scan'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from '@canton-network/core-types'
+
+export type Types = components['schemas']
 
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional

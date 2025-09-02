@@ -4,8 +4,10 @@
 import {
     Types,
     LedgerClient,
-    TokenStandardService,
+    PrettyTransactions,
+    TokenStandardService
 } from '@canton-network/core-ledger-client'
+import { ScanClient } from '@canton-network/core-scan-client'
 import { pino } from 'pino'
 import {
     PrettyTransactions,
@@ -29,6 +31,7 @@ export class TokenStandardController {
     private partyId: string = ''
     private synchronizerId: string = ''
     private transferFactoryRegistryUrl: string = ''
+    private scanApiUrl: URL = new URL('http://localhost:3000')
 
     /** Creates a new instance of the LedgerController.
      *
@@ -64,6 +67,14 @@ export class TokenStandardController {
         this.synchronizerId = synchronizerId
         return this
     }
+    /**
+     * Sets the scanApiUrl that the TokenStandardController will use for requests.
+     * @param scanApiUrl
+     */
+    setScanApiUrl(scanApiUrl: string): TokenStandardController {
+        this.scanApiUrl = new URL(scanApiUrl)
+        return this
+    }
 
     /**
      * Sets the transferFactoryRegistryUrl that the TokenStandardController will use for requests.
@@ -80,6 +91,10 @@ export class TokenStandardController {
         return await this.service.getInstrumentAdmin(
             this.transferFactoryRegistryUrl
         )
+    }
+
+    getScanClient(): ScanClient {
+        return new ScanClient(this.scanApiUrl.href, this.logger)
     }
 
     /** Lists all holdings for the current party.
