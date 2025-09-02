@@ -120,7 +120,6 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
 )
 logger.info('Submitted transfer transaction')
 
-
 const holdings = await sdk.tokenStandard?.listHoldingTransactions()
 
 const transferCid = holdings!.transactions
@@ -137,7 +136,10 @@ sdk.userLedger?.setPartyId(receiver!.partyId)
 sdk.tokenStandard?.setPartyId(receiver!.partyId)
 
 const [acceptTransferCommand, disclosedContracts3] =
-    await sdk.tokenStandard!.acceptTransferInstruction(transferCid)
+    await sdk.tokenStandard!.exerciseTransferInstructionChoice(
+        transferCid,
+        'Accept'
+    )
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
     [{ ExerciseCommand: acceptTransferCommand }],

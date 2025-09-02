@@ -11,6 +11,8 @@ import {
 } from '@canton-network/core-ledger-client'
 import { HoldingV1 } from '@canton-network/core-token-standard'
 
+export type TransactionInstructionChoice = 'Accept' | 'Reject'
+
 /**
  * TokenStandardController handles token standard management tasks.
  * This controller requires a userId and token.
@@ -148,14 +150,30 @@ export class TokenStandardController {
         }
     }
 
-    async acceptTransferInstruction(
-        transferInstructionCid: string
+    /** Execute the choice TransferInstruction_Accept o TransferInstruction_Reject
+     *  on the provided transfer instruction.
+     * @param transferInstructionCid The contract ID of the transfer instruction to accept or reject
+     * @param instructionChoice is either Accept or Reject
+     * @returns A promise that resolves to an array of
+     *  active contracts interface view values and cids.
+     */
+
+    async exerciseTransferInstructionChoice(
+        transferInstructionCid: string,
+        instructionChoice: TransactionInstructionChoice
     ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
         try {
-            return await this.service.createAcceptTransferInstruction(
-                transferInstructionCid,
-                this.transferFactoryRegistryUrl
-            )
+            if (instructionChoice === 'Accept') {
+                return await this.service.createAcceptTransferInstruction(
+                    transferInstructionCid,
+                    this.transferFactoryRegistryUrl
+                )
+            } else {
+                return await this.service.createRejectTransferInstruction(
+                    transferInstructionCid,
+                    this.transferFactoryRegistryUrl
+                )
+            }
         } catch (error) {
             this.logger.error(
                 { error },

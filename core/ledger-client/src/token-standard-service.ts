@@ -90,6 +90,44 @@ export class TokenStandardService {
         }
     }
 
+    async createRejectTransferInstruction(
+        transferInstructionCid: string,
+        transferFactoryRegistryUrl: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
+            const client = this.tokenStandardClient(transferFactoryRegistryUrl)
+            const choiceContext = await client.post(
+                '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/reject',
+                {},
+                {
+                    path: {
+                        transferInstructionId: transferInstructionCid,
+                    },
+                }
+            )
+
+            const exercise: ExerciseCommand = {
+                templateId: TransferInstructionInterface,
+                contractId: transferInstructionCid,
+                choice: 'TransferInstruction_Reject',
+                choiceArgument: {
+                    extraArgs: {
+                        context: choiceContext.choiceContextData,
+                        meta: { values: {} },
+                    },
+                },
+            }
+
+            return [exercise, choiceContext.disclosedContracts]
+        } catch (e) {
+            this.logger.error(
+                'Failed to create reject transfer instruction:',
+                e
+            )
+            throw e
+        }
+    }
+
     // <T> is shape of viewValue related to queried interface.
     // i.e. when querying by TransferInstruction interfaceId, <T> would be TransferInstructionView from daml codegen
     async listContractsByInterface<T = ViewValue>(
