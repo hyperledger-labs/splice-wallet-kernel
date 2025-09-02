@@ -5,10 +5,10 @@ import {
     localNetTopologyDefault,
     localNetTokenStandardDefault,
     createKeyPair,
-    LocalNetDefaultScanApi,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
+import { LOCALNET_REGISTRY_API, LOCALNET_SCAN_API } from '../config.js'
 
 const logger = pino({ name: '04-token-standard-localnet', level: 'info' })
 
@@ -30,7 +30,7 @@ const keyPairSender = createKeyPair()
 const keyPairReceiver = createKeyPair()
 
 await sdk.connectAdmin()
-await sdk.connectTopology(LocalNetDefaultScanApi)
+await sdk.connectTopology(LOCALNET_SCAN_API)
 
 const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairSender.privateKey,
@@ -61,9 +61,7 @@ await sdk.userLedger
 
 sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 
-// Node cannot resolve subdomain.localhost, therefore add the following mapping to your /etc/hosts
-// 127.0.0.1   scan.localhost
-sdk.tokenStandard?.setTransferFactoryRegistryUrl('http://scan.localhost:4000')
+sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API)
 
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     sender!.partyId,

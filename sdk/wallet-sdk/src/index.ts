@@ -34,8 +34,6 @@ type TokenStandardFactory = (
     token: string
 ) => TokenStandardController
 
-export const LocalNetDefaultScanApi = 'http://scan.localhost:4000/api/scan'
-
 export interface Config {
     authFactory: AuthFactory
     ledgerFactory: LedgerFactory
