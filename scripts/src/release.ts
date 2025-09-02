@@ -76,14 +76,16 @@ async function checkGit() {
 async function checkBranchIsReady() {
     const { stdout: branch } = await ex('git branch --show-current')
 
-    if (branch !== 'main') {
-        console.error('You must be on the main branch to release')
+    if (branch.trim() !== 'main') {
+        console.error(
+            `You must be on the main branch to release (detected branch: ${branch.trim()})`
+        )
         process.exit(1)
     }
 
     const { stdout: count } = await ex('git rev-list --count HEAD..origin/main')
 
-    if (count !== '0') {
+    if (count.trim() !== '0') {
         console.error(
             'Your branch may be behind the remote, run `git pull` to update it'
         )
@@ -92,7 +94,7 @@ async function checkBranchIsReady() {
 
     const { stdout: porcelain } = await ex('git status --porcelain')
 
-    if (porcelain) {
+    if (porcelain.trim()) {
         console.error('Git working directory is not clean:')
         console.error(porcelain)
         process.exit(1)
