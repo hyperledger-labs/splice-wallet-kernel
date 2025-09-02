@@ -4,12 +4,12 @@ import {
     localTokenStandardDefault,
     TokenStandardController,
 } from './tokenStandardController.js'
+import { ScanClient } from '@canton-network/core-scan-client'
 import {
     localTopologyDefault,
     TopologyController,
 } from './topologyController.js'
 import { Logger } from '@canton-network/core-types'
-
 export * from './ledgerController.js'
 export * from './authController.js'
 export * from './topologyController.js'
@@ -25,7 +25,8 @@ type AuthFactory = () => AuthController
 type LedgerFactory = (userId: string, token: string) => LedgerController
 type TopologyFactory = (
     userId: string,
-    adminAccessToken: string
+    adminAccessToken: string,
+    synchronizerId: string
 ) => TopologyController
 type TokenStandardFactory = (
     userId: string,
@@ -45,7 +46,7 @@ export interface WalletSDK {
     configure(config: Config): WalletSDK
     connect(): Promise<WalletSDK>
     connectAdmin(): Promise<WalletSDK>
-    connectTopology(): Promise<WalletSDK>
+    connectTopology(synchronizer: string | URL): Promise<WalletSDK>
     userLedger: LedgerController | undefined
     adminLedger: LedgerController | undefined
     topology: TopologyController | undefined
@@ -116,14 +117,43 @@ export class WalletSDKImpl implements WalletSDK {
     }
 
     /** Connects to the topology service using admin credentials.
+     * @param synchronizer either the synchronizerId or the base url of the scanClient.
      * @returns A promise that resolves to the WalletSDK instance.
      */
-    async connectTopology(): Promise<WalletSDK> {
+    async connectTopology(synchronizer: string | URL): Promise<WalletSDK> {
         if (this.auth.userId === undefined)
             throw new Error('UserId is not defined in AuthController.')
+        if (synchronizer === undefined)
+            throw new Error(
+                'Synchronizer is not defined in connectTopology. Either provide a synchronizerId or a scanClient base url.'
+            )
         const { userId, accessToken } = await this.auth.getAdminToken()
         this.logger?.info(`Connecting user ${userId} with token ${accessToken}`)
-        this.topology = this.topologyFactory(userId, accessToken)
+        let synchronizerId: string
+        if (typeof synchronizer === 'string') {
+            synchronizerId = synchronizer
+        } else if (synchronizer instanceof URL) {
+            const scanClient = new ScanClient(
+                synchronizer.href,
+                this.logger!,
+                accessToken
+            )
+            const amuletSynchronizerId =
+                await scanClient.GetAmuletSynchronizerId()
+            if (amuletSynchronizerId === undefined) {
+                throw new Error('SynchronizerId is not defined in ScanClient.')
+            } else {
+                synchronizerId = amuletSynchronizerId
+            }
+        } else
+            throw new Error(
+                'invalid Synchronizer format. Either provide a synchronizerId or a scanClient base url.'
+            )
+        this.topology = this.topologyFactory(
+            userId,
+            accessToken,
+            synchronizerId
+        )
         return this
     }
 }

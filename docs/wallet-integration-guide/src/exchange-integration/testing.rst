@@ -10,9 +10,9 @@ Sketch:
 
 * When testing on your laptop or in CI, we recommend using the
   `Docker-Compose based local deployment of a Global Synchronizer and Canton Coin from Splice
-  <https://docs.dev.sync.global/app_dev/testing/localnet.html>`_.
+  <https://docs.dev.sync.global/app_dev/testing/localnet.html>`__.
 * You can also setup a DevNet node for testing purposes
-  using either Docker-Compose or k8s as `documented in Splice <https://docs.dev.sync.global/validator_operator/index.html>`_.
+  using either Docker-Compose or k8s as `documented in Splice <https://docs.dev.sync.global/validator_operator/index.html>`__.
 
 
 

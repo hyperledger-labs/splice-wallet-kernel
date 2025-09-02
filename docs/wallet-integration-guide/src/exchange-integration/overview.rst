@@ -34,10 +34,17 @@ The following dependency diagrams shows the work items and milestones, which we 
 .. image:: images/delivery_dependencies.png
   :alt: milestone and delivery dependency diagram
 
-
-* **MVP for CC**: this MVP allows you to support deposits and withdrawals of Canton Coin (CC).
+* **MVP for CC with 1-step withdrawal only**: this MVP allows you to support deposits and withdrawals of Canton Coin (CC).
   It includes earning app rewards for all CC deposits.
-  It comes with the limitation that users must setup a CC transfer preapproval to receive withdrawals.
+  The workflows build on the Canton Network Token Standard and thus provide a good stepping stone for
+  supporting all CN tokens.
+  We consider it an intermediate milestone, as it does not support:
+
+  * all CN tokens
+  * CC users that prefer to control the receipt of transfers, and thus do not want to
+    setup preapprovals
+  * earning app rewards for all deposits and withdrawals
+
   See the following sections for details on the work items it depends on.
 
   * :ref:`Setup DevNet node and/or use LocalNet <test-node-setup>`
@@ -58,6 +65,9 @@ The following dependency diagrams shows the work items and milestones, which we 
 * **Earn app rewards for all CN tokens**: is an additional milestone that improves
   the profitability of your integration by implementing the changes required so that
   your exchange earns app rewards on both withdrawals and deposits of all CN tokens.
+  Sharing app rewards is an optional step. Whether you want to so depends on
+  your user base and business model.
 
   * :ref:`deposit-app-rewards`
   * :ref:`withdrawal-app-rewards`
+  * :ref:`share-rewards-with-customers`

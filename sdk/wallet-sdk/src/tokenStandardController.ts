@@ -77,7 +77,6 @@ export class TokenStandardController {
             afterOffset
         )
     }
-
     async createTap(
         receiver: string,
         amount: string,
