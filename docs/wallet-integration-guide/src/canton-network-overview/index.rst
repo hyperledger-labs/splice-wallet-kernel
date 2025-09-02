@@ -66,8 +66,7 @@ To read more about the differences between internal and external parties, see th
 
 Parties are formatted as ``name::fingerprint``. 
 The party name or hint is freely chosen at time of creation - there's a maximum limit of 185 characters from [a-zA-Z0-9:-_ ], it must not use two consecutive colons, and must be unique in the namespace.
-The **fingerprint** is a unique identifier which can be generated from a public key (and thus also from a private key).
-The fingerprint is a sha256 hash of the public key prefixed with '12' (as indicated by the `hash purpose <https://github.com/digital-asset/canton/blob/8ee65155e7f866e1f420703c376c867336b75088/community/base/src/main/scala/com/digitalasset/canton/crypto/HashPurpose.scala#L63>`_).
+The **fingerprint** is a unique identifier and a sha256 hash of the public key prefixed with '12' (as indicated by the `hash purpose <https://github.com/digital-asset/canton/blob/8ee65155e7f866e1f420703c376c867336b75088/community/base/src/main/scala/com/digitalasset/canton/crypto/HashPurpose.scala#L63>`_).
 
 If you want to be able to derive your Party IDs from the public key, you can either use a static Party Name, and therefore derive the key from the fingerprint, or derive Party Name from the public key, too.
 
