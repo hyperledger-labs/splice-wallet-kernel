@@ -17,6 +17,8 @@ const sdk = new WalletSDKImpl().configure({
     topologyFactory: localTopologyDefault,
     tokenStandardFactory: localTokenStandardDefault,
 })
+const fixedLocalNetSynchronizer =
+    'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd'
 
 console.log('SDK initialized')
 
@@ -44,7 +46,7 @@ await sdk.adminLedger
         console.error('Error listing wallets:', error)
     })
 
-await sdk.connectTopology()
+await sdk.connectTopology(fixedLocalNetSynchronizer)
 console.log('Connected to topology')
 
 const keyPair = createKeyPair()

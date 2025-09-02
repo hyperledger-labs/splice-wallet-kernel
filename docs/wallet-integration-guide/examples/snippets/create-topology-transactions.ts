@@ -4,6 +4,7 @@ import {
     localNetAuthDefault,
     localNetLedgerDefault,
     localNetTopologyDefault,
+    LocalNetDefaultScanApi,
 } from '@canton-network/wallet-sdk'
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
@@ -14,7 +15,7 @@ const sdk = new WalletSDKImpl().configure({
     topologyFactory: localNetTopologyDefault, // or use your specific configuration
 })
 
-await sdk.connectTopology()
+await sdk.connectTopology(LocalNetDefaultScanApi)
 
 const { publicKey, privateKey } = TopologyController.createNewKeyPair()
 //partyHint is optional but recommended to make it easier to identify the party

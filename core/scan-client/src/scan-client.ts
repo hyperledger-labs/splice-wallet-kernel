@@ -108,4 +108,29 @@ export class ScanClient {
             return Promise.resolve(response.data)
         }
     }
+
+    public async GetAmuletSynchronizerId(): Promise<string | undefined> {
+        const dsoInfo = await this.get('/v0/dso')
+
+        const payloadObj = JSON.parse(
+            JSON.stringify(dsoInfo.amulet_rules.contract.payload)
+        )
+
+        const initActiveSynchronizer =
+            payloadObj?.configSchedule?.initialValue?.decentralizedSynchronizer
+                ?.activeSynchronizer
+        const futureValues = payloadObj?.configSchedule?.futureValues as []
+
+        if (futureValues.length > 0) {
+            let updatedValue = undefined
+            for (const value of futureValues) {
+                const parsed = JSON.parse(JSON.stringify(value))
+                if (parsed?.decentralizedSynchronizer?.activeSynchronizer) {
+                    updatedValue =
+                        parsed.decentralizedSynchronizer.activeSynchronizer
+                }
+            }
+            return updatedValue ?? initActiveSynchronizer
+        } else return initActiveSynchronizer
+    }
 }

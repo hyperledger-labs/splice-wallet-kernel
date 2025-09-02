@@ -5,6 +5,7 @@ import {
     localNetTopologyDefault,
     localNetTokenStandardDefault,
     createKeyPair,
+    LocalNetDefaultScanApi,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
@@ -29,7 +30,7 @@ const keyPairSender = createKeyPair()
 const keyPairReceiver = createKeyPair()
 
 await sdk.connectAdmin()
-await sdk.connectTopology()
+await sdk.connectTopology(LocalNetDefaultScanApi)
 
 const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairSender.privateKey,
@@ -47,8 +48,7 @@ logger.info(`Created party: ${receiver!.partyId}`)
 
 const synchronizers = await sdk.userLedger?.listSynchronizers()
 
-// @ts-ignore
-const synchonizerId = synchronizers!.connectedSynchronizers[0].synchronizerId
+const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
 
 await sdk.userLedger
     ?.listWallets()

@@ -3,6 +3,7 @@ import {
     localNetAuthDefault,
     localNetLedgerDefault,
     localNetTopologyDefault,
+    LocalNetDefaultScanApi,
 } from '@canton-network/wallet-sdk'
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
@@ -12,7 +13,7 @@ const sdk = new WalletSDKImpl().configure({
     ledgerFactory: localNetLedgerDefault, // or use your specific configuration
     topologyFactory: localNetTopologyDefault, // or use your specific configuration
 })
-await sdk.connectTopology()
+await sdk.connectTopology(LocalNetDefaultScanApi)
 
 const preparedParty = {
     partyTransactions: [], // array of topology transactions

@@ -3,6 +3,7 @@ import {
     localNetAuthDefault,
     localNetLedgerDefault,
     localNetTopologyDefault,
+    LocalNetDefaultScanApi,
     createKeyPair,
 } from '@canton-network/wallet-sdk'
 import { v4 } from 'uuid'
@@ -30,7 +31,7 @@ await sdk.userLedger
     })
 
 const keyPair = createKeyPair()
-await sdk.connectTopology()
+await sdk.connectTopology(LocalNetDefaultScanApi)
 
 console.log('generated keypair')
 const allocatedParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
