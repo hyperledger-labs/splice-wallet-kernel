@@ -700,7 +700,7 @@ export class TransactionParser {
                 // This will happen for holdings with consuming choices
                 // where the party the script is running on is an actor on the choice
                 // but not a stakeholder.
-                if (err.code === 404) {
+                if (err.code === 'CONTRACT_EVENTS_NOT_FOUND') {
                     return null
                 } else {
                     throw err

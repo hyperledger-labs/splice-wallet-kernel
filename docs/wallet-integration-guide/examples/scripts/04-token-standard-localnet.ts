@@ -149,3 +149,17 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
 )
 
 console.log('Accepted transfer instruction')
+
+await new Promise((res) => setTimeout(res, 5000))
+
+{
+    sdk.tokenStandard?.setPartyId(sender!.partyId)
+    const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
+    logger.info(aliceHoldings, '[ALICE] holding transactions')
+
+    sdk.tokenStandard?.setPartyId(receiver!.partyId)
+    const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
+    logger.info(bobHoldings, '[BOB] holding transactions')
+
+    sdk.tokenStandard?.setPartyId(sender!.partyId)
+}
