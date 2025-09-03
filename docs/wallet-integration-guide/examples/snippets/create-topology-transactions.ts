@@ -20,7 +20,8 @@ await sdk.connectTopology(LOCALNET_SCAN_API_URL)
 const { publicKey, privateKey } = TopologyController.createNewKeyPair()
 //partyHint is optional but recommended to make it easier to identify the party
 const partyHint = 'my-wallet-1'
+
 const preparedParty = await sdk.topology?.prepareExternalPartyTopology(
-    publicKey,
+    privateKey,
     partyHint
 )
