@@ -43,7 +43,7 @@
         "pino": "^9.7.0"
     },
     "files": [
-        "dist/*"
+        "dist/**"
     ],
     "publishConfig": {
         "access": "public"

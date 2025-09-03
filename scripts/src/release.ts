@@ -51,12 +51,8 @@ async function runRelease() {
 
     await cmd(`git checkout -b ${branch}`)
     await cmd(`git push --set-upstream origin ${branch}`)
-
     await cmd(`yarn nx release --skip-publish`)
-
-    await cmd(
-        `gh pr create --base main --head ${branch} --title 'chore: release' --body 'Release PR'`
-    )
+    await cmd(`gh pr create --fill --base main --head ${branch}`)
 }
 
 async function checkGitHubCli() {
