@@ -32,7 +32,9 @@ const makeLedgerClientFromEventsResponses = (
         }
         const entry = responseByCid.get(body.contractId)
         if (!entry) {
-            throw Object.assign(new Error('Not Found'), { code: 404 })
+            throw Object.assign(new Error('Not Found'), {
+                code: 'CONTRACT_EVENTS_NOT_FOUND',
+            })
         }
 
         return entry
@@ -93,7 +95,7 @@ describe('TransactionParser', () => {
         expect(mockLedgerClient.post).toHaveBeenCalled()
     })
 
-    it('skips an ArchivedEvent when ledger returns 404', async () => {
+    it('skips an ArchivedEvent when ledger returns CONTRACT_EVENTS_NOT_FOUND', async () => {
         const partyId = 'alice::normalized'
 
         // contractId not present in eventsByContractIdResponses that results in 404 from mock LedgerClient
@@ -130,6 +132,6 @@ describe('TransactionParser', () => {
         ])
         await expect(
             (mockLedgerClient.post as jest.Mock).mock.results[0].value
-        ).rejects.toMatchObject({ code: 404 })
+        ).rejects.toMatchObject({ code: 'CONTRACT_EVENTS_NOT_FOUND' })
     })
 })
