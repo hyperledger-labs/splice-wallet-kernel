@@ -67,7 +67,7 @@
     },
     "lint-staged": {
         "*": "prettier --write --ignore-unknown",
-        "*.ts": "eslint"
+        "*.ts": "yarn eslint"
     },
     "packageManager": "yarn@4.9.4",
     "dependencies": {
