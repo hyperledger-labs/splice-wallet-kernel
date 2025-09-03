@@ -8849,6 +8849,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-license-header@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "eslint-plugin-license-header@npm:0.8.0"
+  dependencies:
+    requireindex: "npm:^1.2.0"
+  checksum: 10c0/816dc806f0e77a7c0e03da829f2e6b1ca571460f187f31422bbada070f9bc32f1f2c02638977df1866a50ce4365ea959ccc0b50e790ca8e8f2575544415b5a38
+  languageName: node
+  linkType: hard
+
 "eslint-plugin-no-unsanitized@npm:4.1.2":
   version: 4.1.2
   resolution: "eslint-plugin-no-unsanitized@npm:4.1.2"
@@ -14534,6 +14543,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"requireindex@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "requireindex@npm:1.2.0"
+  checksum: 10c0/7fb42aed73bf8de9acc4d6716cf07acc7fbe180e58729433bafcf702e76e7bb10e54f8266c06bfec62d752e0ac14d50e8758833de539e6f4e2cd642077866153
+  languageName: node
+  linkType: hard
+
 "resolve-cwd@npm:^3.0.0":
   version: 3.0.0
   resolution: "resolve-cwd@npm:3.0.0"
@@ -15249,6 +15265,7 @@ __metadata:
     "@swc/core": "npm:^1.13.4"
     commitlint: "npm:^19.8.1"
     eslint: "npm:^9.28.0"
+    eslint-plugin-license-header: "npm:^0.8.0"
     globals: "npm:^16.2.0"
     grpc-tools: "npm:^1.13.0"
     husky: "npm:^9.1.7"
