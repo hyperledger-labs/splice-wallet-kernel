@@ -679,7 +679,7 @@ export enum SignatureFormat {
      * Signature scheme specific signature format
      * Legacy format no longer used, except for migrations
      *
-     * @generated from protobuf enum value: SIGNATURE_FORMAT_RAW = 1;
+     * @generated from protobuf enum value: SIGNATURE_FORMAT_CONCAT = 1;
      */
     RAW = 1,
     /**
