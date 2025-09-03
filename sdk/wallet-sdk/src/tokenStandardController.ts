@@ -13,6 +13,11 @@ import { HoldingV1 } from '@canton-network/core-token-standard'
 import { ScanClient } from '@canton-network/core-scan-client'
 import { ValidatorInternalClient } from '@canton-network/core-scan-client/dist/validator-internal-client'
 
+import {
+    getPublicKeyFromPrivate,
+    signTransactionHash,
+} from '@canton-network/core-signing-lib'
+
 export type TransactionInstructionChoice = 'Accept' | 'Reject'
 
 /**
@@ -145,6 +150,36 @@ export class TokenStandardController {
                     public_key: publicKey,
                 },
             }
+        )
+    }
+
+    async externalPartyPreApprovalSetup(
+        partyId: string,
+        validatorUrl: string,
+        privateKey: string
+    ) {
+        const createPartyProposalResponse =
+            await this.createExternalPartyProposal(partyId, validatorUrl)
+
+        const preparedTxAndHash = await this.prepareExternalPartyProposal(
+            createPartyProposalResponse.contract_id,
+            partyId,
+            validatorUrl
+        )
+
+        const txHashBase64 = Buffer.from(
+            preparedTxAndHash.tx_hash,
+            'hex'
+        ).toString('base64')
+
+        const signedHash = signTransactionHash(txHashBase64, privateKey)
+
+        await this.submitPartyProposal(
+            partyId,
+            validatorUrl,
+            getPublicKeyFromPrivate(privateKey),
+            signedHash,
+            preparedTxAndHash.transaction
         )
     }
 
