@@ -1,5 +1,6 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
+
 import express from 'express'
 import { userController } from './controller.js'
 import { pino } from 'pino'

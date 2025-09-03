@@ -1,5 +1,6 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
+
 import { TemplateExecutor } from 'lodash'
 import { OpenrpcDocument as OpenRPC } from '@open-rpc/meta-schema'
 import Typings from '@open-rpc/typings'

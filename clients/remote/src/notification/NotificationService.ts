@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // TODO: make events type-of dApp methods (perhaps just )
 // Support event-driven notifications. We represent a notifier with a generic interface to support node and browser implementations.
+
 type EventListener = (...args: unknown[]) => void
 export interface Notifier {
     on(event: string, listener: EventListener): void

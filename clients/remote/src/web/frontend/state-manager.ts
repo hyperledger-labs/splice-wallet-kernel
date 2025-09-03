@@ -1,5 +1,6 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
+
 class StateManager {
     static localStorageKey(item: string): string {
         return `com.splice.wallet.${item}`

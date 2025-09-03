@@ -1,5 +1,6 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
+
 /** Take a base64 encoded string and return a Uint8Array of the decoded bytes */
 export function fromBase64(b64: string): Uint8Array {
     const binaryString = atob(b64)
