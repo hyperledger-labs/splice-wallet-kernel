@@ -32,7 +32,7 @@
         "lit": "^3.3.0"
     },
     "files": [
-        "dist/*"
+        "dist/**"
     ],
     "publishConfig": {
         "access": "public"
