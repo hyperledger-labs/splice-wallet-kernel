@@ -10,6 +10,8 @@ import {
     ViewValue,
 } from '@canton-network/core-ledger-client'
 import { HoldingV1 } from '@canton-network/core-token-standard'
+import { ScanClient } from '@canton-network/core-scan-client'
+import { ValidatorInternalClient } from '@canton-network/core-scan-client/dist/validator-internal-client'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject'
 
@@ -82,6 +84,67 @@ export class TokenStandardController {
         return await this.service.listHoldingTransactions(
             this.partyId,
             afterOffset
+        )
+    }
+
+    //returns contract id used in prepareExternalPartyProposal
+    async createExternalPartyProposal(partyId: string, baseUrl: string) {
+        const validatorClient = new ValidatorInternalClient(
+            baseUrl,
+            this.logger,
+            this.accessToken
+        )
+        return await validatorClient.post(
+            '/v0/admin/external-party/setup-proposal',
+            {
+                user_party_id: partyId,
+            }
+        )
+    }
+
+    //returns tx and tx hash
+    async prepareExternalPartyProposal(
+        contractId: string,
+        partyId: string,
+        baseUrl: string
+    ) {
+        const validatorClient = new ValidatorInternalClient(
+            baseUrl,
+            this.logger,
+            this.accessToken
+        )
+        return await validatorClient.post(
+            '/v0/admin/external-party/setup-proposal/prepare-accept',
+            {
+                contract_id: contractId,
+                user_party_id: partyId,
+            }
+        )
+    }
+
+    //sign tx hash returned from prepareExternalPartyProposal and submit here
+    async submitPartyProposal(
+        partyId: string,
+        baseUrl: string,
+        publicKey: string,
+        hash: string,
+        tx: string
+    ) {
+        const validatorClient = new ValidatorInternalClient(
+            baseUrl,
+            this.logger,
+            this.accessToken
+        )
+        return await validatorClient.post(
+            '/v0/admin/external-party/setup-proposal/submit-accept',
+            {
+                submission: {
+                    party_id: partyId,
+                    transaction: tx,
+                    signed_tx_hash: hash,
+                    public_key: publicKey,
+                },
+            }
         )
     }
 
@@ -181,6 +244,30 @@ export class TokenStandardController {
             )
             throw error
         }
+    }
+
+    /**  Lookup a TransferPreapproval by the receiver party
+     * @param scanUrl url to access the scan proxy
+     * @param partyId receiver party id
+     * @returns A promise that resolves to an array of
+     * transfer preapparovals by party.
+     */
+
+    async getTransferPreApprovals(scanUrl: string, partyId: string) {
+        const scanClient = new ScanClient(
+            scanUrl,
+            this.logger,
+            this.accessToken
+        )
+
+        return await scanClient.get(
+            '/v0/transfer-preapprovals/by-party/{party}',
+            {
+                path: {
+                    party: partyId,
+                },
+            }
+        )
     }
 }
 
