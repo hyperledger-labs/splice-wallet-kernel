@@ -28,7 +28,8 @@
         "script:fetch:ledger": "tsx ./scripts/src/fetch-ledger-api-specs.ts",
         "script:fetch:localnet": "tsx ./scripts/src/fetch-localnet.ts",
         "script:openrpc:titles": "tsx ./scripts/src/schema-title-validation.ts",
-        "full:rebuild": "yarn clean:all && yarn generate:all && yarn build:all"
+        "full:rebuild": "yarn clean:all && yarn generate:all && yarn build:all",
+        "release": "tsx ./scripts/src/release.ts"
     },
     "workspaces": [
         "api-specs",

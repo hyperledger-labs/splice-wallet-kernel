@@ -21,6 +21,6 @@ const { publicKey, privateKey } = TopologyController.createNewKeyPair()
 const partyHint = 'my-wallet-1'
 
 const allocatedParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
-    publicKey,
+    privateKey,
     partyHint
 )
