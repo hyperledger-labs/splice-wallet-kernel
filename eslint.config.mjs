@@ -1,10 +1,12 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
 import js from '@eslint/js'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import { includeIgnoreFile } from '@eslint/compat'
 import { fileURLToPath } from 'node:url'
-import licenseHeader from 'eslint-plugin-license-header'
+import headers from 'eslint-plugin-headers'
 
 const gitignorePath = fileURLToPath(new URL('.gitignore', import.meta.url))
 
@@ -15,13 +17,14 @@ export default defineConfig([
         '**/build',
         '**/_proto',
         '**/.venv',
-        '.yarn/',
+        '.yarn/**',
         '.commitlintrc.js',
         '.pnp.*',
+        'vite-env.d.ts',
         'core/wallet-dapp-rpc-client',
         'core/wallet-user-rpc-client',
         'core/ledger-client/src/generated-clients',
-        'core/token-standard/src/*',
+        'core/token-standard/src/**',
         'docs/wallet-integration-guide/examples/**',
         'example/playwright-report/**',
     ]),
@@ -29,16 +32,19 @@ export default defineConfig([
         files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
         languageOptions: { globals: { ...globals.browser, ...globals.node } },
         extends: ['js/recommended'],
-        plugins: { js, 'license-header': licenseHeader },
+        plugins: { js, headers },
         rules: {
-            'license-header/header': [
+            'headers/header-format': [
                 'error',
-                [
-                    '// Copyright (c) ' +
-                        new Date().getFullYear() +
-                        ' Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.',
-                    '// SPDX-License-Identifier: Apache-2.0',
-                ],
+                {
+                    source: 'file',
+                    path: 'header.txt',
+                    style: 'line',
+                    trailingNewlines: 1,
+                    variables: {
+                        year: `${new Date().getFullYear()}`,
+                    },
+                },
             ],
         },
     },

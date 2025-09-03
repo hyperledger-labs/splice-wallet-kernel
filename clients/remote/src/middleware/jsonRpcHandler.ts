@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import { NextFunction, Request, Response } from 'express'
 import { Logger } from 'pino'
 import { rpcErrors } from '@metamask/rpc-errors'

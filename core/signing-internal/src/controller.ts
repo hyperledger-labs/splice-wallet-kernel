@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
