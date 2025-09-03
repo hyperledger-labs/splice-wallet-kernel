@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-lib",
-    "version": "0.1.0",
+    "version": "0.2.1",
     "type": "module",
     "description": "Core library for signing driver implementations",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -26,7 +26,7 @@
         "typescript": "^5.8.3"
     },
     "files": [
-        "dist/*"
+        "dist/**"
     ],
     "publishConfig": {
         "access": "public"
