@@ -12,7 +12,7 @@ curl http://localhost:7575/v2/interactive-submission/execute -d {
                 "party": "PARTY_ID",
                 "signatures": [
                 {
-                    "format": "SIGNATURE_FORMAT_RAW",
+                    "format": "SIGNATURE_FORMAT_CONCAT",
                     "signature": "$SIGNATURE",
                     "signingAlgorithmSpec": "SIGNING_ALGORITHM_SPEC_EC_DSA_SHA_256",
                     "signedBy": "FINGERPRINT"

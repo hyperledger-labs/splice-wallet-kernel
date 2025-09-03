@@ -368,7 +368,7 @@ export const userController = (
                                             {
                                                 signature,
                                                 signedBy,
-                                                format: 'SIGNATURE_FORMAT_RAW',
+                                                format: 'SIGNATURE_FORMAT_CONCAT',
                                                 signingAlgorithmSpec:
                                                     'SIGNING_ALGORITHM_SPEC_ED25519',
                                             },
