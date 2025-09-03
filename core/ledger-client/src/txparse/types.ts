@@ -63,6 +63,8 @@ export const EmptyHoldingsChangeSummary: HoldingsChangeSummary = {
  * Same as TransferInstructionView in Daml when exercising a TransferInstruction choice,
  * otherwise just meta and transfer.
  */
+// TODO investigate because it actually differs from TransferInstructionView from daml codegen
+// where status is: { tag, value }
 export interface TransferInstructionView {
     // currentInstructionCid: string // TODO (#505): add
     originalInstructionCid: string | null

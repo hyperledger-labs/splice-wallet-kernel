@@ -1,6 +1,9 @@
 // Copyright (c) 2024 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
-
+import {
+    HoldingV1,
+    TransferInstructionV1,
+} from '@canton-network/core-token-standard'
 export interface InterfaceIdParts {
     packageName: string
     moduleName: string
@@ -35,15 +38,13 @@ export function matchInterfaceIds(a: string, b: string): boolean {
     )
 }
 
-// TODO import from token standard codegen
-export const HoldingInterface =
-    '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding'
+export const HoldingInterface = HoldingV1.Holding.templateId
 
 export const TransferFactoryInterface =
-    '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferFactory'
+    TransferInstructionV1.TransferFactory.templateId
 
 export const TransferInstructionInterface =
-    '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferInstruction'
+    TransferInstructionV1.TransferInstruction.templateId
 
 // TODO (#563): include allocations
 export const TokenStandardTransactionInterfaces = [
