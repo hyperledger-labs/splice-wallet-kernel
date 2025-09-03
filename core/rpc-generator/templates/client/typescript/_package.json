@@ -13,7 +13,7 @@
         "clean": "tsc -b --clean; rm -rf dist",
         "lint": "eslint src/**/*.ts"
     },
-    "files": ["dist/*"],
+    "files": ["dist/**"],
     "publishConfig": {
         "access": "public"
     },

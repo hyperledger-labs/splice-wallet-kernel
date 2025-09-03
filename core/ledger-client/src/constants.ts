@@ -1,47 +1,49 @@
 // Copyright (c) 2024 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-export interface InterfaceId {
+export interface InterfaceIdParts {
     packageName: string
     moduleName: string
     entityName: string
-    toString(): string
-    matches(interfaceId: string): boolean
 }
-function buildInterfaceId(
-    packageName: string,
-    moduleName: string,
-    entityName: string
-): InterfaceId {
+
+export function splitInterfaceId(interfaceId: string): InterfaceIdParts | null {
+    // Captures 3 groups: pkg, module and entity
+    // Note that prefix # is optional in regexp below,
+    // format without # is deprecated, but supported in canton 3.3 and will be removed in canton 3.4
+    // https://docs.digitalasset.com/build/3.3/reference/lapi-migration-guide.html#identifier-addressing-by-package-name
+    const regExp = /^#?([^:]+):([^:]+):([^:]+)$/
+    const match = regExp.exec(interfaceId)
+    if (!match) return null
+    const [, packageName, moduleName, entityName] = match // [0]=full, [1]=pkg, [2]=module, [3]=entity
     return {
         packageName,
         moduleName,
         entityName,
-        toString() {
-            return `#${packageName}:${moduleName}:${entityName}`
-        },
-        matches(interfaceId: string) {
-            return interfaceId.endsWith(`${moduleName}:${entityName}`)
-        },
     }
 }
-export const HoldingInterface = buildInterfaceId(
-    'splice-api-token-holding-v1',
-    'Splice.Api.Token.HoldingV1',
-    'Holding'
-)
 
-export const TransferFactoryInterface = buildInterfaceId(
-    'splice-api-token-transfer-instruction-v1',
-    'Splice.Api.Token.TransferInstructionV1',
-    'TransferFactory'
-)
+export function matchInterfaceIds(a: string, b: string): boolean {
+    const aParts = splitInterfaceId(a)
+    const bParts = splitInterfaceId(b)
 
-export const TransferInstructionInterface = buildInterfaceId(
-    'splice-api-token-transfer-instruction-v1',
-    'Splice.Api.Token.TransferInstructionV1',
-    'TransferInstruction'
-)
+    return (
+        aParts !== null &&
+        bParts !== null &&
+        aParts.moduleName === bParts.moduleName &&
+        aParts.entityName === bParts.entityName
+    )
+}
+
+// TODO import from token standard codegen
+export const HoldingInterface =
+    '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding'
+
+export const TransferFactoryInterface =
+    '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferFactory'
+
+export const TransferInstructionInterface =
+    '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferInstruction'
 
 // TODO (#563): include allocations
 export const TokenStandardTransactionInterfaces = [

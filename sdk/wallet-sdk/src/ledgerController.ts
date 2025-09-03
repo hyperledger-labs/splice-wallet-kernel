@@ -3,6 +3,7 @@ import {
     PostResponse,
     PostRequest,
     GetResponse,
+    Types,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -22,7 +23,7 @@ export class LedgerController {
     private userId: string
     private partyId: string
     private synchronizerId: string
-    private logger = pino({ name: 'LedgerController', level: 'debug' })
+    private logger = pino({ name: 'LedgerController', level: 'info' })
 
     /** Creates a new instance of the LedgerController.
      *
@@ -65,9 +66,14 @@ export class LedgerController {
     async prepareSignAndExecuteTransaction(
         commands: unknown,
         privateKey: string,
-        commandId: string
+        commandId: string,
+        disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
-        const prepared = await this.prepareSubmission(commands, commandId)
+        const prepared = await this.prepareSubmission(
+            commands,
+            commandId,
+            disclosedContracts
+        )
 
         const signature = signTransactionHash(
             prepared.preparedTransactionHash,
@@ -97,19 +103,21 @@ export class LedgerController {
      * @remarks The returned prepared transaction must be signed and executed using the executeSubmission method.
      * @param commands the commands to be executed.
      * @param commandId an unique identifier used to track the transaction, if not provided a random UUID will be used.
+     * @param disclosedContracts additional contracts used to resolve contract & contract key lookups.
      */
     async prepareSubmission(
         commands: unknown,
-        commandId?: string
+        commandId?: string,
+        disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
-        const prepareParams = {
+        const prepareParams: Types['JsPrepareSubmissionRequest'] = {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
             commands: commands as any,
             commandId: commandId || v4(),
             userId: this.userId,
             actAs: [this.partyId],
             readAs: [],
-            disclosedContracts: [],
+            disclosedContracts: disclosedContracts || [],
             synchronizerId: this.synchronizerId,
             verboseHashing: false,
             packageIdSelectionPreference: [],
@@ -211,6 +219,26 @@ export class LedgerController {
         if (options?.identityProviderId !== undefined)
             params.identityProviderId = options.identityProviderId
         return await this.client.get('/v2/parties', params)
+    }
+
+    /**
+     * Lists all synchronizers the user has access to.
+     * @returns A list of connected synchronizers.
+     */
+    async listSynchronizers(): Promise<
+        GetResponse<'/v2/state/connected-synchronizers'>
+    > {
+        if (!this.partyId) {
+            throw new Error('partyId must be set before listing synchronizers')
+        }
+
+        const params: Record<string, unknown> = {
+            query: { party: this.partyId },
+        }
+        return await this.client.get(
+            '/v2/state/connected-synchronizers',
+            params
+        )
     }
 
     /**

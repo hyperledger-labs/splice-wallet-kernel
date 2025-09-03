@@ -166,8 +166,13 @@ export class TopologyController {
             getPublicKeyFromPrivate(privateKey),
             partyHint
         )
+        const base64StringCombinedHash = Buffer.from(
+            preparedParty?.combinedHash,
+            'hex'
+        ).toString('base64')
+
         const signedHash = signTransactionHash(
-            preparedParty.combinedHash,
+            base64StringCombinedHash,
             privateKey
         )
         return await this.submitExternalPartyTopology(signedHash, preparedParty)
@@ -180,15 +185,15 @@ export class TopologyController {
  */
 export const localNetTopologyDefault = (
     userId: string,
-    userAdminToken: string
+    userAdminToken: string,
+    synchronizerId: string
 ): TopologyController => {
     return new TopologyController(
         '127.0.0.1:2902',
         'http://127.0.0.1:2975',
         userId,
         userAdminToken,
-        //TODO: fetch this from a localnet API endpoint
-        'global-domain::122098544e6d707a02edee40ff295792b2b526fa30fa7a284a477041eb23d1d26763'
+        synchronizerId
     )
 }
 

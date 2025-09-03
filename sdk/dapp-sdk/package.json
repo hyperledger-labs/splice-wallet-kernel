@@ -1,7 +1,7 @@
 {
     "name": "@canton-network/dapp-sdk",
     "type": "module",
-    "version": "0.1.0",
+    "version": "0.1.2",
     "description": "Browser SDK for dApp development on the Canton Network",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
@@ -24,7 +24,7 @@
         "typescript": "^5.8.3"
     },
     "files": [
-        "dist/*"
+        "dist/**"
     ],
     "publishConfig": {
         "access": "public"

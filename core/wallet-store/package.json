@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-store",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "type": "module",
     "description": "The Store API provides persistency for the wallet kernel",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -29,7 +29,7 @@
         "typescript": "^5.8.3"
     },
     "files": [
-        "dist/*"
+        "dist/**"
     ],
     "publishConfig": {
         "access": "public"

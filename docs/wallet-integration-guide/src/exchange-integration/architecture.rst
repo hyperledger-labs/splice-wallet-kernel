@@ -1,3 +1,4 @@
+.. _integration-architecture:
 
 Integration Architecture
 ========================
@@ -56,7 +57,7 @@ with Canton. We explain the components in the subsections below.
 Exchange Components
 ^^^^^^^^^^^^^^^^^^^
 
-This guide assumes that there are **Exchange Internal Systems** that manage among other things
+This guide assumes that there are **Exchange Internal Systems** that manage, among other things,
 the exchange's internal ledger of **Customer** balances.
 These systems are in particular used to serve data to the **Exchange UI**,
 which is used by exchange customers to trade, observe their deposits,
@@ -73,8 +74,8 @@ Canton Integration Components
 There are five Canton integration components:
 
 * The **Exchange Validator Node** is a :ref:`Splice validator node <validator_nodes>` that hosts
-  the ``treasuryParty`` that controls the funds of the exchange, receives deposits, and
-  executes transfers for withdrawals.
+  your ``treasuryParty``, which is the party you setup to control funds, receive deposits, and
+  execute transfers for withdrawals. See :ref:`exchange-parties-setup` for details on how to setup this party.
   You are not expected to build this node, but you are expected to either operate it yourself
   or use a node-as-a-service provider to operate it for you.
 * The **Canton Integration DB** is used to keep track of the state of withdrawals and
@@ -122,8 +123,9 @@ in the context of the Canton integration:
 * The **Registry API Server** provides access to extra context to execute
   token transfers. This context is often only known to the token administrator,
   which is why access is provided to it off-ledger. The
-  `OpenAPI specification of the Registry API <https://docs.dev.sync.global/app_dev/token_standard/index.html#api-references>`_
-  is part of the Canton Network Token Standard.
+  OpenAPI specification of the Registry API is
+  maintained as part the
+  `Canton Network Token Standard definitions <https://github.com/hyperledger-labs/splice/tree/main/token-standard>`__ in the Splice repository.
 
 
 .. _information-flows:
@@ -143,10 +145,10 @@ We explain them below.
 There are three main information flows:
 
 #. **Tx History Ingestion**: ingests the transactions
-   affecting the ``treasuryParty`` from the Exchange Validator Node into the Canton Integration DB
-   The transaction data is read using the ``/v2/updates/trees``
-   `Ledger API endpoint <https://github.com/digital-asset/canton/blob/92339b6f98faaecbe3adbfb71293ed9cbfb30204/community/ledger/ledger-json-api/src/test/resources/json-api-docs/openapi.yaml#L845>`_
-   (Arrow 1.a).
+   affecting the ``treasuryParty`` from the Exchange Validator Node into the Canton Integration DB.
+   Arrow 1.a represents the transaction data being read using the ``/v2/updates/flats``
+   Ledger API endpoint using either `plain HTTP <https://github.com/digital-asset/canton/blob/92339b6f98faaecbe3adbfb71293ed9cbfb30204/community/ledger/ledger-json-api/src/test/resources/json-api-docs/openapi.yaml#L786>`__
+   or `websockets <https://github.com/digital-asset/canton/blob/92339b6f98faaecbe3adbfb71293ed9cbfb30204/community/ledger/ledger-json-api/src/test/resources/json-api-docs/asyncapi.yaml#L36>`__.
    It is parsed by the Tx History Ingestion service to update the status of
    funds, deposits, and withdrawals in the Canton Integration DB (Arrow 1.b).
 
@@ -176,7 +178,8 @@ There are three main information flows:
    If yes, it prepares, signs, and executes an accept transaction using the Ledger API (Arrow 3.b).
    If no, then it takes no action, and lets the transfer offer expire or be withdrawn by the sender.
 
-   Note that the Multi-Step Deposit Automation may write back to the Canton Integration DB to store
+   Note that there is an arrow from Multi-Step Deposit Automation back to the Canton Integration DB,
+   as the Multi-Step Deposit Automation may write back to the Canton Integration DB to store
    that the transaction to accept the deposit could not be committed even after retrying multiple times.
 
 The other information flows interact with the main flows as part of a deposit or withdrawal.

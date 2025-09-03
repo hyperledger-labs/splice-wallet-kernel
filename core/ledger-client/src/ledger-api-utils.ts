@@ -6,27 +6,27 @@ import { readFileSync } from 'node:fs'
 import {
     AllKnownMetaKeys,
     HoldingInterface,
-    InterfaceId,
+    matchInterfaceIds,
     TransferInstructionInterface,
 } from './constants.js'
-import { components } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import { LedgerClient } from './ledger-client.js'
 import { Holding, TransferInstructionView } from './txparse/types.js'
+import { Types } from './ledger-client.js'
 
-type TransactionFilter = components['schemas']['TransactionFilter']
-type CreatedEvent = components['schemas']['CreatedEvent']
-type ExercisedEvent = components['schemas']['ExercisedEvent']
-type ArchivedEvent = components['schemas']['ArchivedEvent']
-type ExerciseCommand = components['schemas']['ExerciseCommand']
-type JsInterfaceView = components['schemas']['JsInterfaceView']
-type DisclosedContract = components['schemas']['DisclosedContract']
-type PartySignatures = components['schemas']['PartySignatures']
-type Command = components['schemas']['Command']
-type DeduplicationPeriod2 = components['schemas']['DeduplicationPeriod2']
+type TransactionFilter = Types['TransactionFilter']
+type CreatedEvent = Types['CreatedEvent']
+type ExercisedEvent = Types['ExercisedEvent']
+type ArchivedEvent = Types['ArchivedEvent']
+type ExerciseCommand = Types['ExerciseCommand']
+type JsInterfaceView = Types['JsInterfaceView']
+type DisclosedContract = Types['DisclosedContract']
+type PartySignatures = Types['PartySignatures']
+type Command = Types['Command']
+type DeduplicationPeriod2 = Types['DeduplicationPeriod2']
 
 export function filtersByParty(
     party: string,
-    interfaceNames: InterfaceId[],
+    interfaceNames: string[],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     includeWildcard: boolean
 ): TransactionFilter['filtersByParty'] {
@@ -37,7 +37,7 @@ export function filtersByParty(
                     identifierFilter: {
                         InterfaceFilter: {
                             value: {
-                                interfaceId: interfaceName.toString(),
+                                interfaceId: interfaceName,
                                 includeInterfaceView: true,
                                 includeCreatedEventBlob: true,
                             },
@@ -65,11 +65,11 @@ export function filtersByParty(
 }
 
 export function hasInterface(
-    interfaceId: InterfaceId,
+    interfaceId: string,
     event: ExercisedEvent | ArchivedEvent
 ): boolean {
     return (event.implementedInterfaces || []).some((id) =>
-        interfaceId.matches(id)
+        matchInterfaceIds(id, interfaceId)
     )
 }
 
@@ -90,13 +90,16 @@ export function getKnownInterfaceView(
     const interfaceView = getInterfaceView(createdEvent)
     if (!interfaceView) {
         return null
-    } else if (HoldingInterface.matches(interfaceView.interfaceId)) {
+    } else if (matchInterfaceIds(HoldingInterface, interfaceView.interfaceId)) {
         return {
             type: 'Holding',
             viewValue: interfaceView.viewValue as Holding,
         }
     } else if (
-        TransferInstructionInterface.matches(interfaceView.interfaceId)
+        matchInterfaceIds(
+            TransferInstructionInterface,
+            interfaceView.interfaceId
+        )
     ) {
         return {
             type: 'TransferInstruction',
@@ -114,7 +117,7 @@ export function getKnownInterfaceView(
  */
 export function ensureInterfaceViewIsPresent(
     createdEvent: CreatedEvent,
-    interfaceId: InterfaceId
+    interfaceId: string
 ): JsInterfaceView {
     const interfaceView = getInterfaceView(createdEvent)
     if (!interfaceView) {
@@ -124,9 +127,9 @@ export function ensureInterfaceViewIsPresent(
             )}`
         )
     }
-    if (!interfaceId.matches(interfaceView.interfaceId)) {
+    if (!matchInterfaceIds(interfaceId, interfaceView.interfaceId)) {
         throw new Error(
-            `Not a ${interfaceId.toString()} but a ${
+            `Not a ${interfaceId} but a ${
                 interfaceView.interfaceId
             }: ${JSON.stringify(createdEvent)}`
         )

@@ -7,6 +7,7 @@ import {
     createKeyPair,
     signTransactionHash,
 } from '@canton-network/wallet-sdk'
+import { LOCALNET_SCAN_API_URL } from '../config.js'
 import { v4 } from 'uuid'
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
@@ -44,13 +45,13 @@ await sdk.adminLedger
         console.error('Error listing wallets:', error)
     })
 
-await sdk.connectTopology()
+await sdk.connectTopology(LOCALNET_SCAN_API_URL)
 console.log('Connected to topology')
 
 const keyPair = createKeyPair()
 
 console.log('generated keypair')
-console.log(keyPair)
+
 const preparedParty = await sdk.topology?.prepareExternalPartyTopology(
     keyPair.publicKey
 )
@@ -81,13 +82,14 @@ if (preparedParty) {
 }
 
 console.log('Create ping command for party:', preparedParty!.partyId!)
+
 const createPingCommand = sdk.userLedger?.createPingCommand(
     preparedParty!.partyId!
 )
 
 console.log('Prepare command submission for ping create command')
 const prepareResponse =
-    await sdk.adminLedger?.prepareSubmission(createPingCommand)
+    await sdk.userLedger?.prepareSubmission(createPingCommand)
 
 console.log('Sign transaction hash')
 
@@ -98,7 +100,7 @@ const signedCommandHash = signTransactionHash(
 
 console.log('Submit command')
 
-sdk.adminLedger
+sdk.userLedger
     ?.executeSubmission(
         prepareResponse!,
         signedCommandHash,
@@ -115,15 +117,4 @@ sdk.adminLedger
         console.error('Failed to submit command with error %d', error)
     )
 
-console.log('List Token Standard Holding Transactions')
-await sdk.tokenStandard
-    ?.listHoldingTransactions()
-    .then((transactions) => {
-        console.log('Token Standard Holding Transactions:', transactions)
-    })
-    .catch((error) => {
-        console.error(
-            'Error listing token standard holding transactions:',
-            error
-        )
-    })
+sdk.userLedger?.listSynchronizers()

@@ -21,12 +21,15 @@
         "script:generate:protobufs": "tsx ./scripts/src/generate-protobufs.ts",
         "script:generate:tokenstandard": "tsx ./scripts/src/generate-token-standard.ts",
         "script:generate:tokenstandardclients": "tsx ./scripts/src/generate-token-standard-clients.ts",
+        "script:generate:scan": "tsx ./scripts/src/generate-scan-client.ts",
         "script:fetch:canton": "tsx ./scripts/src/fetch-canton.ts",
-        "script:fetch:tokenstandard": "tsx ./scripts/src/fetch-token-standard.ts",
+        "script:fetch:splice": "tsx ./scripts/src/fetch-splice.ts",
+        "script:fetch:splice-specs": "tsx ./scripts/src/fetch-splice-specs.ts",
         "script:fetch:ledger": "tsx ./scripts/src/fetch-ledger-api-specs.ts",
         "script:fetch:localnet": "tsx ./scripts/src/fetch-localnet.ts",
         "script:openrpc:titles": "tsx ./scripts/src/schema-title-validation.ts",
-        "full:rebuild": "yarn clean:all && yarn generate:all && yarn build:all"
+        "full:rebuild": "yarn clean:all && yarn generate:all && yarn build:all",
+        "release": "tsx ./scripts/src/release.ts"
     },
     "workspaces": [
         "api-specs",

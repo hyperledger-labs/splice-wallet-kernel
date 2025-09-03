@@ -4,59 +4,148 @@ import {
     localNetLedgerDefault,
     localNetTopologyDefault,
     localNetTokenStandardDefault,
+    createKeyPair,
 } from '@canton-network/wallet-sdk'
+import { pino } from 'pino'
+import { v4 } from 'uuid'
+import { LOCALNET_REGISTRY_API_URL, LOCALNET_SCAN_API_URL } from '../config.js'
+
+const logger = pino({ name: '04-token-standard-localnet', level: 'info' })
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
-    logger: console,
+    logger,
     authFactory: localNetAuthDefault,
     ledgerFactory: localNetLedgerDefault,
     topologyFactory: localNetTopologyDefault,
     tokenStandardFactory: localNetTokenStandardDefault,
 })
 
-console.log('SDK initialized')
+logger.info('SDK initialized')
 
 await sdk.connect()
-console.log('Connected to ledger')
+logger.info('Connected to ledger')
 
-const keypair = {
-    publicKey: 'seqoAQYT5GQZU8x4WOEgp5jad+9nVA8aaRn8G0IOoag=',
-    privateKey:
-        'oahT1plqyQxgbb27fsy6ix2881d3+aSvSRhaITGftAOx6qgBBhPkZBlTzHhY4SCnmNp372dUDxppGfwbQg6hqA==',
-}
-const partyId =
-    '1220c::1220cc4e539de29867b7afb76a605ae136577da01e52c87f613c4a99d0fe67d88617'
-const synchronizerId =
-    'global-domain::122098544e6d707a02edee40ff295792b2b526fa30fa7a284a477041eb23d1d26763'
+const keyPairSender = createKeyPair()
+const keyPairReceiver = createKeyPair()
 
-console.log('SDK initialized')
+await sdk.connectAdmin()
+await sdk.connectTopology(LOCALNET_SCAN_API_URL)
 
-await sdk.connect()
-console.log('Connected to ledger')
+const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
+    keyPairSender.privateKey,
+    'alice'
+)
+logger.info(`Created party: ${sender!.partyId}`)
+sdk.userLedger?.setPartyId(sender!.partyId)
+sdk.tokenStandard?.setPartyId(sender!.partyId)
+
+const receiver = await sdk.topology?.prepareSignAndSubmitExternalParty(
+    keyPairReceiver.privateKey,
+    'bob'
+)
+logger.info(`Created party: ${receiver!.partyId}`)
+
+const synchronizers = await sdk.userLedger?.listSynchronizers()
+
+const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
 
 await sdk.userLedger
     ?.listWallets()
     .then((wallets) => {
-        console.log('Wallets:', wallets)
+        logger.info(wallets, 'Wallets:')
     })
     .catch((error) => {
-        console.error('Error listing wallets:', error)
+        logger.error({ error }, 'Error listing wallets')
     })
 
-sdk.userLedger?.setPartyId(partyId)
-sdk.tokenStandard?.setPartyId(partyId)
-sdk.tokenStandard?.setSynchronizerId(synchronizerId)
+sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 
-console.log('List Token Standard Holding Transactions')
+sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL.href)
+
+const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
+    sender!.partyId,
+    '2000000',
+    {
+        instrumentId: 'Amulet',
+        instrumentAdmin:
+            'DSO::12200901488a1b3ff2d4d9ed3aac14af530811522e16f8819e56c41ec937dbcaec92', //TODO: get this from scan
+    }
+)
+
+await sdk.userLedger?.prepareSignAndExecuteTransaction(
+    [{ ExerciseCommand: tapCommand }],
+    keyPairSender.privateKey,
+    v4(),
+    disclosedContracts
+)
+
+await new Promise((res) => setTimeout(res, 5000))
+
+const utxos = await sdk.tokenStandard?.listHoldingUtxos()
+logger.info(utxos, 'List Token Standard Holding UTXOs')
+
 await sdk.tokenStandard
     ?.listHoldingTransactions()
     .then((transactions) => {
-        console.log('Token Standard Holding Transactions:', transactions)
+        logger.info(transactions, 'Token Standard Holding Transactions:')
     })
     .catch((error) => {
-        console.error(
-            'Error listing token standard holding transactions:',
-            error
+        logger.error(
+            { error },
+            'Error listing token standard holding transactions:'
         )
     })
+
+logger.info('Creating transfer transaction')
+
+const [transferCommand, disclosedContracts2] =
+    await sdk.tokenStandard!.createTransfer(
+        sender!.partyId,
+        receiver!.partyId,
+        '100',
+        {
+            instrumentId: 'Amulet',
+            instrumentAdmin:
+                'DSO::12200901488a1b3ff2d4d9ed3aac14af530811522e16f8819e56c41ec937dbcaec92', // todo: get from scan
+        },
+        {}
+    )
+
+await sdk.userLedger?.prepareSignAndExecuteTransaction(
+    [{ ExerciseCommand: transferCommand }],
+    keyPairSender.privateKey,
+    v4(),
+    disclosedContracts2
+)
+logger.info('Submitted transfer transaction')
+
+const holdings = await sdk.tokenStandard?.listHoldingTransactions()
+
+const transferCid = holdings!.transactions
+    .flatMap((object) =>
+        object.events.flatMap(
+            (t) =>
+                (t.label as any)?.tokenStandardChoice?.exerciseResult?.output
+                    ?.value?.transferInstructionCid
+        )
+    )
+    .find((v) => v !== undefined)
+
+sdk.userLedger?.setPartyId(receiver!.partyId)
+sdk.tokenStandard?.setPartyId(receiver!.partyId)
+
+const [acceptTransferCommand, disclosedContracts3] =
+    await sdk.tokenStandard!.exerciseTransferInstructionChoice(
+        transferCid,
+        'Accept'
+    )
+
+await sdk.userLedger?.prepareSignAndExecuteTransaction(
+    [{ ExerciseCommand: acceptTransferCommand }],
+    keyPairReceiver.privateKey,
+    v4(),
+    disclosedContracts3
+)
+
+console.log('Accepted transfer instruction')
