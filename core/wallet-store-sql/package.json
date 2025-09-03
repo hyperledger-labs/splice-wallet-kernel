@@ -40,7 +40,7 @@
         "typescript": "^5.8.3"
     },
     "files": [
-        "dist/*"
+        "dist/**"
     ],
     "publishConfig": {
         "access": "public"

@@ -29,7 +29,7 @@
         "@canton-network/core-types": "workspace:^"
     },
     "files": [
-        "dist/*"
+        "dist/**"
     ],
     "publishConfig": {
         "access": "public"
