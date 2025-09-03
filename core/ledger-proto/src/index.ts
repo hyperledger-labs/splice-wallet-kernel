@@ -1,6 +1,5 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
-
 export * from './_proto/com/digitalasset/canton/crypto/v30/crypto.js'
 export * from './_proto/com/digitalasset/canton/protocol/v30/topology.js'
 export { TopologyManagerWriteServiceClient } from './_proto/com/digitalasset/canton/topology/admin/v30/topology_manager_write_service.client.js'

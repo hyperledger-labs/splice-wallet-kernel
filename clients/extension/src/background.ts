@@ -1,6 +1,5 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
-
 import Browser from 'webextension-polyfill'
 import { dappController } from './dapp-api/controller'
 import { Methods } from './dapp-api/rpc-gen'

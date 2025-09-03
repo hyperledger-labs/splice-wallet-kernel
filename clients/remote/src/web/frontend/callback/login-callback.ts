@@ -1,6 +1,5 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
-
 import { WalletEvent } from '@canton-network/core-types'
 import { LitElement, html } from 'lit'
 import { customElement } from 'lit/decorators.js'

@@ -1,6 +1,5 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
-
 import { css, html, LitElement } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { classMap } from 'lit/directives/class-map.js'

@@ -40,7 +40,7 @@ export default defineConfig([
                     source: 'file',
                     path: 'header.txt',
                     style: 'line',
-                    trailingNewlines: 1,
+                    trailingNewlines: 2,
                     variables: {
                         year: `${new Date().getFullYear()}`,
                     },

@@ -1,6 +1,5 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
-
 import { dapp } from './dapp-api/server.js'
 import { user } from './user-api/server.js'
 import { web } from './web/server.js'
