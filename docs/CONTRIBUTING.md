@@ -12,6 +12,8 @@
 
 ### git "signed-off-by" commit
 
+
+
 As a requirement under the hyperledger foundation, all commits must be signed off. This can be done by adding the `-s` flag every time you commit.
 
 In this repo, we use Husky to automatically configure a git hook to do this for you.
