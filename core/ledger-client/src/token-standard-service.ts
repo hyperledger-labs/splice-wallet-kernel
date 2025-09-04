@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import { TokenStandardClient } from '@canton-network/core-token-standard'
 import { Logger } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
