@@ -1,6 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// Copyright (c) 2024 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     ensureInterfaceViewIsPresent,
     filtersByParty,
@@ -700,7 +701,7 @@ export class TransactionParser {
                 // This will happen for holdings with consuming choices
                 // where the party the script is running on is an actor on the choice
                 // but not a stakeholder.
-                if (err.code === 404) {
+                if (err.code === 'CONTRACT_EVENTS_NOT_FOUND') {
                     return null
                 } else {
                     throw err

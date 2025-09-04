@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import { readdirSync, writeFileSync, mkdirSync } from 'fs'
 import * as path from 'path'
 import generateSchema from 'openapi-typescript'

@@ -6,28 +6,25 @@ Integration Workflows
 Overview
 --------
 
-The workflows below are grouped into two integration stages.
+The workflows below are grouped into two milestones.
 
 * :ref:`mvp-for-cc` contains the minimum viable product (MVP) workflows for integrating Canton Coin (CC) into the exchange.
-  It comes with the limitation that both the exchange and the customers need to set up a ``TransferPreapproval`` to
+  It comes with the limitation that both the exchange and the customers need to set up a ``TransferPreapproval`` contract to
   enable 1-step transfers of CC.
 * :ref:`mvp-for-cn-tokens` contains the additional workflows required to support
   all CN tokens. They are the workflows to onboard a new token and
-  the workflows to support multi-step transfers for both deposits and withdrawals.
-  Multi-step transfers are a part of the Canton Network Token Standard to support
-  tokens where the receiver is given a choice to reject an incoming transfer as well as
-  to support additional asynchronous checks on transfers by the token admin (e.g. KYC/AML checks).
+  to support multi-step transfers for both deposits and withdrawals.
+  Multi-step transfers gives the receiver a choice to: reject an incoming transfer as well as
+  enable additional asynchronous checks on transfers by the token admin (e.g. KYC/AML checks).
 
-Further extensions of these two MVPs to address Day-2 requirements are discussed in :ref:`integration-extensions`.
+Further extensions of these two MVPs to address Day-2 requirements are explored in :ref:`integration-extensions`.
 
 .. important::
 
-  The current descriptions of the workflows do not yet call out the wallet SDK
-  functions implementing their individual steps; and may thus appear overly detailed and complex.
-  They are meant to give a first overview until the references to the specific SDK functions have been added.
+  The descriptions of the workflows below will be simplified as the wallet SDK
+  is extended.  The workflows reflect what currently exists and will be updated as the specific SDK functions are added.
 
   .. todo:: add these functions. potentially using sphinx-tabs to allow switching between SDK function view and higher-level description
-
 
 .. _mvp-for-cc:
 
@@ -37,13 +34,13 @@ MVP for Canton Coin
 .. note::
 
    The diagrams in the sections below adapt the diagram from the :ref:`information-flows`
-   section to the case for Canton Coin (CC). The adaptations are:
+   section to the Canton Coin workflow. The adaptations are:
 
-   * The role of the ``adminParty`` is taken over by the ``dsoParty``, which is the token admin for CC.
+   * The role of the ``adminParty`` is assumed by the ``dsoParty``, which is the token admin party for CC.
      The ``dsoParty`` is a decentralized party that is hosted on the validator
-     nodes run by SV operators. A confirmation threshold of 2/3 is used to achieve Byzantine fault-tolerance
+     nodes run by Super Validator (SV) operators. A confirmation threshold of 2/3 is used to achieve Byzantine fault-tolerance
      for its transaction validation.
-   * The role of the Registry API Server is taken over by the Canton Coin Scan services
+   * The role of the Registry API Server is taken over by the Canton Coin `Scan services <https://docs.dev.sync.global/app_dev/scan_api/toc_proxy.html>`__
      that every SV operator runs. They serve the Registry API for CC.
      See :ref:`reading-from-canton-coin-scan` for more information about
      how to reliably read from multiple Canton Coin Scan instances.
@@ -61,13 +58,13 @@ Assumptions:
 
 -  The Exchange has set up a CC ``TransferPreapproval`` for their
    ``treasuryParty`` as explained in :ref:`setup-treasury-party`.
--  The Exchange has associated deposit account “abc123” with Customer in
+-  The Exchange has associated deposit account “abc123” with the Customer in
    the Canton Integration DB.
 
 Example flow:
 
-1. Customer uses Exchange UI to retrieve ``treasuryParty`` and deposit
-   account-id “abc123” to use for the deposit
+1. Customer uses Exchange UI to retrieve ``treasuryParty`` and the deposit
+   account-id (“abc123”) to use for the deposit
 2. Customer uses Customer Wallet to initiate a token standard transfer of
    100 CC to ``treasuryParty`` with metadata key
    ``splice.lfdecentralizedtrust.org/reason`` set to “abc123”.
@@ -78,15 +75,17 @@ Example flow:
       includes the ``TransferPreapproval`` for the ``treasuryParty``.
    b. Customer wallet submits the command to exercise the
       ``TransferFactory_Transfer`` choice together with the extra
-      transfer context. The resulting transaction archives the funding
-      CC ``Holding`` UTXOs and creates a CC ``Holding`` UTXO with
-      contract-id ``coid234`` owned by the ``treasuryParty`` and
-      another CC ``Holding`` UTXO for the change owned by the Customer.
+      transfer context. The resulting transaction:
+
+        * archives the funding CC ``Holding`` UTXOs
+        * creates a CC ``Holding`` UTXO with contract-id ``coid234`` owned by the ``treasuryParty``
+        * creates another CC ``Holding`` UTXO for the change owned by the Customer.
+
    c. The resulting transaction gets committed across the Customer,
       Exchange, and SV validator nodes. It is assigned an
       update-id ``upd567`` and a record time ``t1`` by the Global
       Synchronizer. It is assigned offset ``off1`` by the Exchange
-      Validator Node.
+      Validator Node. (The other validator nodes will have a different ``offset`` value.)
 
 3. Tx History Ingestion observes ``upd567`` at ``t1`` with offset
    ``off1`` and updates the Canton Integration DB as follows.
@@ -158,12 +157,13 @@ Example flow:
       exclusive upper-bound for the record time of the commit set to
       ``trecTgt``. It also sets the value for key
       ``splice.lfdecentralizedtrust.org/reason`` in the ``Transfer`` metadata to ``wid123``.
-   d. The resulting transaction archives the CC ``Holding`` UTXOs
-      ``coids`` used to fund the transfer and creates one CC ``Holding``
-      UTXO with contract-id ``coid345`` owned by the ``customerParty``
-      and another one with contract-id ``coid789`` owned by
-      ``treasuryParty`` representing the change returned to the
-      Exchange. The resulting transaction gets committed across the
+   d. The resulting transaction:
+
+        * archives the CC ``Holding`` UTXOs ``coids`` used to fund the transfer
+        * creates a CC ``Holding`` UTXO with contract-id ``coid345`` owned by the ``customerParty``
+        * creates a CC ``Holding`` UTXO with contract-id ``coid789`` owned by ``treasuryParty`` representing the change returned to the Exchange.
+
+      The transaction is committed across the
       Customer, Exchange, and SV validator nodes. It is assigned
       an update-id ``upd567`` and a record time ``t1`` < ``trecTgt`` by
       the Global Synchronizer. It is assigned ``off1`` by the Exchange
@@ -305,10 +305,12 @@ We list them in full for completeness.
       was configured in the Customer Wallet as part of :ref:`token-onboarding`.
    b. Customer wallet submits the command to exercise the
       ``TransferFactory_Transfer`` choice together with the extra
-      transfer context. The resulting transaction archives the funding
-      AcmeToken ``Holding`` UTXOs and creates a locked 100 AcmeToken ``Holding`` UTXO with
-      contract-id ``coid234`` owned by the ``customerParty`` and
-      another AcmeToken ``Holding`` UTXO for the change owned by the Customer.
+      transfer context. The resulting transaction:
+
+        * archives the funding AcmeToken ``Holding`` UTXOs
+        * creates a locked 100 AcmeToken ``Holding`` UTXO with contract-id ``coid234`` owned by the ``customerParty``
+        * creates another AcmeToken ``Holding`` UTXO for the change owned by the Customer.
+
       The transaction also creates a ``TransferInstruction`` UTXO with contract-id
       ``coid567``, which represents the transfer offer to the Exchange.
    c. The resulting transaction gets committed across the Customer,
@@ -592,7 +594,7 @@ that the transfer was offered, but rejected by them.
 Canton Network Token Onboarding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You likely have exchange internal requirements and considerations for onboarding a token.
+You likely have requirements and considerations for onboarding a token.
 In the following,
 we document the additional considerations that are specific to Canton.
 
