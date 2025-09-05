@@ -3,10 +3,36 @@
 
 import {
     DAML_RELEASE_VERSION,
-    generateOpenApiClient,
+    ensureDir,
+    error,
     getRepoRoot,
+    info,
     SPLICE_VERSION,
+    success,
 } from './utils.js'
+import * as fs from 'fs'
+import generateSchema from 'openapi-typescript'
+
+export async function generateOpenApiClient(url: URL, output: string) {
+    console.log(
+        'Generating OpenAPI client from url:\n  ' + info(url.toString()) + '\n'
+    )
+    try {
+        // Try a fetch first, because openapi-fetch silently fails if the URL is a 404
+        await fetch(url).then((res) => {
+            if (res.status < 200 || res.status >= 300)
+                throw new Error(
+                    error(`Failed to fetch ${url}: ${res.statusText}`)
+                )
+        })
+        const schema = await generateSchema(url)
+        await ensureDir(output)
+        fs.writeFileSync(output, schema)
+    } catch (err: unknown) {
+        console.error(err)
+        process.exit(1)
+    }
+}
 
 interface OpenApiSpec {
     url: string
@@ -20,7 +46,7 @@ function github(
     ...paths: string[]
 ) {
     const repo = template[0].split(':')
-    const tagPrefix = repo[1] ? `${repo[1]}/` : ''
+    const tagPrefix = repo[1] || ''
 
     // Zip the path segments together
     const rest = template.slice(1).reduce((prev, current, index) => {
@@ -70,6 +96,10 @@ const specs: OpenApiSpec[] = [
     },
 ].concat(tokenStandards)
 
-specs.forEach((spec) => generateOpenApiClient(new URL(spec.url), spec.output))
-
-console.log('Generated fresh TypeScript clients for all OpenAPI specs')
+Promise.all(
+    specs.map((spec) => generateOpenApiClient(new URL(spec.url), spec.output))
+).then(() => {
+    console.log(
+        success('Generated fresh TypeScript clients for all OpenAPI specs')
+    )
+})

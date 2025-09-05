@@ -40,5 +40,5 @@ Use Postman (or similar) to submit a request agains this endpoint with applicati
 If new generation of clients are needed then run the following command:
 
 ```sh
-. yarn script:generate:ledger
+. yarn script:generate:openapi
 ```

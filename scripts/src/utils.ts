@@ -10,7 +10,6 @@ import * as path from 'path'
 import * as process from 'process'
 import { white, green, italic, red, yellow, bold } from 'yoctocolors'
 import * as jsonc from 'jsonc-parser'
-import generateSchema from 'openapi-typescript'
 
 export const info = (message: string): string => italic(white(message))
 export const warn = (message: string): string => bold(yellow(message))
@@ -109,13 +108,6 @@ export async function downloadAndUnpackTarball(
         tar.extract(unpackDir, { strip: options?.strip ?? 1 })
     )
     console.log(success(`Unpacked tarball into ${unpackDir}`))
-}
-
-export async function generateOpenApiClient(url: URL, output: string) {
-    console.log('Generating OpenAPI client from url:\n  ' + url + '\n')
-    const schema = await generateSchema(url)
-    ensureDir(output)
-    fs.writeFileSync(output, schema)
 }
 
 // Get the root of the current repository
