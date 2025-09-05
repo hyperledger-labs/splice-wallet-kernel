@@ -5,6 +5,8 @@
 
 .. #TODO: copy of https://raw.githubusercontent.com/hyperledger-labs/splice/3c0770e648b21a48ef8dde202ef27065592f9422/docs/src/deployment/traffic.rst
 
+.. _tokenomics-fees-and-rewards:
+
 Tokenomics Fees and Rewards
 ===========================
 
