@@ -37,15 +37,6 @@ Use Postman (or similar) to submit a request agains this endpoint with applicati
 
 ## Ledger API specs
 
-To get a new version of the Ledger API specs, run the following command:
-
-```sh
-. yarn script:fetch:ledger
-```
-
-It will download the latest ledger API specs used in the splice repo, if splice is not using the desired version then a manual copy is required.
-You can change the target branch in the script if needed to generate for an older version.
-
 If new generation of clients are needed then run the following command:
 
 ```sh

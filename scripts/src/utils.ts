@@ -10,6 +10,7 @@ import * as path from 'path'
 import * as process from 'process'
 import { white, green, italic, red, yellow, bold } from 'yoctocolors'
 import * as jsonc from 'jsonc-parser'
+import generateSchema from 'openapi-typescript'
 
 export const info = (message: string): string => italic(white(message))
 export const warn = (message: string): string => bold(yellow(message))
@@ -109,6 +110,14 @@ export async function downloadAndUnpackTarball(
     )
     console.log(success(`Unpacked tarball into ${unpackDir}`))
 }
+
+export async function generateOpenApiClient(url: URL, output: string) {
+    console.log('Generating OpenAPI client from url:\n  ' + url + '\n')
+    const schema = await generateSchema(url)
+    ensureDir(output)
+    fs.writeFileSync(output, schema)
+}
+
 // Get the root of the current repository
 // Assumption: the root of the repository is the closest
 //     ancestor directory of the CWD that contains a .git directory
@@ -221,6 +230,13 @@ export function getAllFilesWithExtension(
 
 // Ensure a directory exists
 export async function ensureDir(dir: string) {
+    // Check parent directory if path is a file
+    const segments = dir.split(path.sep)
+    if (segments[segments.length - 1].includes('.')) {
+        ensureDir(path.dirname(dir))
+        return
+    }
+
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true })
     }
