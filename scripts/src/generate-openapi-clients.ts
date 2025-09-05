@@ -13,7 +13,18 @@ import {
 import * as fs from 'fs'
 import generateSchema from 'openapi-typescript'
 
-export async function generateOpenApiClient(url: URL, output: string) {
+interface OpenApiSpec {
+    url: string
+    output: string
+    preprocess?: (ts: string) => string
+}
+
+export async function generateOpenApiClient({
+    url: u,
+    output,
+    preprocess,
+}: OpenApiSpec) {
+    const url = new URL(u)
     console.log(
         'Generating OpenAPI client from url:\n  ' + info(url.toString()) + '\n'
     )
@@ -25,18 +36,14 @@ export async function generateOpenApiClient(url: URL, output: string) {
                     error(`Failed to fetch ${url}: ${res.statusText}`)
                 )
         })
-        const schema = await generateSchema(url)
+        const schema = await generateSchema(url).then(preprocess)
+        console.log(schema.slice(0, 100))
         await ensureDir(output)
         fs.writeFileSync(output, schema)
     } catch (err: unknown) {
         console.error(err)
         process.exit(1)
     }
-}
-
-interface OpenApiSpec {
-    url: string
-    output: string
 }
 
 // Tagged template function
@@ -93,12 +100,18 @@ const specs: OpenApiSpec[] = [
         // Splice Scan API
         url: github`hyperledger-labs/splice:${SPLICE_VERSION}/apps/scan/src/main/openapi/scan.yaml`,
         output: `${getRepoRoot()}/core/scan-client/src/generated-clients/scan.ts`,
+        preprocess: (ts: string) => {
+            let newTs = ts.replace(
+                `external["scan.yaml"]["components"]`,
+                'components'
+            )
+            newTs = newTs.replaceAll('event_type: string;', '')
+            return newTs
+        },
     },
 ].concat(tokenStandards)
 
-Promise.all(
-    specs.map((spec) => generateOpenApiClient(new URL(spec.url), spec.output))
-).then(() => {
+Promise.all(specs.map(generateOpenApiClient)).then(() => {
     console.log(
         success('Generated fresh TypeScript clients for all OpenAPI specs')
     )

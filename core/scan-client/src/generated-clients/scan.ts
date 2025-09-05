@@ -547,7 +547,7 @@ export interface components {
              * @description Up to `limit` validators, sorted greatest number of rounds
              * collected first
              */
-            validatorsByReceivedFaucets: external['scan.yaml']['components']['schemas']['ValidatorReceivedFaucets'][]
+            validatorsByReceivedFaucets: components['schemas']['ValidatorReceivedFaucets'][]
         }
         GetTopValidatorsByPurchasedTrafficResponse: {
             validatorsByPurchasedTraffic: components['schemas']['ValidatorPurchasedTraffic'][]
@@ -919,7 +919,7 @@ export interface components {
             | components['schemas']['ExercisedEvent']
         CreatedEvent: {
             event_type: 'created_event'
-            event_type: string
+
             /**
              * @description The ID of this particular event. Equal to the key of this element of
              * the containing `events_by_id` if this is part of a `TreeEvent`.
@@ -950,7 +950,7 @@ export interface components {
         }
         ExercisedEvent: {
             event_type: 'exercised_event'
-            event_type: string
+
             /**
              * @description The ID of this particular event. Equal to the key of this element of
              * the containing `events_by_id` if this is part of a `TreeEvent`.
