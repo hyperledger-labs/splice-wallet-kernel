@@ -109,6 +109,7 @@ export async function downloadAndUnpackTarball(
     )
     console.log(success(`Unpacked tarball into ${unpackDir}`))
 }
+
 // Get the root of the current repository
 // Assumption: the root of the repository is the closest
 //     ancestor directory of the CWD that contains a .git directory
@@ -221,6 +222,13 @@ export function getAllFilesWithExtension(
 
 // Ensure a directory exists
 export async function ensureDir(dir: string) {
+    // Check parent directory if path is a file
+    const segments = dir.split(path.sep)
+    if (segments[segments.length - 1].includes('.')) {
+        ensureDir(path.dirname(dir))
+        return
+    }
+
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true })
     }
