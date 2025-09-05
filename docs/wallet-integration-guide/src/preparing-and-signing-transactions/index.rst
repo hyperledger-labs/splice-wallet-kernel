@@ -40,9 +40,9 @@ new contracts being created. The ``ExerciseCommand`` takes an existing contract 
 result in new contracts being created.
 
 In the Canton Network, it is often necessary to need to include input data when creating commands which needs to be read from the ledger.
-For example, which UTXOs to include in a transfer. 
-This is private data which you read from your own node. 
-It's also often necessary to include contextual information in a transfer. 
+For example, which UTXOs to include in a transfer.
+This is private data which you read from your own node.
+It's also often necessary to include contextual information in a transfer.
 For example, information about a particular asset which you don't get from your own node - you get from an API provided by the asset issuer.
 See `here <https://github.com/global-synchronizer-foundation/cips/blob/main/cip-0056/cip-0056.md>` for more information.
 
@@ -54,7 +54,7 @@ The general process for forming a transaction is:
 4. Assemble the data into the full command using the OpenAPI/JSON or gRPC schemas.
 
 
-In the examples below, the SDK example uses the AdminWorkflow inside the a validator to create a simple ping command. 
+In the examples below, the SDK example uses the AdminWorkflow inside the a validator to create a simple ping command.
 The ping command is sent to a recepient party who can then exercise the pong choice on the created contract (thereby archiving it).
 In the cURL example, we show the steps above gaining information from a validator and context information from the Canton Coin scan API.
 
@@ -67,7 +67,7 @@ The Wallet SDK allow us to build such a command easily:
     Some of this - private data - you get from your own node, some of it from other nodes.
 
     So the general process is:
-    
+
 
 .. tabs::
 
@@ -105,10 +105,10 @@ For the SDK ping example, the underlying code that creates the command is:
 
 Preparing the Transaction
 -------------------------
-Now that we have a command we need to prepare the transaction by calling a node's RPC API which will return an unsigned transaction. 
+Now that we have a command we need to prepare the transaction by calling a node's RPC API which will return an unsigned transaction.
 It must be a validator which hosts the party initiating the transaction as private information is needed to construct the transaction.
 This is unlike other chains where you construct the transaction fully offline using an SDK.
-A transaction is a collection of commands that are atomic, meaning that either all commands succeed or none of them do. 
+A transaction is a collection of commands that are atomic, meaning that either all commands succeed or none of them do.
 
 Note: contractId's are pinned as part of prepare step, the execution of the transfer will only go succeed if the contractId's haven't been archived between preparation and execution steps.
 
@@ -134,12 +134,13 @@ Validating the Transaction
 --------------------------
 The result from the prepare step is an encoded protobuf message and easily decoded and inspected to go through a policy engine, for example.
 The transaction is returned alongside with the hash that needs to be signed. If the validator is not controlled by you, then it might
-be a good idea to validate that the transaction is what you expect it to be. You can use the Wallet SDK to visualize the transaction 
+be a good idea to validate that the transaction is what you expect it to be. You can use the Wallet SDK to visualize the transaction
 as described in the :ref:`Visualizing a transaction section <visualizing-a-transaction>`.
 
 On top of visualizing the transaction, it's also important to compute the transaction hash yourself and confirm that it matches the hash of the transaction provided by the validator from the prepare step.
 
 .. TODO: Add the alternative method for this step and those below
+
 The hash can be computed using the Wallet SDK:
 
 .. literalinclude:: ../../examples/snippets/compute-transaction-hash.ts
@@ -170,7 +171,8 @@ Below shows an example in the Wallet SDK and using cURL commands:
 
 
 Submitting the Transaction
--------------------------
+--------------------------
+
 Once the transaction is signed, it can be executed on the validator.
 You can observe completions by seeing the committed transactions.
 If they don't appear on your ledger, you are guaranteed some response, and you can keep retrying; signed transactions are idempotent.
