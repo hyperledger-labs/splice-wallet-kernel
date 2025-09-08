@@ -1,6 +1,3 @@
-# Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
-# SPDX-License-Identifier: Apache-2.0
-
 openapi: 3.0.0
 info:
     title: allocation instruction off-ledger API
@@ -11,7 +8,7 @@ info:
 paths:
     /registry/allocation-instruction/v1/allocation-factory:
         post:
-            operationId: 'getAllocationFactory'
+            operationId: getAllocationFactory
             description: |
                 Get the factory and choice context for creating allocations using the `AllocationFactory_Allocate` choice.
             requestBody:
@@ -31,24 +28,21 @@ paths:
                     $ref: '#/components/responses/400'
                 '404':
                     $ref: '#/components/responses/404'
-
 components:
     responses:
         '400':
-            description: 'bad request'
+            description: bad request
             content:
                 application/json:
                     schema:
                         $ref: '#/components/schemas/ErrorResponse'
         '404':
-            description: 'not found'
+            description: not found
             content:
                 application/json:
                     schema:
                         $ref: '#/components/schemas/ErrorResponse'
-
     schemas:
-        # Note: intentionally not shared with the other APIs to keep the self-contained, and because not all OpenAPI codegens support such shared definitions.
         GetFactoryRequest:
             type: object
             properties:
@@ -63,11 +57,11 @@ components:
                         The choice arguments are provided so that the registry can also provide choice-argument
                         specific contracts, e.g., the configuration for a specific instrument-id.
                 excludeDebugFields:
-                    description: 'If set to true, the response will not include debug fields.'
+                    description: If set to true, the response will not include debug fields.
                     default: false
                     type: boolean
-            required: ['choiceArguments']
-
+            required:
+                - choiceArguments
         FactoryWithChoiceContext:
             description: |
                 A factory contract together with the choice context required to exercise the choice
@@ -79,12 +73,13 @@ components:
             type: object
             properties:
                 factoryId:
-                    description: 'The contract ID of the contract implementing the factory interface.'
+                    description: The contract ID of the contract implementing the factory interface.
                     type: string
                 choiceContext:
                     $ref: '#/components/schemas/ChoiceContext'
-            required: ['factoryId', 'choiceContext']
-
+            required:
+                - factoryId
+                - choiceContext
         ChoiceContext:
             description: |
                 The context required to exercise a choice on a contract via an interface.
@@ -93,7 +88,7 @@ components:
             type: object
             properties:
                 choiceContextData:
-                    description: 'The additional data to use when exercising the choice.'
+                    description: The additional data to use when exercising the choice.
                     type: object
                 disclosedContracts:
                     description: |
@@ -102,9 +97,9 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/DisclosedContract'
-            required: ['choiceContextData', 'disclosedContracts']
-
-        # Note: intentionally not shared with the other APIs to keep the self-contained, and because not all OpenAPI codegens support such shared definitions.
+            required:
+                - choiceContextData
+                - disclosedContracts
         DisclosedContract:
             type: object
             properties:
@@ -139,13 +134,10 @@ components:
                     type: string
                     format: date-time
             required:
-                [
-                    'templateId',
-                    'contractId',
-                    'createdEventBlob',
-                    'synchronizerId',
-                ]
-
+                - templateId
+                - contractId
+                - createdEventBlob
+                - synchronizerId
         ErrorResponse:
             type: object
             required:
