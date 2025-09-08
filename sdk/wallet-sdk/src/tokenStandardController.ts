@@ -76,15 +76,18 @@ export class TokenStandardController {
     }
 
     /** Lists all holdings for the current party.
-     * @param afterOffset optional pagination offset.
+     * @param afterOffset optional ledger offset to start from.
+     * @param beforeOffset optional ledger offset to end at.
      * @returns A promise that resolves to an array of holdings.
      */
     async listHoldingTransactions(
-        afterOffset?: string
+        afterOffset?: string,
+        beforeOffset?: string
     ): Promise<PrettyTransactions> {
         return await this.service.listHoldingTransactions(
             this.partyId,
-            afterOffset
+            afterOffset,
+            beforeOffset
         )
     }
 

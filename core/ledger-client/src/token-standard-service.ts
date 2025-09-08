@@ -185,7 +185,8 @@ export class TokenStandardService {
 
     async listHoldingTransactions(
         partyId: string,
-        afterOffset?: string
+        afterOffset?: string,
+        beforeOffset?: string
     ): Promise<PrettyTransactions> {
         try {
             this.logger.debug('Set or query offset')
@@ -193,6 +194,10 @@ export class TokenStandardService {
                 Number(afterOffset) ||
                 (await this.ledgerClient.get('/v2/state/latest-pruned-offsets'))
                     .participantPrunedUpToInclusive
+            const beforeOffsetOrLatest =
+                Number(beforeOffset) ||
+                (await this.ledgerClient.get('/v2/state/ledger-end')).offset
+
             this.logger.debug(afterOffsetOrLatest, 'Using offset')
             const updatesResponse: JsGetUpdatesResponse[] =
                 await this.ledgerClient.post('/v2/updates/flats', {
@@ -211,6 +216,7 @@ export class TokenStandardService {
                         },
                     },
                     beginExclusive: afterOffsetOrLatest,
+                    endInclusive: beforeOffsetOrLatest,
                     verbose: false,
                 })
 
