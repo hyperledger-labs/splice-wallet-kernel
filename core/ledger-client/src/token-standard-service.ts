@@ -93,6 +93,16 @@ export class TokenStandardService {
         }
     }
 
+    async GetInstrumentAdmin(
+        transferFactoryRegistryUrl: string
+    ): Promise<string | undefined> {
+        const client = this.tokenStandardClient(transferFactoryRegistryUrl)
+
+        const info = await client.get('/registry/metadata/v1/info')
+
+        return info.adminId
+    }
+
     async createRejectTransferInstruction(
         transferInstructionCid: string,
         transferFactoryRegistryUrl: string
