@@ -58,7 +58,11 @@ export class ValidatorController {
         return this
     }
 
-    //returns contract id used in prepareExternalPartyProposal
+    /**
+     * Create the ExternalPartySetupProposal contract as the validator operator
+     * @param partyId
+     * returns contractId used in prepareExternalPartyProposal
+     */
     async createExternalPartyProposal(partyId: string) {
         return await this.validatorClient.post(
             '/v0/admin/external-party/setup-proposal',
@@ -68,7 +72,11 @@ export class ValidatorController {
         )
     }
 
-    //returns tx and tx hash
+    /**
+     * Given a contract id of an ExternalPartySetupProposal, prepare the transaction
+     * to accept it such that it can be signed externally
+     * @param contractId contract id of an ExternalPartySetupProposal
+     */
     async prepareExternalPartyProposal(contractId: string) {
         return await this.validatorClient.post(
             '/v0/admin/external-party/setup-proposal/prepare-accept',
@@ -79,7 +87,14 @@ export class ValidatorController {
         )
     }
 
-    //sign tx hash returned from prepareExternalPartyProposal and submit here
+    /**
+     * Submit a transaction prepared using prepareExternalPartyProposal
+     * together with its signature
+     * @param publicKey hex-encoded public key
+     * @param signedHash hex-encoded signed hash from prepareExternalPartyProposal
+     * @param tx hex-encoded transaction from prepareExternalPartyProposal
+     */
+
     async submitPartyProposal(
         publicKey: string,
         signedHash: string,

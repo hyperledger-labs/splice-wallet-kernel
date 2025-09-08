@@ -23,7 +23,6 @@ const sdk = new WalletSDKImpl().configure({
     topologyFactory: localNetTopologyDefault,
     tokenStandardFactory: localNetTokenStandardDefault,
     validatorFactory: localValidatorDefault,
-    // validatorFactory: localValidatorDefault
 })
 
 logger.info('SDK initialized')
@@ -172,21 +171,6 @@ const transferCid = holdings!.transactions
 
 sdk.userLedger?.setPartyId(receiver!.partyId)
 sdk.tokenStandard?.setPartyId(receiver!.partyId)
-
-// const [acceptTransferCommand, disclosedContracts3] =
-//     await sdk.tokenStandard!.exerciseTransferInstructionChoice(
-//         transferCid,
-//         'Accept'
-//     )
-
-// await sdk.userLedger?.prepareSignAndExecuteTransaction(
-//     [{ ExerciseCommand: acceptTransferCommand }],
-//     keyPairReceiver.privateKey,
-//     v4(),
-//     disclosedContracts3
-// )
-
-// console.log('Accepted transfer instruction')
 
 await new Promise((res) => setTimeout(res, 5000))
 
