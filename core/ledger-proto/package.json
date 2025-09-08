@@ -15,11 +15,13 @@
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "devDependencies": {
-        "@protobuf-ts/runtime": "^2.11.1",
-        "@protobuf-ts/runtime-rpc": "^2.11.1",
         "@swc/core": "^1.11.31",
         "@types/node": "^22.15.30",
         "typescript": "^5.8.3"
+    },
+    "dependencies":  {
+      "@protobuf-ts/runtime": "^2.11.1",
+      "@protobuf-ts/runtime-rpc": "^2.11.1"
     },
     "files": [
         "dist/**"

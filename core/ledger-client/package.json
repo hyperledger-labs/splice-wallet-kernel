@@ -16,11 +16,7 @@
         "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
     },
     "devDependencies": {
-        "@grpc/grpc-js": "^1.13.4",
         "@jest/globals": "^29.0.0",
-        "@protobuf-ts/grpc-transport": "^2.11.1",
-        "@protobuf-ts/runtime": "^2.11.1",
-        "@protobuf-ts/runtime-rpc": "^2.11.1",
         "@swc/core": "^1.11.31",
         "@swc/jest": "^0.2.38",
         "@types/jest": "^30.0.0",
@@ -32,11 +28,13 @@
         "typescript": "^5.8.3"
     },
     "dependencies": {
+        "@grpc/grpc-js": "^1.13.4",
         "@canton-network/core-ledger-proto": "workspace:^",
         "@canton-network/core-token-standard": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@protobuf-ts/runtime": "^2.11.1",
         "@protobuf-ts/runtime-rpc": "^2.11.1",
+        "@protobuf-ts/grpc-transport": "^2.11.1",
         "bignumber.js": "^9.2.1",
         "dayjs": "^1.11.13",
         "openapi-fetch": "^0.14.0",
