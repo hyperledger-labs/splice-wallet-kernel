@@ -21,6 +21,7 @@ export * from './ledgerController.js'
 export * from './authController.js'
 export * from './topologyController.js'
 export * from './tokenStandardController.js'
+export * from './validatorController.js'
 export {
     signTransactionHash,
     createKeyPair,
@@ -60,6 +61,7 @@ export interface WalletSDK {
     adminLedger: LedgerController | undefined
     topology: TopologyController | undefined
     tokenStandard: TokenStandardController | undefined
+    validator: ValidatorController | undefined
 }
 
 /**

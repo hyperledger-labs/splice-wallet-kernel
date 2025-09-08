@@ -6,4 +6,5 @@ export {
     GetResponse,
     PostRequest,
     PostResponse,
+    ValidatorInternalClient,
 } from './validator-internal-client.js'

@@ -1,13 +1,13 @@
 import { pino } from 'pino'
-import { ScanClient } from '@canton-network/core-splice-client'
-import { ValidatorInternalClient } from '@canton-network/core-splice-client/dist/validator-internal-client'
+import {
+    ScanClient,
+    ValidatorInternalClient,
+} from '@canton-network/core-splice-client'
 
 import {
     getPublicKeyFromPrivate,
     signTransactionHash,
 } from '@canton-network/core-signing-lib'
-
-export type TransactionInstructionChoice = 'Accept' | 'Reject'
 
 /**
  * TokenStandardController handles token standard management tasks.
@@ -31,7 +31,11 @@ export class ValidatorController {
         baseUrl: string,
         private accessToken: string
     ) {
-        this.validatorClient = new ValidatorInternalClient(baseUrl, this.logger)
+        this.validatorClient = new ValidatorInternalClient(
+            baseUrl,
+            this.logger,
+            this.accessToken
+        )
         this.userId = userId
         return this
     }
@@ -76,14 +80,18 @@ export class ValidatorController {
     }
 
     //sign tx hash returned from prepareExternalPartyProposal and submit here
-    async submitPartyProposal(publicKey: string, hash: string, tx: string) {
+    async submitPartyProposal(
+        publicKey: string,
+        signedHash: string,
+        tx: string
+    ) {
         return await this.validatorClient.post(
             '/v0/admin/external-party/setup-proposal/submit-accept',
             {
                 submission: {
                     party_id: this.partyId,
                     transaction: tx,
-                    signed_tx_hash: hash,
+                    signed_tx_hash: signedHash,
                     public_key: publicKey,
                 },
             }
