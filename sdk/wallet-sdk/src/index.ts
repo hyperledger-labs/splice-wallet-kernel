@@ -7,7 +7,7 @@ import {
     localTokenStandardDefault,
     TokenStandardController,
 } from './tokenStandardController.js'
-import { ScanClient } from '@canton-network/core-scan-client'
+import { ScanClient } from '@canton-network/core-splice-client'
 import {
     localTopologyDefault,
     TopologyController,

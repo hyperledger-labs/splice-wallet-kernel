@@ -1,6 +1,6 @@
 import { pino } from 'pino'
-import { ScanClient } from '@canton-network/core-scan-client'
-import { ValidatorInternalClient } from '@canton-network/core-scan-client/dist/validator-internal-client'
+import { ScanClient } from '@canton-network/core-splice-client'
+import { ValidatorInternalClient } from '@canton-network/core-splice-client/dist/validator-internal-client'
 
 import {
     getPublicKeyFromPrivate,

@@ -23,7 +23,7 @@ const OUTPUT_SPECS_DIR = path.join(API_SPECS_PATH, 'validator')
 const OUTPUT_CLIENTS_DIR = path.join(
     getRepoRoot(),
     'core',
-    'scan-client',
+    'splice-client',
     'src',
     'generated-clients'
 )
