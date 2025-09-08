@@ -27,27 +27,6 @@ Getting more traffic
     * You can sign up with a service like the `Denex Gas Station <https://denex.io/gasstation>`__ to buy your traffic.
 * The validator node has automation to keep traffic topped up. As long as you keep CC in your validator party, it'll stay available. See `here <https://docs.sync.global/validator_operator/validator_helm.html#configuring-automatic-traffic-purchases>`__ for how to configure automatic traffic purchases.
 
-Obtaining CC
-------------
-* The tokenomics of the network give you options for obtaining Canton Coin
-* The tokenomics operate on 10m “mining rounds”. Every 10 minutes, different stakeholders of the network can mint Canton Coin according to how much value they've brought to the network. All rewards towards your node's internal parties will be auto-minted by your node.
-
-*Ways of obtaining Canton Coin:*
-
-* **Validator Liveness Rewards:** Just for being online and growing the network, the Canton Coin rules enable you to mint rewards.
-* **Validator Activeness Rewards:** If you self-purchase traffic, you get a discount via these rewards.
-* **Application Rewards:** If your application brings value to the network it can earn application rewards. Currently, the featured application rewards are oversized.
-
-If the CC obtained by rewards are not sufficient, it's of course possible to buy CC in the open market to fund traffic.
-
-Gaining Application Rewards as a Wallet/Custodian/Exchange
-----------------------------------------------------------
-* First: aim to get featured app status - this features a Party of yours, the “featured party”.
-    * On DevNet you can self-feature through the wallet UI.
-* As a fairly exclusive wallet/custodian, you can bill your customers in Canton Coin and get app rewards proportional to your customer base through this mechanism.
-* If you have a broad customer base, you can construct the transfers to get application rewards for deposits and/or withdrawals. This is particularly easy if you activate direct/1-step transfers for deposits.
-
-
 How to determine the traffic cost of a transaction?
 ---------------------------------------------------
 

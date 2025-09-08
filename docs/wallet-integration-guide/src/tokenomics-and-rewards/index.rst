@@ -17,7 +17,7 @@ CC Rewards
 * The validators automation is not able to mint the rewards for an external parties - the external party needs to delegate the ability for the validator 
 admin party to mint their rewards on their behalf or manually mint the rewards themselves each round they receive rewards.
 * All rewards and coupons are mintable the follow mining round
-* If rewards are not redemed then they are lost*
+* If rewards are not redeemed then they are lost*
 
 You can find more information about the tokenomics of Canton Coin `here <https://docs.dev.sync.global/overview/overview.html#tokenomics>`_.
 
@@ -80,8 +80,8 @@ To accept rewards with an external party you need to call ``AmuletRules_Transfer
 
 Sharing Featured Application Reward between multiple parties
 ------------------------------------------------------------
-Featured Application rewards can be shared between multiple parties, this can be done by defining a list of benficiaries
+Featured Application rewards can be shared between multiple parties, this can be done by defining a list of benificiaries
 and give them a weighted amount of the total reward. The sum of all beneficiaries weight must be equal to 1.0. This results
-in seperate coupons being generated for each beneficiary.
+in separate coupons being generated for each beneficiary.
 
 .. todo add code example once we have this in the wallet SDK
