@@ -93,7 +93,7 @@ export class TokenStandardService {
         }
     }
 
-    async GetInstrumentAdmin(
+    async getInstrumentAdmin(
         transferFactoryRegistryUrl: string
     ): Promise<string | undefined> {
         const client = this.tokenStandardClient(transferFactoryRegistryUrl)

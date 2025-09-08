@@ -75,7 +75,7 @@ export class TokenStandardController {
         return this
     }
 
-    async GetInstrumentAdmin(): Promise<string | undefined> {
+    async getInstrumentAdmin(): Promise<string | undefined> {
         return await this.service.GetInstrumentAdmin(
             this.transferFactoryRegistryUrl
         )

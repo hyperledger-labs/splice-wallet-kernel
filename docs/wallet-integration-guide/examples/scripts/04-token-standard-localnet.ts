@@ -63,7 +63,7 @@ sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL.href)
 const instrumentAdminPartyId =
-    (await sdk.tokenStandard?.GetInstrumentAdmin()) || ''
+    (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     sender!.partyId,
