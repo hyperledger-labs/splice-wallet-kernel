@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-scan-client",
-    "version": "0.1.0",
+    "version": "0.2.1",
     "type": "module",
     "description": "Typescript Client for the Canton Network Scan API",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",

@@ -10,43 +10,42 @@ High-Level Overview
 
 .. todo:: merge, link, align this brief summary with the overview in the wallet integration guide
 
-Very likely you have already integrated your exchange with BTC and other UTXO-based chains.
-The architecture presented here should align well with your existing architecture; and you
-should thus be able to reuse many components and ideas using the following mapping of concepts.
+If you have integrated your exchange with other BTC and other UTXO-based chains, the architecture presented here will be familiar and you
+will be able to reuse existing components and patterns. Before jumping into the discussion, it is important to map your preexisting concepts using the following mapping:
 
 * Transactions are identified in Canton using their globally unique **update-id**.
 * Each transaction is committed at specific **record time** that is assigned by the synchronizer
   used to commit the transaction.
-* Blockheight in BTC can be mapped to record time on the Global Synchronizer in Canton.
+* Blockheight in BTC can be mapped to the record time of the Global Synchronizer in Canton Network.
 * BTC UTXOs map to what are usually called **active contracts** in Canton.
   Every Canton contract carries data of a specific Daml template type.
   For ease of understanding, we often refer to active contracts as "UTXOs" in this guide.
 * BTC addresses map to **parties** in Canton.
 * Validator nodes host parties and store their private data. Validator nodes also
-  expose the **Ledger API**, which can be used by an owner of a party to
+  expose the **Ledger API** (LAPI), which can be used by an owner of a party to
   read their party's state and transactions.
-* Canton is designed as a network-of-networks and
-  validator nodes can thus be connected to multiple synchronizers.
+* Canton is designed as a network-of-networks where each network is a separate synchronizer that is distinct and separate from other synchronizers.  For example, the Global Synchronizer is a synchronizer that connects validators in its network.
+* Validator nodes can be connected to multiple synchronizers.
   Validator nodes merge the data streams from all connected synchronizers into a single logical stream,
-  which is why they assign a local **Ledger API offset** to every transaction.
+  which is why they assign a local Ledger API **offset** to every transaction.
   These offsets are not comparable across validator nodes, but update-ids and record times are.
-* Transactions in Canton have a hierarchical structure that reflects the nested execution and visibility of Daml choices.
+* Transactions in Canton have a hierarchical structure that reflects the nested execution and visibility of Daml choices.  This hierarchical structure guarantees privacy between parties in the same transaction.
   Different validator nodes may see different sub-trees of the same transaction depending on which parties they host.
 * **Memos** are stored in the transfer metadata using the ``splice.lfdecentralizedtrust.org/reason`` key.
-  The Canton Network Token Standard defines this key and a way to parse these memo tags and other transfer information from transactions.
+  The `Canton Network Token Standard <https://docs.dev.sync.global/app_dev/token_standard/index.html>`__ defines this key and a way to parse these memo tags and other transfer information from transactions.
 
-This guide provides a sample architecture and workflows for how you can integrate your exchange with Canton.
+This guide provides a sample architecture and workflows for integrating an exchange with Canton.
 The expectation is that the integration components are reasonably thin wrappers
 over the functionality provided by the wallet SDK.
-The guide expects you to build these components, as they should be mostly concerned
-with how to integrate with your exchange's internal systems and requirements.
+The guide expects you to provide these components since they are mostly concerned
+integrating with your exchange's internal systems and its requirements.
 
 
 Component Overview
 ------------------
 
-The following diagram shows the components for integrating the exchange internal systems
-with Canton. We explain the components in the subsections below.
+The following diagram shows the components to integrate an exchange's internal systems
+with Canton Network. We explain the components in the subsections below.
 
 .. https://lucid.app/lucidchart/2a048991-c76c-4a72-8622-66e837f6e1ec/edit?viewport_loc=-1983%2C-124%2C4710%2C2321%2C0_0&invitationId=inv_d2f23474-4e92-4b66-847a-0602e906795e
 
@@ -59,13 +58,12 @@ Exchange Components
 
 This guide assumes that there are **Exchange Internal Systems** that manage, among other things,
 the exchange's internal ledger of **Customer** balances.
-These systems are in particular used to serve data to the **Exchange UI**,
+These systems serve data to the **Exchange UI**,
 which is used by exchange customers to trade, observe their deposits,
 and request withdrawals of funds to their wallets.
 
-The guide's assumptions might not be perfectly satisfied by your exchange's actual architecture.
-We encourage you to consider them in spirit and map the diagram as best as possible
-to your actual architecture.
+The guide's assumptions might not perfectly match your exchange's actual architecture.
+We encourage you to consider them in spirit and map the diagram as best as possible.
 
 
 Canton Integration Components
@@ -75,15 +73,14 @@ There are five Canton integration components:
 
 * The **Exchange Validator Node** is a :ref:`Splice validator node <validator_nodes>` that hosts
   your ``treasuryParty``, which is the party you setup to control funds, receive deposits, and
-  execute transfers for withdrawals. See :ref:`exchange-parties-setup` for details on how to setup this party.
-  You are not expected to build this node, but you are expected to either operate it yourself
+  execute transfers for withdrawals. See :ref:`exchange-parties-setup` for details on how to setup the ``treasuryParty``.
+  You can `deploy and oeprate a valiator yourself <https://docs.dev.sync.global/validator_operator/index.html#validators>`__
   or use a node-as-a-service provider to operate it for you.
 * The **Canton Integration DB** is used to keep track of the state of withdrawals and
   the customer-attribution of the funds held by the ``treasuryParty``.
-  It is shown as a separate component in the diagram, but it could well be part of your
-  existing databases. The best choice how to build this component depends on your existing
-  architecture.
-* The **Tx History Ingestion** service uses the JSON Ledger API exposed by the
+  It is shown as a separate component in the diagram, but it could be part of an
+  existing databases.
+* The **Tx History Ingestion** service uses the `JSON Ledger API <https://docs.digitalasset.com/build/3.3/reference/json-api/json-api.html>`__ exposed by the
   Exchange Validator Node to read Daml transactions affecting the ``treasuryParty``.
   It parses these transactions and updates the Canton Integration DB
   with the effect of these transactions (e.g. a successful deposit to a customer account).
@@ -94,8 +91,7 @@ There are five Canton integration components:
   support direct transfers. It is not necessary for an integration with Canton Coin,
   which does support direct, 1-step transfers.
 
-So concretely, you are expected to build the three services listed above and provide them
-with some DB where they can store their state in a way that makes it accessible for querying by the Exchange Internal Systems.
+You are expected to provide the three services and DBs listed above in a way that is accessible for querying by the Exchange Internal Systems.
 As explained in the :ref:`architecture-high-level-overview`, you should be able to
 build these services as thin wrappers over the functionality provided by the wallet SDK
 and reuse the DB schemas from your existing UTXO-based integrations.
@@ -106,8 +102,7 @@ in the :ref:`integration-workflows` section.
 Third-Party Components
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The third-party components shown in the diagram are used as follows
-in the context of the Canton integration:
+The purpose of the third-party components in the diagram above (in gray) is:
 
 * The **Global Synchronizer** serves the validator nodes to commit Daml transactions
   in a decentralized and fault-tolerant manner.
@@ -144,7 +139,7 @@ We explain them below.
 
 There are three main information flows:
 
-#. **Tx History Ingestion**: ingests the transactions
+#. **Tx History Ingestion**: ingests the transactions (tx)
    affecting the ``treasuryParty`` from the Exchange Validator Node into the Canton Integration DB.
    Arrow 1.a represents the transaction data being read using the ``/v2/updates/flats``
    Ledger API endpoint using either `plain HTTP <https://github.com/digital-asset/canton/blob/92339b6f98faaecbe3adbfb71293ed9cbfb30204/community/ledger/ledger-json-api/src/test/resources/json-api-docs/openapi.yaml#L786>`__

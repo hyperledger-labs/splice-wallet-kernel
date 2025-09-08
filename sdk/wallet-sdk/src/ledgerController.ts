@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import {
     LedgerClient,
     PostResponse,
@@ -166,7 +169,7 @@ export class LedgerController {
                                     TopologyController.createFingerprintFromPublicKey(
                                         publicKey
                                     ),
-                                format: 'SIGNATURE_FORMAT_RAW',
+                                format: 'SIGNATURE_FORMAT_CONCAT',
                                 signingAlgorithmSpec:
                                     'SIGNING_ALGORITHM_SPEC_ED25519',
                             },

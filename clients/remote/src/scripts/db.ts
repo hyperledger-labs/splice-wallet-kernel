@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import { createCLI } from '@canton-network/core-wallet-store-sql'
 import { ConfigUtils } from '../config/ConfigUtils.js'
 import { configSchema } from '../config/Config.js'

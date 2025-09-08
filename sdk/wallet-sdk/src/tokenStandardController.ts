@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import {
     Types,
     LedgerClient,
@@ -73,15 +76,18 @@ export class TokenStandardController {
     }
 
     /** Lists all holdings for the current party.
-     * @param afterOffset optional pagination offset.
+     * @param afterOffset optional ledger offset to start from.
+     * @param beforeOffset optional ledger offset to end at.
      * @returns A promise that resolves to an array of holdings.
      */
     async listHoldingTransactions(
-        afterOffset?: string
+        afterOffset?: string,
+        beforeOffset?: string
     ): Promise<PrettyTransactions> {
         return await this.service.listHoldingTransactions(
             this.partyId,
-            afterOffset
+            afterOffset,
+            beforeOffset
         )
     }
 
@@ -100,6 +106,10 @@ export class TokenStandardController {
         )
     }
 
+    /**
+     * Lists all holding UTXOs for the current party.
+     * @returns A promise that resolves to an array of holding UTXOs.
+     */
     async listHoldingUtxos(): Promise<PrettyContract<HoldingV1.HoldingView>[]> {
         return await this.service.listContractsByInterface<HoldingV1.HoldingView>(
             '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding',
@@ -107,6 +117,13 @@ export class TokenStandardController {
         )
     }
 
+    /**
+     * Creates a new tap for the specified receiver and amount.
+     * @param receiver The party of the receiver.
+     * @param amount The amount to be tapped.
+     * @param instrument The instrument to be used for the tap.
+     * @returns A promise that resolves to the ExerciseCommand which creates the tap.
+     */
     async createTap(
         receiver: string,
         amount: string,
@@ -124,6 +141,15 @@ export class TokenStandardController {
         )
     }
 
+    /**
+     * Creates a new transfer for the specified sender, receiver, amount, and instrument.
+     * @param sender The party of the sender.
+     * @param receiver The party of the receiver.
+     * @param amount The amount to be transferred.
+     * @param instrument The instrument to be used for the transfer.
+     * @param meta Optional metadata to include with the transfer.
+     * @returns A promise that resolves to the ExerciseCommand which creates the transfer.
+     */
     async createTransfer(
         sender: string,
         receiver: string,
@@ -150,7 +176,7 @@ export class TokenStandardController {
         }
     }
 
-    /** Execute the choice TransferInstruction_Accept o TransferInstruction_Reject
+    /** Execute the choice TransferInstruction_Accept or TransferInstruction_Reject
      *  on the provided transfer instruction.
      * @param transferInstructionCid The contract ID of the transfer instruction to accept or reject
      * @param instructionChoice is either Accept or Reject
