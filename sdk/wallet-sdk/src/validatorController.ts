@@ -141,7 +141,7 @@ export class ValidatorController {
  * A default factory function used for running against a local validator node.
  * This uses mock-auth and is started with the 'yarn start:canton'
  */
-export const localTokenStandardDefault = (
+export const localValidatorDefault = (
     userId: string,
     token: string
 ): ValidatorController => {
