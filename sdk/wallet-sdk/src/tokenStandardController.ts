@@ -12,6 +12,7 @@ import {
     PrettyContract,
     ViewValue,
 } from '@canton-network/core-ledger-client'
+import { HoldingV1 } from '@canton-network/core-token-standard'
 import type { HoldingView } from '@canton-network/core-token-standard'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject'
@@ -112,7 +113,7 @@ export class TokenStandardController {
      */
     async listHoldingUtxos(): Promise<PrettyContract<HoldingView>[]> {
         return await this.service.listContractsByInterface<HoldingView>(
-            '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding',
+            HoldingV1.Holding.templateId,
             this.partyId
         )
     }
