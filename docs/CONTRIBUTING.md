@@ -15,6 +15,18 @@
 5. Run `yarn install` to install the workspaces
 6. Run `yarn postinstall`, this sets up auto sign-off
 
+in order for husky to have access to yarn (as part of our pre-commit) you might need to add an init file for certain IDE's.
+
+this can be done by:
+creating the file `~/.config/husky/init.sh`
+adding the following content:
+
+```
+# ~/.config/husky/init.sh
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+```
+
 ### git "signed-off-by" commit
 
 As a requirement under the hyperledger foundation, all commits must be signed off. This can be done by adding the `-s` flag every time you commit.
