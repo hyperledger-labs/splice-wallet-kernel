@@ -1,16 +1,7 @@
-..
-   Copyright (c) 2024 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
-..
-   SPDX-License-Identifier: Apache-2.0
+Traffic
+=======
 
-.. #TODO: copy of https://raw.githubusercontent.com/hyperledger-labs/splice/3c0770e648b21a48ef8dde202ef27065592f9422/docs/src/deployment/traffic.rst
-
-.. _tokenomics-fees-and-rewards:
-
-Tokenomics Fees and Rewards
-===========================
-
-Below is a high-level summary of the `Sycnrhonizer Traffic Fees page <https://docs.sync.global/deployment/traffic.html>`__ in the Splice Validator documentation.
+Below is a high-level summary of the `Sycnrhonizer Traffic Fees page <https://docs.sync.global/deployment/traffic.html>`_ in the Splice Validator documentation.
 For more detail on point, it's advised to read the that documenation.
 
 Traffic
