@@ -4,11 +4,16 @@
 
 ### environment
 
-1. Install NodeJS, preferably via [nvm](https://github.com/nvm-sh/nvm). We support the latest LTS (v22.16.0 at time of writing)
-2. After installing nvm, run `nvm use` in the repo root
+1. install [nvm](https://github.com/nvm-sh/nvm)
+    1. Run `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash`
+    2. restart your terminal to get the changes
+2. install nodeJs
+    1. Run `nvm install 22.16.0`
+    2. Run `nvm use 22.16.0`
 3. Run `corepack enable` to install `yarn`
 4. Run `yarn set version stable` to update `yarn` to v4
 5. Run `yarn install` to install the workspaces
+6. Run `yarn postinstall`, this sets up auto sign-off
 
 ### git "signed-off-by" commit
 
