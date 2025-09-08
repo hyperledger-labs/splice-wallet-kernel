@@ -1,5 +1,6 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
+
 import {
     HoldingV1,
     TransferInstructionV1,
@@ -9,8 +10,6 @@ export interface InterfaceIdParts {
     moduleName: string
     entityName: string
 }
-
-export const test = 'test'
 
 export function splitInterfaceId(interfaceId: string): InterfaceIdParts | null {
     // Captures 3 groups: pkg, module and entity
