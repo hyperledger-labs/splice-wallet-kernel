@@ -26,10 +26,10 @@ jobs:
             - name: Install dependencies
               run: yarn install --immutable
 
-            #            - name: Validate current PR title with commitlint
-            #              run: echo "$TITLE" | yarn commitlint --verbose
-            #              env:
-            #                  TITLE: ${{ github.event.pull_request.title }}
+            - name: Validate current PR title with commitlint
+              run: echo "$TITLE" | yarn commitlint --verbose
+              env:
+                  TITLE: ${{ github.event.pull_request.title }}
 
             - name: prettier code
               run: yarn run prettier . --check
