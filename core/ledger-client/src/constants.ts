@@ -11,7 +11,7 @@ export interface InterfaceIdParts {
 }
 
 export function splitInterfaceId(interfaceId: string): InterfaceIdParts | null {
-    // Captures 3 groups: pkg, module and entity
+    // Captures 3 groups: pkg, module and entity.
     // Note that prefix # is optional in regexp below,
     // format without # is deprecated, but supported in canton 3.3 and will be removed in canton 3.4
     // https://docs.digitalasset.com/build/3.3/reference/lapi-migration-guide.html#identifier-addressing-by-package-name
