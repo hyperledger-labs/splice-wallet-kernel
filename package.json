@@ -70,7 +70,25 @@
         "*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --fix"
     },
     "resolutions": {
-        "@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0": "workspace:^"
+        "@daml.js/daml-prim-DA-Exception-ArithmeticError-1.0.0": "workspace:^",
+        "@daml.js/daml-prim-DA-Exception-AssertionFailed-1.0.0": "workspace:^",
+        "@daml.js/daml-prim-DA-Exception-GeneralError-1.0.0": "workspace:^",
+        "@daml.js/daml-prim-DA-Exception-PreconditionFailed-1.0.0": "workspace:^",
+        "@daml.js/daml-prim-DA-Types-1.0.0": "workspace:^",
+        "@daml.js/daml-prim-GHC-Types-1.0.0": "workspace:^",
+        "@daml.js/daml-stdlib-DA-Date-Types-1.0.0": "workspace:^",
+        "@daml.js/daml-stdlib-DA-Internal-Down-1.0.0": "workspace:^",
+        "@daml.js/daml-stdlib-DA-Logic-Types-1.0.0": "workspace:^",
+        "@daml.js/daml-stdlib-DA-Monoid-Types-1.0.0": "workspace:^",
+        "@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0": "workspace:^",
+        "@daml.js/daml-stdlib-DA-Random-Types-1.0.0": "workspace:^",
+        "@daml.js/daml-stdlib-DA-Semigroup-Types-1.0.0": "workspace:^",
+        "@daml.js/daml-stdlib-DA-Set-Types-1.0.0": "workspace:^",
+        "@daml.js/daml-stdlib-DA-Stack-Types-1.0.0": "workspace:^",
+        "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "workspace:^",
+        "@daml.js/daml-stdlib-DA-Validation-Types-1.0.0": "workspace:^",
+        "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "workspace:^",
+        "@daml.js/token-standard-models-1.0.0": "workspace:^"
     },
     "packageManager": "yarn@4.9.4",
     "dependencies": {

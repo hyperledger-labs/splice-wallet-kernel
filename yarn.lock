@@ -2268,16 +2268,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Ftoken-standard-models-1.0.0":
-  version: 3.4.0-snapshot.20250616.13911.0.v482d9ec0
-  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=018552&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Ftoken-standard-models-1.0.0"
-  dependencies:
-    "@mojotech/json-type-validation": "npm:^3.1.0"
-  checksum: 10c0/9cd9f0f2b0b3dda7c8ac7616de0f5a0b2841d4b8efe6cf947b2e4f12dd3a8c10eee8dd021ad657066aba82d45550428a69d60488944f976fc93db598e7a05b6f
-  languageName: node
-  linkType: hard
-
-"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@workspace:core/token-standard/src/daml-stdlib-DA-Time-Types-1.0.0":
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@workspace:^, @daml.js/daml-stdlib-DA-Time-Types-1.0.0@workspace:core/token-standard/src/daml-stdlib-DA-Time-Types-1.0.0":
   version: 0.0.0-use.local
   resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@workspace:core/token-standard/src/daml-stdlib-DA-Time-Types-1.0.0"
   dependencies:
@@ -2294,16 +2285,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Ftoken-standard-models-1.0.0":
-  version: 3.4.0-snapshot.20250616.13911.0.v482d9ec0
-  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=24a385&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Ftoken-standard-models-1.0.0"
-  dependencies:
-    "@mojotech/json-type-validation": "npm:^3.1.0"
-  checksum: 10c0/255481abc1a9851ea9c3b3f734020dc2dfefb06bca2166f2632a88a250a9d23025799586873681a3144b7705ec4d668442ae1b33ef01cb0ea6e5caf1c5d96060
-  languageName: node
-  linkType: hard
-
-"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@workspace:core/token-standard/src/ghc-stdlib-DA-Internal-Template-1.0.0":
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@workspace:^, @daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@workspace:core/token-standard/src/ghc-stdlib-DA-Internal-Template-1.0.0":
   version: 0.0.0-use.local
   resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@workspace:core/token-standard/src/ghc-stdlib-DA-Internal-Template-1.0.0"
   dependencies:
