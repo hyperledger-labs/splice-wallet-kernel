@@ -24,6 +24,7 @@ generated/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+!.yarn/cache
 
 .nx/cache
 .nx/workspace-data
