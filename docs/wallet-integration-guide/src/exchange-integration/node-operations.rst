@@ -122,12 +122,28 @@ You can test the party setup on LocalNet or DevNet as follows:
    phases of a minting round.
 
 
+.. _dar-file-management:
+
 .dar File Management
 --------------------
 
-Sketch:
+``.dar`` files define the Daml workflows used by the token admins for their tokens.
+They must be uploaded to your Exchange Validator Node to be able to process
+withdrawals and deposits for those tokens.
 
-* upload using the Ledger API: https://docs.digitalasset.com/build/3.3/sdlc-howtos/applications/develop/manage-daml-packages.html
+The ``.dar`` files for Canton Coin are managed by the Validator Node itself.
+The ``.dar`` files for other tokens need to be uploaded by you
+using the ``/v2/packages`` endpoint of the
+`Ledger API <https://github.com/digital-asset/canton/blob/eeb56bc5d9779a7f918893b7a6b15e0b312a044e/community/ledger/ledger-json-api/src/test/resources/json-api-docs/openapi.yaml#L316>`__.
+See this `how-to guide <https://docs.digitalasset.com/build/3.3/sdlc-howtos/applications/develop/manage-daml-packages.html>`__
+for more information.
+
+.. important::
+
+   Only upload ``.dar`` files from token admins that you trust.
+   The uploaded ``.dar`` files define the choices available on active contracts.
+   Uploading a malicious ``.dar`` file could result in granting an attacker
+   an unintended delegation on your contracts, which could lead to loss of funds.
 
 
 .. _restore-from-validator-node-backup:
