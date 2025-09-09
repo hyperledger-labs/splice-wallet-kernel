@@ -65,6 +65,6 @@
         "ts-jest-resolver": "^2.0.1",
         "tsx": "^4.19.4",
         "typescript": "^5.8.3",
-        "vite": "^6.3.5"
+        "vite": "^6.3.6"
     }
 }

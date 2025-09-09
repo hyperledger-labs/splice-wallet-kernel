@@ -21,7 +21,7 @@
     "devDependencies": {
         "@types/bootstrap": "^5",
         "typescript": "^5.8.3",
-        "vite": "^6.3.5"
+        "vite": "^6.3.6"
     },
     "packageManager": "yarn@4.9.4",
     "dependencies": {
