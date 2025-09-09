@@ -1669,7 +1669,7 @@ __metadata:
   resolution: "@canton-network/core-token-standard@workspace:core/token-standard"
   dependencies:
     "@canton-network/core-types": "workspace:^"
-    "@daml.js/token-standard-models-1.0.0": "file:src/token-standard-models-1.0.0"
+    "@daml.js/token-standard-models-1.0.0": "workspace:^"
     "@daml/ledger": "npm:3.4.0-snapshot.20250616.13911.0.v482d9ec0"
     "@daml/types": "npm:3.4.0-snapshot.20250616.13911.0.v482d9ec0"
     lodash: "npm:^4.17.21"
@@ -2228,16 +2228,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@file:../daml-stdlib-DA-NonEmpty-Types-1.0.0::locator=%40daml.js%2Fdaml-stdlib-DA-Validation-Types-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Fdaml-stdlib-DA-Validation-Types-1.0.0":
-  version: 3.4.0-snapshot.20250616.13911.0.v482d9ec0
-  resolution: "@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@file:../daml-stdlib-DA-NonEmpty-Types-1.0.0#../daml-stdlib-DA-NonEmpty-Types-1.0.0::hash=113ff6&locator=%40daml.js%2Fdaml-stdlib-DA-Validation-Types-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Fdaml-stdlib-DA-Validation-Types-1.0.0"
-  dependencies:
-    "@mojotech/json-type-validation": "npm:^3.1.0"
-  checksum: 10c0/8dff491d69ec1f22d86b70934e25f991cbea8516d31c10d61eaa1014bb60b83365496ccfa4a45265272420935ecc51769fd366d78dd22d0799afa4376f6110fc
-  languageName: node
-  linkType: hard
-
-"@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@workspace:core/token-standard/src/daml-stdlib-DA-NonEmpty-Types-1.0.0":
+"@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@workspace:^, @daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@workspace:core/token-standard/src/daml-stdlib-DA-NonEmpty-Types-1.0.0":
   version: 0.0.0-use.local
   resolution: "@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@workspace:core/token-standard/src/daml-stdlib-DA-NonEmpty-Types-1.0.0"
   dependencies:
@@ -2277,15 +2268,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Ftoken-standard-models-1.0.0%40file%3Asrc%2Ftoken-standard-models-1.0.0%23src%2Ftoken-standard-models-1.0.0%3A%3Ahash%3Ddca8e2%26locator%3D%2540canton-network%252Fcore-token-standard%2540workspace%253Acore%252Ftoken-standard":
-  version: 3.4.0-snapshot.20250616.13911.0.v482d9ec0
-  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=018552&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40file%3Asrc%2Ftoken-standard-models-1.0.0%23src%2Ftoken-standard-models-1.0.0%3A%3Ahash%3Ddca8e2%26locator%3D%2540canton-network%252Fcore-token-standard%2540workspace%253Acore%252Ftoken-standard"
-  dependencies:
-    "@mojotech/json-type-validation": "npm:^3.1.0"
-  checksum: 10c0/9cd9f0f2b0b3dda7c8ac7616de0f5a0b2841d4b8efe6cf947b2e4f12dd3a8c10eee8dd021ad657066aba82d45550428a69d60488944f976fc93db598e7a05b6f
-  languageName: node
-  linkType: hard
-
 "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Ftoken-standard-models-1.0.0":
   version: 3.4.0-snapshot.20250616.13911.0.v482d9ec0
   resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=018552&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Ftoken-standard-models-1.0.0"
@@ -2312,15 +2294,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Ftoken-standard-models-1.0.0%40file%3Asrc%2Ftoken-standard-models-1.0.0%23src%2Ftoken-standard-models-1.0.0%3A%3Ahash%3Ddca8e2%26locator%3D%2540canton-network%252Fcore-token-standard%2540workspace%253Acore%252Ftoken-standard":
-  version: 3.4.0-snapshot.20250616.13911.0.v482d9ec0
-  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=24a385&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40file%3Asrc%2Ftoken-standard-models-1.0.0%23src%2Ftoken-standard-models-1.0.0%3A%3Ahash%3Ddca8e2%26locator%3D%2540canton-network%252Fcore-token-standard%2540workspace%253Acore%252Ftoken-standard"
-  dependencies:
-    "@mojotech/json-type-validation": "npm:^3.1.0"
-  checksum: 10c0/255481abc1a9851ea9c3b3f734020dc2dfefb06bca2166f2632a88a250a9d23025799586873681a3144b7705ec4d668442ae1b33ef01cb0ea6e5caf1c5d96060
-  languageName: node
-  linkType: hard
-
 "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Ftoken-standard-models-1.0.0":
   version: 3.4.0-snapshot.20250616.13911.0.v482d9ec0
   resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=24a385&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Ftoken-standard-models-1.0.0"
@@ -2338,18 +2311,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@daml.js/token-standard-models-1.0.0@file:src/token-standard-models-1.0.0::locator=%40canton-network%2Fcore-token-standard%40workspace%3Acore%2Ftoken-standard":
-  version: 3.4.0-snapshot.20250616.13911.0.v482d9ec0
-  resolution: "@daml.js/token-standard-models-1.0.0@file:src/token-standard-models-1.0.0#src/token-standard-models-1.0.0::hash=dca8e2&locator=%40canton-network%2Fcore-token-standard%40workspace%3Acore%2Ftoken-standard"
-  dependencies:
-    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
-    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
-    "@mojotech/json-type-validation": "npm:^3.1.0"
-  checksum: 10c0/5cefc46d83f77e69eeba00d125155939ee613786acee1be21dad78617831f9d47b8c7ec48e472035eab91e051dec90c387e732704e37832ebe33f4f82b301c0a
-  languageName: node
-  linkType: hard
-
-"@daml.js/token-standard-models-1.0.0@workspace:core/token-standard/src/token-standard-models-1.0.0":
+"@daml.js/token-standard-models-1.0.0@workspace:^, @daml.js/token-standard-models-1.0.0@workspace:core/token-standard/src/token-standard-models-1.0.0":
   version: 0.0.0-use.local
   resolution: "@daml.js/token-standard-models-1.0.0@workspace:core/token-standard/src/token-standard-models-1.0.0"
   dependencies:

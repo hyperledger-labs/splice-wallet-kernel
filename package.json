@@ -69,6 +69,9 @@
         "*": "prettier --write --ignore-unknown",
         "*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --fix"
     },
+    "resolutions": {
+        "@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0": "workspace:^"
+    },
     "packageManager": "yarn@4.9.4",
     "dependencies": {
         "@nx/js": "^21.3.11",
