@@ -7,6 +7,7 @@ import { LedgerClient } from './ledger-client.js'
 import {
     HoldingInterface,
     TokenStandardTransactionInterfaces,
+    TransferFactoryInterface,
     TransferInstructionInterface,
 } from './constants.js'
 import {
@@ -310,9 +311,7 @@ export class TokenStandardService {
             }
 
             const exercise: ExerciseCommand = {
-                // todo: use codegen
-                templateId:
-                    '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferFactory',
+                templateId: TransferFactoryInterface,
                 contractId: transferFactory.factoryId,
                 choice: 'TransferFactory_Transfer',
                 choiceArgument: choiceArgs,
