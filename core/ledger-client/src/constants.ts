@@ -40,17 +40,11 @@ export function matchInterfaceIds(a: string, b: string): boolean {
     )
 }
 
-export const HoldingInterface = HOLDING_INTERFACE_ID
-
-export const TransferFactoryInterface = TRANSFER_FACTORY_INTERFACE_ID
-
-export const TransferInstructionInterface = TRANSFER_INSTRUCTION_INTERFACE_ID
-
 // TODO (#563): include allocations
 export const TokenStandardTransactionInterfaces = [
-    HoldingInterface,
-    TransferFactoryInterface,
-    TransferInstructionInterface,
+    HOLDING_INTERFACE_ID,
+    TRANSFER_FACTORY_INTERFACE_ID,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
 ]
 
 const SpliceMetaKeyPrefix = 'splice.lfdecentralizedtrust.org/'
