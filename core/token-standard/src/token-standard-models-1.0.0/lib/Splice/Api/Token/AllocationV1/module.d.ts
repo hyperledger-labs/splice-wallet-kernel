@@ -1,6 +1,7 @@
 // Generated from Splice/Api/Token/AllocationV1.daml
 /* eslint-disable @typescript-eslint/camelcase */
-
+/* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import * as jtv from '@mojotech/json-type-validation'
 import * as damlTypes from '@daml/types'
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
@@ -12,7 +13,7 @@ import * as Splice_Api_Token_HoldingV1 from '../../../../Splice/Api/Token/Holdin
 import * as Splice_Api_Token_MetadataV1 from '../../../../Splice/Api/Token/MetadataV1/module'
 
 export declare type Allocation =
-    damlTypes.Interface<'2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.AllocationV1:Allocation'> &
+    damlTypes.Interface<'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.AllocationV1:Allocation'> &
         AllocationView
 export declare interface AllocationInterface {
     Archive: damlTypes.Choice<
@@ -55,7 +56,7 @@ export declare interface AllocationInterface {
 export declare const Allocation: damlTypes.InterfaceCompanion<
     Allocation,
     undefined,
-    '2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.AllocationV1:Allocation'
+    'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.AllocationV1:Allocation'
 > &
     damlTypes.FromTemplate<Allocation, unknown> &
     AllocationInterface

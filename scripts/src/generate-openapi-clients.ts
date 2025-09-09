@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    DAML_RELEASE_VERSION,
     downloadAndUnpackTarball,
     downloadToFile,
     ensureDir,
@@ -91,12 +90,8 @@ async function generateOpenApiClient(spec: OpenApiSpec) {
 const specs: OpenApiSpec[] = [
     // Canton JSON Ledger API
     {
-        specdir: `api-specs/ledger-api/3.3.0/`,
-        input: new URL(
-            `https://raw.githubusercontent.com/digital-asset/daml/v${DAML_RELEASE_VERSION}/sdk/canton/community/ledger/ledger-json-api/src/test/resources/json-api-docs/openapi.yaml`
-        ),
+        input: 'api-specs/ledger-api/3.3.0/openapi.yaml',
         output: 'core/ledger-client/src/generated-clients/openapi-3.3.0-SNAPSHOT.ts',
-        hash: 'cfafc1017e68f7bc77bb805f4dce0b2f9089ff488b8f43eeb1839fd1d5ba9023',
     },
     // Splice Scan API
     {
