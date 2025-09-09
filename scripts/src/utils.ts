@@ -31,7 +31,7 @@ export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20250603.0'
 export const CANTON_VERSION = '3.3.0-snapshot.20250904.16083.0.v87695c75'
 
 export const SPLICE_ARCHIVE_HASH =
-    '335c90bcd6d37497248a7d297b736577891a7e0a32eb20e13cdfe20e5d551e2a'
+    '61e25571dd4da32477a56dbd0ddd34d4c9b40ed16f6d585e32b5ec2645abeb45'
 export const SPLICE_SPEC_ARCHIVE_HASH =
     'dac90e26bdecd623f6d7a2e965dd1763de5a470a1ad39deb9eb44775ea42c4ad'
 export const CANTON_ARCHIVE_HASH =
