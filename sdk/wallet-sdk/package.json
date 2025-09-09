@@ -1,7 +1,7 @@
 {
     "name": "@canton-network/wallet-sdk",
     "type": "module",
-    "version": "0.2.1",
+    "version": "0.3.0",
     "description": "Node/browser SDK for integrating with Canton Network",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
@@ -17,8 +17,8 @@
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
         "@canton-network/core-ledger-proto": "workspace:^",
-        "@canton-network/core-scan-client": "workspace:^",
         "@canton-network/core-signing-lib": "workspace:^",
+        "@canton-network/core-splice-client": "workspace:^",
         "@canton-network/core-token-standard": "workspace:^",
         "@canton-network/core-tx-visualizer": "workspace:^",
         "@canton-network/core-types": "workspace:^",

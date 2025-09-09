@@ -4,7 +4,7 @@ const scopes = ['release']
 
 const getScopes = () => {
     const projects = JSON.parse(
-        proc.execFileSync('npx', ['nx', 'show', 'projects', '--json'], {
+        proc.execFileSync('yarn', ['nx', 'show', 'projects', '--json'], {
             encoding: 'utf-8',
         })
     ).map((project) => project.split('/')[1])

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import zlib from 'zlib'
 import tar from 'tar-fs'
 import { pipeline } from 'stream/promises'
@@ -25,15 +28,79 @@ export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton/bootstrap.canton')
 export const API_SPECS_PATH = path.join(repoRoot, 'api-specs')
 // Canton versions
 export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20250603.0'
-export const CANTON_VERSION = '3.3.0-snapshot.20250530.15919.0.v3e7a341c'
+export const CANTON_VERSION = '3.3.0-snapshot.20250904.16083.0.v87695c75'
 
 export const SPLICE_ARCHIVE_HASH =
-    '91a1de163bde6c3a27b9de047592831c83fda78716d3fdc3b1404b892644d4ca'
+    '61e25571dd4da32477a56dbd0ddd34d4c9b40ed16f6d585e32b5ec2645abeb45'
 export const SPLICE_SPEC_ARCHIVE_HASH =
-    '302d966c1c68b33b71be0ae9b6d76df9aff9cf4f23590cd9a3b99cf747a2d35b'
+    'dac90e26bdecd623f6d7a2e965dd1763de5a470a1ad39deb9eb44775ea42c4ad'
 export const CANTON_ARCHIVE_HASH =
-    '7c88d6096701612dc628b6804c16d572c6c6a8cabe3f0ee32ab22afaa39c1eda'
-export const SPLICE_VERSION = '0.4.11'
+    'ac47567a96e3eaf5a62e5398139b41dc55e4dedbf499be4f04582771c0b4f6f7'
+export const SPLICE_VERSION = '0.4.15'
+
+export async function downloadToFile(
+    url: string | URL,
+    directory: string,
+    hash?: string
+) {
+    const filename = path.basename(url.toString())
+    const res = await fetch(url)
+    if (!res.ok || !res.body) {
+        throw new Error(`Failed to download: ${url}`)
+    }
+    await ensureDir(directory)
+    await pipeline(
+        res.body,
+        fs.createWriteStream(path.join(directory, filename))
+    )
+
+    if (hash) {
+        await verifyFileIntegrity(
+            path.join(directory, filename),
+            hash,
+            'sha256'
+        )
+    }
+}
+
+export async function verifyFileIntegrity(
+    filePath: string,
+    expectedHash: string,
+    algo = 'sha256'
+): Promise<boolean> {
+    if (!fs.existsSync(filePath)) {
+        return false
+    }
+
+    return new Promise((resolve, reject) => {
+        const hash = crypto.createHash(algo)
+        const stream = fs.createReadStream(filePath)
+
+        stream.on('data', (chunk) => hash.update(chunk))
+        stream.on('end', () => {
+            const computedHash = hash.digest('hex')
+            const matches = computedHash === expectedHash
+
+            if (matches) {
+                console.log(
+                    success(
+                        `${algo.toUpperCase()} checksum verified successfully.`
+                    )
+                )
+            } else {
+                console.log(
+                    error(
+                        `File hashes did not match.\n\tExpected: ${expectedHash}\n\tReceived: ${computedHash}\nDeleting ${filePath}...`
+                    )
+                )
+                process.exit(1)
+            }
+
+            resolve(matches)
+        })
+        stream.on('error', (err) => reject(err))
+    })
+}
 
 export async function downloadAndUnpackTarball(
     url: string,
@@ -43,27 +110,13 @@ export async function downloadAndUnpackTarball(
 ) {
     let shouldDownload = true
     const algo = 'sha256'
+
+    ensureDir(path.dirname(tarfile))
+
     if (fs.existsSync(tarfile) && options?.hash) {
         // File exists, check hash
-        const existingHash = crypto
-            .createHash(algo)
-            .update(fs.readFileSync(tarfile))
-            .digest('hex')
-        if (existingHash === options.hash) {
-            console.log(
-                success(
-                    `${algo.toUpperCase()} checksum verified for existing file.`
-                )
-            )
-            shouldDownload = false
-        } else {
-            console.log(
-                warn(
-                    `Existing file hash mismatch, deleting ${tarfile} and re-downloading...`
-                )
-            )
-            fs.unlinkSync(tarfile)
-        }
+        const validFile = await verifyFileIntegrity(tarfile, options.hash, algo)
+        shouldDownload = !validFile
     }
 
     if (shouldDownload) {
@@ -76,29 +129,28 @@ export async function downloadAndUnpackTarball(
         console.log(success('Download complete.'))
 
         if (options?.hash) {
+            const validFile = await verifyFileIntegrity(
+                tarfile,
+                options.hash,
+                algo
+            )
+
             const downloadedHash = crypto
                 .createHash(algo)
                 .update(fs.readFileSync(tarfile))
                 .digest('hex')
-            if (downloadedHash !== options.hash) {
+            if (!validFile) {
                 // Remove the bad file
-                fs.unlinkSync(tarfile)
                 throw new Error(
                     error(
                         `Checksum mismatch for downloaded tarball.\n\tExpected: ${options.hash}\n\tReceived: ${downloadedHash}`
-                    )
-                )
-            } else {
-                console.log(
-                    success(
-                        `${algo.toUpperCase()} checksum verified successfully.`
                     )
                 )
             }
         }
     }
 
-    console.log(info(`Unpacking tarball into ${unpackDir}...`))
+    await ensureDir(unpackDir)
     await pipeline(
         fs.createReadStream(tarfile),
         zlib.createGunzip(),

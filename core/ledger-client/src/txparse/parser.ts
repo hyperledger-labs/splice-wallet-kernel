@@ -1,6 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// Copyright (c) 2024 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     ensureInterfaceViewIsPresent,
     filtersByParty,
@@ -32,7 +33,10 @@ import {
     TokenStandardChoice,
     TransferInstructionView,
 } from './types.js'
-import { TransferInstructionV1 } from '@canton-network/core-token-standard'
+import type {
+    Transfer,
+    TransferInstructionResult_Output,
+} from '@canton-network/core-token-standard'
 
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
 import { LedgerClient } from '../ledger-client'
@@ -379,7 +383,7 @@ export class TransactionParser {
         const reason = getMetaKeyValue(ReasonMetaKey, meta)
         const choiceArgumentTransfer = (
             exercisedEvent.choiceArgument as {
-                transfer: TransferInstructionV1.Transfer
+                transfer: Transfer
             }
         ).transfer
 
@@ -519,7 +523,7 @@ export class TransactionParser {
         }
         const exerciseResultOutputTag = (
             exercisedEvent.exerciseResult as {
-                output: TransferInstructionV1.TransferInstructionResult_Output
+                output: TransferInstructionResult_Output
             }
         ).output.tag
         let result: ParsedKnownExercisedEvent | null = null
@@ -700,7 +704,7 @@ export class TransactionParser {
                 // This will happen for holdings with consuming choices
                 // where the party the script is running on is an actor on the choice
                 // but not a stakeholder.
-                if (err.code === 404) {
+                if (err.code === 'CONTRACT_EVENTS_NOT_FOUND') {
                     return null
                 } else {
                     throw err

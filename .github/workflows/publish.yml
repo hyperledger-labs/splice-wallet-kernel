@@ -5,6 +5,7 @@ on:
     push:
         branches:
             - latest
+            - 'backport/**'
 permissions:
     contents: read
 jobs:

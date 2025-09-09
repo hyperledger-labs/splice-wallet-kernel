@@ -71,6 +71,10 @@ export interface paths {
         /** @description Allocate a new party to the participant node */
         post: operations['postV2Parties']
     }
+    '/v2/parties/external/allocate': {
+        /** @description Allocate a new external party */
+        post: operations['postV2PartiesExternalAllocate']
+    }
     '/v2/parties/participant-id': {
         /** @description Get participant id */
         get: operations['getV2PartiesParticipant-id']
@@ -80,6 +84,10 @@ export interface paths {
         get: operations['getV2PartiesParty']
         /** @description Allocate a new party to the participant node */
         patch: operations['patchV2PartiesParty']
+    }
+    '/v2/parties/external/generate-topology': {
+        /** @description Generate a topology for an external party */
+        post: operations['postV2PartiesExternalGenerate-topology']
     }
     '/v2/state/active-contracts': {
         /** @description Query active contracts list (blocking call) */
@@ -97,12 +105,16 @@ export interface paths {
         /** @description Get latest pruned offsets */
         get: operations['getV2StateLatest-pruned-offsets']
     }
+    '/v2/updates': {
+        /** @description Query updates list (blocking call) */
+        post: operations['postV2Updates']
+    }
     '/v2/updates/flats': {
-        /** @description Query flat transactions update list (blocking call) */
+        /** @description Query flat transactions update list (blocking call, deprecated: use v2/updates instead) */
         post: operations['postV2UpdatesFlats']
     }
     '/v2/updates/trees': {
-        /** @description Query update transactions tree list (blocking call) */
+        /** @description Query update transactions tree list (blocking call, deprecated: use v2/updates instead) */
         post: operations['postV2UpdatesTrees']
     }
     '/v2/updates/transaction-tree-by-offset/{offset}': {
@@ -181,12 +193,57 @@ export interface paths {
         /** @description Get the preferred package version for constructing a command submission */
         get: operations['getV2Interactive-submissionPreferred-package-version']
     }
+    '/v2/interactive-submission/preferred-packages': {
+        /** @description Get the version of preferred packages for constructing a command submission */
+        post: operations['postV2Interactive-submissionPreferred-packages']
+    }
 }
 
 export type webhooks = Record<string, never>
 
 export interface components {
     schemas: {
+        /**
+         * AllocateExternalPartyRequest
+         * @description Required authorization: ``HasRight(ParticipantAdmin) OR IsAuthenticatedIdentityProviderAdmin(identity_provider_id)``
+         */
+        AllocateExternalPartyRequest: {
+            /**
+             * @description TODO(#27670) support synchronizer aliases
+             * Synchronizer ID on which to onboard the party
+             * Required
+             */
+            synchronizer: string
+            /**
+             * @description TopologyTransactions to onboard the external party
+             * Can contain:
+             * - A namespace for the party.
+             * This can be either a single NamespaceDelegation,
+             * or DecentralizedNamespaceDefinition along with its authorized namespace owners in the form of NamespaceDelegations.
+             * May be provided, if so it must be fully authorized by the signatures in this request combined with the existing topology state.
+             * - A PartyToKeyMapping to register the party's signing keys.
+             * May be provided, if so it must be fully authorized by the signatures in this request combined with the existing topology state.
+             * - A PartyToParticipant to register the hosting relationship of the party.
+             * Must be provided.
+             * Required
+             */
+            onboardingTransactions?: components['schemas']['SignedTransaction'][]
+            /**
+             * @description Optional signatures of the combined hash of all onboarding_transactions
+             * This may be used instead of providing signatures on each individual transaction
+             */
+            multiHashSignatures?: components['schemas']['Signature'][]
+            /**
+             * @description The id of the ``Identity Provider``
+             * If not set, assume the party is managed by the default identity provider.
+             * Optional
+             */
+            identityProviderId: string
+        }
+        /** AllocateExternalPartyResponse */
+        AllocateExternalPartyResponse: {
+            partyId: string
+        }
         /**
          * AllocatePartyRequest
          * @description Required authorization: ``HasRight(ParticipantAdmin) OR IsAuthenticatedIdentityProviderAdmin(identity_provider_id)``
@@ -945,9 +1002,10 @@ export interface components {
          */
         ExerciseCommand: {
             /**
-             * @description The template of contract the client wants to exercise.
+             * @description The template or interface of the contract the client wants to exercise.
              * Both package-name and package-id reference identifier formats for the template-id are supported.
              * Note: The package-id reference identifier format is deprecated. We plan to end support for this format in version 3.4.
+             * To exercise a choice on an interface, specify the interface identifier in the template_id field.
              *
              * Required
              */
@@ -1150,12 +1208,54 @@ export interface components {
              * template or wildcard filter means additional events that will match the query.
              * The impact of include_interface_view and include_created_event_blob fields in the filters will
              * also be accumulated.
+             * At least one cumulative filter MUST be specified.
              * A template or an interface SHOULD NOT appear twice in the accumulative field.
              * A wildcard filter SHOULD NOT be defined more than once in the accumulative field.
-             * Optional, if no ``CumulativeFilter`` defined, the default of a single ``WildcardFilter`` with
-             * include_created_event_blob unset is used.
+             * Optional
              */
             cumulative?: components['schemas']['CumulativeFilter'][]
+        }
+        /** GenerateExternalPartyTopologyRequest */
+        GenerateExternalPartyTopologyRequest: {
+            /**
+             * @description TODO(#27670) support synchronizer aliases
+             * Required: synchronizer-id for which we are building this request.
+             */
+            synchronizer: string
+            /** @description Required: the actual party id will be constructed from this hint and a fingerprint of the public key */
+            partyHint: string
+            /** @description Required: public key */
+            publicKey?: components['schemas']['SigningPublicKey']
+            /** @description Optional: if true, then the local participant will only be observing, not confirming. Default false. */
+            localParticipantObservationOnly: boolean
+            /** @description Optional: other participant ids which should be confirming for this party */
+            otherConfirmingParticipantUids?: string[]
+            /**
+             * Format: int32
+             * @description Optional: Confirmation threshold >= 1 for the party. Defaults to all available confirmers (or if set to 0).
+             */
+            confirmationThreshold: number
+            /** @description Optional: other observing participant ids for this party */
+            observingParticipantUids?: string[]
+        }
+        /**
+         * GenerateExternalPartyTopologyResponse
+         * @description Response message with topology transactions and the multi-hash to be signed.
+         */
+        GenerateExternalPartyTopologyResponse: {
+            /** @description the generated party id */
+            partyId: string
+            /** @description the fingerprint of the supplied public key */
+            publicKeyFingerprint: string
+            /**
+             * @description The serialized topology transactions which need to be signed and submitted as part of the allocate party process
+             * Note that the serialization includes the versioning information. Therefore, the transaction here is serialized
+             * as an `UntypedVersionedMessage` which in turn contains the serialized `TopologyTransaction` in the version
+             * supported by the synchronizer.
+             */
+            topologyTransactions?: string[]
+            /** @description the multi-hash which may be signed instead of each individual transaction */
+            multiHash: string
         }
         /**
          * GetActiveContractsRequest
@@ -1309,6 +1409,53 @@ export interface components {
              * Optional
              */
             packagePreference?: components['schemas']['PackagePreference']
+        }
+        /** GetPreferredPackagesRequest */
+        GetPreferredPackagesRequest: {
+            /**
+             * @description The package-name vetting requirements for which the preferred packages should be resolved.
+             *
+             * Generally it is enough to provide the requirements for the intended command's root package-names.
+             * Additional package-name requirements can be provided when additional Daml transaction informees need to use
+             * package dependencies of the command's root packages.
+             *
+             * Required
+             */
+            packageVettingRequirements?: components['schemas']['PackageVettingRequirement'][]
+            /**
+             * @description The synchronizer whose vetting state to use for resolving this query.
+             * If not specified, the vetting state of all the synchronizers the participant is connected to will be used.
+             * Optional
+             */
+            synchronizerId: string
+            /**
+             * @description The timestamp at which the package vetting validity should be computed
+             * on the latest topology snapshot as seen by the participant.
+             * If not provided, the participant's current clock time is used.
+             * Optional
+             */
+            vettingValidAt?: string
+        }
+        /** GetPreferredPackagesResponse */
+        GetPreferredPackagesResponse: {
+            /**
+             * @description The package references of the preferred packages.
+             * Must contain one package reference for each requested package-name.
+             *
+             * If you build command submissions whose content depends on the returned
+             * preferred packages, then we recommend submitting the preferred package-ids
+             * in the ``package_id_selection_preference`` of the command submission to
+             * avoid race conditions with concurrent changes of the on-ledger package vetting state.
+             *
+             * Required
+             */
+            packageReferences?: components['schemas']['PackageReference'][]
+            /**
+             * @description The synchronizer for which the package preferences are computed.
+             * If the synchronizer_id was specified in the request, then it matches the request synchronizer_id.
+             * Required
+             */
+            synchronizerId: string
         }
         /**
          * GetTransactionByIdRequest
@@ -2040,6 +2187,17 @@ export interface components {
              * This can be useful for troubleshooting of hash mismatches. Should only be used for debugging.
              */
             verboseHashing: boolean
+            /**
+             * @description Maximum timestamp at which the transaction can be recorded onto the ledger via the synchronizer specified in the `PrepareSubmissionResponse`.
+             * If submitted after it will be rejected even if otherwise valid, in which case it needs to be prepared and signed again
+             * with a new valid max_record_time.
+             * Use this to limit the time-to-life of a prepared transaction,
+             * which is useful to know when it can definitely not be accepted
+             * anymore and resorting to preparing another transaction for the same
+             * intent is safe again.
+             * Optional
+             */
+            maxRecordTime?: string
         }
         /**
          * JsPrepareSubmissionResponse
@@ -2580,6 +2738,22 @@ export interface components {
             /** @description Required */
             packageVersion: string
         }
+        /**
+         * PackageVettingRequirement
+         * @description Defines a package-name for which the commonly vetted package with the highest version must be found.
+         */
+        PackageVettingRequirement: {
+            /**
+             * @description The parties whose participants' vetting state should be considered when resolving the preferred package.
+             * Required
+             */
+            parties?: string[]
+            /**
+             * @description The package-name for which the preferred package should be resolved.
+             * Required
+             */
+            packageName: string
+        }
         /** ParticipantAdmin */
         ParticipantAdmin: {
             value: components['schemas']['ParticipantAdmin1']
@@ -2784,6 +2958,26 @@ export interface components {
             signedBy: string
             /** @description The signing algorithm specification used to produce this signature */
             signingAlgorithmSpec: string
+        }
+        /** SignedTransaction */
+        SignedTransaction: {
+            transaction: string
+            signatures?: components['schemas']['Signature'][]
+        }
+        /** SigningPublicKey */
+        SigningPublicKey: {
+            /**
+             * @description The serialization format of the public key
+             * @example CRYPTO_KEY_FORMAT_DER_X509_SUBJECT_PUBLIC_KEY_INFO
+             */
+            format: string
+            /** @description Serialized public key in the format specified above */
+            keyData: string
+            /**
+             * @description The key specification
+             * @example SIGNING_KEY_SPEC_EC_CURVE25519
+             */
+            keySpec: string
         }
         /**
          * SinglePartySignatures
@@ -3814,6 +4008,32 @@ export interface operations {
             }
         }
     }
+    /** @description Allocate a new external party */
+    postV2PartiesExternalAllocate: {
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['AllocateExternalPartyRequest']
+            }
+        }
+        responses: {
+            200: {
+                content: {
+                    'application/json': components['schemas']['AllocateExternalPartyResponse']
+                }
+            }
+            /** @description Invalid value for: body, Invalid value for: headers */
+            400: {
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
     /** @description Get participant id */
     'getV2PartiesParticipant-id': {
         responses: {
@@ -3896,6 +4116,32 @@ export interface operations {
             }
         }
     }
+    /** @description Generate a topology for an external party */
+    'postV2PartiesExternalGenerate-topology': {
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['GenerateExternalPartyTopologyRequest']
+            }
+        }
+        responses: {
+            200: {
+                content: {
+                    'application/json': components['schemas']['GenerateExternalPartyTopologyResponse']
+                }
+            }
+            /** @description Invalid value for: body, Invalid value for: headers */
+            400: {
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
     /** @description Query active contracts list (blocking call) */
     'postV2StateActive-contracts': {
         parameters: {
@@ -3933,8 +4179,8 @@ export interface operations {
     /** @description Get connected synchronizers */
     'getV2StateConnected-synchronizers': {
         parameters: {
-            query: {
-                party: string
+            query?: {
+                party?: string
                 participantId?: string
             }
         }
@@ -3999,7 +4245,41 @@ export interface operations {
             }
         }
     }
-    /** @description Query flat transactions update list (blocking call) */
+    /** @description Query updates list (blocking call) */
+    postV2Updates: {
+        parameters: {
+            query?: {
+                /** @description maximum number of elements to return, this param is ignored if is bigger than server setting */
+                limit?: number
+                /** @description timeout to complete and send result if no new elements are received (for open ended streams) */
+                stream_idle_timeout_ms?: number
+            }
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['GetUpdatesRequest']
+            }
+        }
+        responses: {
+            200: {
+                content: {
+                    'application/json': components['schemas']['JsGetUpdatesResponse'][]
+                }
+            }
+            /** @description Invalid value for: body, Invalid value for: query parameter limit, Invalid value for: query parameter stream_idle_timeout_ms, Invalid value for: headers */
+            400: {
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    /** @description Query flat transactions update list (blocking call, deprecated: use v2/updates instead) */
     postV2UpdatesFlats: {
         parameters: {
             query?: {
@@ -4033,7 +4313,7 @@ export interface operations {
             }
         }
     }
-    /** @description Query update transactions tree list (blocking call) */
+    /** @description Query update transactions tree list (blocking call, deprecated: use v2/updates instead) */
     postV2UpdatesTrees: {
         parameters: {
             query?: {
@@ -4685,6 +4965,32 @@ export interface operations {
                 }
             }
             /** @description Invalid value for: query parameter parties, Invalid value for: query parameter package-name, Invalid value for: query parameter vetting_valid_at, Invalid value for: query parameter synchronizer-id, Invalid value for: headers */
+            400: {
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    /** @description Get the version of preferred packages for constructing a command submission */
+    'postV2Interactive-submissionPreferred-packages': {
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['GetPreferredPackagesRequest']
+            }
+        }
+        responses: {
+            200: {
+                content: {
+                    'application/json': components['schemas']['GetPreferredPackagesResponse']
+                }
+            }
+            /** @description Invalid value for: body, Invalid value for: headers */
             400: {
                 content: {
                     'text/plain': string

@@ -1,6 +1,7 @@
 // Generated from Splice/Api/Token/MetadataV1.daml
 /* eslint-disable @typescript-eslint/camelcase */
-
+/* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import * as jtv from '@mojotech/json-type-validation'
 import * as damlTypes from '@daml/types'
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
@@ -10,7 +11,7 @@ import * as pkg9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69 
 import * as pkgb70db8369e1c461d5c70f1c86f526a29e9776c655e6ffc2560f95b05ccb8b946 from '@daml.js/daml-stdlib-DA-Time-Types-1.0.0'
 
 export declare type AnyContract =
-    damlTypes.Interface<'2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.MetadataV1:AnyContract'> &
+    damlTypes.Interface<'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.MetadataV1:AnyContract'> &
         AnyContractView
 export declare interface AnyContractInterface {
     Archive: damlTypes.Choice<
@@ -26,7 +27,7 @@ export declare interface AnyContractInterface {
 export declare const AnyContract: damlTypes.InterfaceCompanion<
     AnyContract,
     undefined,
-    '2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.MetadataV1:AnyContract'
+    'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.MetadataV1:AnyContract'
 > &
     damlTypes.FromTemplate<AnyContract, unknown> &
     AnyContractInterface

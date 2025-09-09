@@ -1,15 +1,15 @@
 'use strict'
-
+/* eslint-disable-next-line no-unused-vars */
 function __export(m) {
     /* eslint-disable-next-line no-prototype-builtins */
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p]
 }
 Object.defineProperty(exports, '__esModule', { value: true })
-
+/* eslint-disable-next-line no-unused-vars */
 var jtv = require('@mojotech/json-type-validation')
-
+/* eslint-disable-next-line no-unused-vars */
 var damlTypes = require('@daml/types')
-
+/* eslint-disable-next-line no-unused-vars */
 var damlLedger = require('@daml/ledger')
 
 var pkg9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69 = require('@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0')
@@ -18,7 +18,7 @@ var pkgb70db8369e1c461d5c70f1c86f526a29e9776c655e6ffc2560f95b05ccb8b946 = requir
 var Splice_Api_Token_MetadataV1 = require('../../../../Splice/Api/Token/MetadataV1/module')
 
 exports.Holding = damlTypes.assembleInterface(
-    '2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.HoldingV1:Holding',
+    'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.HoldingV1:Holding',
     function () {
         return exports.HoldingView
     },

@@ -1,4 +1,7 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
 // Disabled unused vars rule to allow for future implementations
+
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { LedgerClient } from '@canton-network/core-ledger-client'
 import buildController from './rpc-gen/index.js'
@@ -368,7 +371,7 @@ export const userController = (
                                             {
                                                 signature,
                                                 signedBy,
-                                                format: 'SIGNATURE_FORMAT_RAW',
+                                                format: 'SIGNATURE_FORMAT_CONCAT',
                                                 signingAlgorithmSpec:
                                                     'SIGNING_ALGORITHM_SPEC_ED25519',
                                             },

@@ -1,6 +1,7 @@
 // Generated from Splice/Api/Token/TransferInstructionV1.daml
 /* eslint-disable @typescript-eslint/camelcase */
-
+/* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import * as jtv from '@mojotech/json-type-validation'
 import * as damlTypes from '@daml/types'
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
@@ -12,7 +13,7 @@ import * as Splice_Api_Token_HoldingV1 from '../../../../Splice/Api/Token/Holdin
 import * as Splice_Api_Token_MetadataV1 from '../../../../Splice/Api/Token/MetadataV1/module'
 
 export declare type TransferFactory =
-    damlTypes.Interface<'2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.TransferInstructionV1:TransferFactory'> &
+    damlTypes.Interface<'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.TransferInstructionV1:TransferFactory'> &
         TransferFactoryView
 export declare interface TransferFactoryInterface {
     Archive: damlTypes.Choice<
@@ -46,13 +47,13 @@ export declare interface TransferFactoryInterface {
 export declare const TransferFactory: damlTypes.InterfaceCompanion<
     TransferFactory,
     undefined,
-    '2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.TransferInstructionV1:TransferFactory'
+    'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.TransferInstructionV1:TransferFactory'
 > &
     damlTypes.FromTemplate<TransferFactory, unknown> &
     TransferFactoryInterface
 
 export declare type TransferInstruction =
-    damlTypes.Interface<'2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.TransferInstructionV1:TransferInstruction'> &
+    damlTypes.Interface<'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.TransferInstructionV1:TransferInstruction'> &
         TransferInstructionView
 export declare interface TransferInstructionInterface {
     Archive: damlTypes.Choice<
@@ -104,7 +105,7 @@ export declare interface TransferInstructionInterface {
 export declare const TransferInstruction: damlTypes.InterfaceCompanion<
     TransferInstruction,
     undefined,
-    '2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.TransferInstructionV1:TransferInstruction'
+    'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.TransferInstructionV1:TransferInstruction'
 > &
     damlTypes.FromTemplate<TransferInstruction, unknown> &
     TransferInstructionInterface

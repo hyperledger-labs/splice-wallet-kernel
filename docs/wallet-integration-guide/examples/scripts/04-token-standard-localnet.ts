@@ -62,14 +62,15 @@ await sdk.userLedger
 sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL.href)
+const instrumentAdminPartyId =
+    (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     sender!.partyId,
     '2000000',
     {
         instrumentId: 'Amulet',
-        instrumentAdmin:
-            'DSO::12200901488a1b3ff2d4d9ed3aac14af530811522e16f8819e56c41ec937dbcaec92', //TODO: get this from scan
+        instrumentAdmin: instrumentAdminPartyId,
     }
 )
 
@@ -82,8 +83,8 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
 
 await new Promise((res) => setTimeout(res, 5000))
 
-const utxos = await sdk.tokenStandard?.listHoldingUtxos()
-logger.info(utxos, 'List Token Standard Holding UTXOs')
+const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
+logger.info(utxos, 'List Available Token Standard Holding UTXOs')
 
 await sdk.tokenStandard
     ?.listHoldingTransactions()
@@ -106,8 +107,7 @@ const [transferCommand, disclosedContracts2] =
         '100',
         {
             instrumentId: 'Amulet',
-            instrumentAdmin:
-                'DSO::12200901488a1b3ff2d4d9ed3aac14af530811522e16f8819e56c41ec937dbcaec92', // todo: get from scan
+            instrumentAdmin: instrumentAdminPartyId,
         },
         {}
     )
@@ -119,6 +119,8 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
     disclosedContracts2
 )
 logger.info('Submitted transfer transaction')
+
+await new Promise((res) => setTimeout(res, 5000))
 
 const holdings = await sdk.tokenStandard?.listHoldingTransactions()
 
@@ -149,3 +151,17 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
 )
 
 console.log('Accepted transfer instruction')
+
+await new Promise((res) => setTimeout(res, 5000))
+
+{
+    sdk.tokenStandard?.setPartyId(sender!.partyId)
+    const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
+    logger.info(aliceHoldings, '[ALICE] holding transactions')
+
+    sdk.tokenStandard?.setPartyId(receiver!.partyId)
+    const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
+    logger.info(bobHoldings, '[BOB] holding transactions')
+
+    sdk.tokenStandard?.setPartyId(sender!.partyId)
+}

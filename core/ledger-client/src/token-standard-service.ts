@@ -1,9 +1,13 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import { TokenStandardClient } from '@canton-network/core-token-standard'
 import { Logger } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
 import {
     HoldingInterface,
     TokenStandardTransactionInterfaces,
+    TransferFactoryInterface,
     TransferInstructionInterface,
 } from './constants.js'
 import {
@@ -88,6 +92,16 @@ export class TokenStandardService {
             )
             throw e
         }
+    }
+
+    async getInstrumentAdmin(
+        transferFactoryRegistryUrl: string
+    ): Promise<string | undefined> {
+        const client = this.tokenStandardClient(transferFactoryRegistryUrl)
+
+        const info = await client.get('/registry/metadata/v1/info')
+
+        return info.adminId
     }
 
     async createRejectTransferInstruction(
@@ -182,7 +196,8 @@ export class TokenStandardService {
 
     async listHoldingTransactions(
         partyId: string,
-        afterOffset?: string
+        afterOffset?: string,
+        beforeOffset?: string
     ): Promise<PrettyTransactions> {
         try {
             this.logger.debug('Set or query offset')
@@ -190,6 +205,10 @@ export class TokenStandardService {
                 Number(afterOffset) ||
                 (await this.ledgerClient.get('/v2/state/latest-pruned-offsets'))
                     .participantPrunedUpToInclusive
+            const beforeOffsetOrLatest =
+                Number(beforeOffset) ||
+                (await this.ledgerClient.get('/v2/state/ledger-end')).offset
+
             this.logger.debug(afterOffsetOrLatest, 'Using offset')
             const updatesResponse: JsGetUpdatesResponse[] =
                 await this.ledgerClient.post('/v2/updates/flats', {
@@ -208,6 +227,7 @@ export class TokenStandardService {
                         },
                     },
                     beginExclusive: afterOffsetOrLatest,
+                    endInclusive: beforeOffsetOrLatest,
                     verbose: false,
                 })
 
@@ -235,6 +255,7 @@ export class TokenStandardService {
             const ledgerEndOffset = await this.ledgerClient.get(
                 '/v2/state/ledger-end'
             )
+            //TODO: filter out any holdings that has a non-expired lock
             const senderHoldings = await this.ledgerClient.post(
                 '/v2/state/active-contracts',
                 {
@@ -301,9 +322,7 @@ export class TokenStandardService {
             }
 
             const exercise: ExerciseCommand = {
-                // todo: use codegen
-                templateId:
-                    '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferFactory',
+                templateId: TransferFactoryInterface,
                 contractId: transferFactory.factoryId,
                 choice: 'TransferFactory_Transfer',
                 choiceArgument: choiceArgs,

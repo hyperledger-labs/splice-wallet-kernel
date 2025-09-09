@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
 // Generate a release for all packages. Performs a version bump and opens a PR against `main`
 
 import { promisify } from 'util'

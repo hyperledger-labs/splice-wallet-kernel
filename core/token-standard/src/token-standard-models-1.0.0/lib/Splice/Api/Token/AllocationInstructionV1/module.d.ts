@@ -1,6 +1,7 @@
 // Generated from Splice/Api/Token/AllocationInstructionV1.daml
 /* eslint-disable @typescript-eslint/camelcase */
-
+/* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import * as jtv from '@mojotech/json-type-validation'
 import * as damlTypes from '@daml/types'
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
@@ -13,7 +14,7 @@ import * as Splice_Api_Token_HoldingV1 from '../../../../Splice/Api/Token/Holdin
 import * as Splice_Api_Token_MetadataV1 from '../../../../Splice/Api/Token/MetadataV1/module'
 
 export declare type AllocationFactory =
-    damlTypes.Interface<'2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.AllocationInstructionV1:AllocationFactory'> &
+    damlTypes.Interface<'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.AllocationInstructionV1:AllocationFactory'> &
         AllocationFactoryView
 export declare interface AllocationFactoryInterface {
     Archive: damlTypes.Choice<
@@ -47,13 +48,13 @@ export declare interface AllocationFactoryInterface {
 export declare const AllocationFactory: damlTypes.InterfaceCompanion<
     AllocationFactory,
     undefined,
-    '2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.AllocationInstructionV1:AllocationFactory'
+    'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.AllocationInstructionV1:AllocationFactory'
 > &
     damlTypes.FromTemplate<AllocationFactory, unknown> &
     AllocationFactoryInterface
 
 export declare type AllocationInstruction =
-    damlTypes.Interface<'2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.AllocationInstructionV1:AllocationInstruction'> &
+    damlTypes.Interface<'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.AllocationInstructionV1:AllocationInstruction'> &
         AllocationInstructionView
 export declare interface AllocationInstructionInterface {
     Archive: damlTypes.Choice<
@@ -87,7 +88,7 @@ export declare interface AllocationInstructionInterface {
 export declare const AllocationInstruction: damlTypes.InterfaceCompanion<
     AllocationInstruction,
     undefined,
-    '2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.AllocationInstructionV1:AllocationInstruction'
+    'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.AllocationInstructionV1:AllocationInstruction'
 > &
     damlTypes.FromTemplate<AllocationInstruction, unknown> &
     AllocationInstructionInterface

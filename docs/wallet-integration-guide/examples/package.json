@@ -13,7 +13,8 @@
         "run-01": "tsx ./scripts/01-auth.ts | pino-pretty",
         "run-02": "tsx ./scripts/02-auth-localnet.ts | pino-pretty",
         "run-03": "tsx ./scripts/03-ping-localnet.ts | pino-pretty",
-        "run-04": "tsx ./scripts/04-token-standard-localnet.ts | pino-pretty"
+        "run-04": "tsx ./scripts/04-token-standard-localnet.ts | pino-pretty",
+        "run-05": "tsx ./scripts/05-token-standard-transfer-autoaccept.ts| pino-pretty"
     },
     "devDependencies": {
         "tsx": "^4.20.3",

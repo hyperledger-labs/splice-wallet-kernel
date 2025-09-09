@@ -1555,18 +1555,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-scan-client@workspace:^, @canton-network/core-scan-client@workspace:core/scan-client":
-  version: 0.0.0-use.local
-  resolution: "@canton-network/core-scan-client@workspace:core/scan-client"
-  dependencies:
-    "@canton-network/core-types": "workspace:^"
-    openapi-fetch: "npm:^0.14.0"
-    typescript: "npm:^5.8.3"
-    uuid: "npm:^11.1.0"
-    zod: "npm:^3.25.67"
-  languageName: unknown
-  linkType: soft
-
 "@canton-network/core-signing-fireblocks@workspace:core/signing-fireblocks":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-signing-fireblocks@workspace:core/signing-fireblocks"
@@ -1653,6 +1641,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/core-splice-client@workspace:^, @canton-network/core-splice-client@workspace:core/splice-client":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-splice-client@workspace:core/splice-client"
+  dependencies:
+    "@canton-network/core-types": "workspace:^"
+    openapi-fetch: "npm:^0.14.0"
+    typescript: "npm:^5.8.3"
+    uuid: "npm:^11.1.0"
+    zod: "npm:^3.25.67"
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/core-splice-provider@workspace:^, @canton-network/core-splice-provider@workspace:core/splice-provider":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-splice-provider@workspace:core/splice-provider"
@@ -1669,7 +1669,10 @@ __metadata:
   resolution: "@canton-network/core-token-standard@workspace:core/token-standard"
   dependencies:
     "@canton-network/core-types": "workspace:^"
+    "@daml.js/token-standard-models-1.0.0": "file:src/token-standard-models-1.0.0"
+    "@daml/ledger": "npm:3.4.0-snapshot.20250616.13911.0.v482d9ec0"
     "@daml/types": "npm:3.4.0-snapshot.20250616.13911.0.v482d9ec0"
+    lodash: "npm:^4.17.21"
     openapi-fetch: "npm:^0.14.0"
     typescript: "npm:^5.8.3"
     uuid: "npm:^11.1.0"
@@ -1923,8 +1926,8 @@ __metadata:
   dependencies:
     "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-ledger-proto": "workspace:^"
-    "@canton-network/core-scan-client": "workspace:^"
     "@canton-network/core-signing-lib": "workspace:^"
+    "@canton-network/core-splice-client": "workspace:^"
     "@canton-network/core-token-standard": "workspace:^"
     "@canton-network/core-tx-visualizer": "workspace:^"
     "@canton-network/core-types": "workspace:^"
@@ -2225,16 +2228,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@file:../daml-stdlib-DA-NonEmpty-Types-1.0.0::locator=%40daml.js%2Fdaml-stdlib-DA-Validation-Types-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Fdaml-stdlib-DA-Validation-Types-1.0.0":
-  version: 3.4.0-snapshot.20250616.13911.0.v482d9ec0
-  resolution: "@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@file:../daml-stdlib-DA-NonEmpty-Types-1.0.0#../daml-stdlib-DA-NonEmpty-Types-1.0.0::hash=113ff6&locator=%40daml.js%2Fdaml-stdlib-DA-Validation-Types-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Fdaml-stdlib-DA-Validation-Types-1.0.0"
-  dependencies:
-    "@mojotech/json-type-validation": "npm:^3.1.0"
-  checksum: 10c0/8dff491d69ec1f22d86b70934e25f991cbea8516d31c10d61eaa1014bb60b83365496ccfa4a45265272420935ecc51769fd366d78dd22d0799afa4376f6110fc
-  languageName: node
-  linkType: hard
-
-"@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@workspace:core/token-standard/src/daml-stdlib-DA-NonEmpty-Types-1.0.0":
+"@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@workspace:^, @daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@workspace:core/token-standard/src/daml-stdlib-DA-NonEmpty-Types-1.0.0":
   version: 0.0.0-use.local
   resolution: "@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@workspace:core/token-standard/src/daml-stdlib-DA-NonEmpty-Types-1.0.0"
   dependencies:
@@ -2274,16 +2268,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Ftoken-standard-models-1.0.0":
-  version: 3.4.0-snapshot.20250616.13911.0.v482d9ec0
-  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=018552&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Ftoken-standard-models-1.0.0"
-  dependencies:
-    "@mojotech/json-type-validation": "npm:^3.1.0"
-  checksum: 10c0/9cd9f0f2b0b3dda7c8ac7616de0f5a0b2841d4b8efe6cf947b2e4f12dd3a8c10eee8dd021ad657066aba82d45550428a69d60488944f976fc93db598e7a05b6f
-  languageName: node
-  linkType: hard
-
-"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@workspace:core/token-standard/src/daml-stdlib-DA-Time-Types-1.0.0":
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@workspace:^, @daml.js/daml-stdlib-DA-Time-Types-1.0.0@workspace:core/token-standard/src/daml-stdlib-DA-Time-Types-1.0.0":
   version: 0.0.0-use.local
   resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@workspace:core/token-standard/src/daml-stdlib-DA-Time-Types-1.0.0"
   dependencies:
@@ -2300,16 +2285,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Ftoken-standard-models-1.0.0":
-  version: 3.4.0-snapshot.20250616.13911.0.v482d9ec0
-  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=24a385&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Acore%2Ftoken-standard%2Fsrc%2Ftoken-standard-models-1.0.0"
-  dependencies:
-    "@mojotech/json-type-validation": "npm:^3.1.0"
-  checksum: 10c0/255481abc1a9851ea9c3b3f734020dc2dfefb06bca2166f2632a88a250a9d23025799586873681a3144b7705ec4d668442ae1b33ef01cb0ea6e5caf1c5d96060
-  languageName: node
-  linkType: hard
-
-"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@workspace:core/token-standard/src/ghc-stdlib-DA-Internal-Template-1.0.0":
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@workspace:^, @daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@workspace:core/token-standard/src/ghc-stdlib-DA-Internal-Template-1.0.0":
   version: 0.0.0-use.local
   resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@workspace:core/token-standard/src/ghc-stdlib-DA-Internal-Template-1.0.0"
   dependencies:
@@ -2317,7 +2293,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@daml.js/token-standard-models-1.0.0@workspace:core/token-standard/src/token-standard-models-1.0.0":
+"@daml.js/token-standard-models-1.0.0@workspace:^, @daml.js/token-standard-models-1.0.0@workspace:core/token-standard/src/token-standard-models-1.0.0":
   version: 0.0.0-use.local
   resolution: "@daml.js/token-standard-models-1.0.0@workspace:core/token-standard/src/token-standard-models-1.0.0"
   dependencies:
@@ -2326,6 +2302,20 @@ __metadata:
     "@mojotech/json-type-validation": "npm:^3.1.0"
   languageName: unknown
   linkType: soft
+
+"@daml/ledger@npm:3.4.0-snapshot.20250616.13911.0.v482d9ec0":
+  version: 3.4.0-snapshot.20250616.13911.0.v482d9ec0
+  resolution: "@daml/ledger@npm:3.4.0-snapshot.20250616.13911.0.v482d9ec0"
+  dependencies:
+    "@daml/types": "npm:3.4.0-snapshot.20250616.13911.0.v482d9ec0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+    cross-fetch: "npm:^3.0.4"
+    events: "npm:^3.1.0"
+    isomorphic-ws: "npm:^4.0.1"
+    ws: "npm:^7.2.1"
+  checksum: 10c0/171b2e9f26da20aa6125e8ce18e8f8bfd3454c14c71fe880a6817f3dbc8d5df68726346edb53566af50e646e537fca5010ed4bea6c1c523fcddad7b6cde5c270
+  languageName: node
+  linkType: hard
 
 "@daml/types@npm:3.4.0-snapshot.20250616.13911.0.v482d9ec0":
   version: 3.4.0-snapshot.20250616.13911.0.v482d9ec0
@@ -8003,6 +7993,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cross-fetch@npm:^3.0.4":
+  version: 3.2.0
+  resolution: "cross-fetch@npm:3.2.0"
+  dependencies:
+    node-fetch: "npm:^2.7.0"
+  checksum: 10c0/d8596adf0269130098a676f6739a0922f3cc7b71cc89729925411ebe851a87026171c82ea89154c4811c9867c01c44793205a52e618ce2684650218c7fbeeb9f
+  languageName: node
+  linkType: hard
+
 "cross-spawn@npm:^7.0.2, cross-spawn@npm:^7.0.3, cross-spawn@npm:^7.0.6":
   version: 7.0.6
   resolution: "cross-spawn@npm:7.0.6"
@@ -8849,6 +8848,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-headers@npm:^1.3.3":
+  version: 1.3.3
+  resolution: "eslint-plugin-headers@npm:1.3.3"
+  peerDependencies:
+    eslint: ">=7"
+  checksum: 10c0/8bbd528fa77ff9ec58ff3763551ac0fba6bb42b7259c262cf2e423fc7b29aa540fbe39d67307503ac08fd2fe3b16f3c7cdc193d2758d9c2ff4dc235908137254
+  languageName: node
+  linkType: hard
+
 "eslint-plugin-no-unsanitized@npm:4.1.2":
   version: 4.1.2
   resolution: "eslint-plugin-no-unsanitized@npm:4.1.2"
@@ -9136,6 +9144,13 @@ __metadata:
   version: 5.0.1
   resolution: "eventemitter3@npm:5.0.1"
   checksum: 10c0/4ba5c00c506e6c786b4d6262cfbce90ddc14c10d4667e5c83ae993c9de88aa856033994dd2b35b83e8dc1170e224e66a319fa80adc4c32adcd2379bbc75da814
+  languageName: node
+  linkType: hard
+
+"events@npm:^3.1.0":
+  version: 3.3.0
+  resolution: "events@npm:3.3.0"
+  checksum: 10c0/d6b6f2adbccbcda74ddbab52ed07db727ef52e31a61ed26db9feb7dc62af7fc8e060defa65e5f8af9449b86b52cc1a1f6a79f2eafcf4e62add2b7a1fa4a432f6
   languageName: node
   linkType: hard
 
@@ -10686,6 +10701,15 @@ __metadata:
     node-fetch: "npm:^2.6.1"
     whatwg-fetch: "npm:^3.4.1"
   checksum: 10c0/511b1135c6d18125a07de661091f5e7403b7640060355d2d704ce081e019bc1862da849482d079ce5e2559b8976d3de7709566063aec1b908369c0b98a2b075b
+  languageName: node
+  linkType: hard
+
+"isomorphic-ws@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "isomorphic-ws@npm:4.0.1"
+  peerDependencies:
+    ws: "*"
+  checksum: 10c0/7cb90dc2f0eb409825558982fb15d7c1d757a88595efbab879592f9d2b63820d6bbfb5571ab8abe36c715946e165a413a99f6aafd9f40ab1f514d73487bc9996
   languageName: node
   linkType: hard
 
@@ -12937,7 +12961,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.7":
+"node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.7, node-fetch@npm:^2.7.0":
   version: 2.7.0
   resolution: "node-fetch@npm:2.7.0"
   dependencies:
@@ -15249,6 +15273,7 @@ __metadata:
     "@swc/core": "npm:^1.13.4"
     commitlint: "npm:^19.8.1"
     eslint: "npm:^9.28.0"
+    eslint-plugin-headers: "npm:^1.3.3"
     globals: "npm:^16.2.0"
     grpc-tools: "npm:^1.13.0"
     husky: "npm:^9.1.7"
@@ -16904,7 +16929,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^7.0.0, ws@npm:~7.5.10":
+"ws@npm:^7.0.0, ws@npm:^7.2.1, ws@npm:~7.5.10":
   version: 7.5.10
   resolution: "ws@npm:7.5.10"
   peerDependencies:

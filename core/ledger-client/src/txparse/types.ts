@@ -1,6 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// Copyright (c) 2024 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
 
 export type ViewValue = components['schemas']['JsInterfaceView']['viewValue'] // unknown | undefined
@@ -63,6 +64,8 @@ export const EmptyHoldingsChangeSummary: HoldingsChangeSummary = {
  * Same as TransferInstructionView in Daml when exercising a TransferInstruction choice,
  * otherwise just meta and transfer.
  */
+// TODO investigate because it actually differs from TransferInstructionView from daml codegen
+// where status is: { tag, value }
 export interface TransferInstructionView {
     // currentInstructionCid: string // TODO (#505): add
     originalInstructionCid: string | null
