@@ -115,13 +115,32 @@ export class TokenStandardController {
 
     /**
      * Lists all holding UTXOs for the current party.
+     * @param includeLocked defaulted to true, this will include locked UTXOs.
      * @returns A promise that resolves to an array of holding UTXOs.
      */
-    async listHoldingUtxos(): Promise<PrettyContract<HoldingView>[]> {
-        return await this.service.listContractsByInterface<HoldingView>(
+    async listHoldingUtxos(
+        includeLocked: boolean = true
+    ): Promise<PrettyContract<HoldingView>[]> {
+        const utxos = await this.service.listContractsByInterface<HoldingView>(
             HOLDING_INTERFACE_ID,
             this.partyId
         )
+        const currentTime = new Date()
+
+        if (includeLocked) {
+            return utxos
+        } else {
+            return utxos.filter((utxo) => {
+                const lock = utxo.interfaceViewValue.lock
+                if (!lock) return true
+
+                const expiresAt = lock.expiresAt
+                if (!expiresAt) return false
+
+                const expiresAtDate = new Date(expiresAt)
+                return expiresAtDate <= currentTime
+            })
+        }
     }
 
     /**
