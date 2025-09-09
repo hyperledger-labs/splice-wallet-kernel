@@ -7,12 +7,19 @@ export * from './token-standard-client.js'
 // Constants
 export * from './interface-ids.const.js'
 
-// Types have to be exported directly from the source file
-export type {
-    AllocationInstructionV1,
-    AllocationRequestV1,
-    AllocationV1,
-    HoldingV1,
-    MetadataV1,
-    TransferInstructionV1,
-} from './token-standard-models-1.0.0/lib/Splice/Api/Token/index.js'
+export type HoldingView = {
+    owner: string
+    instrumentId: InstrumentId
+    amount: number
+    lock: any
+    meta: Metadata
+}
+
+type InstrumentId = {
+    admin: string
+    id: string
+}
+
+type Metadata = {
+    values: { [key: string]: string }
+}
