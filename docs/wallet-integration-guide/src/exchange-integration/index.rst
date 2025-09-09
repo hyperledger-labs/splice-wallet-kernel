@@ -23,6 +23,7 @@ than exchanges that want to support deposits and withdrawals of Canton Network t
    workflows
    non-functionals
    node-operations
+   disaster-recovery
    testing
    extensions
 
