@@ -13,6 +13,7 @@ import {
     ViewValue,
 } from '@canton-network/core-ledger-client'
 import { HoldingV1 } from '@canton-network/core-token-standard'
+import type { HoldingView } from '@canton-network/core-token-standard'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject'
 
@@ -110,9 +111,9 @@ export class TokenStandardController {
      * Lists all holding UTXOs for the current party.
      * @returns A promise that resolves to an array of holding UTXOs.
      */
-    async listHoldingUtxos(): Promise<PrettyContract<HoldingV1.HoldingView>[]> {
-        return await this.service.listContractsByInterface<HoldingV1.HoldingView>(
-            '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding',
+    async listHoldingUtxos(): Promise<PrettyContract<HoldingView>[]> {
+        return await this.service.listContractsByInterface<HoldingView>(
+            HoldingV1.Holding.templateId,
             this.partyId
         )
     }
