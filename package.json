@@ -33,6 +33,7 @@
         "api-specs",
         "clients/*",
         "core/**",
+        "!core/token-standard/src/**",
         "example",
         "example-scripts",
         "sdk/*",
@@ -71,5 +72,8 @@
     "dependencies": {
         "@nx/js": "^21.3.11",
         "nx": "^21.3.11"
-    }
+    },
+    "files": [
+        "!core/token-standard/src/**/package.json"
+    ]
 }
