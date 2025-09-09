@@ -33,10 +33,7 @@ import {
     TokenStandardChoice,
     TransferInstructionView,
 } from './types.js'
-import type {
-    Transfer,
-    TransferInstructionResult_Output,
-} from '@canton-network/core-token-standard'
+import { TransferInstructionV1 } from '@canton-network/core-token-standard'
 
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
 import { LedgerClient } from '../ledger-client'
@@ -383,7 +380,7 @@ export class TransactionParser {
         const reason = getMetaKeyValue(ReasonMetaKey, meta)
         const choiceArgumentTransfer = (
             exercisedEvent.choiceArgument as {
-                transfer: Transfer
+                transfer: TransferInstructionV1.Transfer
             }
         ).transfer
 
@@ -523,7 +520,7 @@ export class TransactionParser {
         }
         const exerciseResultOutputTag = (
             exercisedEvent.exerciseResult as {
-                output: TransferInstructionResult_Output
+                output: TransferInstructionV1.TransferInstructionResult_Output
             }
         ).output.tag
         let result: ParsedKnownExercisedEvent | null = null

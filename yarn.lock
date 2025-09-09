@@ -1669,7 +1669,6 @@ __metadata:
   resolution: "@canton-network/core-token-standard@workspace:core/token-standard"
   dependencies:
     "@canton-network/core-types": "workspace:^"
-    "@daml.js/token-standard-models-1.0.0": "file:src/token-standard-models-1.0.0"
     "@daml/ledger": "npm:3.4.0-snapshot.20250616.13911.0.v482d9ec0"
     "@daml/types": "npm:3.4.0-snapshot.20250616.13911.0.v482d9ec0"
     lodash: "npm:^4.17.21"
@@ -2293,7 +2292,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@daml.js/token-standard-models-1.0.0@workspace:^, @daml.js/token-standard-models-1.0.0@workspace:core/token-standard/src/token-standard-models-1.0.0":
+"@daml.js/token-standard-models-1.0.0@workspace:core/token-standard/src/token-standard-models-1.0.0":
   version: 0.0.0-use.local
   resolution: "@daml.js/token-standard-models-1.0.0@workspace:core/token-standard/src/token-standard-models-1.0.0"
   dependencies:

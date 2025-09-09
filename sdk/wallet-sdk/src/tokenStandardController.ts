@@ -12,8 +12,7 @@ import {
     PrettyContract,
     ViewValue,
 } from '@canton-network/core-ledger-client'
-import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
-import type { HoldingView } from '@canton-network/core-token-standard'
+import { HoldingV1 } from '@canton-network/core-token-standard'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject'
 
@@ -118,13 +117,15 @@ export class TokenStandardController {
      * @param includeLocked defaulted to true, this will include locked UTXOs.
      * @returns A promise that resolves to an array of holding UTXOs.
      */
+
     async listHoldingUtxos(
         includeLocked: boolean = true
-    ): Promise<PrettyContract<HoldingView>[]> {
-        const utxos = await this.service.listContractsByInterface<HoldingView>(
-            HOLDING_INTERFACE_ID,
-            this.partyId
-        )
+    ): Promise<PrettyContract<HoldingV1.HoldingView>[]> {
+        const utxos =
+            await this.service.listContractsByInterface<HoldingV1.HoldingView>(
+                '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding',
+                this.partyId
+            )
         const currentTime = new Date()
 
         if (includeLocked) {
