@@ -83,8 +83,8 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
 
 await new Promise((res) => setTimeout(res, 5000))
 
-const utxos = await sdk.tokenStandard?.listHoldingUtxos()
-logger.info(utxos, 'List Token Standard Holding UTXOs')
+const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
+logger.info(utxos, 'List Available Token Standard Holding UTXOs')
 
 await sdk.tokenStandard
     ?.listHoldingTransactions()
@@ -120,7 +120,7 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
 )
 logger.info('Submitted transfer transaction')
 
-await new Promise((res) => setTimeout(res, 1000))
+await new Promise((res) => setTimeout(res, 5000))
 
 const holdings = await sdk.tokenStandard?.listHoldingTransactions()
 
