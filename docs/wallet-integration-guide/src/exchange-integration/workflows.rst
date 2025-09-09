@@ -602,7 +602,7 @@ we document the additional considerations that are specific to Canton.
 
 At a high-level, the Canton-specific steps to onboarding a token are:
 
-1. Upload the token admin's .dar files to your validator node.
+1. :ref:`Upload the token admin's .dar files <dar-file-management>` to your validator node.
 2. Store the mapping from the token admin's ``adminParty`` id
    to the admin's Registry API Server URL in your Canton Integration DB
    (or another suitable place).
