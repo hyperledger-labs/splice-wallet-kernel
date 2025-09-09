@@ -255,6 +255,7 @@ export class TokenStandardService {
             const ledgerEndOffset = await this.ledgerClient.get(
                 '/v2/state/ledger-end'
             )
+            //TODO: filter out any holdings that has a non-expired lock
             const senderHoldings = await this.ledgerClient.post(
                 '/v2/state/active-contracts',
                 {
