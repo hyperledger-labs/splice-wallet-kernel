@@ -1,7 +1,7 @@
-import { paths as allocation } from './generated-clients/splice-api-token-allocation-v1/allocation-v1'
-import { paths as metadata } from './generated-clients/splice-api-token-metadata-v1/token-metadata-v1'
-import { paths as transferInstruction } from './generated-clients/splice-api-token-transfer-instruction-v1/transfer-instruction-v1'
-import { paths as allocationInstruction } from './generated-clients/splice-api-token-allocation-instruction-v1/allocation-instruction-v1'
+import { paths as allocation } from './generated-clients/splice-api-token-allocation-v1/allocation-v1.js'
+import { paths as metadata } from './generated-clients/splice-api-token-metadata-v1/token-metadata-v1.js'
+import { paths as transferInstruction } from './generated-clients/splice-api-token-transfer-instruction-v1/transfer-instruction-v1.js'
+import { paths as allocationInstruction } from './generated-clients/splice-api-token-allocation-instruction-v1/allocation-instruction-v1.js'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from '@canton-network/core-types'
 
