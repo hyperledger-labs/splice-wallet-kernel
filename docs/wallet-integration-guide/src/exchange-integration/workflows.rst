@@ -143,7 +143,8 @@ Example flow:
      The ``coids`` are considered to be reserved for funding the transfer
      for withdrawal ``wid123`` until ``trecTgt`` has passed.
 
-3. Withdrawal Automation observes the pending withdrawal ``wid123`` and
+3. Withdrawal Automation queries the Canton Integration DB in a polling fashion,
+   observes the pending withdrawal ``wid123``, and
    commits the corresponding CC transfer as follows.
 
    a. Withdrawal Automation queries Canton Coin Scan to retrieve the
@@ -345,7 +346,7 @@ We list them in full for completeness.
 This is where the main difference to the :ref:`one-step-deposit-workflow` starts.
 The Multi-Step Deposit Automation service will now auto-accept the transfer offer.
 
-5. The Multi-Step Deposit Automation regularly queries for pending transfer offers for known
+5. The Multi-Step Deposit Automation regularly queries the Canton Integration DB for pending transfer offers for known
    deposit accounts. It thus observes the pending transfer offer ``coid567`` and accepts it as follows.
 
     a. Multi-Step Deposit Automation retrieves the URL for Acme's Registry API Server
@@ -443,7 +444,8 @@ We list them in full for completeness.
      are considered to be reserved to funding this transfer until
      ``trecTgt`` has passed.
 
-3.  Withdrawal Automation observes the pending withdrawal ``wid123`` and
+3.  Withdrawal Automation queries the Canton Integration DB in a polling fashion,
+    observes the pending withdrawal ``wid123``, and
     commits the corresponding AcmeToken transfer as follows.
 
     a. Withdrawal Automation retrieves the URL for Acme's Registry API Server
@@ -600,7 +602,7 @@ we document the additional considerations that are specific to Canton.
 
 At a high-level, the Canton-specific steps to onboarding a token are:
 
-1. Upload the token admin's .dar files to your validator node.
+1. :ref:`Upload the token admin's .dar files <dar-file-management>` to your validator node.
 2. Store the mapping from the token admin's ``adminParty`` id
    to the admin's Registry API Server URL in your Canton Integration DB
    (or another suitable place).

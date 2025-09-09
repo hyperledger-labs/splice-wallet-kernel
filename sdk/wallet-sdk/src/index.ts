@@ -7,16 +7,21 @@ import {
     localTokenStandardDefault,
     TokenStandardController,
 } from './tokenStandardController.js'
-import { ScanClient } from '@canton-network/core-scan-client'
+import { ScanClient } from '@canton-network/core-splice-client'
 import {
     localTopologyDefault,
     TopologyController,
 } from './topologyController.js'
 import { Logger } from '@canton-network/core-types'
+import {
+    localValidatorDefault,
+    ValidatorController,
+} from './validatorController.js'
 export * from './ledgerController.js'
 export * from './authController.js'
 export * from './topologyController.js'
 export * from './tokenStandardController.js'
+export * from './validatorController.js'
 export {
     signTransactionHash,
     createKeyPair,
@@ -35,12 +40,14 @@ type TokenStandardFactory = (
     userId: string,
     token: string
 ) => TokenStandardController
+type ValidatorFactory = (userId: string, token: string) => ValidatorController
 
 export interface Config {
     authFactory: AuthFactory
     ledgerFactory: LedgerFactory
     topologyFactory?: TopologyFactory
     tokenStandardFactory?: TokenStandardFactory
+    validatorFactory?: ValidatorFactory
     logger?: Logger
 }
 
@@ -54,6 +61,7 @@ export interface WalletSDK {
     adminLedger: LedgerController | undefined
     topology: TopologyController | undefined
     tokenStandard: TokenStandardController | undefined
+    validator: ValidatorController | undefined
 }
 
 /**
@@ -69,12 +77,14 @@ export class WalletSDKImpl implements WalletSDK {
     private topologyFactory: TopologyFactory = localTopologyDefault
     private tokenStandardFactory: TokenStandardFactory =
         localTokenStandardDefault
+    private validatorFactory: ValidatorFactory = localValidatorDefault
 
     private logger: Logger | undefined
     userLedger: LedgerController | undefined
     adminLedger: LedgerController | undefined
     topology: TopologyController | undefined
     tokenStandard: TokenStandardController | undefined
+    validator: ValidatorController | undefined
 
     constructor() {
         this.auth = this.authFactory()
@@ -93,6 +103,8 @@ export class WalletSDKImpl implements WalletSDK {
             this.topologyFactory = config.topologyFactory
         if (config.tokenStandardFactory)
             this.tokenStandardFactory = config.tokenStandardFactory
+        if (config.validatorFactory)
+            this.validatorFactory = config.validatorFactory
         return this
     }
 
@@ -106,6 +118,7 @@ export class WalletSDKImpl implements WalletSDK {
         this.logger?.info(`Connecting user ${userId} with token ${accessToken}`)
         this.userLedger = this.ledgerFactory(userId, accessToken)
         this.tokenStandard = this.tokenStandardFactory(userId, accessToken)
+        this.validator = this.validatorFactory(userId, accessToken)
         return this
     }
 
