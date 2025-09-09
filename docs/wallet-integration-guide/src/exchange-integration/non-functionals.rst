@@ -42,6 +42,8 @@ For the integration components that you build, we recommend the following strate
   This is in line with how we recommend to implement the :ref:`multi-step-deposit-workflow`.
 
 
+.. _retrying-rpc-errors:
+
 Handling RPC Errors
 ^^^^^^^^^^^^^^^^^^^
 
@@ -83,6 +85,8 @@ as we assume you have strategies in place for those.
   in the Canton Integration DB by the Tx History Ingestion component.
   A withdrawal is considered definitely failed once its target record time ``trecTgt`` is below
   the last ingested record time.
+
+
 
 * **Multi-Step Deposit Automation**: the approach is analogous to the one for Withdrawal Automation.
 

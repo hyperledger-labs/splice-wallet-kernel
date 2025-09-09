@@ -1,3 +1,6 @@
+
+.. _disaster-recovery:
+
 Backup and Restore
 ==================
 
@@ -87,20 +90,55 @@ affects:
   as before the disaster.
 
 
+.. _restore-canton-integration-db:
 
-Backup and Restore of the Canton Integration DB
---------------------------------------------------
+Handling a Restore of the Canton Integration DB from a Backup
+-------------------------------------------------------------
 
-Sketch:
+Follow your internal guidance and best practices on how to restore the Canton Integration DB from a backup.
 
-* the loss of data affects only the data written by the exchange internal systems; i.e., the data
-  written in Step 2 of the :ref:`one-step-withdrawal-workflow`. Looking at that data we observe:
+From a data consistency perspective, all writes to the Canton Integration DB by
+Tx History Ingestion will be recovered without data loss from the transactions
+stored on the Exchange Validator Node.
 
-  * withdrawal requests might be in-flight on Canton for which there is no entry in the integration DB
-  * ``Holding`` UTXOs might be marked as non-reserved, but they are actually spent by in-flight withdrawal transfers
+Likewise, the write in Step 3 of the :ref:`one-step-withdrawal-workflow`
+to mark a withdrawal as failed due to the lack of a CC transfer-preapproval
+is safe to redo, as it is idempotent.
 
-* ensure that history ingestion of ``TransferInstruction`` UTXOs for outgoing transfers also succeeds if the withdrawal id cannot be resolved; e.g. by creating a record
-  for them. Consider storing extra metadata in the ``Transfer`` record to be able to do so from the on-chain data only.
-* wait with reserving UTXOs until the Canton Integration DB has resynchronized with all in-flight
-  withdrawals; e.g., by waiting until you observe a record time larger than the largest target record time of in-flight withdrawals
-  (you should be able to estimate that using ``now + yourDefaultInFlightTimeout``).
+Thus the only data loss that you need to handle
+is the loss of data written by your Exchange Internal Systems to the Canton Integration DB
+to request the execution of a withdrawal.
+This data consists in particular of the withdrawal-id, the UTXO reservation state,
+and the reservation of user funds for the withdrawal.
+See Step 2 in the :ref:`one-step-withdrawal-workflow` and
+Step 2 in the :ref:`multi-step-withdrawal-workflow` for details.
+
+The problem to avoid is for the user to initiate another withdrawal of the funds
+whose withdrawal might be in-flight on Canton.
+You can do so as follows:
+
+1. Disable initiating withdrawals of CN tokens in your Exchange Internal Systems
+   and stop the Withdrawal Automation component.
+2. Restore the Canton Integration DB from the backup.
+3. Wait until Tx History Ingestion has ingested a record time ``tSafe`` that is
+   larger than the largest target record time ``trecTgt`` of all in-flight withdrawals.
+   Assuming you use a constant ``ttl`` to compute the ``trecTgt`` of a withdrawal,
+   you can estimate ``tSafe`` as ``now + ttl``.
+4. Enable withdrawal creation in your Exchange Internal Systems
+   and start the Withdrawal Automation component.
+   The integration is operational again.
+
+Step 3 takes care to resynchronize the state of the Canton Integration DB
+with the state of in-flight withdrawals on Canton.
+For this to work it is important that you implement Tx History Ingestion
+such that it can handle ingesting withdrawal transfers whose withdrawal-id
+cannot be resolved because the corresponding withdrawal request was lost in the restore.
+
+We recommend doing so by having the Tx History Ingestion re-create
+the withdrawal request record from the on-chain data.
+Likely not all fields can be recovered, so consider either
+marking the withdrawal as "recovered" and leaving them blank.
+Alternatively, you can store these fields in additional metadata on the transfer record
+when creating the withdrawal transfer on-chain.
+This will though cost additional traffic and may leak information to your customer
+and the token admin.
