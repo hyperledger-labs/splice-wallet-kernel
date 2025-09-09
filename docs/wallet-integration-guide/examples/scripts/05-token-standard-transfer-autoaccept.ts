@@ -5,12 +5,15 @@ import {
     localNetTopologyDefault,
     localNetTokenStandardDefault,
     createKeyPair,
+    localValidatorDefault,
+    signTransactionHash,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
-import { v4 } from 'uuid'
 import { LOCALNET_REGISTRY_API_URL, LOCALNET_SCAN_API_URL } from '../config.js'
+import { json } from 'stream/consumers'
+import { v4 } from 'uuid'
 
-const logger = pino({ name: '04-token-standard-localnet', level: 'info' })
+const logger = pino({ name: '05-external-party-setup', level: 'info' })
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
@@ -19,6 +22,7 @@ const sdk = new WalletSDKImpl().configure({
     ledgerFactory: localNetLedgerDefault,
     topologyFactory: localNetTopologyDefault,
     tokenStandardFactory: localNetTokenStandardDefault,
+    validatorFactory: localValidatorDefault,
 })
 
 logger.info('SDK initialized')
@@ -62,12 +66,44 @@ await sdk.userLedger
 sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL.href)
+await new Promise((res) => setTimeout(res, 5000))
+
+logger.info('creating external party proposal for party: ' + receiver?.partyId)
+
+sdk.validator?.setPartyId(receiver?.partyId!)
+
+sdk.userLedger?.setPartyId(receiver?.partyId!)
+sdk.tokenStandard?.setSynchronizerId(synchonizerId)
+
+sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL.href)
+
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
+const [tapCommandreceiver, disclosedContractsreceiver] =
+    await sdk.tokenStandard!.createTap(receiver!.partyId, '20000000', {
+        instrumentId: 'Amulet',
+        instrumentAdmin: instrumentAdminPartyId,
+    })
+
+await sdk.userLedger?.prepareSignAndExecuteTransaction(
+    [{ ExerciseCommand: tapCommandreceiver }],
+    keyPairReceiver.privateKey,
+    v4(),
+    disclosedContractsreceiver
+)
+
+await new Promise((res) => setTimeout(res, 5000))
+
+await sdk.validator?.externalPartyPreApprovalSetup(keyPairReceiver.privateKey)
+
+logger.info('submitted external party proposal for ' + receiver?.partyId)
+
+sdk.userLedger?.setPartyId(sender?.partyId!)
+
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     sender!.partyId,
-    '2000000',
+    '20000000',
     {
         instrumentId: 'Amulet',
         instrumentAdmin: instrumentAdminPartyId,
@@ -108,8 +144,7 @@ const [transferCommand, disclosedContracts2] =
         {
             instrumentId: 'Amulet',
             instrumentAdmin: instrumentAdminPartyId,
-        },
-        {}
+        }
     )
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
@@ -134,21 +169,6 @@ const transferCid = holdings!.transactions
 
 sdk.userLedger?.setPartyId(receiver!.partyId)
 sdk.tokenStandard?.setPartyId(receiver!.partyId)
-
-const [acceptTransferCommand, disclosedContracts3] =
-    await sdk.tokenStandard!.exerciseTransferInstructionChoice(
-        transferCid,
-        'Accept'
-    )
-
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
-    [{ ExerciseCommand: acceptTransferCommand }],
-    keyPairReceiver.privateKey,
-    v4(),
-    disclosedContracts3
-)
-
-console.log('Accepted transfer instruction')
 
 await new Promise((res) => setTimeout(res, 5000))
 
