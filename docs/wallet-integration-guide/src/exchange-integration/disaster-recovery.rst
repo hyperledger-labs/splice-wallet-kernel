@@ -92,8 +92,8 @@ affects:
 
 .. _restore-canton-integration-db:
 
-Handling a Restore of the Canton Integration DB from a Backup
--------------------------------------------------------------
+Restoring the Canton Integration DB from a Backup
+-------------------------------------------------
 
 Follow your internal guidance and best practices on how to restore the Canton Integration DB from a backup.
 

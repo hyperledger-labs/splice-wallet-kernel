@@ -12,6 +12,7 @@ Below you learn how to handle crashes of the integration components,
 how to handle RPC errors, and
 how to perform disaster recovery for the Exchange Validator Node.
 
+.. _crash-fault-tolerance:
 
 Handling Crashes
 ^^^^^^^^^^^^^^^^
