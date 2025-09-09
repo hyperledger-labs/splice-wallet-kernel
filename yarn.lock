@@ -1555,18 +1555,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-scan-client@workspace:^, @canton-network/core-scan-client@workspace:core/scan-client":
-  version: 0.0.0-use.local
-  resolution: "@canton-network/core-scan-client@workspace:core/scan-client"
-  dependencies:
-    "@canton-network/core-types": "workspace:^"
-    openapi-fetch: "npm:^0.14.0"
-    typescript: "npm:^5.8.3"
-    uuid: "npm:^11.1.0"
-    zod: "npm:^3.25.67"
-  languageName: unknown
-  linkType: soft
-
 "@canton-network/core-signing-fireblocks@workspace:core/signing-fireblocks":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-signing-fireblocks@workspace:core/signing-fireblocks"
@@ -1650,6 +1638,18 @@ __metadata:
     jest: "npm:^29.7.0"
     ts-jest-resolver: "npm:^2.0.1"
     typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
+
+"@canton-network/core-splice-client@workspace:^, @canton-network/core-splice-client@workspace:core/splice-client":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-splice-client@workspace:core/splice-client"
+  dependencies:
+    "@canton-network/core-types": "workspace:^"
+    openapi-fetch: "npm:^0.14.0"
+    typescript: "npm:^5.8.3"
+    uuid: "npm:^11.1.0"
+    zod: "npm:^3.25.67"
   languageName: unknown
   linkType: soft
 
@@ -1926,8 +1926,8 @@ __metadata:
   dependencies:
     "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-ledger-proto": "workspace:^"
-    "@canton-network/core-scan-client": "workspace:^"
     "@canton-network/core-signing-lib": "workspace:^"
+    "@canton-network/core-splice-client": "workspace:^"
     "@canton-network/core-token-standard": "workspace:^"
     "@canton-network/core-tx-visualizer": "workspace:^"
     "@canton-network/core-types": "workspace:^"
