@@ -6,11 +6,9 @@ import {
     localNetTokenStandardDefault,
     createKeyPair,
     localValidatorDefault,
-    signTransactionHash,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { LOCALNET_REGISTRY_API_URL, LOCALNET_SCAN_API_URL } from '../config.js'
-import { json } from 'stream/consumers'
 import { v4 } from 'uuid'
 
 const logger = pino({ name: '05-external-party-setup', level: 'info' })
@@ -80,19 +78,6 @@ sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL.href)
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
-const [tapCommandreceiver, disclosedContractsreceiver] =
-    await sdk.tokenStandard!.createTap(receiver!.partyId, '20000000', {
-        instrumentId: 'Amulet',
-        instrumentAdmin: instrumentAdminPartyId,
-    })
-
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
-    [{ ExerciseCommand: tapCommandreceiver }],
-    keyPairReceiver.privateKey,
-    v4(),
-    disclosedContractsreceiver
-)
-
 await new Promise((res) => setTimeout(res, 5000))
 
 await sdk.validator?.externalPartyPreApprovalSetup(keyPairReceiver.privateKey)
@@ -154,18 +139,6 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
     disclosedContracts2
 )
 logger.info('Submitted transfer transaction')
-
-const holdings = await sdk.tokenStandard?.listHoldingTransactions()
-
-const transferCid = holdings!.transactions
-    .flatMap((object) =>
-        object.events.flatMap(
-            (t) =>
-                (t.label as any)?.tokenStandardChoice?.exerciseResult?.output
-                    ?.value?.transferInstructionCid
-        )
-    )
-    .find((v) => v !== undefined)
 
 sdk.userLedger?.setPartyId(receiver!.partyId)
 sdk.tokenStandard?.setPartyId(receiver!.partyId)
