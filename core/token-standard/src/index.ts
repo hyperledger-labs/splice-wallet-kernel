@@ -5,6 +5,8 @@ export * from './token-standard-client.js'
 // That arisen because of daml codegen outputting only .js and .d.ts files
 import { Splice } from '@daml.js/token-standard-models-1.0.0'
 
+export * from './interface-ids.const.js'
+
 // Values only
 export const TransferInstructionV1 = Splice.Api.Token.TransferInstructionV1
 export const AllocationInstructionV1 = Splice.Api.Token.AllocationInstructionV1
