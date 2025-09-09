@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    HoldingV1,
-    TransferInstructionV1,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+    TRANSFER_FACTORY_INTERFACE_ID,
+    HOLDING_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 export interface InterfaceIdParts {
     packageName: string
@@ -39,13 +40,11 @@ export function matchInterfaceIds(a: string, b: string): boolean {
     )
 }
 
-export const HoldingInterface = HoldingV1.Holding.templateId
+export const HoldingInterface = HOLDING_INTERFACE_ID
 
-export const TransferFactoryInterface =
-    TransferInstructionV1.TransferFactory.templateId
+export const TransferFactoryInterface = TRANSFER_FACTORY_INTERFACE_ID
 
-export const TransferInstructionInterface =
-    TransferInstructionV1.TransferInstruction.templateId
+export const TransferInstructionInterface = TRANSFER_INSTRUCTION_INTERFACE_ID
 
 // TODO (#563): include allocations
 export const TokenStandardTransactionInterfaces = [
