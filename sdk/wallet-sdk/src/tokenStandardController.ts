@@ -76,6 +76,12 @@ export class TokenStandardController {
         return this
     }
 
+    async getInstrumentAdmin(): Promise<string | undefined> {
+        return await this.service.getInstrumentAdmin(
+            this.transferFactoryRegistryUrl
+        )
+    }
+
     /** Lists all holdings for the current party.
      * @param afterOffset optional ledger offset to start from.
      * @param beforeOffset optional ledger offset to end at.
