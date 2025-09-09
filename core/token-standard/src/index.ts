@@ -5,6 +5,7 @@ export * from './token-standard-client.js'
 // That arisen because of daml codegen outputting only .js and .d.ts files
 import { Splice } from '@daml.js/token-standard-models-1.0.0'
 
+// Constants
 export * from './interface-ids.const.js'
 
 // Values only
