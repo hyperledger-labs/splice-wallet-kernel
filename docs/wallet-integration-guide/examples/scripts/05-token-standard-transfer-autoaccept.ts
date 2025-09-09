@@ -72,21 +72,41 @@ logger.info('creating external party proposal for party: ' + receiver?.partyId)
 
 sdk.validator?.setPartyId(receiver?.partyId!)
 
-await sdk.validator?.externalPartyPreApprovalSetup(keyPairReceiver.privateKey)
-
-logger.info('submitted external party proposal for ' + receiver?.partyId)
-
+sdk.userLedger?.setPartyId(receiver?.partyId!)
 sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL.href)
 
+const instrumentAdminPartyId =
+    (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
+
+const [tapCommandreceiver, disclosedContractsreceiver] =
+    await sdk.tokenStandard!.createTap(receiver!.partyId, '20000000', {
+        instrumentId: 'Amulet',
+        instrumentAdmin: instrumentAdminPartyId,
+    })
+
+await sdk.userLedger?.prepareSignAndExecuteTransaction(
+    [{ ExerciseCommand: tapCommandreceiver }],
+    keyPairReceiver.privateKey,
+    v4(),
+    disclosedContractsreceiver
+)
+
+await new Promise((res) => setTimeout(res, 5000))
+
+await sdk.validator?.externalPartyPreApprovalSetup(keyPairReceiver.privateKey)
+
+logger.info('submitted external party proposal for ' + receiver?.partyId)
+
+sdk.userLedger?.setPartyId(sender?.partyId!)
+
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     sender!.partyId,
-    '2000000',
+    '20000000',
     {
         instrumentId: 'Amulet',
-        instrumentAdmin:
-            'DSO::12200901488a1b3ff2d4d9ed3aac14af530811522e16f8819e56c41ec937dbcaec92', //TODO: get this from scan
+        instrumentAdmin: instrumentAdminPartyId,
     }
 )
 
@@ -123,10 +143,8 @@ const [transferCommand, disclosedContracts2] =
         '100',
         {
             instrumentId: 'Amulet',
-            instrumentAdmin:
-                'DSO::12200901488a1b3ff2d4d9ed3aac14af530811522e16f8819e56c41ec937dbcaec92', // todo: get from scan
-        },
-        {}
+            instrumentAdmin: instrumentAdminPartyId,
+        }
     )
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
