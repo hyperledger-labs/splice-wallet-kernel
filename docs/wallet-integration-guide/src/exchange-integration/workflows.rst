@@ -87,7 +87,7 @@ Example flow:
       Synchronizer. It is assigned offset ``off1`` by the Exchange
       Validator Node. (The other validator nodes will have a different ``offset`` value.)
 
-3. Tx History Ingestion observes ``upd567`` at ``t1`` with offset
+3. Tx History Ingestion observes ``upd567`` at record time ``t1`` with offset
    ``off1`` and updates the Canton Integration DB as follows.
 
    a. Tx History Ingestion parses ``upd567`` using the token standard tx
@@ -102,8 +102,8 @@ Example flow:
    b. Tx History ingestion writes the following in a single, atomic
       transaction to the Canton Integration DB
 
-      * The latest ingested update-id ``upd567`` its record time ``t1``
-        and offset ``off1``.
+      * The latest ingested update-id ``upd567``, its record time ``t1``,
+        its offset ``off1``, and the ``synchronizerId`` of the Global Synchronizer.
       * The new CC ``Holding`` UTXO ``coid234`` for the 100 CC that was
         received.
       * The credit of 100 CC on the Customer’s account at the exchange.
@@ -206,6 +206,8 @@ Example flow:
 6. Customer observes the completion of the withdrawal at ``t1`` in the
    Exchange UI and the receipt of the expected funds in their Customer Wallet.
 
+
+.. TODO: add a note on offset checkpoints and how to process them
 
 .. _utxo-management:
 
@@ -595,6 +597,8 @@ that the transfer was offered, but rejected by them.
 
 Canton Network Token Onboarding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. TODO: also add a note on upgrading .dar files
 
 You likely have requirements and considerations for onboarding a token.
 In the following,

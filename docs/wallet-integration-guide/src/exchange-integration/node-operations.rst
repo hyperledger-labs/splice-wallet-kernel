@@ -146,17 +146,6 @@ for more information.
    an unintended delegation on your contracts, which could lead to loss of funds.
 
 
-.. _restore-from-validator-node-backup:
-
-Backup and Restore
-------------------
-
-
-Sketch: considerations when restoring from a validator node backup
-
-* offsets change ==> put tx history ingestion into recovery mode and use the last ingested update-id to re-synchronize
-
-
 
 .. _hard-synchronizer-migration:
 
