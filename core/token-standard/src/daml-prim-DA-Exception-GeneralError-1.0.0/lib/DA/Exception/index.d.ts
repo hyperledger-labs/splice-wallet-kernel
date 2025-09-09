@@ -1,2 +1,2 @@
-import * as GeneralError from './GeneralError'
-export { GeneralError }
+import * as GeneralError from './GeneralError';
+export { GeneralError } ;

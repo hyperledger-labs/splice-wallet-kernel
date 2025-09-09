@@ -1,2 +1,2 @@
-import * as NonEmpty from './NonEmpty'
-export { NonEmpty }
+import * as NonEmpty from './NonEmpty';
+export { NonEmpty } ;

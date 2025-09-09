@@ -1,2 +1,2 @@
-import * as Time from './Time'
-export { Time }
+import * as Time from './Time';
+export { Time } ;

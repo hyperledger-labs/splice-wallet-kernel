@@ -1,2 +1,2 @@
-import * as Logic from './Logic'
-export { Logic }
+import * as Logic from './Logic';
+export { Logic } ;

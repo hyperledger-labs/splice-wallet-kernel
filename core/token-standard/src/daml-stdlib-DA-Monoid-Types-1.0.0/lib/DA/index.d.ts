@@ -1,2 +1,2 @@
-import * as Monoid from './Monoid'
-export { Monoid }
+import * as Monoid from './Monoid';
+export { Monoid } ;

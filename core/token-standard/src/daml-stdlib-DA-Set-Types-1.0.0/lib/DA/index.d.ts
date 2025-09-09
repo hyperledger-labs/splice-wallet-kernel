@@ -1,2 +1,2 @@
-import * as Set from './Set'
-export { Set }
+import * as Set from './Set';
+export { Set } ;
