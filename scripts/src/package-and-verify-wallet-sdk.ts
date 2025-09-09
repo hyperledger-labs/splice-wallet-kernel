@@ -23,26 +23,56 @@ async function main() {
 
     // Create a temp dir for both the test and the tgz
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wallet-sdk-test-'))
+
+    // write Yarn config for isolated, node_modules-based test project
+    fs.writeFileSync(
+        path.join(tmpDir, '.yarnrc.yml'),
+        ['nodeLinker: node-modules', 'enableGlobalCache: false'].join('\n') +
+            '\n'
+    )
+
     const tgzName = 'wallet-sdk-test.tgz'
     const tgzPath = path.join(tmpDir, tgzName)
 
+    const tokenStandardDir = path.join(repoRoot, 'core/token-standard')
+    const tokenStandardTgzPath = path.join(tmpDir, 'token-standard.tgz')
+
+    // Build the package
+    run('yarn install', { cwd: tokenStandardDir })
+    run('yarn build', { cwd: tokenStandardDir })
+
     let ran = false
     try {
-        // Pack the package into the temp dir
+        // Pack the packages into the temp dir
+        run(`yarn pack --filename "${tokenStandardTgzPath}"`, {
+            cwd: tokenStandardDir,
+        })
         run(`yarn pack --filename "${tgzPath}"`, { cwd: sdkDir })
 
         // Test import in temp dir
         run('yarn init -y', { cwd: tmpDir })
+
+        // Resolve token-standard to the packed tgz
+        const pkgJsonPath = path.join(tmpDir, 'package.json')
+        const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
+        pkgJson.resolutions = {
+            '@canton-network/core-token-standard': `file:${tokenStandardTgzPath}`,
+        }
+        fs.writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, 2))
+
+        run('yarn install', { cwd: tmpDir })
+
+        run(`yarn add "${tokenStandardTgzPath}"`, { cwd: tmpDir })
         run(`yarn add "${tgzPath}"`, { cwd: tmpDir })
 
         // Write test import file
-        const testFile = path.join(tmpDir, 'test-import.js')
+        const testFile = path.join(tmpDir, 'test-import.ts')
         fs.writeFileSync(
             testFile,
-            `try {\n  require('wallet-sdk');\n  console.log('Import successful.');\n} catch (e) {\n  console.error('Import failed:', e);\n  process.exit(1);\n}`
+            `import { WalletSDKImpl } from '@canton-network/wallet-sdk';\n  console.log('Import successful.' + WalletSDKImpl);`
         )
-        run('yarn add node@latest', { cwd: tmpDir })
-        run('node test-import.js', { cwd: tmpDir })
+        run('yarn add typescript tsx', { cwd: tmpDir })
+        run('tsx test-import.ts', { cwd: tmpDir })
         ran = true
         console.log(success('Package and import test completed successfully.'))
     } finally {
