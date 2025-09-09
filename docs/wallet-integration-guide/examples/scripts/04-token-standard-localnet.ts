@@ -123,7 +123,6 @@ logger.info('Submitted transfer transaction')
 await new Promise((res) => setTimeout(res, 1000))
 
 const holdings = await sdk.tokenStandard?.listHoldingTransactions()
-logger.info(holdings, 'List Token Standard Holding Transactions')
 
 const transferCid = holdings!.transactions
     .flatMap((object) =>
@@ -137,8 +136,6 @@ const transferCid = holdings!.transactions
 
 sdk.userLedger?.setPartyId(receiver!.partyId)
 sdk.tokenStandard?.setPartyId(receiver!.partyId)
-
-logger.info(`Receiver accepting transfer instruction ${transferCid}`)
 
 const [acceptTransferCommand, disclosedContracts3] =
     await sdk.tokenStandard!.exerciseTransferInstructionChoice(
