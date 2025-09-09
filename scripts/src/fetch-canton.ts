@@ -11,14 +11,12 @@ import {
     CANTON_PATH,
     CANTON_VERSION,
     DAML_RELEASE_VERSION,
-    ensureDir,
     error,
     downloadAndUnpackTarball,
 } from './utils.js'
 import path from 'path'
 
 async function main() {
-    await ensureDir(CANTON_PATH)
     const tarfile = path.join(CANTON_PATH, 'canton.tar.gz')
     const archiveUrl = `https://github.com/digital-asset/daml/releases/download/v${DAML_RELEASE_VERSION}/canton-open-source-${CANTON_VERSION}.tar.gz`
 
