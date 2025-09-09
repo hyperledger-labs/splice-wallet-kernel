@@ -65,6 +65,7 @@ and request withdrawals of funds to their wallets.
 The guide's assumptions might not perfectly match your exchange's actual architecture.
 We encourage you to consider them in spirit and map the diagram as best as possible.
 
+.. _canton-integration-components:
 
 Canton Integration Components
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
