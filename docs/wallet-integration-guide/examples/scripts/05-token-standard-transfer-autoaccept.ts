@@ -68,33 +68,13 @@ sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL.href)
 await new Promise((res) => setTimeout(res, 5000))
 
-logger.info('creating external party proposal for party: ' + sender?.partyId)
+logger.info('creating external party proposal for party: ' + receiver?.partyId)
 
 sdk.validator?.setPartyId(receiver?.partyId!)
 
-const createPartyResult = await sdk.validator?.createExternalPartyProposal(
-    receiver?.partyId!
-)
+await sdk.validator?.externalPartyPreApprovalSetup(keyPairReceiver.privateKey)
 
-logger.info(
-    'created external party proposal contract id' +
-        JSON.stringify(createPartyResult?.contract_id)
-)
-
-const preparedTxAndHash = await sdk.validator?.prepareExternalPartyProposal(
-    createPartyResult?.contract_id
-)
-
-const signedHash = signTransactionHash(
-    Buffer.from(preparedTxAndHash?.tx_hash!, 'hex').toString('base64'),
-    keyPairReceiver.privateKey
-)
-
-const submittedProposal = await sdk.validator?.submitPartyProposal(
-    Buffer.from(keyPairReceiver.publicKey, 'base64').toString('hex'),
-    Buffer.from(signedHash, 'base64').toString('hex'),
-    preparedTxAndHash?.transaction!
-)
+logger.info('submitted external party proposal for ' + receiver?.partyId)
 
 sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 

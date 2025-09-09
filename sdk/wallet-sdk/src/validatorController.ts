@@ -116,24 +116,31 @@ export class ValidatorController {
         )
     }
 
-    async externalPartyPreApprovalSetup(partyId: string, privateKey: string) {
+    /**
+     * Creates an ExternalpartySetupProposal contract as validator operator
+     * Prepares and submits the transaction so that the party can
+     * Auto accept transfers
+     * @param privateKey base64 encoded private key
+     */
+
+    async externalPartyPreApprovalSetup(privateKey: string) {
         const createPartyProposalResponse =
-            await this.createExternalPartyProposal(partyId)
+            await this.createExternalPartyProposal(this.partyId)
 
         const preparedTxAndHash = await this.prepareExternalPartyProposal(
             createPartyProposalResponse.contract_id
         )
 
-        const txHashBase64 = Buffer.from(
-            preparedTxAndHash.tx_hash,
-            'hex'
-        ).toString('base64')
-
-        const signedHash = signTransactionHash(txHashBase64, privateKey)
+        const signedHash = signTransactionHash(
+            Buffer.from(preparedTxAndHash.tx_hash, 'hex').toString('base64'),
+            privateKey
+        )
 
         await this.submitPartyProposal(
-            getPublicKeyFromPrivate(privateKey),
-            signedHash,
+            Buffer.from(getPublicKeyFromPrivate(privateKey), 'base64').toString(
+                'hex'
+            ),
+            Buffer.from(signedHash, 'base64').toString('hex'),
             preparedTxAndHash.transaction
         )
     }
