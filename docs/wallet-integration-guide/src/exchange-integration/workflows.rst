@@ -57,7 +57,7 @@ MVP for Canton Coin
 Assumptions:
 
 -  The Exchange has set up a CC ``TransferPreapproval`` for their
-   ``treasuryParty`` as explained in :ref:`setup-treasury-party`.
+   ``treasuryParty`` as explained in :ref:`treasury-party-setup`.
 -  The Exchange has associated deposit account “abc123” with the Customer in
    the Canton Integration DB.
 
