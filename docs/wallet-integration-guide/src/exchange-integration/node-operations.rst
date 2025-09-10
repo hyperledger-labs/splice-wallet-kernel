@@ -146,6 +146,16 @@ for more information.
    an unintended delegation on your contracts, which could lead to loss of funds.
 
 
+.. _validator-node-monitoring:
+
+Monitoring
+----------
+
+See the Splice documentation for guidance on `how to monitor your validator node <https://docs.dev.sync.global/deployment/observability/index.html>`__.
+Note in particular that it includes `Grafana dashboards <https://docs.dev.sync.global/deployment/observability/metrics.html#grafana-dashboards>`__
+for monitoring the traffic usage, balances of local parties (e.g., the ``exchangeParty``),
+and `many other metrics <https://docs.dev.sync.global/deployment/observability/metrics_reference.html>`__.
+
 
 .. _hard-synchronizer-migration:
 
