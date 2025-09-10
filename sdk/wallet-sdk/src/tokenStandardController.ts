@@ -5,15 +5,12 @@ import {
     Types,
     LedgerClient,
     PrettyTransactions,
-    TokenStandardService
-} from '@canton-network/core-ledger-client'
-import { ScanClient } from '@canton-network/core-scan-client'
-import { pino } from 'pino'
-import {
-    PrettyTransactions,
     PrettyContract,
     ViewValue,
+    TokenStandardService,
 } from '@canton-network/core-ledger-client'
+import { ScanProxyClient } from '@canton-network/core-splice-client'
+import { pino } from 'pino'
 import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
 import type { HoldingView } from '@canton-network/core-token-standard'
 
@@ -71,6 +68,7 @@ export class TokenStandardController {
      * Sets the scanApiUrl that the TokenStandardController will use for requests.
      * @param scanApiUrl
      */
+    // TODO can I remove that, as it's part of validatorController?
     setScanApiUrl(scanApiUrl: string): TokenStandardController {
         this.scanApiUrl = new URL(scanApiUrl)
         return this
@@ -93,8 +91,8 @@ export class TokenStandardController {
         )
     }
 
-    getScanClient(): ScanClient {
-        return new ScanClient(this.scanApiUrl.href, this.logger)
+    getScanClient(): ScanProxyClient {
+        return new ScanProxyClient(this.scanApiUrl.href, this.logger)
     }
 
     /** Lists all holdings for the current party.

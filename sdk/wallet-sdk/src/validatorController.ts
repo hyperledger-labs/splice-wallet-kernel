@@ -3,7 +3,7 @@
 
 import { pino } from 'pino'
 import {
-    ScanClient,
+    ScanProxyClient,
     ValidatorInternalClient,
 } from '@canton-network/core-splice-client'
 
@@ -19,6 +19,7 @@ import {
 export class ValidatorController {
     private logger = pino({ name: 'ValidatorController', level: 'info' })
     private validatorClient: ValidatorInternalClient
+    private scanProxyClient: ScanProxyClient
     private userId: string
     private partyId: string = ''
     private synchronizerId: string = ''
@@ -35,6 +36,12 @@ export class ValidatorController {
         private accessToken: string
     ) {
         this.validatorClient = new ValidatorInternalClient(
+            baseUrl,
+            this.logger,
+            this.accessToken
+        )
+
+        this.scanProxyClient = new ScanProxyClient(
             baseUrl,
             this.logger,
             this.accessToken
@@ -146,21 +153,14 @@ export class ValidatorController {
     }
 
     /**  Lookup a TransferPreapproval by the receiver party
-     * @param scanUrl url to access the scan proxy
      * @param partyId receiver party id
      * @returns A promise that resolves to an array of
-     * transfer preapparovals by party.
+     * transfer preapprovals by party.
      */
 
-    async getTransferPreApprovals(scanUrl: string, partyId: string) {
-        const scanClient = new ScanClient(
-            scanUrl,
-            this.logger,
-            this.accessToken
-        )
-
-        return await scanClient.get(
-            '/v0/transfer-preapprovals/by-party/{party}',
+    async getTransferPreApprovals(partyId: string) {
+        return await this.scanProxyClient.get(
+            '/v0/scan-proxy/transfer-preapprovals/by-party/{party}',
             {
                 path: {
                     party: partyId,

@@ -1,10 +1,11 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { paths } from './generated-clients/scan'
+import { paths } from './generated-clients/scan-proxy'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from '@canton-network/core-types'
 
+// TODO do we need to export that?
 // export type Types = components['schemas']
 
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
@@ -47,7 +48,7 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
     ? Res
     : never
 
-export class ScanClient {
+export class ScanProxyClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
 
@@ -115,17 +116,21 @@ export class ScanClient {
     }
 
     public async GetAmuletSynchronizerId(): Promise<string | undefined> {
-        const dsoInfo = await this.get('/v0/dso')
+        this.logger.info('TEST81')
+        // const dsoInfo = await this.get('/v0/dso')
+        const amuletRules = await this.get('/v0/scan-proxy/amulet-rules')
 
+        this.logger.info('TEST9')
+        // TODO do we need to JSON.stringify/JSON.parse?
         const payloadObj = JSON.parse(
-            JSON.stringify(dsoInfo.amulet_rules.contract.payload)
+            JSON.stringify(amuletRules.amulet_rules.contract.payload)
         )
 
         const initActiveSynchronizer =
             payloadObj?.configSchedule?.initialValue?.decentralizedSynchronizer
                 ?.activeSynchronizer
         const futureValues = payloadObj?.configSchedule?.futureValues as []
-
+        this.logger.info('TEST10')
         if (futureValues.length > 0) {
             let updatedValue = undefined
             for (const value of futureValues) {
