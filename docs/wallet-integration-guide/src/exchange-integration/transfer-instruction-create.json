@@ -1,0 +1,104 @@
+{
+    "update": {
+        "Transaction": {
+            "value": {
+                "updateId": "12208359521a283dbd0749c2a38c858ad71612fd5177aa95fb736e77fd181b8060c7",
+                "commandId": "",
+                "workflowId": "",
+                "effectiveAt": "1970-01-01T00:01:00Z",
+                "events": [
+                    {
+                        "CreatedEvent": {
+                            "offset": 96,
+                            "nodeId": 0,
+                            "contractId": "00fc774936c91f423c117744102a5996e4dc117f2b6496ef337967a7d2c5d02e4aca1112203c35266c980ae19508cc690cb501f8c767c02bfdbe838f1f89105de6fe59439f",
+                            "templateId": "6e9fc50fb94e56751b49f09ba2dc84da53a9d7cff08115ebb4f6b7a12d0c990c:Splice.AmuletTransferInstruction:AmuletTransferInstruction",
+                            "contractKey": null,
+                            "createArgument": {
+                                "lockedAmulet": "004ef3ae401af384aa37391f3a975647b1ca3d9ca3dc97f7b1e19c47d013ed4956ca11122015cac2e81f6d2e2735ed64c16326230234cc374c85ed42657b7801bf62233ddc",
+                                "transfer": {
+                                    "sender": "sender::1220f37942af4f4d062006155d504f1adfa1565260cd499e62325b011c06db635d8c",
+                                    "receiver": "treasury-party::12207bd11907b9b3c11ade702d30b556bfe635314d3d0f708f9677e09a4ff096ef87",
+                                    "amount": "1000.0000000000",
+                                    "instrumentId": {
+                                        "admin": "DSO::1220d26d73867a428814de451fdd8e716acf45fe59c6569d76ad77d42270629f3ce9",
+                                        "id": "Amulet"
+                                    },
+                                    "requestedAt": "1970-01-01T00:01:00Z",
+                                    "executeBefore": "1970-01-01T00:02:00Z",
+                                    "inputHoldingCids": [
+                                        "004ef3ae401af384aa37391f3a975647b1ca3d9ca3dc97f7b1e19c47d013ed4956ca11122015cac2e81f6d2e2735ed64c16326230234cc374c85ed42657b7801bf62233ddc"
+                                    ],
+                                    "meta": {
+                                        "values": {
+                                            "splice.lfdecentralizedtrust.org/reason": "deposit-account-id"
+                                        }
+                                    }
+                                }
+                            },
+                            "createdEventBlob": "",
+                            "interfaceViews": [
+                                {
+                                    "interfaceId": "55ba4deb0ad4662c4168b39859738a0e91388d252286480c7331b3f71a517281:Splice.Api.Token.TransferInstructionV1:TransferInstruction",
+                                    "viewStatus": {
+                                        "code": 0,
+                                        "message": "",
+                                        "details": []
+                                    },
+                                    "viewValue": {
+                                        "originalInstructionCid": null,
+                                        "transfer": {
+                                            "sender": "sender::1220f37942af4f4d062006155d504f1adfa1565260cd499e62325b011c06db635d8c",
+                                            "receiver": "treasury-party::12207bd11907b9b3c11ade702d30b556bfe635314d3d0f708f9677e09a4ff096ef87",
+                                            "amount": "1000.0000000000",
+                                            "instrumentId": {
+                                                "admin": "DSO::1220d26d73867a428814de451fdd8e716acf45fe59c6569d76ad77d42270629f3ce9",
+                                                "id": "Amulet"
+                                            },
+                                            "requestedAt": "1970-01-01T00:01:00Z",
+                                            "executeBefore": "1970-01-01T00:02:00Z",
+                                            "inputHoldingCids": [
+                                                "004ef3ae401af384aa37391f3a975647b1ca3d9ca3dc97f7b1e19c47d013ed4956ca11122015cac2e81f6d2e2735ed64c16326230234cc374c85ed42657b7801bf62233ddc"
+                                            ],
+                                            "meta": {
+                                                "values": {
+                                                    "splice.lfdecentralizedtrust.org/reason": "deposit-account-id"
+                                                }
+                                            }
+                                        },
+                                        "status": {
+                                            "tag": "TransferPendingReceiverAcceptance",
+                                            "value": {}
+                                        },
+                                        "meta": {
+                                            "values": {}
+                                        }
+                                    }
+                                }
+                            ],
+                            "witnessParties": [
+                                "treasury-party::12207bd11907b9b3c11ade702d30b556bfe635314d3d0f708f9677e09a4ff096ef87"
+                            ],
+                            "signatories": [
+                                "DSO::1220d26d73867a428814de451fdd8e716acf45fe59c6569d76ad77d42270629f3ce9",
+                                "sender::1220f37942af4f4d062006155d504f1adfa1565260cd499e62325b011c06db635d8c"
+                            ],
+                            "observers": [
+                                "treasury-party::12207bd11907b9b3c11ade702d30b556bfe635314d3d0f708f9677e09a4ff096ef87"
+                            ],
+                            "createdAt": "1970-01-01T00:01:00Z",
+                            "packageName": "splice-amulet"
+                        }
+                    }
+                ],
+                "offset": 96,
+                "synchronizerId": "global-domain::1220d26d73867a428814de451fdd8e716acf45fe59c6569d76ad77d42270629f3ce9",
+                "traceContext": {
+                    "traceparent": "00-5272bc75d4e43cc836ad878ee28fd812-63cd1b00c1d96ad3-01",
+                    "tracestate": null
+                },
+                "recordTime": "1970-01-01T00:01:00.000145Z"
+            }
+        }
+    }
+}
