@@ -118,7 +118,7 @@ To make the above more concrete, let's look at an example transaction
 of a 1-Step Deposit as seen through the `JSON Ledger API <https://docs.digitalasset.com/build/3.3/tutorials/json-api/canton_and_the_json_ledger_api.html>`_.
 
 In this case, we query a single transaction. The format is identical to the transaction you will get when streaming transactions through ``/v2/updates/flats`` and you can also use the same filter.
-Note that you need to adjust the ``token``, ``update-id`` and ``receiver`` placeholders to match your setup.
+Note that you need to adjust the ``auth-token``, ``update-id`` and ``receiver`` placeholders to match your setup.
 
 .. code:: bash
 
@@ -159,9 +159,9 @@ You can parse such transactions using the `token standard history parser <https:
    ``nodeId`` 4 which exercises the ``TransferPreapproval_Send``
    choice. Note that this choice is specific to Canton Coin so rely on
    the existence of the ``meta`` field which is standardized instead
-   of the specific choice.
+   of the specific choice name.
 3. Extract the ``"splice.lfdecentralizedtrust.org/reason"`` to get the deposit account. In this example it is ``memo-string``.
-4. Go over all events with ``nodeId`` > the ``nodeId`` of the transfer (4 in the example here) and < the ``lastDescendantNodeId`` of the transfer (12 in the example here).
+4. Go over all events whose ``nodeId`` is larger than the ``nodeId`` of the transfer (4 in the example here) and smaller than the ``lastDescendantNodeId`` of the transfer (12 in the example here).
 5. Find all ``CreatedEvents`` in that range that create a ``Holding`` with
    ``"owner": "<receiver>"`` and sum up the amounts for each
    ``instrumentId``.  In this example, we have two events that create
