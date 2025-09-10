@@ -252,6 +252,24 @@ export class LedgerController {
         return await this.client.get('/v2/state/ledger-end')
     }
 
+    createTransferPreapprovalCommand(
+        validatorOperatorParty: string,
+        receiverParty: string,
+        dsoParty: string
+    ) {
+        return {
+            CreateCommand: {
+                templateId:
+                    '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
+                createArguments: {
+                    provider: validatorOperatorParty,
+                    receiver: receiverParty,
+                    expectedDso: dsoParty,
+                },
+            },
+        }
+    }
+
     /**
      * Retrieves active contracts with optional filtering by template IDs and parties.
      * @param options Optional parameters for filtering:
