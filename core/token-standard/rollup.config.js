@@ -29,7 +29,9 @@ export default {
         commonjs({
             transformMixedEsModules: true,
         }),
-        typescript(),
+        typescript({
+            outputToFilesystem: true,
+        }),
         nodeResolve(),
     ],
 }

@@ -42,6 +42,8 @@ For the integration components that you build, we recommend the following strate
   This is in line with how we recommend to implement the :ref:`multi-step-deposit-workflow`.
 
 
+.. _retrying-rpc-errors:
+
 Handling RPC Errors
 ^^^^^^^^^^^^^^^^^^^
 
@@ -58,6 +60,8 @@ as we assume you have strategies in place for those.
   Consider crashing the ingestion component if the bounded number of retries is exceeded
   to recover from bugs in the in-memory state of the ingestion component.
 
+
+.. _withdrawal-automation:
 
 * **Withdrawal Automation**:
   recall from :ref:`one-step-withdrawal-workflow` that the Withdrawal Automation
@@ -81,6 +85,8 @@ as we assume you have strategies in place for those.
   in the Canton Integration DB by the Tx History Ingestion component.
   A withdrawal is considered definitely failed once its target record time ``trecTgt`` is below
   the last ingested record time.
+
+
 
 * **Multi-Step Deposit Automation**: the approach is analogous to the one for Withdrawal Automation.
 
@@ -148,5 +154,3 @@ The on-ledger validation of the transfers ensures that
 you do not need to trust the Scan instance for correctness.
 Ensure that you read from a different Scan instance on every retry
 to avoid being affected by a faulty Scan instance for too long.
-
-

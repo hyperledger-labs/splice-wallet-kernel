@@ -152,7 +152,9 @@ Example flow:
    b. Withdrawal automation checks that transfer is indeed a 1-step
       transfer by checking that ``transfer_kind`` = ``"direct"`` in the response from
       Canton Coin Scan. If that is not the case, then it marks the withdrawal
-      as failed in the Canton Integration DB and stops processing.
+      as failed in the Canton Integration DB with reason
+      "lack of CC transfer-preapproval for ``customerParty``"
+      and stops processing.
    c. Withdrawal Automation prepares, signs, and submits the command to
       exercise the ``TransferFactory_Transfer`` choice with the
       exclusive upper-bound for the record time of the commit set to
@@ -189,6 +191,7 @@ Example flow:
         ``t1`` and offset ``off1``.
       * The successful completion of withdrawal ``wid123`` by the
         transaction with update-id ``upd567`` at record time ``t1``.
+      * The deduction of 100 CC from the Customer's trading account.
       * The archival of the CC ``Holding`` UTXOs ``coids``.
       * The new CC ``Holding`` UTXO ``coid789`` for the change returned
         after funding the CC transfer.
@@ -460,7 +463,7 @@ We list them in full for completeness.
        ``trecTgt``. It also sets the value for key
        ``splice.lfdecentralizedtrust.org/reason`` in the ``Transfer`` metadata to ``wid123``;
        and it sets the upper bound for the customer to accept the transfer far
-       enough in the future (e.g. 30 days).
+       enough in the future, so that the customer has sufficient time to act (e.g. 1 year).
     d. The resulting transaction gets committed across the Customer,
        Exchange, and Acme validator nodes. It is assigned an
        update-id ``upd567`` and a record time ``t1`` < ``trecTgt`` by
@@ -489,7 +492,8 @@ We list them in full for completeness.
        * The withdrawal-id ``wid123`` from the
          ``splice.lfdecentralizedtrust.org/reason`` metadata value.
        * The new locked AcmeToken ``Holding`` UTXO ``coid345`` owned by the
-         ``treasuryParty``.
+         ``treasuryParty`` and locked to the withdrawal ``wid123``
+         of 100 AcmeToken to ``customerParty``.
        * The new  AcmeToken ``Holding`` UTXO ``coid789`` owned by the
          ``treasuryParty``
        * The ``TransferInstruction`` UTXO ``coid567`` representing the

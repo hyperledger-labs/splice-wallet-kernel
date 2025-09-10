@@ -21,6 +21,8 @@ Testing Checklists
 
 Sketch: at a minimum, make sure to test
 
+.. TODO:: Document deduplication https://github.com/hyperledger-labs/splice-wallet-kernel/issues/423
+
 * backup and restore of validator node
 * crash-fault tolerance of integration code
 * withdrawal deduplication
