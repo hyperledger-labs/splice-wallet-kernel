@@ -15,11 +15,11 @@ model `trust model
 <https://docs.digitalasset.com/overview/3.3/explanations/canton/external-party.html#party-trust-model>`_
 for more details.
 
-To guard against compromise, you can setup your party with multiple
+To guard against validator node compromise, you can setup your ``treasuryParty`` with multiple
 confirming nodes and a threshold N > 1. As long as less than N nodes
 are compromised, your party is still secured. Common setups are:
 
-1. 2 confirming nodes with a threshold of 2. This provides security
+1. Two confirming nodes with a threshold of 2. This provides security
    against a single node being compromised. Note that it does not
    provide availability in case of compromise though: If one node is
    compromised or down, transactions will be rejected as you will not
@@ -40,7 +40,9 @@ As part of the :ref:`initial party setup <create-an-external-party>`_,
 you can specify multiple multiple confirming participants and a
 threshold as needed. Note that at this point, the wallet SDK library
 does not yet support this so you must go directly through the Canton
-APIs. This is expected to change soon. Until then, the easiest way to do so at the moment is through the Canton
+APIs. This is expected to change soon. 
+
+Until then, the easiest way to do so at the moment is through the Canton
 console. You can find a full reference for all required steps in the
 `integration test
 <https://github.com/digital-asset/canton/blob/3c9ac9891c03cb06303736d7224bcc01dbd50084/community/app/src/test/scala/com/digitalasset/canton/integration/tests/jsonapi/ExternalPartyLedgerApiOnboardingTest.scala#L183>`_. Note
@@ -49,18 +51,19 @@ not just by your party's key but also by all confirming
 participants. This is accomplished through the
 ``participant2.topology.transactions.authorize`` step in the test.
 
-DAR Management
+.dar File Management
 ^^^^^^^^^^^^^^
 
 Any DAR that you upload, both as part of the initial setup but also
 whenever you upload newer versions to upgrade an existing package,
-must be uploaded to all confirming nodes of the party.
+must be uploaded to all validator nodes hosting your party.
 
 Reading Data and Submitting Transactions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can use any of the confirming nodes for reading data of a party
-hosted on them. However, offsets are not comparable across nodes so it
+Both nodes serve all transactions for the ``treasuryParty`` and can
+thus be used in principle to read them.
+However, offsets are not comparable across nodes so it
 is recommended that to run Tx History Ingestion against the same node
 under normal operations. If you do need to switch nodes, you can do so
 following the same procedure used for `restoring a validator from a
