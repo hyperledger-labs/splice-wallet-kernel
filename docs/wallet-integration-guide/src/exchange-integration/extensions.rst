@@ -3,6 +3,71 @@
 Integration Extensions
 ----------------------
 
+This page describes the following additional features that you can consider adding to your integration,
+beyond the MVP described in the :ref:`exchange-integration-overview` section:
+
+.. contents::
+   :local:
+   :depth: 2
+   :backlinks: none
+
+
+Optimizing App Rewards
+~~~~~~~~~~~~~~~~~~~~~~
+
+Sketch:
+
+* use Daml model to create featured app reward markers in the same tx that acts on a transfer: https://github.com/hyperledger-labs/splice/pull/1729/files#diff-f9e3d1de2443dd22c3999d1018d1c3ef2031c76626f97c8b951ab7f351e17999
+* likely this Daml model will come as part the wallet SDK or be part of Splice
+* sketch of the model referenced from here: https://github.com/hyperledger-labs/splice/issues/1901#issuecomment-3183999764
+* upload the corresponding .dar to your validator node; note that only your node needs it. Customers won't see it.
+
+.. _deposit-app-rewards:
+
+Earning App Rewards for Deposits
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sketch:
+
+* change call to ``TransferInstruction_Accept`` to use the wrapped version, like the one here https://github.com/hyperledger-labs/splice/pull/1907/files#diff-4cbc6e851f73f40db384d63aa97dbf4ffb93c505b0ed0c3c360e7914f94f6201R64-R73
+* note history tx parser should deal with this properly and just ignore the extra wrapper. So no further change required
+
+.. _withdrawal-app-rewards:
+
+Earning App Rewards for Withdrawals
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sketch:
+
+* change call to ``TransferFactory_Transfer`` to use the wrapped version, like the one here https://github.com/hyperledger-labs/splice/pull/1907/files#diff-4cbc6e851f73f40db384d63aa97dbf4ffb93c505b0ed0c3c360e7914f94f6201R54-R62
+* note history tx parser should deal with this properly and just ignore the extra wrapper. So no further change required
+
+
+.. _share-rewards-with-customers:
+
+Sharing App Rewards with your Customers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sketch:
+
+* use the benefeciary feature of app rewards to share some of the rewards with your customers
+
+  * see https://hyperledger-labs.github.io/splice/background/tokenomics/feat_app_act_marker_tokenomics.html#creating-a-featured-application-activity-marker
+
+
+.. _treasury-sharding:
+
+Sharding the Treasury
+~~~~~~~~~~~~~~~~~~~~~
+
+Sketch: the :ref:`integration-architecture` is already built to support multiple treasury parties
+
+* allocate multiple treasury parties in :ref:`exchange-parties-setup`; they can even be one separate nodes
+* run Tx History Ingestion, Withdrawal Automation, Multi-Step Deposit Automation once for each ``treasuryParty``
+* have your Exchange Internal Systems pick the ``treasuryParty`` that should execute the withdrawal
+
+  * you might have to split large withdrawals over multiple parties in case none of them have large enough balances on their own
+
 Multi-Hosting the Treasury Party
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -98,62 +163,6 @@ submitting a new ``PartyToParticipant`` topology transaction with the
 updated threshold.
 
 Future versions of Canton will allow changing the confirming nodes without the need for setting up a new party.
-
-App Reward Optimization
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Sketch:
-
-* use Daml model to create featured app reward markers in the same tx that acts on a transfer: https://github.com/hyperledger-labs/splice/pull/1729/files#diff-f9e3d1de2443dd22c3999d1018d1c3ef2031c76626f97c8b951ab7f351e17999
-* likely this Daml model will come as part the wallet SDK or be part of Splice
-* sketch of the model referenced from here: https://github.com/hyperledger-labs/splice/issues/1901#issuecomment-3183999764
-* upload the corresponding .dar to your validator node; note that only your node needs it. Customers won't see it.
-
-.. _deposit-app-rewards:
-
-Earn App Rewards for Deposits
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Sketch:
-
-* change call to ``TransferInstruction_Accept`` to use the wrapped version, like the one here https://github.com/hyperledger-labs/splice/pull/1907/files#diff-4cbc6e851f73f40db384d63aa97dbf4ffb93c505b0ed0c3c360e7914f94f6201R64-R73
-* note history tx parser should deal with this properly and just ignore the extra wrapper. So no further change required
-
-.. _withdrawal-app-rewards:
-
-Earn App Rewards for Withdrawals
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Sketch:
-
-* change call to ``TransferFactory_Transfer`` to use the wrapped version, like the one here https://github.com/hyperledger-labs/splice/pull/1907/files#diff-4cbc6e851f73f40db384d63aa97dbf4ffb93c505b0ed0c3c360e7914f94f6201R54-R62
-* note history tx parser should deal with this properly and just ignore the extra wrapper. So no further change required
-
-
-.. _share-rewards-with-customers:
-
-Sharing App Rewards with your Customers
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Sketch:
-
-* use the benefeciary feature of app rewards to share some of the rewards with your customers
-
-  * see https://hyperledger-labs.github.io/splice/background/tokenomics/feat_app_act_marker_tokenomics.html#creating-a-featured-application-activity-marker
-
-
-.. _treasury-sharding:
-
-Sharding the Treasury
-~~~~~~~~~~~~~~~~~~~~~
-
-Sketch: the :ref:`integration-architecture` is already built to support multiple treasury parties
-
-* allocate multiple treasury parties in :ref:`exchange-parties-setup`; they can even be one separate nodes
-* run Tx History Ingestion, Withdrawal Automation, Multi-Step Deposit Automation once for each ``treasuryParty``
-* have your Exchange Internal Systems pick the ``treasuryParty`` that should execute the withdrawal
-
-  * you might have to split large withdrawals over multiple parties in case none of them have large enough balances on their own
 
 
 
