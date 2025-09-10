@@ -185,7 +185,7 @@ export class TokenStandardController {
             instrumentAdmin: string
         },
         memo?: string,
-        meta?: Record<string, never>
+        meta?: Record<string, unknown>
     ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
         try {
             return await this.service.createTransfer(

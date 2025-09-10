@@ -252,7 +252,7 @@ export class TokenStandardService {
         instrumentId: string,
         transferFactoryRegistryUrl: string,
         memo?: string,
-        meta?: Record<string, never>
+        meta?: Record<string, unknown>
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
             const ledgerEndOffset = await this.ledgerClient.get(
