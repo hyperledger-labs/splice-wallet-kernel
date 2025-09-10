@@ -127,13 +127,26 @@ as called out in `this test case <https://github.com/hyperledger-labs/splice/blo
 Sharding the Treasury
 ~~~~~~~~~~~~~~~~~~~~~
 
-Sketch: the :ref:`integration-architecture` is already built to support multiple treasury parties
+Sharding your treasury over multiple treasury parties may be interesting to reduce the risk
+of compromise of a single ``treasuryParty``'s private key.
+Using multiple treasury parties also provides operational flexibility with respect
+to which validator nodes host what party.
+This can be useful for load balancing or to incrementally change your party hosting setup.
 
-* allocate multiple treasury parties in :ref:`exchange-parties-setup`; they can even be one separate nodes
-* run Tx History Ingestion, Withdrawal Automation, Multi-Step Deposit Automation once for each ``treasuryParty``
-* have your Exchange Internal Systems pick the ``treasuryParty`` that should execute the withdrawal
+You can shard your treasury over multiple parties as follows:
 
-  * you might have to split large withdrawals over multiple parties in case none of them have large enough balances on their own
+#. Setup multiple treasury parties instead of using a single ``treasuryParty``.
+   Use the setup described in the :ref:`treasury-party-setup` section for each of them.
+#. Run one instance of Tx History Ingestion, Withdrawal Automation, and
+   Multi-Step Deposit Automation for each treasury party.
+#. Share the Canton Integration DB across all instances, but adjust
+   the schema such that UTXOs and pending multi-step transfers are tracked per treasury party.
+#. Change your Exchange Internal Systems such that they select the treasury party
+   as well as the ``Holding`` UTXOs to use for funding a withdrawal.
+   For large withdrawals that surpass the funds available to a single treasury party,
+   you can either rebalance the funds across multiple treasury parties
+   or split the withdrawal into multiple smaller ones.
+
 
 Multi-Hosting the Treasury Party
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -153,7 +166,7 @@ are compromised, your party is still secured. Common setups are:
 1. Two confirming nodes with a threshold of 2. This provides security
    against a single node being compromised. However, if one of the two nodes is down,
    transactions for the party will fail.
-2. 3 confirming nodes with a threshold of 2. This extends the previous
+2. Three confirming nodes with a threshold of 2. This extends the previous
    setup to also provide availability in case one of the nodes goes
    down or gets compromised as the other two nodes are still functional.
 
