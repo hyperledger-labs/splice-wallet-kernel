@@ -59,6 +59,8 @@ as we assume you have strategies in place for those.
   to recover from bugs in the in-memory state of the ingestion component.
 
 
+.. _withdrawal-automation:
+
 * **Withdrawal Automation**:
   recall from :ref:`one-step-withdrawal-workflow` that the Withdrawal Automation
   first retrieves extra context from the Registry API Server of the token admin
@@ -148,5 +150,3 @@ The on-ledger validation of the transfers ensures that
 you do not need to trust the Scan instance for correctness.
 Ensure that you read from a different Scan instance on every retry
 to avoid being affected by a faulty Scan instance for too long.
-
-
