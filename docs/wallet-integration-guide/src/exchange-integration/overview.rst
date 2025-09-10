@@ -72,6 +72,6 @@ the profitability of the integration by implementing  changes so
 the exchange earns application rewards on both withdrawals and deposits of all CN tokens.
 Sharing application rewards is an optional steps.
 
-* :ref:`deposit-app-rewards`
 * :ref:`withdrawal-app-rewards`
+* :ref:`deposit-app-rewards`
 * :ref:`share-rewards-with-customers`
