@@ -67,6 +67,7 @@ sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL.href)
 await new Promise((res) => setTimeout(res, 5000))
 
 sdk.validator?.setPartyId(receiver?.partyId!)
+const validatorOperatorParty = await sdk.validator?.getValidatorUser()
 
 sdk.userLedger?.setPartyId(receiver?.partyId!)
 sdk.tokenStandard?.setSynchronizerId(synchonizerId)
@@ -82,7 +83,7 @@ logger.info('creating transfer preapproval proposal')
 
 const transferPreApprovalProposal =
     sdk.userLedger?.createTransferPreapprovalCommand(
-        'app_user_localnet-localparty-1::122051dda3eb7110475dea361052b6072ef66b635d23196887a0eacaa2533598bf93', // TODO: find out how to get this not through validator api
+        validatorOperatorParty!, // TODO: find out how to get this not through validator api
         receiver?.partyId!,
         instrumentAdminPartyId
     )

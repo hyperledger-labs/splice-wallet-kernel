@@ -168,6 +168,15 @@ export class ValidatorController {
             }
         )
     }
+
+    /**  Looks up the validator operator party
+     */
+
+    async getValidatorUser() {
+        const validatorUserResponse =
+            await this.validatorClient.get('/v0/validator-user')
+        return validatorUserResponse.party_id
+    }
 }
 
 /**
