@@ -118,12 +118,12 @@ To make the above more concrete, let's look at an example transaction
 of a 1-Step Deposit as seen through the `JSON Ledger API <https://docs.digitalasset.com/build/3.3/tutorials/json-api/canton_and_the_json_ledger_api.html>`_.
 
 In this case, we query a single transaction. The format is identical to the transaction you will get when streaming transactions through ``/v2/updates/flats`` and you can also use the same filter.
-Note that you need to adjust the ``auth-token``, ``update-id`` and ``receiver`` placeholders to match your setup.
+Note that you need to adjust the ``auth-token``, ``update-id`` and ``treasury-party`` placeholders to match your setup.
 
 .. code:: bash
 
     curl -sSL --fail-with-body http://json-api-url/v2/updates/update-by-id \
-        -H 'Authorization: Bearer <token>' \
+        -H 'Authorization: Bearer <authtoken>' \
           -d '{
                 "updateId": "<update-id>",
                 "updateFormat": {
@@ -131,7 +131,7 @@ Note that you need to adjust the ``auth-token``, ``update-id`` and ``receiver`` 
                     "transactionShape": "TRANSACTION_SHAPE_LEDGER_EFFECTS",
                     "eventFormat": {
                       "filtersByParty": {
-                        "<receiver>": {
+                        "<treasury-party>": {
                           "cumulative": [
                             {"identifierFilter": {"WildcardFilter": {"value": {"includeCreatedEventBlob": false}}}},
                             {"identifierFilter": {"InterfaceFilter": {"value": {"interfaceId": "#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferFactory", "includeInterfaceView": true, "includeCreatedEventBlob": false}}}},
@@ -163,18 +163,18 @@ You can parse such transactions using the `token standard history parser <https:
 3. Extract the ``"splice.lfdecentralizedtrust.org/reason"`` to get the deposit account. In this example it is ``memo-string``.
 4. Go over all events whose ``nodeId`` is larger than the ``nodeId`` of the transfer (4 in the example here) and smaller than the ``lastDescendantNodeId`` of the transfer (12 in the example here).
 5. Find all ``CreatedEvents`` in that range that create a ``Holding`` with
-   ``"owner": "<receiver>"`` and sum up the amounts for each
+   ``"owner": "<treasury-party>"`` and sum up the amounts for each
    ``instrumentId``.  In this example, we have two events that create
    holdings, ``nodeId`` 11 and 12. However, only 12 has ``"owner":
-   "<receiver>"``. Therefore, we extract that the transfer created
+   "<treasury-party>"``. Therefore, we extract that the transfer created
    ``200.0000000000`` for the token with instrument id ``{"admin":
    "DSO::12204b8b621ec1dedd51ee2510085f8164cad194953496494d32f541f3f2c170e962",
    "id": "Amulet"}``.
 6. Find all ``ExercisedEvents`` with ``implementedInterfaces``
    containing the ``Holding`` interface and ``consuming: true``. In
    the example here, this is the event with ``nodeId:: 8``. For each of them get the ``contractId`` and lookup the contract payload through the event query service as shown below.
-   If you get a 404, it's a holding for a different party so you can ignore it. If you get back an event, check if the owner matches the ``receiver``. If so, sum up all events for which this is the case.
-   In the example here, we get a 404 as it is a holding of the sender not receiver.
+   If you get a 404, it's a holding for a different party so you can ignore it. If you get back an event, check if ``"owner": "<treasury-party>"``. If so, sum up all events for which this is the case.
+   In the example here, we get a 404 as it is a holding of the sender not treasury-party.
 .. code:: bash
 
     curl -sSL --fail-with-body http://json-api-url/v2/events/events-by-contract-id \
@@ -183,7 +183,7 @@ You can parse such transactions using the `token standard history parser <https:
           "contractId": "009b939ae451ef1a0cb81d1606391406690e055b5be301fd2f51efb6be5675577eca1112200f58604ac538224f73bdc57117d73830ed1e3167f956d66f9e3ecdacbf2359a7",
           "eventFormat": {
             "filtersByParty": {
-              "<receiver-party>": {
+              "<treasury-party>": {
                 "cumulative": [
                   {"identifierFilter": {"InterfaceFilter": {"value": {"interfaceId": "#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding", "includeInterfaceView": true, "includeCreatedEventBlob": false}}}}
                 ]
@@ -192,7 +192,7 @@ You can parse such transactions using the `token standard history parser <https:
             "verbose": true
           }
         }'
-7. Subtract the sum of archived holdings for the receiver from the sum
+7. Subtract the sum of archived holdings for the treasury-party from the sum
    of created holdings. This gives you the deposit amount for each
    instrument id. You now extracted the deposit amount from the
    created and exercised events, the UTXOs from the created events and
