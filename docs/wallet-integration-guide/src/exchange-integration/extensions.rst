@@ -6,16 +6,94 @@ Integration Extensions
 Multi-Hosted Parties
 ~~~~~~~~~~~~~~~~~~~~
 
-Sketch:
+As part of setting up the ``treasuryParty``, you need to sign the
+``PartyToParticipant`` mapping which defines the set of confirming
+nodes for that party as well as the confirmation threshold. The
+confirming nodes for the party are essential to keep your party secure
+and compromise of them could lead to loss of funds. Refer to the trust
+model `trust model
+<https://docs.digitalasset.com/overview/3.3/explanations/canton/external-party.html#party-trust-model>`_
+for more details.
 
-* allocate the ``treasuryParty`` from the start as a `decentralized party <https://docs.digitalasset.com/operate/3.4/howtos/operate/parties/decentralized_parties.html>`__ on multiple validator nodes
+To guard against compromise, you can setup your party with multiple
+confirming nodes and a threshold N > 1. As long as less than N nodes
+are compromised, your party is still secured. Common setups are:
 
-  * a common setup is to use two nodes with threshold two; thus both of them must confirm a tx for it to be committed
+1. 2 confirming nodes with a threshold of 2. This provides security
+   against a single node being compromised. Note that it does not
+   provide availability in case of compromise though: If one node is
+   compromised or down, transactions will be rejected as you will not
+   be able to reach 2 valid confirmations. To be able to run
+   transactions again you either need to bring both nodes back online
+   or change the hosting nodes.
+2. 3 confirming nodes with a threshold of 2. This extends the previous
+   setup to also provide availability in case one of the nodes goes
+   down or gets compromised as you can still reach 2 valid
+   confirmations.
 
-* upload all .dars for your onboarded tokens on all of these validators
-* use any of the nodes hosting the party to read from as part of history ingestion and to prepare and execute transactions
+Party Setup
+^^^^^^^^^^^
 
-  * switching between the nodes can be done. take care to re-synchronize the ingestion offset as described in :ref:`restore-from-validator-node-backup`
+.. TODO:: https://github.com/hyperledger-labs/splice-wallet-kernel/issues/272 Update this when wallet SDK support is available
+
+As part of the :ref:`initial party setup <create-an-external-party>`_,
+you can specify multiple multiple confirming participants and a
+threshold as needed. Note that at this point, the wallet SDK library
+does not yet support this so you must go directly through the Canton
+APIs. This is expected to change soon. Until then, the easiest way to do so at the moment is through the Canton
+console. You can find a full reference for all required steps in the
+`integration test
+<https://github.com/digital-asset/canton/blob/3c9ac9891c03cb06303736d7224bcc01dbd50084/community/app/src/test/scala/com/digitalasset/canton/integration/tests/jsonapi/ExternalPartyLedgerApiOnboardingTest.scala#L183>`_. Note
+in particular that you must sign the ``PartyToParticipant`` mapping
+not just by your party's key but also by all confirming
+participants. This is accomplished through the
+``participant2.topology.transactions.authorize`` step in the test.
+
+DAR Management
+^^^^^^^^^^^^^^
+
+Any DAR that you upload, both as part of the initial setup but also
+whenever you upload newer versions to upgrade an existing package,
+must be uploaded to all confirming nodes of the party.
+
+Reading Data and Submitting Transactions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can use any of the confirming nodes for reading data of a party
+hosted on them. However, offsets are not comparable across nodes so it
+is recommended that to run Tx History Ingestion against the same node
+under normal operations. If you do need to switch nodes, you can do so
+following the same procedure used for `restoring a validator from a
+backup <validator_backup_restore>`_ to resynchronize Tx History
+Ingestion against the offsets of the new node.
+
+Preparation and execution of transactions can also be done against any
+of the confirming nodes of the party. However, `Command Deduplication
+<https://docs.digitalasset.com/build/3.3/sdlc-howtos/applications/develop/command-deduplication.html>`_
+is only performed by the executing node so if you submit across nodes you cannot rely on it.
+
+.. TODO:: Link to recommended deduplication strategy https://github.com/hyperledger-labs/splice-wallet-kernel/issues/423
+
+Changing the set of Confirming Nodes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It is highly recommended to setup your desired set of confirming nodes
+when initially setting up the party as changes to the set of
+confirming nodes are tricky. Adding and removing nodes is possible but
+it is a fragile procedure that is not recommended in production at
+this point. This will be improved in future releases.
+
+If you do find yourself in a situation where you don't have any other
+option than changing the set of confirming nodes, refer to the `Canton documentation <https://docs.digitalasset.com/operate/3.3/howtos/operate/parties/party_replication.html#offline-party-replication>`_ for detailed information on the limitations. At a high level, the limitations are as follows:
+
+Removing nodes is possible by submitting a new ``PartyToParticipant`` mapping but can leave
+the nodes hosting the party in a broken state so make sure that those
+nodes were not used for other purposes.
+
+Adding new nodes does not just require changing the
+``PartyToParticipant`` mapping but it also requires a manual state
+transfer of all active contracts to new confirming nodes. This is an
+involved procedure with high potential for issues.
 
 
 App Reward Optimization
