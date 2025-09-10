@@ -18,7 +18,7 @@ structure and parsing strategy.
 1-Step Transfers
 ~~~~~~~~~~~~~~~~
 
-To understand the structure of a 1-step deposit, let's look at an example transaction
+To understand the structure of a 1 step transfer, let's look at an example deposit
  as seen through the `JSON Ledger API <https://docs.digitalasset.com/build/3.3/tutorials/json-api/canton_and_the_json_ledger_api.html>`_.
 
 In this case, we query a single transaction. The format is identical to the transaction you will get when streaming transactions through ``/v2/updates/flats`` and you can also use the same filter.
@@ -110,6 +110,21 @@ You can parse such transactions using the `token standard history parser <https:
    ``AmuletRules_Transfer``. This is important as you already
    accounted for this event through the parent event at node id 4. Note that one transaction can contain multiple deposits including mixing 1 and 2-step deposits in the same transaction.
 
+Differences between 1-Step Deposits and Withdrawals
+---------------------------------------------------
+
+The example we discussed above, shows a deposit. A withdrawal is
+essentially the same transaction but sender and receiver are
+swapped. For a withdrawal, the sender, i.e. the treasury party for an
+exchange, will also see the ``TransferFactory_Transfer`` choice as a
+parent and you can extract the amount and reason from that instead of
+looking for the ``meta`` field in exercise results. Note however, that for Canton Coin
+the ``amount`` in the ``TransferFactory_Transfer`` argument will be
+higher than the difference of holdings archived and created for the
+treasury party due to Canton Coin usage fees. Once the `CIP for CC fee removal
+<https://lists.sync.global/g/cip-discuss/message/304?p=%2C%2C%2C20%2C0%2C0%2C0%3A%3Arecentpostdate%2Fsticky%2C%2Cfee%2C20%2C1%2C0%2C115127097>`_
+is implemented, this distinction goes away.
+Currently Canton Coin is the only token on Canton Network charging such fees.
 
 Multi-Step Transfers
 ~~~~~~~~~~~~~~~~~~~~
@@ -184,3 +199,16 @@ To parse this proceed as follows:
          }'
 
    If you get a 404, the instruction is not for your treasury party so you can ignore it. If you get back an event, it has the same structure that we've seen above when a transfer offer is created and you can again extract the amount, instrument id and deposit account from it.
+
+Differences between Multi-Step Deposits and Withdrawals
+-------------------------------------------------------
+
+The main difference is similar as for 1-step transfers that the sender
+that creates the withdrawal offer, i.e., the treasury party sees a
+``TransferFactory_Transfer``. For Canton Coin, both the creation of
+the ``TransferInstruction`` as well as the acceptance currently charge
+fees so the amount specified in the transfer is smaller than the holdings change of the treasury party.
+Once the `CIP for CC fee removal
+<https://lists.sync.global/g/cip-discuss/message/304?p=%2C%2C%2C20%2C0%2C0%2C0%3A%3Arecentpostdate%2Fsticky%2C%2Cfee%2C20%2C1%2C0%2C115127097>`_
+is implemented, this distinction goes away.
+Currently Canton Coin is the only token on Canton Network charging such fees.
