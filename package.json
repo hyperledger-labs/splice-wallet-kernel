@@ -31,12 +31,12 @@
     },
     "workspaces": [
         "api-specs",
-        "clients/*",
+        "clients/**",
         "core/**",
-        "!core/token-standard/src/**",
+        "damljs/**",
         "example",
         "example-scripts",
-        "sdk/*",
+        "sdk/**",
         "scripts",
         "mock-oauth2",
         "docs/wallet-integration-guide/examples"
