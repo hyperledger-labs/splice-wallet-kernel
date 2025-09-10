@@ -66,9 +66,8 @@ sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL.href)
 await new Promise((res) => setTimeout(res, 5000))
 
-logger.info('creating external party proposal for party: ' + receiver?.partyId)
-
 sdk.validator?.setPartyId(receiver?.partyId!)
+const validatorOperatorParty = await sdk.validator?.getValidatorUser()
 
 sdk.userLedger?.setPartyId(receiver?.partyId!)
 sdk.tokenStandard?.setSynchronizerId(synchonizerId)
@@ -80,9 +79,22 @@ const instrumentAdminPartyId =
 
 await new Promise((res) => setTimeout(res, 5000))
 
-await sdk.validator?.externalPartyPreApprovalSetup(keyPairReceiver.privateKey)
+logger.info('creating transfer preapproval proposal')
 
-logger.info('submitted external party proposal for ' + receiver?.partyId)
+const transferPreApprovalProposal =
+    sdk.userLedger?.createTransferPreapprovalCommand(
+        validatorOperatorParty!, // TODO: find out how to get this not through validator api
+        receiver?.partyId!,
+        instrumentAdminPartyId
+    )
+
+await sdk.userLedger?.prepareSignAndExecuteTransaction(
+    [transferPreApprovalProposal],
+    keyPairReceiver.privateKey,
+    v4()
+)
+
+logger.info('transfer pre approval proposal is created')
 
 sdk.userLedger?.setPartyId(sender?.partyId!)
 
