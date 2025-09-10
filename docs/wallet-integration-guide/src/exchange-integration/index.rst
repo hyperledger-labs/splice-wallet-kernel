@@ -16,11 +16,9 @@ than exchanges that want to support deposits and withdrawals of Canton Network t
    overview
    architecture
    workflows
+   txingestion
    non-functionals
    node-operations
    disaster-recovery
    testing
    extensions
-
-
-
