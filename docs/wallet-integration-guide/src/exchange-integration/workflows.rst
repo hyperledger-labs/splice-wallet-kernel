@@ -117,6 +117,8 @@ Example flow:
 4. Customer observes the successful deposit in their Exchange UI,
    whose data is retrieved from the Canton Integration DB via the Exchange Internal Systems.
 
+.. _one-step-transfer-parsing:
+
 Transaction Structure
 ~~~~~~~~~~~~~~~~~~~~~
 
