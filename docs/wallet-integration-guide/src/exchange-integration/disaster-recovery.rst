@@ -36,6 +36,7 @@ is up to you.
 
 Follow your internal guidance and best practices on what DB system to use and how to back it up.
 
+.. _validator_backup_restore:
 
 Restoring the Exchange Validator Node from a Backup
 ---------------------------------------------------

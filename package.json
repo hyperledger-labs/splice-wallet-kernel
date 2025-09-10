@@ -25,6 +25,7 @@
         "script:fetch:splice": "tsx ./scripts/src/fetch-splice.ts",
         "script:fetch:localnet": "tsx ./scripts/src/fetch-localnet.ts",
         "script:openrpc:titles": "tsx ./scripts/src/schema-title-validation.ts",
+        "script:validate:package": "tsx ./scripts/src/package-and-verify-wallet-sdk.ts",
         "full:rebuild": "yarn clean:all && yarn generate:all && yarn build:all",
         "release": "tsx ./scripts/src/release.ts"
     },
@@ -32,6 +33,7 @@
         "api-specs",
         "clients/*",
         "core/**",
+        "!core/token-standard/src/**",
         "example",
         "example-scripts",
         "sdk/*",
@@ -67,29 +69,11 @@
         "*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --fix"
     },
     "packageManager": "yarn@4.9.4",
-    "resolutions": {
-        "@daml.js/daml-prim-DA-Exception-ArithmeticError-1.0.0": "workspace:^",
-        "@daml.js/daml-prim-DA-Exception-AssertionFailed-1.0.0": "workspace:^",
-        "@daml.js/daml-prim-DA-Exception-GeneralError-1.0.0": "workspace:^",
-        "@daml.js/daml-prim-DA-Exception-PreconditionFailed-1.0.0": "workspace:^",
-        "@daml.js/daml-prim-DA-Types-1.0.0": "workspace:^",
-        "@daml.js/daml-prim-GHC-Types-1.0.0": "workspace:^",
-        "@daml.js/daml-stdlib-DA-Date-Types-1.0.0": "workspace:^",
-        "@daml.js/daml-stdlib-DA-Internal-Down-1.0.0": "workspace:^",
-        "@daml.js/daml-stdlib-DA-Logic-Types-1.0.0": "workspace:^",
-        "@daml.js/daml-stdlib-DA-Monoid-Types-1.0.0": "workspace:^",
-        "@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0": "workspace:^",
-        "@daml.js/daml-stdlib-DA-Random-Types-1.0.0": "workspace:^",
-        "@daml.js/daml-stdlib-DA-Semigroup-Types-1.0.0": "workspace:^",
-        "@daml.js/daml-stdlib-DA-Set-Types-1.0.0": "workspace:^",
-        "@daml.js/daml-stdlib-DA-Stack-Types-1.0.0": "workspace:^",
-        "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "workspace:^",
-        "@daml.js/daml-stdlib-DA-Validation-Types-1.0.0": "workspace:^",
-        "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "workspace:^",
-        "@daml.js/token-standard-models-1.0.0": "workspace:^"
-    },
     "dependencies": {
         "@nx/js": "^21.3.11",
         "nx": "^21.3.11"
-    }
+    },
+    "files": [
+        "!core/token-standard/src/**/package.json"
+    ]
 }
