@@ -91,7 +91,7 @@
                 "meta": {
                   "values": {
                     "splice.lfdecentralizedtrust.org/burned": "14.0",
-                    "splice.lfdecentralizedtrust.org/reason": "memo-string",
+                    "splice.lfdecentralizedtrust.org/reason": "deposit-account-id",
                     "splice.lfdecentralizedtrust.org/sender": "sender::1220278a4a0eb2c244b425dff62853ef1cd04ca1095bffcea465c0de766faf9ab8cd",
                     "splice.lfdecentralizedtrust.org/tx-kind": "transfer"
                   }

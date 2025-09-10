@@ -149,7 +149,7 @@ Note that you need to adjust the ``auth-token``, ``update-id`` and ``treasury-pa
 .. literalinclude:: 1-step-transfer.json
     :language: json
 
-You can parse such transactions using the `token standard history parser <https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/core/ledger-client/src/txparse/parser.ts`_ provided in the wallet SDK to extract the deposit amount, account and holding contract ids. If you prefer implementing your own implementation, you can parse this as follows:
+You can parse such transactions using the `token standard history parser <https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/core/ledger-client/src/txparse/parser.ts`_ provided in the wallet SDK to extract the deposit amount, account and holding contract ids. Note that one-step deposits are more complex to parse than two-step transfers as the token standard does not provide an interface choice visible to the receiver. If you prefer implementing your own implementation, you can parse this as follows:
 
 1. Go over the list of events ordered by ``nodeId`` that you see in the transaction.
 2. For each exercised event, check the exercise result. If it has a
@@ -160,7 +160,7 @@ You can parse such transactions using the `token standard history parser <https:
    choice. Note that this choice is specific to Canton Coin so rely on
    the existence of the ``meta`` field which is standardized instead
    of the specific choice name.
-3. Extract the ``"splice.lfdecentralizedtrust.org/reason"`` to get the deposit account. In this example it is ``memo-string``.
+3. Extract the ``"splice.lfdecentralizedtrust.org/reason"`` to get the deposit account. In this example it is ``deposit-account-id``.
 4. Go over all events whose ``nodeId`` is larger than the ``nodeId`` of the transfer (4 in the example here) and smaller than the ``lastDescendantNodeId`` of the transfer (12 in the example here).
 5. Find all ``CreatedEvents`` in that range that create a ``Holding`` with
    ``"owner": "<treasury-party>"`` and sum up the amounts for each
@@ -202,7 +202,7 @@ You can parse such transactions using the `token standard history parser <https:
    ``lastDescendantNodeId + 1``. Note that in this example this skips
    over the event with ``nodeId: 5`` which exercises
    ``AmuletRules_Transfer``. This is important as you already
-   accounted for this event through the parent event at node id 4.
+   accounted for this event through the parent event at node id 4. Note that one transaction can contain multiple deposits including mixing 1 and 2-step deposits in the same transaction.
 
 .. _one-step-withdrawal-workflow:
 
