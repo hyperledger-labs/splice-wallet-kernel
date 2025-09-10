@@ -252,6 +252,15 @@ export class LedgerController {
         return await this.client.get('/v2/state/ledger-end')
     }
 
+    /**
+     * This creates a TransferPreapprovalCommand
+     * The validator auto accepts when the provider is the validator operatory party
+     * And this allows us to auto accept incoming transfer for the receiver party
+     * @param validatorOperatorParty operator party retrieved through the getValidatorUser call
+     * @param receiverParty party for which the auto accept is created for
+     * @param dsoParty Party that the sender expects to represent the DSO party of the AmuletRules contract they are calling
+     */
+
     createTransferPreapprovalCommand(
         validatorOperatorParty: string,
         receiverParty: string,
