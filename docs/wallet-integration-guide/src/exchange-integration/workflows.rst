@@ -514,6 +514,79 @@ Ingesting deposit offers with unknown deposit accounts is still valuable
 to allow the exchange's support team to handle customer inquiries about
 these transfers.
 
+Transaction Structure
+~~~~~~~~~~~~~~~~~~~~~
+
+To make the above more concrete, let's look at an example transaction
+of a Multi-Step Deposit as seen through the `JSON Ledger API <https://docs.digitalasset.com/build/3.3/tutorials/json-api/canton_and_the_json_ledger_api.html>`_.
+
+In this case, we query a single transaction. The format is identical to the transaction you will get when streaming transactions through ``/v2/updates/flats`` and you can also use the same filter.
+Note that you need to adjust the ``auth-token``, ``update-id`` and ``treasury-party`` placeholders to match your setup.
+
+.. code:: bash
+
+    curl -sSL --fail-with-body http://json-api-url/v2/updates/update-by-id \
+        -H 'Authorization: Bearer <authtoken>' \
+          -d '{
+                "updateId": "<update-id>",
+                "updateFormat": {
+                  "includeTransactions": {
+                    "transactionShape": "TRANSACTION_SHAPE_LEDGER_EFFECTS",
+                    "eventFormat": {
+                      "filtersByParty": {
+                        "<treasury-party>": {
+                          "cumulative": [
+                            {"identifierFilter": {"WildcardFilter": {"value": {"includeCreatedEventBlob": false}}}},
+                            {"identifierFilter": {"InterfaceFilter": {"value": {"interfaceId": "#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferFactory", "includeInterfaceView": true, "includeCreatedEventBlob": false}}}},
+                            {"identifierFilter": {"InterfaceFilter": {"value": {"interfaceId": "#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding", "includeInterfaceView": true, "includeCreatedEventBlob": false}}}},
+                            {"identifierFilter": {"InterfaceFilter": {"value": {"interfaceId": "#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferInstruction", "includeInterfaceView": true, "includeCreatedEventBlob": false}}}}
+                          ]
+                        }
+                      },
+                      "verbose": true
+                    }
+                  }
+                }
+              }'
+
+.. literalinclude:: transfer-instruction-create.json
+    :language: json
+
+You can parse such transactions using the `token standard history parser <https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/core/ledger-client/src/txparse/parser.ts`_ provided in the wallet SDK to extract the deposit amount, account and holding contract ids. If you prefer implementing your own implementation, you can parse this as follows:
+
+1. Go over the list of events ordered by ``nodeId`` that you see in the transaction.
+2. Look for all ``CreatedEvents`` of the ``TransferInstruction`` interface with ``"receiver": "<treasury-party>"``. Each of these represents a deposit offer that can be accepted or rejected.
+   In the example this is only one event with node id ``0``. Extract the ``instrument``, the ``amount`` and the ``splice.lfdecentralizedtrust.org/reason`` field from the ``interfaceView`` and the contract id of the ``TransferInstruction``. Note that one transaction can contain multiple deposits including mixing 1 and 2-step deposits in the same transaction.
+
+After accepting the deposit offer through your automation, you can Tx History Ingestion can then observe and process acceptance. An example of such a transaction can be seen below.
+
+.. literalinclude:: transfer-instruction-accept.json
+    :language: json
+
+To parse this proceed as follows:
+
+1. Go over the list of events ordered by ``nodeId`` that you see in the transaction.
+2. Look for exercises of the ``TransferInstruction_Accept`` choice on the ``TransferInstruction`` interface. In the example, this is the event with node id ``0``. For each of those, extract the contract id. You can then query the event query service using:
+
+.. code:: bash
+
+    curl -sSL --fail-with-body http://json-api-url/v2/events/events-by-contract-id \
+      -H 'Authorization: Bearer 00fc774936c91f423c117744102a5996e4dc117f2b6496ef337967a7d2c5d02e4aca1112203c35266c980ae19508cc690cb501f8c767c02bfdbe838f1f89105de6fe59439f' \
+        -d '{
+          "contractId": "009b939ae451ef1a0cb81d1606391406690e055b5be301fd2f51efb6be5675577eca1112200f58604ac538224f73bdc57117d73830ed1e3167f956d66f9e3ecdacbf2359a7",
+          "eventFormat": {
+            "filtersByParty": {
+              "<treasury-party>": {
+                "cumulative": [
+                  {"identifierFilter": {"InterfaceFilter": {"value": {"interfaceId": "#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferInstruction", "includeInterfaceView": true, "includeCreatedEventBlob": false}}}}
+                ]
+              }
+            },
+            "verbose": true
+          }
+        }'
+
+   If you get a 404, the instruction is not for your treasury party so you can ignore it. If you get back an event, it has the same structure that we've seen above when a transfer offer is created and you can again extract the amount, instrument id and deposit account from it.
 
 .. _multi-step-withdrawal-workflow:
 
