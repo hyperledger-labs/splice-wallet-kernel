@@ -43,7 +43,7 @@ async function main() {
 
     let ran = false
     try {
-        // Pack the package into the temp dir
+        // Pack the packages into the temp dir
         run(`yarn pack --filename "${tokenStandardTgzPath}"`, {
             cwd: tokenStandardDir,
         })
@@ -66,13 +66,13 @@ async function main() {
         run(`yarn add "${tgzPath}"`, { cwd: tmpDir })
 
         // Write test import file
-        const testFile = path.join(tmpDir, 'test-import.js')
+        const testFile = path.join(tmpDir, 'test-import.ts')
         fs.writeFileSync(
             testFile,
-            `try {\n  require('@canton-network/wallet-sdk');\n  console.log('Import successful.');\n} catch (e) {\n  console.error('Import failed:', e);\n  process.exit(1);\n}`
+            `import { WalletSDKImpl } from '@canton-network/wallet-sdk';\n  console.log('Import successful.' + WalletSDKImpl);`
         )
-        // run('yarn add node@latest', { cwd: tmpDir })
-        run('node test-import.js', { cwd: tmpDir })
+        run('yarn add typescript tsx', { cwd: tmpDir })
+        run('tsx test-import.ts', { cwd: tmpDir })
         ran = true
         console.log(success('Package and import test completed successfully.'))
     } finally {

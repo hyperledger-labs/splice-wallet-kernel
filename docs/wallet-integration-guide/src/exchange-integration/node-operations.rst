@@ -152,10 +152,55 @@ for more information.
 Rolling out Major Splice Upgrades
 ---------------------------------
 
+For major protocol changes, the global sychronizer undergoes a `Major
+Upgrade Procedure
+<https://docs.dev.sync.global/validator_operator/validator_major_upgrades.html>`_.
+The schedule for these upgrades is published by the `Super Validators
+<https://docs.google.com/document/d/1QhLL5bL0u8temBL86y957VbWDtZJhH9udH-_C7nBlvc/edit?tab=t.0#heading=h.ripdn5ydglli>`_
+and also announced in the ``#validator-operations`` slack channel.
 
-Sketch:
+As part of this procedure, the old synchronizer is paused, all
+validator operators create an export of the state of their validator,
+and deploy a new validator connected to the new synchronizer and
+import their state again. For a more detailed overview, refer to the
+`Splice docs <https://docs.dev.sync.global/validator_operator/validator_major_upgrades.html>`__.
 
-* See splice docs for context: https://docs.dev.sync.global/validator_operator/validator_major_upgrades.html
-* like backup and restore above, but with a hard resynchronization to restart from offset ``0``
-* determine the offset as of which the ACS export for the hard migration is taken, and ensure that
-  your Tx Ingestion has ingested that before resynchronizing to the newly deployed validator node
+The procedure requires some experience to get it right, so it is highly
+recommended to run nodes on DevNet and TestNet so you can practice the
+procedure before you encounter it on MainNet.
+
+From an integration perspective, there are a few things to keep in mind:
+
+1. A major upgrade only preserves the active contracts but not the
+   update history. In particular, you will not be able to get
+   transactions from before the major upgrade on the update service on
+   the Ledger API of the newly deployed validator node.
+2. Offsets on the upgraded validator node start from ``0`` again.
+3. The update history will include special import transactions for the
+   contracts imported from the old synchronizer.
+
+We recommend to handle the upgrade as follows:
+
+1. Wait for the synchronizer to be paused and your node to have
+   written the migration dump as described in the `Splice docs
+   <https://docs.dev.sync.global/validator_operator/validator_major_upgrades.html#catching-up-before-the-migration>`__.
+2. Open the migration dump and extract the ``acs_timestamp`` from it, e.g., using ``jq .acs_timestamp < /domain-upgrade-dump/domain_migration_dump.json``.
+   This is the timestamp at which the synchronizer was paused.
+3. Wait for your Tx History Ingestion to have caught up to record time
+   ``acs_timestamp`` or higher. Note that you must consume offset
+   checkpoints to guarantee this as otherwise you might not have a
+   transaction visible to your node at exactly ``acs_timestamp`` and
+   there can be no Daml transactions with a ``record time >=
+   acs_timestamp`` but you are guaranteed to get at least one offset
+   checkpoint with a higher record time.
+
+   .. TODO:: Explain offset checkpoints https://github.com/hyperledger-labs/splice-wallet-kernel/issues/421
+4. Upgrade your validator and connect it to the new synchronizer following the
+   `Splice docs <https://docs.dev.sync.global/validator_operator/validator_major_upgrades.html#deploying-the-validator-app-and-participant-docker-compose>`__.
+5. Resume your Tx History Ingestion from offset ``0``.
+6. Ignore transactions with record time
+   ``0001-01-01T00:00:00.000000Z``. These are the special import
+   transactions for contracts imported from the old synchronizer so
+   you have already processed them on the old synchronizer. Note that you can reuse the :ref:`infrastructure <validator_backup_restore>` used to ignore duplicate transactions after a
+   backup restore to ignore the transactions here.
+7. After the initial import transactions, continue ingestion as usual.
