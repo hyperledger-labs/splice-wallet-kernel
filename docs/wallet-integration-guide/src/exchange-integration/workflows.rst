@@ -560,7 +560,7 @@ You can parse such transactions using the `token standard history parser <https:
 2. Look for all ``CreatedEvents`` of the ``TransferInstruction`` interface with ``"receiver": "<treasury-party>"``. Each of these represents a deposit offer that can be accepted or rejected.
    In the example this is only one event with node id ``0``. Extract the ``instrument``, the ``amount`` and the ``splice.lfdecentralizedtrust.org/reason`` field from the ``interfaceView`` and the contract id of the ``TransferInstruction``. Note that one transaction can contain multiple deposits including mixing 1 and 2-step deposits in the same transaction.
 
-After accepting the deposit offer through your automation, you can Tx History Ingestion can then observe and process acceptance. An example of such a transaction can be seen below.
+After accepting the deposit offer through your automation, Tx History Ingestion can then observe and process acceptance. An example of such a transaction can be seen below.
 
 .. literalinclude:: transfer-instruction-accept.json
     :language: json
