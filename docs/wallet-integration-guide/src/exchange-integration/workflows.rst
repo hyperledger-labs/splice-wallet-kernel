@@ -25,11 +25,6 @@ The workflows below are grouped into two milestones.
 
 Further extensions of these two MVPs to address Day-2 requirements are explored in :ref:`integration-extensions`.
 
-.. important::
-
-  The descriptions of the workflows below will be simplified as the wallet SDK
-  is extended.  The workflows reflect what currently exists and will be updated as the specific SDK functions are added.
-
   .. todo:: add these functions. potentially using sphinx-tabs to allow switching between SDK function view and higher-level description
 
 .. _mvp-for-cc:

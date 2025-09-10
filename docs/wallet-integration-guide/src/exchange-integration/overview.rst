@@ -6,20 +6,6 @@ Overview
 This guide aims to help you integrate your exchange with Canton
 for the purpose of trading Canton Coin (CC) and Canton Network (CN) tokens.
 
-What is the status of this guide?
----------------------------------
-
-The guide is under active development with new content being added daily.
-Here are some things you can do with it in its current state:
-
-* Review the :ref:`recommended architecture <integration-architecture>` and compare it to your existing
-  integration architecture for UTXO-based chains.
-* Understand how deposits and withdrawals work by reading the :ref:`integration-workflows` section.
-* Get a feel for the overall integration project
-  by browsing the :ref:`table of contents <exchange-integration>`
-  and the sketches of the incomplete sections.
-
-
 What to develop in what order?
 ------------------------------
 
