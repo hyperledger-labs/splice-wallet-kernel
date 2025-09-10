@@ -52,14 +52,14 @@ const synchronizers = await sdk.userLedger?.listSynchronizers()
 
 const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
 
-await sdk.userLedger
-    ?.listWallets()
-    .then((wallets) => {
-        logger.info(wallets, 'Wallets:')
-    })
-    .catch((error) => {
-        logger.error({ error }, 'Error listing wallets')
-    })
+// await sdk.userLedger
+//     ?.listWallets()
+//     .then((wallets) => {
+//         logger.info(wallets, 'Wallets:')
+//     })
+//     .catch((error) => {
+//         logger.error({ error }, 'Error listing wallets')
+//     })
 
 sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 

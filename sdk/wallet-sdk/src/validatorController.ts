@@ -62,6 +62,8 @@ export class ValidatorController {
     }
 
     /**
+     * @deprecated
+     * Use the ledgerController.createTransferPreapprovalCommand() and ledgerController.prepareSignAndExecuteTransaction() instead
      * Create the ExternalPartySetupProposal contract as the validator operator
      * @param partyId
      * returns contractId used in prepareExternalPartyProposal
@@ -76,6 +78,8 @@ export class ValidatorController {
     }
 
     /**
+     * @deprecated
+     * Use the ledgerController.createTransferPreapprovalCommand() and ledgerController.prepareSignAndExecuteTransaction() instead
      * Given a contract id of an ExternalPartySetupProposal, prepare the transaction
      * to accept it such that it can be signed externally
      * @param contractId contract id of an ExternalPartySetupProposal
@@ -91,6 +95,8 @@ export class ValidatorController {
     }
 
     /**
+     * @deprecated
+     * Use the ledgerController.createTransferPreapprovalCommand() and ledgerController.prepareSignAndExecuteTransaction() instead
      * Submit a transaction prepared using prepareExternalPartyProposal
      * together with its signature
      * @param publicKey hex-encoded public key
@@ -117,6 +123,7 @@ export class ValidatorController {
     }
 
     /**
+     * @deprecated Use the ledgerController.createTransferPreapprovalCommand() and ledgerController.prepareSignAndExecuteTransaction() instead
      * Creates an ExternalpartySetupProposal contract as validator operator
      * Prepares and submits the transaction so that the party can
      * Auto accept transfers
