@@ -151,7 +151,7 @@ Note that you need to adjust the ``auth-token``, ``update-id`` and ``treasury-pa
 
 You can parse such transactions using the `token standard history parser <https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/core/ledger-client/src/txparse/parser.ts`_ provided in the wallet SDK to extract the deposit amount, account and holding contract ids. If you prefer implementing your own implementation, you can parse this as follows:
 
-1. Go over the list of events that you see in the transaction.
+1. Go over the list of events ordered by ``nodeId`` that you see in the transaction.
 2. For each exercised event, check the exercise result. If it has a
    field called ```meta`` with a
    ``"splice.lfdecentralizedtrust.org/tx-kind": "transfer"`` field you
