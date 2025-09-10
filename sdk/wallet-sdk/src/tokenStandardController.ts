@@ -184,6 +184,7 @@ export class TokenStandardController {
             instrumentId: string
             instrumentAdmin: string
         },
+        memo?: string,
         meta?: Record<string, never>
     ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
         try {
@@ -194,6 +195,7 @@ export class TokenStandardController {
                 instrument.instrumentAdmin,
                 instrument.instrumentId,
                 this.transferFactoryRegistryUrl,
+                memo,
                 meta
             )
         } catch (error) {

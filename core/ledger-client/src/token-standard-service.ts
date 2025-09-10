@@ -24,6 +24,8 @@ import {
 import type { PrettyTransactions, Transaction } from './txparse/types.js'
 import { Types } from './ledger-client.js'
 
+const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
+
 type ExerciseCommand = Types['ExerciseCommand']
 type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
@@ -249,6 +251,7 @@ export class TokenStandardService {
         instrumentAdmin: string, // TODO (#907): replace with registry call
         instrumentId: string,
         transferFactoryRegistryUrl: string,
+        memo?: string,
         meta?: Record<string, never>
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
@@ -296,7 +299,7 @@ export class TokenStandardService {
                     requestedAt: now.toISOString(),
                     executeBefore: tomorrow.toISOString(),
                     inputHoldingCids,
-                    meta: { values: meta || {} },
+                    meta: { values: { [MEMO_KEY]: memo || '', ...meta } },
                 },
                 extraArgs: {
                     context: { values: {} },
