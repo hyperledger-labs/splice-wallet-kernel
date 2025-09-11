@@ -18,7 +18,7 @@ structure and parsing strategy.
 1-Step Transfers
 ~~~~~~~~~~~~~~~~
 
-To understand the structure of a 1 step transfer, let's look at an example deposit
+To understand the structure of a 1-step transfer, let's look at an example deposit
  as seen through the `JSON Ledger API <https://docs.digitalasset.com/build/3.3/tutorials/json-api/canton_and_the_json_ledger_api.html>`_.
 
 In this case, we query a single transaction. The format is identical to the transaction you will get when streaming transactions through ``/v2/updates/flats`` and you can also use the same filter.
@@ -118,7 +118,9 @@ essentially the same transaction but sender and receiver are
 swapped. For a withdrawal, the sender, i.e. the treasury party for an
 exchange, will also see the ``TransferFactory_Transfer`` choice as a
 parent and you can extract the amount and reason from that instead of
-looking for the ``meta`` field in exercise results. Note however, that for Canton Coin
+looking for the ``meta`` field in exercise results. 
+
+Note however, that for Canton Coin
 the ``amount`` in the ``TransferFactory_Transfer`` argument will be
 higher than the difference of holdings archived and created for the
 treasury party due to Canton Coin usage fees. Once the `CIP for CC fee removal
@@ -205,7 +207,9 @@ Differences between Multi-Step Deposits and Withdrawals
 
 The main difference is similar as for 1-step transfers that the sender
 that creates the withdrawal offer, i.e., the treasury party sees a
-``TransferFactory_Transfer``. For Canton Coin, both the creation of
+``TransferFactory_Transfer``. 
+
+For Canton Coin, both the creation of
 the ``TransferInstruction`` as well as the acceptance currently charge
 fees so the amount specified in the transfer is smaller than the holdings change of the treasury party.
 Once the `CIP for CC fee removal
