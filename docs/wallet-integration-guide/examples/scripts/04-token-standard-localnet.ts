@@ -109,7 +109,7 @@ const [transferCommand, disclosedContracts2] =
             instrumentId: 'Amulet',
             instrumentAdmin: instrumentAdminPartyId,
         },
-        {}
+        'memo-ref'
     )
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
