@@ -19,8 +19,8 @@ resume processing transactions from that point on after a crash or
 restart.
 
 Offset checkpoints are in particular required around :ref:`Major
-Upgrades <hard-synchronizer-migration>` where there is no Daml
-transaction for an extended period of time but you want to ensure that
+Splice Upgrades <hard-synchronizer-migration>` where there is no Daml
+transaction for an extended period of time, but you want to ensure that
 your Tx History Ingestion advances beyond a particular record time.
 
 Transaction Parsing
