@@ -9,5 +9,5 @@ poetry install
 Run this to start the docs server:
 
 ```sh
-poetry run sphinx-autobuild -c . src build
+poetry run sphinx-autobuild -c . src build -W
 ```

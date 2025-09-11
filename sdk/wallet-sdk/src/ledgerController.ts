@@ -253,6 +253,33 @@ export class LedgerController {
     }
 
     /**
+     * This creates a TransferPreapprovalCommand
+     * The validator auto accepts when the provider is the validator operatory party
+     * And this allows us to auto accept incoming transfer for the receiver party
+     * @param validatorOperatorParty operator party retrieved through the getValidatorUser call
+     * @param receiverParty party for which the auto accept is created for
+     * @param dsoParty Party that the sender expects to represent the DSO party of the AmuletRules contract they are calling
+     */
+
+    createTransferPreapprovalCommand(
+        validatorOperatorParty: string,
+        receiverParty: string,
+        dsoParty: string
+    ) {
+        return {
+            CreateCommand: {
+                templateId:
+                    '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
+                createArguments: {
+                    provider: validatorOperatorParty,
+                    receiver: receiverParty,
+                    expectedDso: dsoParty,
+                },
+            },
+        }
+    }
+
+    /**
      * Retrieves active contracts with optional filtering by template IDs and parties.
      * @param options Optional parameters for filtering:
      *  - offset: The ledger offset to query active contracts at.

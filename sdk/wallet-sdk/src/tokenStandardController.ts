@@ -184,7 +184,8 @@ export class TokenStandardController {
             instrumentId: string
             instrumentAdmin: string
         },
-        meta?: Record<string, never>
+        memo?: string,
+        meta?: Record<string, unknown>
     ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
         try {
             return await this.service.createTransfer(
@@ -194,6 +195,7 @@ export class TokenStandardController {
                 instrument.instrumentAdmin,
                 instrument.instrumentId,
                 this.transferFactoryRegistryUrl,
+                memo,
                 meta
             )
         } catch (error) {

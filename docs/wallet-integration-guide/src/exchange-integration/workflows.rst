@@ -1,7 +1,14 @@
 .. _integration-workflows:
 
+
 Integration Workflows
 =====================
+
+.. contents::
+   :local:
+   :depth: 2
+   :backlinks: none
+
 
 Overview
 --------
@@ -18,11 +25,6 @@ The workflows below are grouped into two milestones.
   enable additional asynchronous checks on transfers by the token admin (e.g. KYC/AML checks).
 
 Further extensions of these two MVPs to address Day-2 requirements are explored in :ref:`integration-extensions`.
-
-.. important::
-
-  The descriptions of the workflows below will be simplified as the wallet SDK
-  is extended.  The workflows reflect what currently exists and will be updated as the specific SDK functions are added.
 
   .. todo:: add these functions. potentially using sphinx-tabs to allow switching between SDK function view and higher-level description
 
@@ -111,6 +113,8 @@ Example flow:
 4. Customer observes the successful deposit in their Exchange UI,
    whose data is retrieved from the Canton Integration DB via the Exchange Internal Systems.
 
+.. _one-step-transfer-parsing:
+
 
 .. _one-step-withdrawal-workflow:
 
@@ -152,7 +156,9 @@ Example flow:
    b. Withdrawal automation checks that transfer is indeed a 1-step
       transfer by checking that ``transfer_kind`` = ``"direct"`` in the response from
       Canton Coin Scan. If that is not the case, then it marks the withdrawal
-      as failed in the Canton Integration DB and stops processing.
+      as failed in the Canton Integration DB with reason
+      "lack of CC transfer-preapproval for ``customerParty``"
+      and stops processing.
    c. Withdrawal Automation prepares, signs, and submits the command to
       exercise the ``TransferFactory_Transfer`` choice with the
       exclusive upper-bound for the record time of the commit set to
@@ -189,6 +195,7 @@ Example flow:
         ``t1`` and offset ``off1``.
       * The successful completion of withdrawal ``wid123`` by the
         transaction with update-id ``upd567`` at record time ``t1``.
+      * The deduction of 100 CC from the Customer's trading account.
       * The archival of the CC ``Holding`` UTXOs ``coids``.
       * The new CC ``Holding`` UTXO ``coid789`` for the change returned
         after funding the CC transfer.
@@ -413,7 +420,6 @@ Ingesting deposit offers with unknown deposit accounts is still valuable
 to allow the exchange's support team to handle customer inquiries about
 these transfers.
 
-
 .. _multi-step-withdrawal-workflow:
 
 Multi-Step Withdrawal Workflow
@@ -460,7 +466,7 @@ We list them in full for completeness.
        ``trecTgt``. It also sets the value for key
        ``splice.lfdecentralizedtrust.org/reason`` in the ``Transfer`` metadata to ``wid123``;
        and it sets the upper bound for the customer to accept the transfer far
-       enough in the future (e.g. 30 days).
+       enough in the future, so that the customer has sufficient time to act (e.g. 1 year).
     d. The resulting transaction gets committed across the Customer,
        Exchange, and Acme validator nodes. It is assigned an
        update-id ``upd567`` and a record time ``t1`` < ``trecTgt`` by
@@ -489,7 +495,8 @@ We list them in full for completeness.
        * The withdrawal-id ``wid123`` from the
          ``splice.lfdecentralizedtrust.org/reason`` metadata value.
        * The new locked AcmeToken ``Holding`` UTXO ``coid345`` owned by the
-         ``treasuryParty``.
+         ``treasuryParty`` and locked to the withdrawal ``wid123``
+         of 100 AcmeToken to ``customerParty``.
        * The new  AcmeToken ``Holding`` UTXO ``coid789`` owned by the
          ``treasuryParty``
        * The ``TransferInstruction`` UTXO ``coid567`` representing the

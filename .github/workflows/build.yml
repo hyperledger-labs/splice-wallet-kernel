@@ -52,6 +52,9 @@ jobs:
             - name: Run unit tests
               run: yarn test:all
 
+            - name: Validate wallet SDK package build
+              run: yarn script:validate:package
+
             - name: Download Canton
               run: yarn script:fetch:canton
 
@@ -149,4 +152,4 @@ jobs:
 
             - name: Build docs
               working-directory: docs/wallet-integration-guide
-              run: poetry run sphinx-build -c . src build
+              run: poetry run sphinx-build -c . src build --fail-on-warning
