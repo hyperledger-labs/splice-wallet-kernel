@@ -7,6 +7,7 @@ Transaction History Ingestion Details
 
 Offset Checkpoints
 ^^^^^^^^^^^^^^^^^^
+
 When consuming transactions through the update service at
 ``/v2/updates`` you will not just receive transactions but you will
 also receive `offset checkpoints
@@ -15,8 +16,7 @@ offset checkpoint contains an offset and the most recent observed
 record time for each synchronizer. Your Tx History Ingestion should
 use that to update the last processed offset and record time (in
 addition to updating those after each transaction) so that it will
-resume processing transactions from that point on after a crash or
-restart.
+resume processing transactions from that point on after a :ref:`crash or restart <crash-fault-tolerance>`.
 
 Offset checkpoints are in particular required around :ref:`Major
 Splice Upgrades <hard-synchronizer-migration>` where there is no Daml
