@@ -10,6 +10,7 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
 
 * Range filter for `listHoldingTransactions(afterOffset?: string,beforeOffset?: string)`
 * Transfer pre-approval support:
+
 .. code-block:: javascript
 
     const sdk = new WalletSDKImpl().configure({
@@ -28,6 +29,7 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
     await sdk.validator?.externalPartyPreApprovalSetup(keyPairReceiver.privateKey)
 
 * Support added for 2-step transfers (propose / accept)
+
 .. code-block:: javascript
 
     const [acceptTransferCommand, disclosedContracts3] =
@@ -37,6 +39,7 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
         )
 
 * ``listHoldingsUtxo`` has been extended to only ``nonLocked`` UTXOs
+
 .. code-block:: javascript
 
     //new optional parameter, default is true (to be backwards compatible

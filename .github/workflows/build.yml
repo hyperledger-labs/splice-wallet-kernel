@@ -152,4 +152,4 @@ jobs:
 
             - name: Build docs
               working-directory: docs/wallet-integration-guide
-              run: poetry run sphinx-build -c . src build
+              run: poetry run sphinx-build -c . src build --fail-on-warning
