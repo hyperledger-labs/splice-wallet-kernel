@@ -249,14 +249,9 @@ We recommend to handle the upgrade as follows:
 2. Open the migration dump and extract the ``acs_timestamp`` from it, e.g., using ``jq .acs_timestamp < /domain-upgrade-dump/domain_migration_dump.json``.
    This is the timestamp at which the synchronizer was paused.
 3. Wait for your Tx History Ingestion to have caught up to record time
-   ``acs_timestamp`` or higher. Note that you must consume offset
-   checkpoints to guarantee this as otherwise you might not have a
-   transaction visible to your node at exactly ``acs_timestamp`` and
-   there can be no Daml transactions with a ``record time >=
-   acs_timestamp`` but you are guaranteed to get at least one offset
-   checkpoint with a higher record time.
+   ``acs_timestamp`` or higher. Note that you must consume :ref:`<offset_checkpoints>`
+   to guarantee that your Tx History Ingestion advances past ``acs_timestamp``.
 
-   .. TODO:: Explain offset checkpoints https://github.com/hyperledger-labs/splice-wallet-kernel/issues/421
 4. Upgrade your validator and connect it to the new synchronizer following the
    `Splice docs <https://docs.dev.sync.global/validator_operator/validator_major_upgrades.html#deploying-the-validator-app-and-participant-docker-compose>`__.
 5. Resume your Tx History Ingestion from offset ``0``.
