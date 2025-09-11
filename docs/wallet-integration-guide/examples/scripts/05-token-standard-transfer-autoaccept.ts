@@ -52,14 +52,14 @@ const synchronizers = await sdk.userLedger?.listSynchronizers()
 
 const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
 
-await sdk.userLedger
-    ?.listWallets()
-    .then((wallets) => {
-        logger.info(wallets, 'Wallets:')
-    })
-    .catch((error) => {
-        logger.error({ error }, 'Error listing wallets')
-    })
+// await sdk.userLedger
+//     ?.listWallets()
+//     .then((wallets) => {
+//         logger.info(wallets, 'Wallets:')
+//     })
+//     .catch((error) => {
+//         logger.error({ error }, 'Error listing wallets')
+//     })
 
 sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 
@@ -94,39 +94,16 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
     v4()
 )
 
-logger.info('transfer pre approval proposal is created')
-
-const wait = (msecDuration: number): Promise<void> => {
-    return new Promise((resolve) => setTimeout(resolve, msecDuration))
-}
-const retry = async <T>(
-    workerFn: { (): Promise<T> },
-    retries = 3,
-    delay = 500
-): Promise<T> => {
-    try {
-        return await workerFn()
-    } catch (e) {
-        if (retries > 1) {
-            await wait(delay)
-            return await retry(workerFn, retries - 1, delay * 2)
-        } else {
-            throw e
-        }
-    }
-}
-
-const checkPreApproval = async () => {
-    return new Promise((resolve, reject) => {
-        if (sdk.userLedger?.checkPreApprovalForParty()) resolve(true)
-        else reject('Transfer PreApprovalProposal not accepted')
-    })
-}
-
-const preApprovalResult = await retry(checkPreApproval).catch((e) =>
-    logger.error(e)
+logger.info(
+    'transfer pre approval proposal is created...Waiting for validator to auto accept'
 )
-logger.info(preApprovalResult, 'PreApproval status')
+
+await sdk.userLedger
+    ?.checkPreApprovalWithRetries(3, 500)
+    .then((result) => {
+        logger.info(result, 'PreApproval Result')
+    })
+    .catch((e) => logger.error(e))
 
 sdk.userLedger?.setPartyId(sender?.partyId!)
 

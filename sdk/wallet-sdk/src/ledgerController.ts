@@ -280,7 +280,7 @@ export class LedgerController {
     }
 
     //Queries ACS for TransferPreapproval for party
-    async checkPreApprovalForParty(): Promise<boolean> {
+    async checkPreApprovalForParty() {
         const legerEndOffset = await this.ledgerEnd()
 
         const opt = {
@@ -293,9 +293,30 @@ export class LedgerController {
         }
 
         const preApproval = await this.activeContracts(opt)
-        if (preApproval.length === undefined || preApproval.length < 1)
-            return false
-        else return true
+
+        return new Promise((resolve, reject) => {
+            if (preApproval.length === undefined || preApproval.length < 1)
+                reject('Transfer PreApprovalProposal not accepted')
+            else resolve('Transfer PreApprovalAccepted')
+        })
+    }
+
+    async checkPreApprovalWithRetries(retries: number, delay: number) {
+        for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+                await new Promise((res) => setTimeout(res, delay))
+                const result = await this.checkPreApprovalForParty()
+                return result
+            } catch (error) {
+                if (attempt < retries) {
+                    this.logger.debug(error)
+                    await this.checkPreApprovalWithRetries(
+                        retries - 1,
+                        delay * 2
+                    )
+                }
+            }
+        }
     }
 
     /**
