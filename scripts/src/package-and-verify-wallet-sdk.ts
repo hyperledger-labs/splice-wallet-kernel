@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { execSync } from 'child_process'
-import * as fs from 'fs'
-import * as path from 'path'
-import os from 'os'
-import { getRepoRoot, success, error } from './utils.js'
-import { diffChars } from 'diff'
 import 'colors'
+import { diffChars } from 'diff'
+import * as fs from 'fs'
+import os from 'os'
+import * as path from 'path'
+import { error, getRepoRoot, success } from './utils.js'
 
 function run(cmd: string, opts: { cwd?: string } = {}) {
     console.log(`$ ${cmd}`)
@@ -100,19 +100,61 @@ async function main() {
 
     run('yarn install', { cwd: repoRoot })
 
+    const packages = [
+        { '@canton-network/core-ledger-proto': 'core/ledger-proto' },
+        { '@canton-network/core-rpc-generator': 'core/rpc-generator' },
+        { '@canton-network/core-tx-visualizer': 'core/tx-visualizer' },
+        { '@canton-network/core-types': 'core/types' },
+        { '@canton-network/core-splice-client': 'core/splice-client' },
+        { '@canton-network/core-token-standard': 'core/token-standard' },
+        { '@canton-network/core-ledger-client': 'core/ledger-client' },
+        { '@canton-network/core-wallet-auth': 'core/wallet-auth' },
+        { '@canton-network/core-signing-lib': 'core/signing-lib' },
+        {
+            '@canton-network/core-signing-fireblocks':
+                'core/signing-fireblocks',
+        },
+        { '@canton-network/core-signing-internal': 'core/signing-internal' },
+        {
+            '@canton-network/core-signing-participant':
+                'core/signing-participant',
+        },
+        {
+            '@canton-network/core-wallet-dapp-rpc-client':
+                'core/wallet-dapp-rpc-client',
+        },
+        { '@canton-network/core-wallet-store': 'core/wallet-store' },
+        {
+            '@canton-network/core-wallet-store-inmemory':
+                'core/wallet-store-inmemory',
+        },
+        { '@canton-network/core-wallet-store-sql': 'core/wallet-store-sql' },
+        {
+            '@canton-network/core-wallet-ui-components':
+                'core/wallet-ui-components',
+        },
+        { '@canton-network/core-splice-provider': 'core/splice-provider' },
+        {
+            '@canton-network/core-wallet-user-rpc-client':
+                'core/wallet-user-rpc-client',
+        },
+    ]
+
+    const paths = {} as Record<string, string>
+    for (const pkg of packages) {
+        const [pkgName, pkgDir] = Object.entries(pkg)[0]
+        const pkgPath = await buildPackage(pkgName, pkgDir, tmpDir)
+
+        paths[pkgName] = `file:${pkgPath}`
+        updateJsonResolutions(tmpDir, paths)
+    }
+
     await buildPackage('wallet-sdk', 'sdk/wallet-sdk', tmpDir)
-    const coreTokenStandardPkgPath = await buildPackage(
-        'core-token-standard',
-        'core/token-standard',
-        tmpDir
-    )
 
     let ran = false
     try {
         // Resolve token-standard to the packed tgz
-        updateJsonResolutions(tmpDir, {
-            '@canton-network/core-token-standard': `file:${coreTokenStandardPkgPath}`,
-        })
+        updateJsonResolutions(tmpDir, paths)
 
         runAssert(
             'tsx test-import.ts',
