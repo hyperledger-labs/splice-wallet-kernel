@@ -249,7 +249,7 @@ We recommend to handle the upgrade as follows:
 2. Open the migration dump and extract the ``acs_timestamp`` from it, e.g., using ``jq .acs_timestamp < /domain-upgrade-dump/domain_migration_dump.json``.
    This is the timestamp at which the synchronizer was paused.
 3. Wait for your Tx History Ingestion to have caught up to record time
-   ``acs_timestamp`` or higher. Note that you must consume :ref:`<offset_checkpoints>`
+   ``acs_timestamp`` or higher. Note that you must consume :ref:`offset checkpoints <offset-checkpoints>`
    to guarantee that your Tx History Ingestion advances past ``acs_timestamp``.
 
 4. Upgrade your validator and connect it to the new synchronizer following the

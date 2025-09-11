@@ -3,7 +3,7 @@
 Transaction History Ingestion Details
 =====================================
 
-.. _offset_checkpoints:
+.. _offset-checkpoints:
 
 Offset Checkpoints
 ^^^^^^^^^^^^^^^^^^
