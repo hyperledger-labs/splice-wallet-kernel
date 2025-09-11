@@ -279,6 +279,25 @@ export class LedgerController {
         }
     }
 
+    //Queries ACS for TransferPreapproval for party
+    async checkPreApprovalForParty(): Promise<boolean> {
+        const legerEndOffset = await this.ledgerEnd()
+
+        const opt = {
+            offset: legerEndOffset.offset,
+            templateIds: [
+                '#splice-amulet:Splice.AmuletRules:TransferPreapproval',
+            ],
+            parties: [this.partyId],
+            filterByParty: true,
+        }
+
+        const preApproval = await this.activeContracts(opt)
+        if (preApproval.length === undefined || preApproval.length < 1)
+            return false
+        else return true
+    }
+
     /**
      * Retrieves active contracts with optional filtering by template IDs and parties.
      * @param options Optional parameters for filtering:

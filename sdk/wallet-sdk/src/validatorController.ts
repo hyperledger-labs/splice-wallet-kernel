@@ -152,7 +152,9 @@ export class ValidatorController {
         )
     }
 
-    /**  Lookup a TransferPreapproval by the receiver party
+    /**
+     * @deprecated use ledgerController.checkPreApprovalForParty() instead
+     *  Lookup a TransferPreapproval by the receiver party
      * @param scanUrl url to access the scan proxy
      * @param partyId receiver party id
      * @returns A promise that resolves to an array of
