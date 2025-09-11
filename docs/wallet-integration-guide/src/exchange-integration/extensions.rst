@@ -59,16 +59,22 @@ to tag withdrawal transfers with a featured application activity marker.
 
 2. Upload that ``splice-util-featured-app-proxies.dar`` file to your Exchange Validator Node.
 
-3. Add a step to the :ref:`treasury party setup <treasury-party-setup>` to also create a ``DelegateProxy`` contract with
+3. Change the :ref:`Ledger API user setup <setup-ledger-api-users>`
+   such that the
+
+   a. the user used by Withdrawal Automation also has the ``readAs(exchangeParty)`` right
+
+   b. the user that performs the :ref:`exchange parties setup <exchange-parties-setup>`
+      also has the ``canActAs(exchangeParty)`` right.
+
+4. Add a step to the :ref:`treasury party setup <treasury-party-setup>` to also create a ``DelegateProxy`` contract with
    ``provider = exchangeParty`` and ``delegate = treasuryParty``.
 
    Use the ``/v2/commands/submit-and-wait``
    `endpoint <https://github.com/digital-asset/canton/blob/97b837d7b7e9a499963cba1d39a017648c46e8d7/community/ledger/ledger-json-api/src/test/resources/json-api-docs/openapi.yaml#L6>`__
    submit the ``create`` command for the ``DelegateProxy`` template.
-   You will need to `authenticate as a participant user <https://docs.digitalasset.com/build/3.3/sdlc-howtos/applications/secure/authorization.html>`__
-   with ``ActAs(exchangeParty)`` rights to submit this command.
 
-4. Change the initialization code of the Withdrawal Automation to:
+5. Change the initialization code of the Withdrawal Automation to:
 
    a. query the active contracts of the ``exchangeParty`` for the
       ``DelegateProxy`` contract created in the previous step and
@@ -79,7 +85,7 @@ to tag withdrawal transfers with a featured application activity marker.
       and its `create-event-blob <https://docs.digitalasset.com/build/3.3/sdlc-howtos/applications/develop/explicit-contract-disclosure.html>`__
       in ``featuredAppRightEventBlob``.
 
-5. Change the Withdrawal Automation code that initiates a withdrawal transfer to
+6. Change the Withdrawal Automation code that initiates a withdrawal transfer to
    call the ``DelegateProxy_TransferFactory_Transfer`` choice
    instead of the ``TransferFactory_Transfer`` choice, as shown in
    `this test case <https://github.com/hyperledger-labs/splice/blob/5870d2d8b0c6b9dfcf8afe11ab0685e2ee58342f/daml/splice-util-featured-app-proxies-test/daml/Splice/Scripts/TestFeaturedDepositsAndWithdrawals.daml#L204-L215>`__.
@@ -99,9 +105,9 @@ as it descends into the ``TransferFactory_Transfer`` choice that is called by th
 Earning App Rewards for Deposits
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Steps 1 to 4 are analogous to the steps described in the :ref:`withdrawal-app-rewards` section above.
+Steps 1 to 5 are analogous to the steps described in the :ref:`withdrawal-app-rewards` section above.
 
-In Step 5, change the Deposit Automation code that accepts a deposit offer to
+In Step 6, change the Deposit Automation code that accepts a deposit offer to
 call the ``DelegateProxy_TransferInstruction_Accept`` choice
 instead of the ``TransferInstruction_Accept`` choice, as shown in
 `this test case <https://github.com/hyperledger-labs/splice/blob/5870d2d8b0c6b9dfcf8afe11ab0685e2ee58342f/daml/splice-util-featured-app-proxies-test/daml/Splice/Scripts/TestFeaturedDepositsAndWithdrawals.daml#L147-L161>`__.

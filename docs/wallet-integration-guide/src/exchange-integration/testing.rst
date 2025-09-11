@@ -1,3 +1,6 @@
+
+.. _exchange-integration-testing:
+
 Integration Testing
 ===================
 

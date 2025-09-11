@@ -5,16 +5,18 @@
 
 .. #TODO: copy of https://raw.githubusercontent.com/hyperledger-labs/splice/3c0770e648b21a48ef8dde202ef27065592f9422/docs/src/deployment/traffic.rst
 
+.. _tokenomics-and-rewards:
+
 Tokenomics and Rewards
 ======================
 
 CC Rewards
 ----------
 * The tokenomics operate on 10m “mining rounds”.
-* Every 10 minutes, different stakeholders of the network are rewarded with coupons which can be used to mint Canton Coin according to how much value they've brought to the network. 
+* Every 10 minutes, different stakeholders of the network are rewarded with coupons which can be used to mint Canton Coin according to how much value they've brought to the network.
 * Coupons are rewarded to the Validator admin party.
 * All rewards awarded to a node's local parties will be auto-minted by the node administrator party.
-* The validators automation is not able to mint the rewards for an external parties - the external party needs to delegate the ability for the validator 
+* The validators automation is not able to mint the rewards for an external parties - the external party needs to delegate the ability for the validator
 admin party to mint their rewards on their behalf or manually mint the rewards themselves each round they receive rewards.
 * All rewards and coupons are mintable the follow mining round
 * If rewards are not redeemed then they are lost*
