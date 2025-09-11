@@ -7,7 +7,7 @@ Validator Node Operations
 Reward Minting and Traffic Funding
 ----------------------------------
 
-As explained in :ref:`tokenomics-fees-and-rewards`,
+As explained in :ref:`tokenomics-and-rewards`,
 your validator node will need traffic to submit the transactions to execute withdrawals
 or accept multi-step deposits. As also explained in that section,
 the network provides rewards that can be used to fund traffic.
@@ -120,6 +120,58 @@ You can test the party setup on LocalNet or DevNet as follows:
    minted app rewards for this deposit.
    It takes 30', as activity recording and rewards minting happen in different
    phases of a minting round.
+
+
+.. _setup-ledger-api-users:
+
+Setup Ledger API Users
+-----------------------
+
+Clients need to
+`authenticate as a Ledger API user <https://docs.digitalasset.com/build/3.3/sdlc-howtos/applications/secure/authorization.html>`__
+to access the Ledger API of your Exchange Validator Node.
+You can manage Ledger API users and their rights using the
+``/v2/users/...``
+`endpoints of the Ledger API <https://github.com/digital-asset/canton/blob/97b837d7b7e9a499963cba1d39a017648c46e8d7/community/ledger/ledger-json-api/src/test/resources/json-api-docs/openapi.yaml#L1172>`__.
+
+You will need to authenticate as an existing user that has ``participant_admin`` rights
+to create additional users and grant rights.
+One option is to authenticate as the ``ledger-api-user`` that you
+`configured when setting up authentication for your validator node
+<https://docs.dev.sync.global/validator_operator/validator_helm.html#oidc-provider-requirements>`__.
+Another option is to
+`log-in to your Splice Wallet UI for the validator operatory party
+<https://docs.dev.sync.global/validator_operator/validator_helm.html#logging-into-the-wallet-ui>`__
+and use the JWT token used by the UI.
+
+We recommend that you setup one user per service that needs to access the Ledger API.
+This way you can easily manage permissions and access rights for each service independently.
+The `rights <https://docs.digitalasset.com/build/3.3/sdlc-howtos/applications/secure/authorization.html#access-tokens-and-rights>`__
+required by the integration components are as follows:
+
+.. list-table:: Required Ledger API User Rights
+   :header-rows: 1
+
+   * - Component
+     - Required Rights
+     - Purpose
+   * - Tx History Ingestion
+     - ``canReadAs(treasuryParty)``
+     - Read transactions and contracts for the ``treasuryParty``.
+   * - Withdrawal Automation
+     - ``canActAs(treasuryParty)``
+     - Prepare and execute transactions on behalf of the ``treasuryParty``.
+   * - Multi-Step Deposit Automation
+     - ``canActAs(treasuryParty)``
+     - Prepare and execute transactions on behalf of the ``treasuryParty``.
+   * - Automated :ref:`exchange parties setup <exchange-parties-setup>` for
+       :ref:`exchange-integration-testing`
+     - ``participant_admin`` and ``canActAs(treasuryParty)``
+     - Create parties and use the ``treasuryParty`` to create its ``TransferPreapprovalProposal``.
+       Hint: grant ``canActAs(treasuryParty)`` to the user doing the setup
+       after allocating the ``treasuryParty``.
+
+.. TODO(#452): update with CanExecuteAsAnyParty
 
 
 .. _dar-file-management:
