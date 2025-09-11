@@ -6,12 +6,6 @@ Integration Extensions
 This page describes the following additional features that you can consider adding to your integration,
 beyond the MVP described in the :ref:`exchange-integration-overview` section:
 
-.. contents::
-   :local:
-   :depth: 2
-   :backlinks: none
-
-
 Optimizing App Rewards
 ~~~~~~~~~~~~~~~~~~~~~~
 
