@@ -118,7 +118,7 @@ essentially the same transaction but sender and receiver are
 swapped. For a withdrawal, the sender, i.e. the treasury party for an
 exchange, will also see the ``TransferFactory_Transfer`` choice as a
 parent and you can extract the amount and reason from that instead of
-looking for the ``meta`` field in exercise results. 
+looking for the ``meta`` field in exercise results.
 
 Note however, that for Canton Coin
 the ``amount`` in the ``TransferFactory_Transfer`` argument will be
@@ -205,9 +205,9 @@ To parse this proceed as follows:
 Differences between Multi-Step Deposits and Withdrawals
 -------------------------------------------------------
 
-The main difference is similar as for 1-step transfers that the sender
+Analogously to 1-step transfers, the sender
 that creates the withdrawal offer, i.e., the treasury party sees a
-``TransferFactory_Transfer``. 
+``TransferFactory_Transfer`` exercise node and can extract amount and reason from that.
 
 For Canton Coin, both the creation of
 the ``TransferInstruction`` as well as the acceptance currently charge
