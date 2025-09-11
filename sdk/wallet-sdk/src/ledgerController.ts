@@ -301,7 +301,7 @@ export class LedgerController {
         })
     }
 
-    async checkPreApprovalWithRetries(retries: number, delay: number) {
+    async waitForPreApproval(retries: number, delay: number) {
         for (let attempt = 1; attempt <= retries; attempt++) {
             try {
                 await new Promise((res) => setTimeout(res, delay))
@@ -310,10 +310,7 @@ export class LedgerController {
             } catch (error) {
                 if (attempt < retries) {
                     this.logger.debug(error)
-                    await this.checkPreApprovalWithRetries(
-                        retries - 1,
-                        delay * 2
-                    )
+                    await this.waitForPreApproval(retries - 1, delay * 2)
                 }
             }
         }
