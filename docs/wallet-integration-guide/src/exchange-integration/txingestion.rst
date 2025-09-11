@@ -3,6 +3,26 @@
 Transaction History Ingestion Details
 =====================================
 
+.. _offset_checkpoints:
+
+Offset Checkpoints
+^^^^^^^^^^^^^^^^^^
+When consuming transactions through the update service at
+``/v2/updates`` you will not just receive transactions but you will
+also receive `offset checkpoints
+<https://docs.digitalasset.com/build/3.3/reference/lapi-proto-docs.html#com-daml-ledger-api-v2-offsetcheckpoint>`_. Each
+offset checkpoint contains an offset and the most recent observed
+record time for each synchronizer. Your Tx History Ingestion should
+use that to update the last processed offset and record time (in
+addition to updating those after each transaction) so that it will
+resume processing transactions from that point on after a crash or
+restart.
+
+Offset checkpoints are in particular required around :ref:`Major
+Upgrades <hard-synchronizer-migration>` where there is no Daml
+transaction for an extended period of time but you want to ensure that
+your Tx History Ingestion advances beyond a particular record time.
+
 Transaction Parsing
 ^^^^^^^^^^^^^^^^^^^
 

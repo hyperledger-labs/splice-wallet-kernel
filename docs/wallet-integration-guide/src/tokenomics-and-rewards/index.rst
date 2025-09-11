@@ -17,7 +17,7 @@ CC Rewards
 * Coupons are rewarded to the Validator admin party.
 * All rewards awarded to a node's local parties will be auto-minted by the node administrator party.
 * The validators automation is not able to mint the rewards for an external parties - the external party needs to delegate the ability for the validator
-admin party to mint their rewards on their behalf or manually mint the rewards themselves each round they receive rewards.
+  admin party to mint their rewards on their behalf or manually mint the rewards themselves each round they receive rewards.
 * All rewards and coupons are mintable the follow mining round
 * If rewards are not redeemed then they are lost*
 
@@ -46,18 +46,18 @@ Application Rewards and Featured Activity Markers
 **Application Rewards**
 * Transactions which include Canton Coin and featured application transactions earn application rewards.
 * The percentage of Canton Coin awarded to applications is significant and will grow over time.
-* The current amount of CC awarded to applications can be seen in the 'Canton Coin Reward Split By Role Over Time' chart `here <https://canton.thetie.io/>`_.
+* The current amount of CC awarded to applications can be seen in the 'Canton Coin Reward Split By Role Over Time' chart `here <https://canton.thetie.io/>`__.
 
 **Featured application activity markers**
 * Applications which generate valuable activity for the canton network, and have 'featured application' status can earn more application rewards.
-* By applying a ``FeaturedAppActivityMarker`` to a transaction and qualifying as a Featured Application (apply `here <https://sync.global/featured-app-request/>`_) then you recieve a higher proportion of the application rewards.
+* By applying a ``FeaturedAppActivityMarker`` to a transaction and qualifying as a Featured Application (apply `here <https://sync.global/featured-app-request/>`__) then you recieve a higher proportion of the application rewards.
 * A weighting is applied to each transaction in that Canton Coin minting round.
 * More weightings in a round equate to more application rewards.
 * Currently, featured apps receive many more rewards in Canton Coin than the average transaction costs in traffic fees.
 
 Gaining Application Rewards as a Wallet/Custodian/Exchange
 ----------------------------------------------------------
-* Request featured application status. Apply `here <https://sync.global/featured-app-request/>`_.
+* Request featured application status. Apply `here <https://sync.global/featured-app-request/>`__.
     * On DevNet you can self-feature through the wallet UI.
 
 **Enabling Pre-approval / 1-step Transfers**
@@ -68,6 +68,7 @@ Gaining Application Rewards as a Wallet/Custodian/Exchange
 * You can also mark transactions out of your wallet (that don't go to parties which have 1-step transfers enabled) with your party as the operator part for that transaction
 * It's anticipated that you will receive far more Canton Coin through rewards for pre-approval deposits and transfers than you pay in traffic fees, setting up pre-approvals and for creating parties.
 * Therefore:
+
   * You may not want to charge your users for traffic in the near term.
   * In the mid-to-long term the tokenomics may not support this model, so you may want to think about a charging strategy.
   * We still advise monitoring or even controlling the number of parties that a user can create so that you don't end up with users creating too many parties and therefore cost.
