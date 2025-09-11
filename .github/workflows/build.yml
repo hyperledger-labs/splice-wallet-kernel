@@ -61,7 +61,7 @@ jobs:
             - name: Start Canton
               run: yarn start:canton &
 
-            - run: yarn workspace @canton-network/clients-remote run start &
+            - run: DAPP_API_PORT=3008 yarn workspace @canton-network/clients-remote run start &
 
             - run: yarn workspace @canton-network/example run dev &
 
@@ -111,7 +111,7 @@ jobs:
               run: yarn workspace @canton-network/example run playwright install --with-deps
 
             - name: Run example e2e
-              run: yarn workspace @canton-network/example run playwright test
+              run: DAPP_API_PORT=3008 yarn workspace @canton-network/example run playwright test
 
             - uses: actions/upload-artifact@v4
               if: ${{ !cancelled() }}

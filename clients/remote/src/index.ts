@@ -16,9 +16,9 @@ import { ParticipantSigningDriver } from '@canton-network/core-signing-participa
 import { InternalSigningDriver } from '@canton-network/core-signing-internal'
 import { jwtAuthService } from './auth/jwt-auth-service.js'
 
-const dAppPort = 3000
-const userPort = 3001
-const webPort = 3002
+const dAppPort = Number(process.env.DAPP_API_PORT) || 3000
+const userPort = Number(process.env.USER_API_PORT) || 3001
+const webPort = Number(process.env.WEB_PORT) || 3002
 
 const logger = pino({ name: 'main', level: 'debug' })
 
