@@ -153,6 +153,7 @@ You can shard your treasury over multiple parties as follows:
    you can either rebalance the funds across multiple treasury parties
    or split the withdrawal into multiple smaller ones.
 
+.. _treasury-party-multi-hosting:
 
 Multi-Hosting the Treasury Party
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -250,6 +251,13 @@ updated threshold.
 
 Future versions of Canton will allow changing the confirming nodes without the need for setting up a new party.
 
+
+Using a KMS for Validator Node Keys
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See the `Splice docs for how to setup you validator node with keys stored in a KMS <https://docs.dev.sync.global/validator_operator/validator_security.html#using-an-external-kms-for-managing-participant-keys>`__.
+Consider doing so as an additional security hardening measure to
+protect the keys of the `confirming node(s) <treasury-party-multi-hosting>`__ of your ``treasuryParty``.
 
 
 Using the gRPC Ledger API
