@@ -10,6 +10,7 @@ import {
 import {
     getPublicKeyFromPrivate,
     signTransactionHash,
+    PrivateKey,
 } from '@canton-network/core-signing-lib'
 import { PartyId } from '@canton-network/core-ledger-client/src/ledger-api-utils'
 
@@ -21,8 +22,8 @@ export class ValidatorController {
     private logger = pino({ name: 'ValidatorController', level: 'info' })
     private validatorClient: ValidatorInternalClient
     private userId: string
-    private partyId: PartyId = 'empty::empty'
-    private synchronizerId: string = ''
+    private partyId: PartyId | undefined
+    private synchronizerId: PartyId | undefined
 
     /** Creates a new instance of the LedgerController.
      *
@@ -57,9 +58,31 @@ export class ValidatorController {
      * Sets the synchronizerId that the ValidatorController will use for requests.
      * @param synchronizerId
      */
-    setSynchronizerId(synchronizerId: string): ValidatorController {
+    setSynchronizerId(synchronizerId: PartyId): ValidatorController {
         this.synchronizerId = synchronizerId
         return this
+    }
+
+    /**
+     *  Gets the party Id or throws an error if it has not been set yet
+     *  @returns partyId
+     */
+    getPartyId(): PartyId {
+        if (!this.partyId)
+            throw new Error('PartyId is not defined, called setPartyId')
+        else return this.partyId
+    }
+
+    /**
+     *  Gets the synchronizer Id or throws an error if it has not been set yet
+     *  @returns partyId
+     */
+    getSynchronizerId(): PartyId {
+        if (!this.synchronizerId)
+            throw new Error(
+                'synchronizer Id is not defined, called setSynchronizerId'
+            )
+        else return this.synchronizerId
     }
 
     /**
@@ -90,7 +113,7 @@ export class ValidatorController {
             '/v0/admin/external-party/setup-proposal/prepare-accept',
             {
                 contract_id: contractId,
-                user_party_id: this.partyId,
+                user_party_id: this.getPartyId(),
             }
         )
     }
@@ -114,7 +137,7 @@ export class ValidatorController {
             '/v0/admin/external-party/setup-proposal/submit-accept',
             {
                 submission: {
-                    party_id: this.partyId,
+                    party_id: this.getPartyId(),
                     transaction: tx,
                     signed_tx_hash: signedHash,
                     public_key: publicKey,
@@ -131,9 +154,9 @@ export class ValidatorController {
      * @param privateKey base64 encoded private key
      */
 
-    async externalPartyPreApprovalSetup(privateKey: string) {
+    async externalPartyPreApprovalSetup(privateKey: PrivateKey) {
         const createPartyProposalResponse =
-            await this.createExternalPartyProposal(this.partyId)
+            await this.createExternalPartyProposal(this.getPartyId())
 
         const preparedTxAndHash = await this.prepareExternalPartyProposal(
             createPartyProposalResponse.contract_id

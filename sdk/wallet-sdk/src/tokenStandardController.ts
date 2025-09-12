@@ -26,9 +26,9 @@ export class TokenStandardController {
     private client: LedgerClient
     private service: TokenStandardService
     private userId: string
-    private partyId: PartyId = 'empty::empty'
-    private synchronizerId: PartyId = 'empty::empty'
-    private transferFactoryRegistryUrl: URL = new URL('')
+    private partyId: PartyId | undefined
+    private synchronizerId: PartyId | undefined
+    private transferFactoryRegistryUrl: URL | undefined
 
     /** Creates a new instance of the LedgerController.
      *
@@ -76,10 +76,44 @@ export class TokenStandardController {
         return this
     }
 
+    /**
+     *  Gets the party Id or throws an error if it has not been set yet
+     *  @returns partyId
+     */
+    getPartyId(): PartyId {
+        if (!this.partyId)
+            throw new Error('PartyId is not defined, called setPartyId')
+        else return this.partyId
+    }
+
+    /**
+     *  Gets the synchronizer Id or throws an error if it has not been set yet
+     *  @returns partyId
+     */
+    getSynchronizerId(): PartyId {
+        if (!this.synchronizerId)
+            throw new Error(
+                'synchronizer Id is not defined, called setSynchronizerId'
+            )
+        else return this.synchronizerId
+    }
+
+    /**
+     * Sets the transferFactoryRegistryUrl that the TokenStandardController will use for requests.
+     * @param transferFactoryRegistryUrl
+     */
+    getTransferFactoryRegistryUrl(): URL {
+        if (!this.transferFactoryRegistryUrl)
+            throw new Error(
+                'transferFactoryRegistryUrl is not defined, called setTransferFactoryRegistryUrl'
+            )
+        else return this.transferFactoryRegistryUrl
+    }
+
     async getInstrumentAdmin(): Promise<PartyId | undefined> {
         const instrumentAdmin: string | undefined =
             await this.service.getInstrumentAdmin(
-                this.transferFactoryRegistryUrl.href
+                this.getTransferFactoryRegistryUrl().href
             )
         if (instrumentAdmin) return instrumentAdmin as PartyId
         else return undefined
@@ -95,7 +129,7 @@ export class TokenStandardController {
         beforeOffset?: string
     ): Promise<PrettyTransactions> {
         return await this.service.listHoldingTransactions(
-            this.partyId,
+            this.getPartyId(),
             afterOffset,
             beforeOffset
         )
@@ -112,7 +146,7 @@ export class TokenStandardController {
     ): Promise<PrettyContract<T>[]> {
         return await this.service.listContractsByInterface<T>(
             interfaceId,
-            this.partyId
+            this.getPartyId()
         )
     }
 
@@ -127,7 +161,7 @@ export class TokenStandardController {
     ): Promise<PrettyContract<HoldingView>[]> {
         const utxos = await this.service.listContractsByInterface<HoldingView>(
             '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding',
-            this.partyId
+            this.getPartyId()
         )
         const currentTime = new Date()
 
@@ -167,7 +201,7 @@ export class TokenStandardController {
             amount,
             instrument.instrumentAdmin,
             instrument.instrumentId,
-            this.transferFactoryRegistryUrl.href
+            this.getTransferFactoryRegistryUrl().href
         )
     }
 
@@ -199,7 +233,7 @@ export class TokenStandardController {
                 amount,
                 instrument.instrumentAdmin,
                 instrument.instrumentId,
-                this.transferFactoryRegistryUrl.href,
+                this.getTransferFactoryRegistryUrl().href,
                 memo,
                 meta
             )
@@ -225,12 +259,12 @@ export class TokenStandardController {
             if (instructionChoice === 'Accept') {
                 return await this.service.createAcceptTransferInstruction(
                     transferInstructionCid,
-                    this.transferFactoryRegistryUrl.href
+                    this.getTransferFactoryRegistryUrl().href
                 )
             } else {
                 return await this.service.createRejectTransferInstruction(
                     transferInstructionCid,
-                    this.transferFactoryRegistryUrl.href
+                    this.getTransferFactoryRegistryUrl().href
                 )
             }
         } catch (error) {

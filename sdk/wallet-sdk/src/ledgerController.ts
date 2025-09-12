@@ -27,8 +27,8 @@ import { PartyId } from '@canton-network/core-ledger-client/src/ledger-api-utils
 export class LedgerController {
     private client: LedgerClient
     private userId: string
-    private partyId: PartyId
-    private synchronizerId: PartyId
+    private partyId: PartyId | undefined
+    private synchronizerId: PartyId | undefined
     private logger = pino({ name: 'LedgerController', level: 'info' })
 
     /** Creates a new instance of the LedgerController.
@@ -40,8 +40,6 @@ export class LedgerController {
     constructor(userId: string, baseUrl: string, token: string) {
         this.client = new LedgerClient(baseUrl, token, this.logger)
         this.userId = userId
-        this.partyId = 'empty::empty'
-        this.synchronizerId = 'empty::empty'
         return this
     }
 
@@ -52,6 +50,28 @@ export class LedgerController {
     setPartyId(partyId: PartyId): LedgerController {
         this.partyId = partyId
         return this
+    }
+
+    /**
+     *  Gets the party Id or throws an error if it has not been set yet
+     *  @returns partyId
+     */
+    getPartyId(): PartyId {
+        if (!this.partyId)
+            throw new Error('PartyId is not defined, called setPartyId')
+        else return this.partyId
+    }
+
+    /**
+     *  Gets the synchronizer Id or throws an error if it has not been set yet
+     *  @returns partyId
+     */
+    getSynchronizerId(): PartyId {
+        if (!this.synchronizerId)
+            throw new Error(
+                'synchronizer Id is not defined, called setSynchronizerId'
+            )
+        else return this.synchronizerId
     }
 
     /**
@@ -121,10 +141,10 @@ export class LedgerController {
             commands: commands as any,
             commandId: commandId || v4(),
             userId: this.userId,
-            actAs: [this.partyId],
+            actAs: [this.getPartyId()],
             readAs: [],
             disclosedContracts: disclosedContracts || [],
-            synchronizerId: this.synchronizerId,
+            synchronizerId: this.getSynchronizerId(),
             verboseHashing: false,
             packageIdSelectionPreference: [],
         }
@@ -164,7 +184,7 @@ export class LedgerController {
             partySignatures: {
                 signatures: [
                     {
-                        party: this.partyId,
+                        party: this.getPartyId(),
                         signatures: [
                             {
                                 signature,
