@@ -82,7 +82,7 @@ await new Promise((res) => setTimeout(res, 5000))
 logger.info('creating transfer preapproval proposal')
 
 const transferPreApprovalProposal =
-    sdk.userLedger?.createTransferPreapprovalCommand(
+    await sdk.userLedger?.createTransferPreapprovalCommand(
         validatorOperatorParty!, // TODO: find out how to get this not through validator api
         receiver?.partyId!,
         instrumentAdminPartyId
