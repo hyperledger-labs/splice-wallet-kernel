@@ -30,7 +30,9 @@ an expected output
 
 
 **my-json-ledger-api** can be identified with ``curl http://${my-json-ledger-api}/v2/version`` it should produce a json that looks like
-::
+
+.. code-block:: JSON
+
     {
        "version":"3.3.0-SNAPSHOT",
        "features":{
@@ -64,10 +66,14 @@ an expected output
        }
     }
 
+
 the fields may vary based on your configuration.
 
 **my-grpc-admin-api** can be identified with ``grpcurl -plaintext ${my-grpc-admin-api} list`` it should produce an output like
-::
+
+
+.. code-block:: text
+
     com.digitalasset.canton.admin.health.v30.StatusService
     com.digitalasset.canton.admin.participant.v30.EnterpriseParticipantReplicationService
     com.digitalasset.canton.admin.participant.v30.PackageService
@@ -92,7 +98,9 @@ the fields may vary based on your configuration.
 the list might differed based on you canton configuration, the most important part is `TopologyManagerReadService` & `TopologyManagerWriteService`
 
 **my-validator-app-api** & **my-scan-api** can both be identified with ``curl ${api}/version`` they both produce an output like
-::
+
+.. code-block:: JSON
+
     {"version":"0.4.15","commit_ts":"2025-09-05T11:38:13Z"}
 
 
