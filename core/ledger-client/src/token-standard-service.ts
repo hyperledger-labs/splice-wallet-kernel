@@ -13,6 +13,7 @@ import {
 import {
     ensureInterfaceViewIsPresent,
     filtersByParty,
+    PartyId,
 } from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
 import {
@@ -148,7 +149,7 @@ export class TokenStandardService {
     // i.e. when querying by TransferInstruction interfaceId, <T> would be TransferInstructionView from daml codegen
     async listContractsByInterface<T = ViewValue>(
         interfaceId: string,
-        partyId: string
+        partyId: PartyId
     ): Promise<PrettyContract<T>[]> {
         try {
             const ledgerEnd = await this.ledgerClient.get(
@@ -197,7 +198,7 @@ export class TokenStandardService {
     }
 
     async listHoldingTransactions(
-        partyId: string,
+        partyId: PartyId,
         afterOffset?: string,
         beforeOffset?: string
     ): Promise<PrettyTransactions> {
@@ -245,10 +246,10 @@ export class TokenStandardService {
     }
 
     async createTransfer(
-        sender: string,
-        receiver: string,
+        sender: PartyId,
+        receiver: PartyId,
         amount: string,
-        instrumentAdmin: string, // TODO (#907): replace with registry call
+        instrumentAdmin: PartyId, // TODO (#907): replace with registry call
         instrumentId: string,
         transferFactoryRegistryUrl: string,
         memo?: string,
@@ -406,7 +407,7 @@ export class TokenStandardService {
 
     private async toPrettyTransactions(
         updates: JsGetUpdatesResponse[],
-        partyId: string,
+        partyId: PartyId,
         ledgerClient: LedgerClient
     ): Promise<PrettyTransactions> {
         // Runtime filters that also let TS know which of OneOfs types to check against

@@ -11,6 +11,7 @@ import {
     getPublicKeyFromPrivate,
     signTransactionHash,
 } from '@canton-network/core-signing-lib'
+import { PartyId } from '@canton-network/core-ledger-client/src/ledger-api-utils'
 
 /**
  * TokenStandardController handles token standard management tasks.
@@ -20,7 +21,7 @@ export class ValidatorController {
     private logger = pino({ name: 'ValidatorController', level: 'info' })
     private validatorClient: ValidatorInternalClient
     private userId: string
-    private partyId: string = ''
+    private partyId: PartyId = 'empty::empty'
     private synchronizerId: string = ''
 
     /** Creates a new instance of the LedgerController.
@@ -47,7 +48,7 @@ export class ValidatorController {
      * Sets the party that the ValidatorController will use for requests.
      * @param partyId
      */
-    setPartyId(partyId: string): ValidatorController {
+    setPartyId(partyId: PartyId): ValidatorController {
         this.partyId = partyId
         return this
     }
@@ -68,7 +69,7 @@ export class ValidatorController {
      * @param partyId
      * returns contractId used in prepareExternalPartyProposal
      */
-    async createExternalPartyProposal(partyId: string) {
+    async createExternalPartyProposal(partyId: PartyId) {
         return await this.validatorClient.post(
             '/v0/admin/external-party/setup-proposal',
             {
@@ -159,7 +160,7 @@ export class ValidatorController {
      * transfer preapparovals by party.
      */
 
-    async getTransferPreApprovals(scanUrl: string, partyId: string) {
+    async getTransferPreApprovals(scanUrl: string, partyId: PartyId) {
         const scanClient = new ScanClient(
             scanUrl,
             this.logger,

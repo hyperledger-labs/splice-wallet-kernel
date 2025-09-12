@@ -13,6 +13,7 @@ import {
     ViewValue,
 } from '@canton-network/core-ledger-client'
 import { HoldingView } from '@canton-network/core-token-standard'
+import { PartyId } from '@canton-network/core-ledger-client/src/ledger-api-utils'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject'
 
@@ -25,9 +26,9 @@ export class TokenStandardController {
     private client: LedgerClient
     private service: TokenStandardService
     private userId: string
-    private partyId: string = ''
-    private synchronizerId: string = ''
-    private transferFactoryRegistryUrl: string = ''
+    private partyId: PartyId = 'empty::empty'
+    private synchronizerId: PartyId = 'empty::empty'
+    private transferFactoryRegistryUrl: URL = new URL('')
 
     /** Creates a new instance of the LedgerController.
      *
@@ -50,7 +51,7 @@ export class TokenStandardController {
      * Sets the party that the TokenStandardController will use for requests.
      * @param partyId
      */
-    setPartyId(partyId: string): TokenStandardController {
+    setPartyId(partyId: PartyId): TokenStandardController {
         this.partyId = partyId
         return this
     }
@@ -59,7 +60,7 @@ export class TokenStandardController {
      * Sets the synchronizerId that the TokenStandardController will use for requests.
      * @param synchronizerId
      */
-    setSynchronizerId(synchronizerId: string): TokenStandardController {
+    setSynchronizerId(synchronizerId: PartyId): TokenStandardController {
         this.synchronizerId = synchronizerId
         return this
     }
@@ -69,16 +70,19 @@ export class TokenStandardController {
      * @param transferFactoryRegistryUrl
      */
     setTransferFactoryRegistryUrl(
-        transferFactoryRegistryUrl: string
+        transferFactoryRegistryUrl: URL
     ): TokenStandardController {
         this.transferFactoryRegistryUrl = transferFactoryRegistryUrl
         return this
     }
 
-    async getInstrumentAdmin(): Promise<string | undefined> {
-        return await this.service.getInstrumentAdmin(
-            this.transferFactoryRegistryUrl
-        )
+    async getInstrumentAdmin(): Promise<PartyId | undefined> {
+        const instrumentAdmin: string | undefined =
+            await this.service.getInstrumentAdmin(
+                this.transferFactoryRegistryUrl.href
+            )
+        if (instrumentAdmin) return instrumentAdmin as PartyId
+        else return undefined
     }
 
     /** Lists all holdings for the current party.
@@ -151,11 +155,11 @@ export class TokenStandardController {
      * @returns A promise that resolves to the ExerciseCommand which creates the tap.
      */
     async createTap(
-        receiver: string,
+        receiver: PartyId,
         amount: string,
         instrument: {
             instrumentId: string
-            instrumentAdmin: string
+            instrumentAdmin: PartyId
         }
     ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
         return this.service.createTap(
@@ -163,7 +167,7 @@ export class TokenStandardController {
             amount,
             instrument.instrumentAdmin,
             instrument.instrumentId,
-            this.transferFactoryRegistryUrl
+            this.transferFactoryRegistryUrl.href
         )
     }
 
@@ -173,16 +177,17 @@ export class TokenStandardController {
      * @param receiver The party of the receiver.
      * @param amount The amount to be transferred.
      * @param instrument The instrument to be used for the transfer.
+     * @param memo The message for the receiver to identify the transaction.
      * @param meta Optional metadata to include with the transfer.
      * @returns A promise that resolves to the ExerciseCommand which creates the transfer.
      */
     async createTransfer(
-        sender: string,
-        receiver: string,
+        sender: PartyId,
+        receiver: PartyId,
         amount: string,
         instrument: {
             instrumentId: string
-            instrumentAdmin: string
+            instrumentAdmin: PartyId
         },
         memo?: string,
         meta?: Record<string, unknown>
@@ -194,7 +199,7 @@ export class TokenStandardController {
                 amount,
                 instrument.instrumentAdmin,
                 instrument.instrumentId,
-                this.transferFactoryRegistryUrl,
+                this.transferFactoryRegistryUrl.href,
                 memo,
                 meta
             )
@@ -220,12 +225,12 @@ export class TokenStandardController {
             if (instructionChoice === 'Accept') {
                 return await this.service.createAcceptTransferInstruction(
                     transferInstructionCid,
-                    this.transferFactoryRegistryUrl
+                    this.transferFactoryRegistryUrl.href
                 )
             } else {
                 return await this.service.createRejectTransferInstruction(
                     transferInstructionCid,
-                    this.transferFactoryRegistryUrl
+                    this.transferFactoryRegistryUrl.href
                 )
             }
         } catch (error) {

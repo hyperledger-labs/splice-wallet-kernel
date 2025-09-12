@@ -10,6 +10,7 @@ import {
     getMetaKeyValue,
     hasInterface,
     mergeMetas,
+    PartyId,
     removeParsedMetaKeys,
 } from '../ledger-api-utils.js'
 import {
@@ -48,13 +49,13 @@ type JsGetEventsByContractIdResponse =
 
 export class TransactionParser {
     private readonly ledgerClient: LedgerClient
-    private readonly partyId: string
+    private readonly partyId: PartyId
     private readonly transaction: JsTransaction
 
     constructor(
         transaction: JsTransaction,
         ledgerClient: LedgerClient,
-        partyId: string
+        partyId: PartyId
     ) {
         this.ledgerClient = ledgerClient
         this.partyId = partyId

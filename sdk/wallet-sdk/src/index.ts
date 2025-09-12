@@ -28,13 +28,14 @@ export {
 } from '@canton-network/core-signing-lib'
 export { decodePreparedTransaction } from '@canton-network/core-tx-visualizer'
 export { PreparedTransaction } from '@canton-network/core-ledger-proto'
+import { PartyId } from '@canton-network/core-ledger-client/src/ledger-api-utils'
 
 type AuthFactory = () => AuthController
 type LedgerFactory = (userId: string, token: string) => LedgerController
 type TopologyFactory = (
     userId: string,
     adminAccessToken: string,
-    synchronizerId: string
+    synchronizerId: PartyId
 ) => TopologyController
 type TokenStandardFactory = (
     userId: string,
@@ -56,7 +57,7 @@ export interface WalletSDK {
     configure(config: Config): WalletSDK
     connect(): Promise<WalletSDK>
     connectAdmin(): Promise<WalletSDK>
-    connectTopology(synchronizer: string | URL): Promise<WalletSDK>
+    connectTopology(synchronizer: PartyId | URL): Promise<WalletSDK>
     userLedger: LedgerController | undefined
     adminLedger: LedgerController | undefined
     topology: TopologyController | undefined
@@ -115,7 +116,6 @@ export class WalletSDKImpl implements WalletSDK {
      */
     async connect(): Promise<WalletSDK> {
         const { userId, accessToken } = await this.auth.getUserToken()
-        this.logger?.info(`Connecting user ${userId} with token ${accessToken}`)
         this.userLedger = this.ledgerFactory(userId, accessToken)
         this.tokenStandard = this.tokenStandardFactory(userId, accessToken)
         this.validator = this.validatorFactory(userId, accessToken)
@@ -127,7 +127,6 @@ export class WalletSDKImpl implements WalletSDK {
      */
     async connectAdmin(): Promise<WalletSDK> {
         const { userId, accessToken } = await this.auth.getAdminToken()
-        this.logger?.info(`Connecting user ${userId} with token ${accessToken}`)
         this.adminLedger = this.ledgerFactory(userId, accessToken)
         return this
     }
@@ -136,7 +135,7 @@ export class WalletSDKImpl implements WalletSDK {
      * @param synchronizer either the synchronizerId or the base url of the scanClient.
      * @returns A promise that resolves to the WalletSDK instance.
      */
-    async connectTopology(synchronizer: string | URL): Promise<WalletSDK> {
+    async connectTopology(synchronizer: PartyId | URL): Promise<WalletSDK> {
         if (this.auth.userId === undefined)
             throw new Error('UserId is not defined in AuthController.')
         if (synchronizer === undefined)
@@ -144,8 +143,7 @@ export class WalletSDKImpl implements WalletSDK {
                 'Synchronizer is not defined in connectTopology. Either provide a synchronizerId or a scanClient base url.'
             )
         const { userId, accessToken } = await this.auth.getAdminToken()
-        this.logger?.info(`Connecting user ${userId} with token ${accessToken}`)
-        let synchronizerId: string
+        let synchronizerId: PartyId
         if (typeof synchronizer === 'string') {
             synchronizerId = synchronizer
         } else if (synchronizer instanceof URL) {
@@ -159,7 +157,7 @@ export class WalletSDKImpl implements WalletSDK {
             if (amuletSynchronizerId === undefined) {
                 throw new Error('SynchronizerId is not defined in ScanClient.')
             } else {
-                synchronizerId = amuletSynchronizerId
+                synchronizerId = amuletSynchronizerId as PartyId
             }
         } else
             throw new Error(
