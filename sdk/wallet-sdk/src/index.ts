@@ -137,6 +137,7 @@ export class WalletSDKImpl implements WalletSDK {
      * @returns A promise that resolves to the WalletSDK instance.
      */
     async connectTopology(synchronizer: string | URL): Promise<WalletSDK> {
+        // TODO adjust the argument so it's clear whether synchronizerId or URL is passed
         if (this.auth.userId === undefined)
             throw new Error('UserId is not defined in AuthController.')
         if (synchronizer === undefined)
@@ -149,7 +150,7 @@ export class WalletSDKImpl implements WalletSDK {
             synchronizerId = synchronizer
         } else if (synchronizer instanceof URL) {
             const scanProxyClient = new ScanProxyClient(
-                'http://wallet.localhost:2000/api/validator',
+                synchronizer.href,
                 this.logger!,
                 accessToken
             )
