@@ -264,7 +264,7 @@ export class LedgerController {
     createTransferPreapprovalCommand(
         validatorOperatorParty: string,
         receiverParty: string,
-        dsoParty: string
+        dsoParty?: string
     ) {
         return {
             CreateCommand: {
@@ -273,7 +273,7 @@ export class LedgerController {
                 createArguments: {
                     provider: validatorOperatorParty,
                     receiver: receiverParty,
-                    expectedDso: dsoParty,
+                    ...(dsoParty && { expectedDso: dsoParty }),
                 },
             },
         }
