@@ -25,6 +25,8 @@ import type { PrettyTransactions, Transaction } from './txparse/types.js'
 import { Types } from './ledger-client.js'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 
+const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
+
 type ExerciseCommand = Types['ExerciseCommand']
 type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
@@ -255,12 +257,14 @@ export class TokenStandardService {
         instrumentAdmin: string, // TODO (#907): replace with registry call
         instrumentId: string,
         transferFactoryRegistryUrl: string,
-        meta?: Record<string, never>
+        memo?: string,
+        meta?: Record<string, unknown>
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
             const ledgerEndOffset = await this.ledgerClient.get(
                 '/v2/state/ledger-end'
             )
+            //TODO: filter out any holdings that has a non-expired lock
             const senderHoldings = await this.ledgerClient.post(
                 '/v2/state/active-contracts',
                 {
@@ -301,7 +305,7 @@ export class TokenStandardService {
                     requestedAt: now.toISOString(),
                     executeBefore: tomorrow.toISOString(),
                     inputHoldingCids,
-                    meta: { values: meta || {} },
+                    meta: { values: { [MEMO_KEY]: memo || '', ...meta } },
                 },
                 extraArgs: {
                     context: { values: {} },

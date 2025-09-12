@@ -1,15 +1,15 @@
 'use strict'
-
+/* eslint-disable-next-line no-unused-vars */
 function __export(m) {
     /* eslint-disable-next-line no-prototype-builtins */
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p]
 }
 Object.defineProperty(exports, '__esModule', { value: true })
-
+/* eslint-disable-next-line no-unused-vars */
 var jtv = require('@mojotech/json-type-validation')
-
+/* eslint-disable-next-line no-unused-vars */
 var damlTypes = require('@daml/types')
-
+/* eslint-disable-next-line no-unused-vars */
 var damlLedger = require('@daml/ledger')
 
 var pkg9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69 = require('@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0')
@@ -18,7 +18,7 @@ var Splice_Api_Token_HoldingV1 = require('../../../../Splice/Api/Token/HoldingV1
 var Splice_Api_Token_MetadataV1 = require('../../../../Splice/Api/Token/MetadataV1/module')
 
 exports.TransferFactory = damlTypes.assembleInterface(
-    '2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.TransferInstructionV1:TransferFactory',
+    'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.TransferInstructionV1:TransferFactory',
     function () {
         return exports.TransferFactoryView
     },
@@ -84,7 +84,7 @@ exports.TransferFactory = damlTypes.assembleInterface(
 )
 
 exports.TransferInstruction = damlTypes.assembleInterface(
-    '2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.TransferInstructionV1:TransferInstruction',
+    'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.TransferInstructionV1:TransferInstruction',
     function () {
         return exports.TransferInstructionView
     },

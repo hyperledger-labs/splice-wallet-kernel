@@ -28,15 +28,15 @@ export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton/bootstrap.canton')
 export const API_SPECS_PATH = path.join(repoRoot, 'api-specs')
 // Canton versions
 export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20250603.0'
-export const CANTON_VERSION = '3.3.0-snapshot.20250530.15919.0.v3e7a341c'
+export const CANTON_VERSION = '3.3.0-snapshot.20250904.16083.0.v87695c75'
 
 export const SPLICE_ARCHIVE_HASH =
-    'dd80fb524b75221ec677c7e7a9c0a83589458f294b88b26fe5ca78dfc011dfd8'
+    '61e25571dd4da32477a56dbd0ddd34d4c9b40ed16f6d585e32b5ec2645abeb45'
 export const SPLICE_SPEC_ARCHIVE_HASH =
-    '302d966c1c68b33b71be0ae9b6d76df9aff9cf4f23590cd9a3b99cf747a2d35b'
+    'dac90e26bdecd623f6d7a2e965dd1763de5a470a1ad39deb9eb44775ea42c4ad'
 export const CANTON_ARCHIVE_HASH =
-    '7c88d6096701612dc628b6804c16d572c6c6a8cabe3f0ee32ab22afaa39c1eda'
-export const SPLICE_VERSION = '0.4.11'
+    'ac47567a96e3eaf5a62e5398139b41dc55e4dedbf499be4f04582771c0b4f6f7'
+export const SPLICE_VERSION = '0.4.15'
 
 export async function downloadToFile(
     url: string | URL,

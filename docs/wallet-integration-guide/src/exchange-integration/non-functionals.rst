@@ -12,6 +12,7 @@ Below you learn how to handle crashes of the integration components,
 how to handle RPC errors, and
 how to perform disaster recovery for the Exchange Validator Node.
 
+.. _crash-fault-tolerance:
 
 Handling Crashes
 ^^^^^^^^^^^^^^^^
@@ -42,6 +43,8 @@ For the integration components that you build, we recommend the following strate
   This is in line with how we recommend to implement the :ref:`multi-step-deposit-workflow`.
 
 
+.. _retrying-rpc-errors:
+
 Handling RPC Errors
 ^^^^^^^^^^^^^^^^^^^
 
@@ -58,6 +61,8 @@ as we assume you have strategies in place for those.
   Consider crashing the ingestion component if the bounded number of retries is exceeded
   to recover from bugs in the in-memory state of the ingestion component.
 
+
+.. _withdrawal-automation:
 
 * **Withdrawal Automation**:
   recall from :ref:`one-step-withdrawal-workflow` that the Withdrawal Automation
@@ -81,6 +86,8 @@ as we assume you have strategies in place for those.
   in the Canton Integration DB by the Tx History Ingestion component.
   A withdrawal is considered definitely failed once its target record time ``trecTgt`` is below
   the last ingested record time.
+
+
 
 * **Multi-Step Deposit Automation**: the approach is analogous to the one for Withdrawal Automation.
 
@@ -148,22 +155,3 @@ The on-ledger validation of the transfers ensures that
 you do not need to trust the Scan instance for correctness.
 Ensure that you read from a different Scan instance on every retry
 to avoid being affected by a faulty Scan instance for too long.
-
-
-
-Backup and Restore of the Canton Integration DB
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Sketch:
-
-* the loss of data affects only the data written by the exchange internal systems; i.e., the data
-  written in Step 2 of the :ref:`one-step-withdrawal-workflow`. Looking at that data we observe:
-
-  * withdrawal requests might be in-flight on Canton for which there is no entry in the integration DB
-  * ``Holding`` UTXOs might be marked as non-reserved, but they are actually spent by in-flight withdrawal transfers
-
-* ensure that history ingestion of ``TransferInstruction`` UTXOs for outgoing transfers also succeeds if the withdrawal id cannot be resolved; e.g. by creating a record
-  for them. Consider storing extra metadata in the ``Transfer`` record to be able to do so from the on-chain data only.
-* wait with reserving UTXOs until the Canton Integration DB has resynchronized with all in-flight
-  withdrawals; e.g., by waiting until you observe a record time larger than the largest target record time of in-flight withdrawals
-  (you should be able to estimate that using ``now + yourDefaultInFlightTimeout``).

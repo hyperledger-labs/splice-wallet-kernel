@@ -69,6 +69,8 @@ export class ValidatorController {
     }
 
     /**
+     * @deprecated
+     * Use the ledgerController.createTransferPreapprovalCommand() and ledgerController.prepareSignAndExecuteTransaction() instead
      * Create the ExternalPartySetupProposal contract as the validator operator
      * @param partyId
      * returns contractId used in prepareExternalPartyProposal
@@ -83,6 +85,8 @@ export class ValidatorController {
     }
 
     /**
+     * @deprecated
+     * Use the ledgerController.createTransferPreapprovalCommand() and ledgerController.prepareSignAndExecuteTransaction() instead
      * Given a contract id of an ExternalPartySetupProposal, prepare the transaction
      * to accept it such that it can be signed externally
      * @param contractId contract id of an ExternalPartySetupProposal
@@ -98,6 +102,8 @@ export class ValidatorController {
     }
 
     /**
+     * @deprecated
+     * Use the ledgerController.createTransferPreapprovalCommand() and ledgerController.prepareSignAndExecuteTransaction() instead
      * Submit a transaction prepared using prepareExternalPartyProposal
      * together with its signature
      * @param publicKey hex-encoded public key
@@ -124,7 +130,8 @@ export class ValidatorController {
     }
 
     /**
-     * Creates an ExternalPartySetupProposal contract as validator operator
+     * @deprecated Use the ledgerController.createTransferPreapprovalCommand() and ledgerController.prepareSignAndExecuteTransaction() instead
+     * Creates an ExternalpartySetupProposal contract as validator operator
      * Prepares and submits the transaction so that the party can
      * Auto accept transfers
      * @param privateKey base64 encoded private key
@@ -152,6 +159,15 @@ export class ValidatorController {
         )
     }
 
+    /**  Looks up the validator operator party
+     */
+
+    async getValidatorUser() {
+        const validatorUserResponse =
+            await this.validatorClient.get('/v0/validator-user')
+        return validatorUserResponse.party_id
+    }
+
     /**  Lookup a TransferPreapproval by the receiver party
      * @param partyId receiver party id
      * @returns A promise that resolves to an array of
@@ -173,6 +189,7 @@ export class ValidatorController {
      * @returns A promise that resolves to an array of
      * open mining rounds contracts
      */
+
     async getOpenMiningRounds() {
         return this.scanProxyClient.getOpenMiningRounds()
     }
@@ -181,6 +198,7 @@ export class ValidatorController {
      * @returns A promise that resolves to an
      * amulet rules contract
      */
+
     async getAmuletRules() {
         return this.scanProxyClient.getAmuletRules()
     }

@@ -52,13 +52,16 @@ jobs:
             - name: Run unit tests
               run: yarn test:all
 
+            - name: Validate wallet SDK package build
+              run: yarn script:validate:package
+
             - name: Download Canton
               run: yarn script:fetch:canton
 
             - name: Start Canton
               run: yarn start:canton &
 
-            - run: yarn workspace @canton-network/clients-remote run start &
+            - run: DAPP_API_PORT=3008 yarn workspace @canton-network/clients-remote run start &
 
             - run: yarn workspace @canton-network/example run dev &
 
@@ -108,7 +111,7 @@ jobs:
               run: yarn workspace @canton-network/example run playwright install --with-deps
 
             - name: Run example e2e
-              run: yarn workspace @canton-network/example run playwright test
+              run: DAPP_API_PORT=3008 yarn workspace @canton-network/example run playwright test
 
             - uses: actions/upload-artifact@v4
               if: ${{ !cancelled() }}
@@ -149,4 +152,4 @@ jobs:
 
             - name: Build docs
               working-directory: docs/wallet-integration-guide
-              run: poetry run sphinx-build -c . src build
+              run: poetry run sphinx-build -c . src build --fail-on-warning

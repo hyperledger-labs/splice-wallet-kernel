@@ -11,7 +11,6 @@ import {
 } from '@canton-network/core-ledger-client'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { pino } from 'pino'
-import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
 import type { HoldingView } from '@canton-network/core-token-standard'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject'
@@ -124,13 +123,33 @@ export class TokenStandardController {
 
     /**
      * Lists all holding UTXOs for the current party.
+     * @param includeLocked defaulted to true, this will include locked UTXOs.
      * @returns A promise that resolves to an array of holding UTXOs.
      */
-    async listHoldingUtxos(): Promise<PrettyContract<HoldingView>[]> {
-        return await this.service.listContractsByInterface<HoldingView>(
-            HOLDING_INTERFACE_ID,
+
+    async listHoldingUtxos(
+        includeLocked: boolean = true
+    ): Promise<PrettyContract<HoldingView>[]> {
+        const utxos = await this.service.listContractsByInterface<HoldingView>(
+            '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding',
             this.partyId
         )
+        const currentTime = new Date()
+
+        if (includeLocked) {
+            return utxos
+        } else {
+            return utxos.filter((utxo) => {
+                const lock = utxo.interfaceViewValue.lock
+                if (!lock) return true
+
+                const expiresAt = lock.expiresAt
+                if (!expiresAt) return false
+
+                const expiresAtDate = new Date(expiresAt)
+                return expiresAtDate <= currentTime
+            })
+        }
     }
 
     /**
@@ -174,7 +193,8 @@ export class TokenStandardController {
             instrumentId: string
             instrumentAdmin: string
         },
-        meta?: Record<string, never>
+        memo?: string,
+        meta?: Record<string, unknown>
     ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
         try {
             return await this.service.createTransfer(
@@ -184,6 +204,7 @@ export class TokenStandardController {
                 instrument.instrumentAdmin,
                 instrument.instrumentId,
                 this.transferFactoryRegistryUrl,
+                memo,
                 meta
             )
         } catch (error) {

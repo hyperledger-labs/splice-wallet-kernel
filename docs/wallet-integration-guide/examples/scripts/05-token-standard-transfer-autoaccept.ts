@@ -6,11 +6,9 @@ import {
     localNetTokenStandardDefault,
     createKeyPair,
     localValidatorDefault,
-    signTransactionHash,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { LOCALNET_REGISTRY_API_URL, LOCALNET_SCAN_API_URL } from '../config.js'
-import { json } from 'stream/consumers'
 import { v4 } from 'uuid'
 
 const logger = pino({ name: '05-external-party-setup', level: 'info' })
@@ -68,9 +66,8 @@ sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL.href)
 await new Promise((res) => setTimeout(res, 5000))
 
-logger.info('creating external party proposal for party: ' + receiver?.partyId)
-
 sdk.validator?.setPartyId(receiver?.partyId!)
+const validatorOperatorParty = await sdk.validator?.getValidatorUser()
 
 sdk.userLedger?.setPartyId(receiver?.partyId!)
 sdk.tokenStandard?.setSynchronizerId(synchonizerId)
@@ -80,24 +77,24 @@ sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL.href)
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
-const [tapCommandreceiver, disclosedContractsreceiver] =
-    await sdk.tokenStandard!.createTap(receiver!.partyId, '20000000', {
-        instrumentId: 'Amulet',
-        instrumentAdmin: instrumentAdminPartyId,
-    })
-
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
-    [{ ExerciseCommand: tapCommandreceiver }],
-    keyPairReceiver.privateKey,
-    v4(),
-    disclosedContractsreceiver
-)
-
 await new Promise((res) => setTimeout(res, 5000))
 
-await sdk.validator?.externalPartyPreApprovalSetup(keyPairReceiver.privateKey)
+logger.info('creating transfer preapproval proposal')
 
-logger.info('submitted external party proposal for ' + receiver?.partyId)
+const transferPreApprovalProposal =
+    sdk.userLedger?.createTransferPreapprovalCommand(
+        validatorOperatorParty!, // TODO: find out how to get this not through validator api
+        receiver?.partyId!,
+        instrumentAdminPartyId
+    )
+
+await sdk.userLedger?.prepareSignAndExecuteTransaction(
+    [transferPreApprovalProposal],
+    keyPairReceiver.privateKey,
+    v4()
+)
+
+logger.info('transfer pre approval proposal is created')
 
 sdk.userLedger?.setPartyId(sender?.partyId!)
 
@@ -144,7 +141,8 @@ const [transferCommand, disclosedContracts2] =
         {
             instrumentId: 'Amulet',
             instrumentAdmin: instrumentAdminPartyId,
-        }
+        },
+        'memo-ref'
     )
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
@@ -154,18 +152,6 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
     disclosedContracts2
 )
 logger.info('Submitted transfer transaction')
-
-const holdings = await sdk.tokenStandard?.listHoldingTransactions()
-
-const transferCid = holdings!.transactions
-    .flatMap((object) =>
-        object.events.flatMap(
-            (t) =>
-                (t.label as any)?.tokenStandardChoice?.exerciseResult?.output
-                    ?.value?.transferInstructionCid
-        )
-    )
-    .find((v) => v !== undefined)
 
 sdk.userLedger?.setPartyId(receiver!.partyId)
 sdk.tokenStandard?.setPartyId(receiver!.partyId)

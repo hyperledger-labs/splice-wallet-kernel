@@ -1,5 +1,6 @@
 .. _integration-workflows:
 
+
 Integration Workflows
 =====================
 
@@ -18,11 +19,6 @@ The workflows below are grouped into two milestones.
   enable additional asynchronous checks on transfers by the token admin (e.g. KYC/AML checks).
 
 Further extensions of these two MVPs to address Day-2 requirements are explored in :ref:`integration-extensions`.
-
-.. important::
-
-  The descriptions of the workflows below will be simplified as the wallet SDK
-  is extended.  The workflows reflect what currently exists and will be updated as the specific SDK functions are added.
 
   .. todo:: add these functions. potentially using sphinx-tabs to allow switching between SDK function view and higher-level description
 
@@ -57,7 +53,7 @@ MVP for Canton Coin
 Assumptions:
 
 -  The Exchange has set up a CC ``TransferPreapproval`` for their
-   ``treasuryParty`` as explained in :ref:`setup-treasury-party`.
+   ``treasuryParty`` as explained in :ref:`treasury-party-setup`.
 -  The Exchange has associated deposit account “abc123” with the Customer in
    the Canton Integration DB.
 
@@ -87,7 +83,7 @@ Example flow:
       Synchronizer. It is assigned offset ``off1`` by the Exchange
       Validator Node. (The other validator nodes will have a different ``offset`` value.)
 
-3. Tx History Ingestion observes ``upd567`` at ``t1`` with offset
+3. Tx History Ingestion observes ``upd567`` at record time ``t1`` with offset
    ``off1`` and updates the Canton Integration DB as follows.
 
    a. Tx History Ingestion parses ``upd567`` using the token standard tx
@@ -102,14 +98,16 @@ Example flow:
    b. Tx History ingestion writes the following in a single, atomic
       transaction to the Canton Integration DB
 
-      * The latest ingested update-id ``upd567`` its record time ``t1``
-        and offset ``off1``.
+      * The latest ingested update-id ``upd567``, its record time ``t1``,
+        its offset ``off1``, and the ``synchronizerId`` of the Global Synchronizer.
       * The new CC ``Holding`` UTXO ``coid234`` for the 100 CC that was
         received.
       * The credit of 100 CC on the Customer’s account at the exchange.
 
 4. Customer observes the successful deposit in their Exchange UI,
    whose data is retrieved from the Canton Integration DB via the Exchange Internal Systems.
+
+.. _one-step-transfer-parsing:
 
 
 .. _one-step-withdrawal-workflow:
@@ -152,7 +150,9 @@ Example flow:
    b. Withdrawal automation checks that transfer is indeed a 1-step
       transfer by checking that ``transfer_kind`` = ``"direct"`` in the response from
       Canton Coin Scan. If that is not the case, then it marks the withdrawal
-      as failed in the Canton Integration DB and stops processing.
+      as failed in the Canton Integration DB with reason
+      "lack of CC transfer-preapproval for ``customerParty``"
+      and stops processing.
    c. Withdrawal Automation prepares, signs, and submits the command to
       exercise the ``TransferFactory_Transfer`` choice with the
       exclusive upper-bound for the record time of the commit set to
@@ -189,6 +189,7 @@ Example flow:
         ``t1`` and offset ``off1``.
       * The successful completion of withdrawal ``wid123`` by the
         transaction with update-id ``upd567`` at record time ``t1``.
+      * The deduction of 100 CC from the Customer's trading account.
       * The archival of the CC ``Holding`` UTXOs ``coids``.
       * The new CC ``Holding`` UTXO ``coid789`` for the change returned
         after funding the CC transfer.
@@ -206,6 +207,8 @@ Example flow:
 6. Customer observes the completion of the withdrawal at ``t1`` in the
    Exchange UI and the receipt of the expected funds in their Customer Wallet.
 
+
+.. TODO: add a note on offset checkpoints and how to process them
 
 .. _utxo-management:
 
@@ -411,7 +414,6 @@ Ingesting deposit offers with unknown deposit accounts is still valuable
 to allow the exchange's support team to handle customer inquiries about
 these transfers.
 
-
 .. _multi-step-withdrawal-workflow:
 
 Multi-Step Withdrawal Workflow
@@ -458,7 +460,7 @@ We list them in full for completeness.
        ``trecTgt``. It also sets the value for key
        ``splice.lfdecentralizedtrust.org/reason`` in the ``Transfer`` metadata to ``wid123``;
        and it sets the upper bound for the customer to accept the transfer far
-       enough in the future (e.g. 30 days).
+       enough in the future, so that the customer has sufficient time to act (e.g. 1 year).
     d. The resulting transaction gets committed across the Customer,
        Exchange, and Acme validator nodes. It is assigned an
        update-id ``upd567`` and a record time ``t1`` < ``trecTgt`` by
@@ -487,7 +489,8 @@ We list them in full for completeness.
        * The withdrawal-id ``wid123`` from the
          ``splice.lfdecentralizedtrust.org/reason`` metadata value.
        * The new locked AcmeToken ``Holding`` UTXO ``coid345`` owned by the
-         ``treasuryParty``.
+         ``treasuryParty`` and locked to the withdrawal ``wid123``
+         of 100 AcmeToken to ``customerParty``.
        * The new  AcmeToken ``Holding`` UTXO ``coid789`` owned by the
          ``treasuryParty``
        * The ``TransferInstruction`` UTXO ``coid567`` representing the
@@ -595,6 +598,8 @@ that the transfer was offered, but rejected by them.
 
 Canton Network Token Onboarding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. TODO: also add a note on upgrading .dar files
 
 You likely have requirements and considerations for onboarding a token.
 In the following,

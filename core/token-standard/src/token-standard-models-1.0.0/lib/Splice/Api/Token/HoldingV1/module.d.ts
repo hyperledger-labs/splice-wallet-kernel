@@ -1,6 +1,7 @@
 // Generated from Splice/Api/Token/HoldingV1.daml
 /* eslint-disable @typescript-eslint/camelcase */
-
+/* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import * as jtv from '@mojotech/json-type-validation'
 import * as damlTypes from '@daml/types'
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
@@ -12,7 +13,7 @@ import * as pkgb70db8369e1c461d5c70f1c86f526a29e9776c655e6ffc2560f95b05ccb8b946 
 import * as Splice_Api_Token_MetadataV1 from '../../../../Splice/Api/Token/MetadataV1/module'
 
 export declare type Holding =
-    damlTypes.Interface<'2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.HoldingV1:Holding'> &
+    damlTypes.Interface<'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.HoldingV1:Holding'> &
         HoldingView
 export declare interface HoldingInterface {
     Archive: damlTypes.Choice<
@@ -26,7 +27,7 @@ export declare interface HoldingInterface {
 export declare const Holding: damlTypes.InterfaceCompanion<
     Holding,
     undefined,
-    '2e5bc93346f9c9e0bd2f4d64f966c0fac2089d101f3091ce26623bd417fd4075:Splice.Api.Token.HoldingV1:Holding'
+    'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.HoldingV1:Holding'
 > &
     damlTypes.FromTemplate<Holding, unknown> &
     HoldingInterface

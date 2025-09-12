@@ -7,7 +7,7 @@ Validator Node Operations
 Reward Minting and Traffic Funding
 ----------------------------------
 
-As explained in :ref:`tokenomics-fees-and-rewards`,
+As explained in :ref:`tokenomics-and-rewards`,
 your validator node will need traffic to submit the transactions to execute withdrawals
 or accept multi-step deposits. As also explained in that section,
 the network provides rewards that can be used to fund traffic.
@@ -122,6 +122,58 @@ You can test the party setup on LocalNet or DevNet as follows:
    phases of a minting round.
 
 
+.. _setup-ledger-api-users:
+
+Setup Ledger API Users
+-----------------------
+
+Clients need to
+`authenticate as a Ledger API user <https://docs.digitalasset.com/build/3.3/sdlc-howtos/applications/secure/authorization.html>`__
+to access the Ledger API of your Exchange Validator Node.
+You can manage Ledger API users and their rights using the
+``/v2/users/...``
+`endpoints of the Ledger API <https://github.com/digital-asset/canton/blob/97b837d7b7e9a499963cba1d39a017648c46e8d7/community/ledger/ledger-json-api/src/test/resources/json-api-docs/openapi.yaml#L1172>`__.
+
+You will need to authenticate as an existing user that has ``participant_admin`` rights
+to create additional users and grant rights.
+One option is to authenticate as the ``ledger-api-user`` that you
+`configured when setting up authentication for your validator node
+<https://docs.dev.sync.global/validator_operator/validator_helm.html#oidc-provider-requirements>`__.
+Another option is to
+`log-in to your Splice Wallet UI for the validator operatory party
+<https://docs.dev.sync.global/validator_operator/validator_helm.html#logging-into-the-wallet-ui>`__
+and use the JWT token used by the UI.
+
+We recommend that you setup one user per service that needs to access the Ledger API.
+This way you can easily manage permissions and access rights for each service independently.
+The `rights <https://docs.digitalasset.com/build/3.3/sdlc-howtos/applications/secure/authorization.html#access-tokens-and-rights>`__
+required by the integration components are as follows:
+
+.. list-table:: Required Ledger API User Rights
+   :header-rows: 1
+
+   * - Component
+     - Required Rights
+     - Purpose
+   * - Tx History Ingestion
+     - ``canReadAs(treasuryParty)``
+     - Read transactions and contracts for the ``treasuryParty``.
+   * - Withdrawal Automation
+     - ``canActAs(treasuryParty)``
+     - Prepare and execute transactions on behalf of the ``treasuryParty``.
+   * - Multi-Step Deposit Automation
+     - ``canActAs(treasuryParty)``
+     - Prepare and execute transactions on behalf of the ``treasuryParty``.
+   * - Automated :ref:`exchange parties setup <exchange-parties-setup>` for
+       :ref:`exchange-integration-testing`
+     - ``participant_admin`` and ``canActAs(treasuryParty)``
+     - Create parties and use the ``treasuryParty`` to create its ``TransferPreapprovalProposal``.
+       Hint: grant ``canActAs(treasuryParty)`` to the user doing the setup
+       after allocating the ``treasuryParty``.
+
+.. TODO(#452): update with CanExecuteAsAnyParty
+
+
 .. _dar-file-management:
 
 .dar File Management
@@ -146,16 +198,15 @@ for more information.
    an unintended delegation on your contracts, which could lead to loss of funds.
 
 
-.. _restore-from-validator-node-backup:
+.. _validator-node-monitoring:
 
-Backup and Restore
-------------------
+Monitoring
+----------
 
-
-Sketch: considerations when restoring from a validator node backup
-
-* offsets change ==> put tx history ingestion into recovery mode and use the last ingested update-id to re-synchronize
-
+See the Splice documentation for guidance on `how to monitor your validator node <https://docs.dev.sync.global/deployment/observability/index.html>`__.
+Note in particular that it includes `Grafana dashboards <https://docs.dev.sync.global/deployment/observability/metrics.html#grafana-dashboards>`__
+for monitoring the traffic usage, balances of local parties (e.g., the ``exchangeParty``),
+and `many other metrics <https://docs.dev.sync.global/deployment/observability/metrics_reference.html>`__.
 
 
 .. _hard-synchronizer-migration:
@@ -163,10 +214,50 @@ Sketch: considerations when restoring from a validator node backup
 Rolling out Major Splice Upgrades
 ---------------------------------
 
+For major protocol changes, the global sychronizer undergoes a `Major
+Upgrade Procedure
+<https://docs.dev.sync.global/validator_operator/validator_major_upgrades.html>`_.
+The schedule for these upgrades is published by the `Super Validators
+<https://docs.google.com/document/d/1QhLL5bL0u8temBL86y957VbWDtZJhH9udH-_C7nBlvc/edit?tab=t.0#heading=h.ripdn5ydglli>`_
+and also announced in the ``#validator-operations`` slack channel.
 
-Sketch:
+As part of this procedure, the old synchronizer is paused, all
+validator operators create an export of the state of their validator,
+and deploy a new validator connected to the new synchronizer and
+import their state again. For a more detailed overview, refer to the
+`Splice docs <https://docs.dev.sync.global/validator_operator/validator_major_upgrades.html>`__.
 
-* See splice docs for context: https://docs.dev.sync.global/validator_operator/validator_major_upgrades.html
-* like backup and restore above, but with a hard resynchronization to restart from offset ``0``
-* determine the offset as of which the ACS export for the hard migration is taken, and ensure that
-  your Tx Ingestion has ingested that before resynchronizing to the newly deployed validator node
+The procedure requires some experience to get it right, so it is highly
+recommended to run nodes on DevNet and TestNet so you can practice the
+procedure before you encounter it on MainNet.
+
+From an integration perspective, there are a few things to keep in mind:
+
+1. A major upgrade only preserves the active contracts but not the
+   update history. In particular, you will not be able to get
+   transactions from before the major upgrade on the update service on
+   the Ledger API of the newly deployed validator node.
+2. Offsets on the upgraded validator node start from ``0`` again.
+3. The update history will include special import transactions for the
+   contracts imported from the old synchronizer.
+
+We recommend to handle the upgrade as follows:
+
+1. Wait for the synchronizer to be paused and your node to have
+   written the migration dump as described in the `Splice docs
+   <https://docs.dev.sync.global/validator_operator/validator_major_upgrades.html#catching-up-before-the-migration>`__.
+2. Open the migration dump and extract the ``acs_timestamp`` from it, e.g., using ``jq .acs_timestamp < /domain-upgrade-dump/domain_migration_dump.json``.
+   This is the timestamp at which the synchronizer was paused.
+3. Wait for your Tx History Ingestion to have caught up to record time
+   ``acs_timestamp`` or higher. Note that you must consume :ref:`offset checkpoints <offset-checkpoints>`
+   to guarantee that your Tx History Ingestion advances past ``acs_timestamp``.
+
+4. Upgrade your validator and connect it to the new synchronizer following the
+   `Splice docs <https://docs.dev.sync.global/validator_operator/validator_major_upgrades.html#deploying-the-validator-app-and-participant-docker-compose>`__.
+5. Resume your Tx History Ingestion from offset ``0``.
+6. Ignore transactions with record time
+   ``0001-01-01T00:00:00.000000Z``. These are the special import
+   transactions for contracts imported from the old synchronizer so
+   you have already processed them on the old synchronizer. Note that you can reuse the :ref:`infrastructure <validator_backup_restore>` used to ignore duplicate transactions after a
+   backup restore to ignore the transactions here.
+7. After the initial import transactions, continue ingestion as usual.
