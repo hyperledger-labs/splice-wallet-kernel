@@ -273,7 +273,7 @@ export class LedgerController {
 
         const version =
             spliceWalletPackageVersionResponse.packagePreference
-                ?.packageReference?.packageId
+                ?.packageReference?.packageVersion
 
         if (this.compareVersions(version!, '0.1.11') === -1) {
             return {
