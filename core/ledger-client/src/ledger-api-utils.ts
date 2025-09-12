@@ -25,8 +25,10 @@ type PartySignatures = Types['PartySignatures']
 type Command = Types['Command']
 type DeduplicationPeriod2 = Types['DeduplicationPeriod2']
 
+export type PartyId = `${string}::${string}`
+
 export function filtersByParty(
-    party: string,
+    party: PartyId,
     interfaceNames: string[],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     includeWildcard: boolean
@@ -195,7 +197,7 @@ export async function submitExerciseCommand(
     ledgerClient: LedgerClient,
     exerciseCommand: ExerciseCommand,
     disclosedContracts: DisclosedContract[],
-    partyId: string,
+    partyId: PartyId,
     userId: string,
     publicKeyPath: string,
     privateKeyPath: string
@@ -369,7 +371,7 @@ export interface Completion {
 async function awaitCompletion(
     ledgerClient: LedgerClient,
     ledgerEnd: number,
-    partyId: string,
+    partyId: PartyId,
     userId: string,
     commandId: string,
     submissionId: string

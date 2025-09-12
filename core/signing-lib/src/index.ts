@@ -21,9 +21,12 @@ export enum PartyMode {
     EXTERNAL = 'external',
 }
 
+export type PublicKey = string
+export type PrivateKey = string
+
 export interface KeyPair {
-    publicKey: string
-    privateKey: string
+    publicKey: PublicKey
+    privateKey: PrivateKey
 }
 
 export enum SigningProvider {

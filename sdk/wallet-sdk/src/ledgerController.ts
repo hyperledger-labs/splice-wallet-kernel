@@ -11,11 +11,14 @@ import {
 import {
     signTransactionHash,
     getPublicKeyFromPrivate,
+    PrivateKey,
+    PublicKey,
 } from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-client/src/_proto/com/digitalasset/canton/crypto/v30/crypto'
 import { TopologyController } from './topologyController.js'
+import { PartyId } from '@canton-network/core-ledger-client/src/ledger-api-utils'
 
 /**
  * Controller for interacting with the Ledger API, this is the primary interaction point with the validator node
@@ -24,8 +27,8 @@ import { TopologyController } from './topologyController.js'
 export class LedgerController {
     private client: LedgerClient
     private userId: string
-    private partyId: string
-    private synchronizerId: string
+    private partyId: PartyId | undefined
+    private synchronizerId: PartyId | undefined
     private logger = pino({ name: 'LedgerController', level: 'info' })
 
     /** Creates a new instance of the LedgerController.
@@ -37,8 +40,6 @@ export class LedgerController {
     constructor(userId: string, baseUrl: string, token: string) {
         this.client = new LedgerClient(baseUrl, token, this.logger)
         this.userId = userId
-        this.partyId = ''
-        this.synchronizerId = ''
         return this
     }
 
@@ -46,16 +47,38 @@ export class LedgerController {
      * Sets the party that the ledgerController will use for requests.
      * @param partyId
      */
-    setPartyId(partyId: string): LedgerController {
+    setPartyId(partyId: PartyId): LedgerController {
         this.partyId = partyId
         return this
+    }
+
+    /**
+     *  Gets the party Id or throws an error if it has not been set yet
+     *  @returns partyId
+     */
+    getPartyId(): PartyId {
+        if (!this.partyId)
+            throw new Error('PartyId is not defined, called setPartyId')
+        else return this.partyId
+    }
+
+    /**
+     *  Gets the synchronizer Id or throws an error if it has not been set yet
+     *  @returns partyId
+     */
+    getSynchronizerId(): PartyId {
+        if (!this.synchronizerId)
+            throw new Error(
+                'synchronizer Id is not defined, called setSynchronizerId'
+            )
+        else return this.synchronizerId
     }
 
     /**
      * Sets the synchronizerId that the ledgerController will use for requests.
      * @param synchronizerId
      */
-    setSynchronizerId(synchronizerId: string): LedgerController {
+    setSynchronizerId(synchronizerId: PartyId): LedgerController {
         this.synchronizerId = synchronizerId
         return this
     }
@@ -68,7 +91,7 @@ export class LedgerController {
      */
     async prepareSignAndExecuteTransaction(
         commands: unknown,
-        privateKey: string,
+        privateKey: PrivateKey,
         commandId: string,
         disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
@@ -118,10 +141,10 @@ export class LedgerController {
             commands: commands as any,
             commandId: commandId || v4(),
             userId: this.userId,
-            actAs: [this.partyId],
+            actAs: [this.getPartyId()],
             readAs: [],
             disclosedContracts: disclosedContracts || [],
-            synchronizerId: this.synchronizerId,
+            synchronizerId: this.getSynchronizerId(),
             verboseHashing: false,
             packageIdSelectionPreference: [],
         }
@@ -142,7 +165,7 @@ export class LedgerController {
     async executeSubmission(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
         signature: string,
-        publicKey: SigningPublicKey | string,
+        publicKey: SigningPublicKey | PublicKey,
         submissionId: string
     ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
         if (prepared.preparedTransaction === undefined) {
@@ -161,7 +184,7 @@ export class LedgerController {
             partySignatures: {
                 signatures: [
                     {
-                        party: this.partyId,
+                        party: this.getPartyId(),
                         signatures: [
                             {
                                 signature,
@@ -189,7 +212,7 @@ export class LedgerController {
      * This creates a simple Ping command, useful for testing signing and onboarding
      * @param partyId the party to receive the ping
      */
-    createPingCommand(partyId: string) {
+    createPingCommand(partyId: PartyId) {
         return [
             {
                 CreateCommand: {
@@ -255,9 +278,9 @@ export class LedgerController {
      */
 
     async createTransferPreapprovalCommand(
-        validatorOperatorParty: string,
-        receiverParty: string,
-        dsoParty?: string
+        validatorOperatorParty: PartyId,
+        receiverParty: PartyId,
+        dsoParty?: PartyId
     ) {
         const params: Record<string, unknown> = {
             query: {

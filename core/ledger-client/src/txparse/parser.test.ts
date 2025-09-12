@@ -55,7 +55,7 @@ describe('TransactionParser', () => {
         jest.clearAllMocks()
     })
     it('returns transaction header and no events when input has no events', async () => {
-        const partyId = 'Alice'
+        const partyId = 'Alice::122000'
 
         const tx = {
             updateId: 'update-1',
