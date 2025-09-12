@@ -122,17 +122,10 @@ logger.info('Submitted transfer transaction')
 
 await new Promise((res) => setTimeout(res, 5000))
 
-const holdings = await sdk.tokenStandard?.listHoldingTransactions()
+const pendingInstructions =
+    await sdk.tokenStandard?.fetchPendingTransferInstructionView()
 
-const transferCid = holdings!.transactions
-    .flatMap((object) =>
-        object.events.flatMap(
-            (t) =>
-                (t.label as any)?.tokenStandardChoice?.exerciseResult?.output
-                    ?.value?.transferInstructionCid
-        )
-    )
-    .find((v) => v !== undefined)
+const transferCid = pendingInstructions?.[0].contractId!
 
 sdk.userLedger?.setPartyId(receiver!.partyId)
 sdk.tokenStandard?.setPartyId(receiver!.partyId)
