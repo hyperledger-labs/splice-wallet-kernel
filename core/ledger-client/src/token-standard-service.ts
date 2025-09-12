@@ -351,7 +351,6 @@ export class TokenStandardService {
         instrumentId: string,
         transferFactoryRegistryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        // TODO: replace with correct scan lookup
         const now = new Date()
         const tomorrow = new Date(now)
         tomorrow.setDate(tomorrow.getDate() + 1)
