@@ -29,6 +29,7 @@
     },
     "dependencies": {
         "@canton-network/core-ledger-proto": "workspace:^",
+        "@canton-network/core-splice-client": "workspace:^",
         "@canton-network/core-token-standard": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@grpc/grpc-js": "^1.13.4",
