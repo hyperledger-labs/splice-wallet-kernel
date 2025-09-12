@@ -18,7 +18,7 @@ communicate this account identifier in the format required by the exchange. For 
 
 CN Token Standard Wallets
 -------------------------
-The token standard defines the ``splice.lfdedentralizedtrust.org/reason`` metadata
+The token standard defines the ``splice.lfdecentralizedtrust.org/reason`` metadata
 key for the purpose of communicating a human-readable description for the transfer (see
 `CIP-0056 <https://github.com/global-synchronizer-foundation/cips/blob/main/cip-0056/cip-0056.md#generic-metadata>`__).
 
@@ -29,7 +29,7 @@ when initiating a transfer. This is actually what the Canton Coin wallet does be
 initiating a Canton Coin transfer.
 
 Likewise when displaying an incoming transfer or the tx history for a transfer the content of
-``splice.lfdedentralizedtrust.org/reason`` metadata key should be parsed and
+``splice.lfdecentralizedtrust.org/reason`` metadata key should be parsed and
 displayed, as done for example by the transaction history parser in the token standard CLI
 (`docs <https://docs.dev.sync.global/app_dev/token_standard/index.html#reading-and-parsing-transaction-history-involving-token-standard-contracts>`__).
 This allows exchanges to communicate a correlation-id for a redemption.
