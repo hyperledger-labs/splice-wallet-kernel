@@ -245,14 +245,6 @@ export class LedgerController {
     }
 
     /**
-     * Retrieves the current ledger end, useful for synchronization purposes.
-     * @returns The current ledger end.
-     */
-    async ledgerEnd(): Promise<GetResponse<'/v2/state/ledger-end'>> {
-        return await this.client.get('/v2/state/ledger-end')
-    }
-
-    /**
      * This creates a TransferPreapprovalCommand
      * The validator auto accepts when the provider is the validator operatory party
      * And this allows us to auto accept incoming transfer for the receiver party
@@ -261,22 +253,75 @@ export class LedgerController {
      * @param dsoParty Party that the sender expects to represent the DSO party of the AmuletRules contract they are calling
      */
 
-    createTransferPreapprovalCommand(
+    async createTransferPreApprovalCommand(
         validatorOperatorParty: string,
         receiverParty: string,
         dsoParty?: string
     ) {
-        return {
-            CreateCommand: {
-                templateId:
-                    '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
-                createArguments: {
-                    provider: validatorOperatorParty,
-                    receiver: receiverParty,
-                    ...(dsoParty && { expectedDso: dsoParty }),
-                },
+        const params: Record<string, unknown> = {
+            query: {
+                parties: this.partyId,
+                'package-name': 'splice-wallet',
             },
         }
+
+        const spliceWalletPackageVersionResponse = await this.client.get(
+            '/v2/interactive-submission/preferred-package-version',
+            params
+        )
+
+        const version =
+            spliceWalletPackageVersionResponse.packagePreference
+                ?.packageReference?.packageId
+
+        if (this.compareVersions(version!, '0.1.11') === -1) {
+            return {
+                CreateCommand: {
+                    templateId:
+                        '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
+                    createArguments: {
+                        provider: validatorOperatorParty,
+                        receiver: receiverParty,
+                    },
+                },
+            }
+        } else {
+            return {
+                CreateCommand: {
+                    templateId:
+                        '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
+                    createArguments: {
+                        provider: validatorOperatorParty,
+                        receiver: receiverParty,
+                        expectedDso: dsoParty!,
+                    },
+                },
+            }
+        }
+    }
+
+    private compareVersions(v1: string, v2: string): number {
+        const a = v1.split('.').map(Number)
+        const b = v2.split('.').map(Number)
+        const length = Math.max(a.length, b.length)
+
+        for (let i = 0; i < length; i++) {
+            const num1 = a[i] ?? 0
+            const num2 = b[i] ?? 0
+
+            if (num1 > num2) return 1
+            if (num1 < num2) return -1
+        }
+
+        return 0
+    }
+
+    /**
+     * Retrieves the current ledger end, useful for synchronization purposes.
+     * @returns The current ledger end.
+     */
+    async ledgerEnd(): Promise<GetResponse<'/v2/state/ledger-end'>> {
+        return await this.client.get('/v2/state/ledger-end')
     }
 
     /**
