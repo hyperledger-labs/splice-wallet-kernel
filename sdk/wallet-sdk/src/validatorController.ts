@@ -124,7 +124,7 @@ export class ValidatorController {
     }
 
     /**
-     * Creates an ExternalpartySetupProposal contract as validator operator
+     * Creates an ExternalPartySetupProposal contract as validator operator
      * Prepares and submits the transaction so that the party can
      * Auto accept transfers
      * @param privateKey base64 encoded private key
@@ -167,6 +167,22 @@ export class ValidatorController {
                 },
             }
         )
+    }
+
+    /**  Fetch open mining rounds from Scan Proxy API
+     * @returns A promise that resolves to an array of
+     * open mining rounds contracts
+     */
+    async getOpenMiningRounds() {
+        return this.scanProxyClient.getOpenMiningRounds()
+    }
+
+    /**  Fetch Amulet rules from Scan Proxy API
+     * @returns A promise that resolves to an
+     * amulet rules contract
+     */
+    async getAmuletRules() {
+        return this.scanProxyClient.getAmuletRules()
     }
 }
 

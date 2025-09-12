@@ -154,7 +154,7 @@ export class WalletSDKImpl implements WalletSDK {
                 accessToken
             )
             const amuletSynchronizerId =
-                await scanProxyClient.GetAmuletSynchronizerId()
+                await scanProxyClient.getAmuletSynchronizerId()
             if (amuletSynchronizerId === undefined) {
                 throw new Error(
                     'SynchronizerId is not defined in ScanProxyClient.'

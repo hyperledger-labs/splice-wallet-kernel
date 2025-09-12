@@ -28,23 +28,32 @@ export class TokenStandardController {
     private partyId: string = ''
     private synchronizerId: string = ''
     private transferFactoryRegistryUrl: string = ''
-    private scanApiUrl: URL = new URL('http://localhost:3000')
 
     /** Creates a new instance of the LedgerController.
      *
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
+     * @param validatorBaseUrl the url for the validator api. Needed for Scan Proxy API access.
      * @param accessToken the access token from the user, usually provided by an auth controller.
      */
     constructor(
         userId: string,
         baseUrl: string,
-        private accessToken: string
+        validatorBaseUrl: string,
+        accessToken: string
     ) {
         this.client = new LedgerClient(baseUrl, accessToken, this.logger)
-        this.service = new TokenStandardService(this.client, this.logger)
+        const scanProxyClient = new ScanProxyClient(
+            validatorBaseUrl,
+            this.logger,
+            accessToken
+        )
+        this.service = new TokenStandardService(
+            this.client,
+            scanProxyClient,
+            this.logger
+        )
         this.userId = userId
-        return this
     }
 
     /**
@@ -64,15 +73,6 @@ export class TokenStandardController {
         this.synchronizerId = synchronizerId
         return this
     }
-    /**
-     * Sets the scanApiUrl that the TokenStandardController will use for requests.
-     * @param scanApiUrl
-     */
-    // TODO can I remove that, as it's part of validatorController?
-    setScanApiUrl(scanApiUrl: string): TokenStandardController {
-        this.scanApiUrl = new URL(scanApiUrl)
-        return this
-    }
 
     /**
      * Sets the transferFactoryRegistryUrl that the TokenStandardController will use for requests.
@@ -89,10 +89,6 @@ export class TokenStandardController {
         return await this.service.getInstrumentAdmin(
             this.transferFactoryRegistryUrl
         )
-    }
-
-    getScanClient(): ScanProxyClient {
-        return new ScanProxyClient(this.scanApiUrl.href, this.logger)
     }
 
     /** Lists all holdings for the current party.
@@ -238,7 +234,12 @@ export const localTokenStandardDefault = (
     userId: string,
     token: string
 ): TokenStandardController => {
-    return new TokenStandardController(userId, 'http://127.0.0.1:5003', token)
+    return new TokenStandardController(
+        userId,
+        'http://127.0.0.1:5003',
+        'http://wallet.localhost:2000/api/validator',
+        token
+    )
 }
 
 /**
@@ -249,5 +250,10 @@ export const localNetTokenStandardDefault = (
     userId: string,
     token: string
 ): TokenStandardController => {
-    return new TokenStandardController(userId, 'http://127.0.0.1:2975', token)
+    return new TokenStandardController(
+        userId,
+        'http://127.0.0.1:2975',
+        'http://wallet.localhost:2000/api/validator',
+        token
+    )
 }
