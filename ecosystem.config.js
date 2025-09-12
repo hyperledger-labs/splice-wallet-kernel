@@ -9,7 +9,7 @@ const sharedEnvDevelopment = {
 export const apps = [
     {
         name: 'remote',
-        script: 'yarn workspace @canton-network/clients-remote dev',
+        script: 'DAPP_API_PORT=3008 yarn workspace @canton-network/clients-remote dev',
         env_development: sharedEnvDevelopment,
     },
     {
