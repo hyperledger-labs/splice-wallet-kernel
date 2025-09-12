@@ -94,7 +94,16 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
     v4()
 )
 
-logger.info('transfer pre approval proposal is created')
+logger.info(
+    'transfer pre approval proposal is created...Waiting for validator to auto accept'
+)
+
+await sdk.userLedger
+    ?.waitForPreApproval(3, 500)
+    .then((result) => {
+        logger.info(result, 'PreApproval Result')
+    })
+    .catch((e) => logger.error(e))
 
 sdk.userLedger?.setPartyId(sender?.partyId!)
 

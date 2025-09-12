@@ -329,6 +329,43 @@ export class LedgerController {
         return await this.client.get('/v2/state/ledger-end')
     }
 
+    //Queries ACS for TransferPreapproval for party
+    async checkPreApprovalForParty() {
+        const legerEndOffset = await this.ledgerEnd()
+
+        const opt = {
+            offset: legerEndOffset.offset,
+            templateIds: [
+                '#splice-amulet:Splice.AmuletRules:TransferPreapproval',
+            ],
+            parties: [this.partyId],
+            filterByParty: true,
+        }
+
+        const preApproval = await this.activeContracts(opt)
+
+        return new Promise((resolve, reject) => {
+            if (preApproval.length === undefined || preApproval.length < 1)
+                reject('Transfer PreApprovalProposal not accepted')
+            else resolve('Transfer PreApprovalAccepted')
+        })
+    }
+
+    async waitForPreApproval(retries: number, delay: number) {
+        for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+                await new Promise((res) => setTimeout(res, delay))
+                const result = await this.checkPreApprovalForParty()
+                return result
+            } catch (error) {
+                if (attempt < retries) {
+                    this.logger.debug(error)
+                    await this.waitForPreApproval(retries - 1, delay * 2)
+                }
+            }
+        }
+    }
+
     /**
      * Retrieves active contracts with optional filtering by template IDs and parties.
      * @param options Optional parameters for filtering:
