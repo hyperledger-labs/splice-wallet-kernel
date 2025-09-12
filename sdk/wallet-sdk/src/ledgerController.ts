@@ -254,7 +254,7 @@ export class LedgerController {
      * dsoParty is required for splice-wallet package versions greater than or higher than 0.1.11
      */
 
-    async createTransferPreApprovalCommand(
+    async createTransferPreapprovalCommand(
         validatorOperatorParty: string,
         receiverParty: string,
         dsoParty?: string
