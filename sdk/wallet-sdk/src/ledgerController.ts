@@ -251,6 +251,7 @@ export class LedgerController {
      * @param validatorOperatorParty operator party retrieved through the getValidatorUser call
      * @param receiverParty party for which the auto accept is created for
      * @param dsoParty Party that the sender expects to represent the DSO party of the AmuletRules contract they are calling
+     * dsoParty is required for splice-wallet package versions greater than or higher than 0.1.11
      */
 
     async createTransferPreApprovalCommand(
@@ -286,16 +287,20 @@ export class LedgerController {
                 },
             }
         } else {
-            return {
-                CreateCommand: {
-                    templateId:
-                        '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
-                    createArguments: {
-                        provider: validatorOperatorParty,
-                        receiver: receiverParty,
-                        expectedDso: dsoParty!,
+            if (dsoParty) {
+                return {
+                    CreateCommand: {
+                        templateId:
+                            '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
+                        createArguments: {
+                            provider: validatorOperatorParty,
+                            receiver: receiverParty,
+                            expectedDso: dsoParty!,
+                        },
                     },
-                },
+                }
+            } else {
+                new Error('dsoParty is undefined')
             }
         }
     }
