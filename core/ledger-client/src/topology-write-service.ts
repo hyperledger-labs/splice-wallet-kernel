@@ -180,8 +180,10 @@ export class TopologyWriteService {
     private generateTransactionsRequest(
         namespace: string,
         partyId: PartyId,
-        participantId: string,
-        publicKey: SigningPublicKey
+        // participantId: string,
+        participantIds: string[],
+        publicKey: SigningPublicKey,
+        confirmingThreshold: number = 1
     ): GenerateTransactionsRequest {
         // Implementation for generating transactions request
         const namespaceDelegation = TopologyMapping.create({
@@ -198,19 +200,20 @@ export class TopologyWriteService {
             },
         })
 
+        const hostingParticipants = participantIds.map((pId) => {
+            return PartyToParticipant_HostingParticipant.create({
+                participantUid: pId,
+                permission: Enums_ParticipantPermission.CONFIRMATION,
+            })
+        })
+
         const partyToParticipant = TopologyMapping.create({
             mapping: {
                 oneofKind: 'partyToParticipant',
                 partyToParticipant: PartyToParticipant.create({
                     party: partyId,
-                    threshold: 1,
-                    participants: [
-                        PartyToParticipant_HostingParticipant.create({
-                            participantUid: participantId,
-                            permission:
-                                Enums_ParticipantPermission.CONFIRMATION,
-                        }),
-                    ],
+                    threshold: confirmingThreshold,
+                    participants: hostingParticipants,
                 }),
             },
         })
@@ -252,7 +255,8 @@ export class TopologyWriteService {
 
     async generateTransactions(
         publicKey: string,
-        partyId: PartyId
+        partyId: PartyId,
+        confirmingThreshold: number = 1
     ): Promise<GenerateTransactionsResponse> {
         const signingPublicKey = signingPublicKeyFromEd25519(publicKey)
         const namespace =
@@ -265,8 +269,9 @@ export class TopologyWriteService {
         const req = this.generateTransactionsRequest(
             namespace,
             partyId,
-            participantId,
-            signingPublicKey
+            [participantId],
+            signingPublicKey,
+            confirmingThreshold
         )
 
         return this.topologyClient.generateTransactions(req, {
@@ -328,7 +333,7 @@ export class TopologyWriteService {
         })
     }
 
-    private async authorizePartyToParticipant(
+  async authorizePartyToParticipant(
         partyId: PartyId
     ): Promise<AuthorizeResponse> {
         const hash = await this.waitForPartyToParticipantProposal(partyId)

@@ -181,6 +181,28 @@ export class TopologyController {
 
         return await this.submitExternalPartyTopology(signedHash, preparedParty)
     }
+
+    async multiHostParty(
+        participantEndpoints: string[],
+        confirmingThreshold: number,
+        publicKey: string,
+        privateKey: string,
+        synchronizerId: string
+    ) {
+        const allocatedParty =
+            await this.prepareSignAndSubmitExternalParty(privateKey)
+
+        participantEndpoints.forEach((endpoint) => {
+            const lc = new LedgerClient(endpoint, 'token?', this.logger)
+            const service = new TopologyWriteService(
+                synchronizerId,
+                endpoint,
+                'token?',
+                lc
+            )
+            service.authorizePartyToParticipant(allocatedParty.partyId)
+        })
+    }
 }
 
 /**
