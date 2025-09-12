@@ -26,20 +26,6 @@ jobs:
             - name: Install dependencies
               run: yarn install --immutable
 
-            - name: Validate current PR title with commitlint
-              run: echo "$TITLE" | yarn commitlint --verbose
-              env:
-                  TITLE: ${{ github.event.pull_request.title }}
-
-            - name: prettier code
-              run: yarn run prettier . --check
-
-            - name: eslint code
-              run: yarn workspaces foreach -A run eslint
-
-            - name: run codegen
-              run: yarn generate:all
-
             - name: Build project
               run: yarn build:all
 
@@ -186,3 +172,21 @@ jobs:
             - name: Build docs
               working-directory: docs/wallet-integration-guide
               run: poetry run sphinx-build -c . src build --fail-on-warning
+
+    test-static:
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+            - name: Validate current PR title with commitlint
+              run: echo "$TITLE" | yarn commitlint --verbose
+              env:
+                  TITLE: ${{ github.event.pull_request.title }}
+
+            - name: prettier code
+              run: yarn run prettier . --check
+
+            - name: eslint code
+              run: yarn workspaces foreach -A run eslint
+
+            - name: run codegen
+              run: yarn generate:all
