@@ -15,7 +15,7 @@
         "@open-rpc/meta-schema": "^1.14.9",
         "@types/node": "^24.0.4",
         "@types/tar-fs": "^2.0.4",
-        "axios": "^1.11.0",
+        "axios": "^1.12.0",
         "colors": "^1.4.0",
         "diff": "^8.0.2",
         "openapi-typescript": "^6.0.0",
