@@ -16,7 +16,7 @@ import { installDamlSDK } from './install-daml-sdk.js'
 
 const repoRoot = getRepoRoot()
 const SRC_DIR = path.join(repoRoot, '.splice/token-standard')
-const DEST_DIR = path.join(repoRoot, 'core/token-standard')
+const DEST_DIR = path.join(repoRoot, 'damljs/token-standard-models')
 
 async function main() {
     console.log(info('Finding .daml files...'))
@@ -57,23 +57,13 @@ async function main() {
     try {
         console.log(info(`exec daml codegen js`))
         execSync(
-            `exec daml codegen js .daml/dist/token-standard-models-1.0.0.dar -o src`,
+            `exec daml codegen js .daml/dist/token-standard-models-1.0.0.dar -o .`,
             { cwd: DEST_DIR, stdio: 'inherit' }
         )
         console.log(info('Codegen completed.'))
     } catch (err) {
         console.error(error(`Error running daml codegen js: ${err}`))
     }
-
-    // Remove copied .daml files
-    /*for (const file of copiedFiles) {
-        try {
-            fs.unlinkSync(file);
-        } catch (err) {
-            console.error(warn(`Failed to remove ${file}: ${err}`));
-        }
-    }
-    console.log(info('Removed copied .daml files.'));*/
 }
 
 main()

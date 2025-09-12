@@ -25,7 +25,7 @@ export default defineConfig([
         'core/wallet-dapp-rpc-client',
         'core/wallet-user-rpc-client',
         'core/ledger-client/src/generated-clients',
-        'core/token-standard/src/**',
+        'damljs/**',
         'docs/wallet-integration-guide/examples/**',
         'example/playwright-report/**',
     ]),
