@@ -295,7 +295,7 @@ export class LedgerController {
                         createArguments: {
                             provider: validatorOperatorParty,
                             receiver: receiverParty,
-                            expectedDso: dsoParty!,
+                            expectedDso: dsoParty,
                         },
                     },
                 }
