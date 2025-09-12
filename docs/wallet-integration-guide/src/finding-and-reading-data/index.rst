@@ -53,7 +53,7 @@ to the UTXO mode of unspent and spent. Active contracts are contracts that are u
 
 .. _visualizing-a-transaction:
 
-Visualizing a Transaction
--------------------------
+.. Visualizing a Transaction
+.. -------------------------
 
 .. todo:: write section about using the transaction visualizer to represent a created event blob.

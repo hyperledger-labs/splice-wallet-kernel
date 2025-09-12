@@ -8,7 +8,7 @@ Overview
 
 This document describes the steps required to create a new party (wallet/address) on a validator.
 Parties represent acting entites in the network and all transaction happens between one or more parties.
-To understand more about parties see `Parties section here <parties>`__.
+To understand more about parties see the :ref:`Parties <parties>` in the Overview.
 
 A detailed tutorial of the steps below can be seen in the External Signing Tutorial `here <https://docs.digitalasset.com/build/3.3/tutorials/app-dev/external_signing_onboarding.html>`_ using python example scripts.
 
@@ -92,7 +92,6 @@ Submit the topology transactions
 ---------------------------------
 Once the signature is generated, the topology transactions can be submitted to the validator.
 The wallet SDK has a helper function to submit the transactions:
-
 
 .. literalinclude:: ../../examples/snippets/submit-signed-topology-transaction.ts
    :language: typescript
