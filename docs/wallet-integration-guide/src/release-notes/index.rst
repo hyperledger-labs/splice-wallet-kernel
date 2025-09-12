@@ -3,6 +3,22 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+To update to the latest version of the Wallet SDK, you can use the following:
+
+.. tabs::
+    .. group-tab:: npm
+        .. code:: shell
+
+            npm update @canton-network/wallet-
+    .. group-tab:: yarn
+        .. code:: shell
+
+            yarn upgrade @canton-network/wallet-sdk
+    .. group-tab:: pnpm
+        .. code:: shell
+
+            pnpm update @canton-network/wallet-sdk
+
 0.5.0
 -----
 
