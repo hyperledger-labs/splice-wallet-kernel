@@ -13626,7 +13626,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino-pretty@npm:^13.0.0":
+"pino-pretty@npm:^13.0.0, pino-pretty@npm:^13.1.1":
   version: 13.1.1
   resolution: "pino-pretty@npm:13.1.1"
   dependencies:
@@ -15103,6 +15103,7 @@ __metadata:
     lint-staged: "npm:^16.1.0"
     nx: "npm:^21.3.11"
     oauth2-mock-server: "npm:^8.1.0"
+    pino-pretty: "npm:^13.1.1"
     pm2: "npm:^6.0.8"
     prettier: "npm:^3.5.3"
     ts-proto: "npm:^2.7.7"

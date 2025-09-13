@@ -57,6 +57,7 @@
         "husky": "^9.1.7",
         "lint-staged": "^16.1.0",
         "oauth2-mock-server": "^8.1.0",
+        "pino-pretty": "^13.1.1",
         "pm2": "^6.0.8",
         "prettier": "^3.5.3",
         "ts-proto": "^2.7.7",

@@ -30,9 +30,21 @@ async function executeScript(name: string) {
 async function cmd(command: string): Promise<void> {
     const [bin, ...args] = command.split(' ')
     const child = child_process.spawn(bin, args, {
-        stdio: 'inherit',
+        stdio: ['ignore', 'pipe', 'pipe'],
         shell: true,
     })
+
+    // spawn pino-pretty
+    const pretty = child_process.spawn('yarn', ['pino-pretty'], {
+        stdio: ['pipe', process.stdout, process.stderr],
+        shell: true,
+    })
+
+    // pipe logs: child.stdout → pino-pretty.stdin
+    child.stdout.pipe(pretty.stdin)
+
+    // also forward stderr directly
+    child.stderr.pipe(process.stderr)
 
     await new Promise<void>((resolve, reject) => {
         child.on('close', (code) => {
