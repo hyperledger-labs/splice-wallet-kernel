@@ -8164,10 +8164,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "docs-wallet-integration-guide-examples@workspace:docs/wallet-integration-guide/examples"
   dependencies:
+    "@canton-network/core-signing-lib": "workspace:^"
     "@canton-network/wallet-sdk": "workspace:^"
+    "@jest/globals": "npm:^29.0.0"
+    "@swc/core": "npm:^1.11.31"
+    "@swc/jest": "npm:^0.2.38"
+    "@types/jest": "npm:^29.5.14"
     "@types/node": "npm:^24.3.0"
+    jest: "npm:^29.7.0"
     pino: "npm:9.7.0"
     pino-pretty: "npm:^13.0.0"
+    ts-jest-resolver: "npm:^2.0.1"
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.8.3"
     uuid: "npm:^11.1.0"

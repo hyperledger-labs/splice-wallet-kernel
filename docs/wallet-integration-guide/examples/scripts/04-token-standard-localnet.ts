@@ -80,7 +80,7 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
     disclosedContracts
 )
 
-await new Promise((res) => setTimeout(res, 10000))
+await new Promise((res) => setTimeout(res, 5000))
 
 const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
 logger.info(utxos, 'List Available Token Standard Holding UTXOs')

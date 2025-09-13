@@ -127,6 +127,9 @@ jobs:
             - name: Start Localnet
               run: yarn start:localnet
 
+            - name: Test example snippets
+              run: yarn workspace docs-wallet-integration-guide-examples run test
+
             - name: Test example scripts
               run: yarn script:test:examples
 
