@@ -61,7 +61,8 @@ jobs:
             - name: Start Canton
               run: yarn start:canton &
 
-            - run: DAPP_API_PORT=3008 yarn workspace @canton-network/clients-remote run start &
+            - name: Start remote WK
+              run: DAPP_API_PORT=3008 yarn workspace @canton-network/clients-remote run start &
 
             - run: yarn workspace @canton-network/example run dev &
 
@@ -119,6 +120,15 @@ jobs:
                   name: playwright-report
                   path: example/playwright-report/
                   retention-days: 30
+
+            - name: Download localnet
+              run: yarn script:fetch:localnet
+
+            - name: Start Localnet
+              run: yarn start:localnet
+
+            - name: Test example scripts
+              run: yarn script:test:examples
 
     build-docs:
         runs-on: ubuntu-latest
