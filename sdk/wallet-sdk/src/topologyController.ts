@@ -31,6 +31,12 @@ export type AllocatedParty = {
     partyId: PartyId
 }
 
+type ParticipantEndpointConfig = {
+    baseUrl: string
+    accessToken: string
+    participantPermission: string
+}
+
 /**
  * TopologyController handles topology management tasks involving administrating external parties.
  * Since these parties require topology transactions to be signed by an admin user, this controller
@@ -183,7 +189,7 @@ export class TopologyController {
     }
 
     async multiHostParty(
-        participantEndpoints: string[],
+        participantEndpoints: ParticipantEndpointConfig[],
         confirmingThreshold: number,
         publicKey: string,
         privateKey: string,
@@ -193,11 +199,15 @@ export class TopologyController {
             await this.prepareSignAndSubmitExternalParty(privateKey)
 
         participantEndpoints.forEach((endpoint) => {
-            const lc = new LedgerClient(endpoint, 'token?', this.logger)
+            const lc = new LedgerClient(
+                endpoint.baseUrl,
+                endpoint.accessToken,
+                this.logger
+            )
             const service = new TopologyWriteService(
                 synchronizerId,
-                endpoint,
-                'token?',
+                endpoint.baseUrl,
+                endpoint.accessToken,
                 lc
             )
             service.authorizePartyToParticipant(allocatedParty.partyId)
