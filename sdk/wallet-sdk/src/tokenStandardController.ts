@@ -96,6 +96,9 @@ export class TokenStandardController {
             beforeOffset
         )
     }
+    async getTransactionById(updateId: string) {
+        return await this.service.getTransactionById(updateId)
+    }
 
     /** Lists all active contracts' interface view values and cids,
      *  filtered by an interface for the current party.
@@ -173,6 +176,7 @@ export class TokenStandardController {
      * @param receiver The party of the receiver.
      * @param amount The amount to be transferred.
      * @param instrument The instrument to be used for the transfer.
+     * @param memo Optional memo to include with the transfer.
      * @param meta Optional metadata to include with the transfer.
      * @returns A promise that resolves to the ExerciseCommand which creates the transfer.
      */

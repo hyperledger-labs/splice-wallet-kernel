@@ -31,6 +31,7 @@ type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
 type OffsetCheckpoint2 = Types['OffsetCheckpoint2']
 type JsTransaction = Types['JsTransaction']
+type JsGetTransactionResponse = Types['JsGetTransactionResponse']
 
 type OffsetCheckpointUpdate = {
     update: { OffsetCheckpoint: OffsetCheckpoint2 }
@@ -242,6 +243,15 @@ export class TokenStandardService {
             this.logger.error('Failed to list holding transactions.', err)
             throw err
         }
+    }
+
+    async getTransactionById(updateId: string) {
+        const transactionResponse: JsGetTransactionResponse =
+            await this.ledgerClient.post('/v2/updates/transaction-by-id', {
+                updateId,
+            })
+        // TODO use parser, but make it work without party ID
+        return transactionResponse
     }
 
     async createTransfer(
