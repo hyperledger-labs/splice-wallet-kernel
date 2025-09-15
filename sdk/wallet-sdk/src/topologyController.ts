@@ -31,10 +31,10 @@ export type AllocatedParty = {
     partyId: PartyId
 }
 
-type ParticipantEndpointConfig = {
+export type ParticipantEndpointConfig = {
+    adminApiUrl: string
     baseUrl: string
     accessToken: string
-    participantPermission: string
 }
 
 /**
@@ -101,7 +101,8 @@ export class TopologyController {
      */
     async prepareExternalPartyTopology(
         publicKey: PublicKey,
-        partyHint?: string
+        partyHint?: string,
+        confirmingThreshold?: number
     ): Promise<PreparedParty> {
         const namespace =
             TopologyController.createFingerprintFromPublicKey(publicKey)
@@ -111,7 +112,7 @@ export class TopologyController {
             : `${namespace.slice(0, 5)}::${namespace}`
 
         const transactions = await this.topologyClient
-            .generateTransactions(publicKey, partyId)
+            .generateTransactions(publicKey, partyId, confirmingThreshold)
             .then((resp) => resp.generatedTransactions)
 
         const txHashes = transactions.map((tx) =>
@@ -173,11 +174,13 @@ export class TopologyController {
      */
     async prepareSignAndSubmitExternalParty(
         privateKey: PrivateKey,
-        partyHint?: string
+        partyHint?: string,
+        confirmingThreshold?: number
     ): Promise<AllocatedParty> {
         const preparedParty = await this.prepareExternalPartyTopology(
             getPublicKeyFromPrivate(privateKey),
-            partyHint
+            partyHint,
+            confirmingThreshold
         )
 
         const signedHash = signTransactionHash(
@@ -190,14 +193,19 @@ export class TopologyController {
 
     async multiHostParty(
         participantEndpoints: ParticipantEndpointConfig[],
-        confirmingThreshold: number,
-        publicKey: string,
         privateKey: string,
-        synchronizerId: string
+        synchronizerId: string,
+        partyHint?: string,
+        confirmingThreshold?: number
     ) {
-        const allocatedParty =
-            await this.prepareSignAndSubmitExternalParty(privateKey)
+        //allocate initial party against participant that the sdk is connected to
+        const allocatedParty = await this.prepareSignAndSubmitExternalParty(
+            privateKey,
+            partyHint,
+            confirmingThreshold
+        )
 
+        //for the rest of the participant configs, authorize the party to participant mapping
         participantEndpoints.forEach((endpoint) => {
             const lc = new LedgerClient(
                 endpoint.baseUrl,
