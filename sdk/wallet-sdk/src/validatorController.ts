@@ -32,7 +32,7 @@ export class ValidatorController {
      */
     constructor(
         userId: string,
-        baseUrl: string,
+        baseUrl: URL,
         private accessToken: string
     ) {
         this.validatorClient = new ValidatorInternalClient(
@@ -214,7 +214,7 @@ export const localValidatorDefault = (
 ): ValidatorController => {
     return new ValidatorController(
         userId,
-        'http://wallet.localhost:2000/api/validator',
+        new URL('http://wallet.localhost:2000/api/validator'),
         token
     )
 }

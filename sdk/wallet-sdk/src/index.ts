@@ -150,7 +150,7 @@ export class WalletSDKImpl implements WalletSDK {
             synchronizerId = synchronizer
         } else if (synchronizer instanceof URL) {
             const scanProxyClient = new ScanProxyClient(
-                synchronizer.href,
+                synchronizer,
                 this.logger!,
                 accessToken
             )

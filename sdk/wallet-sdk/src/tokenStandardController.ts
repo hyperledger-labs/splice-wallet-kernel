@@ -37,8 +37,8 @@ export class TokenStandardController {
      */
     constructor(
         userId: string,
-        baseUrl: string,
-        validatorBaseUrl: string,
+        baseUrl: URL,
+        validatorBaseUrl: URL,
         accessToken: string
     ) {
         this.client = new LedgerClient(baseUrl, accessToken, this.logger)
@@ -257,8 +257,8 @@ export const localTokenStandardDefault = (
 ): TokenStandardController => {
     return new TokenStandardController(
         userId,
-        'http://127.0.0.1:5003',
-        'http://wallet.localhost:2000/api/validator',
+        new URL('http://127.0.0.1:5003'),
+        new URL('http://wallet.localhost:2000/api/validator'),
         token
     )
 }
@@ -273,8 +273,8 @@ export const localNetTokenStandardDefault = (
 ): TokenStandardController => {
     return new TokenStandardController(
         userId,
-        'http://127.0.0.1:2975',
-        'http://wallet.localhost:2000/api/validator',
+        new URL('http://127.0.0.1:2975'),
+        new URL('http://wallet.localhost:2000/api/validator'),
         token
     )
 }

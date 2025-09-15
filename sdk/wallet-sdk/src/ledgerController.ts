@@ -34,7 +34,7 @@ export class LedgerController {
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
      * @param token the access token from the user, usually provided by an auth controller.
      */
-    constructor(userId: string, baseUrl: string, token: string) {
+    constructor(userId: string, baseUrl: URL, token: string) {
         this.client = new LedgerClient(baseUrl, token, this.logger)
         this.userId = userId
         this.partyId = ''
@@ -402,7 +402,7 @@ export const localLedgerDefault = (
     userId: string,
     token: string
 ): LedgerController => {
-    return new LedgerController(userId, 'http://127.0.0.1:5003', token)
+    return new LedgerController(userId, new URL('http://127.0.0.1:5003'), token)
 }
 
 /**
@@ -413,5 +413,5 @@ export const localNetLedgerDefault = (
     userId: string,
     token: string
 ): LedgerController => {
-    return new LedgerController(userId, 'http://127.0.0.1:2975', token)
+    return new LedgerController(userId, new URL('http://127.0.0.1:2975'), token)
 }

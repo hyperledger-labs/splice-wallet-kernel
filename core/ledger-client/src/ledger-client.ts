@@ -54,10 +54,10 @@ export class LedgerClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
 
-    constructor(baseUrl: string, token: string, _logger: Logger) {
+    constructor(baseUrl: URL, token: string, _logger: Logger) {
         this.logger = _logger.child({ component: 'LedgerClient' })
         this.client = createClient<paths>({
-            baseUrl,
+            baseUrl: baseUrl.href,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
                 return fetch(url, {
                     ...options,
