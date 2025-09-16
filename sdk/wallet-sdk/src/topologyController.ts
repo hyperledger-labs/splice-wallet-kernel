@@ -205,8 +205,7 @@ export class TopologyController {
             confirmingThreshold
         )
 
-        //for the rest of the participant configs, authorize the party to participant mapping
-        participantEndpoints.forEach((endpoint) => {
+        for (const endpoint of participantEndpoints) {
             const lc = new LedgerClient(
                 endpoint.baseUrl,
                 endpoint.accessToken,
@@ -218,8 +217,33 @@ export class TopologyController {
                 endpoint.accessToken,
                 lc
             )
-            service.authorizePartyToParticipant(allocatedParty.partyId)
-        })
+            this.logger.info(endpoint, 'endpoint info')
+
+            await service
+                .waitForPartyToParticipantProposal(allocatedParty.partyId)
+                .then((p) => this.logger.info(p, 'result of listing proposals'))
+                .catch((e) => this.logger.error(e))
+
+            await service.authorizePartyToParticipant(allocatedParty.partyId)
+        }
+
+        //for the rest of the participant configs, authorize the party to participant mapping
+        // participantEndpoints.forEach((endpoint) => {
+        //     const lc = new LedgerClient(
+        //         endpoint.baseUrl,
+        //         endpoint.accessToken,
+        //         this.logger
+        //     )
+        //     const service = new TopologyWriteService(
+        //         synchronizerId,
+        //         endpoint.baseUrl,
+        //         endpoint.accessToken,
+        //         lc
+        //     )
+        //     this.logger.info(endpoint, 'endpoint info')
+
+        //     await service.authorizePartyToParticipant(allocatedParty.partyId)
+        // })
     }
 }
 
