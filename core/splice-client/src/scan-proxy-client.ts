@@ -1,14 +1,11 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    components,
-    paths,
-} from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
+import { components, paths } from './generated-clients/scan-proxy'
 import createClient, { Client } from 'openapi-fetch'
-import { Logger } from 'pino'
+import { Logger } from '@canton-network/core-types'
 
-export type Types = components['schemas']
+export type ScanProxyTypes = components['schemas']
 
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional
@@ -50,12 +47,13 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
     ? Res
     : never
 
-export class LedgerClient {
+export class ScanProxyClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
 
-    constructor(baseUrl: URL, token: string, _logger: Logger) {
-        this.logger = _logger.child({ component: 'LedgerClient' })
+    constructor(baseUrl: URL, logger: Logger, token: string) {
+        this.logger = logger
+        this.logger.debug({ baseUrl, token }, 'TokenStandardClient initialized')
         this.client = createClient<paths>({
             baseUrl: baseUrl.href,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
@@ -63,7 +61,8 @@ export class LedgerClient {
                     ...options,
                     headers: {
                         ...(options.headers || {}),
-                        Authorization: `Bearer ${token}`,
+                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        'Content-Type': 'application/json',
                     },
                 })
             },
@@ -80,8 +79,9 @@ export class LedgerClient {
     ): Promise<PostResponse<Path>> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
         const options = { body, params } as any
-
+        this.logger.debug({ requestBody: body }, `POST ${path}`)
         const resp = await this.client.POST(path, options)
+        this.logger.debug({ requestBody: body, response: resp }, `POST ${path}`)
         return this.valueOrError(resp)
     }
 
@@ -96,67 +96,11 @@ export class LedgerClient {
         const options = { params } as any
 
         const resp = await this.client.GET(path, options)
-        return this.valueOrError(resp)
-    }
-
-    /**
-     * Grants a user the right to act as a party, while ensuring the party exists.
-     *
-     * @param userId The ID of the user to grant rights to.
-     * @param partyId The ID of the party to grant rights for.
-     * @returns A promise that resolves when the rights have been granted.
-     */
-    public async grantUserRights(userId: string, partyId: string) {
-        // Wait for party to appear on participant
-        let partyFound = false
-        let tries = 0
-        const maxTries = 5
-
-        while (!partyFound || tries >= maxTries) {
-            const parties = await this.get('/v2/parties')
-            partyFound =
-                parties.partyDetails?.some(
-                    (party) => party.party === partyId
-                ) || false
-
-            await new Promise((resolve) => setTimeout(resolve, 1000))
-            tries++
-        }
-
-        if (tries >= maxTries) {
-            throw new Error('timed out waiting for new party to appear')
-        }
-
-        // Assign user rights to party
-        const result = await this.post(
-            '/v2/users/{user-id}/rights',
-            {
-                identityProviderId: '',
-                userId,
-                rights: [
-                    {
-                        kind: {
-                            CanActAs: {
-                                value: {
-                                    party: partyId,
-                                },
-                            },
-                        },
-                    },
-                ],
-            },
-            {
-                path: {
-                    'user-id': userId,
-                },
-            }
+        this.logger.debug(
+            { path: path, params: params, response: resp },
+            `GET ${path}`
         )
-
-        if (!result.newlyGrantedRights) {
-            throw new Error('Failed to grant user rights')
-        }
-
-        return
+        return this.valueOrError(resp)
     }
 
     private async valueOrError<T>(response: {
@@ -168,5 +112,54 @@ export class LedgerClient {
         } else {
             return Promise.resolve(response.data)
         }
+    }
+
+    public async getAmuletRules(): Promise<ScanProxyTypes['Contract']> {
+        const amuletRules = await this.get('/v0/scan-proxy/amulet-rules')
+        return amuletRules.amulet_rules.contract
+    }
+
+    public async getOpenMiningRounds(): Promise<ScanProxyTypes['Contract'][]> {
+        const openAndIssuingMiningRounds = await this.get(
+            '/v0/scan-proxy/open-and-issuing-mining-rounds'
+        )
+        return openAndIssuingMiningRounds.open_mining_rounds.map(
+            (openMiningRound) => openMiningRound.contract
+        )
+    }
+
+    public async getAmuletSynchronizerId(): Promise<string | undefined> {
+        type FutureValue = {
+            decentralizedSynchronizer?: {
+                activeSynchronizer?: string
+            }
+        }
+
+        type Payload = {
+            configSchedule?: {
+                initialValue?: FutureValue
+                futureValues?: FutureValue[]
+            }
+        }
+
+        const amuletRules = await this.getAmuletRules()
+        const payloadObj = amuletRules.payload as Payload
+
+        const initActiveSynchronizer =
+            payloadObj?.configSchedule?.initialValue?.decentralizedSynchronizer
+                ?.activeSynchronizer
+        const futureValues = payloadObj?.configSchedule?.futureValues
+
+        if (Array.isArray(futureValues) && futureValues.length > 0) {
+            let updatedValue: string | undefined = undefined
+            for (const value of futureValues) {
+                const parsed = JSON.parse(JSON.stringify(value))
+                if (parsed?.decentralizedSynchronizer?.activeSynchronizer) {
+                    updatedValue =
+                        parsed.decentralizedSynchronizer.activeSynchronizer
+                }
+            }
+            return updatedValue ?? initActiveSynchronizer
+        } else return initActiveSynchronizer
     }
 }

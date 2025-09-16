@@ -29,7 +29,11 @@ export class PartyAllocationService {
         adminApiUrl: string,
         logger: Logger
     ) {
-        this.ledgerClient = new LedgerClient(httpLedgerUrl, adminToken, logger)
+        this.ledgerClient = new LedgerClient(
+            new URL(httpLedgerUrl),
+            adminToken,
+            logger
+        )
         this.topologyClient = new TopologyWriteService(
             this.synchronizerId,
             adminApiUrl,

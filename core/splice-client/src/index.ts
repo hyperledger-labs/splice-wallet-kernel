@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './scan-client.js'
+export * from './scan-proxy-client.js'
 export {
     GetResponse,
     PostRequest,

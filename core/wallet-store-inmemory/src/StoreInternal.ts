@@ -97,7 +97,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
 
             // Get existing parties from participant
             const ledgerClient = new LedgerClient(
-                network.ledgerApi.baseUrl,
+                new URL(network.ledgerApi.baseUrl),
                 this.authContext!.accessToken,
                 this.logger
             )
