@@ -13,6 +13,9 @@
     "files.watcherExclude": {
         "**/target": true
     },
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "always"
+    },
     "metals.inlayHints.implicitArguments.enable": true,
     "metals.inlayHints.implicitConversions.enable": true
 }
