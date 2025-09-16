@@ -13,6 +13,7 @@ import {
 import { LedgerClient } from './ledger-client.js'
 import { Holding, TransferInstructionView } from './txparse/types.js'
 import { Types } from './ledger-client.js'
+import { PartyId } from '@canton-network/core-types'
 
 type TransactionFilter = Types['TransactionFilter']
 type CreatedEvent = Types['CreatedEvent']
@@ -24,8 +25,6 @@ type DisclosedContract = Types['DisclosedContract']
 type PartySignatures = Types['PartySignatures']
 type Command = Types['Command']
 type DeduplicationPeriod2 = Types['DeduplicationPeriod2']
-
-export type PartyId = `${string}::${string}`
 
 export function filtersByParty(
     party: PartyId,

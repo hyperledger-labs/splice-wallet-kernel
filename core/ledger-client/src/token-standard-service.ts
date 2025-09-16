@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { TokenStandardClient } from '@canton-network/core-token-standard'
-import { Logger } from '@canton-network/core-types'
+import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
 import {
     HoldingInterface,
@@ -13,7 +13,6 @@ import {
 import {
     ensureInterfaceViewIsPresent,
     filtersByParty,
-    PartyId,
 } from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
 import {

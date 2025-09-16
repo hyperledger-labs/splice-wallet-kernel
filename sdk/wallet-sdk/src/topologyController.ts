@@ -17,7 +17,7 @@ import {
 } from '@canton-network/core-signing-lib'
 import { pino } from 'pino'
 import { hashPreparedTransaction } from '@canton-network/core-tx-visualizer'
-import { PartyId } from '@canton-network/core-ledger-client/src/ledger-api-utils'
+import { PartyId } from '@canton-network/core-types'
 
 export type PreparedParty = {
     partyTransactions: Uint8Array<ArrayBufferLike>[]

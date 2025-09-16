@@ -7,7 +7,7 @@ import {
 } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from 'pino'
-import { PartyId } from './ledger-api-utils'
+import { PartyId } from '@canton-network/core-types'
 
 export type Types = components['schemas']
 

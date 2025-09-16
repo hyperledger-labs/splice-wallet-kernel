@@ -39,8 +39,7 @@ const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
     'alice'
 )
 logger.info(`Created party: ${sender!.partyId}`)
-sdk.userLedger?.setPartyId(sender!.partyId)
-sdk.tokenStandard?.setPartyId(sender!.partyId)
+await sdk.setPartyId(sender!.partyId)
 
 const receiver = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairReceiver.privateKey,
@@ -66,11 +65,8 @@ sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL)
 await new Promise((res) => setTimeout(res, 5000))
 
-sdk.validator?.setPartyId(receiver?.partyId!)
+await sdk.setPartyId(receiver?.partyId!)
 const validatorOperatorParty = await sdk.validator?.getValidatorUser()
-
-sdk.userLedger?.setPartyId(receiver?.partyId!)
-sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL)
 
@@ -96,7 +92,7 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
 
 logger.info('transfer pre approval proposal is created')
 
-sdk.userLedger?.setPartyId(sender?.partyId!)
+await sdk.setPartyId(sender?.partyId!)
 
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     sender!.partyId,
@@ -153,19 +149,14 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
 )
 logger.info('Submitted transfer transaction')
 
-sdk.userLedger?.setPartyId(receiver!.partyId)
-sdk.tokenStandard?.setPartyId(receiver!.partyId)
-
 await new Promise((res) => setTimeout(res, 5000))
 
 {
-    sdk.tokenStandard?.setPartyId(sender!.partyId)
+    await sdk.setPartyId(sender!.partyId)
     const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
     logger.info(aliceHoldings, '[ALICE] holding transactions')
 
-    sdk.tokenStandard?.setPartyId(receiver!.partyId)
+    await sdk.setPartyId(receiver!.partyId)
     const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
     logger.info(bobHoldings, '[BOB] holding transactions')
-
-    sdk.tokenStandard?.setPartyId(sender!.partyId)
 }

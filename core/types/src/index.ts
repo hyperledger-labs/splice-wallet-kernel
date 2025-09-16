@@ -9,6 +9,12 @@ import { v4 as uuidv4 } from 'uuid'
  */
 export type Logger = Pick<Console, 'debug' | 'info' | 'warn' | 'error'>
 
+export const PartyId = z
+    .string()
+    .regex(/^[a-zA-Z0-9:-_]*::[a-z0-9]*/, 'Invalid party ID format')
+
+export type PartyId = z.infer<typeof PartyId>
+
 /**
  *  Requests / responses
  */

@@ -10,7 +10,6 @@ import {
     getMetaKeyValue,
     hasInterface,
     mergeMetas,
-    PartyId,
     removeParsedMetaKeys,
 } from '../ledger-api-utils.js'
 import {
@@ -38,6 +37,7 @@ import {
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
 import { LedgerClient } from '../ledger-client'
 import BigNumber from 'bignumber.js'
+import { PartyId } from '@canton-network/core-types'
 
 type ArchivedEvent = components['schemas']['ArchivedEvent']
 type CreatedEvent = components['schemas']['CreatedEvent']

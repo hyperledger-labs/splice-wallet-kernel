@@ -28,7 +28,7 @@ export {
 } from '@canton-network/core-signing-lib'
 export { decodePreparedTransaction } from '@canton-network/core-tx-visualizer'
 export { PreparedTransaction } from '@canton-network/core-ledger-proto'
-import { PartyId } from '@canton-network/core-ledger-client/src/ledger-api-utils'
+import { PartyId } from '@canton-network/core-types'
 
 type AuthFactory = () => AuthController
 type LedgerFactory = (userId: string, token: string) => LedgerController
@@ -58,6 +58,7 @@ export interface WalletSDK {
     connect(): Promise<WalletSDK>
     connectAdmin(): Promise<WalletSDK>
     connectTopology(synchronizer: PartyId | URL): Promise<WalletSDK>
+    setPartyId(partyId: PartyId, synchronizerId?: PartyId): Promise<void>
     userLedger: LedgerController | undefined
     adminLedger: LedgerController | undefined
     topology: TopologyController | undefined
@@ -169,5 +170,50 @@ export class WalletSDKImpl implements WalletSDK {
             synchronizerId
         )
         return this
+    }
+
+    /**
+     * Sets the partyId (and synchronizerId) for all controllers except for adminLedger.
+     * @param partyId the partyId to set.
+     * @param synchronizerId optional synchronizerId, if the party is hosted on multiple synchronizers.
+     */
+    async setPartyId(
+        partyId: PartyId,
+        synchronizerId?: PartyId
+    ): Promise<void> {
+        const _synchronizerId: PartyId =
+            synchronizerId ??
+            (await this.userLedger!.listSynchronizers(partyId))!
+                .connectedSynchronizers![0].synchronizerId
+
+        if (this.userLedger === undefined)
+            this.logger?.warn(
+                'User ledger controller is not defined, consider calling sdk.connect() first!'
+            )
+        else {
+            this.logger?.info(
+                `setting user ledger controller to use ${partyId}`
+            )
+            this.userLedger!.setPartyId(partyId)
+            this.userLedger!.setSynchronizerId(_synchronizerId)
+        }
+
+        if (this.tokenStandard === undefined)
+            this.logger?.warn(
+                'token standard controller is not defined, consider calling sdk.connect() first!'
+            )
+        else {
+            this.logger?.info(
+                `setting token standard controller to use ${partyId}`
+            )
+
+            this.tokenStandard?.setPartyId(partyId)
+            this.tokenStandard?.setSynchronizerId(_synchronizerId)
+        }
+        if (this.validator === undefined)
+            this.logger?.warn('validator controller is not defined')
+
+        this.validator?.setPartyId(partyId)
+        this.validator?.setSynchronizerId(_synchronizerId)
     }
 }

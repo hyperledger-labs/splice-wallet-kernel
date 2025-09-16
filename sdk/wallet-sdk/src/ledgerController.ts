@@ -18,7 +18,7 @@ import { v4 } from 'uuid'
 import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-client/src/_proto/com/digitalasset/canton/crypto/v30/crypto'
 import { TopologyController } from './topologyController.js'
-import { PartyId } from '@canton-network/core-ledger-client/src/ledger-api-utils'
+import { PartyId } from '@canton-network/core-types'
 
 /**
  * Controller for interacting with the Ledger API, this is the primary interaction point with the validator node
@@ -58,7 +58,7 @@ export class LedgerController {
      */
     getPartyId(): PartyId {
         if (!this.partyId)
-            throw new Error('PartyId is not defined, called setPartyId')
+            throw new Error('PartyId is not defined, call setPartyId')
         else return this.partyId
     }
 
@@ -69,7 +69,7 @@ export class LedgerController {
     getSynchronizerId(): PartyId {
         if (!this.synchronizerId)
             throw new Error(
-                'synchronizer Id is not defined, called setSynchronizerId'
+                'synchronizer Id is not defined, call setSynchronizerId'
             )
         else return this.synchronizerId
     }
@@ -88,6 +88,7 @@ export class LedgerController {
      * @param commands the commands to be executed.
      * @param privateKey the private key to sign the transaction with.
      * @param commandId an unique identifier used to track the transaction, if not provided a random UUID will be used.
+     * @param disclosedContracts off-ledger sourced contractIds needed to perform the transaction.
      */
     async prepareSignAndExecuteTransaction(
         commands: unknown,
@@ -219,7 +220,7 @@ export class LedgerController {
                     templateId: '#AdminWorkflows:Canton.Internal.Ping:Ping',
                     createArguments: {
                         id: v4(),
-                        initiator: this.partyId,
+                        initiator: this.getPartyId(),
                         responder: partyId,
                     },
                 },
@@ -249,17 +250,14 @@ export class LedgerController {
 
     /**
      * Lists all synchronizers the user has access to.
+     * @param partyId a potential partyId for filtering.
      * @returns A list of connected synchronizers.
      */
-    async listSynchronizers(): Promise<
-        GetResponse<'/v2/state/connected-synchronizers'>
-    > {
-        if (!this.partyId) {
-            throw new Error('partyId must be set before listing synchronizers')
-        }
-
+    async listSynchronizers(
+        partyId?: PartyId
+    ): Promise<GetResponse<'/v2/state/connected-synchronizers'>> {
         const params: Record<string, unknown> = {
-            query: { party: this.partyId },
+            query: { party: partyId ?? this.getPartyId() },
         }
         return await this.client.get(
             '/v2/state/connected-synchronizers',
@@ -284,7 +282,7 @@ export class LedgerController {
     ) {
         const params: Record<string, unknown> = {
             query: {
-                parties: this.partyId,
+                parties: this.getPartyId(),
                 'package-name': 'splice-wallet',
             },
         }

@@ -37,8 +37,7 @@ const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
     'alice'
 )
 logger.info(`Created party: ${sender!.partyId}`)
-sdk.userLedger?.setPartyId(sender!.partyId)
-sdk.tokenStandard?.setPartyId(sender!.partyId)
+await sdk.setPartyId(sender!.partyId)
 
 const receiver = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairReceiver.privateKey,
@@ -134,8 +133,7 @@ const transferCid = holdings!.transactions
     )
     .find((v) => v !== undefined)
 
-sdk.userLedger?.setPartyId(receiver!.partyId)
-sdk.tokenStandard?.setPartyId(receiver!.partyId)
+await sdk.setPartyId(receiver!.partyId)
 
 const [acceptTransferCommand, disclosedContracts3] =
     await sdk.tokenStandard!.exerciseTransferInstructionChoice(
@@ -155,13 +153,13 @@ console.log('Accepted transfer instruction')
 await new Promise((res) => setTimeout(res, 5000))
 
 {
-    sdk.tokenStandard?.setPartyId(sender!.partyId)
+    await sdk.setPartyId(sender!.partyId)
     const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
     logger.info(aliceHoldings, '[ALICE] holding transactions')
 
-    sdk.tokenStandard?.setPartyId(receiver!.partyId)
+    await sdk.setPartyId(receiver!.partyId)
     const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
     logger.info(bobHoldings, '[BOB] holding transactions')
 
-    sdk.tokenStandard?.setPartyId(sender!.partyId)
+    await sdk.setPartyId(sender!.partyId)
 }

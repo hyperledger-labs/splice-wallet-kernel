@@ -13,7 +13,7 @@ import {
     ViewValue,
 } from '@canton-network/core-ledger-client'
 import { HoldingView } from '@canton-network/core-token-standard'
-import { PartyId } from '@canton-network/core-ledger-client/src/ledger-api-utils'
+import { PartyId } from '@canton-network/core-types'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject'
 
@@ -82,7 +82,7 @@ export class TokenStandardController {
      */
     getPartyId(): PartyId {
         if (!this.partyId)
-            throw new Error('PartyId is not defined, called setPartyId')
+            throw new Error('PartyId is not defined, call setPartyId')
         else return this.partyId
     }
 
@@ -93,7 +93,7 @@ export class TokenStandardController {
     getSynchronizerId(): PartyId {
         if (!this.synchronizerId)
             throw new Error(
-                'synchronizer Id is not defined, called setSynchronizerId'
+                'synchronizer Id is not defined, call setSynchronizerId'
             )
         else return this.synchronizerId
     }

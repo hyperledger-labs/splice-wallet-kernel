@@ -37,7 +37,7 @@ import {
 import { GrpcTransport } from '@protobuf-ts/grpc-transport'
 import { ChannelCredentials } from '@grpc/grpc-js'
 import { createHash } from 'node:crypto'
-import { PartyId } from './ledger-api-utils'
+import { PartyId } from '@canton-network/core-types'
 
 function prefixedInt(value: number, bytes: Buffer | Uint8Array): Buffer {
     const buffer = Buffer.alloc(4 + bytes.length)
