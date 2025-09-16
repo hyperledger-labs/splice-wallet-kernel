@@ -4,15 +4,14 @@
 import {
     Types,
     LedgerClient,
-    TokenStandardService,
-} from '@canton-network/core-ledger-client'
-import { pino } from 'pino'
-import {
     PrettyTransactions,
     PrettyContract,
     ViewValue,
+    TokenStandardService,
 } from '@canton-network/core-ledger-client'
-import { HoldingView } from '@canton-network/core-token-standard'
+import { ScanProxyClient } from '@canton-network/core-splice-client'
+import { pino } from 'pino'
+import type { HoldingView } from '@canton-network/core-token-standard'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject'
 
@@ -33,17 +32,27 @@ export class TokenStandardController {
      *
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
+     * @param validatorBaseUrl the url for the validator api. Needed for Scan Proxy API access.
      * @param accessToken the access token from the user, usually provided by an auth controller.
      */
     constructor(
         userId: string,
-        baseUrl: string,
-        private accessToken: string
+        baseUrl: URL,
+        validatorBaseUrl: URL,
+        accessToken: string
     ) {
         this.client = new LedgerClient(baseUrl, accessToken, this.logger)
-        this.service = new TokenStandardService(this.client, this.logger)
+        const scanProxyClient = new ScanProxyClient(
+            validatorBaseUrl,
+            this.logger,
+            accessToken
+        )
+        this.service = new TokenStandardService(
+            this.client,
+            scanProxyClient,
+            this.logger
+        )
         this.userId = userId
-        return this
     }
 
     /**
@@ -250,7 +259,12 @@ export const localTokenStandardDefault = (
     userId: string,
     token: string
 ): TokenStandardController => {
-    return new TokenStandardController(userId, 'http://127.0.0.1:5003', token)
+    return new TokenStandardController(
+        userId,
+        new URL('http://127.0.0.1:5003'),
+        new URL('http://wallet.localhost:2000/api/validator'),
+        token
+    )
 }
 
 /**
@@ -261,5 +275,10 @@ export const localNetTokenStandardDefault = (
     userId: string,
     token: string
 ): TokenStandardController => {
-    return new TokenStandardController(userId, 'http://127.0.0.1:2975', token)
+    return new TokenStandardController(
+        userId,
+        new URL('http://127.0.0.1:2975'),
+        new URL('http://wallet.localhost:2000/api/validator'),
+        token
+    )
 }

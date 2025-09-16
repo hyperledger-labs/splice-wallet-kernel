@@ -23,6 +23,7 @@ import {
 
 import type { PrettyTransactions, Transaction } from './txparse/types.js'
 import { Types } from './ledger-client.js'
+import { ScanProxyClient } from '@canton-network/core-splice-client'
 
 const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
 
@@ -52,10 +53,11 @@ type JsActiveContractEntryResponse = JsGetActiveContractsResponse & {
 export class TokenStandardService {
     constructor(
         private ledgerClient: LedgerClient,
+        private scanProxyClient: ScanProxyClient,
         private readonly logger: Logger
     ) {}
 
-    private tokenStandardClient(registryUrl: string): TokenStandardClient {
+    private getTokenStandardClient(registryUrl: string): TokenStandardClient {
         return new TokenStandardClient(registryUrl, this.logger, undefined)
     }
 
@@ -64,7 +66,9 @@ export class TokenStandardService {
         transferFactoryRegistryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const client = this.tokenStandardClient(transferFactoryRegistryUrl)
+            const client = this.getTokenStandardClient(
+                transferFactoryRegistryUrl
+            )
             const choiceContext = await client.post(
                 '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/accept',
                 {},
@@ -100,7 +104,7 @@ export class TokenStandardService {
     async getInstrumentAdmin(
         transferFactoryRegistryUrl: string
     ): Promise<string | undefined> {
-        const client = this.tokenStandardClient(transferFactoryRegistryUrl)
+        const client = this.getTokenStandardClient(transferFactoryRegistryUrl)
 
         const info = await client.get('/registry/metadata/v1/info')
 
@@ -112,7 +116,9 @@ export class TokenStandardService {
         transferFactoryRegistryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const client = this.tokenStandardClient(transferFactoryRegistryUrl)
+            const client = this.getTokenStandardClient(
+                transferFactoryRegistryUrl
+            )
             const choiceContext = await client.post(
                 '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/reject',
                 {},
@@ -319,7 +325,7 @@ export class TokenStandardService {
 
             this.logger.debug('Creating transfer factory...')
 
-            const transferFactory = await this.tokenStandardClient(
+            const transferFactory = await this.getTokenStandardClient(
                 transferFactoryRegistryUrl
             ).post('/registry/transfer-instruction/v1/transfer-factory', {
                 choiceArguments: choiceArgs as unknown as Record<string, never>,
@@ -355,7 +361,6 @@ export class TokenStandardService {
         instrumentId: string,
         transferFactoryRegistryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        // TODO: replace with correct scan lookup
         const now = new Date()
         const tomorrow = new Date(now)
         tomorrow.setDate(tomorrow.getDate() + 1)
@@ -378,7 +383,7 @@ export class TokenStandardService {
             },
         }
 
-        const transferFactory = await this.tokenStandardClient(
+        const transferFactory = await this.getTokenStandardClient(
             transferFactoryRegistryUrl
         ).post('/registry/transfer-instruction/v1/transfer-factory', {
             choiceArguments: choiceArgs as unknown as Record<string, never>,
@@ -387,27 +392,27 @@ export class TokenStandardService {
         const disclosedContracts =
             transferFactory.choiceContext.disclosedContracts
 
-        const amuletRules = disclosedContracts.find((c) =>
-            c.templateId?.endsWith('Splice.AmuletRules:AmuletRules')
-        )
+        const amuletRules = await this.scanProxyClient.getAmuletRules()
+        const openMiningRounds =
+            await this.scanProxyClient.getOpenMiningRounds()
         if (!amuletRules) {
             throw new Error('AmuletRules contract not found')
         }
-        const openMiningRounds = disclosedContracts.find((c) =>
-            c.templateId?.endsWith('Splice.Round:OpenMiningRound')
-        )
-        if (!openMiningRounds) {
+
+        if (!(Array.isArray(openMiningRounds) && openMiningRounds.length)) {
             throw new Error('OpenMiningRound contract not found')
         }
+        const latestOpenMiningRound =
+            openMiningRounds[openMiningRounds.length - 1]
         return [
             {
-                templateId: amuletRules.templateId!,
-                contractId: amuletRules.contractId,
+                templateId: amuletRules.template_id!,
+                contractId: amuletRules.contract_id,
                 choice: 'AmuletRules_DevNet_Tap',
                 choiceArgument: {
                     receiver: receiver,
                     amount: amount,
-                    openRound: openMiningRounds.contractId,
+                    openRound: latestOpenMiningRound.contract_id,
                 },
             },
             disclosedContracts,

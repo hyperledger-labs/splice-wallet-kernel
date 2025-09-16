@@ -41,7 +41,7 @@ export class TopologyController {
 
     constructor(
         adminApiUrl: string,
-        baseUrl: string,
+        baseUrl: URL,
         userId: string,
         userAdminToken: string,
         synchronizerId: string
@@ -193,7 +193,7 @@ export const localNetTopologyDefault = (
 ): TopologyController => {
     return new TopologyController(
         '127.0.0.1:2902',
-        'http://127.0.0.1:2975',
+        new URL('http://127.0.0.1:2975'),
         userId,
         userAdminToken,
         synchronizerId
@@ -210,7 +210,7 @@ export const localTopologyDefault = (
 ): TopologyController => {
     return new TopologyController(
         '127.0.0.1:5012',
-        'http://127.0.0.1:5003',
+        new URL('http://127.0.0.1:5003'),
         userId,
         userAdminToken,
         'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd'

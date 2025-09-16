@@ -49,14 +49,14 @@ export class ValidatorInternalClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
 
-    constructor(baseUrl: string, logger: Logger, token?: string) {
+    constructor(baseUrl: URL, logger: Logger, token?: string) {
         this.logger = logger
         this.logger.debug(
             { baseUrl, token },
             'ValidatorInternalClient initialized'
         )
         this.client = createClient<paths>({
-            baseUrl,
+            baseUrl: baseUrl.href,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
                 return fetch(url, {
                     ...options,
