@@ -392,8 +392,27 @@ export class TokenStandardService {
         if (!(Array.isArray(openMiningRounds) && openMiningRounds.length)) {
             throw new Error('OpenMiningRound contract not found')
         }
-        const latestOpenMiningRound =
-            openMiningRounds[openMiningRounds.length - 1]
+
+        const nowForOpenMiningRounds = Date.now()
+        const latestOpenMiningRound = openMiningRounds.findLast(
+            (openMiningRound) => {
+                const { opensAt, targetClosesAt } = openMiningRound.payload
+                const opensAtMs = Number(new Date(opensAt))
+                const targetClosesAtMs = Number(new Date(targetClosesAt))
+
+                return (
+                    opensAtMs <= nowForOpenMiningRounds &&
+                    targetClosesAtMs > nowForOpenMiningRounds
+                )
+            }
+        )
+
+        if (!latestOpenMiningRound) {
+            throw new Error(
+                'OpenMiningRound active at current moment not found'
+            )
+        }
+
         return [
             {
                 templateId: amuletRules.template_id!,
