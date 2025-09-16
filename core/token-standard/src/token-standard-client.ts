@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import { paths as allocation } from './generated-clients/splice-api-token-allocation-v1/allocation-v1.js'
 import { paths as metadata } from './generated-clients/splice-api-token-metadata-v1/token-metadata-v1.js'
 import { paths as transferInstruction } from './generated-clients/splice-api-token-transfer-instruction-v1/transfer-instruction-v1.js'
