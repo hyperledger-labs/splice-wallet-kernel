@@ -123,7 +123,13 @@ export class TopologyWriteService {
         }
 
         // 55 is the hash purpose for multi topology transaction hashes
-        return computeSha256CantonHash(55, concatenatedHashes)
+        const predefineHashPurpose = computeSha256CantonHash(
+            55,
+            concatenatedHashes
+        )
+
+        //convert to base64
+        return Buffer.from(predefineHashPurpose, 'hex').toString('base64')
     }
 
     static createFingerprintFromKey = (
