@@ -218,6 +218,7 @@ export class TopologyController {
         partyHint?: string,
         confirmingThreshold?: number
     ) {
+        this.logger.info('getting participant ids')
         const participantIdPromises = participantEndpoints.map(
             async (endpoint) => {
                 return await this.getParticipantId(endpoint)
@@ -225,6 +226,8 @@ export class TopologyController {
         )
 
         const participantIds = await Promise.all(participantIdPromises)
+
+        this.logger.info(participantIds, 'participantIds')
 
         //allocate initial party against participant that the sdk is connected to
         const allocatedParty = await this.prepareSignAndSubmitExternalParty(

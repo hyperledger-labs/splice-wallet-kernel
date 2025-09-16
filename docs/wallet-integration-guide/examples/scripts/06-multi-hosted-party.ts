@@ -61,11 +61,6 @@ const participantEndpointConfigs = [
     // },
 ]
 
-/*
-
-        '127.0.0.1:2902',
-        'http://127.0.0.1:2975',
-        */
 logger.info('multi host party starting...')
 const result = await sdk.topology?.multiHostParty(
     participantEndpointConfigs,
