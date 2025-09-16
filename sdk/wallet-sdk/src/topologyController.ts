@@ -241,7 +241,7 @@ export class TopologyController {
 
         const preparedParty = await this.prepareSignAndSubmitExternalParty(
             privateKey,
-            'bob',
+            partyHint,
             confirmingThreshold,
             participantIds
         )
