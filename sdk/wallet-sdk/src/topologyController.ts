@@ -33,7 +33,7 @@ export type AllocatedParty = {
 
 export type ParticipantEndpointConfig = {
     adminApiUrl: string
-    baseUrl: string
+    baseUrl: URL
     accessToken: string
 }
 

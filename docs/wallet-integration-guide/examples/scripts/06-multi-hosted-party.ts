@@ -51,12 +51,12 @@ const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
 const participantEndpointConfigs = [
     {
         adminApiUrl: '127.0.0.1:2902',
-        baseUrl: 'http://127.0.0.1:2975',
+        baseUrl: new URL('http://127.0.0.1:2975'),
         accessToken: adminToken.accessToken,
     },
     {
         adminApiUrl: '127.0.0.1:3902',
-        baseUrl: 'http://127.0.0.1:3975',
+        baseUrl: new URL('http://127.0.0.1:3975'),
         accessToken: adminToken.accessToken,
     },
 ]
