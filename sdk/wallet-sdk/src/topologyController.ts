@@ -150,7 +150,8 @@ export class TopologyController {
      */
     async submitExternalPartyTopology(
         signedHash: string,
-        preparedParty: PreparedParty
+        preparedParty: PreparedParty,
+        multiHost: boolean = false
     ): Promise<AllocatedParty> {
         const signedTopologyTxs = preparedParty.partyTransactions.map(
             (transaction) =>
@@ -162,13 +163,23 @@ export class TopologyController {
                 )
         )
 
+        this.logger.info('submitting external party topology')
         await this.topologyClient.submitExternalPartyTopology(
             signedTopologyTxs,
             preparedParty.partyId
         )
 
-        await this.client.grantUserRights(this.userId, preparedParty.partyId)
+        this.logger.info(
+            'submitted topology, now waiting on granting user rights'
+        )
+        if (!multiHost) {
+            await this.client.grantUserRights(
+                this.userId,
+                preparedParty.partyId
+            )
 
+            this.logger.info('granted user rights')
+        }
         return { partyId: preparedParty.partyId }
     }
 
@@ -259,7 +270,8 @@ export class TopologyController {
 
         const submit = await this.submitExternalPartyTopology(
             signedHash,
-            preparedParty
+            preparedParty,
+            true
         )
 
         this.logger.info(submit, 'submitResponse')
@@ -277,34 +289,36 @@ export class TopologyController {
         //     'allocated multihost party on sdk connected participant'
         // )
 
-        // for (const endpoint of participantEndpoints) {
-        //     const lc = new LedgerClient(
-        //         endpoint.baseUrl,
-        //         endpoint.accessToken,
-        //         this.logger
-        //     )
-        //     const service = new TopologyWriteService(
-        //         synchronizerId,
-        //         endpoint.adminApiUrl,
-        //         endpoint.accessToken,
-        //         lc
-        //     )
-        //     this.logger.info(endpoint, 'endpoint info')
+        //start after first because we've already onboarded an external party the normal way
+        //now we need to authorize the party to participant requests on the others
+        for (let i = 1; i < participantEndpoints.length; i++) {
+            const lc = new LedgerClient(
+                participantEndpoints[i].baseUrl,
+                participantEndpoints[i].accessToken,
+                this.logger
+            )
+            const service = new TopologyWriteService(
+                synchronizerId,
+                participantEndpoints[i].adminApiUrl,
+                participantEndpoints[i].accessToken,
+                lc
+            )
+            this.logger.info(participantEndpoints[i], 'endpoint info')
 
-        //     const proposals = await service
-        //         .waitForPartyToParticipantProposal(allocatedParty.partyId)
-        //         .then((p) => this.logger.info(p, 'result of listing proposals'))
-        //         .catch((e) =>
-        //             this.logger.error(
-        //                 e,
-        //                 'list party to participant proposal error'
-        //             )
-        //         )
+            // const proposals = await service
+            //     .waitForPartyToParticipantProposal(allocatedParty.partyId)
+            //     .then((p) => this.logger.info(p, 'result of listing proposals'))
+            //     .catch((e) =>
+            //         this.logger.error(
+            //             e,
+            //             'list party to participant proposal error'
+            //         )
+            //     )
 
-        //     this.logger.info(proposals, 'listing proposals')
+            // this.logger.info(proposals, 'listing proposals')
 
-        //     await service.authorizePartyToParticipant(allocatedParty.partyId)
-        // }
+            await service.authorizePartyToParticipant(preparedParty.partyId)
+        }
 
         //for the rest of the participant configs, authorize the party to participant mapping
         // participantEndpoints.forEach((endpoint) => {
