@@ -239,33 +239,6 @@ export class TopologyController {
 
         const participantIds = await Promise.all(participantIdPromises)
 
-        // const preparedParty = await this.prepareExternalPartyTopology(
-        //     getPublicKeyFromPrivate(privateKey),
-        //     partyHint,
-        //     confirmingThreshold,
-        //     participantIds
-        // )
-
-        // this.logger.info(preparedParty, 'preparedTxResponse')
-
-        // const base64StringCombinedHash = Buffer.from(
-        //     preparedParty?.combinedHash,
-        //     'hex'
-        // ).toString('base64')
-
-        // const signedHash = signTransactionHash(
-        //     base64StringCombinedHash,
-        //     privateKey
-        // )
-
-        // this.logger.info(signedHash)
-
-        // const submit = await this.submitExternalPartyTopology(
-        //     signedHash,
-        //     preparedParty,
-        //     true
-        // )
-
         const preparedParty = await this.prepareSignAndSubmitExternalParty(
             privateKey,
             'bob',
