@@ -169,16 +169,11 @@ export class TopologyController {
             preparedParty.partyId
         )
 
-        this.logger.info(
-            'submitted topology, now waiting on granting user rights'
-        )
         if (!multiHost) {
             await this.client.grantUserRights(
                 this.userId,
                 preparedParty.partyId
             )
-
-            this.logger.info('granted user rights')
         }
         return { partyId: preparedParty.partyId }
     }
@@ -207,7 +202,13 @@ export class TopologyController {
             privateKey
         )
 
-        return await this.submitExternalPartyTopology(signedHash, preparedParty)
+        const multiHost = participantIds && participantIds?.length > 0
+
+        return await this.submitExternalPartyTopology(
+            signedHash,
+            preparedParty,
+            multiHost
+        )
     }
 
     async getParticipantId(
@@ -238,56 +239,41 @@ export class TopologyController {
 
         const participantIds = await Promise.all(participantIdPromises)
 
-        this.logger.info(participantIds, 'participantIds')
-        const fingerprint = TopologyController.createFingerprintFromPublicKey(
-            getPublicKeyFromPrivate(privateKey)
-        )
-
-        this.logger.info(fingerprint)
-
-        this.logger.info('preparing external party topology')
-
-        const preparedParty = await this.prepareExternalPartyTopology(
-            getPublicKeyFromPrivate(privateKey),
-            partyHint,
-            confirmingThreshold,
-            participantIds
-        )
-
-        this.logger.info(preparedParty, 'preparedTxResponse')
-
-        const base64StringCombinedHash = Buffer.from(
-            preparedParty?.combinedHash,
-            'hex'
-        ).toString('base64')
-
-        const signedHash = signTransactionHash(
-            base64StringCombinedHash,
-            privateKey
-        )
-
-        this.logger.info(signedHash)
-
-        const submit = await this.submitExternalPartyTopology(
-            signedHash,
-            preparedParty,
-            true
-        )
-
-        this.logger.info(submit, 'submitResponse')
-
-        //allocate initial party against participant that the sdk is connected to
-        // const allocatedParty = await this.prepareSignAndSubmitExternalParty(
-        //     privateKey,
+        // const preparedParty = await this.prepareExternalPartyTopology(
+        //     getPublicKeyFromPrivate(privateKey),
         //     partyHint,
         //     confirmingThreshold,
         //     participantIds
         // )
 
-        // this.logger.info(
-        //     allocatedParty,
-        //     'allocated multihost party on sdk connected participant'
+        // this.logger.info(preparedParty, 'preparedTxResponse')
+
+        // const base64StringCombinedHash = Buffer.from(
+        //     preparedParty?.combinedHash,
+        //     'hex'
+        // ).toString('base64')
+
+        // const signedHash = signTransactionHash(
+        //     base64StringCombinedHash,
+        //     privateKey
         // )
+
+        // this.logger.info(signedHash)
+
+        // const submit = await this.submitExternalPartyTopology(
+        //     signedHash,
+        //     preparedParty,
+        //     true
+        // )
+
+        const preparedParty = await this.prepareSignAndSubmitExternalParty(
+            privateKey,
+            'bob',
+            confirmingThreshold,
+            participantIds
+        )
+
+        this.logger.info(preparedParty, 'onboarded external party')
 
         //start after first because we've already onboarded an external party the normal way
         //now we need to authorize the party to participant requests on the others
@@ -305,38 +291,12 @@ export class TopologyController {
             )
             this.logger.info(participantEndpoints[i], 'endpoint info')
 
-            // const proposals = await service
-            //     .waitForPartyToParticipantProposal(allocatedParty.partyId)
-            //     .then((p) => this.logger.info(p, 'result of listing proposals'))
-            //     .catch((e) =>
-            //         this.logger.error(
-            //             e,
-            //             'list party to participant proposal error'
-            //         )
-            //     )
-
-            // this.logger.info(proposals, 'listing proposals')
-
             await service.authorizePartyToParticipant(preparedParty.partyId)
         }
 
-        //for the rest of the participant configs, authorize the party to participant mapping
-        // participantEndpoints.forEach((endpoint) => {
-        //     const lc = new LedgerClient(
-        //         endpoint.baseUrl,
-        //         endpoint.accessToken,
-        //         this.logger
-        //     )
-        //     const service = new TopologyWriteService(
-        //         synchronizerId,
-        //         endpoint.baseUrl,
-        //         endpoint.accessToken,
-        //         lc
-        //     )
-        //     this.logger.info(endpoint, 'endpoint info')
+        await this.client.grantUserRights(this.userId, preparedParty.partyId)
 
-        //     await service.authorizePartyToParticipant(allocatedParty.partyId)
-        // })
+        return { partyId: preparedParty.partyId }
     }
 }
 
