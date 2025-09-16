@@ -32,7 +32,7 @@ type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
 type OffsetCheckpoint2 = Types['OffsetCheckpoint2']
 type JsTransaction = Types['JsTransaction']
-type JsGetTransactionResponse = Types['JsGetTransactionResponse']
+type TransactionFormat = Types['TransactionFormat']
 
 type OffsetCheckpointUpdate = {
     update: { OffsetCheckpoint: OffsetCheckpoint2 }
@@ -251,13 +251,33 @@ export class TokenStandardService {
         }
     }
 
-    async getTransactionById(updateId: string) {
-        const transactionResponse: JsGetTransactionResponse =
-            await this.ledgerClient.post('/v2/updates/transaction-by-id', {
-                updateId,
-            })
-        // TODO use parser, but make it work without party ID
-        return transactionResponse
+    async getTransactionById(updateId: string, partyId: PartyId) {
+        const transactionFormat: TransactionFormat = {
+            eventFormat: {
+                filtersByParty: {
+                    [partyId]: {
+                        cumulative: [
+                            {
+                                identifierFilter: {
+                                    WildcardFilter: {
+                                        value: {
+                                            includeCreatedEventBlob: false,
+                                        },
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+                verbose: true,
+            },
+            transactionShape: 'TRANSACTION_SHAPE_ACS_DELTA',
+        }
+
+        return this.ledgerClient.post('/v2/updates/transaction-by-id', {
+            updateId,
+            transactionFormat,
+        })
     }
 
     async createTransfer(

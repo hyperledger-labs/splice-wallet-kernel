@@ -144,7 +144,10 @@ export class TokenStandardController {
         )
     }
     async getTransactionById(updateId: string) {
-        return await this.service.getTransactionById(updateId)
+        if (this.partyId === undefined) {
+            throw new Error('PartyId is not defined, call setPartyId')
+        }
+        return await this.service.getTransactionById(updateId, this.partyId)
     }
 
     /** Lists all active contracts' interface view values and cids,
