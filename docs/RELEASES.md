@@ -4,8 +4,8 @@ This repository is a monorepo of independently versioned Javascript packages. We
 
 1. Checkout `main` and `git pull` to be up-to-date
 2. Run `git fetch --tags --force` to fetch the latest tags locally
-3. Create a new branch to hold the version bump commit: `git checkout -b release/<branch>` (can be any branch name)
-4. Push the branch to the remote: `git push --set-upstream origin release/<branch>`
+3. Create a new branch to hold the version bump commit: `git checkout -b release/$(date +%s)`
+4. Push the branch to the remote: `git push --set-upstream origin <branch from prior step>`
 5. Ensure you have the `gh` CLI tool installed and authenticated: `gh auth status`
     - if unauthenticated, `gh auth login`
 6. Run `yarn nx release --skip-publish --dry-run` to sanity check the new update versions
