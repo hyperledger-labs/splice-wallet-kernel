@@ -1493,6 +1493,7 @@ __metadata:
   resolution: "@canton-network/core-ledger-client@workspace:core/ledger-client"
   dependencies:
     "@canton-network/core-ledger-proto": "workspace:^"
+    "@canton-network/core-splice-client": "workspace:^"
     "@canton-network/core-token-standard": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@grpc/grpc-js": "npm:^1.13.4"

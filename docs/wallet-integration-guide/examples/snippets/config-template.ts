@@ -7,7 +7,11 @@ import {
 } from '@canton-network/wallet-sdk'
 
 const myLedgerFactory = (userId: string, token: string) => {
-    return new LedgerController(userId, 'my-json-ledger-api', token)
+    return new LedgerController(
+        userId,
+        new URL('http://my-json-ledger-api'),
+        token
+    )
 }
 
 const myTopologyFactory = (
@@ -17,7 +21,7 @@ const myTopologyFactory = (
 ) => {
     return new TopologyController(
         'my-grpc-admin-api',
-        'my-json-ledger-api',
+        new URL('http://my-json-ledger-api'),
         userId,
         userAdminToken,
         synchronizerId
@@ -25,7 +29,11 @@ const myTopologyFactory = (
 }
 
 const myValidatorFactory = (userId: string, token: string) => {
-    return new ValidatorController(userId, 'my-validator-app-api', token)
+    return new ValidatorController(
+        userId,
+        new URL('http://my-validator-app-api'),
+        token
+    )
 }
 
 const sdk = new WalletSDKImpl().configure({
@@ -38,4 +46,4 @@ const sdk = new WalletSDKImpl().configure({
 
 await sdk.connect()
 await sdk.connectAdmin()
-await sdk.connectTopology(new URL('my-scan-api'))
+await sdk.connectTopology(new URL('http://my-scan-api'))
