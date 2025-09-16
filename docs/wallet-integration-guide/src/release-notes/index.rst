@@ -67,7 +67,7 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
             preparedParty
         )
 
-* fixed a bug that caused the expectedDto field to be required when performing TransferPreApprovalProposal (this is only required after Splice 0.1.11)
+* fixed a bug that caused the expectedDso field to be required when performing TransferPreApprovalProposal (this is only required after Splice 0.1.11)
 * simplified setParty & setSynchronizer, now it can all be done with one call on sdk.setPartyId()
 
 .. code-block:: javascript
