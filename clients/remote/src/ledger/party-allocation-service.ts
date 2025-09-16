@@ -122,9 +122,7 @@ export class PartyAllocationService {
 
         const combinedHash = TopologyWriteService.combineHashes(txHashes)
 
-        const signature = await signingCallback(
-            Buffer.from(combinedHash, 'hex').toString('base64')
-        )
+        const signature = await signingCallback(combinedHash)
 
         const signedTopologyTxs = transactions.map((transaction) =>
             TopologyWriteService.toSignedTopologyTransaction(
