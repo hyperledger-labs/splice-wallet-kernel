@@ -205,6 +205,11 @@ export class TopologyController {
             confirmingThreshold
         )
 
+        this.logger.info(
+            allocatedParty,
+            'allocated multihost party on sdk connected participant'
+        )
+
         for (const endpoint of participantEndpoints) {
             const lc = new LedgerClient(
                 endpoint.baseUrl,
@@ -213,7 +218,7 @@ export class TopologyController {
             )
             const service = new TopologyWriteService(
                 synchronizerId,
-                endpoint.baseUrl,
+                endpoint.adminApiUrl,
                 endpoint.accessToken,
                 lc
             )
@@ -222,7 +227,12 @@ export class TopologyController {
             await service
                 .waitForPartyToParticipantProposal(allocatedParty.partyId)
                 .then((p) => this.logger.info(p, 'result of listing proposals'))
-                .catch((e) => this.logger.error(e))
+                .catch((e) =>
+                    this.logger.error(
+                        e,
+                        'list party to participant proposal error'
+                    )
+                )
 
             await service.authorizePartyToParticipant(allocatedParty.partyId)
         }

@@ -11,7 +11,7 @@ import { pino } from 'pino'
 import { LOCALNET_REGISTRY_API_URL, LOCALNET_SCAN_API_URL } from '../config.js'
 import { v4 } from 'uuid'
 
-const logger = pino({ name: '05-external-party-setup', level: 'info' })
+const logger = pino({ name: '06-external-party-setup', level: 'info' })
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
@@ -42,6 +42,7 @@ const alice = await sdk.topology?.prepareSignAndSubmitExternalParty(
 )
 logger.info('created single hosted party to get synchronzerId')
 sdk.userLedger?.setPartyId(alice?.partyId!)
+logger.info(alice?.partyId!, 'created single user')
 
 const synchronizers = await sdk.userLedger?.listSynchronizers()
 
