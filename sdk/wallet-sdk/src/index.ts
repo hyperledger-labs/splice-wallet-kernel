@@ -7,7 +7,7 @@ import {
     localTokenStandardDefault,
     TokenStandardController,
 } from './tokenStandardController.js'
-import { ScanClient } from '@canton-network/core-splice-client'
+import { ScanProxyClient } from '@canton-network/core-splice-client'
 import {
     localTopologyDefault,
     TopologyController,
@@ -133,36 +133,39 @@ export class WalletSDKImpl implements WalletSDK {
     }
 
     /** Connects to the topology service using admin credentials.
-     * @param synchronizer either the synchronizerId or the base url of the scanClient.
+     * @param synchronizer either the synchronizerId or the base url of the scanProxyClient.
      * @returns A promise that resolves to the WalletSDK instance.
      */
     async connectTopology(synchronizer: PartyId | URL): Promise<WalletSDK> {
+        // TODO adjust the argument so it's clear whether synchronizerId or URL is passed
         if (this.auth.userId === undefined)
             throw new Error('UserId is not defined in AuthController.')
         if (synchronizer === undefined)
             throw new Error(
-                'Synchronizer is not defined in connectTopology. Either provide a synchronizerId or a scanClient base url.'
+                'Synchronizer is not defined in connectTopology. Provide a synchronizerId'
             )
         const { userId, accessToken } = await this.auth.getAdminToken()
         let synchronizerId: PartyId
         if (typeof synchronizer === 'string') {
             synchronizerId = synchronizer
         } else if (synchronizer instanceof URL) {
-            const scanClient = new ScanClient(
-                synchronizer.href,
+            const scanProxyClient = new ScanProxyClient(
+                synchronizer,
                 this.logger!,
                 accessToken
             )
             const amuletSynchronizerId =
-                await scanClient.GetAmuletSynchronizerId()
+                await scanProxyClient.getAmuletSynchronizerId()
             if (amuletSynchronizerId === undefined) {
-                throw new Error('SynchronizerId is not defined in ScanClient.')
+                throw new Error(
+                    'SynchronizerId is not defined in ScanProxyClient.'
+                )
             } else {
                 synchronizerId = amuletSynchronizerId as PartyId
             }
         } else
             throw new Error(
-                'invalid Synchronizer format. Either provide a synchronizerId or a scanClient base url.'
+                'invalid Synchronizer format. Either provide a synchronizerId or a scanProxyClient base url.'
             )
         this.topology = this.topologyFactory(
             userId,

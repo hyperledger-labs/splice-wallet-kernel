@@ -3,7 +3,7 @@
 
 import { pino } from 'pino'
 import {
-    ScanClient,
+    ScanProxyClient,
     ValidatorInternalClient,
 } from '@canton-network/core-splice-client'
 
@@ -21,6 +21,7 @@ import { PartyId } from '@canton-network/core-types'
 export class ValidatorController {
     private logger = pino({ name: 'ValidatorController', level: 'info' })
     private validatorClient: ValidatorInternalClient
+    private scanProxyClient: ScanProxyClient
     private userId: string
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
@@ -33,10 +34,16 @@ export class ValidatorController {
      */
     constructor(
         userId: string,
-        baseUrl: string,
+        baseUrl: URL,
         private accessToken: string
     ) {
         this.validatorClient = new ValidatorInternalClient(
+            baseUrl,
+            this.logger,
+            this.accessToken
+        )
+
+        this.scanProxyClient = new ScanProxyClient(
             baseUrl,
             this.logger,
             this.accessToken
@@ -208,6 +215,41 @@ export class ValidatorController {
             await this.validatorClient.get('/v0/validator-user')
         return validatorUserResponse.party_id
     }
+
+    /**  Lookup a TransferPreapproval by the receiver party
+     * @param partyId receiver party id
+     * @returns A promise that resolves to an array of
+     * transfer preapprovals by party.
+     */
+
+    async getTransferPreApprovals(partyId: string) {
+        return await this.scanProxyClient.get(
+            '/v0/scan-proxy/transfer-preapprovals/by-party/{party}',
+            {
+                path: {
+                    party: partyId,
+                },
+            }
+        )
+    }
+
+    /**  Fetch open mining rounds from Scan Proxy API
+     * @returns A promise that resolves to an array of
+     * open mining rounds contracts
+     */
+
+    async getOpenMiningRounds() {
+        return this.scanProxyClient.getOpenMiningRounds()
+    }
+
+    /**  Fetch Amulet rules from Scan Proxy API
+     * @returns A promise that resolves to an
+     * amulet rules contract
+     */
+
+    async getAmuletRules() {
+        return this.scanProxyClient.getAmuletRules()
+    }
 }
 
 /**
@@ -220,7 +262,7 @@ export const localValidatorDefault = (
 ): ValidatorController => {
     return new ValidatorController(
         userId,
-        'http://wallet.localhost:2000/api/validator',
+        new URL('http://wallet.localhost:2000/api/validator'),
         token
     )
 }
