@@ -37,6 +37,7 @@ import {
 import { GrpcTransport } from '@protobuf-ts/grpc-transport'
 import { ChannelCredentials } from '@grpc/grpc-js'
 import { createHash } from 'node:crypto'
+import { PartyId } from '@canton-network/core-types'
 
 function prefixedInt(value: number, bytes: Buffer | Uint8Array): Buffer {
     const buffer = Buffer.alloc(4 + bytes.length)
@@ -122,7 +123,13 @@ export class TopologyWriteService {
         }
 
         // 55 is the hash purpose for multi topology transaction hashes
-        return computeSha256CantonHash(55, concatenatedHashes)
+        const predefineHashPurpose = computeSha256CantonHash(
+            55,
+            concatenatedHashes
+        )
+
+        //convert to base64
+        return Buffer.from(predefineHashPurpose, 'hex').toString('base64')
     }
 
     static createFingerprintFromKey = (
@@ -172,7 +179,7 @@ export class TopologyWriteService {
 
     private generateTransactionsRequest(
         namespace: string,
-        partyId: string,
+        partyId: PartyId,
         participantId: string,
         publicKey: SigningPublicKey
     ): GenerateTransactionsRequest {
@@ -237,7 +244,7 @@ export class TopologyWriteService {
 
     async submitExternalPartyTopology(
         signedTopologyTxs: SignedTopologyTransaction[],
-        partyId: string
+        partyId: PartyId
     ) {
         await this.addTransactions(signedTopologyTxs)
         await this.authorizePartyToParticipant(partyId)
@@ -245,7 +252,7 @@ export class TopologyWriteService {
 
     async generateTransactions(
         publicKey: string,
-        partyId: string
+        partyId: PartyId
     ): Promise<GenerateTransactionsResponse> {
         const signingPublicKey = signingPublicKeyFromEd25519(publicKey)
         const namespace =
@@ -286,7 +293,7 @@ export class TopologyWriteService {
     }
 
     async waitForPartyToParticipantProposal(
-        partyId: string
+        partyId: PartyId
     ): Promise<Uint8Array | undefined> {
         return new Promise((resolve, reject) => {
             const interval = setInterval(async () => {
@@ -322,7 +329,7 @@ export class TopologyWriteService {
     }
 
     private async authorizePartyToParticipant(
-        partyId: string
+        partyId: PartyId
     ): Promise<AuthorizeResponse> {
         const hash = await this.waitForPartyToParticipantProposal(partyId)
 

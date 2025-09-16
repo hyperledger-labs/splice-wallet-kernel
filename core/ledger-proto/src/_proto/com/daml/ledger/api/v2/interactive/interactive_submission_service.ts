@@ -20,10 +20,10 @@ import { Node } from './transaction/v1/interactive_submission_data.js'
 import { Create } from './transaction/v1/interactive_submission_data.js'
 import { Value } from '../value.js'
 import { GlobalKey } from './interactive_submission_common_data.js'
-import { Timestamp } from '../../../../../../google/protobuf/timestamp.js'
 import { Duration } from '../../../../../../google/protobuf/duration.js'
 import { PrefetchContractKey } from '../commands.js'
 import { DisclosedContract } from '../commands.js'
+import { Timestamp } from '../../../../../../google/protobuf/timestamp.js'
 import { Command } from '../commands.js'
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.interactive.PrepareSubmissionRequest
@@ -62,6 +62,19 @@ export interface PrepareSubmissionRequest {
      * @generated from protobuf field: com.daml.ledger.api.v2.interactive.MinLedgerTime min_ledger_time = 4
      */
     minLedgerTime?: MinLedgerTime
+    /**
+     * Maximum timestamp at which the transaction can be recorded onto the ledger via the synchronizer specified in the `PrepareSubmissionResponse`.
+     * If submitted after it will be rejected even if otherwise valid, in which case it needs to be prepared and signed again
+     * with a new valid max_record_time.
+     * Use this to limit the time-to-life of a prepared transaction,
+     * which is useful to know when it can definitely not be accepted
+     * anymore and resorting to preparing another transaction for the same
+     * intent is safe again.
+     * Optional
+     *
+     * @generated from protobuf field: optional google.protobuf.Timestamp max_record_time = 11
+     */
+    maxRecordTime?: Timestamp
     /**
      * Set of parties on whose behalf the command should be executed, if submitted.
      * If ledger API authorization is enabled, then the authorization metadata must authorize the sender of the request
@@ -421,6 +434,17 @@ export interface Metadata {
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.interactive.Metadata.GlobalKeyMappingEntry global_key_mapping = 8
      */
     globalKeyMapping: Metadata_GlobalKeyMappingEntry[]
+    /**
+     * Maximum timestamp at which the transaction can be recorded onto the ledger via the synchronizer `synchronizer_id`.
+     * If submitted after it will be rejected even if otherwise valid, in which case it needs to be prepared and signed again
+     * with a new valid max_record_time.
+     * Unsigned in 3.3 to avoid a breaking protocol change
+     * Will be signed in 3.4+
+     * Set max_record_time in the PreparedTransactionRequest to get this field set accordingly
+     *
+     * @generated from protobuf field: optional uint64 max_record_time = 11
+     */
+    maxRecordTime?: bigint
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.interactive.Metadata.SubmitterInfo
@@ -624,6 +648,88 @@ export interface PackagePreference {
     synchronizerId: string
 }
 /**
+ * Defines a package-name for which the commonly vetted package with the highest version must be found.
+ *
+ * @generated from protobuf message com.daml.ledger.api.v2.interactive.PackageVettingRequirement
+ */
+export interface PackageVettingRequirement {
+    /**
+     * The parties whose participants' vetting state should be considered when resolving the preferred package.
+     * Required
+     *
+     * @generated from protobuf field: repeated string parties = 1
+     */
+    parties: string[]
+    /**
+     * The package-name for which the preferred package should be resolved.
+     * Required
+     *
+     * @generated from protobuf field: string package_name = 2
+     */
+    packageName: string
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.interactive.GetPreferredPackagesRequest
+ */
+export interface GetPreferredPackagesRequest {
+    /**
+     * The package-name vetting requirements for which the preferred packages should be resolved.
+     *
+     * Generally it is enough to provide the requirements for the intended command's root package-names.
+     * Additional package-name requirements can be provided when additional Daml transaction informees need to use
+     * package dependencies of the command's root packages.
+     *
+     * Required
+     *
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.interactive.PackageVettingRequirement package_vetting_requirements = 1
+     */
+    packageVettingRequirements: PackageVettingRequirement[]
+    /**
+     * The synchronizer whose vetting state to use for resolving this query.
+     * If not specified, the vetting state of all the synchronizers the participant is connected to will be used.
+     * Optional
+     *
+     * @generated from protobuf field: string synchronizer_id = 2
+     */
+    synchronizerId: string
+    /**
+     * The timestamp at which the package vetting validity should be computed
+     * on the latest topology snapshot as seen by the participant.
+     * If not provided, the participant's current clock time is used.
+     * Optional
+     *
+     * @generated from protobuf field: google.protobuf.Timestamp vetting_valid_at = 3
+     */
+    vettingValidAt?: Timestamp
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.interactive.GetPreferredPackagesResponse
+ */
+export interface GetPreferredPackagesResponse {
+    /**
+     * The package references of the preferred packages.
+     * Must contain one package reference for each requested package-name.
+     *
+     * If you build command submissions whose content depends on the returned
+     * preferred packages, then we recommend submitting the preferred package-ids
+     * in the ``package_id_selection_preference`` of the command submission to
+     * avoid race conditions with concurrent changes of the on-ledger package vetting state.
+     *
+     * Required
+     *
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.PackageReference package_references = 1
+     */
+    packageReferences: PackageReference[]
+    /**
+     * The synchronizer for which the package preferences are computed.
+     * If the synchronizer_id was specified in the request, then it matches the request synchronizer_id.
+     * Required
+     *
+     * @generated from protobuf field: string synchronizer_id = 2
+     */
+    synchronizerId: string
+}
+/**
  * [docs-entry-start: HashingSchemeVersion]
  * The hashing scheme version used when building the hash of the PreparedTransaction
  *
@@ -734,6 +840,12 @@ class PrepareSubmissionRequest$Type extends MessageType<PrepareSubmissionRequest
                 T: () => MinLedgerTime,
             },
             {
+                no: 11,
+                name: 'max_record_time',
+                kind: 'message',
+                T: () => Timestamp,
+            },
+            {
                 no: 5,
                 name: 'act_as',
                 kind: 'scalar',
@@ -836,6 +948,14 @@ class PrepareSubmissionRequest$Type extends MessageType<PrepareSubmissionRequest
                         reader.uint32(),
                         options,
                         message.minLedgerTime
+                    )
+                    break
+                case /* optional google.protobuf.Timestamp max_record_time */ 11:
+                    message.maxRecordTime = Timestamp.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.maxRecordTime
                     )
                     break
                 case /* repeated string act_as */ 5:
@@ -941,6 +1061,13 @@ class PrepareSubmissionRequest$Type extends MessageType<PrepareSubmissionRequest
         /* bool verbose_hashing = 10; */
         if (message.verboseHashing !== false)
             writer.tag(10, WireType.Varint).bool(message.verboseHashing)
+        /* optional google.protobuf.Timestamp max_record_time = 11; */
+        if (message.maxRecordTime)
+            Timestamp.internalBinaryWrite(
+                message.maxRecordTime,
+                writer.tag(11, WireType.LengthDelimited).fork(),
+                options
+            ).join()
         /* repeated com.daml.ledger.api.v2.PrefetchContractKey prefetch_contract_keys = 15; */
         for (let i = 0; i < message.prefetchContractKeys.length; i++)
             PrefetchContractKey.internalBinaryWrite(
@@ -1969,6 +2096,14 @@ class Metadata$Type extends MessageType<Metadata> {
                 repeat: 2 /*RepeatType.UNPACKED*/,
                 T: () => Metadata_GlobalKeyMappingEntry,
             },
+            {
+                no: 11,
+                name: 'max_record_time',
+                kind: 'scalar',
+                opt: true,
+                T: 4 /*ScalarType.UINT64*/,
+                L: 0 /*LongType.BIGINT*/,
+            },
         ])
     }
     create(value?: PartialMessage<Metadata>): Metadata {
@@ -2038,6 +2173,9 @@ class Metadata$Type extends MessageType<Metadata> {
                             options
                         )
                     )
+                    break
+                case /* optional uint64 max_record_time */ 11:
+                    message.maxRecordTime = reader.uint64().toBigInt()
                     break
                 default:
                     let u = options.readUnknownField
@@ -2110,6 +2248,9 @@ class Metadata$Type extends MessageType<Metadata> {
             writer
                 .tag(10, WireType.Varint)
                 .uint64(message.maxLedgerEffectiveTime)
+        /* optional uint64 max_record_time = 11; */
+        if (message.maxRecordTime !== undefined)
+            writer.tag(11, WireType.Varint).uint64(message.maxRecordTime)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -3082,6 +3223,341 @@ class PackagePreference$Type extends MessageType<PackagePreference> {
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.PackagePreference
  */
 export const PackagePreference = new PackagePreference$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class PackageVettingRequirement$Type extends MessageType<PackageVettingRequirement> {
+    constructor() {
+        super('com.daml.ledger.api.v2.interactive.PackageVettingRequirement', [
+            {
+                no: 1,
+                name: 'parties',
+                kind: 'scalar',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 2,
+                name: 'package_name',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<PackageVettingRequirement>
+    ): PackageVettingRequirement {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.parties = []
+        message.packageName = ''
+        if (value !== undefined)
+            reflectionMergePartial<PackageVettingRequirement>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: PackageVettingRequirement
+    ): PackageVettingRequirement {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated string parties */ 1:
+                    message.parties.push(reader.string())
+                    break
+                case /* string package_name */ 2:
+                    message.packageName = reader.string()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: PackageVettingRequirement,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated string parties = 1; */
+        for (let i = 0; i < message.parties.length; i++)
+            writer.tag(1, WireType.LengthDelimited).string(message.parties[i])
+        /* string package_name = 2; */
+        if (message.packageName !== '')
+            writer.tag(2, WireType.LengthDelimited).string(message.packageName)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.PackageVettingRequirement
+ */
+export const PackageVettingRequirement = new PackageVettingRequirement$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class GetPreferredPackagesRequest$Type extends MessageType<GetPreferredPackagesRequest> {
+    constructor() {
+        super(
+            'com.daml.ledger.api.v2.interactive.GetPreferredPackagesRequest',
+            [
+                {
+                    no: 1,
+                    name: 'package_vetting_requirements',
+                    kind: 'message',
+                    repeat: 2 /*RepeatType.UNPACKED*/,
+                    T: () => PackageVettingRequirement,
+                },
+                {
+                    no: 2,
+                    name: 'synchronizer_id',
+                    kind: 'scalar',
+                    T: 9 /*ScalarType.STRING*/,
+                },
+                {
+                    no: 3,
+                    name: 'vetting_valid_at',
+                    kind: 'message',
+                    T: () => Timestamp,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<GetPreferredPackagesRequest>
+    ): GetPreferredPackagesRequest {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.packageVettingRequirements = []
+        message.synchronizerId = ''
+        if (value !== undefined)
+            reflectionMergePartial<GetPreferredPackagesRequest>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: GetPreferredPackagesRequest
+    ): GetPreferredPackagesRequest {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated com.daml.ledger.api.v2.interactive.PackageVettingRequirement package_vetting_requirements */ 1:
+                    message.packageVettingRequirements.push(
+                        PackageVettingRequirement.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options
+                        )
+                    )
+                    break
+                case /* string synchronizer_id */ 2:
+                    message.synchronizerId = reader.string()
+                    break
+                case /* google.protobuf.Timestamp vetting_valid_at */ 3:
+                    message.vettingValidAt = Timestamp.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.vettingValidAt
+                    )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: GetPreferredPackagesRequest,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated com.daml.ledger.api.v2.interactive.PackageVettingRequirement package_vetting_requirements = 1; */
+        for (let i = 0; i < message.packageVettingRequirements.length; i++)
+            PackageVettingRequirement.internalBinaryWrite(
+                message.packageVettingRequirements[i],
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* string synchronizer_id = 2; */
+        if (message.synchronizerId !== '')
+            writer
+                .tag(2, WireType.LengthDelimited)
+                .string(message.synchronizerId)
+        /* google.protobuf.Timestamp vetting_valid_at = 3; */
+        if (message.vettingValidAt)
+            Timestamp.internalBinaryWrite(
+                message.vettingValidAt,
+                writer.tag(3, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.GetPreferredPackagesRequest
+ */
+export const GetPreferredPackagesRequest =
+    new GetPreferredPackagesRequest$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class GetPreferredPackagesResponse$Type extends MessageType<GetPreferredPackagesResponse> {
+    constructor() {
+        super(
+            'com.daml.ledger.api.v2.interactive.GetPreferredPackagesResponse',
+            [
+                {
+                    no: 1,
+                    name: 'package_references',
+                    kind: 'message',
+                    repeat: 2 /*RepeatType.UNPACKED*/,
+                    T: () => PackageReference,
+                },
+                {
+                    no: 2,
+                    name: 'synchronizer_id',
+                    kind: 'scalar',
+                    T: 9 /*ScalarType.STRING*/,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<GetPreferredPackagesResponse>
+    ): GetPreferredPackagesResponse {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.packageReferences = []
+        message.synchronizerId = ''
+        if (value !== undefined)
+            reflectionMergePartial<GetPreferredPackagesResponse>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: GetPreferredPackagesResponse
+    ): GetPreferredPackagesResponse {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated com.daml.ledger.api.v2.PackageReference package_references */ 1:
+                    message.packageReferences.push(
+                        PackageReference.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options
+                        )
+                    )
+                    break
+                case /* string synchronizer_id */ 2:
+                    message.synchronizerId = reader.string()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: GetPreferredPackagesResponse,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated com.daml.ledger.api.v2.PackageReference package_references = 1; */
+        for (let i = 0; i < message.packageReferences.length; i++)
+            PackageReference.internalBinaryWrite(
+                message.packageReferences[i],
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* string synchronizer_id = 2; */
+        if (message.synchronizerId !== '')
+            writer
+                .tag(2, WireType.LengthDelimited)
+                .string(message.synchronizerId)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.GetPreferredPackagesResponse
+ */
+export const GetPreferredPackagesResponse =
+    new GetPreferredPackagesResponse$Type()
 /**
  * @generated ServiceType for protobuf service com.daml.ledger.api.v2.interactive.InteractiveSubmissionService
  */
@@ -3105,6 +3581,12 @@ export const InteractiveSubmissionService = new ServiceType(
             options: {},
             I: GetPreferredPackageVersionRequest,
             O: GetPreferredPackageVersionResponse,
+        },
+        {
+            name: 'GetPreferredPackages',
+            options: {},
+            I: GetPreferredPackagesRequest,
+            O: GetPreferredPackagesResponse,
         },
     ]
 )

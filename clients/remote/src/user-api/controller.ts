@@ -313,7 +313,7 @@ export const userController = (
             const notifier = notificationService.getNotifier(userId)
 
             const ledgerClient = new LedgerClient(
-                network.ledgerApi.baseUrl,
+                new URL(network.ledgerApi.baseUrl),
                 authContext.accessToken,
                 logger
             )

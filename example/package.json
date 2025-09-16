@@ -7,6 +7,7 @@
         "dev": "vite",
         "build": "tsc -b && vite build",
         "lint": "eslint .",
+        "e2e": "playwright test --ui",
         "preview": "vite preview"
     },
     "dependencies": {

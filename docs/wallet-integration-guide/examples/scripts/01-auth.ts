@@ -60,13 +60,9 @@ console.log('Prepared external topology')
 
 if (preparedParty) {
     console.log('Signing the hash')
-    const base64StringCombinedHash = Buffer.from(
-        preparedParty?.combinedHash,
-        'hex'
-    ).toString('base64')
 
     const signedHash = signTransactionHash(
-        base64StringCombinedHash,
+        preparedParty?.combinedHash,
         keyPair.privateKey
     )
 
@@ -84,7 +80,7 @@ const createPingCommand = await sdk.userLedger?.createPingCommand(
     preparedParty!.partyId!
 )
 
-sdk.adminLedger?.setPartyId(preparedParty!.partyId!)
+sdk.setPartyId(preparedParty!.partyId!)
 
 console.log('Prepare command submission for ping create command')
 const prepareResponse =

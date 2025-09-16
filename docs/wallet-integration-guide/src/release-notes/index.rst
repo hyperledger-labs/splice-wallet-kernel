@@ -3,6 +3,54 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+0.5.0
+-----
+
+**Released on September 11th, 2025**
+
+* Memo field added to create transfer
+
+.. code-block:: javascript
+
+    const [transferCommand, disclosedContracts2] =
+        await sdk.tokenStandard!.createTransfer(
+            sender!.partyId,
+            receiver!.partyId,
+            '100',
+            {
+                instrumentId: 'Amulet',
+                instrumentAdmin: instrumentAdminPartyId,
+            },
+            'my-new-favorite-memo-field'
+        )
+
+* pre-approval creation now supported through ledgerController instead of validatorController
+
+
+previously
+
+.. code-block:: javascript
+
+    await sdk.validator?.externalPartyPreApprovalSetup(privateKey)
+
+now instead using ledger api:
+
+.. code-block:: javascript
+
+    const transferPreApprovalProposal =
+        sdk.userLedger?.createTransferPreapprovalCommand(
+            validatorOperatorParty, //this needs to be sourced from the validator
+            receiver?.partyId,
+            instrumentAdminPartyId
+        )
+
+    await sdk.userLedger?.prepareSignAndExecuteTransaction(
+        [transferPreApprovalProposal],
+        keyPairReceiver.privateKey,
+        v4()
+    )
+
+
 0.4.0
 -----
 
@@ -47,7 +95,7 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
 
     //this include locked UTXOs
     const allUtxos = await sdk.tokenStandard?.listHoldingUtxos()
-    
+
 * Include some small bug fixes. The most noteable are:
     * ``Contract not found`` error when listing holdings (https://github.com/hyperledger-labs/splice-wallet-kernel/issues/357)
     * Requirements to have extra import (like @protobuf-ts/runtime-rpc) resolved
