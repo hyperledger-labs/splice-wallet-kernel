@@ -13,6 +13,7 @@ import {
 import { LedgerClient } from './ledger-client.js'
 import { Holding, TransferInstructionView } from './txparse/types.js'
 import { Types } from './ledger-client.js'
+import { PartyId } from '@canton-network/core-types'
 
 type TransactionFilter = Types['TransactionFilter']
 type CreatedEvent = Types['CreatedEvent']
@@ -26,7 +27,7 @@ type Command = Types['Command']
 type DeduplicationPeriod2 = Types['DeduplicationPeriod2']
 
 export function filtersByParty(
-    party: string,
+    party: PartyId,
     interfaceNames: string[],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     includeWildcard: boolean
@@ -195,7 +196,7 @@ export async function submitExerciseCommand(
     ledgerClient: LedgerClient,
     exerciseCommand: ExerciseCommand,
     disclosedContracts: DisclosedContract[],
-    partyId: string,
+    partyId: PartyId,
     userId: string,
     publicKeyPath: string,
     privateKeyPath: string
@@ -369,7 +370,7 @@ export interface Completion {
 async function awaitCompletion(
     ledgerClient: LedgerClient,
     ledgerEnd: number,
-    partyId: string,
+    partyId: PartyId,
     userId: string,
     commandId: string,
     submissionId: string

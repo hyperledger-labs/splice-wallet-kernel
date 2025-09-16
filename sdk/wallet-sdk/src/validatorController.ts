@@ -10,7 +10,9 @@ import {
 import {
     getPublicKeyFromPrivate,
     signTransactionHash,
+    PrivateKey,
 } from '@canton-network/core-signing-lib'
+import { PartyId } from '@canton-network/core-types'
 
 /**
  * TokenStandardController handles token standard management tasks.
@@ -21,8 +23,8 @@ export class ValidatorController {
     private validatorClient: ValidatorInternalClient
     private scanProxyClient: ScanProxyClient
     private userId: string
-    private partyId: string = ''
-    private synchronizerId: string = ''
+    private partyId: PartyId | undefined
+    private synchronizerId: PartyId | undefined
 
     /** Creates a new instance of the LedgerController.
      *
@@ -54,7 +56,7 @@ export class ValidatorController {
      * Sets the party that the ValidatorController will use for requests.
      * @param partyId
      */
-    setPartyId(partyId: string): ValidatorController {
+    setPartyId(partyId: PartyId): ValidatorController {
         this.partyId = partyId
         return this
     }
@@ -63,9 +65,31 @@ export class ValidatorController {
      * Sets the synchronizerId that the ValidatorController will use for requests.
      * @param synchronizerId
      */
-    setSynchronizerId(synchronizerId: string): ValidatorController {
+    setSynchronizerId(synchronizerId: PartyId): ValidatorController {
         this.synchronizerId = synchronizerId
         return this
+    }
+
+    /**
+     *  Gets the party Id or throws an error if it has not been set yet
+     *  @returns partyId
+     */
+    getPartyId(): PartyId {
+        if (!this.partyId)
+            throw new Error('PartyId is not defined, call setPartyId')
+        else return this.partyId
+    }
+
+    /**
+     *  Gets the synchronizer Id or throws an error if it has not been set yet
+     *  @returns partyId
+     */
+    getSynchronizerId(): PartyId {
+        if (!this.synchronizerId)
+            throw new Error(
+                'synchronizer Id is not defined, call setSynchronizerId'
+            )
+        else return this.synchronizerId
     }
 
     /**
@@ -75,7 +99,7 @@ export class ValidatorController {
      * @param partyId
      * returns contractId used in prepareExternalPartyProposal
      */
-    async createExternalPartyProposal(partyId: string) {
+    async createExternalPartyProposal(partyId: PartyId) {
         return await this.validatorClient.post(
             '/v0/admin/external-party/setup-proposal',
             {
@@ -96,7 +120,7 @@ export class ValidatorController {
             '/v0/admin/external-party/setup-proposal/prepare-accept',
             {
                 contract_id: contractId,
-                user_party_id: this.partyId,
+                user_party_id: this.getPartyId(),
             }
         )
     }
@@ -120,7 +144,7 @@ export class ValidatorController {
             '/v0/admin/external-party/setup-proposal/submit-accept',
             {
                 submission: {
-                    party_id: this.partyId,
+                    party_id: this.getPartyId(),
                     transaction: tx,
                     signed_tx_hash: signedHash,
                     public_key: publicKey,
@@ -137,9 +161,9 @@ export class ValidatorController {
      * @param privateKey base64 encoded private key
      */
 
-    async externalPartyPreApprovalSetup(privateKey: string) {
+    async externalPartyPreApprovalSetup(privateKey: PrivateKey) {
         const createPartyProposalResponse =
-            await this.createExternalPartyProposal(this.partyId)
+            await this.createExternalPartyProposal(this.getPartyId())
 
         const preparedTxAndHash = await this.prepareExternalPartyProposal(
             createPartyProposalResponse.contract_id

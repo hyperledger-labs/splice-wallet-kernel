@@ -210,6 +210,7 @@ export interface NamespaceDelegation {
           }
 }
 /**
+ * [start-docs-entry: namespace delegation restrictions]
  * the key can sign all currently known mappings and all mappings that will be added in future releases
  *
  * @generated from protobuf message com.digitalasset.canton.protocol.v30.NamespaceDelegation.CanSignAllMappings
@@ -290,6 +291,7 @@ export interface OwnerToKeyMapping {
     publicKeys: PublicKey[]
 }
 /**
+ * [doc-entry-start: PartyToKeyMapping]
  * mapping a party to a key
  * authorization: whoever controls the party uid
  * UNIQUE(party)

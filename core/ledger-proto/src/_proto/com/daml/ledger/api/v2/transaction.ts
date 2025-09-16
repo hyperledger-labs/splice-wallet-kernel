@@ -29,6 +29,7 @@ import { CreatedEvent } from './event.js'
  * _no_ witness parties, which were included simply because they were
  * children of events which have witnesses.
  *
+ * @deprecated
  * @generated from protobuf message com.daml.ledger.api.v2.TreeEvent
  */
 export interface TreeEvent {
@@ -61,6 +62,7 @@ export interface TreeEvent {
  * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
  * Complete view of an on-ledger transaction.
  *
+ * @deprecated
  * @generated from protobuf message com.daml.ledger.api.v2.TransactionTree
  */
 export interface TransactionTree {
@@ -339,6 +341,7 @@ class TreeEvent$Type extends MessageType<TreeEvent> {
     }
 }
 /**
+ * @deprecated
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.TreeEvent
  */
 export const TreeEvent = new TreeEvent$Type()
@@ -582,6 +585,7 @@ class TransactionTree$Type extends MessageType<TransactionTree> {
     }
 }
 /**
+ * @deprecated
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.TransactionTree
  */
 export const TransactionTree = new TransactionTree$Type()
