@@ -183,30 +183,6 @@ export class ValidatorController {
         )
     }
 
-    /**  Lookup a TransferPreapproval by the receiver party
-     * @param scanUrl url to access the scan proxy
-     * @param partyId receiver party id
-     * @returns A promise that resolves to an array of
-     * transfer preapparovals by party.
-     */
-
-    async getTransferPreApprovals(scanUrl: string, partyId: PartyId) {
-        const scanClient = new ScanClient(
-            scanUrl,
-            this.logger,
-            this.accessToken
-        )
-
-        return await scanClient.get(
-            '/v0/transfer-preapprovals/by-party/{party}',
-            {
-                path: {
-                    party: partyId,
-                },
-            }
-        )
-    }
-
     /**  Looks up the validator operator party
      */
 
