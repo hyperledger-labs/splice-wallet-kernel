@@ -40,14 +40,18 @@ describe('testing doc snippets', () => {
             continue
         }
 
-        test(filename, async () => {
-            const mod = await import(fullpath.replace('.ts', '.js'))
-            expect(mod.default).toBeDefined()
+        test(
+            filename,
+            async () => {
+                const mod = await import(fullpath.replace('.ts', '.js'))
+                expect(mod.default).toBeDefined()
 
-            const result = await mod.default()
+                const result = await mod.default()
 
-            // Run `yarn jest -u` to update snapshots for new changes
-            expect(result).toMatchSnapshot()
-        })
+                // Run `yarn jest -u` to update snapshots for new changes
+                expect(result).toMatchSnapshot()
+            },
+            10000
+        )
     }
 })

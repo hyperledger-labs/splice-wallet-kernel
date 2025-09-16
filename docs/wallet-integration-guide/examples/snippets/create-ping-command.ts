@@ -11,6 +11,7 @@ export default async function () {
         ledgerFactory: localNetLedgerDefault,
     })
     await sdk.connect()
+    await sdk.setPartyId('source-of-ping-party', 'global-synchronizer-id')
 
     const receiver = 'target-of-ping-party'
 

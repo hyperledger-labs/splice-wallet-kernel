@@ -18,12 +18,16 @@ export default async function () {
     await sdk.connectTopology(LOCALNET_SCAN_API_URL)
 
     const key = createKeyPair()
+    console.debug('Created key pair for new party: ', key)
 
     // partyHint is optional but recommended to make it easier to identify the party
     const partyHint = 'my-wallet-1'
 
-    return await sdk.topology?.prepareSignAndSubmitExternalParty(
+    const party = await sdk.topology?.prepareSignAndSubmitExternalParty(
         key.privateKey,
         partyHint
     )
+
+    console.debug('Created new party: ', party)
+    return party
 }

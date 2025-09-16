@@ -149,12 +149,18 @@ export class TopologyController {
                 )
         )
 
+        console.debug(
+            `Submitting external party topology for partyId ${preparedParty.partyId}`
+        )
         await this.topologyClient.submitExternalPartyTopology(
             signedTopologyTxs,
             preparedParty.partyId
         )
+
+        console.debug(`Authorizing party ${preparedParty.partyId}`)
         await this.client.grantUserRights(this.userId, preparedParty.partyId)
 
+        console.debug(`Completed setup for party ${preparedParty.partyId}`)
         return { partyId: preparedParty.partyId }
     }
 
@@ -168,15 +174,23 @@ export class TopologyController {
         privateKey: PrivateKey,
         partyHint?: string
     ): Promise<AllocatedParty> {
+        console.debug(
+            `Preparing, signing and submitting external party topology`
+        )
         const preparedParty = await this.prepareExternalPartyTopology(
             getPublicKeyFromPrivate(privateKey),
             partyHint
+        )
+        console.debug(
+            `Prepared external party topology for partyId ${preparedParty.partyId}`
         )
 
         const signedHash = signTransactionHash(
             preparedParty!.combinedHash,
             privateKey
         )
+        console.debug(`Signed transaction hash for partyId ${signedHash}`)
+
         return await this.submitExternalPartyTopology(signedHash, preparedParty)
     }
 }

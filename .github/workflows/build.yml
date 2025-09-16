@@ -133,6 +133,26 @@ jobs:
             - name: Test example scripts
               run: yarn script:test:examples
 
+            - name: Save container logs
+              if: failure()
+              run: |
+                  #!/usr/bin/env bash
+                  set -euo pipefail
+
+                  mkdir -p logs
+
+                  # Dump logs of each running container once (not streaming)
+                  for c in $(docker ps -a --format '{{.Names}}'); do
+                    docker logs "$c" &> "logs/$c.log" || true
+                  done
+
+            - name: Upload logs as artifacts
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: docker-logs
+                  path: logs/
+
     build-docs:
         runs-on: ubuntu-latest
         steps:
