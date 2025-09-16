@@ -6,45 +6,43 @@ import {
     createKeyPair,
 } from '@canton-network/wallet-sdk'
 import { v4 } from 'uuid'
+import { pino } from 'pino'
 import { LOCALNET_SCAN_API_URL } from '../config.js'
+
+const logger = pino({ name: '03-token-standard-localnet', level: 'info' })
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
-    logger: console,
+    logger: logger,
     authFactory: localNetAuthDefault,
     ledgerFactory: localNetLedgerDefault,
     topologyFactory: localNetTopologyDefault,
 })
 
-console.log('SDK initialized')
+logger.info('SDK initialized')
 
 await sdk.connect()
-console.log('Connected to ledger')
+logger.info('Connected to ledger')
 
-await sdk.userLedger
-    ?.listWallets()
-    .then((wallets) => {
-        console.log('Wallets:', wallets)
-    })
-    .catch((error) => {
-        console.error('Error listing wallets:', error)
-    })
+const wallets = await sdk.userLedger?.listWallets()
+
+logger.info(wallets, 'user Wallets')
 
 const keyPair = createKeyPair()
 await sdk.connectTopology(LOCALNET_SCAN_API_URL)
 
-console.log('generated keypair')
+logger.info('generated keypair')
 const allocatedParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPair.privateKey
 )
-sdk.userLedger?.setPartyId(allocatedParty!.partyId)
-console.log('Create ping command')
+await sdk.setPartyId(allocatedParty!.partyId)
+logger.info('Create ping command')
 const createPingCommand = sdk.userLedger?.createPingCommand(
     allocatedParty!.partyId!
 )
-sdk.userLedger?.setPartyId(allocatedParty!.partyId!)
+await sdk.setPartyId(allocatedParty!.partyId!)
 
-console.log('Prepare command submission for ping create command')
+logger.info('Prepare command submission for ping create command')
 const prepareResponse = await sdk.userLedger?.prepareSignAndExecuteTransaction(
     createPingCommand,
     keyPair.privateKey,

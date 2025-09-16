@@ -84,7 +84,7 @@ const createPingCommand = await sdk.userLedger?.createPingCommand(
     preparedParty!.partyId!
 )
 
-sdk.adminLedger?.setPartyId(preparedParty!.partyId!)
+sdk.setPartyId(preparedParty!.partyId!)
 
 console.log('Prepare command submission for ping create command')
 const prepareResponse =

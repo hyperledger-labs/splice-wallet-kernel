@@ -12,20 +12,23 @@ import {
     getPublicKeyFromPrivate,
     signTransactionHash,
     KeyPair,
+    PrivateKey,
+    PublicKey,
 } from '@canton-network/core-signing-lib'
 import { pino } from 'pino'
 import { hashPreparedTransaction } from '@canton-network/core-tx-visualizer'
+import { PartyId } from '@canton-network/core-types'
 
 export type PreparedParty = {
     partyTransactions: Uint8Array<ArrayBufferLike>[]
     combinedHash: string
     txHashes: Buffer<ArrayBuffer>[]
     namespace: string
-    partyId: string
+    partyId: PartyId
 }
 
 export type AllocatedParty = {
-    partyId: string
+    partyId: PartyId
 }
 
 /**
@@ -44,7 +47,7 @@ export class TopologyController {
         baseUrl: URL,
         userId: string,
         userAdminToken: string,
-        synchronizerId: string
+        synchronizerId: PartyId
     ) {
         this.client = new LedgerClient(baseUrl, userAdminToken, this.logger)
         this.userId = userId
@@ -79,7 +82,7 @@ export class TopologyController {
      * @param publicKey
      */
     static createFingerprintFromPublicKey(
-        publicKey: SigningPublicKey | string
+        publicKey: SigningPublicKey | PublicKey
     ): string {
         return TopologyWriteService.createFingerprintFromKey(publicKey)
     }
@@ -91,13 +94,13 @@ export class TopologyController {
      * @returns A PreparedParty object containing the prepared transactions.
      */
     async prepareExternalPartyTopology(
-        publicKey: string,
+        publicKey: PublicKey,
         partyHint?: string
     ): Promise<PreparedParty> {
         const namespace =
             TopologyController.createFingerprintFromPublicKey(publicKey)
 
-        const partyId = partyHint
+        const partyId: PartyId = partyHint
             ? `${partyHint}::${namespace}`
             : `${namespace.slice(0, 5)}::${namespace}`
 
@@ -162,7 +165,7 @@ export class TopologyController {
      * @returns An AllocatedParty object containing the partyId of the new party.
      */
     async prepareSignAndSubmitExternalParty(
-        privateKey: string,
+        privateKey: PrivateKey,
         partyHint?: string
     ): Promise<AllocatedParty> {
         const preparedParty = await this.prepareExternalPartyTopology(
@@ -189,7 +192,7 @@ export class TopologyController {
 export const localNetTopologyDefault = (
     userId: string,
     userAdminToken: string,
-    synchronizerId: string
+    synchronizerId: PartyId
 ): TopologyController => {
     return new TopologyController(
         '127.0.0.1:2902',
