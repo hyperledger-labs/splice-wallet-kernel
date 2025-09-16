@@ -373,7 +373,9 @@ export interface paths {
     '/v0/transactions': {
         /**
          * @deprecated
-         * @description **Deprecated**. Lists transactions, by default in ascending order, paged, from ledger begin or optionally starting after a provided event id.
+         * @description **Deprecated with known bugs that will not be fixed, use /v2/updates instead**.
+         *
+         * Lists transactions, by default in ascending order, paged, from ledger begin or optionally starting after a provided event id.
          */
         post: operations['listTransactionHistory']
     }
@@ -2961,7 +2963,9 @@ export interface operations {
     }
     /**
      * @deprecated
-     * @description **Deprecated**. Lists transactions, by default in ascending order, paged, from ledger begin or optionally starting after a provided event id.
+     * @description **Deprecated with known bugs that will not be fixed, use /v2/updates instead**.
+     *
+     * Lists transactions, by default in ascending order, paged, from ledger begin or optionally starting after a provided event id.
      */
     listTransactionHistory: {
         requestBody: {

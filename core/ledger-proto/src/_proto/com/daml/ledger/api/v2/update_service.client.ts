@@ -59,6 +59,7 @@ export interface IUpdateServiceClient {
      * The stream will be filtered only by the parties as wildcard parties.
      * The template/interface filters describe the respective fields in the ``CreatedEvent`` results.
      *
+     * @deprecated
      * @generated from protobuf rpc: GetUpdateTrees
      */
     getUpdateTrees(
@@ -71,6 +72,7 @@ export interface IUpdateServiceClient {
      * For looking up a transaction instead of a transaction tree, please see GetTransactionByEventId
      * If the transaction cannot be found for the request, or all the events are filtered, a TRANSACTION_NOT_FOUND error will be raised.
      *
+     * @deprecated
      * @generated from protobuf rpc: GetTransactionTreeByOffset
      */
     getTransactionTreeByOffset(
@@ -83,6 +85,7 @@ export interface IUpdateServiceClient {
      * For looking up a transaction instead of a transaction tree, please see GetTransactionById
      * If the transaction cannot be found for the request, or all the events are filtered, a TRANSACTION_NOT_FOUND error will be raised.
      *
+     * @deprecated
      * @generated from protobuf rpc: GetTransactionTreeById
      */
     getTransactionTreeById(
@@ -95,6 +98,7 @@ export interface IUpdateServiceClient {
      * If there is no transaction with this offset, or all the events are filtered, a TRANSACTION_NOT_FOUND error will be raised.
      * Use a wildcard template filter if you want to retrieve any transaction visible to the parties you can read as.
      *
+     * @deprecated
      * @generated from protobuf rpc: GetTransactionByOffset
      */
     getTransactionByOffset(
@@ -107,6 +111,7 @@ export interface IUpdateServiceClient {
      * If there is no transaction with this id, or all the events are filtered, a TRANSACTION_NOT_FOUND error will be raised.
      * Use a wildcard template filter if you want to retrieve any transaction visible to the parties you can read as.
      *
+     * @deprecated
      * @generated from protobuf rpc: GetTransactionById
      */
     getTransactionById(
@@ -185,6 +190,7 @@ export class UpdateServiceClient implements IUpdateServiceClient, ServiceInfo {
      * The stream will be filtered only by the parties as wildcard parties.
      * The template/interface filters describe the respective fields in the ``CreatedEvent`` results.
      *
+     * @deprecated
      * @generated from protobuf rpc: GetUpdateTrees
      */
     getUpdateTrees(
@@ -207,6 +213,7 @@ export class UpdateServiceClient implements IUpdateServiceClient, ServiceInfo {
      * For looking up a transaction instead of a transaction tree, please see GetTransactionByEventId
      * If the transaction cannot be found for the request, or all the events are filtered, a TRANSACTION_NOT_FOUND error will be raised.
      *
+     * @deprecated
      * @generated from protobuf rpc: GetTransactionTreeByOffset
      */
     getTransactionTreeByOffset(
@@ -226,6 +233,7 @@ export class UpdateServiceClient implements IUpdateServiceClient, ServiceInfo {
      * For looking up a transaction instead of a transaction tree, please see GetTransactionById
      * If the transaction cannot be found for the request, or all the events are filtered, a TRANSACTION_NOT_FOUND error will be raised.
      *
+     * @deprecated
      * @generated from protobuf rpc: GetTransactionTreeById
      */
     getTransactionTreeById(
@@ -245,6 +253,7 @@ export class UpdateServiceClient implements IUpdateServiceClient, ServiceInfo {
      * If there is no transaction with this offset, or all the events are filtered, a TRANSACTION_NOT_FOUND error will be raised.
      * Use a wildcard template filter if you want to retrieve any transaction visible to the parties you can read as.
      *
+     * @deprecated
      * @generated from protobuf rpc: GetTransactionByOffset
      */
     getTransactionByOffset(
@@ -264,6 +273,7 @@ export class UpdateServiceClient implements IUpdateServiceClient, ServiceInfo {
      * If there is no transaction with this id, or all the events are filtered, a TRANSACTION_NOT_FOUND error will be raised.
      * Use a wildcard template filter if you want to retrieve any transaction visible to the parties you can read as.
      *
+     * @deprecated
      * @generated from protobuf rpc: GetTransactionById
      */
     getTransactionById(

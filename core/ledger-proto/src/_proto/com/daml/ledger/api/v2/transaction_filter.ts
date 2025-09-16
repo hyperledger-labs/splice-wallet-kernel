@@ -168,6 +168,7 @@ export interface TemplateFilter {
  * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
  * Used both for filtering create and archive events as well as for filtering transaction trees.
  *
+ * @deprecated
  * @generated from protobuf message com.daml.ledger.api.v2.TransactionFilter
  */
 export interface TransactionFilter {
@@ -985,6 +986,7 @@ class TransactionFilter$Type extends MessageType<TransactionFilter> {
     }
 }
 /**
+ * @deprecated
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.TransactionFilter
  */
 export const TransactionFilter = new TransactionFilter$Type()

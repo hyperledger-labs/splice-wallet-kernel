@@ -52,7 +52,8 @@ export interface GetUpdatesRequest {
      * Template filters must be empty for GetUpdateTrees requests.
      * Optional for backwards compatibility, if defined update_format must be unset
      *
-     * @generated from protobuf field: com.daml.ledger.api.v2.TransactionFilter filter = 3
+     * @deprecated
+     * @generated from protobuf field: com.daml.ledger.api.v2.TransactionFilter filter = 3 [deprecated = true]
      */
     filter?: TransactionFilter
     /**
@@ -62,7 +63,8 @@ export interface GetUpdatesRequest {
      * for record fields.
      * Optional for backwards compatibility, if defined update_format must be unset
      *
-     * @generated from protobuf field: bool verbose = 4
+     * @deprecated
+     * @generated from protobuf field: bool verbose = 4 [deprecated = true]
      */
     verbose: boolean
     /**
@@ -126,6 +128,7 @@ export interface GetUpdatesResponse {
 /**
  * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
  *
+ * @deprecated
  * @generated from protobuf message com.daml.ledger.api.v2.GetUpdateTreesResponse
  */
 export interface GetUpdateTreesResponse {
@@ -163,6 +166,7 @@ export interface GetUpdateTreesResponse {
 /**
  * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
  *
+ * @deprecated
  * @generated from protobuf message com.daml.ledger.api.v2.GetTransactionByOffsetRequest
  */
 export interface GetTransactionByOffsetRequest {
@@ -202,6 +206,7 @@ export interface GetTransactionByOffsetRequest {
 /**
  * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
  *
+ * @deprecated
  * @generated from protobuf message com.daml.ledger.api.v2.GetTransactionByIdRequest
  */
 export interface GetTransactionByIdRequest {
@@ -241,6 +246,7 @@ export interface GetTransactionByIdRequest {
 /**
  * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
  *
+ * @deprecated
  * @generated from protobuf message com.daml.ledger.api.v2.GetTransactionTreeResponse
  */
 export interface GetTransactionTreeResponse {
@@ -254,6 +260,7 @@ export interface GetTransactionTreeResponse {
 /**
  * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
  *
+ * @deprecated
  * @generated from protobuf message com.daml.ledger.api.v2.GetTransactionResponse
  */
 export interface GetTransactionResponse {
@@ -403,7 +410,7 @@ class GetUpdatesRequest$Type extends MessageType<GetUpdatesRequest> {
                 case /* optional int64 end_inclusive */ 2:
                     message.endInclusive = reader.int64().toBigInt()
                     break
-                case /* com.daml.ledger.api.v2.TransactionFilter filter */ 3:
+                case /* com.daml.ledger.api.v2.TransactionFilter filter = 3 [deprecated = true] */ 3:
                     message.filter = TransactionFilter.internalBinaryRead(
                         reader,
                         reader.uint32(),
@@ -411,7 +418,7 @@ class GetUpdatesRequest$Type extends MessageType<GetUpdatesRequest> {
                         message.filter
                     )
                     break
-                case /* bool verbose */ 4:
+                case /* bool verbose = 4 [deprecated = true] */ 4:
                     message.verbose = reader.bool()
                     break
                 case /* com.daml.ledger.api.v2.UpdateFormat update_format */ 5:
@@ -452,14 +459,14 @@ class GetUpdatesRequest$Type extends MessageType<GetUpdatesRequest> {
         /* optional int64 end_inclusive = 2; */
         if (message.endInclusive !== undefined)
             writer.tag(2, WireType.Varint).int64(message.endInclusive)
-        /* com.daml.ledger.api.v2.TransactionFilter filter = 3; */
+        /* com.daml.ledger.api.v2.TransactionFilter filter = 3 [deprecated = true]; */
         if (message.filter)
             TransactionFilter.internalBinaryWrite(
                 message.filter,
                 writer.tag(3, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        /* bool verbose = 4; */
+        /* bool verbose = 4 [deprecated = true]; */
         if (message.verbose !== false)
             writer.tag(4, WireType.Varint).bool(message.verbose)
         /* com.daml.ledger.api.v2.UpdateFormat update_format = 5; */
@@ -782,6 +789,7 @@ class GetUpdateTreesResponse$Type extends MessageType<GetUpdateTreesResponse> {
     }
 }
 /**
+ * @deprecated
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetUpdateTreesResponse
  */
 export const GetUpdateTreesResponse = new GetUpdateTreesResponse$Type()
@@ -901,6 +909,7 @@ class GetTransactionByOffsetRequest$Type extends MessageType<GetTransactionByOff
     }
 }
 /**
+ * @deprecated
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetTransactionByOffsetRequest
  */
 export const GetTransactionByOffsetRequest =
@@ -1020,6 +1029,7 @@ class GetTransactionByIdRequest$Type extends MessageType<GetTransactionByIdReque
     }
 }
 /**
+ * @deprecated
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetTransactionByIdRequest
  */
 export const GetTransactionByIdRequest = new GetTransactionByIdRequest$Type()
@@ -1108,6 +1118,7 @@ class GetTransactionTreeResponse$Type extends MessageType<GetTransactionTreeResp
     }
 }
 /**
+ * @deprecated
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetTransactionTreeResponse
  */
 export const GetTransactionTreeResponse = new GetTransactionTreeResponse$Type()
@@ -1192,6 +1203,7 @@ class GetTransactionResponse$Type extends MessageType<GetTransactionResponse> {
     }
 }
 /**
+ * @deprecated
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetTransactionResponse
  */
 export const GetTransactionResponse = new GetTransactionResponse$Type()

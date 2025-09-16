@@ -27,16 +27,18 @@ export const CANTON_CONF = path.join(repoRoot, 'canton/canton.conf')
 export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton/bootstrap.canton')
 export const API_SPECS_PATH = path.join(repoRoot, 'api-specs')
 // Canton versions
-export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20250603.0'
-export const CANTON_VERSION = '3.3.0-snapshot.20250904.16083.0.v87695c75'
+export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20250417.0'
+export const CANTON_VERSION = '3.3.0-snapshot.20250910.16087.0.v82d35a4d'
 
+export const LOCALNET_ARCHIVE_HASH =
+    '257167dbedd9b07b30bf75ef0968454709cee4891e8774ea460431d5bd4d6888'
 export const SPLICE_ARCHIVE_HASH =
-    '61e25571dd4da32477a56dbd0ddd34d4c9b40ed16f6d585e32b5ec2645abeb45'
+    'f0caa6539ecf4929164fd82631f4608bdd8ca1522f0e5c0a03f281ad02ddcc75'
 export const SPLICE_SPEC_ARCHIVE_HASH =
-    'dac90e26bdecd623f6d7a2e965dd1763de5a470a1ad39deb9eb44775ea42c4ad'
+    '2134536c95927b946b9a1639deb54f94086725f529742755f992dc4efc7326ae'
 export const CANTON_ARCHIVE_HASH =
     'ac47567a96e3eaf5a62e5398139b41dc55e4dedbf499be4f04582771c0b4f6f7'
-export const SPLICE_VERSION = '0.4.15'
+export const SPLICE_VERSION = '0.4.16'
 
 export async function downloadToFile(
     url: string | URL,
