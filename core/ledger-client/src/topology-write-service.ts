@@ -256,29 +256,46 @@ export class TopologyWriteService {
     async generateTransactions(
         publicKey: string,
         partyId: PartyId,
-        confirmingThreshold: number = 1
+        confirmingThreshold: number = 1,
+        participantIds?: string[]
     ): Promise<GenerateTransactionsResponse> {
         const signingPublicKey = signingPublicKeyFromEd25519(publicKey)
         const namespace =
             TopologyWriteService.createFingerprintFromKey(signingPublicKey)
 
-        const { participantId } = await this.ledgerClient.get(
-            '/v2/parties/participant-id'
-        )
+        if (participantIds === undefined || participantIds.length === 0) {
+            const { participantId } = await this.ledgerClient.get(
+                '/v2/parties/participant-id'
+            )
 
-        const req = this.generateTransactionsRequest(
-            namespace,
-            partyId,
-            [participantId],
-            signingPublicKey,
-            confirmingThreshold
-        )
+            const req = this.generateTransactionsRequest(
+                namespace,
+                partyId,
+                [participantId],
+                signingPublicKey,
+                confirmingThreshold
+            )
 
-        return this.topologyClient.generateTransactions(req, {
-            meta: {
-                Authorization: `Bearer ${this.userAdminToken}`,
-            },
-        }).response
+            return this.topologyClient.generateTransactions(req, {
+                meta: {
+                    Authorization: `Bearer ${this.userAdminToken}`,
+                },
+            }).response
+        } else {
+            const req = this.generateTransactionsRequest(
+                namespace,
+                partyId,
+                participantIds,
+                signingPublicKey,
+                confirmingThreshold
+            )
+
+            return this.topologyClient.generateTransactions(req, {
+                meta: {
+                    Authorization: `Bearer ${this.userAdminToken}`,
+                },
+            }).response
+        }
     }
 
     private async addTransactions(

@@ -102,7 +102,8 @@ export class TopologyController {
     async prepareExternalPartyTopology(
         publicKey: PublicKey,
         partyHint?: string,
-        confirmingThreshold?: number
+        confirmingThreshold?: number,
+        participantIds?: string[]
     ): Promise<PreparedParty> {
         const namespace =
             TopologyController.createFingerprintFromPublicKey(publicKey)
@@ -112,7 +113,12 @@ export class TopologyController {
             : `${namespace.slice(0, 5)}::${namespace}`
 
         const transactions = await this.topologyClient
-            .generateTransactions(publicKey, partyId, confirmingThreshold)
+            .generateTransactions(
+                publicKey,
+                partyId,
+                confirmingThreshold,
+                participantIds
+            )
             .then((resp) => resp.generatedTransactions)
 
         const txHashes = transactions.map((tx) =>
@@ -175,12 +181,14 @@ export class TopologyController {
     async prepareSignAndSubmitExternalParty(
         privateKey: PrivateKey,
         partyHint?: string,
-        confirmingThreshold?: number
+        confirmingThreshold?: number,
+        participantIds?: string[]
     ): Promise<AllocatedParty> {
         const preparedParty = await this.prepareExternalPartyTopology(
             getPublicKeyFromPrivate(privateKey),
             partyHint,
-            confirmingThreshold
+            confirmingThreshold,
+            participantIds
         )
 
         const signedHash = signTransactionHash(
@@ -191,6 +199,18 @@ export class TopologyController {
         return await this.submitExternalPartyTopology(signedHash, preparedParty)
     }
 
+    async getParticipantId(
+        participantEndpoints: ParticipantEndpointConfig
+    ): Promise<string> {
+        const lc = new LedgerClient(
+            participantEndpoints.baseUrl,
+            participantEndpoints.accessToken,
+            this.logger
+        )
+
+        return (await lc.get('/v2/parties/participant-id')).participantId
+    }
+
     async multiHostParty(
         participantEndpoints: ParticipantEndpointConfig[],
         privateKey: string,
@@ -198,11 +218,20 @@ export class TopologyController {
         partyHint?: string,
         confirmingThreshold?: number
     ) {
+        const participantIdPromises = participantEndpoints.map(
+            async (endpoint) => {
+                return await this.getParticipantId(endpoint)
+            }
+        )
+
+        const participantIds = await Promise.all(participantIdPromises)
+
         //allocate initial party against participant that the sdk is connected to
         const allocatedParty = await this.prepareSignAndSubmitExternalParty(
             privateKey,
             partyHint,
-            confirmingThreshold
+            confirmingThreshold,
+            participantIds
         )
 
         this.logger.info(
@@ -224,7 +253,7 @@ export class TopologyController {
             )
             this.logger.info(endpoint, 'endpoint info')
 
-            await service
+            const proposals = await service
                 .waitForPartyToParticipantProposal(allocatedParty.partyId)
                 .then((p) => this.logger.info(p, 'result of listing proposals'))
                 .catch((e) =>
@@ -233,6 +262,8 @@ export class TopologyController {
                         'list party to participant proposal error'
                     )
                 )
+
+            this.logger.info(proposals, 'listing proposals')
 
             await service.authorizePartyToParticipant(allocatedParty.partyId)
         }
