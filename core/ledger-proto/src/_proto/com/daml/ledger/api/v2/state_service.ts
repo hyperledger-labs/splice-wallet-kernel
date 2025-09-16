@@ -34,7 +34,8 @@ export interface GetActiveContractsRequest {
      * Templates to include in the served snapshot, per party.
      * Optional, if specified event_format must be unset, if not specified event_format must be set.
      *
-     * @generated from protobuf field: com.daml.ledger.api.v2.TransactionFilter filter = 1
+     * @deprecated
+     * @generated from protobuf field: com.daml.ledger.api.v2.TransactionFilter filter = 1 [deprecated = true]
      */
     filter?: TransactionFilter
     /**
@@ -43,7 +44,8 @@ export interface GetActiveContractsRequest {
      * In particular, setting the verbose flag to true triggers the ledger to include labels for record fields.
      * Optional, if specified event_format must be unset.
      *
-     * @generated from protobuf field: bool verbose = 2
+     * @deprecated
+     * @generated from protobuf field: bool verbose = 2 [deprecated = true]
      */
     verbose: boolean
     /**
@@ -206,7 +208,9 @@ export interface GetConnectedSynchronizersRequest {
     /**
      * The party of interest
      * Must be a valid PartyIdString (as described in ``value.proto``).
-     * Required
+     * If defined, will return only synchronizers on which this party is hosted
+     * If empty, all synchronizers this node is connected to will be returned
+     * Optional
      *
      * @generated from protobuf field: string party = 1
      */
@@ -250,7 +254,8 @@ export interface GetConnectedSynchronizersResponse_ConnectedSynchronizer {
     synchronizerId: string
     /**
      * The permission on the synchronizer
-     * Required
+     * Set if a party was used in the request, otherwise unspecified.
+     * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.ParticipantPermission permission = 3
      */
@@ -388,7 +393,7 @@ class GetActiveContractsRequest$Type extends MessageType<GetActiveContractsReque
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
-                case /* com.daml.ledger.api.v2.TransactionFilter filter */ 1:
+                case /* com.daml.ledger.api.v2.TransactionFilter filter = 1 [deprecated = true] */ 1:
                     message.filter = TransactionFilter.internalBinaryRead(
                         reader,
                         reader.uint32(),
@@ -396,7 +401,7 @@ class GetActiveContractsRequest$Type extends MessageType<GetActiveContractsReque
                         message.filter
                     )
                     break
-                case /* bool verbose */ 2:
+                case /* bool verbose = 2 [deprecated = true] */ 2:
                     message.verbose = reader.bool()
                     break
                 case /* int64 active_at_offset */ 3:
@@ -434,14 +439,14 @@ class GetActiveContractsRequest$Type extends MessageType<GetActiveContractsReque
         writer: IBinaryWriter,
         options: BinaryWriteOptions
     ): IBinaryWriter {
-        /* com.daml.ledger.api.v2.TransactionFilter filter = 1; */
+        /* com.daml.ledger.api.v2.TransactionFilter filter = 1 [deprecated = true]; */
         if (message.filter)
             TransactionFilter.internalBinaryWrite(
                 message.filter,
                 writer.tag(1, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        /* bool verbose = 2; */
+        /* bool verbose = 2 [deprecated = true]; */
         if (message.verbose !== false)
             writer.tag(2, WireType.Varint).bool(message.verbose)
         /* int64 active_at_offset = 3; */

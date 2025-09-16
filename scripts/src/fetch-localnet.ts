@@ -6,7 +6,7 @@ import {
     ensureDir,
     SPLICE_VERSION,
     downloadAndUnpackTarball,
-    SPLICE_ARCHIVE_HASH,
+    LOCALNET_ARCHIVE_HASH,
 } from './utils.js'
 import path from 'path'
 
@@ -19,7 +19,7 @@ async function main() {
     await ensureDir(LOCALNET_PATH)
 
     await downloadAndUnpackTarball(DOWNLOAD_URL, TAR_PATH, LOCALNET_PATH, {
-        hash: SPLICE_ARCHIVE_HASH,
+        hash: LOCALNET_ARCHIVE_HASH,
         strip: 1,
     })
 }
