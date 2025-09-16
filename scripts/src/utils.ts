@@ -37,7 +37,7 @@ export const SPLICE_ARCHIVE_HASH =
 export const SPLICE_SPEC_ARCHIVE_HASH =
     '2134536c95927b946b9a1639deb54f94086725f529742755f992dc4efc7326ae'
 export const CANTON_ARCHIVE_HASH =
-    'ac47567a96e3eaf5a62e5398139b41dc55e4dedbf499be4f04582771c0b4f6f7'
+    '43c89d9833886fc68cac4951ba1959b7f6cc5269abfff1ba5129859203aa8cd3'
 export const SPLICE_VERSION = '0.4.16'
 
 export async function downloadToFile(
