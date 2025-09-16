@@ -3,7 +3,7 @@
 This repository is a monorepo of independently versioned Javascript packages. We use Conventional Commits to track changes to individual packages over time. When it comes time to publish updates to NPM, a maintainer runs through the following process from the repo root:
 
 1. Checkout `main` and `git pull` to be up-to-date
-2. Run `git fetch tags --force` to fetch the latest tags locally
+2. Run `git fetch --tags --force` to fetch the latest tags locally
 3. Create a new branch to hold the version bump commit: `git checkout -b release/<branch>` (can be any branch name)
 4. Push the branch to the remote: `git push --set-upstream origin release/<branch>`
 5. Ensure you have the `gh` CLI tool installed and authenticated: `gh auth status`
