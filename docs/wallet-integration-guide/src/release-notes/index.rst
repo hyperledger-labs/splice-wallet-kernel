@@ -89,6 +89,7 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
     await sdk.setPartyId(partyId,synchronizerId)
     //synchronizerId is optional, it will automatically select the first synchronizerId,
     //the party is connected to if none is defined
+
 0.5.0
 -----
 
