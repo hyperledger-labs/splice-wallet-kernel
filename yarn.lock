@@ -4192,7 +4192,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nx/js@npm:^21.3.11":
+"@nx/eslint@npm:21.5.1":
+  version: 21.5.1
+  resolution: "@nx/eslint@npm:21.5.1"
+  dependencies:
+    "@nx/devkit": "npm:21.5.1"
+    "@nx/js": "npm:21.5.1"
+    semver: "npm:^7.5.3"
+    tslib: "npm:^2.3.0"
+    typescript: "npm:~5.9.2"
+  peerDependencies:
+    "@zkochan/js-yaml": 0.0.7
+    eslint: ^8.0.0 || ^9.0.0
+  peerDependenciesMeta:
+    "@zkochan/js-yaml":
+      optional: true
+  checksum: 10c0/ae986c0bd53d4279c94c89d07450b8710162854f5fba1302eb4f85b16c9c11ce7e7bb5adb70684f1e574237fa8c01769ad2022da8305b6ba820729f89caae084
+  languageName: node
+  linkType: hard
+
+"@nx/js@npm:21.5.1, @nx/js@npm:^21.3.11":
   version: 21.5.1
   resolution: "@nx/js@npm:21.5.1"
   dependencies:
@@ -4301,6 +4320,25 @@ __metadata:
   version: 21.5.1
   resolution: "@nx/nx-win32-x64-msvc@npm:21.5.1"
   conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@nx/playwright@npm:21.5.1":
+  version: 21.5.1
+  resolution: "@nx/playwright@npm:21.5.1"
+  dependencies:
+    "@nx/devkit": "npm:21.5.1"
+    "@nx/eslint": "npm:21.5.1"
+    "@nx/js": "npm:21.5.1"
+    "@phenomnomnominal/tsquery": "npm:~5.0.1"
+    minimatch: "npm:9.0.3"
+    tslib: "npm:^2.3.0"
+  peerDependencies:
+    "@playwright/test": ^1.36.0
+  peerDependenciesMeta:
+    "@playwright/test":
+      optional: true
+  checksum: 10c0/cb1700f50a5afbed2e36056e6326dc2fde1370f16a9d800b716f411d5f3f03e540fbcba8bf59aa9bdd30da930e9d369f238b4ee7f28c58eaa1f41015a10fd5e8
   languageName: node
   linkType: hard
 
@@ -4585,6 +4623,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@phenomnomnominal/tsquery@npm:~5.0.1":
+  version: 5.0.1
+  resolution: "@phenomnomnominal/tsquery@npm:5.0.1"
+  dependencies:
+    esquery: "npm:^1.4.0"
+  peerDependencies:
+    typescript: ^3 || ^4 || ^5
+  checksum: 10c0/e241410cd321eb19543acd1e5f3cd973e02ecca918b2382d44e35e316fa1e41cf2d81abc4a2ee48cca023541d3812e94b491f215894375f5a2576e948b934e89
+  languageName: node
+  linkType: hard
+
 "@pkgjs/parseargs@npm:^0.11.0":
   version: 0.11.0
   resolution: "@pkgjs/parseargs@npm:0.11.0"
@@ -4599,7 +4648,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.54.2":
+"@playwright/test@npm:^1.36.0, @playwright/test@npm:^1.54.2":
   version: 1.55.0
   resolution: "@playwright/test@npm:1.55.0"
   dependencies:
@@ -9245,7 +9294,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esquery@npm:^1.4.2, esquery@npm:^1.5.0":
+"esquery@npm:^1.4.0, esquery@npm:^1.4.2, esquery@npm:^1.5.0":
   version: 1.6.0
   resolution: "esquery@npm:1.6.0"
   dependencies:
@@ -15488,7 +15537,9 @@ __metadata:
     "@eslint/compat": "npm:^1.2.9"
     "@eslint/js": "npm:^9.28.0"
     "@nx/js": "npm:^21.3.11"
+    "@nx/playwright": "npm:21.5.1"
     "@open-rpc/generator": "npm:^2.0.0"
+    "@playwright/test": "npm:^1.36.0"
     "@protobuf-ts/plugin": "npm:^2.11.1"
     "@swc-node/register": "npm:^1.11.1"
     "@swc/core": "npm:^1.13.4"
@@ -16388,7 +16439,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^5.0.0, typescript@npm:^5.8.3":
+"typescript@npm:^5.0.0, typescript@npm:^5.8.3, typescript@npm:~5.9.2":
   version: 5.9.2
   resolution: "typescript@npm:5.9.2"
   bin:
@@ -16428,7 +16479,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A^5.0.0#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.8.3#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A^5.0.0#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.8.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A~5.9.2#optional!builtin<compat/typescript>":
   version: 5.9.2
   resolution: "typescript@patch:typescript@npm%3A5.9.2#optional!builtin<compat/typescript>::version=5.9.2&hash=5786d5"
   bin:

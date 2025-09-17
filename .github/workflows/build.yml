@@ -119,9 +119,6 @@ jobs:
               uses: actions/checkout@v4
             - uses: ./.github/actions/setup_yarn
 
-            - name: Build
-              run: yarn build:all # TODO: probs unnecessary if we run playwright via nx directly
-
             - name: Download Canton
               run: yarn script:fetch:canton
 
@@ -179,7 +176,7 @@ jobs:
               run: yarn workspace @canton-network/example run playwright install --with-deps
 
             - name: Run example e2e
-              run: DAPP_API_PORT=3008 yarn workspace @canton-network/example run playwright test
+              run: DAPP_API_PORT=3008 yarn nx playwright:e2e @canton-network/example
 
             - uses: actions/upload-artifact@v4
               if: ${{ !cancelled() }}

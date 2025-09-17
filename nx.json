@@ -32,5 +32,13 @@
         "lint": {
             "cache": true
         }
-    }
+    },
+    "plugins": [
+        {
+            "plugin": "@nx/playwright/plugin",
+            "options": {
+                "targetName": "playwright:e2e"
+            }
+        }
+    ]
 }
