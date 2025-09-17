@@ -516,6 +516,7 @@ export class TokenStandardService {
         const { createdEvent } = activeContract
         return {
             contractId: createdEvent.contractId,
+            activeContract,
             interfaceViewValue: ensureInterfaceViewIsPresent(
                 createdEvent,
                 interfaceId
