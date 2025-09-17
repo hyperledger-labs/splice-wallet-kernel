@@ -40,9 +40,8 @@ const alice = await sdk.topology?.prepareSignAndSubmitExternalParty(
     singleHostedPartyKeyPair.privateKey,
     'alice'
 )
-logger.info('created single hosted party to get synchronzerId')
+logger.info(alice?.partyId!, 'created single hosted party to get synchronzerId')
 sdk.userLedger?.setPartyId(alice?.partyId!)
-logger.info(alice?.partyId!, 'created single user')
 
 const synchronizers = await sdk.userLedger?.listSynchronizers()
 
