@@ -218,6 +218,10 @@ export class TopologyController {
         )
     }
 
+    /** Gets a participantId for a specified participant
+     * @param participantEndpoints the config to connect to a ledger
+     * @returns A participant id
+     */
     async getParticipantId(
         participantEndpoints: MultiHostPartyParticipantConfig
     ): Promise<string> {
@@ -230,6 +234,16 @@ export class TopologyController {
         return (await lc.get('/v2/parties/participant-id')).participantId
     }
 
+    /** Prepares, signs and submits a new external party topology in one step.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param participant_endpoints List of endpoints to the respective hosting participant Admin APIs and ledger API.
+     * @param privateKey The private key of the new external party, used to sign the topology transactions.
+     * @param synchronizer_id  ID of the synchronizer on which the party will be registered.
+     * @param hostingParticipantPermissions Map of participant id and permission level for participant
+     * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirming_threshold Minimum number of confirmations that must be received from the confirming participants to authorize a transaction.
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
     async prepareSignAndSubmitMultiHostExternalParty(
         participantEndpoints: MultiHostPartyParticipantConfig[],
         privateKey: string,
@@ -269,6 +283,9 @@ export class TopologyController {
 
             await service.authorizePartyToParticipant(preparedParty.partyId)
         }
+
+        // the PartyToParticipant mapping needs to be authorized on each HostingParticipant
+        // before we can grantUserRights to the party
 
         await this.client.grantUserRights(this.userId, preparedParty.partyId)
 
