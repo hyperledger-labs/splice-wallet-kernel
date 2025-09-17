@@ -1,2 +1,2 @@
-import * as PreconditionFailed from './PreconditionFailed';
-export { PreconditionFailed } ;
+import * as PreconditionFailed from './PreconditionFailed'
+export { PreconditionFailed }

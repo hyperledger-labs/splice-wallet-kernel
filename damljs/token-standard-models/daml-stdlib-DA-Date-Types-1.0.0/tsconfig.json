@@ -1,10 +1,7 @@
 {
     "compilerOptions": {
         "declaration": true,
-        "lib": [
-            "dom",
-            "es2015"
-        ],
+        "lib": ["dom", "es2015"],
         "module": "commonjs",
         "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": true,
@@ -15,7 +12,5 @@
         "strict": true,
         "target": "es5"
     },
-    "include": [
-        "src/**/*.ts"
-    ]
+    "include": ["src/**/*.ts"]
 }

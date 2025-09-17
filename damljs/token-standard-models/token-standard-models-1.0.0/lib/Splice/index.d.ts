@@ -1,2 +1,2 @@
-import * as Api from './Api';
-export { Api } ;
+import * as Api from './Api'
+export { Api }

@@ -1,2 +1,2 @@
-import * as Exception from './Exception';
-export { Exception } ;
+import * as Exception from './Exception'
+export { Exception }

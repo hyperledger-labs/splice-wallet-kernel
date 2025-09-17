@@ -1,2 +1,2 @@
-import * as Token from './Token';
-export { Token } ;
+import * as Token from './Token'
+export { Token }

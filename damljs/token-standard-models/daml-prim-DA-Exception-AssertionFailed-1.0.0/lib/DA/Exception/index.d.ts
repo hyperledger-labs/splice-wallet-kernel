@@ -1,2 +1,2 @@
-import * as AssertionFailed from './AssertionFailed';
-export { AssertionFailed } ;
+import * as AssertionFailed from './AssertionFailed'
+export { AssertionFailed }

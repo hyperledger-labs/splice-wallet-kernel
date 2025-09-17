@@ -1,2 +1,2 @@
-import * as Template from './Template';
-export { Template } ;
+import * as Template from './Template'
+export { Template }

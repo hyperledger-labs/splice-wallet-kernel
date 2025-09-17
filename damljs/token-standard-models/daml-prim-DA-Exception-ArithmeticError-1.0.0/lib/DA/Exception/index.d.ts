@@ -1,2 +1,2 @@
-import * as ArithmeticError from './ArithmeticError';
-export { ArithmeticError } ;
+import * as ArithmeticError from './ArithmeticError'
+export { ArithmeticError }

@@ -1,2 +1,2 @@
-import * as Tuple from './Tuple';
-export { Tuple } ;
+import * as Tuple from './Tuple'
+export { Tuple }

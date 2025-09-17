@@ -1,2 +1,2 @@
-import * as Down from './Down';
-export { Down } ;
+import * as Down from './Down'
+export { Down }

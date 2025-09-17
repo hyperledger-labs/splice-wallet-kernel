@@ -1,2 +1,2 @@
-import * as Random from './Random';
-export { Random } ;
+import * as Random from './Random'
+export { Random }
