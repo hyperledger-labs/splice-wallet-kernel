@@ -2,169 +2,170 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export interface paths {
-    '/registry/metadata/v1/info': {
-        /**
-         * @description Get information about the registry.
-         * The response includes the standards supported by the registry.
-         */
-        get: operations['getRegistryInfo']
-    }
-    '/registry/metadata/v1/instruments': {
-        /** @description List all instruments managed by this instrument admin. */
-        get: operations['listInstruments']
-    }
-    '/registry/metadata/v1/instruments/{instrumentId}': {
-        /** @description Retrieve an instrument's metadata. */
-        get: operations['getInstrument']
-    }
-}
-
-export type webhooks = Record<string, never>
-
-export interface components {
-    schemas: {
-        GetRegistryInfoResponse: {
-            /** @description The Daml party representing the registry app */
-            adminId: string
-            /** @description The token standard APIs supported by the registry. Note that this only includes the registry-wide APIs. Use the instrument lookup endpoints to see which APIs are supported for a given instrument */
-            supportedApis: components['schemas']['SupportedApis']
-        }
-        Instrument: {
-            /** @description The unique identifier assigned by the admin to the instrument. */
-            id: string
-            /** @description The display name for the instrument recommended by the instrument admin. This is not necessarily unique. */
-            name: string
-            /** @description The symbol for the instrument recommended by the instrument admin. This is not necessarily unique. */
-            symbol: string
-            /** @description Decimal encoded current total supply of the instrument. */
-            totalSupply?: string
-            /**
-             * Format: date-time
-             * @description The timestamp when the total supply was last computed.
-             */
-            totalSupplyAsOf?: string
-            /**
-             * Format: int8
-             * @description The number of decimal places used by the instrument.
-             *
-             * Must be a number between 0 and 10, as the Daml interfaces represent holding amounts as
-             * `Decimal` values, which use 10 decimal places and are precise for 38 digits.
-             * Setting this to 0 means that the instrument can only be held in whole units.
-             *
-             * This number SHOULD be used for display purposes in a wallet to decide how many
-             * decimal places to show and accept when displaying or entering amounts.
-             *
-             * @default 10
-             */
-            decimals: number
-            supportedApis: components['schemas']['SupportedApis']
-        }
-        ListInstrumentsResponse: {
-            instruments: components['schemas']['Instrument'][]
-            /** @description The token for the next page of results, to be used as the lastInstrumentId for the next page. */
-            nextPageToken?: string
-        }
-        ErrorResponse: {
-            error: string
-        }
-        /**
-         * @description Map from token standard API name to the minor version of the API supported, e.g.,
-         * splice-api-token-metadata-v1 -> 1 where the `1` corresponds to the minor version.
-         */
-        SupportedApis: {
-            [key: string]: number
-        }
-    }
-    responses: {
-        /** @description bad request */
-        400: {
-            content: {
-                'application/json': components['schemas']['ErrorResponse']
-            }
-        }
-        /** @description not found */
-        404: {
-            content: {
-                'application/json': components['schemas']['ErrorResponse']
-            }
-        }
-        /** @description conflict */
-        409: {
-            content: {
-                'application/json': components['schemas']['ErrorResponse']
-            }
-        }
-        /** @description Internal server error */
-        500: {
-            content: {
-                'application/json': components['schemas']['ErrorResponse']
-            }
-        }
-    }
-    parameters: never
-    requestBodies: never
-    headers: never
-    pathItems: never
-}
-
-export type $defs = Record<string, never>
-
-export type external = Record<string, never>
-
-export interface operations {
+  "/registry/metadata/v1/info": {
     /**
      * @description Get information about the registry.
      * The response includes the standards supported by the registry.
      */
-    getRegistryInfo: {
-        responses: {
-            /** @description ok */
-            200: {
-                content: {
-                    'application/json': components['schemas']['GetRegistryInfoResponse']
-                }
-            }
-            404: components['responses']['404']
-            500: components['responses']['500']
-        }
-    }
+    get: operations["getRegistryInfo"];
+  };
+  "/registry/metadata/v1/instruments": {
     /** @description List all instruments managed by this instrument admin. */
-    listInstruments: {
-        parameters: {
-            query?: {
-                /** @description Number of instruments per page. */
-                pageSize?: number
-                /** @description The `nextPageToken` received from the response for the previous page. */
-                pageToken?: string
-            }
-        }
-        responses: {
-            /** @description ok */
-            200: {
-                content: {
-                    'application/json': components['schemas']['ListInstrumentsResponse']
-                }
-            }
-            404: components['responses']['404']
-            500: components['responses']['500']
-        }
-    }
+    get: operations["listInstruments"];
+  };
+  "/registry/metadata/v1/instruments/{instrumentId}": {
     /** @description Retrieve an instrument's metadata. */
-    getInstrument: {
-        parameters: {
-            path: {
-                instrumentId: string
-            }
-        }
-        responses: {
-            /** @description ok */
-            200: {
-                content: {
-                    'application/json': components['schemas']['Instrument']
-                }
-            }
-            404: components['responses']['404']
-            500: components['responses']['500']
-        }
-    }
+    get: operations["getInstrument"];
+  };
+}
+
+export type webhooks = Record<string, never>;
+
+export interface components {
+  schemas: {
+    GetRegistryInfoResponse: {
+      /** @description The Daml party representing the registry app */
+      adminId: string;
+      /** @description The token standard APIs supported by the registry. Note that this only includes the registry-wide APIs. Use the instrument lookup endpoints to see which APIs are supported for a given instrument */
+      supportedApis: components["schemas"]["SupportedApis"];
+    };
+    Instrument: {
+      /** @description The unique identifier assigned by the admin to the instrument. */
+      id: string;
+      /** @description The display name for the instrument recommended by the instrument admin. This is not necessarily unique. */
+      name: string;
+      /** @description The symbol for the instrument recommended by the instrument admin. This is not necessarily unique. */
+      symbol: string;
+      /** @description Decimal encoded current total supply of the instrument. */
+      totalSupply?: string;
+      /**
+       * Format: date-time
+       * @description The timestamp when the total supply was last computed.
+       */
+      totalSupplyAsOf?: string;
+      /**
+       * Format: int8
+       * @description The number of decimal places used by the instrument.
+       *
+       * Must be a number between 0 and 10, as the Daml interfaces represent holding amounts as
+       * `Decimal` values, which use 10 decimal places and are precise for 38 digits.
+       * Setting this to 0 means that the instrument can only be held in whole units.
+       *
+       * This number SHOULD be used for display purposes in a wallet to decide how many
+       * decimal places to show and accept when displaying or entering amounts.
+       *
+       * @default 10
+       */
+      decimals: number;
+      supportedApis: components["schemas"]["SupportedApis"];
+    };
+    ListInstrumentsResponse: {
+      instruments: components["schemas"]["Instrument"][];
+      /** @description The token for the next page of results, to be used as the lastInstrumentId for the next page. */
+      nextPageToken?: string;
+    };
+    ErrorResponse: {
+      error: string;
+    };
+    /**
+     * @description Map from token standard API name to the minor version of the API supported, e.g.,
+     * splice-api-token-metadata-v1 -> 1 where the `1` corresponds to the minor version.
+     */
+    SupportedApis: {
+      [key: string]: number;
+    };
+  };
+  responses: {
+    /** @description bad request */
+    400: {
+      content: {
+        "application/json": components["schemas"]["ErrorResponse"];
+      };
+    };
+    /** @description not found */
+    404: {
+      content: {
+        "application/json": components["schemas"]["ErrorResponse"];
+      };
+    };
+    /** @description conflict */
+    409: {
+      content: {
+        "application/json": components["schemas"]["ErrorResponse"];
+      };
+    };
+    /** @description Internal server error */
+    500: {
+      content: {
+        "application/json": components["schemas"]["ErrorResponse"];
+      };
+    };
+  };
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
+}
+
+export type $defs = Record<string, never>;
+
+export type external = Record<string, never>;
+
+export interface operations {
+
+  /**
+   * @description Get information about the registry.
+   * The response includes the standards supported by the registry.
+   */
+  getRegistryInfo: {
+    responses: {
+      /** @description ok */
+      200: {
+        content: {
+          "application/json": components["schemas"]["GetRegistryInfoResponse"];
+        };
+      };
+      404: components["responses"]["404"];
+      500: components["responses"]["500"];
+    };
+  };
+  /** @description List all instruments managed by this instrument admin. */
+  listInstruments: {
+    parameters: {
+      query?: {
+        /** @description Number of instruments per page. */
+        pageSize?: number;
+        /** @description The `nextPageToken` received from the response for the previous page. */
+        pageToken?: string;
+      };
+    };
+    responses: {
+      /** @description ok */
+      200: {
+        content: {
+          "application/json": components["schemas"]["ListInstrumentsResponse"];
+        };
+      };
+      404: components["responses"]["404"];
+      500: components["responses"]["500"];
+    };
+  };
+  /** @description Retrieve an instrument's metadata. */
+  getInstrument: {
+    parameters: {
+      path: {
+        instrumentId: string;
+      };
+    };
+    responses: {
+      /** @description ok */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Instrument"];
+        };
+      };
+      404: components["responses"]["404"];
+      500: components["responses"]["500"];
+    };
+  };
 }
