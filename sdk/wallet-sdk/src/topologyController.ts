@@ -259,6 +259,7 @@ export class TopologyController {
             hostingParticipantPermissions
         )
 
+        this.logger.info(preparedParty, 'created external party')
         //start after first because we've already onboarded an external party and authorized the mapping
         // on the participant specified in the wallet.sdk.configure
         // now we need to authorize the party to participant transaction on the others

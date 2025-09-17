@@ -199,13 +199,12 @@ export class TopologyWriteService {
             },
         })
 
-        const hostingParticipants = Array.from(
-            hostingParticipantRights.entries()
-        ).map(([pId, participantPermission]) =>
-            PartyToParticipant_HostingParticipant.create({
-                participantUid: pId,
-                permission: participantPermission,
-            })
+        const hostingParticipants = [...hostingParticipantRights].map(
+            ([participantUid, permission]) =>
+                PartyToParticipant_HostingParticipant.create({
+                    participantUid,
+                    permission,
+                })
         )
 
         const partyToParticipant = TopologyMapping.create({
@@ -264,46 +263,33 @@ export class TopologyWriteService {
         const namespace =
             TopologyWriteService.createFingerprintFromKey(signingPublicKey)
 
-        if (
-            hostingParticipantRights === undefined ||
-            hostingParticipantRights.size === 0
-        ) {
+        let participantRights = hostingParticipantRights
+
+        // if no participantRights have been supplied, this party will be hosted on 1 validator (not multi-hosted)
+        // the default is to get the participantId from ledger client with Confirmation rights
+        if (!participantRights || participantRights.size === 0) {
             const { participantId } = await this.ledgerClient.get(
                 '/v2/parties/participant-id'
             )
 
-            const participantPermssionRights = new Map<
-                string,
-                Enums_ParticipantPermission
-            >([[participantId, Enums_ParticipantPermission.CONFIRMATION]])
-            const req = this.generateTransactionsRequest(
-                namespace,
-                partyId,
-                signingPublicKey,
-                confirmingThreshold,
-                participantPermssionRights
-            )
-
-            return this.topologyClient.generateTransactions(req, {
-                meta: {
-                    Authorization: `Bearer ${this.userAdminToken}`,
-                },
-            }).response
-        } else {
-            const req = this.generateTransactionsRequest(
-                namespace,
-                partyId,
-                signingPublicKey,
-                confirmingThreshold,
-                hostingParticipantRights
-            )
-
-            return this.topologyClient.generateTransactions(req, {
-                meta: {
-                    Authorization: `Bearer ${this.userAdminToken}`,
-                },
-            }).response
+            participantRights = new Map<string, Enums_ParticipantPermission>([
+                [participantId, Enums_ParticipantPermission.CONFIRMATION],
+            ])
         }
+
+        const req = this.generateTransactionsRequest(
+            namespace,
+            partyId,
+            signingPublicKey,
+            confirmingThreshold,
+            participantRights
+        )
+
+        return this.topologyClient.generateTransactions(req, {
+            meta: {
+                Authorization: `Bearer ${this.userAdminToken}`,
+            },
+        }).response
     }
 
     private async addTransactions(
