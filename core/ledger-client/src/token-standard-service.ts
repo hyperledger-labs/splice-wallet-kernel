@@ -30,6 +30,7 @@ const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
 type ExerciseCommand = Types['ExerciseCommand']
 type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
+type JsGetTransactionResponse = Types['JsGetTransactionResponse']
 type OffsetCheckpoint2 = Types['OffsetCheckpoint2']
 type JsTransaction = Types['JsTransaction']
 type TransactionFormat = Types['TransactionFormat']
@@ -251,7 +252,10 @@ export class TokenStandardService {
         }
     }
 
-    async getTransactionById(updateId: string, partyId: PartyId) {
+    async getTransactionById(
+        updateId: string,
+        partyId: PartyId
+    ): Promise<Transaction> {
         const transactionFormat: TransactionFormat = {
             eventFormat: {
                 filtersByParty: {
@@ -274,10 +278,19 @@ export class TokenStandardService {
             transactionShape: 'TRANSACTION_SHAPE_ACS_DELTA',
         }
 
-        return this.ledgerClient.post('/v2/updates/transaction-by-id', {
-            updateId,
-            transactionFormat,
-        })
+        const getTransactionResponse = await this.ledgerClient.post(
+            '/v2/updates/transaction-by-id',
+            {
+                updateId,
+                transactionFormat,
+            }
+        )
+
+        return this.toPrettyTransaction(
+            getTransactionResponse,
+            partyId,
+            this.ledgerClient
+        )
     }
 
     async createTransfer(
@@ -504,6 +517,16 @@ export class TokenStandardService {
                 .filter((tx) => tx.events.length > 0)
                 .map(renderTransaction),
         }
+    }
+
+    private async toPrettyTransaction(
+        getTransactionResponse: JsGetTransactionResponse,
+        partyId: PartyId,
+        ledgerClient: LedgerClient
+    ): Promise<Transaction> {
+        const tx = getTransactionResponse.transaction
+        const parser = new TransactionParser(tx, ledgerClient, partyId)
+        return parser.parseTransaction()
     }
 
     // returns object with JsActiveContract content
