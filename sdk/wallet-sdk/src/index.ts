@@ -27,7 +27,10 @@ export {
     createKeyPair,
 } from '@canton-network/core-signing-lib'
 export { decodePreparedTransaction } from '@canton-network/core-tx-visualizer'
-export { PreparedTransaction } from '@canton-network/core-ledger-proto'
+export {
+    PreparedTransaction,
+    Enums_ParticipantPermission,
+} from '@canton-network/core-ledger-proto'
 import { PartyId } from '@canton-network/core-types'
 
 type AuthFactory = () => AuthController

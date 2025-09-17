@@ -180,9 +180,9 @@ export class TopologyWriteService {
     private generateTransactionsRequest(
         namespace: string,
         partyId: PartyId,
-        participantIds: string[],
         publicKey: SigningPublicKey,
-        confirmingThreshold: number = 1
+        confirmingThreshold: number = 1,
+        hostingParticipantRights: Map<string, Enums_ParticipantPermission>
     ): GenerateTransactionsRequest {
         // Implementation for generating transactions request
         const namespaceDelegation = TopologyMapping.create({
@@ -199,13 +199,14 @@ export class TopologyWriteService {
             },
         })
 
-        //TODO: export HostingParticipant type that takes in (participantId, participant permission)
-        const hostingParticipants = participantIds.map((pId) => {
-            return PartyToParticipant_HostingParticipant.create({
+        const hostingParticipants = Array.from(
+            hostingParticipantRights.entries()
+        ).map(([pId, participantPermission]) =>
+            PartyToParticipant_HostingParticipant.create({
                 participantUid: pId,
-                permission: Enums_ParticipantPermission.CONFIRMATION,
+                permission: participantPermission,
             })
-        })
+        )
 
         const partyToParticipant = TopologyMapping.create({
             mapping: {
@@ -257,23 +258,30 @@ export class TopologyWriteService {
         publicKey: string,
         partyId: PartyId,
         confirmingThreshold: number = 1,
-        participantIds?: string[]
+        hostingParticipantRights?: Map<string, Enums_ParticipantPermission>
     ): Promise<GenerateTransactionsResponse> {
         const signingPublicKey = signingPublicKeyFromEd25519(publicKey)
         const namespace =
             TopologyWriteService.createFingerprintFromKey(signingPublicKey)
 
-        if (participantIds === undefined || participantIds.length === 0) {
+        if (
+            hostingParticipantRights === undefined ||
+            hostingParticipantRights.size === 0
+        ) {
             const { participantId } = await this.ledgerClient.get(
                 '/v2/parties/participant-id'
             )
 
+            const participantPermssionRights = new Map<
+                string,
+                Enums_ParticipantPermission
+            >([[participantId, Enums_ParticipantPermission.CONFIRMATION]])
             const req = this.generateTransactionsRequest(
                 namespace,
                 partyId,
-                [participantId],
                 signingPublicKey,
-                confirmingThreshold
+                confirmingThreshold,
+                participantPermssionRights
             )
 
             return this.topologyClient.generateTransactions(req, {
@@ -285,9 +293,9 @@ export class TopologyWriteService {
             const req = this.generateTransactionsRequest(
                 namespace,
                 partyId,
-                participantIds,
                 signingPublicKey,
-                confirmingThreshold
+                confirmingThreshold,
+                hostingParticipantRights
             )
 
             return this.topologyClient.generateTransactions(req, {

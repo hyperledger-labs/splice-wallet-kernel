@@ -8,8 +8,8 @@ import {
     localValidatorDefault,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
-import { LOCALNET_REGISTRY_API_URL, LOCALNET_SCAN_API_URL } from '../config.js'
-import { v4 } from 'uuid'
+import { LOCALNET_SCAN_API_URL } from '../config.js'
+import { Enums_ParticipantPermission } from '@canton-network/wallet-sdk'
 
 const logger = pino({ name: '06-external-party-setup', level: 'info' })
 
@@ -48,7 +48,7 @@ const synchronizers = await sdk.userLedger?.listSynchronizers()
 
 const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
 
-const participantEndpointConfigs = [
+const multiHostedParticipantEndpointConfig = [
     {
         adminApiUrl: '127.0.0.1:2902',
         baseUrl: new URL('http://127.0.0.1:2975'),
@@ -62,10 +62,26 @@ const participantEndpointConfigs = [
 ]
 
 logger.info('multi host party starting...')
-const result = await sdk.topology?.multiHostParty(
-    participantEndpointConfigs,
+
+const participantIdPromises = multiHostedParticipantEndpointConfig.map(
+    async (endpoint) => {
+        return await sdk.topology?.getParticipantId(endpoint)
+    }
+)
+
+const participantIds = await Promise.all(participantIdPromises)
+
+const participantPermissionMap = new Map<string, Enums_ParticipantPermission>()
+
+participantIds.map((pId) =>
+    participantPermissionMap.set(pId!, Enums_ParticipantPermission.CONFIRMATION)
+)
+
+await sdk.topology?.prepareSignAndSubmitMultiHostExternalParty(
+    multiHostedParticipantEndpointConfig,
     multiHostedParty.privateKey,
     synchonizerId,
+    participantPermissionMap,
     'bob'
 )
 
