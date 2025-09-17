@@ -56,7 +56,6 @@ export interface ICommandServiceClient {
      * Submits a single composite command, waits for its result, and returns the transaction tree.
      * Propagates the gRPC error of failed submissions including Daml interpretation errors.
      *
-     * @deprecated
      * @generated from protobuf rpc: SubmitAndWaitForTransactionTree
      */
     submitAndWaitForTransactionTree(
@@ -138,7 +137,6 @@ export class CommandServiceClient
      * Submits a single composite command, waits for its result, and returns the transaction tree.
      * Propagates the gRPC error of failed submissions including Daml interpretation errors.
      *
-     * @deprecated
      * @generated from protobuf rpc: SubmitAndWaitForTransactionTree
      */
     submitAndWaitForTransactionTree(

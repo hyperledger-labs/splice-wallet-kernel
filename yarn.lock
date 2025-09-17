@@ -2238,10 +2238,10 @@ __metadata:
 
 "@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@file:../daml-stdlib-DA-NonEmpty-Types-1.0.0::locator=%40daml.js%2Fdaml-stdlib-DA-Validation-Types-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Fdaml-stdlib-DA-Validation-Types-1.0.0":
   version: 3.3.0-snapshot.20250603.0
-  resolution: "@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@file:../daml-stdlib-DA-NonEmpty-Types-1.0.0#../daml-stdlib-DA-NonEmpty-Types-1.0.0::hash=8b4f3f&locator=%40daml.js%2Fdaml-stdlib-DA-Validation-Types-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Fdaml-stdlib-DA-Validation-Types-1.0.0"
+  resolution: "@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@file:../daml-stdlib-DA-NonEmpty-Types-1.0.0#../daml-stdlib-DA-NonEmpty-Types-1.0.0::hash=c841d6&locator=%40daml.js%2Fdaml-stdlib-DA-Validation-Types-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Fdaml-stdlib-DA-Validation-Types-1.0.0"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
-  checksum: 10c0/c87852d792fadb8ab0a763f0abcb3e9fc2e066079b07454a5dad01108f14d7f7f48b443ea2596113a14735b7091b9c8932222db5bc5c15814a9ea86b340bcbbb
+  checksum: 10c0/6252b2505ee21af6cb3fb919afc90de96ca50730e8f528b41f0f1a4dfda2b00984f2aa8079814b611c16116a0f181daf461ac95fe57c530290032bab33a2fa93
   languageName: node
   linkType: hard
 
@@ -2287,10 +2287,10 @@ __metadata:
 
 "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0":
   version: 3.3.0-snapshot.20250603.0
-  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=3c4668&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0"
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=516bf5&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
-  checksum: 10c0/7d35c4e4d08b771818324fc65cf73868520858a8c3fae4110bca21d82ae0784673181a8bde34d37436f03dc23250f4f1386f50ada5ef7244c3fbc4709665ad5b
+  checksum: 10c0/a750232901b01f73be7b4b1e95f672850f8b09c5d73c1efa8935ef1cdaeea662920f5663414001d53c13eb041dd94fb4a6d4f1e48bc9f1277ad046d01b14bdfa
   languageName: node
   linkType: hard
 
@@ -2313,10 +2313,10 @@ __metadata:
 
 "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0":
   version: 3.3.0-snapshot.20250603.0
-  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=005182&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0"
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=31d742&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
-  checksum: 10c0/e1210af3228753d17d860f63e137b1f884ece7bb87bf7e38833480a0ffad116983f049294240c0bfdf3b022ef838cbc4af2f49e0d7012a927b3009d71928ed45
+  checksum: 10c0/638a8e77e88673eda18e3dea88ed981e7a6711aa183efb2b2daab3504e8b1b25a41e8b60a1c28d3cd3b053e576000925b51952ad4233d2196338d470c132739c
   languageName: node
   linkType: hard
 
