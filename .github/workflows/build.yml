@@ -11,6 +11,8 @@ jobs:
     build:
         runs-on: ubuntu-latest
         steps:
+            - name: Checkout
+              uses: actions/checkout@v4
             - uses: ./.github/actions/setup_yarn
             - uses: actions/cache@v4
               with:
@@ -34,17 +36,84 @@ jobs:
                       .nx/workspace-data
                   key: nx-${{ github.ref }}-${{ github.sha }}
 
+            - name: Validate wallet SDK package build
+              run: yarn script:validate:package
+
+    build-docs:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version-file: .python-version
+
+            - name: Install and configure Poetry
+              uses: snok/install-poetry@v1
+              with:
+                  version: 2.1.3
+
+            # load cached venv if cache exists
+            - name: Load cached venv
+              id: cached-poetry-dependencies
+              uses: actions/cache@v4
+              with:
+                  path: docs/wallet-integration-guide/.venv
+                  key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('docs/wallet-integration-guide/poetry.lock') }}
+
+            # install dependencies if cache does not exist
+            - name: Install dependencies
+              if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+              working-directory: docs/wallet-integration-guide
+              run: poetry install --no-interaction --no-root
+
+            - name: Build docs
+              working-directory: docs/wallet-integration-guide
+              run: poetry run sphinx-build -c . src build --fail-on-warning
+
+    test-static:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - uses: ./.github/actions/setup_yarn
+            - name: Validate current PR title with commitlint
+              run: echo "$TITLE" | yarn commitlint --verbose
+              env:
+                  TITLE: ${{ github.event.pull_request.title }}
+
             - name: check package.json names
               run: yarn script:cleancoding
 
             - name: check open-rpc specs titles
               run: yarn script:openrpc:titles
 
+            - name: prettier code
+              run: yarn run prettier . --check
+
+            - name: eslint code
+              run: yarn workspaces foreach -A run eslint
+
+    test-unit:
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - uses: ./.github/actions/setup_yarn
             - name: Run unit tests
               run: yarn test:all
 
-            - name: Validate wallet SDK package build
-              run: yarn script:validate:package
+    test-kernel-e2e:
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - uses: ./.github/actions/setup_yarn
 
             - name: Download Canton
               run: yarn script:fetch:canton
@@ -112,6 +181,14 @@ jobs:
                   path: example/playwright-report/
                   retention-days: 30
 
+    test-wallet-sdk-e2e:
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - uses: ./.github/actions/setup_yarn
+
             - name: Download localnet
               run: yarn script:fetch:localnet
 
@@ -143,75 +220,3 @@ jobs:
               with:
                   name: docker-logs
                   path: logs/
-
-    build-docs:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-
-            - name: Setup Python
-              uses: actions/setup-python@v5
-              with:
-                  python-version-file: .python-version
-
-            - name: Install and configure Poetry
-              uses: snok/install-poetry@v1
-              with:
-                  version: 2.1.3
-
-            # load cached venv if cache exists
-            - name: Load cached venv
-              id: cached-poetry-dependencies
-              uses: actions/cache@v4
-              with:
-                  path: docs/wallet-integration-guide/.venv
-                  key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('docs/wallet-integration-guide/poetry.lock') }}
-
-            # install dependencies if cache does not exist
-            - name: Install dependencies
-              if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-              working-directory: docs/wallet-integration-guide
-              run: poetry install --no-interaction --no-root
-
-            - name: Build docs
-              working-directory: docs/wallet-integration-guide
-              run: poetry run sphinx-build -c . src build --fail-on-warning
-
-    test-static:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: ./.github/actions/setup_yarn
-            - name: Validate current PR title with commitlint
-              run: echo "$TITLE" | yarn commitlint --verbose
-              env:
-                  TITLE: ${{ github.event.pull_request.title }}
-
-            - name: prettier code
-              run: yarn run prettier . --check
-
-            - name: eslint code
-              run: yarn workspaces foreach -A run eslint
-
-    test-unit:
-        runs-on: ubuntu-latest
-        needs: build
-        steps:
-            - uses: ./.github/actions/setup_yarn
-            - name: Run unit tests
-              run: yarn test:all
-
-    test-e2e:
-        runs-on: ubuntu-latest
-        needs: build
-        steps:
-            - uses: ./.github/actions/setup_yarn
-
-    test-e2e-wallet-sdk:
-        runs-on: ubuntu-latest
-        needs: build
-        steps:
-            - uses: ./.github/actions/setup_yarn
-
-            - name: Start Canton
-              run: yarn start:canton &

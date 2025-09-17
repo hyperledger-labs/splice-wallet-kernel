@@ -1,11 +1,10 @@
 name: Setup Yarn
+description: 'Setup Yarn for the project'
 runs:
     using: composite
     steps:
-        - name: Checkout
-          uses: actions/checkout@v4
-
         - name: Enable Corepack
+          shell: bash
           run: corepack enable
 
         - name: Setup Node.js
@@ -15,4 +14,5 @@ runs:
               cache: 'yarn'
 
         - name: Install dependencies
+          shell: bash
           run: yarn install --immutable
