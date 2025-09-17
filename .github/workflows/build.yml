@@ -88,7 +88,7 @@ jobs:
               run: yarn run prettier . --check
 
             - name: eslint code
-              run: yarn workspaces foreach -A run eslint
+              run: yarn workspaces foreach -A run eslint .
 
     test-unit:
         runs-on: ubuntu-latest
