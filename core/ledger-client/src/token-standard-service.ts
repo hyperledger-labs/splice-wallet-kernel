@@ -1,7 +1,10 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { TokenStandardClient } from '@canton-network/core-token-standard'
+import {
+    TokenStandardClient,
+    HoldingView,
+} from '@canton-network/core-token-standard'
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
 import {
@@ -300,41 +303,45 @@ export class TokenStandardService {
         instrumentAdmin: PartyId, // TODO (#907): replace with registry call
         instrumentId: string,
         transferFactoryRegistryUrl: string,
+        inputUtxos?: string[],
         memo?: string,
         meta?: Record<string, unknown>
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const ledgerEndOffset = await this.ledgerClient.get(
-                '/v2/state/ledger-end'
-            )
-            //TODO: filter out any holdings that has a non-expired lock
-            const senderHoldings = await this.ledgerClient.post(
-                '/v2/state/active-contracts',
-                {
-                    filter: {
-                        filtersByParty: filtersByParty(
-                            sender,
-                            [HoldingInterface],
-                            false
-                        ),
-                    },
-                    verbose: false,
-                    activeAtOffset: ledgerEndOffset.offset,
-                }
-            )
-            if (senderHoldings.length === 0) {
-                throw new Error(
-                    "Sender has no holdings, so transfer can't be executed."
-                )
-            }
-            const holdings = senderHoldings.map(
-                (h) => h['contractEntry']['JsActiveContract']
-            )
-            const inputHoldingCids = holdings
-                .filter((h) => h !== undefined)
-                .map((h) => h['createdEvent']['contractId'])
-
+            let inputHoldingCids: string[]
             const now = new Date()
+
+            if (inputUtxos && inputUtxos.length > 0) {
+                inputHoldingCids = inputUtxos
+            } else {
+                const senderHoldings =
+                    await this.listContractsByInterface<HoldingView>(
+                        HoldingInterface,
+                        sender
+                    )
+                if (senderHoldings.length === 0) {
+                    throw new Error(
+                        "Sender has no holdings, so transfer can't be executed."
+                    )
+                }
+
+                inputHoldingCids = senderHoldings
+                    .filter((utxo) => {
+                        //filter out locked holdings
+                        const lock = utxo.interfaceViewValue.lock
+                        if (!lock) return true
+
+                        const expiresAt = lock.expiresAt
+                        if (!expiresAt) return false
+
+                        const expiresAtDate = new Date(expiresAt)
+                        return expiresAtDate <= now
+                    })
+                    .map((h) => h.contractId)
+                /* TODO: optimize input holding selection, currently if you transfer 10 CC and have 10 inputs of 1000 CC,
+                    then all 10 of those are chose as input.
+                 */
+            }
             const tomorrow = new Date(now)
             tomorrow.setDate(tomorrow.getDate() + 1)
             const choiceArgs = {

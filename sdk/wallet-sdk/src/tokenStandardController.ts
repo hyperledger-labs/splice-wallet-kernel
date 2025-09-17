@@ -226,6 +226,7 @@ export class TokenStandardController {
      * @param receiver The party of the receiver.
      * @param amount The amount to be transferred.
      * @param instrument The instrument to be used for the transfer.
+     * @param inputUtxos The utxos to use for this transfer, if not defined it will auto-select.
      * @param memo The message for the receiver to identify the transaction.
      * @param meta Optional metadata to include with the transfer.
      * @returns A promise that resolves to the ExerciseCommand which creates the transfer.
@@ -238,6 +239,7 @@ export class TokenStandardController {
             instrumentId: string
             instrumentAdmin: PartyId
         },
+        inputUtxos?: string[],
         memo?: string,
         meta?: Record<string, unknown>
     ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
@@ -249,6 +251,7 @@ export class TokenStandardController {
                 instrument.instrumentAdmin,
                 instrument.instrumentId,
                 this.getTransferFactoryRegistryUrl().href,
+                inputUtxos,
                 memo,
                 meta
             )
