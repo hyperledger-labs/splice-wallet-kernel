@@ -165,15 +165,11 @@ export class TopologyController {
                 )
         )
 
-        console.debug(
-            `Submitting external party topology for partyId ${preparedParty.partyId}`
-        )
         await this.topologyClient.submitExternalPartyTopology(
             signedTopologyTxs,
             preparedParty.partyId
         )
 
-        console.debug(`Authorizing party ${preparedParty.partyId}`)
         if (grantUserRights) {
             await this.client.grantUserRights(
                 this.userId,
@@ -181,7 +177,6 @@ export class TopologyController {
             )
         }
 
-        console.debug(`Completed setup for party ${preparedParty.partyId}`)
         return { partyId: preparedParty.partyId }
     }
 
@@ -197,9 +192,6 @@ export class TopologyController {
         confirmingThreshold?: number,
         hostingParticipantPermissions?: Map<string, Enums_ParticipantPermission>
     ): Promise<AllocatedParty> {
-        console.debug(
-            `Preparing, signing and submitting external party topology`
-        )
         const preparedParty = await this.prepareExternalPartyTopology(
             getPublicKeyFromPrivate(privateKey),
             partyHint,
@@ -207,16 +199,10 @@ export class TopologyController {
             hostingParticipantPermissions
         )
 
-        console.debug(
-            `Prepared external party topology for partyId ${preparedParty.partyId}`
-        )
-
         const signedHash = signTransactionHash(
             preparedParty!.combinedHash,
             privateKey
         )
-
-        console.debug(`Signed transaction hash for partyId ${signedHash}`)
 
         // grant user rights automatically if the party is hosted on 1 participant
         // if hosted on multiple participants, then we need to authorize each PartyToParticipant mapping
@@ -273,8 +259,6 @@ export class TopologyController {
             hostingParticipantPermissions
         )
 
-        this.logger.info(preparedParty, 'onboarded external party')
-
         //start after first because we've already onboarded an external party and authorized the mapping
         // on the participant specified in the wallet.sdk.configure
         // now we need to authorize the party to participant transaction on the others
@@ -292,8 +276,6 @@ export class TopologyController {
                 endpoint.accessToken,
                 lc
             )
-
-            this.logger.info(endpoint, 'endpoint info')
 
             await service.authorizePartyToParticipant(preparedParty.partyId)
         }
