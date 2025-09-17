@@ -28,8 +28,9 @@ import type { RpcOptions } from '@protobuf-ts/runtime-rpc'
 export interface IStateServiceClient {
     /**
      * Returns a stream of the snapshot of the active contracts and incomplete (un)assignments at a ledger offset.
-     * If there are no active contracts, the stream returns a single response message with the offset at which the snapshot has been taken.
-     * Clients SHOULD use the offset in the last GetActiveContractsResponse message to continue streaming transactions with the update service.
+     * Once the stream of GetActiveContractsResponses completes,
+     * the client SHOULD begin streaming updates from the update service,
+     * starting at the GetActiveContractsRequest.active_at_offset specified in this request.
      * Clients SHOULD NOT assume that the set of active contracts they receive reflects the state at the ledger end.
      *
      * @generated from protobuf rpc: GetActiveContracts
@@ -85,8 +86,9 @@ export class StateServiceClient implements IStateServiceClient, ServiceInfo {
     constructor(private readonly _transport: RpcTransport) {}
     /**
      * Returns a stream of the snapshot of the active contracts and incomplete (un)assignments at a ledger offset.
-     * If there are no active contracts, the stream returns a single response message with the offset at which the snapshot has been taken.
-     * Clients SHOULD use the offset in the last GetActiveContractsResponse message to continue streaming transactions with the update service.
+     * Once the stream of GetActiveContractsResponses completes,
+     * the client SHOULD begin streaming updates from the update service,
+     * starting at the GetActiveContractsRequest.active_at_offset specified in this request.
      * Clients SHOULD NOT assume that the set of active contracts they receive reflects the state at the ledger end.
      *
      * @generated from protobuf rpc: GetActiveContracts

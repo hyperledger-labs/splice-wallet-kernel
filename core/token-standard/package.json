@@ -9,18 +9,26 @@
     "types": "dist/index.d.ts",
     "packageManager": "yarn@4.9.4",
     "scripts": {
-        "build": "tsc -b",
+        "build": "rollup -c",
         "dev": "tsc -b --watch",
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
         "@canton-network/core-types": "workspace:^",
+        "@daml/ledger": "3.4.0-snapshot.20250616.13911.0.v482d9ec0",
+        "@daml/types": "3.4.0-snapshot.20250616.13911.0.v482d9ec0",
         "lodash": "^4.17.21",
         "openapi-fetch": "^0.14.0",
         "uuid": "^11.1.0",
         "zod": "^3.25.67"
     },
     "devDependencies": {
+        "@daml.js/token-standard-models-1.0.0": "workspace:^",
+        "@rollup/plugin-commonjs": "^28.0.6",
+        "@rollup/plugin-node-resolve": "^16.0.1",
+        "@rollup/plugin-typescript": "^12.1.4",
+        "rollup": "^4.50.1",
+        "tslib": "^2.8.1",
         "typescript": "^5.8.3"
     },
     "files": [
