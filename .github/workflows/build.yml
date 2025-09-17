@@ -29,7 +29,7 @@ jobs:
                   path: |
                       .nx/cache
                       .nx/workspace-data
-                  key: nx-${{ github.ref }}-${{ github.sha }}
+                  key: nx-${{ github.ref }}
 
     build-docs:
         runs-on: ubuntu-latest
@@ -102,15 +102,6 @@ jobs:
             - name: Run unit tests
               run: yarn test:all
 
-            - name: Save Nx cache
-              if: always()
-              uses: actions/cache@v4
-              with:
-                  path: |
-                      .nx/cache
-                      .nx/workspace-data
-                  key: nx-${{ github.ref }}-${{ github.sha }}
-
     test-kernel-e2e:
         runs-on: ubuntu-latest
         needs: build
@@ -126,11 +117,11 @@ jobs:
               run: yarn start:canton &
 
             - name: Start remote WK
-              run: DAPP_API_PORT=3008 yarn nx run @canton-network/clients-remote:start
+              run: DAPP_API_PORT=3008 yarn nx run @canton-network/clients-remote:start &
 
-            - run: yarn nx run @canton-network/example:dev
+            - run: yarn nx run @canton-network/example:dev &
 
-            - run: yarn nx run @canton-network/mock-oauth2:start
+            - run: yarn nx run @canton-network/mock-oauth2:start &
 
             # Figures out the version of playwright that's installed.
             # 1. Because we don't know what version yarn will resolve it to, we have

@@ -22,7 +22,6 @@ runs:
               path: |
                   .nx/cache
                   .nx/workspace-data
-              key: nx-${{ github.ref }}-${{ github.sha }}
+              key: nx-${{ github.ref }}
               restore-keys: |
-                  nx-${{ github.ref }}-
                   nx-
