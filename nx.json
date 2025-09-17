@@ -31,6 +31,12 @@
         },
         "lint": {
             "cache": true
+        },
+        "dev": {
+            "dependsOn": ["^build"]
+        },
+        "start": {
+            "dependsOn": ["^build"]
         }
     },
     "plugins": [

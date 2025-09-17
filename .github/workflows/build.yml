@@ -126,11 +126,11 @@ jobs:
               run: yarn start:canton &
 
             - name: Start remote WK
-              run: DAPP_API_PORT=3008 yarn workspace @canton-network/clients-remote run start &
+              run: DAPP_API_PORT=3008 yarn nx run @canton-network/clients-remote:start
 
-            - run: yarn workspace @canton-network/example run dev &
+            - run: yarn nx run @canton-network/example:dev
 
-            - run: yarn workspace @canton-network/mock-oauth2 start &
+            - run: yarn nx run @canton-network/mock-oauth2:start
 
             # Figures out the version of playwright that's installed.
             # 1. Because we don't know what version yarn will resolve it to, we have
