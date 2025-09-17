@@ -95,7 +95,7 @@ export class LedgerController {
         privateKey: PrivateKey,
         commandId: string,
         disclosedContracts?: Types['DisclosedContract'][]
-    ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
+    ): Promise<string> {
         const prepared = await this.prepareSubmission(
             commands,
             commandId,
@@ -108,7 +108,55 @@ export class LedgerController {
         )
         const publicKey = getPublicKeyFromPrivate(privateKey)
 
-        return this.executeSubmission(prepared, signature, publicKey, commandId)
+        await this.executeSubmission(prepared, signature, publicKey, commandId)
+        return commandId
+    }
+
+    async waitForCompletion(
+        commandId: string,
+        offsetLatest: number,
+        timeoutMs: number
+    ): Promise<Types['Completion']['value']> {
+        // pull offset and hit completions endpoint until we find our commandId or timeout
+        const start = Date.now()
+        let offset = offsetLatest
+
+        while (Date.now() - start < timeoutMs) {
+            const completions = await this.client.post(
+                '/v2/commands/completions',
+                {
+                    userId: this.userId,
+                    parties: [this.getPartyId()],
+                    beginExclusive: offset,
+                }
+            )
+
+            // Find the completion for our commandId
+            const found = completions.find(
+                (completion) =>
+                    completion.completionResponse?.Completion?.value
+                        ?.commandId === commandId
+            )
+
+            if (found && found.completionResponse.Completion) {
+                return found.completionResponse.Completion.value
+            }
+
+            // Optionally update offset if completions returns a new offset
+            const offsets = completions.map(
+                (c) =>
+                    c.completionResponse?.OffsetCheckpoint?.value.offset ||
+                    offset
+            )
+            offset = Math.max(...offsets)
+
+            // Wait a bit before polling again
+            await new Promise((res) => setTimeout(res, 500))
+        }
+
+        throw new Error(
+            `Timeout waiting for completion of commandId: ${commandId}`
+        )
     }
 
     /**

@@ -111,15 +111,23 @@ const [transferCommand, disclosedContracts2] =
         'memo-ref'
     )
 
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
-    [{ ExerciseCommand: transferCommand }],
-    keyPairSender.privateKey,
-    v4(),
-    disclosedContracts2
-)
+const offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
+
+const transferCommandId =
+    await sdk.userLedger?.prepareSignAndExecuteTransaction(
+        [{ ExerciseCommand: transferCommand }],
+        keyPairSender.privateKey,
+        v4(),
+        disclosedContracts2
+    )
 logger.info('Submitted transfer transaction')
 
-await new Promise((res) => setTimeout(res, 5000))
+const completion = await sdk.userLedger?.waitForCompletion(
+    transferCommandId!,
+    offsetLatest,
+    5000
+)
+logger.info({ completion }, 'Transfer transaction completed')
 
 const holdings = await sdk.tokenStandard?.listHoldingTransactions()
 
