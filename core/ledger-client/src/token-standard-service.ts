@@ -294,7 +294,6 @@ export class TokenStandardService {
                         const expiresAtDate = new Date(expiresAt)
                         return expiresAtDate <= now
                     })
-                    .filter((h) => h !== undefined)
                     .map((h) => h.contractId)
                 /* TODO: optimize input holding selection, currently if you transfer 10 CC and have 10 inputs of 1000 CC,
                     then all 10 of those are chose as input.
