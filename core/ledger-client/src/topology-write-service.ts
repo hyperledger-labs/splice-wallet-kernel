@@ -350,7 +350,7 @@ export class TopologyWriteService {
         })
     }
 
-  async authorizePartyToParticipant(
+    async authorizePartyToParticipant(
         partyId: PartyId
     ): Promise<AuthorizeResponse> {
         const hash = await this.waitForPartyToParticipantProposal(partyId)
