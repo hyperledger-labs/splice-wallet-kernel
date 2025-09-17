@@ -153,6 +153,7 @@ export class TopologyController {
             signedTopologyTxs,
             preparedParty.partyId
         )
+
         await this.client.grantUserRights(this.userId, preparedParty.partyId)
 
         return { partyId: preparedParty.partyId }
@@ -177,6 +178,7 @@ export class TopologyController {
             preparedParty!.combinedHash,
             privateKey
         )
+
         return await this.submitExternalPartyTopology(signedHash, preparedParty)
     }
 }

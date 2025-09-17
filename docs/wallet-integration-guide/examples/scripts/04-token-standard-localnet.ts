@@ -80,7 +80,7 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
     disclosedContracts
 )
 
-await new Promise((res) => setTimeout(res, 10000))
+await new Promise((res) => setTimeout(res, 5000))
 
 const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
 logger.info(utxos, 'List Available Token Standard Holding UTXOs')
@@ -108,6 +108,7 @@ const [transferCommand, disclosedContracts2] =
             instrumentId: 'Amulet',
             instrumentAdmin: instrumentAdminPartyId,
         },
+        utxos?.map((t) => t.contractId),
         'memo-ref'
     )
 
@@ -148,7 +149,7 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
     disclosedContracts3
 )
 
-console.log('Accepted transfer instruction')
+logger.info('Accepted transfer instruction')
 
 await new Promise((res) => setTimeout(res, 5000))
 

@@ -57,6 +57,7 @@ async function cmd(command: string): Promise<void> {
     })
 }
 
+// this is sequential, we can parallelize if needed
 for (const script of scripts) {
     try {
         await executeScript(script)
