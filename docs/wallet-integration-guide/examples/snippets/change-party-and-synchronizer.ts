@@ -4,12 +4,14 @@ import {
     localNetLedgerDefault,
 } from '@canton-network/wallet-sdk'
 
-const sdk = new WalletSDKImpl().configure({
-    logger: console,
-    authFactory: localNetAuthDefault,
-    ledgerFactory: localNetLedgerDefault,
-})
-await sdk.connect()
+export default async function () {
+    const sdk = new WalletSDKImpl().configure({
+        logger: console,
+        authFactory: localNetAuthDefault,
+        ledgerFactory: localNetLedgerDefault,
+    })
+    await sdk.connect()
 
-sdk.userLedger?.setPartyId('my-wallet-1')
-sdk.userLedger?.setSynchronizerId('synchronizer-1')
+    sdk.userLedger?.setPartyId('my-wallet-1')
+    sdk.userLedger?.setSynchronizerId('synchronizer-1')
+}

@@ -1,9 +1,11 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { paths } from './generated-clients/scan'
+import { components, paths } from './generated-clients/scan'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from '@canton-network/core-types'
+
+export type ScanTypes = components['schemas']
 
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional
@@ -112,7 +114,7 @@ export class ScanClient {
         }
     }
 
-    public async GetAmuletSynchronizerId(): Promise<string | undefined> {
+    public async getAmuletSynchronizerId(): Promise<string | undefined> {
         const dsoInfo = await this.get('/v0/dso')
 
         const payloadObj = JSON.parse(

@@ -1,8 +1,11 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { TokenStandardClient } from '@canton-network/core-token-standard'
-import { Logger } from '@canton-network/core-types'
+import {
+    TokenStandardClient,
+    HoldingView,
+} from '@canton-network/core-token-standard'
+import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
 import {
     HoldingInterface,
@@ -23,6 +26,7 @@ import {
 
 import type { PrettyTransactions, Transaction } from './txparse/types.js'
 import { Types } from './ledger-client.js'
+import { ScanProxyClient } from '@canton-network/core-splice-client'
 
 const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
 
@@ -51,10 +55,11 @@ type JsActiveContractEntryResponse = JsGetActiveContractsResponse & {
 export class TokenStandardService {
     constructor(
         private ledgerClient: LedgerClient,
+        private scanProxyClient: ScanProxyClient,
         private readonly logger: Logger
     ) {}
 
-    private tokenStandardClient(registryUrl: string): TokenStandardClient {
+    private getTokenStandardClient(registryUrl: string): TokenStandardClient {
         return new TokenStandardClient(registryUrl, this.logger, undefined)
     }
 
@@ -63,7 +68,9 @@ export class TokenStandardService {
         transferFactoryRegistryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const client = this.tokenStandardClient(transferFactoryRegistryUrl)
+            const client = this.getTokenStandardClient(
+                transferFactoryRegistryUrl
+            )
             const choiceContext = await client.post(
                 '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/accept',
                 {},
@@ -99,7 +106,7 @@ export class TokenStandardService {
     async getInstrumentAdmin(
         transferFactoryRegistryUrl: string
     ): Promise<string | undefined> {
-        const client = this.tokenStandardClient(transferFactoryRegistryUrl)
+        const client = this.getTokenStandardClient(transferFactoryRegistryUrl)
 
         const info = await client.get('/registry/metadata/v1/info')
 
@@ -111,7 +118,9 @@ export class TokenStandardService {
         transferFactoryRegistryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const client = this.tokenStandardClient(transferFactoryRegistryUrl)
+            const client = this.getTokenStandardClient(
+                transferFactoryRegistryUrl
+            )
             const choiceContext = await client.post(
                 '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/reject',
                 {},
@@ -148,7 +157,7 @@ export class TokenStandardService {
     // i.e. when querying by TransferInstruction interfaceId, <T> would be TransferInstructionView from daml codegen
     async listContractsByInterface<T = ViewValue>(
         interfaceId: string,
-        partyId: string
+        partyId: PartyId
     ): Promise<PrettyContract<T>[]> {
         try {
             const ledgerEnd = await this.ledgerClient.get(
@@ -197,7 +206,7 @@ export class TokenStandardService {
     }
 
     async listHoldingTransactions(
-        partyId: string,
+        partyId: PartyId,
         afterOffset?: string,
         beforeOffset?: string
     ): Promise<PrettyTransactions> {
@@ -245,47 +254,51 @@ export class TokenStandardService {
     }
 
     async createTransfer(
-        sender: string,
-        receiver: string,
+        sender: PartyId,
+        receiver: PartyId,
         amount: string,
-        instrumentAdmin: string, // TODO (#907): replace with registry call
+        instrumentAdmin: PartyId, // TODO (#907): replace with registry call
         instrumentId: string,
         transferFactoryRegistryUrl: string,
+        inputUtxos?: string[],
         memo?: string,
         meta?: Record<string, unknown>
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const ledgerEndOffset = await this.ledgerClient.get(
-                '/v2/state/ledger-end'
-            )
-            //TODO: filter out any holdings that has a non-expired lock
-            const senderHoldings = await this.ledgerClient.post(
-                '/v2/state/active-contracts',
-                {
-                    filter: {
-                        filtersByParty: filtersByParty(
-                            sender,
-                            [HoldingInterface],
-                            false
-                        ),
-                    },
-                    verbose: false,
-                    activeAtOffset: ledgerEndOffset.offset,
-                }
-            )
-            if (senderHoldings.length === 0) {
-                throw new Error(
-                    "Sender has no holdings, so transfer can't be executed."
-                )
-            }
-            const holdings = senderHoldings.map(
-                (h) => h['contractEntry']['JsActiveContract']
-            )
-            const inputHoldingCids = holdings
-                .filter((h) => h !== undefined)
-                .map((h) => h['createdEvent']['contractId'])
-
+            let inputHoldingCids: string[]
             const now = new Date()
+
+            if (inputUtxos && inputUtxos.length > 0) {
+                inputHoldingCids = inputUtxos
+            } else {
+                const senderHoldings =
+                    await this.listContractsByInterface<HoldingView>(
+                        HoldingInterface,
+                        sender
+                    )
+                if (senderHoldings.length === 0) {
+                    throw new Error(
+                        "Sender has no holdings, so transfer can't be executed."
+                    )
+                }
+
+                inputHoldingCids = senderHoldings
+                    .filter((utxo) => {
+                        //filter out locked holdings
+                        const lock = utxo.interfaceViewValue.lock
+                        if (!lock) return true
+
+                        const expiresAt = lock.expiresAt
+                        if (!expiresAt) return false
+
+                        const expiresAtDate = new Date(expiresAt)
+                        return expiresAtDate <= now
+                    })
+                    .map((h) => h.contractId)
+                /* TODO: optimize input holding selection, currently if you transfer 10 CC and have 10 inputs of 1000 CC,
+                    then all 10 of those are chose as input.
+                 */
+            }
             const tomorrow = new Date(now)
             tomorrow.setDate(tomorrow.getDate() + 1)
             const choiceArgs = {
@@ -309,7 +322,7 @@ export class TokenStandardService {
 
             this.logger.debug('Creating transfer factory...')
 
-            const transferFactory = await this.tokenStandardClient(
+            const transferFactory = await this.getTokenStandardClient(
                 transferFactoryRegistryUrl
             ).post('/registry/transfer-instruction/v1/transfer-factory', {
                 choiceArguments: choiceArgs as unknown as Record<string, never>,
@@ -345,7 +358,6 @@ export class TokenStandardService {
         instrumentId: string,
         transferFactoryRegistryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        // TODO: replace with correct scan lookup
         const now = new Date()
         const tomorrow = new Date(now)
         tomorrow.setDate(tomorrow.getDate() + 1)
@@ -368,7 +380,7 @@ export class TokenStandardService {
             },
         }
 
-        const transferFactory = await this.tokenStandardClient(
+        const transferFactory = await this.getTokenStandardClient(
             transferFactoryRegistryUrl
         ).post('/registry/transfer-instruction/v1/transfer-factory', {
             choiceArguments: choiceArgs as unknown as Record<string, never>,
@@ -377,27 +389,46 @@ export class TokenStandardService {
         const disclosedContracts =
             transferFactory.choiceContext.disclosedContracts
 
-        const amuletRules = disclosedContracts.find((c) =>
-            c.templateId?.endsWith('Splice.AmuletRules:AmuletRules')
-        )
+        const amuletRules = await this.scanProxyClient.getAmuletRules()
+        const openMiningRounds =
+            await this.scanProxyClient.getOpenMiningRounds()
         if (!amuletRules) {
             throw new Error('AmuletRules contract not found')
         }
-        const openMiningRounds = disclosedContracts.find((c) =>
-            c.templateId?.endsWith('Splice.Round:OpenMiningRound')
-        )
-        if (!openMiningRounds) {
+
+        if (!(Array.isArray(openMiningRounds) && openMiningRounds.length)) {
             throw new Error('OpenMiningRound contract not found')
         }
+
+        const nowForOpenMiningRounds = Date.now()
+        const latestOpenMiningRound = openMiningRounds.findLast(
+            (openMiningRound) => {
+                const { opensAt, targetClosesAt } = openMiningRound.payload
+                const opensAtMs = Number(new Date(opensAt))
+                const targetClosesAtMs = Number(new Date(targetClosesAt))
+
+                return (
+                    opensAtMs <= nowForOpenMiningRounds &&
+                    targetClosesAtMs > nowForOpenMiningRounds
+                )
+            }
+        )
+
+        if (!latestOpenMiningRound) {
+            throw new Error(
+                'OpenMiningRound active at current moment not found'
+            )
+        }
+
         return [
             {
-                templateId: amuletRules.templateId!,
-                contractId: amuletRules.contractId,
+                templateId: amuletRules.template_id!,
+                contractId: amuletRules.contract_id,
                 choice: 'AmuletRules_DevNet_Tap',
                 choiceArgument: {
                     receiver: receiver,
                     amount: amount,
-                    openRound: openMiningRounds.contractId,
+                    openRound: latestOpenMiningRound.contract_id,
                 },
             },
             disclosedContracts,
@@ -406,7 +437,7 @@ export class TokenStandardService {
 
     private async toPrettyTransactions(
         updates: JsGetUpdatesResponse[],
-        partyId: string,
+        partyId: PartyId,
         ledgerClient: LedgerClient
     ): Promise<PrettyTransactions> {
         // Runtime filters that also let TS know which of OneOfs types to check against

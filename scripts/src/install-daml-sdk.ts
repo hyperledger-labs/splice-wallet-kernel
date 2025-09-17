@@ -12,6 +12,7 @@ import {
     warn,
     success,
     error,
+    ensureDir,
 } from './utils.js'
 import { pipeline } from 'stream/promises'
 import { Readable } from 'stream'
@@ -49,6 +50,7 @@ export async function installDamlSDK() {
     }
 
     const TEMP_DIR = `${getRepoRoot()}/temp`
+    await ensureDir(TEMP_DIR)
 
     const osType = os.platform()
 

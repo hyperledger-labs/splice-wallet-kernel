@@ -37,6 +37,7 @@ import {
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
 import { LedgerClient } from '../ledger-client'
 import BigNumber from 'bignumber.js'
+import { PartyId } from '@canton-network/core-types'
 
 type ArchivedEvent = components['schemas']['ArchivedEvent']
 type CreatedEvent = components['schemas']['CreatedEvent']
@@ -48,13 +49,13 @@ type JsGetEventsByContractIdResponse =
 
 export class TransactionParser {
     private readonly ledgerClient: LedgerClient
-    private readonly partyId: string
+    private readonly partyId: PartyId
     private readonly transaction: JsTransaction
 
     constructor(
         transaction: JsTransaction,
         ledgerClient: LedgerClient,
-        partyId: string
+        partyId: PartyId
     ) {
         this.ledgerClient = ledgerClient
         this.partyId = partyId

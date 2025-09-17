@@ -37,8 +37,7 @@ const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
     'alice'
 )
 logger.info(`Created party: ${sender!.partyId}`)
-sdk.userLedger?.setPartyId(sender!.partyId)
-sdk.tokenStandard?.setPartyId(sender!.partyId)
+await sdk.setPartyId(sender!.partyId)
 
 const receiver = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairReceiver.privateKey,
@@ -61,7 +60,7 @@ await sdk.userLedger
 
 sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 
-sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL.href)
+sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL)
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
@@ -109,6 +108,7 @@ const [transferCommand, disclosedContracts2] =
             instrumentId: 'Amulet',
             instrumentAdmin: instrumentAdminPartyId,
         },
+        utxos?.map((t) => t.contractId),
         'memo-ref'
     )
 
@@ -127,8 +127,7 @@ const pendingInstructions =
 
 const transferCid = pendingInstructions?.[0].contractId!
 
-sdk.userLedger?.setPartyId(receiver!.partyId)
-sdk.tokenStandard?.setPartyId(receiver!.partyId)
+await sdk.setPartyId(receiver!.partyId)
 
 const [acceptTransferCommand, disclosedContracts3] =
     await sdk.tokenStandard!.exerciseTransferInstructionChoice(
@@ -143,18 +142,18 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
     disclosedContracts3
 )
 
-console.log('Accepted transfer instruction')
+logger.info('Accepted transfer instruction')
 
 await new Promise((res) => setTimeout(res, 5000))
 
 {
-    sdk.tokenStandard?.setPartyId(sender!.partyId)
+    await sdk.setPartyId(sender!.partyId)
     const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
     logger.info(aliceHoldings, '[ALICE] holding transactions')
 
-    sdk.tokenStandard?.setPartyId(receiver!.partyId)
+    await sdk.setPartyId(receiver!.partyId)
     const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
     logger.info(bobHoldings, '[BOB] holding transactions')
 
-    sdk.tokenStandard?.setPartyId(sender!.partyId)
+    await sdk.setPartyId(sender!.partyId)
 }

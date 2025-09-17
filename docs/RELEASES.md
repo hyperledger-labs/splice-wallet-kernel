@@ -1,12 +1,22 @@
 # Release
 
-This repository is a monorepo of independently versioned Javascript packages. We use Conventional Commits to track changes to individual packages over time. When it comes time to publish updates to NPM, a maintainer runs through the following process:
+This repository is a monorepo of independently versioned Javascript packages. We use Conventional Commits to track changes to individual packages over time. When it comes time to publish updates to NPM, a maintainer runs through the following process from the repo root:
 
 1. Checkout `main` and `git pull` to be up-to-date
-2. Run `yarn release` from the repo root (depends on `gh` CLI to open a PR)
-3. Merge the version bump PR into `main`
-4. Open and merge a PR from `main` to `latest`
-5. Wait for the `publish.yml` workflow to complete on `latest`. Afterwards, any updated packages should be pushed to NPM
+2. Run `git fetch --tags --force` to fetch the latest tags locally
+3. Create a new branch to hold the version bump commit: `git checkout -b release/$(date +%s)`
+4. Push the branch to the remote: `git push --set-upstream origin <branch from prior step>`
+5. Ensure you have the `gh` CLI tool installed and authenticated: `gh auth status`
+    - if unauthenticated, `gh auth login`
+6. Run `yarn nx release --skip-publish --dry-run` to sanity check the new update versions
+7. Run `yarn nx release --skip-publish` if all looks good. This will
+    - create and push new git tags for each package
+    - create new GH releases with changelogs
+    - create a commit containing the version bumps in all affected package.json's
+8. Merge the version bump PR into `main`
+9. Open a PR from `main` to `latest`
+10. Ensure you change "Squash and merge" to "Create a merge commit", and then merge the PR
+11. Wait for the `publish.yml` workflow to complete on `latest`. Afterwards, any updated packages should be pushed to NPM
     - Check the page here to confirm: https://www.npmjs.com/org/canton-network
 
 ## Backporting

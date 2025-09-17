@@ -29,7 +29,11 @@ export class PartyAllocationService {
         adminApiUrl: string,
         logger: Logger
     ) {
-        this.ledgerClient = new LedgerClient(httpLedgerUrl, adminToken, logger)
+        this.ledgerClient = new LedgerClient(
+            new URL(httpLedgerUrl),
+            adminToken,
+            logger
+        )
         this.topologyClient = new TopologyWriteService(
             this.synchronizerId,
             adminApiUrl,
@@ -118,9 +122,7 @@ export class PartyAllocationService {
 
         const combinedHash = TopologyWriteService.combineHashes(txHashes)
 
-        const signature = await signingCallback(
-            Buffer.from(combinedHash, 'hex').toString('base64')
-        )
+        const signature = await signingCallback(combinedHash)
 
         const signedTopologyTxs = transactions.map((transaction) =>
             TopologyWriteService.toSignedTopologyTransaction(

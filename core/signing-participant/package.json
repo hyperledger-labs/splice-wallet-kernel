@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-participant",
-    "version": "0.3.1",
+    "version": "0.3.3",
     "packageManager": "yarn@4.9.4",
     "type": "module",
     "description": "Wallet Kernel driver for Canton participant internal parties",

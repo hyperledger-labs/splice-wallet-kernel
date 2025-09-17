@@ -61,7 +61,8 @@ jobs:
             - name: Start Canton
               run: yarn start:canton &
 
-            - run: DAPP_API_PORT=3008 yarn workspace @canton-network/clients-remote run start &
+            - name: Start remote WK
+              run: DAPP_API_PORT=3008 yarn workspace @canton-network/clients-remote run start &
 
             - run: yarn workspace @canton-network/example run dev &
 
@@ -119,6 +120,38 @@ jobs:
                   name: playwright-report
                   path: example/playwright-report/
                   retention-days: 30
+
+            - name: Download localnet
+              run: yarn script:fetch:localnet
+
+            - name: Start Localnet
+              run: yarn start:localnet
+
+            - name: Test example snippets
+              run: yarn workspace docs-wallet-integration-guide-examples run test
+
+            - name: Test example scripts
+              run: yarn script:test:examples
+
+            - name: Save container logs
+              if: failure()
+              run: |
+                  #!/usr/bin/env bash
+                  set -euo pipefail
+
+                  mkdir -p logs
+
+                  # Dump logs of each running container once (not streaming)
+                  for c in $(docker ps -a --format '{{.Names}}'); do
+                    docker logs "$c" &> "logs/$c.log" || true
+                  done
+
+            - name: Upload logs as artifacts
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: docker-logs
+                  path: logs/
 
     build-docs:
         runs-on: ubuntu-latest

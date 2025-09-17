@@ -4,20 +4,15 @@
 import {
     Types,
     LedgerClient,
-    TokenStandardService,
-} from '@canton-network/core-ledger-client'
-import { pino } from 'pino'
-import {
     PrettyTransactions,
     PrettyContract,
     ViewValue,
+    TokenStandardService,
 } from '@canton-network/core-ledger-client'
-import {
-    HoldingView,
-    TRANSFER_INSTRUCTION_INTERFACE_ID,
-    HOLDING_INTERFACE_ID,
-    TransferInstructionView,
-} from '@canton-network/core-token-standard'
+import { ScanProxyClient } from '@canton-network/core-splice-client'
+import { pino } from 'pino'
+import type { HoldingView } from '@canton-network/core-token-standard'
+import { PartyId } from '@canton-network/core-types'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject'
 
@@ -30,32 +25,42 @@ export class TokenStandardController {
     private client: LedgerClient
     private service: TokenStandardService
     private userId: string
-    private partyId: string = ''
-    private synchronizerId: string = ''
-    private transferFactoryRegistryUrl: string = ''
+    private partyId: PartyId | undefined
+    private synchronizerId: PartyId | undefined
+    private transferFactoryRegistryUrl: URL | undefined
 
     /** Creates a new instance of the LedgerController.
      *
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
+     * @param validatorBaseUrl the url for the validator api. Needed for Scan Proxy API access.
      * @param accessToken the access token from the user, usually provided by an auth controller.
      */
     constructor(
         userId: string,
-        baseUrl: string,
-        private accessToken: string
+        baseUrl: URL,
+        validatorBaseUrl: URL,
+        accessToken: string
     ) {
         this.client = new LedgerClient(baseUrl, accessToken, this.logger)
-        this.service = new TokenStandardService(this.client, this.logger)
+        const scanProxyClient = new ScanProxyClient(
+            validatorBaseUrl,
+            this.logger,
+            accessToken
+        )
+        this.service = new TokenStandardService(
+            this.client,
+            scanProxyClient,
+            this.logger
+        )
         this.userId = userId
-        return this
     }
 
     /**
      * Sets the party that the TokenStandardController will use for requests.
      * @param partyId
      */
-    setPartyId(partyId: string): TokenStandardController {
+    setPartyId(partyId: PartyId): TokenStandardController {
         this.partyId = partyId
         return this
     }
@@ -64,7 +69,7 @@ export class TokenStandardController {
      * Sets the synchronizerId that the TokenStandardController will use for requests.
      * @param synchronizerId
      */
-    setSynchronizerId(synchronizerId: string): TokenStandardController {
+    setSynchronizerId(synchronizerId: PartyId): TokenStandardController {
         this.synchronizerId = synchronizerId
         return this
     }
@@ -74,16 +79,53 @@ export class TokenStandardController {
      * @param transferFactoryRegistryUrl
      */
     setTransferFactoryRegistryUrl(
-        transferFactoryRegistryUrl: string
+        transferFactoryRegistryUrl: URL
     ): TokenStandardController {
         this.transferFactoryRegistryUrl = transferFactoryRegistryUrl
         return this
     }
 
-    async getInstrumentAdmin(): Promise<string | undefined> {
-        return await this.service.getInstrumentAdmin(
-            this.transferFactoryRegistryUrl
-        )
+    /**
+     *  Gets the party Id or throws an error if it has not been set yet
+     *  @returns partyId
+     */
+    getPartyId(): PartyId {
+        if (!this.partyId)
+            throw new Error('PartyId is not defined, call setPartyId')
+        else return this.partyId
+    }
+
+    /**
+     *  Gets the synchronizer Id or throws an error if it has not been set yet
+     *  @returns partyId
+     */
+    getSynchronizerId(): PartyId {
+        if (!this.synchronizerId)
+            throw new Error(
+                'synchronizer Id is not defined, call setSynchronizerId'
+            )
+        else return this.synchronizerId
+    }
+
+    /**
+     * Sets the transferFactoryRegistryUrl that the TokenStandardController will use for requests.
+     * @param transferFactoryRegistryUrl
+     */
+    getTransferFactoryRegistryUrl(): URL {
+        if (!this.transferFactoryRegistryUrl)
+            throw new Error(
+                'transferFactoryRegistryUrl is not defined, called setTransferFactoryRegistryUrl'
+            )
+        else return this.transferFactoryRegistryUrl
+    }
+
+    async getInstrumentAdmin(): Promise<PartyId | undefined> {
+        const instrumentAdmin: string | undefined =
+            await this.service.getInstrumentAdmin(
+                this.getTransferFactoryRegistryUrl().href
+            )
+        if (instrumentAdmin) return instrumentAdmin as PartyId
+        else return undefined
     }
 
     /** Lists all holdings for the current party.
@@ -96,7 +138,7 @@ export class TokenStandardController {
         beforeOffset?: string
     ): Promise<PrettyTransactions> {
         return await this.service.listHoldingTransactions(
-            this.partyId,
+            this.getPartyId(),
             afterOffset,
             beforeOffset
         )
@@ -113,7 +155,7 @@ export class TokenStandardController {
     ): Promise<PrettyContract<T>[]> {
         return await this.service.listContractsByInterface<T>(
             interfaceId,
-            this.partyId
+            this.getPartyId()
         )
     }
 
@@ -127,8 +169,8 @@ export class TokenStandardController {
         includeLocked: boolean = true
     ): Promise<PrettyContract<HoldingView>[]> {
         const utxos = await this.service.listContractsByInterface<HoldingView>(
-            HOLDING_INTERFACE_ID,
-            this.partyId
+            '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding',
+            this.getPartyId()
         )
         const currentTime = new Date()
 
@@ -170,11 +212,11 @@ export class TokenStandardController {
      * @returns A promise that resolves to the ExerciseCommand which creates the tap.
      */
     async createTap(
-        receiver: string,
+        receiver: PartyId,
         amount: string,
         instrument: {
             instrumentId: string
-            instrumentAdmin: string
+            instrumentAdmin: PartyId
         }
     ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
         return this.service.createTap(
@@ -182,7 +224,7 @@ export class TokenStandardController {
             amount,
             instrument.instrumentAdmin,
             instrument.instrumentId,
-            this.transferFactoryRegistryUrl
+            this.getTransferFactoryRegistryUrl().href
         )
     }
 
@@ -192,17 +234,20 @@ export class TokenStandardController {
      * @param receiver The party of the receiver.
      * @param amount The amount to be transferred.
      * @param instrument The instrument to be used for the transfer.
+     * @param inputUtxos The utxos to use for this transfer, if not defined it will auto-select.
+     * @param memo The message for the receiver to identify the transaction.
      * @param meta Optional metadata to include with the transfer.
      * @returns A promise that resolves to the ExerciseCommand which creates the transfer.
      */
     async createTransfer(
-        sender: string,
-        receiver: string,
+        sender: PartyId,
+        receiver: PartyId,
         amount: string,
         instrument: {
             instrumentId: string
-            instrumentAdmin: string
+            instrumentAdmin: PartyId
         },
+        inputUtxos?: string[],
         memo?: string,
         meta?: Record<string, unknown>
     ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
@@ -213,7 +258,8 @@ export class TokenStandardController {
                 amount,
                 instrument.instrumentAdmin,
                 instrument.instrumentId,
-                this.transferFactoryRegistryUrl,
+                this.getTransferFactoryRegistryUrl().href,
+                inputUtxos,
                 memo,
                 meta
             )
@@ -239,12 +285,12 @@ export class TokenStandardController {
             if (instructionChoice === 'Accept') {
                 return await this.service.createAcceptTransferInstruction(
                     transferInstructionCid,
-                    this.transferFactoryRegistryUrl
+                    this.getTransferFactoryRegistryUrl().href
                 )
             } else {
                 return await this.service.createRejectTransferInstruction(
                     transferInstructionCid,
-                    this.transferFactoryRegistryUrl
+                    this.getTransferFactoryRegistryUrl().href
                 )
             }
         } catch (error) {
@@ -265,7 +311,12 @@ export const localTokenStandardDefault = (
     userId: string,
     token: string
 ): TokenStandardController => {
-    return new TokenStandardController(userId, 'http://127.0.0.1:5003', token)
+    return new TokenStandardController(
+        userId,
+        new URL('http://127.0.0.1:5003'),
+        new URL('http://wallet.localhost:2000/api/validator'),
+        token
+    )
 }
 
 /**
@@ -276,5 +327,10 @@ export const localNetTokenStandardDefault = (
     userId: string,
     token: string
 ): TokenStandardController => {
-    return new TokenStandardController(userId, 'http://127.0.0.1:2975', token)
+    return new TokenStandardController(
+        userId,
+        new URL('http://127.0.0.1:2975'),
+        new URL('http://wallet.localhost:2000/api/validator'),
+        token
+    )
 }

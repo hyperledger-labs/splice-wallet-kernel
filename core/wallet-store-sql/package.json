@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-store-sql",
-    "version": "0.3.1",
+    "version": "0.3.3",
     "type": "module",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "description": "SQL implementation of the Store API",

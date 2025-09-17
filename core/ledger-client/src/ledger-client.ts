@@ -7,6 +7,7 @@ import {
 } from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from 'pino'
+import { PartyId } from '@canton-network/core-types'
 
 export type Types = components['schemas']
 
@@ -54,10 +55,10 @@ export class LedgerClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
 
-    constructor(baseUrl: string, token: string, _logger: Logger) {
+    constructor(baseUrl: URL, token: string, _logger: Logger) {
         this.logger = _logger.child({ component: 'LedgerClient' })
         this.client = createClient<paths>({
-            baseUrl,
+            baseUrl: baseUrl.href,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
                 return fetch(url, {
                     ...options,
@@ -106,7 +107,7 @@ export class LedgerClient {
      * @param partyId The ID of the party to grant rights for.
      * @returns A promise that resolves when the rights have been granted.
      */
-    public async grantUserRights(userId: string, partyId: string) {
+    public async grantUserRights(userId: string, partyId: PartyId) {
         // Wait for party to appear on participant
         let partyFound = false
         let tries = 0
