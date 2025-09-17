@@ -33,7 +33,7 @@ export type AllocatedParty = {
     partyId: PartyId
 }
 
-export type MultiHostPartyOptions = {
+export type MultiHostPartyParticipantConfig = {
     adminApiUrl: string
     baseUrl: URL
     accessToken: string
@@ -219,7 +219,7 @@ export class TopologyController {
     }
 
     async getParticipantId(
-        participantEndpoints: MultiHostPartyOptions
+        participantEndpoints: MultiHostPartyParticipantConfig
     ): Promise<string> {
         const lc = new LedgerClient(
             participantEndpoints.baseUrl,
@@ -231,7 +231,7 @@ export class TopologyController {
     }
 
     async prepareSignAndSubmitMultiHostExternalParty(
-        participantEndpoints: MultiHostPartyOptions[],
+        participantEndpoints: MultiHostPartyParticipantConfig[],
         privateKey: string,
         synchronizerId: string,
         hostingParticipantPermissions: Map<string, Enums_ParticipantPermission>,
@@ -247,21 +247,25 @@ export class TopologyController {
 
         this.logger.info(preparedParty, 'onboarded external party')
 
-        //start after first because we've already onboarded an external party the normal way
-        //now we need to authorize the party to participant requests on the others
-        for (let i = 1; i < participantEndpoints.length; i++) {
+        //start after first because we've already onboarded an external party and authorized the mapping
+        // on the participant specified in the wallet.sdk.configure
+        // now we need to authorize the party to participant transaction on the others
+
+        for (const endpoint of participantEndpoints.slice(1)) {
             const lc = new LedgerClient(
-                participantEndpoints[i].baseUrl,
-                participantEndpoints[i].accessToken,
+                endpoint.baseUrl,
+                endpoint.accessToken,
                 this.logger
             )
+
             const service = new TopologyWriteService(
                 synchronizerId,
-                participantEndpoints[i].adminApiUrl,
-                participantEndpoints[i].accessToken,
+                endpoint.adminApiUrl,
+                endpoint.accessToken,
                 lc
             )
-            this.logger.info(participantEndpoints[i], 'endpoint info')
+
+            this.logger.info(endpoint, 'endpoint info')
 
             await service.authorizePartyToParticipant(preparedParty.partyId)
         }
