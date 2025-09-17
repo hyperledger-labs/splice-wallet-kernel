@@ -8,6 +8,8 @@
 import type { RpcTransport } from '@protobuf-ts/runtime-rpc'
 import type { ServiceInfo } from '@protobuf-ts/runtime-rpc'
 import { InteractiveSubmissionService } from './interactive_submission_service.js'
+import type { GetPreferredPackagesResponse } from './interactive_submission_service.js'
+import type { GetPreferredPackagesRequest } from './interactive_submission_service.js'
 import type { GetPreferredPackageVersionResponse } from './interactive_submission_service.js'
 import type { GetPreferredPackageVersionRequest } from './interactive_submission_service.js'
 import type { ExecuteSubmissionResponse } from './interactive_submission_service.js'
@@ -58,7 +60,7 @@ export interface IInteractiveSubmissionServiceClient {
      *
      * Can be accessed by any Ledger API client with a valid token when Ledger API authorization is enabled.
      *
-     * Experimental API: this endpoint is not guaranteed to provide backwards compatibility in future releases
+     * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0
      *
      * @generated from protobuf rpc: GetPreferredPackageVersion
      */
@@ -69,6 +71,30 @@ export interface IInteractiveSubmissionServiceClient {
         GetPreferredPackageVersionRequest,
         GetPreferredPackageVersionResponse
     >
+    /**
+     * Compute the preferred packages for the vetting requirements in the request.
+     * A preferred package is the highest-versioned package for a provided package-name
+     * that is vetted by all the participants hosting the provided parties.
+     *
+     * Ledger API clients should use this endpoint for constructing command submissions
+     * that are compatible with the provided preferred packages, by making informed decisions on:
+     * - which are the compatible packages that can be used to create contracts
+     * - which contract or exercise choice argument version can be used in the command
+     * - which choices can be executed on a template or interface of a contract
+     *
+     * If the package preferences could not be computed due to no selection satisfying the requirements,
+     * a `FAILED_PRECONDITION` error will be returned.
+     *
+     * Can be accessed by any Ledger API client with a valid token when Ledger API authorization is enabled.
+     *
+     * Experimental API: this endpoint is not guaranteed to provide backwards compatibility in future releases
+     *
+     * @generated from protobuf rpc: GetPreferredPackages
+     */
+    getPreferredPackages(
+        input: GetPreferredPackagesRequest,
+        options?: RpcOptions
+    ): UnaryCall<GetPreferredPackagesRequest, GetPreferredPackagesResponse>
 }
 /**
  * Service allowing interactive construction of command submissions
@@ -131,7 +157,7 @@ export class InteractiveSubmissionServiceClient
      *
      * Can be accessed by any Ledger API client with a valid token when Ledger API authorization is enabled.
      *
-     * Experimental API: this endpoint is not guaranteed to provide backwards compatibility in future releases
+     * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0
      *
      * @generated from protobuf rpc: GetPreferredPackageVersion
      */
@@ -147,6 +173,37 @@ export class InteractiveSubmissionServiceClient
         return stackIntercept<
             GetPreferredPackageVersionRequest,
             GetPreferredPackageVersionResponse
+        >('unary', this._transport, method, opt, input)
+    }
+    /**
+     * Compute the preferred packages for the vetting requirements in the request.
+     * A preferred package is the highest-versioned package for a provided package-name
+     * that is vetted by all the participants hosting the provided parties.
+     *
+     * Ledger API clients should use this endpoint for constructing command submissions
+     * that are compatible with the provided preferred packages, by making informed decisions on:
+     * - which are the compatible packages that can be used to create contracts
+     * - which contract or exercise choice argument version can be used in the command
+     * - which choices can be executed on a template or interface of a contract
+     *
+     * If the package preferences could not be computed due to no selection satisfying the requirements,
+     * a `FAILED_PRECONDITION` error will be returned.
+     *
+     * Can be accessed by any Ledger API client with a valid token when Ledger API authorization is enabled.
+     *
+     * Experimental API: this endpoint is not guaranteed to provide backwards compatibility in future releases
+     *
+     * @generated from protobuf rpc: GetPreferredPackages
+     */
+    getPreferredPackages(
+        input: GetPreferredPackagesRequest,
+        options?: RpcOptions
+    ): UnaryCall<GetPreferredPackagesRequest, GetPreferredPackagesResponse> {
+        const method = this.methods[3],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<
+            GetPreferredPackagesRequest,
+            GetPreferredPackagesResponse
         >('unary', this._transport, method, opt, input)
     }
 }
