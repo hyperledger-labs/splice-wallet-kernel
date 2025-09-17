@@ -112,14 +112,21 @@ export class LedgerController {
         return commandId
     }
 
+    /**
+     * Waits for a command to be completed by polling the completions endpoint.
+     * @param commandId The ID of the command to wait for.
+     * @param beginExclusive The offset to start polling from.
+     * @param timeoutMs The maximum time to wait in milliseconds.
+     * @returns The completion value of the command.
+     * @throws An error if the timeout is reached before the command is completed.
+     */
     async waitForCompletion(
         commandId: string,
-        offsetLatest: number,
+        beginExclusive: number,
         timeoutMs: number
     ): Promise<Types['Completion']['value']> {
-        // pull offset and hit completions endpoint until we find our commandId or timeout
         const start = Date.now()
-        let offset = offsetLatest
+        let offset = beginExclusive
 
         while (Date.now() - start < timeoutMs) {
             const completions = await this.client.post(
