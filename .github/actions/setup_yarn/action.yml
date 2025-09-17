@@ -19,7 +19,10 @@ runs:
 
         - uses: actions/cache@v4
           with:
-              path: .nx/cache
-              key: nx-${{ github.sha }}
+              path: |
+                  .nx/cache
+                  .nx/workspace-data
+              key: nx-${{ github.ref }}-${{ github.sha }}
               restore-keys: |
+                  nx-${{ github.ref }}-
                   nx-
