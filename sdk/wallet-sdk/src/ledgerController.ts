@@ -86,6 +86,14 @@ export class LedgerController {
         return this
     }
 
+    /**
+     * Verifies the signature for a message
+     * @param txHash hash of the prepared transaction
+     * @param publicKey the public key correlating to the private key used to sign the signature.
+     * @param signature the signed signature of the preparedTransactionHash from the prepareSubmission method.
+     * @returns true if verification succeeded or false if it failed
+     */
+
     verifyTxHash(
         txHash: string,
         publicKey: SigningPublicKey | PublicKey,
@@ -95,7 +103,7 @@ export class LedgerController {
         if (typeof publicKey === 'string') {
             key = publicKey
         } else {
-            key = publicKey.publicKey.toString()
+            key = btoa(String.fromCodePoint(...publicKey.publicKey))
         }
 
         try {
