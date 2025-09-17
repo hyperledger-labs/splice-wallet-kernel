@@ -180,7 +180,6 @@ export class TopologyWriteService {
     private generateTransactionsRequest(
         namespace: string,
         partyId: PartyId,
-        // participantId: string,
         participantIds: string[],
         publicKey: SigningPublicKey,
         confirmingThreshold: number = 1
@@ -200,6 +199,7 @@ export class TopologyWriteService {
             },
         })
 
+        //TODO: export HostingParticipant type that takes in (participantId, participant permission)
         const hostingParticipants = participantIds.map((pId) => {
             return PartyToParticipant_HostingParticipant.create({
                 participantUid: pId,
