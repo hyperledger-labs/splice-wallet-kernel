@@ -259,26 +259,18 @@ export class TokenStandardService {
         updateId: string,
         partyId: PartyId
     ): Promise<Transaction> {
+        const filter = filtersByParty(
+            partyId,
+            TokenStandardTransactionInterfaces,
+            false
+        )
+
         const transactionFormat: TransactionFormat = {
             eventFormat: {
-                filtersByParty: {
-                    [partyId]: {
-                        cumulative: [
-                            {
-                                identifierFilter: {
-                                    WildcardFilter: {
-                                        value: {
-                                            includeCreatedEventBlob: false,
-                                        },
-                                    },
-                                },
-                            },
-                        ],
-                    },
-                },
-                verbose: true,
+                filtersByParty: filter,
+                verbose: false,
             },
-            transactionShape: 'TRANSACTION_SHAPE_ACS_DELTA',
+            transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
         }
 
         const getTransactionResponse = await this.ledgerClient.post(
@@ -533,7 +525,8 @@ export class TokenStandardService {
     ): Promise<Transaction> {
         const tx = getTransactionResponse.transaction
         const parser = new TransactionParser(tx, ledgerClient, partyId)
-        return parser.parseTransaction()
+        const parsedTx = await parser.parseTransaction()
+        return renderTransaction(parsedTx)
     }
 
     // returns object with JsActiveContract content
