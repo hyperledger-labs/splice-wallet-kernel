@@ -165,18 +165,23 @@ export class TopologyController {
                 )
         )
 
-        this.logger.info('submitting external party topology')
+        console.debug(
+            `Submitting external party topology for partyId ${preparedParty.partyId}`
+        )
         await this.topologyClient.submitExternalPartyTopology(
             signedTopologyTxs,
             preparedParty.partyId
         )
 
+        console.debug(`Authorizing party ${preparedParty.partyId}`)
         if (grantUserRights) {
             await this.client.grantUserRights(
                 this.userId,
                 preparedParty.partyId
             )
         }
+
+        console.debug(`Completed setup for party ${preparedParty.partyId}`)
         return { partyId: preparedParty.partyId }
     }
 
@@ -192,6 +197,9 @@ export class TopologyController {
         confirmingThreshold?: number,
         hostingParticipantPermissions?: Map<string, Enums_ParticipantPermission>
     ): Promise<AllocatedParty> {
+        console.debug(
+            `Preparing, signing and submitting external party topology`
+        )
         const preparedParty = await this.prepareExternalPartyTopology(
             getPublicKeyFromPrivate(privateKey),
             partyHint,
@@ -199,10 +207,16 @@ export class TopologyController {
             hostingParticipantPermissions
         )
 
+        console.debug(
+            `Prepared external party topology for partyId ${preparedParty.partyId}`
+        )
+
         const signedHash = signTransactionHash(
             preparedParty!.combinedHash,
             privateKey
         )
+
+        console.debug(`Signed transaction hash for partyId ${signedHash}`)
 
         // grant user rights automatically if the party is hosted on 1 participant
         // if hosted on multiple participants, then we need to authorize each PartyToParticipant mapping
