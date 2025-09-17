@@ -16,7 +16,6 @@
         "build:all": "nx run-many -t build --parallel",
         "clean:all": "nx run-many -t clean --parallel",
         "test:all": "nx run-many -t test --parallel",
-        "test:snippets": "yarn workspace docs-wallet-integration-guide-examples run snippets",
         "postinstall": "husky",
         "script:cleancoding": "tsx ./scripts/src/clean-coding.ts",
         "script:install:daml-sdk": "tsx --eval \"import { installDamlSDK } from './scripts/src/install-daml-sdk.ts'; installDamlSDK()\"",
