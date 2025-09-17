@@ -3,6 +3,13 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+0.6.1
+-----
+
+**Released on September 16th, 2025**
+
+Fixed a minor edge case where a future mining round would be chosen if there was a client clock skew.
+
 0.6.0
 -----
 
