@@ -3,8 +3,8 @@ import {
     localNetAuthDefault,
     localNetLedgerDefault,
     localNetTopologyDefault,
+    localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
-import { LOCALNET_SCAN_API_URL } from '../config.js'
 
 // @disable-snapshot-test
 export default async function () {
@@ -15,7 +15,7 @@ export default async function () {
         ledgerFactory: localNetLedgerDefault, // or use your specific configuration
         topologyFactory: localNetTopologyDefault, // or use your specific configuration
     })
-    await sdk.connectTopology(LOCALNET_SCAN_API_URL)
+    await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
     const preparedParty = {
         partyTransactions: [], // array of topology transactions
@@ -26,5 +26,5 @@ export default async function () {
     }
     const signature = 'your-signed-hash-here'
 
-    return sdk.topology?.submitExternalPartyTopology(signature, preparedParty)
+    sdk.topology?.submitExternalPartyTopology(signature, preparedParty)
 }

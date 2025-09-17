@@ -4,8 +4,8 @@ import {
     localNetAuthDefault,
     localNetLedgerDefault,
     localNetTopologyDefault,
+    localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
-import { LOCALNET_SCAN_API_URL } from '../config.js'
 
 // @disable-snapshot-test
 export default async function () {
@@ -17,7 +17,7 @@ export default async function () {
         topologyFactory: localNetTopologyDefault, // or use your specific configuration
     })
 
-    await sdk.connectTopology(LOCALNET_SCAN_API_URL)
+    await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
     const { publicKey, privateKey } = TopologyController.createNewKeyPair()
     //partyHint is optional but recommended to make it easier to identify the party

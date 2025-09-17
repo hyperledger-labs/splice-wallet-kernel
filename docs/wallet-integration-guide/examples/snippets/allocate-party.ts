@@ -4,8 +4,8 @@ import {
     localNetAuthDefault,
     localNetLedgerDefault,
     localNetTopologyDefault,
+    localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
-import { LOCALNET_SCAN_API_URL } from '../config.js'
 
 export default async function () {
     // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
