@@ -1,5 +1,6 @@
 {
     "name": "splice-wallet-kernel",
+    "private": true,
     "scripts": {
         "start:all": "yarn pm2 start ecosystem.config.js --env development",
         "start:canton": "tsx ./scripts/src/start-canton.ts",
@@ -12,10 +13,10 @@
         "generate:signing": "yarn workspace @canton-network/core-rpc-generator build && open-rpc-generator generate -c ./rpc-generator-config-signing.json",
         "generate:grpc": "tsx ./scripts/src/generate-protobufs.ts",
         "generate:all": "yarn generate:dapp && yarn generate:user && yarn generate:signing",
-        "build:all": "yarn workspaces foreach -A -t run build",
-        "clean:all": "yarn workspaces foreach -A run clean",
-        "test:all": "yarn workspaces foreach -A --exclude=docs-wallet-integration-guide-examples run test",
-        "test:snippets": "yarn workspace docs-wallet-integration-guide-examples run test",
+        "build:all": "nx run-many -t build --parallel",
+        "clean:all": "nx run-many -t clean --parallel",
+        "test:all": "nx run-many -t test --parallel",
+        "test:snippets": "yarn workspace docs-wallet-integration-guide-examples run snippets",
         "postinstall": "husky",
         "script:cleancoding": "tsx ./scripts/src/clean-coding.ts",
         "script:install:daml-sdk": "tsx --eval \"import { installDamlSDK } from './scripts/src/install-daml-sdk.ts'; installDamlSDK()\"",
@@ -75,8 +76,5 @@
     "dependencies": {
         "@nx/js": "^21.3.11",
         "nx": "^21.3.11"
-    },
-    "files": [
-        "!core/token-standard/src/**/package.json"
-    ]
+    }
 }

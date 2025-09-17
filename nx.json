@@ -1,8 +1,13 @@
 {
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "namedInputs": {
+        "default": ["{projectRoot}/**/*", "sharedGlobals"],
+        "production": ["default"],
+        "sharedGlobals": []
+    },
     "release": {
+        "projects": ["core/*", "sdk/*"],
         "projectsRelationship": "independent",
-        "packages": ["core/*", "sdk/*"],
         "version": {
             "conventionalCommits": true,
             "fallbackCurrentVersionResolver": "disk"
@@ -17,10 +22,11 @@
     },
     "targetDefaults": {
         "build": {
-            "outputs": ["{projectRoot}/dist"],
+            "dependsOn": ["^build"],
             "cache": true
         },
         "test": {
+            "dependsOn": ["build"],
             "cache": true
         },
         "lint": {
