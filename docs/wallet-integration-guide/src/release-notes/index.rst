@@ -117,6 +117,7 @@ we have also extended the `executeSubmission` and `prepareSignAndExecuteTransact
 * fetch transaction by update id
 
 .. code-block:: javascript
+
     // convenient new endpoint to get transaction based on update id
     // this will come out in same format as listHoldingTransactions
     sdk.tokenStandard?.getTransactionById('my-update-id')
