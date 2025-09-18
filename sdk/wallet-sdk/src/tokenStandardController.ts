@@ -57,7 +57,8 @@ export class TokenStandardController {
         this.service = new TokenStandardService(
             this.client,
             scanProxyClient,
-            this.logger
+            this.logger,
+            accessToken
         )
         this.userId = userId
     }
