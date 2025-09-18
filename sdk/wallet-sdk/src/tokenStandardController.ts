@@ -232,6 +232,7 @@ export class TokenStandardController {
      * @param instrument The instrument to be used for the transfer.
      * @param inputUtxos The utxos to use for this transfer, if not defined it will auto-select.
      * @param memo The message for the receiver to identify the transaction.
+     * @param expiryDate Optional Expiry Date, default is 24 hours.
      * @param meta Optional metadata to include with the transfer.
      * @returns A promise that resolves to the ExerciseCommand which creates the transfer.
      */
@@ -245,6 +246,7 @@ export class TokenStandardController {
         },
         inputUtxos?: string[],
         memo?: string,
+        expiryDate?: Date,
         meta?: Record<string, unknown>
     ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
         try {
@@ -257,6 +259,7 @@ export class TokenStandardController {
                 this.getTransferFactoryRegistryUrl().href,
                 inputUtxos,
                 memo,
+                expiryDate,
                 meta
             )
         } catch (error) {
