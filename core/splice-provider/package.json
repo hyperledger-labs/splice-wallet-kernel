@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-splice-provider",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "type": "module",
     "description": "A JavaScript Splice Provider API (EIP-1193 compliant).",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
