@@ -7,7 +7,7 @@ import {
     createKeyPair,
     signTransactionHash,
 } from '@canton-network/wallet-sdk'
-import { LOCALNET_SCAN_API_URL } from '../config.js'
+import { LOCALNET_VALIDATOR_URL } from '../config.js'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
 
@@ -48,7 +48,7 @@ await sdk.adminLedger
         logger.error(error, 'Error listing wallets')
     })
 
-await sdk.connectTopology(LOCALNET_SCAN_API_URL)
+await sdk.connectTopology(LOCALNET_VALIDATOR_URL)
 logger.info('Connected to topology')
 
 const keyPair = createKeyPair()
