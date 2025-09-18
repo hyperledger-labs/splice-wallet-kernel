@@ -88,7 +88,7 @@ jobs:
               run: yarn run prettier . --check
 
             - name: eslint code
-              run: yarn workspaces foreach -A run eslint .
+              run: yarn eslint .
 
     test-unit:
         runs-on: ubuntu-latest
@@ -190,9 +190,6 @@ jobs:
             - name: Start Localnet
               run: yarn start:localnet
 
-            - name: Validate SDK package install
-              run: yarn script:validate:package
-
             - name: Test example snippets
               run: yarn nx snippets docs-wallet-integration-guide-examples
 
@@ -218,3 +215,14 @@ jobs:
               with:
                   name: docker-logs
                   path: logs/
+
+    test-wallet-sdk-pkg:
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - uses: ./.github/actions/setup_yarn
+
+            - name: Validate SDK package install
+              run: yarn script:validate:package
