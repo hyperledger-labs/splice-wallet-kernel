@@ -8,7 +8,7 @@ import {
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
-import { LOCALNET_REGISTRY_API_URL, LOCALNET_SCAN_API_URL } from '../config.js'
+import { LOCALNET_REGISTRY_API_URL, LOCALNET_VALIDATOR_URL } from '../config.js'
 
 const logger = pino({ name: '04-token-standard-localnet', level: 'info' })
 
@@ -30,7 +30,7 @@ const keyPairSender = createKeyPair()
 const keyPairReceiver = createKeyPair()
 
 await sdk.connectAdmin()
-await sdk.connectTopology(LOCALNET_SCAN_API_URL)
+await sdk.connectTopology(LOCALNET_VALIDATOR_URL)
 
 const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairSender.privateKey,
@@ -80,7 +80,7 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
     disclosedContracts
 )
 
-await new Promise((res) => setTimeout(res, 10000))
+await new Promise((res) => setTimeout(res, 5000))
 
 const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
 logger.info(utxos, 'List Available Token Standard Holding UTXOs')
@@ -108,30 +108,32 @@ const [transferCommand, disclosedContracts2] =
             instrumentId: 'Amulet',
             instrumentAdmin: instrumentAdminPartyId,
         },
+        utxos?.map((t) => t.contractId),
         'memo-ref'
     )
 
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
-    [{ ExerciseCommand: transferCommand }],
-    keyPairSender.privateKey,
-    v4(),
-    disclosedContracts2
-)
+const offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
+
+const transferCommandId =
+    await sdk.userLedger?.prepareSignAndExecuteTransaction(
+        [{ ExerciseCommand: transferCommand }],
+        keyPairSender.privateKey,
+        v4(),
+        disclosedContracts2
+    )
 logger.info('Submitted transfer transaction')
 
-await new Promise((res) => setTimeout(res, 5000))
+const completion = await sdk.userLedger?.waitForCompletion(
+    offsetLatest,
+    5000,
+    transferCommandId!
+)
+logger.info({ completion }, 'Transfer transaction completed')
 
-const holdings = await sdk.tokenStandard?.listHoldingTransactions()
+const pendingInstructions =
+    await sdk.tokenStandard?.fetchPendingTransferInstructionView()
 
-const transferCid = holdings!.transactions
-    .flatMap((object) =>
-        object.events.flatMap(
-            (t) =>
-                (t.label as any)?.tokenStandardChoice?.exerciseResult?.output
-                    ?.value?.transferInstructionCid
-        )
-    )
-    .find((v) => v !== undefined)
+const transferCid = pendingInstructions?.[0].contractId!
 
 await sdk.setPartyId(receiver!.partyId)
 
@@ -148,7 +150,7 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
     disclosedContracts3
 )
 
-console.log('Accepted transfer instruction')
+logger.info('Accepted transfer instruction')
 
 await new Promise((res) => setTimeout(res, 5000))
 
@@ -160,6 +162,4 @@ await new Promise((res) => setTimeout(res, 5000))
     await sdk.setPartyId(receiver!.partyId)
     const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
     logger.info(bobHoldings, '[BOB] holding transactions')
-
-    await sdk.setPartyId(sender!.partyId)
 }

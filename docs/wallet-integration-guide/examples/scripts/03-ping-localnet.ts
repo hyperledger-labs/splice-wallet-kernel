@@ -7,9 +7,9 @@ import {
 } from '@canton-network/wallet-sdk'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
-import { LOCALNET_SCAN_API_URL } from '../config.js'
+import { LOCALNET_VALIDATOR_URL } from '../config.js'
 
-const logger = pino({ name: '03-token-standard-localnet', level: 'info' })
+const logger = pino({ name: '03-ping-localnet', level: 'info' })
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
@@ -29,7 +29,7 @@ const wallets = await sdk.userLedger?.listWallets()
 logger.info(wallets, 'user Wallets')
 
 const keyPair = createKeyPair()
-await sdk.connectTopology(LOCALNET_SCAN_API_URL)
+await sdk.connectTopology(LOCALNET_VALIDATOR_URL)
 
 logger.info('generated keypair')
 const allocatedParty = await sdk.topology?.prepareSignAndSubmitExternalParty(

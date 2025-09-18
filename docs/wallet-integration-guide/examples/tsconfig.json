@@ -5,5 +5,10 @@
         "module": "nodenext",
         "noEmit": true
     },
-    "include": ["scripts/*.ts", "snippets/*.ts", "config.ts"]
+    "include": [
+        "scripts/*.ts",
+        "snippets/*.ts",
+        "config.ts",
+        "snippets.test.ts"
+    ]
 }

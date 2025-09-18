@@ -40,7 +40,14 @@ export interface paths {
         post: operations['postV2CommandsAsyncSubmit-reassignment']
     }
     '/v2/commands/completions': {
-        /** @description Query completions list (blocking call) */
+        /**
+         * @description Query completions list (blocking call)
+         * Notice: This endpoint should be used for small results set.
+         * When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
+         * there will be an error (`413 Content Too Large`) returned.
+         * Increasing this limit may lead to performance issues and high memory consumption.
+         * Consider using websockets (asyncapi) for better efficiency with larger results.
+         */
         post: operations['postV2CommandsCompletions']
     }
     '/v2/events/events-by-contract-id': {
@@ -90,7 +97,19 @@ export interface paths {
         post: operations['postV2PartiesExternalGenerate-topology']
     }
     '/v2/state/active-contracts': {
-        /** @description Query active contracts list (blocking call) */
+        /**
+         * @description Query active contracts list (blocking call).
+         * Querying active contracts is an expensive operation and if possible should not be repeated often.
+         * Consider querying active contracts initially (for a given offset)
+         * and then repeatedly call one of `/v2/updates/...`endpoints  to get subsequent modifications.
+         * You can also use websockets to get updates with better performance.
+         *
+         * Notice: This endpoint should be used for small results set.
+         * When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
+         * there will be an error (`413 Content Too Large`) returned.
+         * Increasing this limit may lead to performance issues and high memory consumption.
+         * Consider using websockets (asyncapi) for better efficiency with larger results.
+         */
         post: operations['postV2StateActive-contracts']
     }
     '/v2/state/connected-synchronizers': {
@@ -106,15 +125,36 @@ export interface paths {
         get: operations['getV2StateLatest-pruned-offsets']
     }
     '/v2/updates': {
-        /** @description Query updates list (blocking call) */
+        /**
+         * @description Query updates list (blocking call)
+         * Notice: This endpoint should be used for small results set.
+         * When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
+         * there will be an error (`413 Content Too Large`) returned.
+         * Increasing this limit may lead to performance issues and high memory consumption.
+         * Consider using websockets (asyncapi) for better efficiency with larger results.
+         */
         post: operations['postV2Updates']
     }
     '/v2/updates/flats': {
-        /** @description Query flat transactions update list (blocking call, deprecated: use v2/updates instead) */
+        /**
+         * @description Query flat transactions update list (blocking call)
+         * Notice: This endpoint should be used for small results set.
+         * When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
+         * there will be an error (`413 Content Too Large`) returned.
+         * Increasing this limit may lead to performance issues and high memory consumption.
+         * Consider using websockets (asyncapi) for better efficiency with larger results.
+         */
         post: operations['postV2UpdatesFlats']
     }
     '/v2/updates/trees': {
-        /** @description Query update transactions tree list (blocking call, deprecated: use v2/updates instead) */
+        /**
+         * @description Query update transactions tree list (blocking call)
+         * Notice: This endpoint should be used for small results set.
+         * When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
+         * there will be an error (`413 Content Too Large`) returned.
+         * Increasing this limit may lead to performance issues and high memory consumption.
+         * Consider using websockets (asyncapi) for better efficiency with larger results.
+         */
         post: operations['postV2UpdatesTrees']
     }
     '/v2/updates/transaction-tree-by-offset/{offset}': {
@@ -3770,7 +3810,14 @@ export interface operations {
             }
         }
     }
-    /** @description Query completions list (blocking call) */
+    /**
+     * @description Query completions list (blocking call)
+     * Notice: This endpoint should be used for small results set.
+     * When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
+     * there will be an error (`413 Content Too Large`) returned.
+     * Increasing this limit may lead to performance issues and high memory consumption.
+     * Consider using websockets (asyncapi) for better efficiency with larger results.
+     */
     postV2CommandsCompletions: {
         parameters: {
             query?: {
@@ -4142,7 +4189,19 @@ export interface operations {
             }
         }
     }
-    /** @description Query active contracts list (blocking call) */
+    /**
+     * @description Query active contracts list (blocking call).
+     * Querying active contracts is an expensive operation and if possible should not be repeated often.
+     * Consider querying active contracts initially (for a given offset)
+     * and then repeatedly call one of `/v2/updates/...`endpoints  to get subsequent modifications.
+     * You can also use websockets to get updates with better performance.
+     *
+     * Notice: This endpoint should be used for small results set.
+     * When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
+     * there will be an error (`413 Content Too Large`) returned.
+     * Increasing this limit may lead to performance issues and high memory consumption.
+     * Consider using websockets (asyncapi) for better efficiency with larger results.
+     */
     'postV2StateActive-contracts': {
         parameters: {
             query?: {
@@ -4245,7 +4304,14 @@ export interface operations {
             }
         }
     }
-    /** @description Query updates list (blocking call) */
+    /**
+     * @description Query updates list (blocking call)
+     * Notice: This endpoint should be used for small results set.
+     * When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
+     * there will be an error (`413 Content Too Large`) returned.
+     * Increasing this limit may lead to performance issues and high memory consumption.
+     * Consider using websockets (asyncapi) for better efficiency with larger results.
+     */
     postV2Updates: {
         parameters: {
             query?: {
@@ -4279,7 +4345,14 @@ export interface operations {
             }
         }
     }
-    /** @description Query flat transactions update list (blocking call, deprecated: use v2/updates instead) */
+    /**
+     * @description Query flat transactions update list (blocking call)
+     * Notice: This endpoint should be used for small results set.
+     * When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
+     * there will be an error (`413 Content Too Large`) returned.
+     * Increasing this limit may lead to performance issues and high memory consumption.
+     * Consider using websockets (asyncapi) for better efficiency with larger results.
+     */
     postV2UpdatesFlats: {
         parameters: {
             query?: {
@@ -4313,7 +4386,14 @@ export interface operations {
             }
         }
     }
-    /** @description Query update transactions tree list (blocking call, deprecated: use v2/updates instead) */
+    /**
+     * @description Query update transactions tree list (blocking call)
+     * Notice: This endpoint should be used for small results set.
+     * When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
+     * there will be an error (`413 Content Too Large`) returned.
+     * Increasing this limit may lead to performance issues and high memory consumption.
+     * Consider using websockets (asyncapi) for better efficiency with larger results.
+     */
     postV2UpdatesTrees: {
         parameters: {
             query?: {

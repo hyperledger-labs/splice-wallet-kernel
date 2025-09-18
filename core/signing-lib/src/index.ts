@@ -41,6 +41,18 @@ export interface SigningDriverInterface {
     controller: (userId: AuthContext['userId'] | undefined) => Methods
 }
 
+export const verifySignedTxHash = (
+    txHash: string,
+    publicKey: string,
+    signature: string
+): boolean => {
+    return nacl.sign.detached.verify(
+        naclUtil.decodeBase64(txHash),
+        naclUtil.decodeBase64(signature),
+        naclUtil.decodeBase64(publicKey)
+    )
+}
+
 export const signTransactionHash = (
     txHash: string,
     privateKey: string

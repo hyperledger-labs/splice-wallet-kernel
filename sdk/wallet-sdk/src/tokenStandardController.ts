@@ -8,10 +8,16 @@ import {
     PrettyContract,
     ViewValue,
     TokenStandardService,
+    Transaction,
+    TransferInstructionView,
+    Holding,
 } from '@canton-network/core-ledger-client'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { pino } from 'pino'
-import type { HoldingView } from '@canton-network/core-token-standard'
+import {
+    HOLDING_INTERFACE_ID,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+} from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject'
@@ -51,7 +57,8 @@ export class TokenStandardController {
         this.service = new TokenStandardService(
             this.client,
             scanProxyClient,
-            this.logger
+            this.logger,
+            accessToken
         )
         this.userId = userId
     }
@@ -108,8 +115,7 @@ export class TokenStandardController {
     }
 
     /**
-     * Sets the transferFactoryRegistryUrl that the TokenStandardController will use for requests.
-     * @param transferFactoryRegistryUrl
+     *  Gets the transferFactoryRegistryUrl that the TokenStandardController uses for requests.
      */
     getTransferFactoryRegistryUrl(): URL {
         if (!this.transferFactoryRegistryUrl)
@@ -143,6 +149,16 @@ export class TokenStandardController {
             beforeOffset
         )
     }
+    /** Lists all holdings for the current party.
+     * @param updateId id of queried transaction
+     * @returns A promise that resolves to a transaction
+     */
+    async getTransactionById(updateId: string): Promise<Transaction> {
+        return await this.service.getTransactionById(
+            updateId,
+            this.getPartyId()
+        )
+    }
 
     /** Lists all active contracts' interface view values and cids,
      *  filtered by an interface for the current party.
@@ -167,9 +183,9 @@ export class TokenStandardController {
 
     async listHoldingUtxos(
         includeLocked: boolean = true
-    ): Promise<PrettyContract<HoldingView>[]> {
-        const utxos = await this.service.listContractsByInterface<HoldingView>(
-            '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding',
+    ): Promise<PrettyContract<Holding>[]> {
+        const utxos = await this.service.listContractsByInterface<Holding>(
+            HOLDING_INTERFACE_ID,
             this.getPartyId()
         )
         const currentTime = new Date()
@@ -188,6 +204,20 @@ export class TokenStandardController {
                 return expiresAtDate <= currentTime
             })
         }
+    }
+
+    /**
+     * Fetches all 2-step transfer pending either accept or reject.
+     * @returns a promise containing prettyContract for TransferInstructionView.
+     */
+
+    async fetchPendingTransferInstructionView(): Promise<
+        PrettyContract<TransferInstructionView>[]
+    > {
+        return await this.service.listContractsByInterface<TransferInstructionView>(
+            TRANSFER_INSTRUCTION_INTERFACE_ID,
+            this.getPartyId()
+        )
     }
 
     /**
@@ -220,7 +250,9 @@ export class TokenStandardController {
      * @param receiver The party of the receiver.
      * @param amount The amount to be transferred.
      * @param instrument The instrument to be used for the transfer.
+     * @param inputUtxos The utxos to use for this transfer, if not defined it will auto-select.
      * @param memo The message for the receiver to identify the transaction.
+     * @param expiryDate Optional Expiry Date, default is 24 hours.
      * @param meta Optional metadata to include with the transfer.
      * @returns A promise that resolves to the ExerciseCommand which creates the transfer.
      */
@@ -232,7 +264,9 @@ export class TokenStandardController {
             instrumentId: string
             instrumentAdmin: PartyId
         },
+        inputUtxos?: string[],
         memo?: string,
+        expiryDate?: Date,
         meta?: Record<string, unknown>
     ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
         try {
@@ -243,7 +277,9 @@ export class TokenStandardController {
                 instrument.instrumentAdmin,
                 instrument.instrumentId,
                 this.getTransferFactoryRegistryUrl().href,
+                inputUtxos,
                 memo,
+                expiryDate,
                 meta
             )
         } catch (error) {

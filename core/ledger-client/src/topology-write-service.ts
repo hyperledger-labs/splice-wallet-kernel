@@ -180,8 +180,9 @@ export class TopologyWriteService {
     private generateTransactionsRequest(
         namespace: string,
         partyId: PartyId,
-        participantId: string,
-        publicKey: SigningPublicKey
+        publicKey: SigningPublicKey,
+        confirmingThreshold: number = 1,
+        hostingParticipantRights: Map<string, Enums_ParticipantPermission>
     ): GenerateTransactionsRequest {
         // Implementation for generating transactions request
         const namespaceDelegation = TopologyMapping.create({
@@ -198,19 +199,21 @@ export class TopologyWriteService {
             },
         })
 
+        const hostingParticipants = [...hostingParticipantRights].map(
+            ([participantUid, permission]) =>
+                PartyToParticipant_HostingParticipant.create({
+                    participantUid,
+                    permission,
+                })
+        )
+
         const partyToParticipant = TopologyMapping.create({
             mapping: {
                 oneofKind: 'partyToParticipant',
                 partyToParticipant: PartyToParticipant.create({
                     party: partyId,
-                    threshold: 1,
-                    participants: [
-                        PartyToParticipant_HostingParticipant.create({
-                            participantUid: participantId,
-                            permission:
-                                Enums_ParticipantPermission.CONFIRMATION,
-                        }),
-                    ],
+                    threshold: confirmingThreshold,
+                    participants: hostingParticipants,
                 }),
             },
         })
@@ -252,21 +255,34 @@ export class TopologyWriteService {
 
     async generateTransactions(
         publicKey: string,
-        partyId: PartyId
+        partyId: PartyId,
+        confirmingThreshold: number = 1,
+        hostingParticipantRights?: Map<string, Enums_ParticipantPermission>
     ): Promise<GenerateTransactionsResponse> {
         const signingPublicKey = signingPublicKeyFromEd25519(publicKey)
         const namespace =
             TopologyWriteService.createFingerprintFromKey(signingPublicKey)
 
-        const { participantId } = await this.ledgerClient.get(
-            '/v2/parties/participant-id'
-        )
+        let participantRights = hostingParticipantRights
+
+        // if no participantRights have been supplied, this party will be hosted on 1 validator (not multi-hosted)
+        // the default is to get the participantId from ledger client with Confirmation rights
+        if (!participantRights || participantRights.size === 0) {
+            const { participantId } = await this.ledgerClient.get(
+                '/v2/parties/participant-id'
+            )
+
+            participantRights = new Map<string, Enums_ParticipantPermission>([
+                [participantId, Enums_ParticipantPermission.CONFIRMATION],
+            ])
+        }
 
         const req = this.generateTransactionsRequest(
             namespace,
             partyId,
-            participantId,
-            signingPublicKey
+            signingPublicKey,
+            confirmingThreshold,
+            participantRights
         )
 
         return this.topologyClient.generateTransactions(req, {
@@ -328,7 +344,7 @@ export class TopologyWriteService {
         })
     }
 
-    private async authorizePartyToParticipant(
+    async authorizePartyToParticipant(
         partyId: PartyId
     ): Promise<AuthorizeResponse> {
         const hash = await this.waitForPartyToParticipantProposal(partyId)

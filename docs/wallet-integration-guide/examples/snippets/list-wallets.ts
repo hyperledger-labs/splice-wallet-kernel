@@ -4,12 +4,15 @@ import {
     localNetLedgerDefault,
 } from '@canton-network/wallet-sdk'
 
-const sdk = new WalletSDKImpl().configure({
-    logger: console,
-    authFactory: localNetAuthDefault,
-    ledgerFactory: localNetLedgerDefault,
-})
+// @disable-snapshot-test
+export default async function () {
+    const sdk = new WalletSDKImpl().configure({
+        logger: console,
+        authFactory: localNetAuthDefault,
+        ledgerFactory: localNetLedgerDefault,
+    })
 
-await sdk.connect()
+    await sdk.connect()
 
-const wallets = await sdk.userLedger?.listWallets()
+    return await sdk.userLedger?.listWallets()
+}

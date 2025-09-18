@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 export * from './token-standard-client.js'
 
 // Codegen outputs are treated as separate package
@@ -11,7 +14,7 @@ export type HoldingView = {
     owner: string
     instrumentId: InstrumentId
     amount: number
-    lock: any
+    lock: Record<string, string | number>
     meta: Metadata
 }
 
