@@ -7,6 +7,8 @@ import {
     PostRequest,
     GetResponse,
     Types,
+    awaitCompletion,
+    promiseWithTimeout,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -89,6 +91,7 @@ export class LedgerController {
      * @param privateKey the private key to sign the transaction with.
      * @param commandId an unique identifier used to track the transaction, if not provided a random UUID will be used.
      * @param disclosedContracts off-ledger sourced contractIds needed to perform the transaction.
+     * @returns the commandId used to track the transaction.
      */
     async prepareSignAndExecuteTransaction(
         commands: unknown,
@@ -121,48 +124,24 @@ export class LedgerController {
      * @throws An error if the timeout is reached before the command is completed.
      */
     async waitForCompletion(
-        commandId: string,
-        beginExclusive: number,
-        timeoutMs: number
+        ledgerEnd: number,
+        timeoutMs: number,
+        commandId?: string,
+        submissionId?: string
     ): Promise<Types['Completion']['value']> {
-        const start = Date.now()
-        let offset = beginExclusive
-
-        while (Date.now() - start < timeoutMs) {
-            const completions = await this.client.post(
-                '/v2/commands/completions',
-                {
-                    userId: this.userId,
-                    parties: [this.getPartyId()],
-                    beginExclusive: offset,
-                }
-            )
-
-            // Find the completion for our commandId
-            const found = completions.find(
-                (completion) =>
-                    completion.completionResponse?.Completion?.value
-                        ?.commandId === commandId
-            )
-
-            if (found && found.completionResponse.Completion) {
-                return found.completionResponse.Completion.value
-            }
-
-            // Optionally update offset if completions returns a new offset
-            const offsets = completions.map(
-                (c) =>
-                    c.completionResponse?.OffsetCheckpoint?.value.offset ||
-                    offset
-            )
-            offset = Math.max(...offsets)
-
-            // Wait a bit before polling again
-            await new Promise((res) => setTimeout(res, 500))
-        }
-
-        throw new Error(
-            `Timeout waiting for completion of commandId: ${commandId}`
+        const completionPromise = awaitCompletion(
+            this.client,
+            ledgerEnd,
+            this.partyId!,
+            this.userId,
+            commandId,
+            submissionId
+        )
+        return promiseWithTimeout(
+            completionPromise,
+            timeoutMs,
+            `Timed out getting completion for submission with userId=${this.userId}, commandId=${commandId}, submissionId=${submissionId}.
+    The submission might have succeeded or failed, but it couldn't be determined in time.`
         )
     }
 

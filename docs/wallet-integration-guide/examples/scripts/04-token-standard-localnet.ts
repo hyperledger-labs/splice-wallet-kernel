@@ -123,9 +123,9 @@ const transferCommandId =
 logger.info('Submitted transfer transaction')
 
 const completion = await sdk.userLedger?.waitForCompletion(
-    transferCommandId!,
     offsetLatest,
-    5000
+    5000,
+    transferCommandId!
 )
 logger.info({ completion }, 'Transfer transaction completed')
 

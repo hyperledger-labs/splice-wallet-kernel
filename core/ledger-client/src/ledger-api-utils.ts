@@ -25,6 +25,7 @@ type DisclosedContract = Types['DisclosedContract']
 type PartySignatures = Types['PartySignatures']
 type Command = Types['Command']
 type DeduplicationPeriod2 = Types['DeduplicationPeriod2']
+type Completion = Types['Completion']['value']
 
 export function filtersByParty(
     party: PartyId,
@@ -351,35 +352,40 @@ function signTransaction(
     }
 }
 
-export interface Completion {
-    updateId: string
-    // the openAPI definition claims these two can be null
-    synchronizerId: string | undefined
-    recordTime: string | undefined
-}
-
-// TODO: awaitCompletion loop
-// const COMPLETIONS_LIMIT = 100
-// const COMPLETIONS_STREAM_IDLE_TIMEOUT_MS = 1000
+const COMPLETIONS_LIMIT = '100'
+const COMPLETIONS_STREAM_IDLE_TIMEOUT_MS = '1000'
 
 /**
  * Polls the completions endpoint until
  * the completion with the given (userId, commandId, submissionId) is returned.
  * Then returns the updateId, synchronizerId and recordTime of that completion.
  */
-async function awaitCompletion(
+export async function awaitCompletion(
     ledgerClient: LedgerClient,
     ledgerEnd: number,
     partyId: PartyId,
     userId: string,
-    commandId: string,
-    submissionId: string
+    commandId?: string,
+    submissionId?: string
 ): Promise<Completion> {
-    const responses = await ledgerClient.post('/v2/commands/completions', {
-        userId,
-        parties: [partyId],
-        beginExclusive: ledgerEnd,
-    })
+    if (!commandId && !submissionId) {
+        throw new Error('Either commandId or submissionId must be provided')
+    }
+
+    const responses = await ledgerClient.post(
+        '/v2/commands/completions',
+        {
+            userId,
+            parties: [partyId],
+            beginExclusive: ledgerEnd,
+        },
+        {
+            query: {
+                limit: COMPLETIONS_LIMIT,
+                stream_idle_timeout_ms: COMPLETIONS_STREAM_IDLE_TIMEOUT_MS,
+            },
+        }
+    )
 
     const completions = responses.filter(
         (response) => !!response.completionResponse.Completion
@@ -388,11 +394,26 @@ async function awaitCompletion(
     const wantedCompletion = completions.find((response) => {
         const completion = response.completionResponse.Completion
         if (!completion) return false
-        return (
-            completion.value.userId === userId &&
-            completion.value.commandId === commandId &&
-            completion.value.submissionId === submissionId
-        )
+
+        if (commandId && submissionId) {
+            return (
+                completion.value.userId === userId &&
+                completion.value.commandId === commandId &&
+                completion.value.submissionId === submissionId
+            )
+        } else if (commandId) {
+            return (
+                completion.value.userId === userId &&
+                completion.value.commandId === commandId
+            )
+        } else if (submissionId) {
+            return (
+                completion.value.userId === userId &&
+                completion.value.submissionId === submissionId
+            )
+        } else {
+            return false
+        }
     })
 
     if (wantedCompletion) {
@@ -404,11 +425,7 @@ async function awaitCompletion(
                 `Command failed with status: ${JSON.stringify(status)}`
             )
         }
-        return {
-            synchronizerId: completion.value.synchronizerTime?.synchronizerId,
-            recordTime: completion.value.synchronizerTime?.recordTime,
-            updateId: completion.value.updateId,
-        }
+        return completion.value
     } else {
         const lastCompletion = completions[completions.length - 1]
         const newLedgerEnd =
@@ -424,7 +441,7 @@ async function awaitCompletion(
     }
 }
 
-async function promiseWithTimeout<T>(
+export async function promiseWithTimeout<T>(
     promise: Promise<T>,
     timeoutMs: number,
     errorMessage: string
