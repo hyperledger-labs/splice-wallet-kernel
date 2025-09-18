@@ -28,6 +28,77 @@ Listing holdings (UTXO's)
 -------------------------
 
 Canton uses created and archived events to determine the state of the ledger. This correlates to how UTXO's are handled on other blockchains
-liked Bitcoin. This means that
+like Bitcoin. This means that at any point in time you can retrieve all your active contracts with the interface 'Holding' to see all assets
+you posses across different instruments.
+
+.. literalinclude:: ../../examples/snippets/list-holdings.ts
+    :language: typescript
+    :dedent:
+
+the above script can safely be used to determine used in a transfer, if you provide no boolean value or true then you need to filter
+out the locked ones manually.
+
+Listing holding transactions
+----------------------------
+
+In order to stream transaction events as they happen on ledger the `listHoldingTransactions` endpoint can be used. This takes two ledger
+offset and gives an overview of all token standard transactions that have happened between. It also returns a `nextOffset` that can be used
+when calling the endpoint again. This will allow you to easily ensure you do not receive any transaction twice and you are only querying the
+transactions that have happened after.
+
+
+.. literalinclude:: ../../examples/snippets/mointor-transaction-holding.ts
+    :language: typescript
+    :dedent:
+
+
+to quickly convert the stream into deposit and withdrawal you can use this function:
+.. code-block:: javascript
+
+    function convertToTransaction(pt: Transaction, associatedParty: string): object[] {
+        return pt.events.flatMap((event) => {
+            if (event.label.type === 'TransferIn') {
+                return [{
+                    updateId: pt.updateId,
+                    recordTime: pt.recordTime,
+                    from: event.label.sender,
+                    to: associatedParty,
+                    amount: Number(event.unlockedHoldingsChangeSummary.amountChange),
+                    instrumentId: 'Amulet',
+                    fee: Number(event.label.burnAmount),
+                    memo: event.label.reason,
+                }];
+            } else if (event.label.type === 'TransferOut') {
+                const label = event.label
+                return event.label.receiverAmounts.map((receiverAmount: any) => ({
+                    updateId: pt.updateId,
+                    recordTime: pt.recordTime,
+                    from: associatedParty,
+                    to: receiverAmount.receiver,
+                    amount: Number(receiverAmount.amount),
+                    instrumentId: 'Amulet',
+                    fee: Number(label.burnAmount),
+                    memo: label.meta.reason,
+                }));
+            } else {
+                return [];
+            }
+        });
+    }
+
+Performing a Tap on DevNet or LocalNet
+--------------------------------------
+
+Creating a transfer
+-------------------
+
+2-step transfer vs 1-step transfer
+----------------------------------
+
+Accepting or rejecting a 2-step transfer
+----------------------------------------
+
+
+
 
 

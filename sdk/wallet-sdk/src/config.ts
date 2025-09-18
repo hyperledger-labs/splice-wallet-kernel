@@ -4,7 +4,9 @@
 const LOCALNET_SCAN_PROXY_API_URL = new URL(
     'http://wallet.localhost:2000/api/validator'
 )
-const LOCALNET_REGISTRY_API_URL = new URL('http://scan.localhost:4000')
+const LOCALNET_REGISTRY_API_URL = new URL(
+    LOCALNET_SCAN_PROXY_API_URL.href + '/v0/scan-proxy'
+)
 
 export const localNetStaticConfig = {
     LOCALNET_SCAN_PROXY_API_URL,

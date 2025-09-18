@@ -6,9 +6,9 @@ import {
     localNetTokenStandardDefault,
     createKeyPair,
     localValidatorDefault,
+    localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
-import { LOCALNET_VALIDATOR_URL } from '../config.js'
 import { Enums_ParticipantPermission } from '@canton-network/wallet-sdk'
 
 const logger = pino({ name: '06-external-party-setup', level: 'info' })
@@ -32,7 +32,7 @@ const multiHostedParty = createKeyPair()
 const singleHostedPartyKeyPair = createKeyPair()
 
 await sdk.connectAdmin()
-await sdk.connectTopology(LOCALNET_VALIDATOR_URL)
+await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
 const adminToken = await sdk.auth.getAdminToken()
 
