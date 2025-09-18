@@ -80,7 +80,7 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
     disclosedContracts
 )
 
-await new Promise((res) => setTimeout(res, 10000))
+await new Promise((res) => setTimeout(res, 5000))
 
 const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
 logger.info(utxos, 'List Available Token Standard Holding UTXOs')
@@ -108,6 +108,7 @@ const [transferCommand, disclosedContracts2] =
             instrumentId: 'Amulet',
             instrumentAdmin: instrumentAdminPartyId,
         },
+        utxos?.map((t) => t.contractId),
         'memo-ref'
     )
 
@@ -129,17 +130,10 @@ const completion = await sdk.userLedger?.waitForCompletion(
 )
 logger.info({ completion }, 'Transfer transaction completed')
 
-const holdings = await sdk.tokenStandard?.listHoldingTransactions()
+const pendingInstructions =
+    await sdk.tokenStandard?.fetchPendingTransferInstructionView()
 
-const transferCid = holdings!.transactions
-    .flatMap((object) =>
-        object.events.flatMap(
-            (t) =>
-                (t.label as any)?.tokenStandardChoice?.exerciseResult?.output
-                    ?.value?.transferInstructionCid
-        )
-    )
-    .find((v) => v !== undefined)
+const transferCid = pendingInstructions?.[0].contractId!
 
 await sdk.setPartyId(receiver!.partyId)
 
@@ -156,7 +150,7 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
     disclosedContracts3
 )
 
-console.log('Accepted transfer instruction')
+logger.info('Accepted transfer instruction')
 
 await new Promise((res) => setTimeout(res, 5000))
 
@@ -168,6 +162,4 @@ await new Promise((res) => setTimeout(res, 5000))
     await sdk.setPartyId(receiver!.partyId)
     const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
     logger.info(bobHoldings, '[BOB] holding transactions')
-
-    await sdk.setPartyId(sender!.partyId)
 }

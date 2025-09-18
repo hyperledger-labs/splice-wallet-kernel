@@ -1,7 +1,10 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { TokenStandardClient } from '@canton-network/core-token-standard'
+import {
+    TokenStandardClient,
+    HoldingView,
+} from '@canton-network/core-token-standard'
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
 import {
@@ -30,8 +33,10 @@ const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
 type ExerciseCommand = Types['ExerciseCommand']
 type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
+type JsGetTransactionResponse = Types['JsGetTransactionResponse']
 type OffsetCheckpoint2 = Types['OffsetCheckpoint2']
 type JsTransaction = Types['JsTransaction']
+type TransactionFormat = Types['TransactionFormat']
 
 type OffsetCheckpointUpdate = {
     update: { OffsetCheckpoint: OffsetCheckpoint2 }
@@ -250,6 +255,39 @@ export class TokenStandardService {
         }
     }
 
+    async getTransactionById(
+        updateId: string,
+        partyId: PartyId
+    ): Promise<Transaction> {
+        const filter = filtersByParty(
+            partyId,
+            TokenStandardTransactionInterfaces,
+            false
+        )
+
+        const transactionFormat: TransactionFormat = {
+            eventFormat: {
+                filtersByParty: filter,
+                verbose: false,
+            },
+            transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
+        }
+
+        const getTransactionResponse = await this.ledgerClient.post(
+            '/v2/updates/transaction-by-id',
+            {
+                updateId,
+                transactionFormat,
+            }
+        )
+
+        return this.toPrettyTransaction(
+            getTransactionResponse,
+            partyId,
+            this.ledgerClient
+        )
+    }
+
     async createTransfer(
         sender: PartyId,
         receiver: PartyId,
@@ -257,43 +295,46 @@ export class TokenStandardService {
         instrumentAdmin: PartyId, // TODO (#907): replace with registry call
         instrumentId: string,
         transferFactoryRegistryUrl: string,
+        inputUtxos?: string[],
         memo?: string,
+        expiryDate?: Date,
         meta?: Record<string, unknown>
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const ledgerEndOffset = await this.ledgerClient.get(
-                '/v2/state/ledger-end'
-            )
-            //TODO: filter out any holdings that has a non-expired lock
-            const senderHoldings = await this.ledgerClient.post(
-                '/v2/state/active-contracts',
-                {
-                    filter: {
-                        filtersByParty: filtersByParty(
-                            sender,
-                            [HoldingInterface],
-                            false
-                        ),
-                    },
-                    verbose: false,
-                    activeAtOffset: ledgerEndOffset.offset,
-                }
-            )
-            if (senderHoldings.length === 0) {
-                throw new Error(
-                    "Sender has no holdings, so transfer can't be executed."
-                )
-            }
-            const holdings = senderHoldings.map(
-                (h) => h['contractEntry']['JsActiveContract']
-            )
-            const inputHoldingCids = holdings
-                .filter((h) => h !== undefined)
-                .map((h) => h['createdEvent']['contractId'])
-
+            let inputHoldingCids: string[]
             const now = new Date()
-            const tomorrow = new Date(now)
-            tomorrow.setDate(tomorrow.getDate() + 1)
+
+            if (inputUtxos && inputUtxos.length > 0) {
+                inputHoldingCids = inputUtxos
+            } else {
+                const senderHoldings =
+                    await this.listContractsByInterface<HoldingView>(
+                        HoldingInterface,
+                        sender
+                    )
+                if (senderHoldings.length === 0) {
+                    throw new Error(
+                        "Sender has no holdings, so transfer can't be executed."
+                    )
+                }
+
+                inputHoldingCids = senderHoldings
+                    .filter((utxo) => {
+                        //filter out locked holdings
+                        const lock = utxo.interfaceViewValue.lock
+                        if (!lock) return true
+
+                        const expiresAt = lock.expiresAt
+                        if (!expiresAt) return false
+
+                        const expiresAtDate = new Date(expiresAt)
+                        return expiresAtDate <= now
+                    })
+                    .map((h) => h.contractId)
+                /* TODO: optimize input holding selection, currently if you transfer 10 CC and have 10 inputs of 1000 CC,
+                    then all 10 of those are chose as input.
+                 */
+            }
             const choiceArgs = {
                 expectedAdmin: instrumentAdmin,
                 transfer: {
@@ -303,7 +344,10 @@ export class TokenStandardService {
                     instrumentId: { admin: instrumentAdmin, id: instrumentId },
                     lock: null,
                     requestedAt: now.toISOString(),
-                    executeBefore: tomorrow.toISOString(),
+                    //given expiryDate or 24 hours
+                    executeBefore: (
+                        expiryDate ?? new Date(Date.now() + 24 * 60 * 60 * 1000)
+                    ).toISOString(),
                     inputHoldingCids,
                     meta: { values: { [MEMO_KEY]: memo || '', ...meta } },
                 },
@@ -476,6 +520,17 @@ export class TokenStandardService {
         }
     }
 
+    private async toPrettyTransaction(
+        getTransactionResponse: JsGetTransactionResponse,
+        partyId: PartyId,
+        ledgerClient: LedgerClient
+    ): Promise<Transaction> {
+        const tx = getTransactionResponse.transaction
+        const parser = new TransactionParser(tx, ledgerClient, partyId)
+        const parsedTx = await parser.parseTransaction()
+        return renderTransaction(parsedTx)
+    }
+
     // returns object with JsActiveContract content
     // and contractId and interface view value extracted from it as separate fields for convenience
     private toPrettyContract<T>(
@@ -486,6 +541,7 @@ export class TokenStandardService {
         const { createdEvent } = activeContract
         return {
             contractId: createdEvent.contractId,
+            activeContract,
             interfaceViewValue: ensureInterfaceViewIsPresent(
                 createdEvent,
                 interfaceId

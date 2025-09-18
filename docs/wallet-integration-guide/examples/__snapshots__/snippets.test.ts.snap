@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`testing doc snippets allocate-party.ts 1`] = `
+{
+  "partyId": "my-wallet-1::122078180903ec6fe58fe30bec7380b351fde137d86eeaea837f6d379a86a8039885",
+}
+`;
+
+exports[`testing doc snippets change-party-and-synchronizer.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-key-pair.ts 1`] = `
+{
+  "privateKey": "oQ+sEiZeiBtPrhneCtlceaW6th6M6jyg1xQroaTiQP77kTpxzDN5irQITKNKghA00Wry/fXEJ9UKb4/FJfJTGw==",
+  "publicKey": "+5E6ccwzeYq0CEyjSoIQNNFq8v31xCfVCm+PxSXyUxs=",
+}
+`;
+
+exports[`testing doc snippets create-ping-command.ts 1`] = `
+[
+  {
+    "CreateCommand": {
+      "createArguments": {
+        "id": "6e747c98-2d9a-4ec6-8e22-c4bc40948c41",
+        "initiator": "source-of-ping-party",
+        "responder": "target-of-ping-party",
+      },
+      "templateId": "#AdminWorkflows:Canton.Internal.Ping:Ping",
+    },
+  },
+]
+`;
+
+exports[`testing doc snippets generate-fingerprint.ts 1`] = `"1220dd3caa6464d2ba93b1fb195ede9344d54a0e17405d9331e91ceea27f07d414f7"`;
