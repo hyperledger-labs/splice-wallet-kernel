@@ -15,7 +15,7 @@ export default async function () {
         ledgerFactory: localNetLedgerDefault, // or use your specific configuration
         topologyFactory: localNetTopologyDefault, // or use your specific configuration
     })
-    await sdk.connectTopology(LOCALNET_SCAN_API_URL)
+    await sdk.connectTopology(LOCALNET_VALIDATOR_URL)
 
     const key = createKeyPair()
 

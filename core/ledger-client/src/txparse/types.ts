@@ -5,6 +5,7 @@
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
 
 export type ViewValue = components['schemas']['JsInterfaceView']['viewValue'] // unknown | undefined
+export type JsActiveContract = components['schemas']['JsActiveContract']
 
 export interface Transaction {
     updateId: string
@@ -230,4 +231,5 @@ export interface PrettyTransactions {
 export interface PrettyContract<T = ViewValue> {
     contractId: string
     interfaceViewValue: T
+    activeContract: JsActiveContract
 }

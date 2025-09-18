@@ -26,5 +26,5 @@ export default async function () {
     }
     const signature = 'your-signed-hash-here'
 
-    sdk.topology?.submitExternalPartyTopology(signature, preparedParty)
+    return sdk.topology?.submitExternalPartyTopology(signature, preparedParty)
 }
