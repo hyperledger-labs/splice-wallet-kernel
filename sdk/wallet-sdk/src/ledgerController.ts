@@ -15,6 +15,7 @@ import {
     getPublicKeyFromPrivate,
     PrivateKey,
     PublicKey,
+    verifySignedTxHash,
 } from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
@@ -83,6 +84,34 @@ export class LedgerController {
     setSynchronizerId(synchronizerId: PartyId): LedgerController {
         this.synchronizerId = synchronizerId
         return this
+    }
+
+    /**
+     * Verifies the signature for a message
+     * @param txHash hash of the prepared transaction
+     * @param publicKey the public key correlating to the private key used to sign the signature.
+     * @param signature the signed signature of the preparedTransactionHash from the prepareSubmission method.
+     * @returns true if verification succeeded or false if it failed
+     */
+
+    verifyTxHash(
+        txHash: string,
+        publicKey: SigningPublicKey | PublicKey,
+        signature: string
+    ) {
+        let key: string
+        if (typeof publicKey === 'string') {
+            key = publicKey
+        } else {
+            key = btoa(String.fromCodePoint(...publicKey.publicKey))
+        }
+
+        try {
+            return verifySignedTxHash(txHash, key, signature)
+        } catch (e: unknown) {
+            this.logger.error(e)
+            return false
+        }
     }
 
     /**
@@ -207,6 +236,16 @@ export class LedgerController {
             throw new Error('preparedTransaction is undefined')
         }
         const transaction: string = prepared.preparedTransaction
+
+        if (
+            !this.verifyTxHash(
+                prepared.preparedTransactionHash,
+                publicKey,
+                signature
+            )
+        ) {
+            throw new Error('BAD SIGNATURE')
+        }
 
         const request = {
             userId: this.userId,
