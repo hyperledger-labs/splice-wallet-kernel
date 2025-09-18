@@ -9,10 +9,15 @@ import {
     ViewValue,
     TokenStandardService,
     Transaction,
+    TransferInstructionView,
+    Holding,
 } from '@canton-network/core-ledger-client'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { pino } from 'pino'
-import type { HoldingView } from '@canton-network/core-token-standard'
+import {
+    HOLDING_INTERFACE_ID,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+} from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject'
@@ -177,9 +182,9 @@ export class TokenStandardController {
 
     async listHoldingUtxos(
         includeLocked: boolean = true
-    ): Promise<PrettyContract<HoldingView>[]> {
-        const utxos = await this.service.listContractsByInterface<HoldingView>(
-            '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding',
+    ): Promise<PrettyContract<Holding>[]> {
+        const utxos = await this.service.listContractsByInterface<Holding>(
+            HOLDING_INTERFACE_ID,
             this.getPartyId()
         )
         const currentTime = new Date()
@@ -198,6 +203,20 @@ export class TokenStandardController {
                 return expiresAtDate <= currentTime
             })
         }
+    }
+
+    /**
+     * Fetches all 2-step transfer pending either accept or reject.
+     * @returns a promise containing prettyContract for TransferInstructionView.
+     */
+
+    async fetchPendingTransferInstructionView(): Promise<
+        PrettyContract<TransferInstructionView>[]
+    > {
+        return await this.service.listContractsByInterface<TransferInstructionView>(
+            TRANSFER_INSTRUCTION_INTERFACE_ID,
+            this.getPartyId()
+        )
     }
 
     /**
