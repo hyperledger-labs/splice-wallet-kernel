@@ -58,11 +58,16 @@ export class TokenStandardService {
     constructor(
         private ledgerClient: LedgerClient,
         private scanProxyClient: ScanProxyClient,
-        private readonly logger: Logger
+        private readonly logger: Logger,
+        private accessToken: string
     ) {}
 
     private getTokenStandardClient(registryUrl: string): TokenStandardClient {
-        return new TokenStandardClient(registryUrl, this.logger, undefined)
+        return new TokenStandardClient(
+            registryUrl,
+            this.logger,
+            this.accessToken
+        )
     }
 
     async createAcceptTransferInstruction(
