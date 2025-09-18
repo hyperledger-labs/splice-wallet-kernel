@@ -11,7 +11,10 @@ import {
 } from '@canton-network/core-ledger-client'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { pino } from 'pino'
-import type { HoldingView } from '@canton-network/core-token-standard'
+import type {
+    HoldingView,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+} from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject'
@@ -196,10 +199,10 @@ export class TokenStandardController {
      */
 
     async fetchPendingTransferInstructionView(): Promise<
-        PrettyContract<TransferInstructionView>[]
+        PrettyContract<TRANSFER_INSTRUCTION_INTERFACE_ID>[]
     > {
-        return await this.service.listContractsByInterface<TransferInstructionView>(
-            TRANSFER_INSTRUCTION_INTERFACE_ID,
+        return await this.service.listContractsByInterface<TRANSFER_INSTRUCTION_INTERFACE_ID>(
+            '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferInstruction',
             this.partyId
         )
     }
