@@ -262,6 +262,7 @@ export class TokenStandardService {
         transferFactoryRegistryUrl: string,
         inputUtxos?: string[],
         memo?: string,
+        expiryDate?: Date,
         meta?: Record<string, unknown>
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
@@ -299,8 +300,6 @@ export class TokenStandardService {
                     then all 10 of those are chose as input.
                  */
             }
-            const tomorrow = new Date(now)
-            tomorrow.setDate(tomorrow.getDate() + 1)
             const choiceArgs = {
                 expectedAdmin: instrumentAdmin,
                 transfer: {
@@ -310,7 +309,10 @@ export class TokenStandardService {
                     instrumentId: { admin: instrumentAdmin, id: instrumentId },
                     lock: null,
                     requestedAt: now.toISOString(),
-                    executeBefore: tomorrow.toISOString(),
+                    //given expiryDate or 24 hours
+                    executeBefore: (
+                        expiryDate ?? new Date(Date.now() + 24 * 60 * 60 * 1000)
+                    ).toISOString(),
                     inputHoldingCids,
                     meta: { values: { [MEMO_KEY]: memo || '', ...meta } },
                 },
