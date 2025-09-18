@@ -394,26 +394,11 @@ export async function awaitCompletion(
     const wantedCompletion = completions.find((response) => {
         const completion = response.completionResponse.Completion
         if (!completion) return false
-
-        if (commandId && submissionId) {
-            return (
-                completion.value.userId === userId &&
-                completion.value.commandId === commandId &&
-                completion.value.submissionId === submissionId
-            )
-        } else if (commandId) {
-            return (
-                completion.value.userId === userId &&
-                completion.value.commandId === commandId
-            )
-        } else if (submissionId) {
-            return (
-                completion.value.userId === userId &&
-                completion.value.submissionId === submissionId
-            )
-        } else {
+        if (completion.value.userId !== userId) return false
+        if (commandId && completion.value.commandId !== commandId) return false
+        if (submissionId && completion.value.submissionId !== submissionId)
             return false
-        }
+        return true
     })
 
     if (wantedCompletion) {

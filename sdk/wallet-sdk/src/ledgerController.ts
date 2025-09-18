@@ -132,7 +132,7 @@ export class LedgerController {
         const completionPromise = awaitCompletion(
             this.client,
             ledgerEnd,
-            this.partyId!,
+            this.getPartyId(),
             this.userId,
             commandId,
             submissionId
