@@ -8,6 +8,7 @@ import {
     PrettyContract,
     ViewValue,
     TokenStandardService,
+    Transaction,
     TransferInstructionView,
     Holding,
 } from '@canton-network/core-ledger-client'
@@ -113,8 +114,7 @@ export class TokenStandardController {
     }
 
     /**
-     * Sets the transferFactoryRegistryUrl that the TokenStandardController will use for requests.
-     * @param transferFactoryRegistryUrl
+     *  Gets the transferFactoryRegistryUrl that the TokenStandardController uses for requests.
      */
     getTransferFactoryRegistryUrl(): URL {
         if (!this.transferFactoryRegistryUrl)
@@ -146,6 +146,16 @@ export class TokenStandardController {
             this.getPartyId(),
             afterOffset,
             beforeOffset
+        )
+    }
+    /** Lists all holdings for the current party.
+     * @param updateId id of queried transaction
+     * @returns A promise that resolves to a transaction
+     */
+    async getTransactionById(updateId: string): Promise<Transaction> {
+        return await this.service.getTransactionById(
+            updateId,
+            this.getPartyId()
         )
     }
 

@@ -33,8 +33,10 @@ const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
 type ExerciseCommand = Types['ExerciseCommand']
 type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
+type JsGetTransactionResponse = Types['JsGetTransactionResponse']
 type OffsetCheckpoint2 = Types['OffsetCheckpoint2']
 type JsTransaction = Types['JsTransaction']
+type TransactionFormat = Types['TransactionFormat']
 
 type OffsetCheckpointUpdate = {
     update: { OffsetCheckpoint: OffsetCheckpoint2 }
@@ -251,6 +253,39 @@ export class TokenStandardService {
             this.logger.error('Failed to list holding transactions.', err)
             throw err
         }
+    }
+
+    async getTransactionById(
+        updateId: string,
+        partyId: PartyId
+    ): Promise<Transaction> {
+        const filter = filtersByParty(
+            partyId,
+            TokenStandardTransactionInterfaces,
+            false
+        )
+
+        const transactionFormat: TransactionFormat = {
+            eventFormat: {
+                filtersByParty: filter,
+                verbose: false,
+            },
+            transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
+        }
+
+        const getTransactionResponse = await this.ledgerClient.post(
+            '/v2/updates/transaction-by-id',
+            {
+                updateId,
+                transactionFormat,
+            }
+        )
+
+        return this.toPrettyTransaction(
+            getTransactionResponse,
+            partyId,
+            this.ledgerClient
+        )
     }
 
     async createTransfer(
@@ -483,6 +518,17 @@ export class TokenStandardService {
         }
     }
 
+    private async toPrettyTransaction(
+        getTransactionResponse: JsGetTransactionResponse,
+        partyId: PartyId,
+        ledgerClient: LedgerClient
+    ): Promise<Transaction> {
+        const tx = getTransactionResponse.transaction
+        const parser = new TransactionParser(tx, ledgerClient, partyId)
+        const parsedTx = await parser.parseTransaction()
+        return renderTransaction(parsedTx)
+    }
+
     // returns object with JsActiveContract content
     // and contractId and interface view value extracted from it as separate fields for convenience
     private toPrettyContract<T>(
@@ -493,6 +539,7 @@ export class TokenStandardService {
         const { createdEvent } = activeContract
         return {
             contractId: createdEvent.contractId,
+            activeContract,
             interfaceViewValue: ensureInterfaceViewIsPresent(
                 createdEvent,
                 interfaceId
