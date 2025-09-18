@@ -7,6 +7,8 @@ import {
     PostRequest,
     GetResponse,
     Types,
+    awaitCompletion,
+    promiseWithTimeout,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -89,13 +91,14 @@ export class LedgerController {
      * @param privateKey the private key to sign the transaction with.
      * @param commandId an unique identifier used to track the transaction, if not provided a random UUID will be used.
      * @param disclosedContracts off-ledger sourced contractIds needed to perform the transaction.
+     * @returns the commandId used to track the transaction.
      */
     async prepareSignAndExecuteTransaction(
         commands: unknown,
         privateKey: PrivateKey,
         commandId: string,
         disclosedContracts?: Types['DisclosedContract'][]
-    ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
+    ): Promise<string> {
         const prepared = await this.prepareSubmission(
             commands,
             commandId,
@@ -108,7 +111,38 @@ export class LedgerController {
         )
         const publicKey = getPublicKeyFromPrivate(privateKey)
 
-        return this.executeSubmission(prepared, signature, publicKey, commandId)
+        await this.executeSubmission(prepared, signature, publicKey, commandId)
+        return commandId
+    }
+
+    /**
+     * Waits for a command to be completed by polling the completions endpoint.
+     * @param commandId The ID of the command to wait for.
+     * @param beginExclusive The offset to start polling from.
+     * @param timeoutMs The maximum time to wait in milliseconds.
+     * @returns The completion value of the command.
+     * @throws An error if the timeout is reached before the command is completed.
+     */
+    async waitForCompletion(
+        ledgerEnd: number,
+        timeoutMs: number,
+        commandId?: string,
+        submissionId?: string
+    ): Promise<Types['Completion']['value']> {
+        const completionPromise = awaitCompletion(
+            this.client,
+            ledgerEnd,
+            this.getPartyId(),
+            this.userId,
+            commandId,
+            submissionId
+        )
+        return promiseWithTimeout(
+            completionPromise,
+            timeoutMs,
+            `Timed out getting completion for submission with userId=${this.userId}, commandId=${commandId}, submissionId=${submissionId}.
+    The submission might have succeeded or failed, but it couldn't be determined in time.`
+        )
     }
 
     /**
