@@ -7,9 +7,13 @@ import tseslint from 'typescript-eslint'
 import { defineConfig } from 'eslint/config'
 import { includeIgnoreFile } from '@eslint/compat'
 import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
 import headers from 'eslint-plugin-headers'
+import nxeslint from '@nx/eslint-plugin'
 
-const gitignorePath = fileURLToPath(new URL('.gitignore', import.meta.url))
+const repoRoot = dirname(fileURLToPath(import.meta.url))
+const gitignorePath = join(repoRoot, '.gitignore')
+const headerFilePath = join(repoRoot, 'header.txt')
 
 export default defineConfig([
     includeIgnoreFile(gitignorePath),
@@ -41,7 +45,7 @@ export default defineConfig([
                 'error',
                 {
                     source: 'file',
-                    path: 'header.txt',
+                    path: headerFilePath,
                     style: 'line',
                     trailingNewlines: 2,
                     variables: {
@@ -52,4 +56,8 @@ export default defineConfig([
         },
     },
     tseslint.configs.recommended,
+    {
+        files: ['**/*.{ts,tsx,mts,cts}'],
+        plugins: { '@nx': nxeslint },
+    },
 ])

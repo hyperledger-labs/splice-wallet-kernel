@@ -88,7 +88,7 @@ jobs:
               run: yarn run prettier . --check
 
             - name: eslint code
-              run: yarn eslint .
+              run: yarn nx run-many -t lint --parallel
 
     test-unit:
         runs-on: ubuntu-latest

@@ -6,7 +6,6 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc -b && vite build",
-        "lint": "eslint .",
         "e2e": "nx playwright:e2e --ui",
         "preview": "vite preview"
     },

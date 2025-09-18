@@ -30,7 +30,10 @@
             "cache": true
         },
         "lint": {
-            "cache": true
+            "cache": true,
+            "options": {
+                "max-warnings": 0
+            }
         },
         "dev": {
             "dependsOn": ["^build"]
@@ -44,6 +47,12 @@
             "plugin": "@nx/playwright/plugin",
             "options": {
                 "targetName": "playwright:e2e"
+            }
+        },
+        {
+            "plugin": "@nx/eslint/plugin",
+            "options": {
+                "targetName": "lint"
             }
         }
     ]
