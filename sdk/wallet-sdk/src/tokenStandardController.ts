@@ -8,11 +8,13 @@ import {
     PrettyContract,
     ViewValue,
     TokenStandardService,
+    TransferInstructionView,
+    Holding,
 } from '@canton-network/core-ledger-client'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { pino } from 'pino'
-import type {
-    HoldingView,
+import {
+    HOLDING_INTERFACE_ID,
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
@@ -170,9 +172,9 @@ export class TokenStandardController {
 
     async listHoldingUtxos(
         includeLocked: boolean = true
-    ): Promise<PrettyContract<HoldingView>[]> {
-        const utxos = await this.service.listContractsByInterface<HoldingView>(
-            '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding',
+    ): Promise<PrettyContract<Holding>[]> {
+        const utxos = await this.service.listContractsByInterface<Holding>(
+            HOLDING_INTERFACE_ID,
             this.getPartyId()
         )
         const currentTime = new Date()
@@ -199,11 +201,11 @@ export class TokenStandardController {
      */
 
     async fetchPendingTransferInstructionView(): Promise<
-        PrettyContract<TRANSFER_INSTRUCTION_INTERFACE_ID>[]
+        PrettyContract<TransferInstructionView>[]
     > {
-        return await this.service.listContractsByInterface<TRANSFER_INSTRUCTION_INTERFACE_ID>(
-            '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferInstruction',
-            this.partyId
+        return await this.service.listContractsByInterface<TransferInstructionView>(
+            TRANSFER_INSTRUCTION_INTERFACE_ID,
+            this.getPartyId()
         )
     }
 

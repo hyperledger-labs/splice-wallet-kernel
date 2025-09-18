@@ -154,6 +154,4 @@ await new Promise((res) => setTimeout(res, 5000))
     await sdk.setPartyId(receiver!.partyId)
     const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
     logger.info(bobHoldings, '[BOB] holding transactions')
-
-    await sdk.setPartyId(sender!.partyId)
 }
