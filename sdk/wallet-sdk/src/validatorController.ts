@@ -14,6 +14,12 @@ import {
 } from '@canton-network/core-signing-lib'
 import { PartyId } from '@canton-network/core-types'
 
+export type TransferPreApprovalLookup = {
+    receiverParty: string
+    dso: string
+    expiresAt: string
+}
+
 /**
  * TokenStandardController handles token standard management tasks.
  * This controller requires a userId and token.
@@ -193,20 +199,32 @@ export class ValidatorController {
     }
 
     /**  Lookup a TransferPreapproval by the receiver party
-     * @param partyId receiver party id
+     * @param receiverId receiver party id
      * @returns A promise that resolves to an array of
      * transfer preapprovals by party.
      */
-
-    async getTransferPreApprovals(partyId: string) {
-        return await this.scanProxyClient.get(
-            '/v0/scan-proxy/transfer-preapprovals/by-party/{party}',
-            {
+    async getTransferPreApprovalByParty(receiverId: string, dsoParty: string) {
+        await this.scanProxyClient
+            .get('/v0/scan-proxy/transfer-preapprovals/by-party/{party}', {
                 path: {
-                    party: partyId,
+                    party: receiverId,
                 },
-            }
-        )
+            })
+            .then((data) => {
+                if (
+                    data.transfer_preapproval.contract.payload.dso === dsoParty
+                ) {
+                    const expirationDate = new Date(
+                        data.transfer_preapproval.contract.payload.expiresAt
+                    )
+                    const currentDate = new Date()
+                    return currentDate.getTime() > expirationDate.getTime()
+                }
+            })
+            .catch((e) => {
+                this.logger.error(e)
+                return false
+            })
     }
 
     /**  Fetch open mining rounds from Scan Proxy API
