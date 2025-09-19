@@ -144,6 +144,7 @@ export class LedgerController {
         return commandId
     }
 
+    // TODO fix jsdoc
     /**
      * Waits for a command to be completed by polling the completions endpoint.
      * @param commandId The ID of the command to wait for.
