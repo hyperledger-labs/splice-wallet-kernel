@@ -70,7 +70,7 @@
         "*": "prettier --write --ignore-unknown",
         "*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --fix"
     },
-    "packageManager": "yarn@4.9.4",
+    "packageManager": "yarn@4.10.1",
     "dependencies": {
         "@nx/js": "^21.3.11",
         "nx": "^21.3.11"
