@@ -82,7 +82,7 @@ export class Discovery extends HTMLElement {
     }
 
     verifiedKernels(): DiscoverResult[] {
-        return [{ url: 'http://localhost:3000/rpc', walletType: 'remote' }]
+        return [{ url: 'http://localhost:3008/rpc', walletType: 'remote' }]
     }
 
     private renderKernelOption(kernel: DiscoverResult) {
