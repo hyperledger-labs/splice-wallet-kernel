@@ -14,6 +14,8 @@ This repository is a monorepo of independently versioned Javascript packages. We
     - create new GH releases with changelogs
     - create a commit containing the version bumps in all affected package.json's
 8. Merge the version bump PR into `main`
+    - if you squash and merge, the release commit will change when merged in main, leaving the tags pointing to orphaned hashes
+    - to fix this manually, then run `yarn script:retag <newhash>` using the new commit hash found on `main` corresponding to the release
 9. Open a PR from `main` to `latest`
 10. Ensure you change "Squash and merge" to "Create a merge commit", and then merge the PR
 11. Wait for the `publish.yml` workflow to complete on `latest`. Afterwards, any updated packages should be pushed to NPM

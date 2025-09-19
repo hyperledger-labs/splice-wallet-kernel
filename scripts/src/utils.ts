@@ -307,3 +307,45 @@ export function markFile(
         )
     }
 }
+
+/**
+ * Maps over the keys and values of an object, allowing transformation of both.
+ *
+ * @param obj object to map over
+ * @param mapFn mapping function, which can return either a new value directly (no key change), or a [newKey, newValue] tuple
+ * @returns a new object with the mapped keys and values
+ */
+export function mapObject<V>(
+    obj: Record<string, V>,
+    mapFn: (k: string, v: V) => V | [string, V]
+): Record<string, V> {
+    return Object.fromEntries(
+        Object.entries(obj).map(([k, v]) => {
+            const mapped = mapFn(k, v)
+            return Array.isArray(mapped) ? mapped : [k, mapped]
+        })
+    )
+}
+
+/**
+ * Elides a string by replacing the middle portion with an ellipsis.
+ *
+ * @param s string to elide
+ * @param len the length of the elided middle portion (default: 8)
+ * @returns the elided string
+ */
+export function elideMiddle(s: string, len = 8) {
+    const elider = '...'
+    const totalLen = s.length
+
+    if (totalLen <= len) return s
+    if (len <= elider.length) return s
+
+    const halfway = Math.floor(totalLen / 2)
+
+    return (
+        s.slice(0, halfway - Math.floor(len / 2)) +
+        elider +
+        s.slice(halfway + Math.floor(len / 2))
+    )
+}
