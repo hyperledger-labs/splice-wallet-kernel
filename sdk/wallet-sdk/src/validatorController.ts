@@ -199,7 +199,7 @@ export class ValidatorController {
      */
     async getTransferPreApprovalByParty(receiverId: string, dsoParty: string) {
         try {
-            const transferPreapprovals = await this.scanProxyClient.get(
+            const { transfer_preapproval } = await this.scanProxyClient.get(
                 '/v0/scan-proxy/transfer-preapprovals/by-party/{party}',
                 {
                     path: {
@@ -208,18 +208,10 @@ export class ValidatorController {
                 }
             )
 
-            if (
-                transferPreapprovals.transfer_preapproval.contract.payload
-                    .dso === dsoParty
-            ) {
-                const expirationDate = new Date(
-                    transferPreapprovals.transfer_preapproval.contract.payload.expiresAt
-                )
-                const currentDate = new Date()
-                return currentDate.getTime() > expirationDate.getTime()
-            } else {
-                return false
-            }
+            const { dso, expiresAt } = transfer_preapproval.contract.payload
+            return (
+                dso === dsoParty && Date.now() < new Date(expiresAt).getTime()
+            )
         } catch (e) {
             this.logger.error(e)
             return false
