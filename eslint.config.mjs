@@ -4,31 +4,37 @@
 import js from '@eslint/js'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import { defineConfig } from 'eslint/config'
 import { includeIgnoreFile } from '@eslint/compat'
 import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
 import headers from 'eslint-plugin-headers'
+import nxeslint from '@nx/eslint-plugin'
 
-const gitignorePath = fileURLToPath(new URL('.gitignore', import.meta.url))
+const repoRoot = dirname(fileURLToPath(import.meta.url))
+const gitignorePath = join(repoRoot, '.gitignore')
+const headerFilePath = join(repoRoot, 'header.txt')
 
 export default defineConfig([
     includeIgnoreFile(gitignorePath),
-    globalIgnores([
-        '**/dist',
-        '**/build',
-        '**/_proto',
-        '**/.venv',
-        '**/vite-env.d.ts',
-        '.yarn/**',
-        '.commitlintrc.js',
-        '.pnp.*',
-        'core/wallet-dapp-rpc-client',
-        'core/wallet-user-rpc-client',
-        'core/ledger-client/src/generated-clients',
-        'damljs/**',
-        'docs/wallet-integration-guide/examples/**',
-        'example/playwright-report/**',
-    ]),
+    {
+        ignores: [
+            '**/dist',
+            '**/build',
+            '**/_proto',
+            '**/.venv',
+            '**/vite-env.d.ts',
+            '.yarn/**',
+            '.commitlintrc.js',
+            '.pnp.*',
+            'core/wallet-dapp-rpc-client',
+            'core/wallet-user-rpc-client',
+            'core/ledger-client/src/generated-clients',
+            'damljs/**',
+            'docs/wallet-integration-guide/examples/**',
+            'example/playwright-report/**',
+        ],
+    },
     {
         files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
         languageOptions: { globals: { ...globals.browser, ...globals.node } },
@@ -39,7 +45,7 @@ export default defineConfig([
                 'error',
                 {
                     source: 'file',
-                    path: 'header.txt',
+                    path: headerFilePath,
                     style: 'line',
                     trailingNewlines: 2,
                     variables: {
@@ -50,4 +56,8 @@ export default defineConfig([
         },
     },
     tseslint.configs.recommended,
+    {
+        files: ['**/*.{ts,tsx,mts,cts}'],
+        plugins: { '@nx': nxeslint },
+    },
 ])

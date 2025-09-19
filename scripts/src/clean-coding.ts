@@ -110,7 +110,7 @@ function checkTsconfigJson(tsconfigJsonPath: string): number {
 
     if (
         tsconfigJsonPath.includes('example/') ||
-        tsconfigJsonPath.includes('token-standard/src')
+        tsconfigJsonPath.includes('damljs/')
     ) {
         return 0 // Skip example tsconfig files
     }
