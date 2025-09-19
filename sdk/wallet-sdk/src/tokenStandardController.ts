@@ -20,7 +20,7 @@ import {
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 
-export type TransactionInstructionChoice = 'Accept' | 'Reject'
+export type TransactionInstructionChoice = 'Accept' | 'Reject' | 'Withdraw'
 
 /**
  * TokenStandardController handles token standard management tasks.
@@ -301,21 +301,29 @@ export class TokenStandardController {
         instructionChoice: TransactionInstructionChoice
     ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
         try {
-            if (instructionChoice === 'Accept') {
-                return await this.service.createAcceptTransferInstruction(
-                    transferInstructionCid,
-                    this.getTransferFactoryRegistryUrl().href
-                )
-            } else {
-                return await this.service.createRejectTransferInstruction(
-                    transferInstructionCid,
-                    this.getTransferFactoryRegistryUrl().href
-                )
+            switch (instructionChoice) {
+                case 'Accept':
+                    return await this.service.createAcceptTransferInstruction(
+                        transferInstructionCid,
+                        this.getTransferFactoryRegistryUrl().href
+                    )
+                case 'Reject':
+                    return await this.service.createRejectTransferInstruction(
+                        transferInstructionCid,
+                        this.getTransferFactoryRegistryUrl().href
+                    )
+                case 'Withdraw':
+                    return await this.service.createWithdrawTransferInstruction(
+                        transferInstructionCid,
+                        this.getTransferFactoryRegistryUrl().href
+                    )
+                default:
+                    throw new Error('Unexpected instruction choice')
             }
         } catch (error) {
             this.logger.error(
                 { error },
-                'Failed to accept transfer instruction'
+                'Failed to exercise transfer instruction choice'
             )
             throw error
         }
