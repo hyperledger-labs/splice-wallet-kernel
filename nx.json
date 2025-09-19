@@ -51,6 +51,7 @@
         },
         {
             "plugin": "@nx/eslint/plugin",
+            "exclude": ["core/*-rpc-client/**/*", "damljs/**/*"],
             "options": {
                 "targetName": "lint"
             }
