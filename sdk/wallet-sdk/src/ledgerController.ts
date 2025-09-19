@@ -7,12 +7,15 @@ import {
     PostRequest,
     GetResponse,
     Types,
+    awaitCompletion,
+    promiseWithTimeout,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
     getPublicKeyFromPrivate,
     PrivateKey,
     PublicKey,
+    verifySignedTxHash,
 } from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
@@ -84,18 +87,47 @@ export class LedgerController {
     }
 
     /**
+     * Verifies the signature for a message
+     * @param txHash hash of the prepared transaction
+     * @param publicKey the public key correlating to the private key used to sign the signature.
+     * @param signature the signed signature of the preparedTransactionHash from the prepareSubmission method.
+     * @returns true if verification succeeded or false if it failed
+     */
+
+    verifyTxHash(
+        txHash: string,
+        publicKey: SigningPublicKey | PublicKey,
+        signature: string
+    ) {
+        let key: string
+        if (typeof publicKey === 'string') {
+            key = publicKey
+        } else {
+            key = btoa(String.fromCodePoint(...publicKey.publicKey))
+        }
+
+        try {
+            return verifySignedTxHash(txHash, key, signature)
+        } catch (e: unknown) {
+            this.logger.error(e)
+            return false
+        }
+    }
+
+    /**
      * Prepares, signs and executes a transaction on the ledger (using interactive submission).
      * @param commands the commands to be executed.
      * @param privateKey the private key to sign the transaction with.
      * @param commandId an unique identifier used to track the transaction, if not provided a random UUID will be used.
      * @param disclosedContracts off-ledger sourced contractIds needed to perform the transaction.
+     * @returns the commandId used to track the transaction.
      */
     async prepareSignAndExecuteTransaction(
         commands: unknown,
         privateKey: PrivateKey,
         commandId: string,
         disclosedContracts?: Types['DisclosedContract'][]
-    ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
+    ): Promise<string> {
         const prepared = await this.prepareSubmission(
             commands,
             commandId,
@@ -108,7 +140,38 @@ export class LedgerController {
         )
         const publicKey = getPublicKeyFromPrivate(privateKey)
 
-        return this.executeSubmission(prepared, signature, publicKey, commandId)
+        await this.executeSubmission(prepared, signature, publicKey, commandId)
+        return commandId
+    }
+
+    /**
+     * Waits for a command to be completed by polling the completions endpoint.
+     * @param commandId The ID of the command to wait for.
+     * @param beginExclusive The offset to start polling from.
+     * @param timeoutMs The maximum time to wait in milliseconds.
+     * @returns The completion value of the command.
+     * @throws An error if the timeout is reached before the command is completed.
+     */
+    async waitForCompletion(
+        ledgerEnd: number,
+        timeoutMs: number,
+        commandId?: string,
+        submissionId?: string
+    ): Promise<Types['Completion']['value']> {
+        const completionPromise = awaitCompletion(
+            this.client,
+            ledgerEnd,
+            this.getPartyId(),
+            this.userId,
+            commandId,
+            submissionId
+        )
+        return promiseWithTimeout(
+            completionPromise,
+            timeoutMs,
+            `Timed out getting completion for submission with userId=${this.userId}, commandId=${commandId}, submissionId=${submissionId}.
+    The submission might have succeeded or failed, but it couldn't be determined in time.`
+        )
     }
 
     /**
@@ -173,6 +236,16 @@ export class LedgerController {
             throw new Error('preparedTransaction is undefined')
         }
         const transaction: string = prepared.preparedTransaction
+
+        if (
+            !this.verifyTxHash(
+                prepared.preparedTransactionHash,
+                publicKey,
+                signature
+            )
+        ) {
+            throw new Error('BAD SIGNATURE')
+        }
 
         const request = {
             userId: this.userId,
