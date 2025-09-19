@@ -93,7 +93,8 @@ function App() {
             provider.removeListener('txChanged', messageListener)
             provider.removeListener('accountsChanged', onAccountsChanged)
         }
-    }, [accounts])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     function createPingContract() {
         setError('')
