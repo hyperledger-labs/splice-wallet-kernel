@@ -93,7 +93,7 @@ function App() {
             provider.removeListener('txChanged', messageListener)
             provider.removeListener('accountsChanged', onAccountsChanged)
         }
-    }, [])
+    }, [accounts])
 
     function createPingContract() {
         setError('')
