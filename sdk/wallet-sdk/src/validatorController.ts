@@ -14,12 +14,6 @@ import {
 } from '@canton-network/core-signing-lib'
 import { PartyId } from '@canton-network/core-types'
 
-export type TransferPreApprovalLookup = {
-    receiverParty: string
-    dso: string
-    expiresAt: string
-}
-
 /**
  * TokenStandardController handles token standard management tasks.
  * This controller requires a userId and token.
@@ -200,31 +194,36 @@ export class ValidatorController {
 
     /**  Lookup a TransferPreapproval by the receiver party
      * @param receiverId receiver party id
-     * @returns A promise that resolves to an array of
-     * transfer preapprovals by party.
+     * @param dsoParty the instrument partyId that has transfer preapproval
+     * @returns A promise that returns a boolean of whether an instrument can be transferred directly to the receiver
      */
     async getTransferPreApprovalByParty(receiverId: string, dsoParty: string) {
-        await this.scanProxyClient
-            .get('/v0/scan-proxy/transfer-preapprovals/by-party/{party}', {
-                path: {
-                    party: receiverId,
-                },
-            })
-            .then((data) => {
-                if (
-                    data.transfer_preapproval.contract.payload.dso === dsoParty
-                ) {
-                    const expirationDate = new Date(
-                        data.transfer_preapproval.contract.payload.expiresAt
-                    )
-                    const currentDate = new Date()
-                    return currentDate.getTime() > expirationDate.getTime()
+        try {
+            const transferPreapprovals = await this.scanProxyClient.get(
+                '/v0/scan-proxy/transfer-preapprovals/by-party/{party}',
+                {
+                    path: {
+                        party: receiverId,
+                    },
                 }
-            })
-            .catch((e) => {
-                this.logger.error(e)
+            )
+
+            if (
+                transferPreapprovals.transfer_preapproval.contract.payload
+                    .dso === dsoParty
+            ) {
+                const expirationDate = new Date(
+                    transferPreapprovals.transfer_preapproval.contract.payload.expiresAt
+                )
+                const currentDate = new Date()
+                return currentDate.getTime() > expirationDate.getTime()
+            } else {
                 return false
-            })
+            }
+        } catch (e) {
+            this.logger.error(e)
+            return false
+        }
     }
 
     /**  Fetch open mining rounds from Scan Proxy API
