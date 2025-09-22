@@ -23,6 +23,16 @@ import { SigningPublicKey } from '@canton-network/core-ledger-client/src/_proto/
 import { TopologyController } from './topologyController.js'
 import { PartyId } from '@canton-network/core-types'
 
+export type RawCommandMap = {
+    ExerciseCommand: Types['ExerciseCommand']
+    CreateCommand: Types['CreateCommand']
+    CreateAndExerciseCommand: Types['CreateAndExerciseCommand']
+}
+export type WrappedCommand<
+    K extends keyof RawCommandMap = keyof RawCommandMap,
+> = {
+    [P in K]: { [Q in P]: RawCommandMap[P] }
+}[K]
 /**
  * Controller for interacting with the Ledger API, this is the primary interaction point with the validator node
  * using external signing.
@@ -123,13 +133,15 @@ export class LedgerController {
      * @returns the commandId used to track the transaction.
      */
     async prepareSignAndExecuteTransaction(
-        commands: unknown,
+        commands: WrappedCommand | WrappedCommand[] | unknown,
         privateKey: PrivateKey,
         commandId: string,
         disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<string> {
+        const commandArray = Array.isArray(commands) ? commands : [commands]
+
         const prepared = await this.prepareSubmission(
-            commands,
+            commandArray,
             commandId,
             disclosedContracts
         )
