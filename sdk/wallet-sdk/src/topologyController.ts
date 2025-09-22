@@ -99,6 +99,8 @@ export class TopologyController {
      *
      * @param publicKey
      * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold optional parameter for multi-hosted parties (default is 1).
+     * @param hostingParticipantPermissions optional participant permission for multi-hosted party.
      * @returns A PreparedParty object containing the prepared transactions.
      */
     async prepareExternalPartyTopology(
@@ -148,6 +150,7 @@ export class TopologyController {
      * This will also authorize the new party to the participant and grant the user rights to the party.
      * @param signedHash The signed combined hash of the prepared transactions.
      * @param preparedParty The prepared party object from prepareExternalPartyTopology.
+     * @param grantUserRights Defines if the transaction should also grant user right to current user (default is true)
      * @returns An AllocatedParty object containing the partyId of the new party.
      */
     async submitExternalPartyTopology(
@@ -184,6 +187,8 @@ export class TopologyController {
      * This will also authorize the new party to the participant and grant the user rights to the party.
      * @param privateKey The private key of the new external party, used to sign the topology transactions.
      * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold optional parameter for multi-hosted parties (default is 1).
+     * @param hostingParticipantPermissions optional participant permission for multi-hosted party.
      * @returns An AllocatedParty object containing the partyId of the new party.
      */
     async prepareSignAndSubmitExternalParty(
@@ -236,12 +241,12 @@ export class TopologyController {
 
     /** Prepares, signs and submits a new external party topology in one step.
      * This will also authorize the new party to the participant and grant the user rights to the party.
-     * @param participant_endpoints List of endpoints to the respective hosting participant Admin APIs and ledger API.
+     * @param participantEndpoints List of endpoints to the respective hosting participant Admin APIs and ledger API.
      * @param privateKey The private key of the new external party, used to sign the topology transactions.
-     * @param synchronizer_id  ID of the synchronizer on which the party will be registered.
+     * @param synchronizerId  ID of the synchronizer on which the party will be registered.
      * @param hostingParticipantPermissions Map of participant id and permission level for participant
      * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
-     * @param confirming_threshold Minimum number of confirmations that must be received from the confirming participants to authorize a transaction.
+     * @param confirmingThreshold Minimum number of confirmations that must be received from the confirming participants to authorize a transaction.
      * @returns An AllocatedParty object containing the partyId of the new party.
      */
     async prepareSignAndSubmitMultiHostExternalParty(
