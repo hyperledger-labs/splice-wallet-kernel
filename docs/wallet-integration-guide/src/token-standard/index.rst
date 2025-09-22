@@ -53,6 +53,7 @@ transactions that have happened after.
 
 
 to quickly convert the stream into deposit and withdrawal you can use this function:
+
 .. code-block:: javascript
 
     function convertToTransaction(pt: Transaction, associatedParty: string): object[] {
@@ -64,7 +65,7 @@ to quickly convert the stream into deposit and withdrawal you can use this funct
                     from: event.label.sender,
                     to: associatedParty,
                     amount: Number(event.unlockedHoldingsChangeSummary.amountChange),
-                    instrumentId: 'Amulet',
+                    instrumentId: 'Amulet', //hardcoded instrumentId from local net
                     fee: Number(event.label.burnAmount),
                     memo: event.label.reason,
                 }];
@@ -76,7 +77,7 @@ to quickly convert the stream into deposit and withdrawal you can use this funct
                     from: associatedParty,
                     to: receiverAmount.receiver,
                     amount: Number(receiverAmount.amount),
-                    instrumentId: 'Amulet',
+                    instrumentId: 'Amulet', //hardcoded instrumentId from local net
                     fee: Number(label.burnAmount),
                     memo: label.meta.reason,
                 }));
@@ -88,9 +89,23 @@ to quickly convert the stream into deposit and withdrawal you can use this funct
 
 Performing a Tap on DevNet or LocalNet
 --------------------------------------
+When writing scripts and setup it is important to have funds present, this can be very tedious on blockchains. Therefor
+most blockchains support some form of a faucet (that allows to receive a small amount of funds to play with). On canton
+we allow the `tap` method that is only present on DevNet (or LocalNet), by using this you can stock funds to easily attempt
+some of the CC transfer flows:
+
+.. literalinclude:: ../../examples/snippets/tap-coins.ts
+    :language: typescript
+    :dedent:
+
+this is an important pre-requisite for the creating of transfer in your script.
 
 Creating a transfer
 -------------------
+
+UTXO management and locked funds
+--------------------------------
+
 
 2-step transfer vs 1-step transfer
 ----------------------------------
