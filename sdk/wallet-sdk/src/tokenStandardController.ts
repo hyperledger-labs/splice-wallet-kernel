@@ -220,6 +220,35 @@ export class TokenStandardController {
         )
     }
 
+    /**  Lookup a TransferPreapproval by the receiver party
+     * @param receiverId receiver party id
+     * @param instrumentId the instrument partyId that has transfer preapproval
+     * @returns the receiverId, dso, and expiresAt
+     */
+    async getTransferPreApprovalByParty(
+        receiverId: PartyId,
+        instrumentId: string
+    ) {
+        try {
+            await this.service.getInstrumentById(
+                this.getTransferFactoryRegistryUrl().href,
+                instrumentId
+            )
+
+            const transfer_preapproval =
+                await this.service.getTransferPreApprovalByParty(receiverId)
+
+            const { dso, expiresAt } = transfer_preapproval.contract.payload
+            return {
+                receiverId,
+                expiresAt,
+                dso,
+            }
+        } catch (e) {
+            this.logger.error(e)
+        }
+    }
+
     /**
      * Creates a new tap for the specified receiver and amount.
      * @param receiver The party of the receiver.
