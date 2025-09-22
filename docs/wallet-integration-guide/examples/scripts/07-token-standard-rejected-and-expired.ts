@@ -191,7 +191,7 @@ logger.info({ completion2 }, 'Transfer transaction completed')
 const pendingInstructions2 =
     await sdk.tokenStandard?.fetchPendingTransferInstructionView()
 
-const transferCid2 = pendingInstructions?.[0].contractId!
+const transferCid2 = pendingInstructions2?.[0].contractId!
 // Wait for transfer instruction to expire
 await new Promise((res) => setTimeout(res, 17500))
 
@@ -203,7 +203,7 @@ const [withdrawTransferCommand, disclosedContracts5] =
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
     [{ ExerciseCommand: withdrawTransferCommand }],
-    keyPairReceiver.privateKey,
+    keyPairSender.privateKey,
     v4(),
     disclosedContracts5
 )
