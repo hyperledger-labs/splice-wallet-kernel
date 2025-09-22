@@ -45,11 +45,10 @@ async function buildPackage(
     pkgDir: string,
     tmpDir: string
 ): Promise<string> {
-    const absolutePkgDir = path.join(repoRoot, pkgDir)
     const filename = path.join(tmpDir, `${name}.tgz`)
 
-    run('yarn build', { cwd: absolutePkgDir })
-    run(`yarn pack --filename "${filename}"`, { cwd: absolutePkgDir })
+    run('yarn build', { cwd: pkgDir })
+    run(`yarn pack --filename "${filename}"`, { cwd: pkgDir })
     run(`yarn add "${filename}"`, { cwd: tmpDir })
 
     return filename
@@ -68,7 +67,30 @@ function updateJsonResolutions(
     fs.writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, 2))
 }
 
+function getAllWalletSdkDependencies(
+    dir: string
+): { name: string; dir: string }[] {
+    const cmd =
+        'yarn workspaces foreach --no-private --topological -R exec \'echo "$npm_package_name $(pwd)"\''
+
+    const workspaces = execSync(cmd, {
+        encoding: 'utf8',
+        cwd: path.join(repoRoot, dir),
+    })
+
+    return workspaces
+        .trim()
+        .split('\n')
+        .filter((l) => !l.startsWith('Done'))
+        .map((line) => {
+            const [name, dir] = line.split(' ')
+            return { name, dir }
+        })
+}
+
 async function main() {
+    const sdkDir = 'sdk/wallet-sdk'
+
     // Create a temp dir for both the test and the tgz
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wallet-sdk-test-'))
 
@@ -100,56 +122,19 @@ async function main() {
 
     run('yarn install', { cwd: repoRoot })
 
-    const packages = [
-        { '@canton-network/core-ledger-proto': 'core/ledger-proto' },
-        { '@canton-network/core-rpc-generator': 'core/rpc-generator' },
-        { '@canton-network/core-tx-visualizer': 'core/tx-visualizer' },
-        { '@canton-network/core-types': 'core/types' },
-        { '@canton-network/core-splice-client': 'core/splice-client' },
-        { '@canton-network/core-token-standard': 'core/token-standard' },
-        { '@canton-network/core-ledger-client': 'core/ledger-client' },
-        { '@canton-network/core-wallet-auth': 'core/wallet-auth' },
-        { '@canton-network/core-signing-lib': 'core/signing-lib' },
-        {
-            '@canton-network/core-signing-fireblocks':
-                'core/signing-fireblocks',
-        },
-        { '@canton-network/core-signing-internal': 'core/signing-internal' },
-        {
-            '@canton-network/core-signing-participant':
-                'core/signing-participant',
-        },
-        {
-            '@canton-network/core-wallet-dapp-rpc-client':
-                'core/wallet-dapp-rpc-client',
-        },
-        { '@canton-network/core-wallet-store': 'core/wallet-store' },
-        {
-            '@canton-network/core-wallet-store-inmemory':
-                'core/wallet-store-inmemory',
-        },
-        { '@canton-network/core-wallet-store-sql': 'core/wallet-store-sql' },
-        {
-            '@canton-network/core-wallet-ui-components':
-                'core/wallet-ui-components',
-        },
-        { '@canton-network/core-splice-provider': 'core/splice-provider' },
-        {
-            '@canton-network/core-wallet-user-rpc-client':
-                'core/wallet-user-rpc-client',
-        },
-    ]
+    const packages = getAllWalletSdkDependencies(sdkDir).filter(
+        (p) => p.name !== '@canton-network/wallet-sdk'
+    )
 
     const paths = {} as Record<string, string>
     for (const pkg of packages) {
-        const [pkgName, pkgDir] = Object.entries(pkg)[0]
-        const pkgPath = await buildPackage(pkgName, pkgDir, tmpDir)
+        const pkgPath = await buildPackage(pkg.name, pkg.dir, tmpDir)
 
-        paths[pkgName] = `file:${pkgPath}`
+        paths[pkg.name] = `file:${pkgPath}`
         updateJsonResolutions(tmpDir, paths)
     }
 
-    await buildPackage('wallet-sdk', 'sdk/wallet-sdk', tmpDir)
+    await buildPackage('wallet-sdk', sdkDir, tmpDir)
 
     let ran = false
     try {
