@@ -70,6 +70,46 @@ export class TokenStandardService {
         )
     }
 
+    async getTransferPreApprovalByParty(partyId: PartyId) {
+        const { transfer_preapproval } = await this.scanProxyClient.get(
+            '/v0/scan-proxy/transfer-preapprovals/by-party/{party}',
+            {
+                path: {
+                    party: partyId,
+                },
+            }
+        )
+
+        return transfer_preapproval
+    }
+
+    async getInstrumentById(
+        transferFactoryRegistryUrl: string,
+        instrumentId: string
+    ) {
+        try {
+            const params: Record<string, unknown> = {
+                path: {
+                    instrumentId,
+                },
+            }
+
+            const client = this.getTokenStandardClient(
+                transferFactoryRegistryUrl
+            )
+
+            return client.get(
+                '/registry/metadata/v1/instruments/{instrumentId}',
+                params
+            )
+        } catch (e) {
+            this.logger.error(e)
+            throw new Error(
+                `Instrument id ${instrumentId} does not exist for this instrument admin.`
+            )
+        }
+    }
+
     async createAcceptTransferInstruction(
         transferInstructionCid: string,
         transferFactoryRegistryUrl: string
