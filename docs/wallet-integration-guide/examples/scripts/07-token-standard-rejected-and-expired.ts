@@ -64,6 +64,7 @@ sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL)
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
+// mint holdings for Alice
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     sender!.partyId,
     '2000000',
@@ -73,32 +74,22 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     }
 )
 
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
+const offsetLatestTap = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
+
+const commandIdTap = await sdk.userLedger?.prepareSignAndExecuteTransaction(
     [{ ExerciseCommand: tapCommand }],
     keyPairSender.privateKey,
     v4(),
     disclosedContracts
 )
 
-await new Promise((res) => setTimeout(res, 5000))
+await sdk.userLedger?.waitForCompletion(offsetLatestTap, 5000, commandIdTap!)
 
 const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
 logger.info(utxos, 'List Available Token Standard Holding UTXOs')
 
-await sdk.tokenStandard
-    ?.listHoldingTransactions()
-    .then((transactions) => {
-        logger.info(transactions, 'Token Standard Holding Transactions:')
-    })
-    .catch((error) => {
-        logger.error(
-            { error },
-            'Error listing token standard holding transactions:'
-        )
-    })
-
+// Alice creates transfer to Bob
 logger.info('Creating transfer transaction')
-
 const [transferCommandToReject, disclosedContracts2] =
     await sdk.tokenStandard!.createTransfer(
         sender!.partyId,
@@ -123,18 +114,14 @@ const transferCommandId =
     )
 logger.info('Submitted transfer transaction')
 
-const completion = await sdk.userLedger?.waitForCompletion(
-    offsetLatest,
-    5000,
-    transferCommandId!
-)
-logger.info({ completion }, 'Transfer transaction completed')
+await sdk.userLedger?.waitForCompletion(offsetLatest, 5000, transferCommandId!)
 
 const pendingInstructions =
     await sdk.tokenStandard?.fetchPendingTransferInstructionView()
 
 const transferCid = pendingInstructions?.[0].contractId!
 
+// Bob rejects the transfer
 await sdk.setPartyId(receiver!.partyId)
 
 const [rejectTransferCommand, disclosedContracts3] =
@@ -152,12 +139,14 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
 
 logger.info('Rejected transfer instruction')
 
+// Alice creates transfer to Bob with expiry date
 await sdk.setPartyId(sender!.partyId)
 
 const utxos2 = await sdk.tokenStandard?.listHoldingUtxos(false)
 logger.info(utxos2, 'List Available Token Standard Holding UTXOs')
 
-const expiryDate = new Date(Date.now() + 15_000) // 5s from now
+const EXPIRATION_MS = 10_000
+const expiryDate = new Date(Date.now() + EXPIRATION_MS) // 5s from now
 const [transferCommandToExpire, disclosedContracts4] =
     await sdk.tokenStandard!.createTransfer(
         sender!.partyId,
@@ -172,6 +161,8 @@ const [transferCommandToExpire, disclosedContracts4] =
         expiryDate
     )
 
+const offsetLatest2 = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
+
 const transferCommandId2 =
     await sdk.userLedger?.prepareSignAndExecuteTransaction(
         [{ ExerciseCommand: transferCommandToExpire }],
@@ -181,20 +172,21 @@ const transferCommandId2 =
     )
 logger.info('Submitted transfer transaction')
 
-const completion2 = await sdk.userLedger?.waitForCompletion(
-    offsetLatest,
+await sdk.userLedger?.waitForCompletion(
+    offsetLatest2,
     5000,
     transferCommandId2!
 )
-logger.info({ completion2 }, 'Transfer transaction completed')
-// TODO check if you can find it there after expiration
+
 const pendingInstructions2 =
     await sdk.tokenStandard?.fetchPendingTransferInstructionView()
 
 const transferCid2 = pendingInstructions2?.[0].contractId!
-// Wait for transfer instruction to expire
-await new Promise((res) => setTimeout(res, 17500))
 
+// Wait for transfer instruction to expire
+await new Promise((res) => setTimeout(res, EXPIRATION_MS + 5_000))
+
+// Alice withdraws the expired transfer
 const [withdrawTransferCommand, disclosedContracts5] =
     await sdk.tokenStandard!.exerciseTransferInstructionChoice(
         transferCid2,
@@ -212,6 +204,70 @@ logger.info('Withdrawn transfer instruction')
 
 await new Promise((res) => setTimeout(res, 5000))
 
+// Alice creates transfer to Bob
+const utxos3 = await sdk.tokenStandard?.listHoldingUtxos(false)
+logger.info(utxos3, 'List Available Token Standard Holding UTXOs')
+const [transferCommandToAccept, disclosedContracts6] =
+    await sdk.tokenStandard!.createTransfer(
+        sender!.partyId,
+        receiver!.partyId,
+        '100',
+        {
+            instrumentId: 'Amulet',
+            instrumentAdmin: instrumentAdminPartyId,
+        },
+        utxos3?.map((t) => t.contractId),
+        'memo-ref'
+    )
+
+const offsetLatest3 = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
+
+const transferCommandId3 =
+    await sdk.userLedger?.prepareSignAndExecuteTransaction(
+        [{ ExerciseCommand: transferCommandToAccept }],
+        keyPairSender.privateKey,
+        v4(),
+        disclosedContracts6
+    )
+logger.info('Submitted transfer transaction')
+
+await sdk.userLedger?.waitForCompletion(
+    offsetLatest3,
+    5000,
+    transferCommandId3!
+)
+
+// Bob accepts the transfer
+await sdk.setPartyId(receiver!.partyId)
+
+const pendingInstructions3 =
+    await sdk.tokenStandard?.fetchPendingTransferInstructionView()
+const transferCid3 = pendingInstructions3?.[0].contractId!
+
+const [acceptTransferCommand, disclosedContracts7] =
+    await sdk.tokenStandard!.exerciseTransferInstructionChoice(
+        transferCid3,
+        'Accept'
+    )
+
+const offsetLatest4 = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
+
+const transferCommandId4 =
+    await sdk.userLedger?.prepareSignAndExecuteTransaction(
+        [{ ExerciseCommand: acceptTransferCommand }],
+        keyPairReceiver.privateKey,
+        v4(),
+        disclosedContracts7
+    )
+logger.info('Accepted transfer instruction')
+
+await sdk.userLedger?.waitForCompletion(
+    offsetLatest4,
+    5000,
+    transferCommandId4!
+)
+
+await new Promise((res) => setTimeout(res, 5000))
 {
     await sdk.setPartyId(sender!.partyId)
     const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()

@@ -144,7 +144,6 @@ export class LedgerController {
         return commandId
     }
 
-    // TODO fix jsdoc
     /**
      * Waits for a command to be completed by polling the completions endpoint.
      * @param ledgerEnd The offset to start polling from.
