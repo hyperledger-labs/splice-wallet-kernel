@@ -8,6 +8,7 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
 
 **Release on September 18th, 2025**
 
+* Important: scan api is not longer used for methods like `connectTopology` use scan proxy instead
 * Added support for multi-hosting a party upon creation against multiple validators
 
 .. code-block:: javascript
