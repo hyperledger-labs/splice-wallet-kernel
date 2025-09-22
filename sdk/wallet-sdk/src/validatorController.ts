@@ -197,7 +197,7 @@ export class ValidatorController {
      * @param dsoParty the instrument partyId that has transfer preapproval
      * @returns A promise that returns a boolean of whether an instrument can be transferred directly to the receiver
      */
-    async getTransferPreApprovalByParty(receiverId: string, dsoParty: string) {
+    async getTransferPreApprovalByParty(receiverId: PartyId) {
         try {
             const { transfer_preapproval } = await this.scanProxyClient.get(
                 '/v0/scan-proxy/transfer-preapprovals/by-party/{party}',
@@ -209,12 +209,16 @@ export class ValidatorController {
             )
 
             const { dso, expiresAt } = transfer_preapproval.contract.payload
-            return (
-                dso === dsoParty && Date.now() < new Date(expiresAt).getTime()
-            )
+            return {
+                receiverId,
+                expiresAt,
+                dso,
+            }
         } catch (e) {
             this.logger.error(e)
-            return false
+            throw new Error(
+                `failed to get transfer preapproval for receiverId: ${receiverId} `
+            )
         }
     }
 
