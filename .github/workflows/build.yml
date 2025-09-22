@@ -148,7 +148,7 @@ jobs:
               id: playwright-cache
               with:
                   path: '~/.cache/ms-playwright'
-                  key: '${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}'
+                  key: '${{ runner.os }}-0-playwright-${{ steps.playwright-version.outputs.version }}'
                   # As a fallback, if the Playwright version has changed, try use the
                   # most recently cached version. There's a good chance that at least one
                   # of the browser binary versions haven't been updated, so Playwright can
@@ -158,7 +158,7 @@ jobs:
                   # date cache, but still let Playwright decide if it needs to download
                   # new binaries or not.
                   restore-keys: |
-                      ${{ runner.os }}-playwright-
+                      ${{ runner.os }}-0-playwright-
 
             # If the Playwright browser binaries weren't able to be restored, we tell
             # playwright to install everything for us.
