@@ -104,7 +104,9 @@ export class TokenStandardService {
             )
         } catch (e) {
             this.logger.error(e)
-            throw new Error(`Error getting instrument id: ${instrumentId}`)
+            throw new Error(
+                `Instrument id ${instrumentId} does not exist for this instrument admin.`
+            )
         }
     }
 
