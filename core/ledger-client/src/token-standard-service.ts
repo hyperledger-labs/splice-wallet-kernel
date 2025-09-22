@@ -308,7 +308,7 @@ export class TokenStandardService {
         const filter = filtersByParty(
             partyId,
             TokenStandardTransactionInterfaces,
-            false
+            true
         )
 
         const transactionFormat: TransactionFormat = {

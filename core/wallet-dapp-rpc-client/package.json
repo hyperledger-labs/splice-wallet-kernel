@@ -10,8 +10,7 @@
     "scripts": {
         "build": "tsc && typedoc src/index.ts --out docs --excludeExternals --excludePrivate --hideGenerator --readme none",
         "dev": "tsc -b --watch",
-        "clean": "tsc -b --clean; rm -rf dist",
-        "lint": "eslint src/**/*.ts"
+        "clean": "tsc -b --clean; rm -rf dist"
     },
     "files": [
         "dist/**"

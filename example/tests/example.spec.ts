@@ -3,7 +3,7 @@
 
 import { test, expect } from '@playwright/test'
 
-const dappApiPort = process.env.DAPP_API_PORT ?? 3000
+const dappApiPort = process.env.DAPP_API_PORT ?? 3008
 
 test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
     await dappPage.goto('http://localhost:8080/')
