@@ -28,7 +28,7 @@ export type TransactionInstructionChoice = 'Accept' | 'Reject'
  */
 export class TokenStandardController {
     private logger = pino({ name: 'TokenStandardController', level: 'info' })
-    private client: LedgerClient
+    private readonly client: LedgerClient
     private service: TokenStandardService
     private userId: string
     private partyId: PartyId | undefined
