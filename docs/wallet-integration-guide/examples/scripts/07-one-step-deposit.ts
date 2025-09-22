@@ -2,20 +2,20 @@ import {
     WalletSDKImpl,
     createKeyPair,
     localNetAuthDefault,
-    localNetLedgerDefault,
+    localNetLedgerAppProvider,
     localNetTokenStandardDefault,
-    localNetTopologyDefault,
+    localNetTopologyAppProvider,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
-import { LOCALNET_VALIDATOR_URL } from '../config.js'
+import { LOCALNET_VALIDATOR_APP_PROVIDER_URL } from '../config.js'
 
 const logger = pino({ name: '07-one-step-deposit', level: 'info' })
 
 const sdk = new WalletSDKImpl().configure({
     logger,
     authFactory: localNetAuthDefault,
-    ledgerFactory: localNetLedgerDefault,
-    topologyFactory: localNetTopologyDefault,
+    ledgerFactory: localNetLedgerAppProvider,
+    topologyFactory: localNetTopologyAppProvider,
     tokenStandardFactory: localNetTokenStandardDefault,
 })
 
@@ -32,7 +32,7 @@ const exchangeParty = (
 
 logger.info(`Created exchange party: ${exchangeParty}`)
 
-await sdk.connectTopology(LOCALNET_VALIDATOR_URL)
+await sdk.connectTopology(LOCALNET_VALIDATOR_APP_PROVIDER_URL)
 const treasuryKeyPair = createKeyPair()
 const treasuryParty = (
     await sdk.topology?.prepareSignAndSubmitExternalParty(
