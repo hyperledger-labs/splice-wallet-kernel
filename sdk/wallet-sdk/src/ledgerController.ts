@@ -2,26 +2,26 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    LedgerClient,
-    PostResponse,
-    PostRequest,
-    GetResponse,
-    Types,
     awaitCompletion,
+    GetResponse,
+    LedgerClient,
+    PostRequest,
+    PostResponse,
     promiseWithTimeout,
+    Types,
 } from '@canton-network/core-ledger-client'
+import { SigningPublicKey } from '@canton-network/core-ledger-client/src/_proto/com/digitalasset/canton/crypto/v30/crypto'
 import {
-    signTransactionHash,
     getPublicKeyFromPrivate,
     PrivateKey,
     PublicKey,
+    signTransactionHash,
     verifySignedTxHash,
 } from '@canton-network/core-signing-lib'
-import { v4 } from 'uuid'
-import { pino } from 'pino'
-import { SigningPublicKey } from '@canton-network/core-ledger-client/src/_proto/com/digitalasset/canton/crypto/v30/crypto'
-import { TopologyController } from './topologyController.js'
 import { PartyId } from '@canton-network/core-types'
+import { pino } from 'pino'
+import { v4 } from 'uuid'
+import { TopologyController } from './topologyController.js'
 
 /**
  * Controller for interacting with the Ledger API, this is the primary interaction point with the validator node
@@ -504,6 +504,13 @@ export const localLedgerDefault = (
  * This uses unsafe-auth and is started with the 'yarn start:localnet' or docker compose from localNet setup.
  */
 export const localNetLedgerDefault = (
+    userId: string,
+    token: string
+): LedgerController => {
+    return localNetLedgerAppUser(userId, token)
+}
+
+export const localNetLedgerAppUser = (
     userId: string,
     token: string
 ): LedgerController => {
