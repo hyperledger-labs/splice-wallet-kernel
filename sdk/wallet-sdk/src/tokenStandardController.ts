@@ -11,6 +11,8 @@ import {
     Transaction,
     TransferInstructionView,
     Holding,
+    ExerciseCommand,
+    DisclosedContract,
 } from '@canton-network/core-ledger-client'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { pino } from 'pino'
@@ -21,7 +23,7 @@ import {
 import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController'
 
-export type TransactionInstructionChoice = 'Accept' | 'Reject'
+export type TransactionInstructionChoice = 'Accept' | 'Reject' | 'Withdraw'
 
 /**
  * TokenStandardController handles token standard management tasks.
@@ -341,26 +343,39 @@ export class TokenStandardController {
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
+        let ExerciseCommand: ExerciseCommand
+        let disclosedContracts: DisclosedContract[]
         try {
-            if (instructionChoice === 'Accept') {
-                const [acceptCommand, disclosedContracts] =
-                    await this.service.createAcceptTransferInstruction(
-                        transferInstructionCid,
-                        this.getTransferFactoryRegistryUrl().href
-                    )
-                return [{ ExerciseCommand: acceptCommand }, disclosedContracts]
-            } else {
-                const [rejectCommand, disclosedContracts] =
-                    await this.service.createRejectTransferInstruction(
-                        transferInstructionCid,
-                        this.getTransferFactoryRegistryUrl().href
-                    )
-                return [{ ExerciseCommand: rejectCommand }, disclosedContracts]
+            switch (instructionChoice) {
+                case 'Accept':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createAcceptTransferInstruction(
+                            transferInstructionCid,
+                            this.getTransferFactoryRegistryUrl().href
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+                case 'Reject':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createRejectTransferInstruction(
+                            transferInstructionCid,
+                            this.getTransferFactoryRegistryUrl().href
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+                case 'Withdraw':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createWithdrawTransferInstruction(
+                            transferInstructionCid,
+                            this.getTransferFactoryRegistryUrl().href
+                        )
+
+                    return [{ ExerciseCommand }, disclosedContracts]
+                default:
+                    throw new Error('Unexpected instruction choice')
             }
         } catch (error) {
             this.logger.error(
                 { error },
-                'Failed to accept transfer instruction'
+                'Failed to exercise transfer instruction choice'
             )
             throw error
         }

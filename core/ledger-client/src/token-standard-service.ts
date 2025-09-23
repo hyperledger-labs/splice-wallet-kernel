@@ -30,7 +30,7 @@ import { ScanProxyClient } from '@canton-network/core-splice-client'
 
 const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
 
-type ExerciseCommand = Types['ExerciseCommand']
+export type ExerciseCommand = Types['ExerciseCommand']
 type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
 type JsGetTransactionResponse = Types['JsGetTransactionResponse']
@@ -44,7 +44,7 @@ type OffsetCheckpointUpdate = {
 type TransactionUpdate = {
     update: { Transaction: { value: JsTransaction } }
 }
-type DisclosedContract = Types['DisclosedContract']
+export type DisclosedContract = Types['DisclosedContract']
 
 type JsActiveContractEntryResponse = JsGetActiveContractsResponse & {
     contractEntry: {
@@ -194,6 +194,47 @@ export class TokenStandardService {
         } catch (e) {
             this.logger.error(
                 'Failed to create reject transfer instruction:',
+                e
+            )
+            throw e
+        }
+    }
+
+    async createWithdrawTransferInstruction(
+        transferInstructionCid: string,
+        transferFactoryRegistryUrl: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
+            const client = this.getTokenStandardClient(
+                transferFactoryRegistryUrl
+            )
+
+            const choiceContext = await client.post(
+                '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/withdraw',
+                {},
+                {
+                    path: {
+                        transferInstructionId: transferInstructionCid,
+                    },
+                }
+            )
+
+            const exercise: ExerciseCommand = {
+                templateId: TransferInstructionInterface,
+                contractId: transferInstructionCid,
+                choice: 'TransferInstruction_Withdraw',
+                choiceArgument: {
+                    extraArgs: {
+                        context: choiceContext.choiceContextData,
+                        meta: { values: {} },
+                    },
+                },
+            }
+
+            return [exercise, choiceContext.disclosedContracts]
+        } catch (e) {
+            this.logger.error(
+                'Failed to create withdraw transfer instruction:',
                 e
             )
             throw e

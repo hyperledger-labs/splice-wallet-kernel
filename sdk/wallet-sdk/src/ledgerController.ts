@@ -139,7 +139,6 @@ export class LedgerController {
         disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<string> {
         const commandArray = Array.isArray(commands) ? commands : [commands]
-
         const prepared = await this.prepareSubmission(
             commandArray,
             commandId,
