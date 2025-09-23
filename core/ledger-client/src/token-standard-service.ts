@@ -30,7 +30,7 @@ import { ScanProxyClient } from '@canton-network/core-splice-client'
 
 const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
 
-type ExerciseCommand = Types['ExerciseCommand']
+export type ExerciseCommand = Types['ExerciseCommand']
 type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
 type JsGetTransactionResponse = Types['JsGetTransactionResponse']
@@ -44,7 +44,7 @@ type OffsetCheckpointUpdate = {
 type TransactionUpdate = {
     update: { Transaction: { value: JsTransaction } }
 }
-type DisclosedContract = Types['DisclosedContract']
+export type DisclosedContract = Types['DisclosedContract']
 
 type JsActiveContractEntryResponse = JsGetActiveContractsResponse & {
     contractEntry: {
@@ -68,6 +68,46 @@ export class TokenStandardService {
             this.logger,
             this.accessToken
         )
+    }
+
+    async getTransferPreApprovalByParty(partyId: PartyId) {
+        const { transfer_preapproval } = await this.scanProxyClient.get(
+            '/v0/scan-proxy/transfer-preapprovals/by-party/{party}',
+            {
+                path: {
+                    party: partyId,
+                },
+            }
+        )
+
+        return transfer_preapproval
+    }
+
+    async getInstrumentById(
+        transferFactoryRegistryUrl: string,
+        instrumentId: string
+    ) {
+        try {
+            const params: Record<string, unknown> = {
+                path: {
+                    instrumentId,
+                },
+            }
+
+            const client = this.getTokenStandardClient(
+                transferFactoryRegistryUrl
+            )
+
+            return client.get(
+                '/registry/metadata/v1/instruments/{instrumentId}',
+                params
+            )
+        } catch (e) {
+            this.logger.error(e)
+            throw new Error(
+                `Instrument id ${instrumentId} does not exist for this instrument admin.`
+            )
+        }
     }
 
     async createAcceptTransferInstruction(

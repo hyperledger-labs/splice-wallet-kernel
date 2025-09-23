@@ -11,6 +11,8 @@ import {
     Transaction,
     TransferInstructionView,
     Holding,
+    ExerciseCommand,
+    DisclosedContract,
 } from '@canton-network/core-ledger-client'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { pino } from 'pino'
@@ -19,6 +21,7 @@ import {
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
+import { WrappedCommand } from './ledgerController'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject' | 'Withdraw'
 
@@ -220,6 +223,35 @@ export class TokenStandardController {
         )
     }
 
+    /**  Lookup a TransferPreapproval by the receiver party
+     * @param receiverId receiver party id
+     * @param instrumentId the instrument partyId that has transfer preapproval
+     * @returns the receiverId, dso, and expiresAt
+     */
+    async getTransferPreApprovalByParty(
+        receiverId: PartyId,
+        instrumentId: string
+    ) {
+        try {
+            await this.service.getInstrumentById(
+                this.getTransferFactoryRegistryUrl().href,
+                instrumentId
+            )
+
+            const transfer_preapproval =
+                await this.service.getTransferPreApprovalByParty(receiverId)
+
+            const { dso, expiresAt } = transfer_preapproval.contract.payload
+            return {
+                receiverId,
+                expiresAt,
+                dso,
+            }
+        } catch (e) {
+            this.logger.error(e)
+        }
+    }
+
     /**
      * Creates a new tap for the specified receiver and amount.
      * @param receiver The party of the receiver.
@@ -234,14 +266,18 @@ export class TokenStandardController {
             instrumentId: string
             instrumentAdmin: PartyId
         }
-    ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
-        return this.service.createTap(
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const [tapCommand, disclosedContracts] = await this.service.createTap(
             receiver,
             amount,
             instrument.instrumentAdmin,
             instrument.instrumentId,
             this.getTransferFactoryRegistryUrl().href
         )
+
+        return [{ ExerciseCommand: tapCommand }, disclosedContracts]
     }
 
     /**
@@ -268,20 +304,25 @@ export class TokenStandardController {
         memo?: string,
         expiryDate?: Date,
         meta?: Record<string, unknown>
-    ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
         try {
-            return await this.service.createTransfer(
-                sender,
-                receiver,
-                amount,
-                instrument.instrumentAdmin,
-                instrument.instrumentId,
-                this.getTransferFactoryRegistryUrl().href,
-                inputUtxos,
-                memo,
-                expiryDate,
-                meta
-            )
+            const [transferCommand, disclosedContracts] =
+                await this.service.createTransfer(
+                    sender,
+                    receiver,
+                    amount,
+                    instrument.instrumentAdmin,
+                    instrument.instrumentId,
+                    this.getTransferFactoryRegistryUrl().href,
+                    inputUtxos,
+                    memo,
+                    expiryDate,
+                    meta
+                )
+
+            return [{ ExerciseCommand: transferCommand }, disclosedContracts]
         } catch (error) {
             this.logger.error({ error }, 'Failed to create transfer')
             throw error
@@ -299,24 +340,35 @@ export class TokenStandardController {
     async exerciseTransferInstructionChoice(
         transferInstructionCid: string,
         instructionChoice: TransactionInstructionChoice
-    ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        let ExerciseCommand: ExerciseCommand
+        let disclosedContracts: DisclosedContract[]
         try {
             switch (instructionChoice) {
                 case 'Accept':
-                    return await this.service.createAcceptTransferInstruction(
-                        transferInstructionCid,
-                        this.getTransferFactoryRegistryUrl().href
-                    )
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createAcceptTransferInstruction(
+                            transferInstructionCid,
+                            this.getTransferFactoryRegistryUrl().href
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
                 case 'Reject':
-                    return await this.service.createRejectTransferInstruction(
-                        transferInstructionCid,
-                        this.getTransferFactoryRegistryUrl().href
-                    )
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createRejectTransferInstruction(
+                            transferInstructionCid,
+                            this.getTransferFactoryRegistryUrl().href
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
                 case 'Withdraw':
-                    return await this.service.createWithdrawTransferInstruction(
-                        transferInstructionCid,
-                        this.getTransferFactoryRegistryUrl().href
-                    )
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createWithdrawTransferInstruction(
+                            transferInstructionCid,
+                            this.getTransferFactoryRegistryUrl().href
+                        )
+
+                    return [{ ExerciseCommand }, disclosedContracts]
                 default:
                     throw new Error('Unexpected instruction choice')
             }
