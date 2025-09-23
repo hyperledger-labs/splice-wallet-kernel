@@ -28,6 +28,7 @@ export default defineConfig([
             '.commitlintrc.js',
             '.pnp.*',
             'core/wallet-dapp-rpc-client',
+            'core/wallet-dapp-remote-rpc-client',
             'core/wallet-user-rpc-client',
             'core/ledger-client/src/generated-clients',
             'damljs/**',

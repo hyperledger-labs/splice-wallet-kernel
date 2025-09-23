@@ -7,7 +7,6 @@ import { DarsAvailable } from './typings.js'
 import { PrepareReturn } from './typings.js'
 import { PrepareExecute } from './typings.js'
 import { LedgerApi } from './typings.js'
-import { OnConnected } from './typings.js'
 import { OnAccountsChanged } from './typings.js'
 import { RequestAccounts } from './typings.js'
 import { OnTxChanged } from './typings.js'
@@ -19,7 +18,6 @@ export type Methods = {
     prepareReturn: PrepareReturn
     prepareExecute: PrepareExecute
     ledgerApi: LedgerApi
-    onConnected: OnConnected
     onAccountsChanged: OnAccountsChanged
     requestAccounts: RequestAccounts
     onTxChanged: OnTxChanged
@@ -33,7 +31,6 @@ function buildController(methods: Methods) {
         prepareReturn: methods.prepareReturn,
         prepareExecute: methods.prepareExecute,
         ledgerApi: methods.ledgerApi,
-        onConnected: methods.onConnected,
         onAccountsChanged: methods.onAccountsChanged,
         requestAccounts: methods.requestAccounts,
         onTxChanged: methods.onTxChanged,
