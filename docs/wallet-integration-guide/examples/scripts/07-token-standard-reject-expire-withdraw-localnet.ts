@@ -24,6 +24,58 @@ const sdk = new WalletSDKImpl().configure({
     tokenStandardFactory: localNetTokenStandardDefault,
 })
 
+type UtxoLockedCounts = {
+    locked: 0
+    unlocked: 0
+}
+
+const getHoldingUtxosCountGroupedByLock =
+    async (): Promise<UtxoLockedCounts> => {
+        const utxosUnlocked = await sdk.tokenStandard?.listHoldingUtxos(false)
+        const utxosAll = await sdk.tokenStandard?.listHoldingUtxos(true)
+        const utxosUnlockedCids = utxosUnlocked!.map((utxo) => utxo.contractId)
+
+        return utxosAll!.reduce(
+            (accumulator, utxo) => {
+                const isUnlocked = utxosUnlockedCids.includes(utxo.contractId)
+                if (isUnlocked) {
+                    accumulator.unlocked++
+                } else {
+                    accumulator.locked++
+                }
+                return accumulator
+            },
+            {
+                locked: 0,
+                unlocked: 0,
+            }
+        )
+    }
+
+const assertLockedAmount = (
+    utxoLockedCounts: UtxoLockedCounts,
+    expectedLocked: number,
+    expectedUnlocked: number | null
+): void => {
+    if (
+        utxoLockedCounts.locked === expectedLocked &&
+        (expectedUnlocked === null ||
+            utxoLockedCounts.unlocked === expectedUnlocked)
+    ) {
+        return
+    }
+
+    logger.error(
+        {
+            utxoLockedCounts,
+            expectedLocked,
+            expectedUnlocked,
+        },
+        'Unexpected count of locked/unlocked Holding UTXOs'
+    )
+    throw new Error('Unexpected count of locked/unlocked Holding UTXOs')
+}
+
 logger.info('SDK initialized')
 
 await sdk.connect()
@@ -114,9 +166,9 @@ await sdk.userLedger?.waitForCompletion(
     transferCommandId!
 )
 
-const senderUtxosBeforeRejected =
-    await sdk.tokenStandard?.listHoldingUtxos(false)
+const senderUtxosBeforeRejected = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosBeforeRejected })
+assertLockedAmount(senderUtxosBeforeRejected, 1, null)
 
 // Bob rejects the transfer
 await sdk.setPartyId(receiver!.partyId)
@@ -148,9 +200,13 @@ await sdk.userLedger?.waitForCompletion(
 
 // Alice creates transfer to Bob with expiry date
 await sdk.setPartyId(sender!.partyId)
-const senderUtxosAfterRejected =
-    await sdk.tokenStandard?.listHoldingUtxos(false)
+const senderUtxosAfterRejected = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosAfterRejected })
+assertLockedAmount(
+    senderUtxosAfterRejected,
+    0,
+    senderUtxosBeforeRejected.unlocked + 1
+)
 
 const EXPIRATION_MS = 10_000
 const expiryDate = new Date(Date.now() + EXPIRATION_MS)
@@ -185,9 +241,9 @@ await sdk.userLedger?.waitForCompletion(
     transferCommandId2!
 )
 
-const senderUtxosBeforeExpired =
-    await sdk.tokenStandard?.listHoldingUtxos(false)
+const senderUtxosBeforeExpired = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosBeforeExpired })
+assertLockedAmount(senderUtxosBeforeExpired, 1, null)
 
 const pendingInstructions2 =
     await sdk.tokenStandard?.fetchPendingTransferInstructionView()
@@ -197,8 +253,13 @@ const expiredTransferCid = pendingInstructions2?.[0].contractId!
 // Wait for transfer instruction to expire
 await new Promise((res) => setTimeout(res, EXPIRATION_MS + 5_000))
 
-const senderUtxosAfterExpired = await sdk.tokenStandard?.listHoldingUtxos(false)
+const senderUtxosAfterExpired = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosAfterExpired })
+assertLockedAmount(
+    senderUtxosAfterExpired,
+    0,
+    senderUtxosBeforeExpired.unlocked + 1
+)
 
 // Alice creates transfer that will be withdrawn
 logger.info('Creating transfer transaction (withdraw)')
@@ -230,9 +291,9 @@ await sdk.userLedger?.waitForCompletion(
     transferCommandId3!
 )
 
-const senderUtxosBeforeWithdraw =
-    await sdk.tokenStandard?.listHoldingUtxos(false)
+const senderUtxosBeforeWithdraw = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosBeforeWithdraw })
+assertLockedAmount(senderUtxosBeforeWithdraw, 1, null)
 
 const pendingInstructions3 =
     await sdk.tokenStandard?.fetchPendingTransferInstructionView()
@@ -243,6 +304,7 @@ const transferCid3 = pendingInstructions3?.find(
     (transferInstruction) =>
         transferInstruction.contractId !== expiredTransferCid
 )!.contractId
+
 // Alice withdraws the transfer
 const [withdrawTransferCommand, disclosedContracts6] =
     await sdk.tokenStandard!.exerciseTransferInstructionChoice(
@@ -265,9 +327,13 @@ await sdk.userLedger?.waitForCompletion(
     withdrawCommandId!
 )
 
-const senderUtxosAfterWithdraw =
-    await sdk.tokenStandard?.listHoldingUtxos(false)
+const senderUtxosAfterWithdraw = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosAfterWithdraw })
+assertLockedAmount(
+    senderUtxosAfterWithdraw,
+    0,
+    senderUtxosBeforeWithdraw.unlocked + 1
+)
 
 // Alice creates transfer to Bob to accept using reclaimed holdings
 const [transferCommandToAccept, disclosedContracts7] =
