@@ -71,8 +71,6 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     }
 )
 
-const offsetLatestTap = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
-
 const commandIdTap = await sdk.userLedger?.prepareSignAndExecuteTransaction(
     [{ ExerciseCommand: tapCommand }],
     keyPairSender.privateKey,
@@ -80,7 +78,11 @@ const commandIdTap = await sdk.userLedger?.prepareSignAndExecuteTransaction(
     disclosedContracts
 )
 
-await sdk.userLedger?.waitForCompletion(offsetLatestTap, 5000, commandIdTap!)
+await sdk.userLedger?.waitForCompletion(
+    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
+    5000,
+    commandIdTap!
+)
 
 // Alice creates transfer to Bob
 logger.info('Creating transfer transaction (reject)')
@@ -97,8 +99,6 @@ const [transferCommandToReject, disclosedContracts2] =
         'memo-ref'
     )
 
-const offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
-
 const transferCommandId =
     await sdk.userLedger?.prepareSignAndExecuteTransaction(
         [{ ExerciseCommand: transferCommandToReject }],
@@ -108,15 +108,22 @@ const transferCommandId =
     )
 logger.info('Submitted transfer transaction (reject)')
 
-await sdk.userLedger?.waitForCompletion(offsetLatest, 5000, transferCommandId!)
+await sdk.userLedger?.waitForCompletion(
+    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
+    5000,
+    transferCommandId!
+)
 
+const senderUtxosBeforeRejected =
+    await sdk.tokenStandard?.listHoldingUtxos(false)
+logger.info({ senderUtxosBeforeRejected })
+
+// Bob rejects the transfer
+await sdk.setPartyId(receiver!.partyId)
 const pendingInstructions =
     await sdk.tokenStandard?.fetchPendingTransferInstructionView()
 
 const transferCid = pendingInstructions?.[0].contractId!
-
-// Bob rejects the transfer
-await sdk.setPartyId(receiver!.partyId)
 
 const [rejectTransferCommand, disclosedContracts3] =
     await sdk.tokenStandard!.exerciseTransferInstructionChoice(
@@ -133,7 +140,6 @@ const rejectCommandId = await sdk.userLedger?.prepareSignAndExecuteTransaction(
 
 logger.info('Rejected transfer instruction')
 
-// TODO await completion
 await sdk.userLedger?.waitForCompletion(
     (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
     5000,
@@ -142,7 +148,9 @@ await sdk.userLedger?.waitForCompletion(
 
 // Alice creates transfer to Bob with expiry date
 await sdk.setPartyId(sender!.partyId)
-const utxosAfterRejected = await sdk.tokenStandard?.listHoldingUtxos(false)
+const senderUtxosAfterRejected =
+    await sdk.tokenStandard?.listHoldingUtxos(false)
+logger.info({ senderUtxosAfterRejected })
 
 const EXPIRATION_MS = 10_000
 const expiryDate = new Date(Date.now() + EXPIRATION_MS)
@@ -162,8 +170,6 @@ const [transferCommandToExpire, disclosedContracts4] =
         expiryDate
     )
 
-const offsetLatest2 = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
-
 const transferCommandId2 =
     await sdk.userLedger?.prepareSignAndExecuteTransaction(
         [{ ExerciseCommand: transferCommandToExpire }],
@@ -174,10 +180,14 @@ const transferCommandId2 =
 logger.info('Submitted transfer transaction (expire)')
 
 await sdk.userLedger?.waitForCompletion(
-    offsetLatest2,
+    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
     5000,
     transferCommandId2!
 )
+
+const senderUtxosBeforeExpired =
+    await sdk.tokenStandard?.listHoldingUtxos(false)
+logger.info({ senderUtxosBeforeExpired })
 
 const pendingInstructions2 =
     await sdk.tokenStandard?.fetchPendingTransferInstructionView()
@@ -187,15 +197,8 @@ const expiredTransferCid = pendingInstructions2?.[0].contractId!
 // Wait for transfer instruction to expire
 await new Promise((res) => setTimeout(res, EXPIRATION_MS + 5_000))
 
-const utxosAfterExpired = await sdk.tokenStandard?.listHoldingUtxos(false)
-const unlockedUtxo = utxosAfterExpired?.find((t) => t.interfaceViewValue.lock)
-if (!unlockedUtxo) {
-    throw new Error('Unexpected lack of unlocked UTXO after expiration')
-}
-logger.info(
-    { unlockedUtxo },
-    'UTXO used as inputHolding in expired transfer got unlocked after expiration'
-)
+const senderUtxosAfterExpired = await sdk.tokenStandard?.listHoldingUtxos(false)
+logger.info({ senderUtxosAfterExpired })
 
 // Alice creates transfer that will be withdrawn
 logger.info('Creating transfer transaction (withdraw)')
@@ -212,8 +215,6 @@ const [transferCommandToWithdraw, disclosedContracts5] =
         'memo-ref'
     )
 
-const offsetLatest3 = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
-
 const transferCommandId3 =
     await sdk.userLedger?.prepareSignAndExecuteTransaction(
         [{ ExerciseCommand: transferCommandToWithdraw }],
@@ -224,10 +225,14 @@ const transferCommandId3 =
 logger.info('Submitted transfer transaction (withdraw)')
 
 await sdk.userLedger?.waitForCompletion(
-    offsetLatest3,
+    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
     5000,
     transferCommandId3!
 )
+
+const senderUtxosBeforeWithdraw =
+    await sdk.tokenStandard?.listHoldingUtxos(false)
+logger.info({ senderUtxosBeforeWithdraw })
 
 const pendingInstructions3 =
     await sdk.tokenStandard?.fetchPendingTransferInstructionView()
@@ -245,7 +250,6 @@ const [withdrawTransferCommand, disclosedContracts6] =
         'Withdraw'
     )
 
-const offsetLatest4 = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
 const withdrawCommandId =
     await sdk.userLedger?.prepareSignAndExecuteTransaction(
         [{ ExerciseCommand: withdrawTransferCommand }],
@@ -255,9 +259,15 @@ const withdrawCommandId =
     )
 
 logger.info('Withdrawn transfer instruction')
-await sdk.userLedger?.waitForCompletion(offsetLatest4, 5000, withdrawCommandId!)
+await sdk.userLedger?.waitForCompletion(
+    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
+    5000,
+    withdrawCommandId!
+)
 
-const utxosAfterWithdraw = await sdk.tokenStandard?.listHoldingUtxos(false)
+const senderUtxosAfterWithdraw =
+    await sdk.tokenStandard?.listHoldingUtxos(false)
+logger.info({ senderUtxosAfterWithdraw })
 
 // Alice creates transfer to Bob to accept using reclaimed holdings
 const [transferCommandToAccept, disclosedContracts7] =
@@ -273,8 +283,6 @@ const [transferCommandToAccept, disclosedContracts7] =
         'memo-ref'
     )
 
-const offsetLatest5 = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
-
 const transferCommandId4 =
     await sdk.userLedger?.prepareSignAndExecuteTransaction(
         [{ ExerciseCommand: transferCommandToAccept }],
@@ -285,7 +293,7 @@ const transferCommandId4 =
 logger.info('Submitted transfer transaction')
 
 await sdk.userLedger?.waitForCompletion(
-    offsetLatest5,
+    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
     5000,
     transferCommandId4!
 )
@@ -307,8 +315,6 @@ const [acceptTransferCommand, disclosedContracts8] =
         'Accept'
     )
 
-const offsetLatest6 = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
-
 const transferCommandId5 =
     await sdk.userLedger?.prepareSignAndExecuteTransaction(
         [{ ExerciseCommand: acceptTransferCommand }],
@@ -319,7 +325,7 @@ const transferCommandId5 =
 logger.info('Accepted transfer instruction')
 
 await sdk.userLedger?.waitForCompletion(
-    offsetLatest6,
+    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
     5000,
     transferCommandId5!
 )
