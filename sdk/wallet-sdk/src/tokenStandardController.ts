@@ -19,6 +19,7 @@ import {
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
+import { WrappedCommand } from './ledgerController'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject'
 
@@ -263,14 +264,18 @@ export class TokenStandardController {
             instrumentId: string
             instrumentAdmin: PartyId
         }
-    ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
-        return this.service.createTap(
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const [tapCommand, disclosedContracts] = await this.service.createTap(
             receiver,
             amount,
             instrument.instrumentAdmin,
             instrument.instrumentId,
             this.getTransferFactoryRegistryUrl().href
         )
+
+        return [{ ExerciseCommand: tapCommand }, disclosedContracts]
     }
 
     /**
@@ -297,20 +302,25 @@ export class TokenStandardController {
         memo?: string,
         expiryDate?: Date,
         meta?: Record<string, unknown>
-    ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
         try {
-            return await this.service.createTransfer(
-                sender,
-                receiver,
-                amount,
-                instrument.instrumentAdmin,
-                instrument.instrumentId,
-                this.getTransferFactoryRegistryUrl().href,
-                inputUtxos,
-                memo,
-                expiryDate,
-                meta
-            )
+            const [transferCommand, disclosedContracts] =
+                await this.service.createTransfer(
+                    sender,
+                    receiver,
+                    amount,
+                    instrument.instrumentAdmin,
+                    instrument.instrumentId,
+                    this.getTransferFactoryRegistryUrl().href,
+                    inputUtxos,
+                    memo,
+                    expiryDate,
+                    meta
+                )
+
+            return [{ ExerciseCommand: transferCommand }, disclosedContracts]
         } catch (error) {
             this.logger.error({ error }, 'Failed to create transfer')
             throw error
@@ -328,18 +338,24 @@ export class TokenStandardController {
     async exerciseTransferInstructionChoice(
         transferInstructionCid: string,
         instructionChoice: TransactionInstructionChoice
-    ): Promise<[Types['ExerciseCommand'], Types['DisclosedContract'][]]> {
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
         try {
             if (instructionChoice === 'Accept') {
-                return await this.service.createAcceptTransferInstruction(
-                    transferInstructionCid,
-                    this.getTransferFactoryRegistryUrl().href
-                )
+                const [acceptCommand, disclosedContracts] =
+                    await this.service.createAcceptTransferInstruction(
+                        transferInstructionCid,
+                        this.getTransferFactoryRegistryUrl().href
+                    )
+                return [{ ExerciseCommand: acceptCommand }, disclosedContracts]
             } else {
-                return await this.service.createRejectTransferInstruction(
-                    transferInstructionCid,
-                    this.getTransferFactoryRegistryUrl().href
-                )
+                const [rejectCommand, disclosedContracts] =
+                    await this.service.createRejectTransferInstruction(
+                        transferInstructionCid,
+                        this.getTransferFactoryRegistryUrl().href
+                    )
+                return [{ ExerciseCommand: rejectCommand }, disclosedContracts]
             }
         } catch (error) {
             this.logger.error(

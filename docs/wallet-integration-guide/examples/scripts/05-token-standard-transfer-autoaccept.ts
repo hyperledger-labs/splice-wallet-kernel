@@ -104,7 +104,7 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
 )
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
-    [{ ExerciseCommand: tapCommand }],
+    tapCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts
@@ -143,7 +143,7 @@ const [transferCommand, disclosedContracts2] =
     )
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
-    [{ ExerciseCommand: transferCommand }],
+    transferCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts2
