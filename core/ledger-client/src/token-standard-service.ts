@@ -8,6 +8,7 @@ import {
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
 import {
+    AllocationInterface,
     HoldingInterface,
     TokenStandardTransactionInterfaces,
     TransferFactoryInterface,
@@ -223,6 +224,127 @@ export class TokenStandardService {
                 templateId: TransferInstructionInterface,
                 contractId: transferInstructionCid,
                 choice: 'TransferInstruction_Withdraw',
+                choiceArgument: {
+                    extraArgs: {
+                        context: choiceContext.choiceContextData,
+                        meta: { values: {} },
+                    },
+                },
+            }
+
+            return [exercise, choiceContext.disclosedContracts]
+        } catch (e) {
+            this.logger.error(
+                'Failed to create withdraw transfer instruction:',
+                e
+            )
+            throw e
+        }
+    }
+
+    // TODO that naming seems off
+    async createExecuteTransferAllocation(
+        allocationCid: string,
+        allocationFactoryRegistryUrl: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
+            const client = this.getTokenStandardClient(
+                allocationFactoryRegistryUrl
+            )
+
+            const choiceContext = await client.post(
+                '/registry/allocations/v1/{allocationId}/choice-contexts/execute-transfer',
+                {},
+                {
+                    path: {
+                        allocationId: allocationCid,
+                    },
+                }
+            )
+
+            const exercise: ExerciseCommand = {
+                templateId: AllocationInterface,
+                contractId: allocationCid,
+                choice: 'Allocation_ExecuteTransfer',
+                choiceArgument: {
+                    extraArgs: {
+                        context: choiceContext.choiceContextData,
+                        meta: { values: {} },
+                    },
+                },
+            }
+
+            return [exercise, choiceContext.disclosedContracts]
+        } catch (e) {
+            this.logger.error(
+                'Failed to create allocation execute transfer:',
+                e
+            )
+            throw e
+        }
+    }
+
+    async createWithdrawAllocation(
+        allocationCid: string,
+        allocationFactoryRegistryUrl: string // TODO those are not actually factories, rename all to avoid confusion
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
+            const client = this.getTokenStandardClient(
+                allocationFactoryRegistryUrl
+            )
+
+            const choiceContext = await client.post(
+                '/registry/allocations/v1/{allocationId}/choice-contexts/withdraw',
+                {},
+                {
+                    path: {
+                        allocationId: allocationCid,
+                    },
+                }
+            )
+
+            const exercise: ExerciseCommand = {
+                templateId: AllocationInterface,
+                contractId: allocationCid,
+                choice: 'Allocation_Withdraw',
+                choiceArgument: {
+                    extraArgs: {
+                        context: choiceContext.choiceContextData,
+                        meta: { values: {} },
+                    },
+                },
+            }
+
+            return [exercise, choiceContext.disclosedContracts]
+        } catch (e) {
+            this.logger.error('Failed to create withdraw allocation:', e)
+            throw e
+        }
+    }
+
+    async createCancelAllocation(
+        allocationCid: string,
+        allocationFactoryRegistryUrl: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
+            const client = this.getTokenStandardClient(
+                allocationFactoryRegistryUrl
+            )
+
+            const choiceContext = await client.post(
+                '/registry/allocations/v1/{allocationId}/choice-contexts/cancel',
+                {},
+                {
+                    path: {
+                        allocationId: allocationCid,
+                    },
+                }
+            )
+
+            const exercise: ExerciseCommand = {
+                templateId: AllocationInterface,
+                contractId: allocationCid,
+                choice: 'Allocation_Cancel',
                 choiceArgument: {
                     extraArgs: {
                         context: choiceContext.choiceContextData,
