@@ -6,7 +6,7 @@
         "sharedGlobals": []
     },
     "release": {
-        "projects": ["core/*", "sdk/*"],
+        "projects": ["core/*", "sdk/*", "!core/rpc-generator"],
         "projectsRelationship": "independent",
         "version": {
             "conventionalCommits": true,
