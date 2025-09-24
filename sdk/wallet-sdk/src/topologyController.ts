@@ -252,7 +252,7 @@ export class TopologyController {
     async prepareSignAndSubmitMultiHostExternalParty(
         participantEndpoints: MultiHostPartyParticipantConfig[],
         privateKey: string,
-        synchronizerId: string,
+        synchronizerId: PartyId,
         hostingParticipantPermissions: Map<string, Enums_ParticipantPermission>,
         partyHint?: string,
         confirmingThreshold?: number
