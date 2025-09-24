@@ -15,10 +15,15 @@ import {
     DisclosedContract,
 } from '@canton-network/core-ledger-client'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
+
+// TODO get somehow Allocation/AllocationInstruction ViewValue types
+
 import { pino } from 'pino'
 import {
     HOLDING_INTERFACE_ID,
     TRANSFER_INSTRUCTION_INTERFACE_ID,
+    ALLOCATION_INSTRUCTION_INTERFACE_ID,
+    ALLOCATION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController'
@@ -210,7 +215,7 @@ export class TokenStandardController {
     }
 
     /**
-     * Fetches all 2-step transfer pending either accept or reject.
+     * Fetches all 2-step transfers pending accept, reject, or withdraw.
      * @returns a promise containing prettyContract for TransferInstructionView.
      */
 
@@ -219,6 +224,36 @@ export class TokenStandardController {
     > {
         return await this.service.listContractsByInterface<TransferInstructionView>(
             TRANSFER_INSTRUCTION_INTERFACE_ID,
+            this.getPartyId()
+        )
+    }
+
+    /**
+     * Fetches all allocation instructions pending withdraw or update
+     * @returns a promise containing prettyContract for AllocationInstructionView.
+     */
+
+    async fetchPendingAllocationInstructionView(): Promise<
+        // TODO add type for interfaceViewValue
+        PrettyContract[]
+    > {
+        return await this.service.listContractsByInterface(
+            ALLOCATION_INSTRUCTION_INTERFACE_ID,
+            this.getPartyId()
+        )
+    }
+
+    /**
+     * Fetches all allocations pending execute_transfer, cancel, or withdraw
+     * @returns a promise containing prettyContract for AllocationView.
+     */
+
+    async fetchPendingAllocationView(): Promise<
+        // TODO add type for interfaceViewValue
+        PrettyContract[]
+    > {
+        return await this.service.listContractsByInterface(
+            ALLOCATION_INTERFACE_ID,
             this.getPartyId()
         )
     }
@@ -325,6 +360,54 @@ export class TokenStandardController {
             return [{ ExerciseCommand: transferCommand }, disclosedContracts]
         } catch (error) {
             this.logger.error({ error }, 'Failed to create transfer')
+            throw error
+        }
+    }
+
+    async createAllocationInstruction(
+        sender: PartyId,
+        receiver: PartyId,
+        amount: string,
+        instrument: { instrumentId: string; instrumentAdmin: PartyId },
+        executor: PartyId,
+        inputUtxos?: string[],
+        memo?: string,
+        meta?: Record<string, unknown>,
+        settlementMeta?: Record<string, unknown>,
+        allocateBefore?: Date,
+        settleBefore?: Date,
+        transferLegId?: string,
+        settlementRefId?: string
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        try {
+            const [exercise, disclosed] =
+                await this.service.createAllocationInstruction(
+                    sender,
+                    receiver,
+                    amount,
+                    instrument.instrumentAdmin,
+                    instrument.instrumentId,
+                    // If you later add a dedicated getter, replace with getAllocationFactoryRegistryUrl().href
+                    this.getTransferFactoryRegistryUrl().href,
+                    executor,
+                    inputUtxos,
+                    memo,
+                    meta,
+                    settlementMeta,
+                    allocateBefore,
+                    settleBefore,
+                    transferLegId,
+                    settlementRefId
+                )
+
+            return [{ ExerciseCommand: exercise }, disclosed]
+        } catch (error) {
+            this.logger.error(
+                { error },
+                'Failed to create allocation instruction'
+            )
             throw error
         }
     }
