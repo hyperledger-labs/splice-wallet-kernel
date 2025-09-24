@@ -10,7 +10,7 @@ import {
     SpliceMessage,
     WalletEvent,
 } from '@canton-network/core-types'
-import { rpcErrors } from '@metamask/rpc-errors'
+import { rpcErrors } from '@canton-network/core-rpc-errors'
 
 const controller = dappController()
 

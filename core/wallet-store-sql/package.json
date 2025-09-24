@@ -17,6 +17,7 @@
     },
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
+        "@canton-network/core-rpc-errors": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
         "@canton-network/core-wallet-store": "workspace:^",
         "better-sqlite3": "^12.2.0",
