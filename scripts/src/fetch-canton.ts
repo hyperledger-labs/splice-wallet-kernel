@@ -9,31 +9,45 @@
 import path from 'path'
 import {
     API_SPECS_PATH,
-    CANTON_ARCHIVE_HASH,
+    supported_canton_versions,
     CANTON_PATH,
-    CANTON_VERSION,
     downloadAndUnpackTarball,
+    CantonVersionAndHash,
     error,
 } from './utils.js'
 import * as fs from 'fs'
 
-async function main() {
-    const tarfile = path.join(CANTON_PATH, 'canton.tar.gz')
-    const archiveUrl = `https://www.canton.io/releases/canton-open-source-${CANTON_VERSION}.tar.gz`
+async function fetchCanton(cantonVersions: CantonVersionAndHash) {
+    const tarfile = path.join(cantonVersions.version, 'canton.tar.gz')
+    const archiveUrl = `https://www.canton.io/releases/canton-open-source-${cantonVersions.version}.tar.gz`
+    const cantonDownloadPath = path.join(CANTON_PATH, cantonVersions.version)
 
-    await downloadAndUnpackTarball(archiveUrl, tarfile, CANTON_PATH, {
-        hash: CANTON_ARCHIVE_HASH,
+    await downloadAndUnpackTarball(archiveUrl, tarfile, cantonDownloadPath, {
+        hash: cantonVersions.hash,
         strip: 1,
     })
 
-    const CANTON_MAJOR_VERSION = CANTON_VERSION.split('-')[0]
+    const CANTON_MAJOR_VERSION = cantonVersions.version.split('-')[0]
+    if (!fs.existsSync(cantonDownloadPath)) {
+        fs.mkdirSync(cantonDownloadPath, { recursive: true })
+    }
+
     fs.copyFileSync(
-        path.join(CANTON_PATH, '/examples/09-json-api/typescript/openapi.yaml'),
+        path.join(
+            cantonDownloadPath,
+            '/examples/09-json-api/typescript/openapi.yaml'
+        ),
         path.join(
             API_SPECS_PATH,
             `ledger-api/${CANTON_MAJOR_VERSION}/openapi.yaml`
         )
     )
+}
+
+async function main() {
+    for (const v of supported_canton_versions) {
+        fetchCanton(v)
+    }
 }
 
 main().catch((e) => {
