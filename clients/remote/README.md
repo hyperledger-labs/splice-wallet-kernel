@@ -14,10 +14,10 @@ yarn build
 yarn dev
 ```
 
-The server now runs on [localhost:3000](http://localhost:3000/).
+The server now runs on [localhost:3008](http://localhost:3008/).
 
 ```shell
-curl -i localhost:3000/api/hello
+curl -i localhost:3008/api/hello
 ```
 
 should return the following response:

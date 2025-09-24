@@ -1,6 +1,6 @@
 {
     "name": "docs-wallet-integration-guide-examples",
-    "version": "1.0.0",
+    "version": "0.0.0",
     "private": true,
     "description": "Example typescripts to be used in combination with the wallet integration guide.",
     "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
@@ -10,13 +10,14 @@
     "scripts": {
         "build": "tsc -b",
         "clean": "tsc -b --clean",
-        "test": "yarn jest",
+        "snippets": "yarn jest",
         "run-01": "tsx ./scripts/01-auth.ts | pino-pretty",
         "run-02": "tsx ./scripts/02-auth-localnet.ts | pino-pretty",
         "run-03": "tsx ./scripts/03-ping-localnet.ts | pino-pretty",
         "run-04": "tsx ./scripts/04-token-standard-localnet.ts | pino-pretty",
         "run-05": "tsx ./scripts/05-token-standard-transfer-autoaccept.ts| pino-pretty",
-        "run-06": "tsx ./scripts/06-multi-hosted-party.ts | pino-pretty"
+        "run-06": "tsx ./scripts/06-multi-hosted-party.ts | pino-pretty",
+        "run-07": "tsx ./scripts/07-token-standard-reject-expire-withdraw-localnet.ts | pino-pretty"
     },
     "devDependencies": {
         "@canton-network/core-signing-lib": "workspace:^",
@@ -35,5 +36,14 @@
         "@canton-network/wallet-sdk": "workspace:^",
         "pino": "9.7.0",
         "uuid": "^11.1.0"
+    },
+    "nx": {
+        "targets": {
+            "snippets": {
+                "dependsOn": [
+                    "^build"
+                ]
+            }
+        }
     }
 }

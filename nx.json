@@ -1,8 +1,13 @@
 {
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "namedInputs": {
+        "default": ["{projectRoot}/**/*", "sharedGlobals"],
+        "production": ["default"],
+        "sharedGlobals": []
+    },
     "release": {
+        "projects": ["core/*", "sdk/*", "!core/rpc-generator"],
         "projectsRelationship": "independent",
-        "packages": ["core/*", "sdk/*"],
         "version": {
             "conventionalCommits": true,
             "fallbackCurrentVersionResolver": "disk"
@@ -17,14 +22,39 @@
     },
     "targetDefaults": {
         "build": {
-            "outputs": ["{projectRoot}/dist"],
+            "dependsOn": ["^build"],
             "cache": true
         },
         "test": {
+            "dependsOn": ["^build"],
             "cache": true
         },
         "lint": {
-            "cache": true
+            "cache": true,
+            "options": {
+                "max-warnings": 0
+            }
+        },
+        "dev": {
+            "dependsOn": ["^build"]
+        },
+        "start": {
+            "dependsOn": ["^build"]
         }
-    }
+    },
+    "plugins": [
+        {
+            "plugin": "@nx/playwright/plugin",
+            "options": {
+                "targetName": "playwright:e2e"
+            }
+        },
+        {
+            "plugin": "@nx/eslint/plugin",
+            "exclude": ["core/*-rpc-client/**/*", "damljs/**/*"],
+            "options": {
+                "targetName": "lint"
+            }
+        }
+    ]
 }

@@ -6,8 +6,7 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc -b && vite build",
-        "lint": "eslint .",
-        "e2e": "playwright test --ui",
+        "e2e": "nx playwright:e2e --ui",
         "preview": "vite preview"
     },
     "dependencies": {
@@ -17,7 +16,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.25.0",
-        "@playwright/test": "^1.54.2",
+        "@playwright/test": "^1.55.0",
         "@types/node": "^24.3.0",
         "@types/react": "^19.1.2",
         "@types/react-dom": "^19.1.2",
@@ -29,5 +28,14 @@
         "typescript": "~5.8.3",
         "typescript-eslint": "^8.30.1",
         "vite": "^6.3.5"
+    },
+    "nx": {
+        "targets": {
+            "playwright:e2e": {
+                "dependsOn": [
+                    "^build"
+                ]
+            }
+        }
     }
 }

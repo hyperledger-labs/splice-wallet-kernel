@@ -30,7 +30,7 @@ import { ScanProxyClient } from '@canton-network/core-splice-client'
 
 const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
 
-type ExerciseCommand = Types['ExerciseCommand']
+export type ExerciseCommand = Types['ExerciseCommand']
 type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
 type JsGetTransactionResponse = Types['JsGetTransactionResponse']
@@ -44,7 +44,7 @@ type OffsetCheckpointUpdate = {
 type TransactionUpdate = {
     update: { Transaction: { value: JsTransaction } }
 }
-type DisclosedContract = Types['DisclosedContract']
+export type DisclosedContract = Types['DisclosedContract']
 
 type JsActiveContractEntryResponse = JsGetActiveContractsResponse & {
     contractEntry: {
@@ -68,6 +68,46 @@ export class TokenStandardService {
             this.logger,
             this.accessToken
         )
+    }
+
+    async getTransferPreApprovalByParty(partyId: PartyId) {
+        const { transfer_preapproval } = await this.scanProxyClient.get(
+            '/v0/scan-proxy/transfer-preapprovals/by-party/{party}',
+            {
+                path: {
+                    party: partyId,
+                },
+            }
+        )
+
+        return transfer_preapproval
+    }
+
+    async getInstrumentById(
+        transferFactoryRegistryUrl: string,
+        instrumentId: string
+    ) {
+        try {
+            const params: Record<string, unknown> = {
+                path: {
+                    instrumentId,
+                },
+            }
+
+            const client = this.getTokenStandardClient(
+                transferFactoryRegistryUrl
+            )
+
+            return client.get(
+                '/registry/metadata/v1/instruments/{instrumentId}',
+                params
+            )
+        } catch (e) {
+            this.logger.error(e)
+            throw new Error(
+                `Instrument id ${instrumentId} does not exist for this instrument admin.`
+            )
+        }
     }
 
     async createAcceptTransferInstruction(
@@ -154,6 +194,47 @@ export class TokenStandardService {
         } catch (e) {
             this.logger.error(
                 'Failed to create reject transfer instruction:',
+                e
+            )
+            throw e
+        }
+    }
+
+    async createWithdrawTransferInstruction(
+        transferInstructionCid: string,
+        transferFactoryRegistryUrl: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
+            const client = this.getTokenStandardClient(
+                transferFactoryRegistryUrl
+            )
+
+            const choiceContext = await client.post(
+                '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/withdraw',
+                {},
+                {
+                    path: {
+                        transferInstructionId: transferInstructionCid,
+                    },
+                }
+            )
+
+            const exercise: ExerciseCommand = {
+                templateId: TransferInstructionInterface,
+                contractId: transferInstructionCid,
+                choice: 'TransferInstruction_Withdraw',
+                choiceArgument: {
+                    extraArgs: {
+                        context: choiceContext.choiceContextData,
+                        meta: { values: {} },
+                    },
+                },
+            }
+
+            return [exercise, choiceContext.disclosedContracts]
+        } catch (e) {
+            this.logger.error(
+                'Failed to create withdraw transfer instruction:',
                 e
             )
             throw e
@@ -267,7 +348,7 @@ export class TokenStandardService {
         const filter = filtersByParty(
             partyId,
             TokenStandardTransactionInterfaces,
-            false
+            true
         )
 
         const transactionFormat: TransactionFormat = {

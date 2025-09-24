@@ -31,14 +31,14 @@ export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20250417.0'
 export const CANTON_VERSION = '3.3.0-snapshot.20250910.16087.0.v82d35a4d'
 
 export const LOCALNET_ARCHIVE_HASH =
-    '257167dbedd9b07b30bf75ef0968454709cee4891e8774ea460431d5bd4d6888'
+    'd64e6474e4e640fa9df17b332ffd2d3eb6fbe09f96c3f788620fe266c2f493e6'
 export const SPLICE_ARCHIVE_HASH =
     'f0caa6539ecf4929164fd82631f4608bdd8ca1522f0e5c0a03f281ad02ddcc75'
 export const SPLICE_SPEC_ARCHIVE_HASH =
-    '2134536c95927b946b9a1639deb54f94086725f529742755f992dc4efc7326ae'
+    '53c01dc80226fcebbacd154a0d555965ee27422e3c304405656804a620e59f6a'
 export const CANTON_ARCHIVE_HASH =
     '43c89d9833886fc68cac4951ba1959b7f6cc5269abfff1ba5129859203aa8cd3'
-export const SPLICE_VERSION = '0.4.16'
+export const SPLICE_VERSION = '0.4.17'
 
 export async function downloadToFile(
     url: string | URL,
@@ -306,4 +306,46 @@ export function markFile(
             `::info file=${relativePath},line=${line},col=${column}::${warning}`
         )
     }
+}
+
+/**
+ * Maps over the keys and values of an object, allowing transformation of both.
+ *
+ * @param obj object to map over
+ * @param mapFn mapping function, which can return either a new value directly (no key change), or a [newKey, newValue] tuple
+ * @returns a new object with the mapped keys and values
+ */
+export function mapObject<V>(
+    obj: Record<string, V>,
+    mapFn: (k: string, v: V) => V | [string, V]
+): Record<string, V> {
+    return Object.fromEntries(
+        Object.entries(obj).map(([k, v]) => {
+            const mapped = mapFn(k, v)
+            return Array.isArray(mapped) ? mapped : [k, mapped]
+        })
+    )
+}
+
+/**
+ * Elides a string by replacing the middle portion with an ellipsis.
+ *
+ * @param s string to elide
+ * @param len the length of the elided middle portion (default: 8)
+ * @returns the elided string
+ */
+export function elideMiddle(s: string, len = 8) {
+    const elider = '...'
+    const totalLen = s.length
+
+    if (totalLen <= len) return s
+    if (len <= elider.length) return s
+
+    const halfway = Math.floor(totalLen / 2)
+
+    return (
+        s.slice(0, halfway - Math.floor(len / 2)) +
+        elider +
+        s.slice(halfway + Math.floor(len / 2))
+    )
 }

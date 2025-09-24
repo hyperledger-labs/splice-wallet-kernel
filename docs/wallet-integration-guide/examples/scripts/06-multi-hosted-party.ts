@@ -41,11 +41,7 @@ const alice = await sdk.topology?.prepareSignAndSubmitExternalParty(
     'alice'
 )
 logger.info(alice?.partyId!, 'created single hosted party to get synchronzerId')
-sdk.userLedger?.setPartyId(alice?.partyId!)
-
-const synchronizers = await sdk.userLedger?.listSynchronizers()
-
-const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
+await sdk.setPartyId(alice?.partyId!)
 
 const multiHostedParticipantEndpointConfig = [
     {
@@ -79,7 +75,7 @@ participantIds.map((pId) =>
 await sdk.topology?.prepareSignAndSubmitMultiHostExternalParty(
     multiHostedParticipantEndpointConfig,
     multiHostedParty.privateKey,
-    synchonizerId,
+    sdk.userLedger!.getSynchronizerId(),
     participantPermissionMap,
     'bob'
 )
