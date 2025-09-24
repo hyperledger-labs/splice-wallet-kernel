@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-internal",
-    "version": "0.3.2",
+    "version": "0.3.3",
     "type": "module",
     "description": "Wallet Kernel driver for offline Ed25519 keypairs",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
