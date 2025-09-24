@@ -74,15 +74,16 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
         instrumentAdmin: instrumentAdminPartyId,
     }
 )
+let offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
 
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
+const tapCommandId = await sdk.userLedger?.prepareSignAndExecuteTransaction(
     tapCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts
 )
 
-await new Promise((res) => setTimeout(res, 5000))
+await sdk.userLedger?.waitForCompletion(offsetLatest, 5000, tapCommandId!)
 
 const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
 logger.info(utxos, 'List Available Token Standard Holding UTXOs')
@@ -114,7 +115,7 @@ const [transferCommand, disclosedContracts2] =
         'memo-ref'
     )
 
-const offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
+offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? offsetLatest
 
 const transferCommandId =
     await sdk.userLedger?.prepareSignAndExecuteTransaction(
@@ -125,12 +126,7 @@ const transferCommandId =
     )
 logger.info('Submitted transfer transaction')
 
-const completion = await sdk.userLedger?.waitForCompletion(
-    offsetLatest,
-    5000,
-    transferCommandId!
-)
-logger.info({ completion }, 'Transfer transaction completed')
+await sdk.userLedger?.waitForCompletion(offsetLatest, 5000, transferCommandId!)
 
 await sdk.setPartyId(receiver!.partyId)
 

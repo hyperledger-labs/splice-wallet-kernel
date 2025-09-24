@@ -47,7 +47,7 @@ when calling the endpoint again. This will allow you to easily ensure you do not
 transactions that have happened after.
 
 
-.. literalinclude:: ../../examples/snippets/mointor-transaction-holding.ts
+.. literalinclude:: ../../examples/snippets/monitor-transaction-holding.ts
     :language: typescript
     :dedent:
 
@@ -103,17 +103,32 @@ this is an important pre-requisite for the creating of transfer in your script.
 Creating a transfer
 -------------------
 
+In order to create a simple transfer you can use the `createTransfer` on the token standard. Then like any other operation
+you can the `prepareSubmission` endpoint, sign the returned hash and finally `executeSubmission`.
+
+.. TODO: ADD SCRIPT
+
 UTXO management and locked funds
 --------------------------------
 
+The default script for creating a transfer above uses automated utxo selection, the automatic being to simply select all utxo's.
+In a more professional you would want to carefully pick which utxo's you would like to use as input for your transfers, alongside
+you might also want to define a custom expiration time for when the transaction should automatically expire.
+
+.. TODO: ADD SCRIPT
 
 2-step transfer vs 1-step transfer
 ----------------------------------
 
+The default behavior for all tokens are a 2-step transfer, this matches how funds are usually transferred in TradFi, but it is
+counter-intuitive in the blockchain world. Canton Coin and potentially other token standard can
+
+
 Accepting or rejecting a 2-step transfer
 ----------------------------------------
 
-
+Withdrawing a 2-step transfer before it gets accepted
+-----------------------------------------------------
 
 
 
