@@ -57,7 +57,7 @@ major version bumps are triggered by adding an exclamation after the scope (`fea
 
 ### building
 
-you can build each repo seperately by going into the repo and running `yarn build`. Alternatively you can run `yarn build:all` to build all workspaces from root.
+you can build each repo separately by going into the repo and running `yarn build`. Alternatively you can run `yarn build:all` to build all workspaces from root.
 
 ### API generation
 
@@ -84,7 +84,7 @@ After running `yarn start:all`, you'll have services exposed on the following po
 | Service          | Url            |
 | ---------------- | -------------- |
 | example dApp UI  | localhost:5137 |
-| HTTP WK dapp RPC | localhost:3000 |
+| HTTP WK dapp RPC | localhost:3008 |
 | HTTP WK user RPC | localhost:3001 |
 
 ### canton
@@ -92,7 +92,7 @@ After running `yarn start:all`, you'll have services exposed on the following po
 To run a Canton instance locally:
 
 1. Ensure you have Java installed. A convenient tool to manage Java SDK versions (similar to `nvm` for Node) is [sdkman](https://sdkman.io/install)
-2. Run `yarn scripts:fetch:canton` to download and install Canton 3.4 to a local `.canton/` directory in the repo (if you haven't already)
+2. Run `yarn script:fetch:canton` to download and install Canton 3.4 to a local `.canton/` directory in the repo (if you haven't already)
 3. Run `yarn start:canton` to start a participant & synchronizer using the repo setup defined in `canton/`
     - (alternatively) start canton directly to access the interactive console: `yarn start:canton:console`
 

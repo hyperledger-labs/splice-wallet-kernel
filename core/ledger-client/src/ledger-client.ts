@@ -111,9 +111,9 @@ export class LedgerClient {
         // Wait for party to appear on participant
         let partyFound = false
         let tries = 0
-        const maxTries = 5
+        const maxTries = 20
 
-        while (!partyFound || tries >= maxTries) {
+        while (!partyFound && tries < maxTries) {
             const parties = await this.get('/v2/parties')
             partyFound =
                 parties.partyDetails?.some(

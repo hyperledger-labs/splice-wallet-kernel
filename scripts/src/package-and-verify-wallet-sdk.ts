@@ -45,11 +45,10 @@ async function buildPackage(
     pkgDir: string,
     tmpDir: string
 ): Promise<string> {
-    const absolutePkgDir = path.join(repoRoot, pkgDir)
     const filename = path.join(tmpDir, `${name}.tgz`)
 
-    run('yarn build', { cwd: absolutePkgDir })
-    run(`yarn pack --filename "${filename}"`, { cwd: absolutePkgDir })
+    run('yarn build', { cwd: pkgDir })
+    run(`yarn pack --filename "${filename}"`, { cwd: pkgDir })
     run(`yarn add "${filename}"`, { cwd: tmpDir })
 
     return filename
@@ -68,7 +67,30 @@ function updateJsonResolutions(
     fs.writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, 2))
 }
 
+function getAllWalletSdkDependencies(
+    dir: string
+): { name: string; dir: string }[] {
+    const cmd =
+        'yarn workspaces foreach --no-private --topological -R exec \'echo "$npm_package_name $(pwd)"\''
+
+    const workspaces = execSync(cmd, {
+        encoding: 'utf8',
+        cwd: path.join(repoRoot, dir),
+    })
+
+    return workspaces
+        .trim()
+        .split('\n')
+        .filter((l) => !l.startsWith('Done'))
+        .map((line) => {
+            const [name, dir] = line.split(' ')
+            return { name, dir }
+        })
+}
+
 async function main() {
+    const sdkDir = 'sdk/wallet-sdk'
+
     // Create a temp dir for both the test and the tgz
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wallet-sdk-test-'))
 
@@ -100,56 +122,19 @@ async function main() {
 
     run('yarn install', { cwd: repoRoot })
 
-    const packages = [
-        { '@canton-network/core-ledger-proto': 'core/ledger-proto' },
-        { '@canton-network/core-rpc-generator': 'core/rpc-generator' },
-        { '@canton-network/core-tx-visualizer': 'core/tx-visualizer' },
-        { '@canton-network/core-types': 'core/types' },
-        { '@canton-network/core-splice-client': 'core/splice-client' },
-        { '@canton-network/core-token-standard': 'core/token-standard' },
-        { '@canton-network/core-ledger-client': 'core/ledger-client' },
-        { '@canton-network/core-wallet-auth': 'core/wallet-auth' },
-        { '@canton-network/core-signing-lib': 'core/signing-lib' },
-        {
-            '@canton-network/core-signing-fireblocks':
-                'core/signing-fireblocks',
-        },
-        { '@canton-network/core-signing-internal': 'core/signing-internal' },
-        {
-            '@canton-network/core-signing-participant':
-                'core/signing-participant',
-        },
-        {
-            '@canton-network/core-wallet-dapp-rpc-client':
-                'core/wallet-dapp-rpc-client',
-        },
-        { '@canton-network/core-wallet-store': 'core/wallet-store' },
-        {
-            '@canton-network/core-wallet-store-inmemory':
-                'core/wallet-store-inmemory',
-        },
-        { '@canton-network/core-wallet-store-sql': 'core/wallet-store-sql' },
-        {
-            '@canton-network/core-wallet-ui-components':
-                'core/wallet-ui-components',
-        },
-        { '@canton-network/core-splice-provider': 'core/splice-provider' },
-        {
-            '@canton-network/core-wallet-user-rpc-client':
-                'core/wallet-user-rpc-client',
-        },
-    ]
+    const packages = getAllWalletSdkDependencies(sdkDir).filter(
+        (p) => p.name !== '@canton-network/wallet-sdk'
+    )
 
     const paths = {} as Record<string, string>
     for (const pkg of packages) {
-        const [pkgName, pkgDir] = Object.entries(pkg)[0]
-        const pkgPath = await buildPackage(pkgName, pkgDir, tmpDir)
+        const pkgPath = await buildPackage(pkg.name, pkg.dir, tmpDir)
 
-        paths[pkgName] = `file:${pkgPath}`
+        paths[pkg.name] = `file:${pkgPath}`
         updateJsonResolutions(tmpDir, paths)
     }
 
-    await buildPackage('wallet-sdk', 'sdk/wallet-sdk', tmpDir)
+    await buildPackage('wallet-sdk', sdkDir, tmpDir)
 
     let ran = false
     try {
@@ -160,7 +145,7 @@ async function main() {
             'tsx test-import.ts',
             // Assert that the imported `WalletSDKImpl` object is not undefined or anything unexpected
             // Note: compares current wallet-sdk build with previous build that is hardcoded below:
-            'Import successful.class WalletSDKImpl{static{__name(this,"WalletSDKImpl")}auth;authFactory=import_authController.localAuthDefault;ledgerFactory=import_ledgerController.localLedgerDefault;topologyFactory=import_topologyController.localTopologyDefault;tokenStandardFactory=import_tokenStandardController.localTokenStandardDefault;validatorFactory=import_validatorController.localValidatorDefault;logger;userLedger;adminLedger;topology;tokenStandard;validator;constructor(){this.auth=this.authFactory()}configure(config){if(config.logger)this.logger=config.logger;if(config.authFactory)this.auth=config.authFactory();if(config.ledgerFactory)this.ledgerFactory=config.ledgerFactory;if(config.topologyFactory)this.topologyFactory=config.topologyFactory;if(config.tokenStandardFactory)this.tokenStandardFactory=config.tokenStandardFactory;if(config.validatorFactory)this.validatorFactory=config.validatorFactory;return this}async connect(){const{userId,accessToken}=await this.auth.getUserToken();this.userLedger=this.ledgerFactory(userId,accessToken);this.tokenStandard=this.tokenStandardFactory(userId,accessToken);this.validator=this.validatorFactory(userId,accessToken);return this}async connectAdmin(){const{userId,accessToken}=await this.auth.getAdminToken();this.adminLedger=this.ledgerFactory(userId,accessToken);return this}async connectTopology(synchronizer){if(this.auth.userId===void 0)throw new Error("UserId is not defined in AuthController.");if(synchronizer===void 0)throw new Error("Synchronizer is not defined in connectTopology. Provide a synchronizerId");const{userId,accessToken}=await this.auth.getAdminToken();let synchronizerId;if(typeof synchronizer==="string"){synchronizerId=synchronizer}else if(synchronizer instanceof URL){const scanProxyClient=new import_core_splice_client.ScanProxyClient(synchronizer,this.logger,accessToken);const amuletSynchronizerId=await scanProxyClient.getAmuletSynchronizerId();if(amuletSynchronizerId===void 0){throw new Error("SynchronizerId is not defined in ScanProxyClient.")}else{synchronizerId=amuletSynchronizerId}}else throw new Error("invalid Synchronizer format. Either provide a synchronizerId or a scanProxyClient base url.");this.topology=this.topologyFactory(userId,accessToken,synchronizerId);return this}async setPartyId(partyId,synchronizerId){const _synchronizerId=synchronizerId??(await this.userLedger.listSynchronizers(partyId)).connectedSynchronizers[0].synchronizerId;if(this.userLedger===void 0)this.logger?.warn("User ledger controller is not defined, consider calling sdk.connect() first!");else{this.logger?.info(`setting user ledger controller to use ${partyId}`);this.userLedger.setPartyId(partyId);this.userLedger.setSynchronizerId(_synchronizerId)}if(this.tokenStandard===void 0)this.logger?.warn("token standard controller is not defined, consider calling sdk.connect() first!");else{this.logger?.info(`setting token standard controller to use ${partyId}`);this.tokenStandard?.setPartyId(partyId);this.tokenStandard?.setSynchronizerId(_synchronizerId)}if(this.validator===void 0)this.logger?.warn("validator controller is not defined");this.validator?.setPartyId(partyId);this.validator?.setSynchronizerId(_synchronizerId)}}',
+            'Import successful.class WalletSDKImpl{static{__name(this,"WalletSDKImpl")}auth;authFactory=import_authController.localAuthDefault;ledgerFactory=import_ledgerController.localLedgerDefault;topologyFactory=import_topologyController.localTopologyDefault;tokenStandardFactory=import_tokenStandardController.localTokenStandardDefault;validatorFactory=import_validatorController.localValidatorDefault;logger;userLedger;adminLedger;topology;tokenStandard;validator;constructor(){this.auth=this.authFactory()}configure(config){if(config.logger)this.logger=config.logger;if(config.authFactory)this.auth=config.authFactory();if(config.ledgerFactory)this.ledgerFactory=config.ledgerFactory;if(config.topologyFactory)this.topologyFactory=config.topologyFactory;if(config.tokenStandardFactory)this.tokenStandardFactory=config.tokenStandardFactory;if(config.validatorFactory)this.validatorFactory=config.validatorFactory;return this}async connect(){const{userId,accessToken}=await this.auth.getUserToken();this.userLedger=this.ledgerFactory(userId,accessToken);this.tokenStandard=this.tokenStandardFactory(userId,accessToken);this.validator=this.validatorFactory(userId,accessToken);return this}async connectAdmin(){const{userId,accessToken}=await this.auth.getAdminToken();this.adminLedger=this.ledgerFactory(userId,accessToken);return this}async connectTopology(synchronizer){if(this.auth.userId===void 0)throw new Error("UserId is not defined in AuthController.");if(synchronizer===void 0)throw new Error("Synchronizer is not defined in connectTopology. Provide a synchronizerId");const{userId,accessToken}=await this.auth.getAdminToken();let synchronizerId;if(typeof synchronizer==="string"){synchronizerId=synchronizer}else if(synchronizer instanceof URL){const scanProxyClient=new import_core_splice_client.ScanProxyClient(synchronizer,this.logger,accessToken);const amuletSynchronizerId=await scanProxyClient.getAmuletSynchronizerId();if(amuletSynchronizerId===void 0){throw new Error("SynchronizerId is not defined in ScanProxyClient.")}else{synchronizerId=amuletSynchronizerId}}else throw new Error("invalid Synchronizer format. Either provide a synchronizerId or a scanProxyClient base url.");this.topology=this.topologyFactory(userId,accessToken,synchronizerId);return this}async setPartyId(partyId,synchronizerId){let _synchronizerId=synchronizerId??"empty::empty";if(synchronizerId===void 0){let synchronizer=await this.userLedger.listSynchronizers(partyId);let retry=0;const maxRetries=10;while(true){synchronizer=await this.userLedger.listSynchronizers(partyId);if(!synchronizer.connectedSynchronizers||synchronizer.connectedSynchronizers.length!==0){_synchronizerId=synchronizer.connectedSynchronizers[0].synchronizerId;break}else{retry++}if(retry>maxRetries)throw new Error(`Could not find any synchronizer id for ${partyId}`);await new Promise(resolve=>setTimeout(resolve,1e3))}}this.logger?.info(`synchronizer id will be set to ${_synchronizerId}`);if(this.userLedger===void 0)this.logger?.warn("User ledger controller is not defined, consider calling sdk.connect() first!");else{this.logger?.info(`setting user ledger controller to use ${partyId}`);this.userLedger.setPartyId(partyId);this.userLedger.setSynchronizerId(_synchronizerId)}if(this.tokenStandard===void 0)this.logger?.warn("token standard controller is not defined, consider calling sdk.connect() first!");else{this.logger?.info(`setting token standard controller to use ${partyId}`);this.tokenStandard?.setPartyId(partyId);this.tokenStandard?.setSynchronizerId(_synchronizerId)}if(this.validator===void 0)this.logger?.warn("validator controller is not defined");this.validator?.setPartyId(partyId);this.validator?.setSynchronizerId(_synchronizerId)}}',
             {
                 cwd: tmpDir,
             }

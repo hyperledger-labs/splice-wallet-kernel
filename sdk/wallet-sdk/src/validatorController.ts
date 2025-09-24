@@ -193,20 +193,33 @@ export class ValidatorController {
     }
 
     /**  Lookup a TransferPreapproval by the receiver party
-     * @param partyId receiver party id
-     * @returns A promise that resolves to an array of
-     * transfer preapprovals by party.
+     * @param receiverId receiver party id
+     * @param dsoParty the instrument partyId that has transfer preapproval
+     * @returns A promise that returns a boolean of whether an instrument can be transferred directly to the receiver
      */
+    async getTransferPreApprovalByParty(receiverId: PartyId) {
+        try {
+            const { transfer_preapproval } = await this.scanProxyClient.get(
+                '/v0/scan-proxy/transfer-preapprovals/by-party/{party}',
+                {
+                    path: {
+                        party: receiverId,
+                    },
+                }
+            )
 
-    async getTransferPreApprovals(partyId: string) {
-        return await this.scanProxyClient.get(
-            '/v0/scan-proxy/transfer-preapprovals/by-party/{party}',
-            {
-                path: {
-                    party: partyId,
-                },
+            const { dso, expiresAt } = transfer_preapproval.contract.payload
+            return {
+                receiverId,
+                expiresAt,
+                dso,
             }
-        )
+        } catch (e) {
+            this.logger.error(e)
+            throw new Error(
+                `failed to get transfer preapproval for receiverId: ${receiverId} `
+            )
+        }
     }
 
     /**  Fetch open mining rounds from Scan Proxy API

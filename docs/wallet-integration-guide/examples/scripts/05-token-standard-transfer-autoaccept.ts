@@ -104,7 +104,7 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
 )
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
-    [{ ExerciseCommand: tapCommand }],
+    tapCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts
@@ -143,7 +143,7 @@ const [transferCommand, disclosedContracts2] =
     )
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
-    [{ ExerciseCommand: transferCommand }],
+    transferCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts2
@@ -160,4 +160,10 @@ await new Promise((res) => setTimeout(res, 5000))
     await sdk.setPartyId(receiver!.partyId)
     const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
     logger.info(bobHoldings, '[BOB] holding transactions')
+    const transferPreApprovalStatus =
+        await sdk.tokenStandard?.getTransferPreApprovalByParty(
+            receiver!.partyId,
+            'Amulet'
+        )
+    logger.info(transferPreApprovalStatus, '[BOB] transfer preapproval status')
 }

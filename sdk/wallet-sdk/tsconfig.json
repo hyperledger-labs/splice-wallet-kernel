@@ -4,19 +4,7 @@
         "rootDir": "./src",
         "outDir": "./dist",
         "moduleResolution": "node",
-        "baseUrl": "./",
-        "paths": {
-            "@canton-network/core-wallet-dapp-rpc-client": [
-                "../core/wallet-dapp-rpc-client/src"
-            ],
-            "@canton-network/core-splice-provider": [
-                "../core/splice-provider/src"
-            ]
-        }
+        "baseUrl": "./"
     },
-    "include": ["src"],
-    "references": [
-        { "path": "../../core/wallet-dapp-rpc-client" },
-        { "path": "../../core/splice-provider" }
-    ]
+    "include": ["src"]
 }

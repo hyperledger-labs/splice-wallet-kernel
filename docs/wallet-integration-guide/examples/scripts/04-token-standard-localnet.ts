@@ -76,7 +76,7 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
 )
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
-    [{ ExerciseCommand: tapCommand }],
+    tapCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts
@@ -118,7 +118,7 @@ const offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
 
 const transferCommandId =
     await sdk.userLedger?.prepareSignAndExecuteTransaction(
-        [{ ExerciseCommand: transferCommand }],
+        transferCommand,
         keyPairSender.privateKey,
         v4(),
         disclosedContracts2
@@ -132,12 +132,12 @@ const completion = await sdk.userLedger?.waitForCompletion(
 )
 logger.info({ completion }, 'Transfer transaction completed')
 
+await sdk.setPartyId(receiver!.partyId)
+
 const pendingInstructions =
     await sdk.tokenStandard?.fetchPendingTransferInstructionView()
 
 const transferCid = pendingInstructions?.[0].contractId!
-
-await sdk.setPartyId(receiver!.partyId)
 
 const [acceptTransferCommand, disclosedContracts3] =
     await sdk.tokenStandard!.exerciseTransferInstructionChoice(
@@ -146,7 +146,7 @@ const [acceptTransferCommand, disclosedContracts3] =
     )
 
 await sdk.userLedger?.prepareSignAndExecuteTransaction(
-    [{ ExerciseCommand: acceptTransferCommand }],
+    acceptTransferCommand,
     keyPairReceiver.privateKey,
     v4(),
     disclosedContracts3

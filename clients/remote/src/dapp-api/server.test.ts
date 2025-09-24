@@ -51,7 +51,7 @@ test('call connect rpc', async () => {
             kernel: {
                 id: 'remote-da',
                 clientType: 'remote',
-                url: 'http://localhost:3000/rpc',
+                url: 'http://localhost:3008/rpc',
             },
             isConnected: false,
             userUrl: 'http://localhost:3002/login/',

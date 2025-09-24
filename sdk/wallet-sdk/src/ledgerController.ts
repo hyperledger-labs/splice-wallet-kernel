@@ -23,13 +23,23 @@ import { SigningPublicKey } from '@canton-network/core-ledger-client/src/_proto/
 import { TopologyController } from './topologyController.js'
 import { PartyId } from '@canton-network/core-types'
 
+export type RawCommandMap = {
+    ExerciseCommand: Types['ExerciseCommand']
+    CreateCommand: Types['CreateCommand']
+    CreateAndExerciseCommand: Types['CreateAndExerciseCommand']
+}
+export type WrappedCommand<
+    K extends keyof RawCommandMap = keyof RawCommandMap,
+> = {
+    [P in K]: { [Q in P]: RawCommandMap[P] }
+}[K]
 /**
  * Controller for interacting with the Ledger API, this is the primary interaction point with the validator node
  * using external signing.
  */
 export class LedgerController {
-    private client: LedgerClient
-    private userId: string
+    private readonly client: LedgerClient
+    private readonly userId: string
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
     private logger = pino({ name: 'LedgerController', level: 'info' })
@@ -123,13 +133,14 @@ export class LedgerController {
      * @returns the commandId used to track the transaction.
      */
     async prepareSignAndExecuteTransaction(
-        commands: unknown,
+        commands: WrappedCommand | WrappedCommand[] | unknown,
         privateKey: PrivateKey,
         commandId: string,
         disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<string> {
+        const commandArray = Array.isArray(commands) ? commands : [commands]
         const prepared = await this.prepareSubmission(
-            commands,
+            commandArray,
             commandId,
             disclosedContracts
         )
@@ -146,9 +157,10 @@ export class LedgerController {
 
     /**
      * Waits for a command to be completed by polling the completions endpoint.
-     * @param commandId The ID of the command to wait for.
-     * @param beginExclusive The offset to start polling from.
+     * @param ledgerEnd The offset to start polling from.
      * @param timeoutMs The maximum time to wait in milliseconds.
+     * @param commandId Optional command id to wait for.
+     * @param submissionId Optional submission id to wait for.
      * @returns The completion value of the command.
      * @throws An error if the timeout is reached before the command is completed.
      */

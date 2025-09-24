@@ -66,5 +66,14 @@
         "tsx": "^4.19.4",
         "typescript": "^5.8.3",
         "vite": "^6.3.5"
+    },
+    "nx": {
+        "targets": {
+            "start": {
+                "dependsOn": [
+                    "build"
+                ]
+            }
+        }
     }
 }

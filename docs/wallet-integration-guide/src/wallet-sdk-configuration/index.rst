@@ -97,19 +97,8 @@ the fields may vary based on your configuration.
 
 the list might differed based on you canton configuration, the most important part is `TopologyManagerReadService` & `TopologyManagerWriteService`
 
-**my-validator-app-api** & **my-scan-api** can both be identified with ``curl ${api}/version`` they both produce an output like
+**my-validator-app-api** & **my-scan-proxy-api** can both be identified with ``curl ${api}/version`` they both produce an output like
 
 .. code-block:: JSON
 
     {"version":"0.4.15","commit_ts":"2025-09-05T11:38:13Z"}
-
-
-I dont have a scan api on DevNet
---------------------------------
-
-for localnet testing we use the scan api to retrieve the synchronizer id, the primary reason for this is because each time you stop
-and start the containers this value changes. However on DevNet, TestNet & MainNet these are fixed and should be sourced from a trusted
-provider.
-
-the signature of ``sdk.connectTopology`` allows you to provide an URL or a string, this allow you to perform the connection using the
-synchronizer id instead like ``await sdk.connectTopology("global-domain::220...")``.

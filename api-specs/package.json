@@ -1,7 +1,7 @@
 {
     "name": "@canton-network/api-specs",
     "private": true,
-    "version": "1.0.0",
+    "version": "0.0.0",
     "description": "Splice Wallet Kernel API specifications",
     "type": "module",
     "scripts": {

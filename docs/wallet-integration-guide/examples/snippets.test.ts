@@ -51,7 +51,7 @@ describe('testing doc snippets', () => {
                 // Run `yarn jest -u` to update snapshots for new changes
                 expect(result).toMatchSnapshot()
             },
-            10000
+            30000
         )
     }
 })

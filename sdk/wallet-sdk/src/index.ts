@@ -188,11 +188,34 @@ export class WalletSDKImpl implements WalletSDK {
         partyId: PartyId,
         synchronizerId?: PartyId
     ): Promise<void> {
-        const _synchronizerId: PartyId =
-            synchronizerId ??
-            (await this.userLedger!.listSynchronizers(partyId))!
-                .connectedSynchronizers![0].synchronizerId
+        let _synchronizerId: PartyId = synchronizerId ?? 'empty::empty'
 
+        if (synchronizerId === undefined) {
+            let synchronizer = await this.userLedger!.listSynchronizers(partyId)
+            let retry = 0
+            const maxRetries = 10
+
+            while (true) {
+                synchronizer = await this.userLedger!.listSynchronizers(partyId)
+                if (
+                    !synchronizer.connectedSynchronizers ||
+                    synchronizer.connectedSynchronizers!.length !== 0
+                ) {
+                    _synchronizerId =
+                        synchronizer!.connectedSynchronizers![0].synchronizerId
+                    break
+                } else {
+                    retry++
+                }
+                if (retry > maxRetries)
+                    throw new Error(
+                        `Could not find any synchronizer id for ${partyId}`
+                    )
+                await new Promise((resolve) => setTimeout(resolve, 1000))
+            }
+        }
+
+        this.logger?.info(`synchronizer id will be set to ${_synchronizerId}`)
         if (this.userLedger === undefined)
             this.logger?.warn(
                 'User ledger controller is not defined, consider calling sdk.connect() first!'

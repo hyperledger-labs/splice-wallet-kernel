@@ -36,11 +36,11 @@ const allocatedParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPair.privateKey
 )
 await sdk.setPartyId(allocatedParty!.partyId)
+
 logger.info('Create ping command')
 const createPingCommand = sdk.userLedger?.createPingCommand(
     allocatedParty!.partyId!
 )
-await sdk.setPartyId(allocatedParty!.partyId!)
 
 logger.info('Prepare command submission for ping create command')
 const prepareResponse = await sdk.userLedger?.prepareSignAndExecuteTransaction(
