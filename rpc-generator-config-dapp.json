@@ -11,6 +11,15 @@
         },
         {
             "type": "custom",
+            "name": "@canton-network/wallet-dapp-rpc-server",
+            "language": "typescript",
+            "openRPCPath": null,
+            "outPath": "./sdk/dapp-sdk/src/dapp-api/rpc-gen",
+            "customComponent": "./core/rpc-generator/dist/components/controller.js",
+            "customType": "controller"
+        },
+        {
+            "type": "custom",
             "name": "@canton-network/wallet-dapp-rpc-extension",
             "language": "typescript",
             "openRPCPath": null,

@@ -57,6 +57,12 @@ export type IsConnected = boolean
 export type ChainId = string
 /**
  *
+ * A URL that points to a user interface.
+ *
+ */
+export type UserUrl = string
+/**
+ *
  * JWT authentication token (if applicable).
  *
  */
@@ -273,6 +279,7 @@ export interface ConnectResult {
     kernel: KernelInfo
     isConnected: IsConnected
     chainId?: ChainId
+    userUrl?: UserUrl
     sessionToken: SessionToken
     [k: string]: any
 }

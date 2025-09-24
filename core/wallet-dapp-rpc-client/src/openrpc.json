@@ -56,6 +56,9 @@
                             "type": "string",
                             "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
                         },
+                        "userUrl": {
+                            "$ref": "#/components/schemas/UserUrl"
+                        },
                         "sessionToken": {
                             "title": "sessionToken",
                             "type": "string",
@@ -261,6 +264,12 @@
                     }
                 },
                 "required": ["response"]
+            },
+            "UserUrl": {
+                "title": "UserUrl",
+                "type": "string",
+                "format": "uri",
+                "description": "A URL that points to a user interface."
             },
             "JsCommands": {
                 "title": "JsCommands",

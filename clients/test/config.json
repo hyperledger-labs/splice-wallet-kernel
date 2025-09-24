@@ -2,7 +2,8 @@
     "kernel": {
         "id": "remote-da",
         "clientType": "remote",
-        "url": "http://localhost:3008/rpc"
+        "url": "http://localhost:3008/rpc",
+        "userUrl": "http://localhost:3002"
     },
     "store": {
         "connection": {

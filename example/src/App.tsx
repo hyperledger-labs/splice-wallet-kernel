@@ -59,14 +59,6 @@ function App() {
             setMessages((prev) => [...prev, JSON.stringify(event)])
         }
 
-        const onConnected = (result: sdk.dappAPI.OnConnectedEvent) => {
-            console.log('DAPP: Connected to Wallet Kernel:', result)
-            messageListener(result)
-            setStatus(
-                `Wallet Kernel: ${result.kernel.id}, status: connected, chain: ${result.chainId}`
-            )
-        }
-
         const onAccountsChanged = (
             wallets: sdk.dappAPI.AccountsChangedEvent
         ) => {
@@ -81,7 +73,6 @@ function App() {
 
         // Listen for connected events from the provider
         // This will be triggered when the user connects to the wallet kernel
-        provider.on<sdk.dappAPI.OnConnectedEvent>('onConnected', onConnected)
         provider.on<sdk.dappAPI.TxChangedEvent>('txChanged', messageListener)
         provider.on<sdk.dappAPI.AccountsChangedEvent>(
             'accountsChanged',
@@ -89,7 +80,6 @@ function App() {
         )
 
         return () => {
-            provider.removeListener('onConnected', onConnected)
             provider.removeListener('txChanged', messageListener)
             provider.removeListener('accountsChanged', onAccountsChanged)
         }
@@ -151,6 +141,15 @@ function App() {
                         }}
                     >
                         connect to wallet kernel
+                    </button>
+                    <button
+                        disabled={status.includes('disconnected') || loading}
+                        onClick={() => {
+                            console.log('Opening to Wallet Kernel...')
+                            sdk.open()
+                        }}
+                    >
+                        open wallet kernel
                     </button>
                     <button
                         disabled={!primaryParty}
