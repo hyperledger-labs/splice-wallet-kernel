@@ -19,7 +19,7 @@
         "colors": "^1.4.0",
         "diff": "^8.0.2",
         "openapi-typescript": "^6.0.0",
-        "tar-fs": "^3.1.0",
+        "tar-fs": "^3.1.1",
         "tsx": "^4.20.3",
         "typescript": "^5.8.3"
     },
