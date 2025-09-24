@@ -102,7 +102,7 @@ export const jsonRpcHandler =
                     'RPC request: Invalid request format'
                 )
 
-                const [httpCode, jsonResponse] = handleRpcError(
+                const [status, response] = handleRpcError(
                     rpcErrors.invalidRequest({
                         message: 'Invalid JSON-RPC request format',
                     }),
@@ -110,7 +110,7 @@ export const jsonRpcHandler =
                     logger
                 )
 
-                res.status(httpCode).json(jsonResponse)
+                res.status(status).json(response)
             } else {
                 const { method, params, id = null } = parsed.data
 
@@ -130,7 +130,7 @@ export const jsonRpcHandler =
                     params?: Params
                 ) => Returns
                 if (!methodFn) {
-                    const [httpCode, jsonResponse] = handleRpcError(
+                    const [status, response] = handleRpcError(
                         rpcErrors.methodNotFound({
                             message: `Method ${method} not found`,
                         }),
@@ -139,7 +139,7 @@ export const jsonRpcHandler =
                         method
                     )
 
-                    res.status(httpCode).json(jsonResponse)
+                    res.status(status).json(response)
                 }
 
                 // TODO: validate params match the expected schema for the method
@@ -151,14 +151,14 @@ export const jsonRpcHandler =
                         res.json(response)
                     })
                     .catch((error: unknown) => {
-                        const [httpCode, jsonResponse] = handleRpcError(
+                        const [status, response] = handleRpcError(
                             error,
                             id,
                             logger,
                             method
                         )
-                        logger.error(jsonResponse, 'RPC response')
-                        res.status(httpCode).json(jsonResponse)
+                        logger.error(response, 'RPC response')
+                        res.status(status).json(response)
                     })
             }
         }

@@ -32,10 +32,6 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
     await wkPage.locator('#network').selectOption('1')
     await wkPage.getByRole('button', { name: 'Connect' }).click()
 
-    // Reload due to issue #233
-    await wkPage.waitForSelector('text=Logged In!')
-    await wkPage.reload()
-
     await wkPage.getByRole('link', { name: 'Wallets' }).click()
 
     dappPage.reload() // Reloading to get the socket to reconnect in playwright
