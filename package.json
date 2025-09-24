@@ -12,7 +12,7 @@
         "generate:user": "yarn workspace @canton-network/core-rpc-generator build && open-rpc-generator generate -c ./rpc-generator-config-user.json",
         "generate:signing": "yarn workspace @canton-network/core-rpc-generator build && open-rpc-generator generate -c ./rpc-generator-config-signing.json",
         "generate:grpc": "tsx ./scripts/src/generate-protobufs.ts",
-        "generate:all": "yarn generate:dapp && yarn generate:user && yarn generate:signing && yarn generate:grpc",
+        "generate:all": "yarn generate:dapp && yarn generate:user && yarn generate:signing",
         "build:all": "nx run-many -t build --parallel",
         "clean:all": "nx run-many -t clean --parallel",
         "test:all": "nx run-many -t test --parallel",
