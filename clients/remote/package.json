@@ -22,6 +22,7 @@
     "license": "ISC",
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
+        "@canton-network/core-rpc-errors": "workspace:^",
         "@canton-network/core-signing-internal": "workspace:^",
         "@canton-network/core-signing-lib": "workspace:^",
         "@canton-network/core-signing-participant": "workspace:^",
@@ -33,7 +34,6 @@
         "@canton-network/core-wallet-store-sql": "workspace:^",
         "@canton-network/core-wallet-ui-components": "workspace:^",
         "@canton-network/core-wallet-user-rpc-client": "workspace:^",
-        "@metamask/rpc-errors": "^7.0.2",
         "cors": "^2.8.5",
         "express": "^5.1.0",
         "google-protobuf": "^3.21.4",

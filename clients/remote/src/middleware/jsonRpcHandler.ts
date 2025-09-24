@@ -3,16 +3,76 @@
 
 import { NextFunction, Request, Response } from 'express'
 import { Logger } from 'pino'
-import { rpcErrors } from '@metamask/rpc-errors'
+import {
+    JsonRpcError,
+    rpcErrors,
+    toHttpErrorCode,
+} from '@canton-network/core-rpc-errors'
 import {
     ErrorResponse,
     JsonRpcRequest,
+    JsonRpcResponse,
     jsonRpcResponse,
 } from '@canton-network/core-types'
 
 interface JsonRpcHttpOptions<T> {
     logger: Logger
     controller: T
+}
+
+/**
+ * Handles JSON-RPC errors and maps them to HTTP responses.
+ * @param error The error that occurred.
+ * @param id The JSON-RPC request ID.
+ * @param logger The logger instance.
+ * @param method The name of the JSON-RPC method being called.
+ * @returns A tuple containing the HTTP status code and the JSON-RPC response.
+ */
+const handleRpcError = (
+    error: unknown,
+    id: string | number | null,
+    logger: Logger,
+    method?: string
+): [number, JsonRpcResponse] => {
+    const genericMessage = method
+        ? `Something went wrong while calling ${method}`
+        : 'Something went wrong'
+
+    let response: ErrorResponse = {
+        error: {
+            ...rpcErrors.internal(),
+            message: genericMessage,
+            data: error,
+        },
+    }
+
+    if (error instanceof JsonRpcError) {
+        response.error = error
+        const httpCode = toHttpErrorCode(error.code)
+        return [httpCode, jsonRpcResponse(id, response)]
+    }
+
+    if (error instanceof Error) {
+        response.error.message = error.message
+    } else if (typeof error === 'string') {
+        response.error.message = error
+    } else if (ErrorResponse.safeParse(error).success) {
+        response = error as ErrorResponse
+    } else if (
+        // Check for a Ledger API error format
+        typeof error === 'object' &&
+        error !== null &&
+        'cause' in error &&
+        'code' in error
+    ) {
+        response.error.message = error.cause as string
+        response.error.data = error
+    }
+
+    const jsonResponse = jsonRpcResponse(id, response)
+    logger.error(jsonResponse, 'RPC response')
+
+    return [500, jsonResponse]
 }
 
 export const jsonRpcHandler =
@@ -41,13 +101,16 @@ export const jsonRpcHandler =
                     },
                     'RPC request: Invalid request format'
                 )
-                res.status(400).json(
-                    jsonRpcResponse(null, {
-                        error: rpcErrors.invalidRequest({
-                            message: 'Invalid JSON-RPC request format',
-                        }),
-                    })
+
+                const [status, response] = handleRpcError(
+                    rpcErrors.invalidRequest({
+                        message: 'Invalid JSON-RPC request format',
+                    }),
+                    null,
+                    logger
                 )
+
+                res.status(status).json(response)
             } else {
                 const { method, params, id = null } = parsed.data
 
@@ -67,13 +130,16 @@ export const jsonRpcHandler =
                     params?: Params
                 ) => Returns
                 if (!methodFn) {
-                    const response = jsonRpcResponse(id, {
-                        error: rpcErrors.methodNotFound({
+                    const [status, response] = handleRpcError(
+                        rpcErrors.methodNotFound({
                             message: `Method ${method} not found`,
                         }),
-                    })
-                    logger.error(response, `RPC response`)
-                    res.status(404).json(response)
+                        null,
+                        logger,
+                        method
+                    )
+
+                    res.status(status).json(response)
                 }
 
                 // TODO: validate params match the expected schema for the method
@@ -85,43 +151,14 @@ export const jsonRpcHandler =
                         res.json(response)
                     })
                     .catch((error: unknown) => {
-                        let response: ErrorResponse = {
-                            error: {
-                                ...rpcErrors.internal(),
-                                message: `Something went wrong while calling ${method}`,
-                                data: undefined,
-                            },
-                        }
-
-                        if (error instanceof Error) {
-                            response.error.message = error.message
-
-                            if (error.message === 'User is not connected') {
-                                response.error.code =
-                                    rpcErrors.invalidRequest().code
-                                res.status(401).json(
-                                    jsonRpcResponse(id, response)
-                                )
-                                return
-                            }
-                        } else if (typeof error === 'string') {
-                            response.error.message = error
-                        } else if (ErrorResponse.safeParse(error).success) {
-                            response = error as ErrorResponse
-                        } else if (
-                            // Check for a Ledger API error format
-                            typeof error === 'object' &&
-                            error !== null &&
-                            'cause' in error &&
-                            'code' in error
-                        ) {
-                            response.error.message = error.cause as string
-                            response.error.data = error
-                        }
-
-                        const jsonResponse = jsonRpcResponse(id, response)
-                        logger.error(jsonResponse, 'RPC response')
-                        res.status(500).json(jsonResponse)
+                        const [status, response] = handleRpcError(
+                            error,
+                            id,
+                            logger,
+                            method
+                        )
+                        logger.error(response, 'RPC response')
+                        res.status(status).json(response)
                     })
             }
         }

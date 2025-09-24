@@ -5,7 +5,6 @@ import '@canton-network/core-wallet-ui-components'
 import { Auth } from '@canton-network/core-wallet-store'
 import { LitElement, html } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
-import { userClient } from '../rpc-client'
 import {
     Network,
     RemoveNetworkParams,
@@ -13,6 +12,8 @@ import {
 } from '@canton-network/core-wallet-user-rpc-client'
 
 import '../index'
+import { stateManager } from '../state-manager'
+import { createUserClient } from '../rpc-client'
 
 @customElement('user-ui-networks')
 export class UserUiNetworks extends LitElement {
@@ -31,11 +32,13 @@ export class UserUiNetworks extends LitElement {
         this.editingNetwork?.auth?.type ?? 'implicit'
 
     private async listNetworks() {
+        const userClient = createUserClient(stateManager.accessToken.get())
         const response = await userClient.request('listNetworks')
         this.networks = response.networks
     }
 
     private async listSessions() {
+        const userClient = createUserClient(stateManager.accessToken.get())
         const response = await userClient.request('listSessions')
         this.sessions = response.sessions
     }
@@ -62,6 +65,7 @@ export class UserUiNetworks extends LitElement {
         const params: RemoveNetworkParams = {
             networkName: net.name,
         }
+        const userClient = createUserClient(stateManager.accessToken.get())
         await userClient.request('removeNetwork', params)
 
         await this.listNetworks()
@@ -111,11 +115,9 @@ export class UserUiNetworks extends LitElement {
             ledgerApi: formData.get('ledgerApi.baseurl') as string,
         }
 
-        await userClient.transport.submit({
-            method: 'addNetwork',
-            params: {
-                network: networkParam,
-            },
+        const userClient = createUserClient(stateManager.accessToken.get())
+        await userClient.request('addNetwork', {
+            network: networkParam,
         })
 
         await this.listNetworks()
