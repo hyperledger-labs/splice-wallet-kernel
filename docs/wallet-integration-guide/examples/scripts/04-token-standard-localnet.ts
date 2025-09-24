@@ -130,12 +130,12 @@ const completion = await sdk.userLedger?.waitForCompletion(
 )
 logger.info({ completion }, 'Transfer transaction completed')
 
+await sdk.setPartyId(receiver!.partyId)
+
 const pendingInstructions =
     await sdk.tokenStandard?.fetchPendingTransferInstructionView()
 
 const transferCid = pendingInstructions?.[0].contractId!
-
-await sdk.setPartyId(receiver!.partyId)
 
 const [acceptTransferCommand, disclosedContracts3] =
     await sdk.tokenStandard!.exerciseTransferInstructionChoice(
