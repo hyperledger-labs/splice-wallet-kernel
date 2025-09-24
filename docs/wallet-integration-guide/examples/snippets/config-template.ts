@@ -48,5 +48,7 @@ export default async function () {
 
     await sdk.connect()
     await sdk.connectAdmin()
-    await sdk.connectTopology(new URL('http://my-scan-api'))
+    //an alternative here is the use the synchronizer directly like
+    //await sdk.connectTopology('global-domain::22200...')
+    await sdk.connectTopology(new URL('http://my-scan-proxy-api'))
 }
