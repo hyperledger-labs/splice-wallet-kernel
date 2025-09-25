@@ -6,19 +6,22 @@ import {
     localValidatorDefault,
 } from '@canton-network/wallet-sdk'
 
-const sdk = new WalletSDKImpl().configure({
-    logger: console,
-    authFactory: localNetAuthDefault,
-    ledgerFactory: localNetLedgerDefault,
-    tokenStandardFactory: localNetTokenStandardDefault,
-    validatorFactory: localValidatorDefault,
-})
+// @disable-snapshot-test
+export default async function () {
+    const sdk = new WalletSDKImpl().configure({
+        logger: console,
+        authFactory: localNetAuthDefault,
+        ledgerFactory: localNetLedgerDefault,
+        tokenStandardFactory: localNetTokenStandardDefault,
+        validatorFactory: localValidatorDefault,
+    })
 
-const myParty = 'my-party'
+    const myParty = 'my-party'
 
-await sdk.connect()
-await sdk.setPartyId(myParty)
+    await sdk.connect()
+    await sdk.setPartyId(myParty)
 
-//this returns a list of all transfer instructions, you can then accept or reject them
-const pendingInstructions =
-    await sdk.tokenStandard?.fetchPendingTransferInstructionView()
+    //this returns a list of all transfer instructions, you can then accept or reject them
+    const pendingInstructions =
+        await sdk.tokenStandard?.fetchPendingTransferInstructionView()
+}

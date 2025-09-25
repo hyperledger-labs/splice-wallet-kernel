@@ -15,7 +15,7 @@ const sdk = new WalletSDKImpl().configure({
 
 const sender = 'sender-party'
 const senderKey = 'private-key-for-my-party'
-const instrumentAdminPartyId = 'Admin of the instrument'
+const instrumentAdminPartyId = 'admin-of-the-instrument'
 
 const receiver = 'receiver-party'
 

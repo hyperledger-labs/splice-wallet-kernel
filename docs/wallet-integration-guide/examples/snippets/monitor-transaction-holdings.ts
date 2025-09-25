@@ -6,30 +6,33 @@ import {
 } from '@canton-network/wallet-sdk'
 import { v4 } from 'uuid'
 
-const sdk = new WalletSDKImpl().configure({
-    logger: console,
-    authFactory: localNetAuthDefault,
-    ledgerFactory: localNetLedgerDefault,
-    tokenStandardFactory: localNetTokenStandardDefault,
-})
-
+// @disable-snapshot-test
 export default async function () {
-    let startLedger = '0'
-    let step = '100'
+    const sdk = new WalletSDKImpl().configure({
+        logger: console,
+        authFactory: localNetAuthDefault,
+        ledgerFactory: localNetLedgerDefault,
+        tokenStandardFactory: localNetTokenStandardDefault,
+    })
 
-    while (true) {
-        const holdings = await sdk.tokenStandard?.listHoldingTransactions(
-            startLedger,
-            step
-        )
+    export default async function () {
+        let startLedger = '0'
+        let step = '100'
 
-        //we update our offsets so we fetch for the next 100 ledger transactions
-        startLedger = holdings!.nextOffset.toString()
-        step = (Number(startLedger) + 100).toString()
+        while (true) {
+            const holdings = await sdk.tokenStandard?.listHoldingTransactions(
+                startLedger,
+                step
+            )
 
-        console.log(!holdings!.transactions)
+            //we update our offsets so we fetch for the next 100 ledger transactions
+            startLedger = holdings!.nextOffset.toString()
+            step = (Number(startLedger) + 100).toString()
 
-        //sleep for 5 seconds
-        await new Promise((res) => setTimeout(res, 5000))
+            console.log(!holdings!.transactions)
+
+            //sleep for 5 seconds
+            await new Promise((res) => setTimeout(res, 5000))
+        }
     }
 }

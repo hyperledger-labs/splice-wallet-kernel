@@ -7,32 +7,35 @@ import {
 } from '@canton-network/wallet-sdk'
 import { v4 } from 'uuid'
 
-const sdk = new WalletSDKImpl().configure({
-    logger: console,
-    authFactory: localNetAuthDefault,
-    ledgerFactory: localNetLedgerDefault,
-    tokenStandardFactory: localNetTokenStandardDefault,
-    validatorFactory: localValidatorDefault,
-})
+// @disable-snapshot-test
+export default async function () {
+    const sdk = new WalletSDKImpl().configure({
+        logger: console,
+        authFactory: localNetAuthDefault,
+        ledgerFactory: localNetLedgerDefault,
+        tokenStandardFactory: localNetTokenStandardDefault,
+        validatorFactory: localValidatorDefault,
+    })
 
-const myParty = 'my-party'
-const myPrivateKey = 'private-key-for-my-party'
-const myPendingTransactionCid = 'Contract-id-for-a-transfer-instruction'
+    const myParty = 'my-party'
+    const myPrivateKey = 'private-key-for-my-party'
+    const myPendingTransactionCid = 'Contract-id-for-a-transfer-instruction'
 
-await sdk.connect()
-await sdk.setPartyId(myParty)
+    await sdk.connect()
+    await sdk.setPartyId(myParty)
 
-//withdraw the transaction
-const [withdrawTransferCommand, disclosedContracts] =
-    await sdk.tokenStandard!.exerciseTransferInstructionChoice(
-        myPendingTransactionCid,
-        'Withdraw'
-    )
+    //withdraw the transaction
+    const [withdrawTransferCommand, disclosedContracts] =
+        await sdk.tokenStandard!.exerciseTransferInstructionChoice(
+            myPendingTransactionCid,
+            'Withdraw'
+        )
 
-const withdrawCommandId =
-    await sdk.userLedger?.prepareSignAndExecuteTransaction(
-        withdrawTransferCommand,
-        myPrivateKey,
-        v4(),
-        disclosedContracts
-    )
+    const withdrawCommandId =
+        await sdk.userLedger?.prepareSignAndExecuteTransaction(
+            withdrawTransferCommand,
+            myPrivateKey,
+            v4(),
+            disclosedContracts
+        )
+}
