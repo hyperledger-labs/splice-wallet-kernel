@@ -6,6 +6,7 @@ import * as v3_3 from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import * as v3_4 from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from 'pino'
+import { PartyId } from '@canton-network/core-types'
 
 type SupportedVersions = '3.3' | '3.4'
 
@@ -124,6 +125,66 @@ export class LedgerClient {
                 )
             }
         }
+    }
+
+    /**
+     * Grants a user the right to act as a party, while ensuring the party exists.
+     *
+     * @param userId The ID of the user to grant rights to.
+     * @param partyId The ID of the party to grant rights for.
+     * @returns A promise that resolves when the rights have been granted.
+     */
+    public async grantUserRights(userId: string, partyId: PartyId) {
+        // Wait for party to appear on participant
+        let partyFound = false
+        let tries = 0
+        const maxTries = 20
+
+        while (!partyFound && tries < maxTries) {
+            const parties = await this.get('/v2/parties')
+            partyFound =
+                parties.partyDetails?.some(
+                    (party) => party.party === partyId
+                ) || false
+
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+            tries++
+        }
+
+        if (tries >= maxTries) {
+            throw new Error('timed out waiting for new party to appear')
+        }
+
+        // Assign user rights to party
+        const result = await this.post(
+            '/v2/users/{user-id}/rights',
+            {
+                identityProviderId: '',
+                userId,
+                rights: [
+                    {
+                        kind: {
+                            CanActAs: {
+                                value: {
+                                    party: partyId,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+            {
+                path: {
+                    'user-id': userId,
+                },
+            }
+        )
+
+        if (!result.newlyGrantedRights) {
+            throw new Error('Failed to grant user rights')
+        }
+
+        return
     }
 
     public async post<Path extends PostEndpoint>(

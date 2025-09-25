@@ -9,6 +9,7 @@ import {
     Types,
     awaitCompletion,
     promiseWithTimeout,
+    versioned_client,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -39,6 +40,7 @@ export type WrappedCommand<
  */
 export class LedgerController {
     private readonly client: LedgerClient
+    private readonly versionedLedgerClient: versioned_client.LedgerClient
     private readonly userId: string
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
@@ -52,6 +54,11 @@ export class LedgerController {
      */
     constructor(userId: string, baseUrl: URL, token: string) {
         this.client = new LedgerClient(baseUrl, token, this.logger)
+        this.versionedLedgerClient = new versioned_client.LedgerClient(
+            baseUrl,
+            token,
+            this.logger
+        )
         this.userId = userId
         return this
     }
