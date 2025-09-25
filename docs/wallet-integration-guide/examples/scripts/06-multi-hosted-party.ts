@@ -7,9 +7,9 @@ import {
     createKeyPair,
     localValidatorDefault,
     localNetStaticConfig,
+    Enums_ParticipantPermission,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
-import { Enums_ParticipantPermission } from '@canton-network/wallet-sdk'
 
 const logger = pino({ name: '06-external-party-setup', level: 'info' })
 

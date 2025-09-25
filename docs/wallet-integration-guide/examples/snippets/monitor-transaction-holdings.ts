@@ -14,8 +14,8 @@ const sdk = new WalletSDKImpl().configure({
 })
 
 export default async function () {
-    let startLedger = 0
-    let step = 100
+    let startLedger = '0'
+    let step = '100'
 
     while (true) {
         const holdings = await sdk.tokenStandard?.listHoldingTransactions(
@@ -24,10 +24,10 @@ export default async function () {
         )
 
         //we update our offsets so we fetch for the next 100 ledger transactions
-        startLedger = holdings.nextOffset
-        step = startLedger + 100
+        startLedger = holdings!.nextOffset.toString()
+        step = (Number(startLedger) + 100).toString()
 
-        console.log(holdings.transactions)
+        console.log(!holdings!.transactions)
 
         //sleep for 5 seconds
         await new Promise((res) => setTimeout(res, 5000))

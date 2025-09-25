@@ -3,7 +3,7 @@ import {
     localNetAuthDefault,
     localNetLedgerDefault,
     localNetTokenStandardDefault,
-    localNetValidatorDefault,
+    localValidatorDefault,
 } from '@canton-network/wallet-sdk'
 import { v4 } from 'uuid'
 
@@ -12,7 +12,7 @@ const sdk = new WalletSDKImpl().configure({
     authFactory: localNetAuthDefault,
     ledgerFactory: localNetLedgerDefault,
     tokenStandardFactory: localNetTokenStandardDefault,
-    validatorFactory: localNetValidatorDefault,
+    validatorFactory: localValidatorDefault,
 })
 
 const myParty = 'my-party'
