@@ -4,12 +4,13 @@
 import { html, LitElement } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import '@canton-network/core-wallet-ui-components'
-import { userClient } from '../rpc-client'
+import { createUserClient } from '../rpc-client'
 import {
     ExecuteParams,
     SignParams,
 } from '@canton-network/core-wallet-user-rpc-client'
 import { decodePreparedTransaction } from '@canton-network/core-tx-visualizer'
+import { stateManager } from '../state-manager'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends LitElement {
@@ -55,6 +56,8 @@ export class ApproveUi extends LitElement {
             preparedTransactionHash: this.txHash,
             preparedTransaction: this.tx,
         }
+
+        const userClient = createUserClient(stateManager.accessToken.get())
         const { signature, signedBy } = await userClient.request(
             'sign',
             signRequest

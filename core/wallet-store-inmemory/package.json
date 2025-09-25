@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-store-inmemory",
-    "version": "0.4.2",
+    "version": "0.4.3",
     "type": "module",
     "description": "In-memory implementation of the Store API",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -17,6 +17,7 @@
     },
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
+        "@canton-network/core-rpc-errors": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
         "@canton-network/core-wallet-store": "workspace:^",
         "pino": "^9.7.0",
