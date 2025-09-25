@@ -241,7 +241,7 @@ export class LedgerController {
     async executeSubmission(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
         signature: string,
-        publicKey: SigningPublicKey | PublicKey,
+        publicKey: PublicKey,
         submissionId: string
     ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
         if (prepared.preparedTransaction === undefined) {

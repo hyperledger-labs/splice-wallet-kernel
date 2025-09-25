@@ -5,7 +5,7 @@ import {
     Enums_ParticipantPermission,
     LedgerClient,
     PreparedTransaction,
-    SigningPublicKey,
+    // SigningPublicKey,
     TopologyWriteService,
 } from '@canton-network/core-ledger-client'
 import {
@@ -89,9 +89,7 @@ export class TopologyController {
      * This is a utility function that uses the same fingerprinting scheme as the ledger.
      * @param publicKey
      */
-    static createFingerprintFromPublicKey(
-        publicKey: SigningPublicKey | PublicKey
-    ): string {
+    static createFingerprintFromPublicKey(publicKey: PublicKey): string {
         return TopologyWriteService.createFingerprintFromKey(publicKey)
     }
 
@@ -107,7 +105,12 @@ export class TopologyController {
         publicKey: PublicKey,
         partyHint?: string,
         confirmingThreshold?: number,
-        hostingParticipantPermissions?: Map<string, Enums_ParticipantPermission>
+        // TODO (breaking): remove this
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        _hostingParticipantPermissions?: Map<
+            string,
+            Enums_ParticipantPermission
+        >
     ): Promise<PreparedParty> {
         const namespace =
             TopologyController.createFingerprintFromPublicKey(publicKey)
@@ -116,34 +119,23 @@ export class TopologyController {
             ? `${partyHint}::${namespace}`
             : `${namespace.slice(0, 5)}::${namespace}`
 
-        const transactions = await this.topologyClient
-            .generateTransactions(
-                publicKey,
-                partyId,
-                confirmingThreshold,
-                hostingParticipantPermissions
-            )
-            .then((resp) => resp.generatedTransactions)
-
-        const txHashes = transactions.map((tx) =>
-            Buffer.from(tx.transactionHash)
+        const transactions = await this.topologyClient.generateTransactions(
+            publicKey,
+            partyHint || namespace.slice(0, 5),
+            confirmingThreshold
         )
 
-        const partyTransactions = transactions.map(
-            (tx) => tx.serializedTransaction
-        )
-
-        const combinedHash = TopologyWriteService.combineHashes(txHashes)
-
-        const result = {
-            partyTransactions,
-            combinedHash,
-            txHashes,
+        return {
+            // TODO (breaking): return the transactions as a string directly
+            partyTransactions: transactions.topologyTransactions!.map((tx) =>
+                Buffer.from(tx, 'base64')
+            ),
+            // TODO (breaking): rename combinedHash to multiHash
+            combinedHash: transactions.multiHash,
+            txHashes: [], // TODO: get hashes?
             namespace,
             partyId,
         }
-
-        return Promise.resolve(result)
     }
 
     /** Submits a prepared and signed external party topology to the ledger.
@@ -158,19 +150,18 @@ export class TopologyController {
         preparedParty: PreparedParty,
         grantUserRights: boolean = true
     ): Promise<AllocatedParty> {
-        const signedTopologyTxs = preparedParty.partyTransactions.map(
-            (transaction) =>
-                TopologyWriteService.toSignedTopologyTransaction(
-                    preparedParty.txHashes,
-                    transaction,
-                    signedHash,
-                    preparedParty.namespace
-                )
-        )
-
-        await this.topologyClient.submitExternalPartyTopology(
-            signedTopologyTxs,
-            preparedParty.partyId
+        await this.topologyClient.allocateExternalParty(
+            preparedParty.partyTransactions.map((transaction) => ({
+                transaction: Buffer.from(transaction).toString('base64'),
+            })),
+            [
+                {
+                    format: 'SIGNATURE_FORMAT_CONCAT',
+                    signature: signedHash,
+                    signedBy: preparedParty.namespace,
+                    signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
+                },
+            ]
         )
 
         if (grantUserRights) {
@@ -250,9 +241,9 @@ export class TopologyController {
      * @returns An AllocatedParty object containing the partyId of the new party.
      */
     async prepareSignAndSubmitMultiHostExternalParty(
-        participantEndpoints: MultiHostPartyParticipantConfig[],
+        _participantEndpoints: MultiHostPartyParticipantConfig[],
         privateKey: string,
-        synchronizerId: PartyId,
+        _synchronizerId: PartyId,
         hostingParticipantPermissions: Map<string, Enums_ParticipantPermission>,
         partyHint?: string,
         confirmingThreshold?: number
@@ -269,22 +260,22 @@ export class TopologyController {
         // on the participant specified in the wallet.sdk.configure
         // now we need to authorize the party to participant transaction on the others
 
-        for (const endpoint of participantEndpoints.slice(1)) {
-            const lc = new LedgerClient(
-                endpoint.baseUrl,
-                endpoint.accessToken,
-                this.logger
-            )
+        // for (const endpoint of participantEndpoints.slice(1)) {
+        //     // const lc = new LedgerClient(
+        //     //     endpoint.baseUrl,
+        //     //     endpoint.accessToken,
+        //     //     this.logger
+        //     // )
 
-            const service = new TopologyWriteService(
-                synchronizerId,
-                endpoint.adminApiUrl,
-                endpoint.accessToken,
-                lc
-            )
+        //     // const service = new TopologyWriteService(
+        //     //     synchronizerId,
+        //     //     endpoint.adminApiUrl,
+        //     //     endpoint.accessToken,
+        //     //     lc
+        //     // )
 
-            await service.authorizePartyToParticipant(preparedParty.partyId)
-        }
+        //     // await service.authorizePartyToParticipant(preparedParty.partyId)
+        // }
 
         // the PartyToParticipant mapping needs to be authorized on each HostingParticipant
         // before we can grantUserRights to the party

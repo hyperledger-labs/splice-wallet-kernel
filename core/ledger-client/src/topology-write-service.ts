@@ -1,43 +1,56 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerClient } from './ledger-client.js'
-import {
-    CryptoKeyFormat,
-    SigningKeyScheme,
-    SigningKeySpec,
-    SigningPublicKey,
-    Signature,
-    SignatureFormat,
-    SigningAlgorithmSpec,
-    TopologyManagerWriteServiceClient,
-    StoreId,
-    StoreId_Synchronizer,
-    Enums_ParticipantPermission,
-    Enums_TopologyChangeOp,
-    NamespaceDelegation,
-    PartyToKeyMapping,
-    PartyToParticipant,
-    PartyToParticipant_HostingParticipant,
-    SignedTopologyTransaction,
-    TopologyMapping,
-    MultiTransactionSignatures,
-    AddTransactionsRequest,
-    AddTransactionsResponse,
-    AuthorizeRequest,
-    AuthorizeResponse,
-    GenerateTransactionsRequest,
-    GenerateTransactionsRequest_Proposal,
-    GenerateTransactionsResponse,
-    BaseQuery,
-    ListPartyToParticipantRequest,
-    Empty,
-    TopologyManagerReadServiceClient,
-} from '@canton-network/core-ledger-proto'
-import { GrpcTransport } from '@protobuf-ts/grpc-transport'
-import { ChannelCredentials } from '@grpc/grpc-js'
+import { LedgerClient, PostResponse, Types } from './ledger-client.js'
+import {} from // CryptoKeyFormat,
+// SigningKeyScheme,
+// SigningKeySpec,
+// SigningPublicKey,
+// Signature,
+// SignatureFormat,
+// SigningAlgorithmSpec,
+// TopologyManagerWriteServiceClient,
+// StoreId,
+// StoreId_Synchronizer,
+// Enums_ParticipantPermission,
+// Enums_TopologyChangeOp,
+// NamespaceDelegation,
+// PartyToKeyMapping,
+// PartyToParticipant,
+// PartyToParticipant_HostingParticipant,
+// SignedTopologyTransaction,
+// TopologyMapping,
+// MultiTransactionSignatures,
+// AddTransactionsRequest,
+// AddTransactionsResponse,
+// AuthorizeRequest,
+// AuthorizeResponse,
+// GenerateTransactionsRequest,
+// GenerateTransactionsRequest_Proposal,
+// GenerateTransactionsResponse,
+// BaseQuery,
+// ListPartyToParticipantRequest,
+// Empty,
+// TopologyManagerReadServiceClient,
+'@canton-network/core-ledger-proto'
+// import { GrpcTransport } from '@protobuf-ts/grpc-transport'
+// import { ChannelCredentials } from '@grpc/grpc-js'
 import { createHash } from 'node:crypto'
 import { PartyId } from '@canton-network/core-types'
+
+type GenerateTransactionResponse =
+    PostResponse<'/v2/parties/external/generate-topology'>
+
+type AllocateExternalPartyResponse =
+    PostResponse<'/v2/parties/external/allocate'>
+
+type OnboardingTransactions = NonNullable<
+    Types['AllocateExternalPartyRequest']['onboardingTransactions']
+>
+
+type MultiHashSignatures = NonNullable<
+    Types['AllocateExternalPartyRequest']['multiHashSignatures']
+>
 
 function prefixedInt(value: number, bytes: Buffer | Uint8Array): Buffer {
     const buffer = Buffer.alloc(4 + bytes.length)
@@ -46,15 +59,15 @@ function prefixedInt(value: number, bytes: Buffer | Uint8Array): Buffer {
     return buffer
 }
 
-function signingPublicKeyFromEd25519(publicKey: string): SigningPublicKey {
-    return {
-        format: CryptoKeyFormat.RAW,
-        publicKey: Buffer.from(publicKey, 'base64'),
-        scheme: SigningKeyScheme.ED25519,
-        keySpec: SigningKeySpec.EC_CURVE25519,
-        usage: [],
-    }
-}
+// function signingPublicKeyFromEd25519(publicKey: string): SigningPublicKey {
+//     return {
+//         format: CryptoKeyFormat.RAW,
+//         publicKey: Buffer.from(publicKey, 'base64'),
+//         scheme: SigningKeyScheme.ED25519,
+//         keySpec: SigningKeySpec.EC_CURVE25519,
+//         usage: [],
+//     }
+// }
 
 function computeSha256CantonHash(purpose: number, bytes: Uint8Array): string {
     const hashInput = prefixedInt(purpose, bytes)
@@ -67,37 +80,37 @@ function computeSha256CantonHash(purpose: number, bytes: Uint8Array): string {
 
 // TODO(#180): remove or rewrite after grpc is gone
 export class TopologyWriteService {
-    private topologyClient: TopologyManagerWriteServiceClient
-    private topologyReadService: TopologyManagerReadServiceClient
+    // private topologyClient: TopologyManagerWriteServiceClient
+    // private topologyReadService: TopologyManagerReadServiceClient
     private ledgerClient: LedgerClient
 
-    private store: StoreId
+    // private store: StoreId
 
     constructor(
-        synchronizerId: string,
+        private synchronizerId: string,
         userAdminUrl: string,
         private userAdminToken: string,
         ledgerClient: LedgerClient
     ) {
-        const transport = new GrpcTransport({
-            host: userAdminUrl,
-            channelCredentials: ChannelCredentials.createInsecure(),
-        })
+        // const transport = new GrpcTransport({
+        //     host: userAdminUrl,
+        //     channelCredentials: ChannelCredentials.createInsecure(),
+        // })
 
-        this.topologyClient = new TopologyManagerWriteServiceClient(transport)
-        this.topologyReadService = new TopologyManagerReadServiceClient(
-            transport
-        )
+        // this.topologyClient = new TopologyManagerWriteServiceClient(transport)
+        // this.topologyReadService = new TopologyManagerReadServiceClient(
+        //     transport
+        // )
 
         this.ledgerClient = ledgerClient
-        this.store = StoreId.create({
-            store: {
-                oneofKind: 'synchronizer',
-                synchronizer: StoreId_Synchronizer.create({
-                    id: synchronizerId,
-                }),
-            },
-        })
+        // this.store = StoreId.create({
+        //     store: {
+        //         oneofKind: 'synchronizer',
+        //         synchronizer: StoreId_Synchronizer.create({
+        //             id: synchronizerId,
+        //         }),
+        //     },
+        // })
     }
 
     static combineHashes(hashes: Buffer[]): string {
@@ -132,240 +145,264 @@ export class TopologyWriteService {
         return Buffer.from(predefineHashPurpose, 'hex').toString('base64')
     }
 
-    static createFingerprintFromKey = (
-        publicKey: SigningPublicKey | string
-    ): string => {
-        let key: SigningPublicKey
-
-        if (typeof publicKey === 'string') {
-            key = signingPublicKeyFromEd25519(publicKey)
-        } else {
-            key = publicKey
-        }
-
+    static createFingerprintFromKey = (publicKey: string): string => {
         // Hash purpose codes can be looked up in the Canton codebase:
         //  https://github.com/DACH-NY/canton/blob/62e9ccd3f1743d2c9422d863cfc2ca800405c71b/community/base/src/main/scala/com/digitalasset/canton/crypto/HashPurpose.scala#L52
         const hashPurpose = 12 // For `PublicKeyFingerprint`
 
         // Implementation for creating a fingerprint from the public key
-        return computeSha256CantonHash(hashPurpose, key.publicKey)
-    }
-
-    static toSignedTopologyTransaction(
-        txHashes: Buffer<ArrayBuffer>[],
-        serializedTransaction: Uint8Array<ArrayBufferLike>,
-        signature: string,
-        namespace: string
-    ): SignedTopologyTransaction {
-        return SignedTopologyTransaction.create({
-            transaction: serializedTransaction,
-            proposal: true,
-            signatures: [],
-            multiTransactionSignatures: [
-                MultiTransactionSignatures.create({
-                    transactionHashes: txHashes,
-                    signatures: [
-                        Signature.create({
-                            format: SignatureFormat.RAW,
-                            signature: Buffer.from(signature, 'base64'),
-                            signedBy: namespace,
-                            signingAlgorithmSpec: SigningAlgorithmSpec.ED25519,
-                        }),
-                    ],
-                }),
-            ],
-        })
-    }
-
-    private generateTransactionsRequest(
-        namespace: string,
-        partyId: PartyId,
-        publicKey: SigningPublicKey,
-        confirmingThreshold: number = 1,
-        hostingParticipantRights: Map<string, Enums_ParticipantPermission>
-    ): GenerateTransactionsRequest {
-        // Implementation for generating transactions request
-        const namespaceDelegation = TopologyMapping.create({
-            mapping: {
-                oneofKind: 'namespaceDelegation',
-                namespaceDelegation: NamespaceDelegation.create({
-                    namespace,
-                    targetKey: publicKey,
-                    isRootDelegation: true,
-                    restriction: {
-                        oneofKind: undefined,
-                    },
-                }),
-            },
-        })
-
-        const hostingParticipants = [...hostingParticipantRights].map(
-            ([participantUid, permission]) =>
-                PartyToParticipant_HostingParticipant.create({
-                    participantUid,
-                    permission,
-                })
+        return computeSha256CantonHash(
+            hashPurpose,
+            Buffer.from(publicKey, 'base64')
         )
-
-        const partyToParticipant = TopologyMapping.create({
-            mapping: {
-                oneofKind: 'partyToParticipant',
-                partyToParticipant: PartyToParticipant.create({
-                    party: partyId,
-                    threshold: confirmingThreshold,
-                    participants: hostingParticipants,
-                }),
-            },
-        })
-
-        const partyToKeyMapping = TopologyMapping.create({
-            mapping: {
-                oneofKind: 'partyToKeyMapping',
-                partyToKeyMapping: PartyToKeyMapping.create({
-                    party: partyId,
-                    threshold: 1,
-                    signingKeys: [publicKey],
-                }),
-            },
-        })
-
-        return GenerateTransactionsRequest.create({
-            proposals: [
-                namespaceDelegation,
-                partyToParticipant,
-                partyToKeyMapping,
-            ].map((mapping) =>
-                GenerateTransactionsRequest_Proposal.create({
-                    mapping,
-                    serial: 1,
-                    store: this.store,
-                    operation: Enums_TopologyChangeOp.ADD_REPLACE,
-                })
-            ),
-        })
     }
 
-    async submitExternalPartyTopology(
-        signedTopologyTxs: SignedTopologyTransaction[],
-        partyId: PartyId
-    ) {
-        await this.addTransactions(signedTopologyTxs)
-        await this.authorizePartyToParticipant(partyId)
+    // static toSignedTopologyTransaction(
+    //     txHashes: Buffer<ArrayBuffer>[],
+    //     serializedTransaction: Uint8Array<ArrayBufferLike>,
+    //     signature: string,
+    //     namespace: string
+    // ): SignedTopologyTransaction {
+    //     return SignedTopologyTransaction.create({
+    //         transaction: serializedTransaction,
+    //         proposal: true,
+    //         signatures: [],
+    //         multiTransactionSignatures: [
+    //             MultiTransactionSignatures.create({
+    //                 transactionHashes: txHashes,
+    //                 signatures: [
+    //                     Signature.create({
+    //                         format: SignatureFormat.RAW,
+    //                         signature: Buffer.from(signature, 'base64'),
+    //                         signedBy: namespace,
+    //                         signingAlgorithmSpec: SigningAlgorithmSpec.ED25519,
+    //                     }),
+    //                 ],
+    //             }),
+    //         ],
+    //     })
+    // }
+
+    // private generateTransactionsRequest(
+    //     namespace: string,
+    //     partyId: PartyId,
+    //     publicKey: SigningPublicKey,
+    //     confirmingThreshold: number = 1,
+    //     hostingParticipantRights: Map<string, Enums_ParticipantPermission>
+    // ): GenerateTransactionsRequest {
+    //     // Implementation for generating transactions request
+    //     const namespaceDelegation = TopologyMapping.create({
+    //         mapping: {
+    //             oneofKind: 'namespaceDelegation',
+    //             namespaceDelegation: NamespaceDelegation.create({
+    //                 namespace,
+    //                 targetKey: publicKey,
+    //                 isRootDelegation: true,
+    //                 restriction: {
+    //                     oneofKind: undefined,
+    //                 },
+    //             }),
+    //         },
+    //     })
+
+    //     const hostingParticipants = [...hostingParticipantRights].map(
+    //         ([participantUid, permission]) =>
+    //             PartyToParticipant_HostingParticipant.create({
+    //                 participantUid,
+    //                 permission,
+    //             })
+    //     )
+
+    //     const partyToParticipant = TopologyMapping.create({
+    //         mapping: {
+    //             oneofKind: 'partyToParticipant',
+    //             partyToParticipant: PartyToParticipant.create({
+    //                 party: partyId,
+    //                 threshold: confirmingThreshold,
+    //                 participants: hostingParticipants,
+    //             }),
+    //         },
+    //     })
+
+    //     const partyToKeyMapping = TopologyMapping.create({
+    //         mapping: {
+    //             oneofKind: 'partyToKeyMapping',
+    //             partyToKeyMapping: PartyToKeyMapping.create({
+    //                 party: partyId,
+    //                 threshold: 1,
+    //                 signingKeys: [publicKey],
+    //             }),
+    //         },
+    //     })
+
+    //     return GenerateTransactionsRequest.create({
+    //         proposals: [
+    //             namespaceDelegation,
+    //             partyToParticipant,
+    //             partyToKeyMapping,
+    //         ].map((mapping) =>
+    //             GenerateTransactionsRequest_Proposal.create({
+    //                 mapping,
+    //                 serial: 1,
+    //                 store: this.store,
+    //                 operation: Enums_TopologyChangeOp.ADD_REPLACE,
+    //             })
+    //         ),
+    //     })
+    // }
+
+    async allocateExternalParty(
+        onboardingTransactions: OnboardingTransactions,
+        multiHashSignatures: MultiHashSignatures
+        // publicKey: string,
+        // signature: string,
+        // namespace: string
+        // signedTopologyTxs: SignedTopologyTransaction[]
+    ): Promise<AllocateExternalPartyResponse> {
+        // const multiHashSignature =
+        //     signedTopologyTxs[0].multiTransactionSignatures[0].signatures[0]
+
+        return this.ledgerClient.post('/v2/parties/external/allocate', {
+            synchronizer: this.synchronizerId,
+            identityProviderId: '',
+            onboardingTransactions,
+            multiHashSignatures,
+            // onboardingTransactions: signedTopologyTxs.map((tx) => ({
+            //     transaction: toBase64(tx.transaction),
+            // })),
+            // multiHashSignatures: [
+            //     {
+            //         format: 'SIGNATURE_FORMAT_CONCAT',
+            //         // signature: toBase64(multiHashSignature.signature),
+            //         // signedBy: multiHashSignature.signedBy,
+            //         signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
+            //     },
+            // ],
+        })
     }
 
     async generateTransactions(
         publicKey: string,
-        partyId: PartyId,
-        confirmingThreshold: number = 1,
-        hostingParticipantRights?: Map<string, Enums_ParticipantPermission>
-    ): Promise<GenerateTransactionsResponse> {
-        const signingPublicKey = signingPublicKeyFromEd25519(publicKey)
-        const namespace =
-            TopologyWriteService.createFingerprintFromKey(signingPublicKey)
+        partyHint: PartyId = '',
+        confirmingThreshold: number = 1
+    ): Promise<GenerateTransactionResponse> {
+        // const signingPublicKey = signingPublicKeyFromEd25519(publicKey)
+        // const namespace =
+        //     TopologyWriteService.createFingerprintFromKey(signingPublicKey)
 
-        let participantRights = hostingParticipantRights
+        // let participantRights = hostingParticipantRights
 
-        // if no participantRights have been supplied, this party will be hosted on 1 validator (not multi-hosted)
-        // the default is to get the participantId from ledger client with Confirmation rights
-        if (!participantRights || participantRights.size === 0) {
-            const { participantId } = await this.ledgerClient.get(
-                '/v2/parties/participant-id'
-            )
+        // // if no participantRights have been supplied, this party will be hosted on 1 validator (not multi-hosted)
+        // // the default is to get the participantId from ledger client with Confirmation rights
+        // if (!participantRights || participantRights.size === 0) {
+        //     const { participantId } = await this.ledgerClient.get(
+        //         '/v2/parties/participant-id'
+        //     )
 
-            participantRights = new Map<string, Enums_ParticipantPermission>([
-                [participantId, Enums_ParticipantPermission.CONFIRMATION],
-            ])
-        }
+        //     participantRights = new Map<string, Enums_ParticipantPermission>([
+        //         [participantId, Enums_ParticipantPermission.CONFIRMATION],
+        //     ])
+        // }
 
-        const req = this.generateTransactionsRequest(
-            namespace,
-            partyId,
-            signingPublicKey,
-            confirmingThreshold,
-            participantRights
+        // const req = this.generateTransactionsRequest(
+        //     namespace,
+        //     partyId,
+        //     signingPublicKey,
+        //     confirmingThreshold,
+        //     participantRights
+        // )
+
+        return this.ledgerClient.post(
+            '/v2/parties/external/generate-topology',
+            {
+                synchronizer: this.synchronizerId,
+                partyHint,
+                publicKey: {
+                    format: 'CRYPTO_KEY_FORMAT_RAW',
+                    keyData: publicKey,
+                    keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
+                },
+                localParticipantObservationOnly: false,
+                confirmationThreshold: confirmingThreshold,
+                otherConfirmingParticipantUids: [],
+            }
         )
-
-        return this.topologyClient.generateTransactions(req, {
-            meta: {
-                Authorization: `Bearer ${this.userAdminToken}`,
-            },
-        }).response
     }
 
-    private async addTransactions(
-        signedTopologyTxs: SignedTopologyTransaction[]
-    ): Promise<AddTransactionsResponse> {
-        const request = AddTransactionsRequest.create({
-            transactions: signedTopologyTxs,
-            forceChanges: [],
-            store: this.store,
-        })
+    // private async addTransactions(
+    //     signedTopologyTxs: SignedTopologyTransaction[]
+    // ): Promise<AddTransactionsResponse> {
+    //     const request = AddTransactionsRequest.create({
+    //         transactions: signedTopologyTxs,
+    //         forceChanges: [],
+    //         store: this.store,
+    //     })
 
-        return this.topologyClient.addTransactions(request, {
-            meta: {
-                Authorization: `Bearer ${this.userAdminToken}`,
-            },
-        }).response
-    }
+    //     return this.topologyClient.addTransactions(request, {
+    //         meta: {
+    //             Authorization: `Bearer ${this.userAdminToken}`,
+    //         },
+    //     }).response
+    // }
 
-    async waitForPartyToParticipantProposal(
-        partyId: PartyId
-    ): Promise<Uint8Array | undefined> {
-        return new Promise((resolve, reject) => {
-            const interval = setInterval(async () => {
-                let counter = 0
+    // async waitForPartyToParticipantProposal(
+    //     partyId: PartyId
+    // ): Promise<Uint8Array | undefined> {
+    //     return new Promise((resolve, reject) => {
+    //         const interval = setInterval(async () => {
+    //             let counter = 0
 
-                const result =
-                    await this.topologyReadService.listPartyToParticipant(
-                        ListPartyToParticipantRequest.create({
-                            baseQuery: BaseQuery.create({
-                                store: this.store,
-                                proposals: true,
-                                timeQuery: {
-                                    oneofKind: 'headState',
-                                    headState: Empty.create(),
-                                },
-                            }),
-                            filterParty: partyId,
-                        })
-                    )
+    //             const result =
+    //                 await this.topologyReadService.listPartyToParticipant(
+    //                     ListPartyToParticipantRequest.create({
+    //                         baseQuery: BaseQuery.create({
+    //                             store: this.store,
+    //                             proposals: true,
+    //                             timeQuery: {
+    //                                 oneofKind: 'headState',
+    //                                 headState: Empty.create(),
+    //                             },
+    //                         }),
+    //                         filterParty: partyId,
+    //                     })
+    //                 )
 
-                if (result.response.results.length > 0) {
-                    clearInterval(interval)
-                    resolve(result.response.results[0].context?.transactionHash)
-                }
+    //             if (result.response.results.length > 0) {
+    //                 clearInterval(interval)
+    //                 resolve(result.response.results[0].context?.transactionHash)
+    //             }
 
-                counter += 1
-                if (counter > 10) {
-                    clearInterval(interval)
-                    reject('Timeout waiting for party to participant proposal')
-                }
-            }, 1000)
-        })
-    }
+    //             counter += 1
+    //             if (counter > 10) {
+    //                 clearInterval(interval)
+    //                 reject('Timeout waiting for party to participant proposal')
+    //             }
+    //         }, 1000)
+    //     })
+    // }
 
-    async authorizePartyToParticipant(
-        partyId: PartyId
-    ): Promise<AuthorizeResponse> {
-        const hash = await this.waitForPartyToParticipantProposal(partyId)
+    // async authorizePartyToParticipant(
+    //     partyId: PartyId
+    // ): Promise<AuthorizeResponse> {
+    //     const hash = await this.waitForPartyToParticipantProposal(partyId)
 
-        if (!hash) {
-            throw new Error('No topology transaction found for authorization')
-        }
+    //     if (!hash) {
+    //         throw new Error('No topology transaction found for authorization')
+    //     }
 
-        const request = AuthorizeRequest.create({
-            type: {
-                oneofKind: 'transactionHash',
-                transactionHash: Buffer.from(hash).toString('hex'),
-            },
-            mustFullyAuthorize: false,
-            store: this.store,
-        })
+    //     const request = AuthorizeRequest.create({
+    //         type: {
+    //             oneofKind: 'transactionHash',
+    //             transactionHash: Buffer.from(hash).toString('hex'),
+    //         },
+    //         mustFullyAuthorize: false,
+    //         store: this.store,
+    //     })
 
-        return this.topologyClient.authorize(request, {
-            meta: {
-                Authorization: `Bearer ${this.userAdminToken}`,
-            },
-        }).response
-    }
+    //     return this.topologyClient.authorize(request, {
+    //         meta: {
+    //             Authorization: `Bearer ${this.userAdminToken}`,
+    //         },
+    //     }).response
+    // }
 }

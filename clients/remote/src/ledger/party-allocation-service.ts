@@ -70,12 +70,7 @@ export class PartyAllocationService {
         signingCallback?: SigningCbFn
     ): Promise<AllocatedParty> {
         if (publicKey !== undefined && signingCallback !== undefined) {
-            return this.allocateExternalParty(
-                userId,
-                hint,
-                publicKey,
-                signingCallback
-            )
+            return this.allocateExternalParty(hint, publicKey, signingCallback)
         } else {
             return this.allocateInternalParty(userId, hint)
         }
@@ -103,42 +98,35 @@ export class PartyAllocationService {
     }
 
     private async allocateExternalParty(
-        userId: string,
         hint: string,
         publicKey: string,
         signingCallback: SigningCbFn
     ): Promise<AllocatedParty> {
         const namespace =
             TopologyWriteService.createFingerprintFromKey(publicKey)
-        const partyId = `${hint}::${namespace}`
 
-        const transactions = await this.topologyClient
-            .generateTransactions(publicKey, partyId)
-            .then((resp) => resp.generatedTransactions)
-
-        const txHashes = transactions.map((tx) =>
-            Buffer.from(tx.transactionHash)
+        const transactions = await this.topologyClient.generateTransactions(
+            publicKey,
+            hint
         )
 
-        const combinedHash = TopologyWriteService.combineHashes(txHashes)
+        const signature = await signingCallback(transactions.multiHash)
 
-        const signature = await signingCallback(combinedHash)
-
-        const signedTopologyTxs = transactions.map((transaction) =>
-            TopologyWriteService.toSignedTopologyTransaction(
-                txHashes,
-                transaction.serializedTransaction,
-                signature,
-                namespace
-            )
+        const res = await this.topologyClient.allocateExternalParty(
+            transactions.topologyTransactions!.map((transaction) => ({
+                transaction,
+            })),
+            [
+                {
+                    format: 'SIGNATURE_FORMAT_CONCAT',
+                    signature: signature,
+                    signedBy: namespace,
+                    signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
+                },
+            ]
         )
 
-        await this.topologyClient.submitExternalPartyTopology(
-            signedTopologyTxs,
-            partyId
-        )
-        await this.ledgerClient.grantUserRights(userId, partyId)
-
-        return { hint, partyId, namespace }
+        // await this.ledgerClient.grantUserRights(userId, partyId)
+        return { hint, partyId: res.partyId, namespace }
     }
 }
