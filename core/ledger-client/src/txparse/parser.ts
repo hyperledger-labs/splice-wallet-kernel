@@ -698,7 +698,7 @@ export class TransactionParser {
         }
 
         const payload =
-            this.ledgerClient.getCurrentClient().version === '3.3'
+            this.ledgerClient.getCurrentClientVersion() === '3.3'
                 ? { ...basePayload, requestingParties: [] }
                 : basePayload
 

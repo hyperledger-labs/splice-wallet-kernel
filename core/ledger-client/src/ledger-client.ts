@@ -129,8 +129,8 @@ export class LedgerClient {
         }
     }
 
-    public getCurrentClient() {
-        return { client: this.currentClient, version: this.clientVersion }
+    public getCurrentClientVersion(): SupportedVersions {
+        return this.clientVersion
     }
 
     /**
