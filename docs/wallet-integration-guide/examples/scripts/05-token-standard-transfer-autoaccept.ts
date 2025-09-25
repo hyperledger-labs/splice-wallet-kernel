@@ -6,9 +6,9 @@ import {
     localNetTokenStandardDefault,
     createKeyPair,
     localValidatorDefault,
+    localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
-import { LOCALNET_REGISTRY_API_URL, LOCALNET_VALIDATOR_URL } from '../config.js'
 import { v4 } from 'uuid'
 
 const logger = pino({ name: '05-external-party-setup', level: 'info' })
@@ -32,7 +32,7 @@ const keyPairSender = createKeyPair()
 const keyPairReceiver = createKeyPair()
 
 await sdk.connectAdmin()
-await sdk.connectTopology(LOCALNET_VALIDATOR_URL)
+await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
 const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairSender.privateKey,
@@ -62,13 +62,13 @@ await sdk.userLedger
 
 sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 
-sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL)
+sdk.tokenStandard?.setTransferFactoryRegistryUrl(
+    localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+)
 await new Promise((res) => setTimeout(res, 5000))
 
 await sdk.setPartyId(receiver?.partyId!)
 const validatorOperatorParty = await sdk.validator?.getValidatorUser()
-
-sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL)
 
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''

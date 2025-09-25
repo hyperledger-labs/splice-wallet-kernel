@@ -31,6 +31,7 @@ export {
     PreparedTransaction,
     Enums_ParticipantPermission,
 } from '@canton-network/core-ledger-proto'
+export * from './config.js'
 import { PartyId } from '@canton-network/core-types'
 
 type AuthFactory = () => AuthController

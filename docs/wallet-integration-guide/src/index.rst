@@ -20,6 +20,7 @@ It's suggested that the Wallet SDK is used to simplify the mojority of workflows
    finding-and-reading-data/index
    preparing-and-signing-transactions/index
    signing-transactions-from-dapps/index
+   token-standard/index
    wallet-sdk-configuration/index
    traffic/index
    tokenomics-and-rewards/index
