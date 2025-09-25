@@ -8,7 +8,9 @@ import createClient, { Client } from 'openapi-fetch'
 import { Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
 
-type SupportedVersions = '3.3' | '3.4'
+export const supportedVersions = ['3.3', '3.4'] as const
+
+export type SupportedVersions = (typeof supportedVersions)[number]
 
 export type Types = v3_3.components['schemas'] | v3_4.components['schemas']
 
@@ -114,23 +116,28 @@ export class LedgerClient {
             //   if not, and version is unsupported, throw an error
 
             //todo fix this
-
-            if (versionFromClient.data?.version.includes('3.3')) {
-                this.clientVersion = '3.3'
-                this.initialized = true
-            } else if (versionFromClient.data?.version.includes('3.4')) {
-                this.clientVersion = '3.4'
-                this.initialized = true
-            } else {
-                throw new Error(
-                    `Unsupported version - found ${versionFromClient.data?.version}`
-                )
-            }
+            this.clientVersion = this.parseSupportedVersions(
+                versionFromClient.data?.version
+            )
+            this.initialized = true
         }
     }
 
     public getCurrentClientVersion(): SupportedVersions {
         return this.clientVersion
+    }
+
+    parseSupportedVersions(version: string | undefined): SupportedVersions {
+        if (!version) {
+            throw new Error('Client version missing from response')
+        }
+
+        const match = supportedVersions.find((v) => version.startsWith(v))
+        if (!match) {
+            throw new Error(`Unsupported version - found ${version}`)
+        }
+
+        return match
     }
 
     /**
