@@ -1,15 +1,18 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    components,
-    paths,
-} from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
+import * as v3_3 from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
+
+import * as v3_4 from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
 
-export type Types = components['schemas']
+type SupportedVersions = '3.3' | '3.4'
+
+export type Types = v3_3.components['schemas'] | v3_4.components['schemas']
+
+type paths = v3_3.paths | v3_4.paths
 
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional
@@ -52,52 +55,82 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
     : never
 
 export class LedgerClient {
-    private readonly client: Client<paths>
+    // privately manage the active connected version and associated client codegen
+    private readonly clients: Record<SupportedVersions, Client<paths>>
+    private clientVersion: SupportedVersions = '3.3' // default to 3.3 if not provided
+    private currentClient: Client<paths>
+    private initialized: boolean = false
     private readonly logger: Logger
 
-    constructor(baseUrl: URL, token: string, _logger: Logger) {
+    // ...
+
+    constructor(
+        baseUrl: URL,
+        token: string,
+        _logger: Logger,
+        version?: SupportedVersions
+    ) {
         this.logger = _logger.child({ component: 'LedgerClient' })
-        this.client = createClient<paths>({
-            baseUrl: baseUrl.href,
-            fetch: async (url: RequestInfo, options: RequestInit = {}) => {
-                return fetch(url, {
-                    ...options,
-                    headers: {
-                        ...(options.headers || {}),
-                        Authorization: `Bearer ${token}`,
-                    },
-                })
-            },
-        })
+        this.clients = {
+            '3.3': createClient<v3_3.paths>({
+                baseUrl: baseUrl.href,
+                fetch: async (url: RequestInfo, options: RequestInit = {}) => {
+                    return fetch(url, {
+                        ...options,
+                        headers: {
+                            ...(options.headers || {}),
+                            Authorization: `Bearer ${token}`,
+                        },
+                    })
+                },
+            }),
+            '3.4': createClient<v3_4.paths>({
+                baseUrl: baseUrl.href,
+                fetch: async (url: RequestInfo, options: RequestInit = {}) => {
+                    return fetch(url, {
+                        ...options,
+                        headers: {
+                            ...(options.headers || {}),
+                            Authorization: `Bearer ${token}`,
+                        },
+                    })
+                },
+            }),
+        }
+
+        this.clientVersion = version ?? this.clientVersion
+        this.currentClient = this.clients[this.clientVersion]
     }
 
-    public async post<Path extends PostEndpoint>(
-        path: Path,
-        body: PostRequest<Path>,
-        params?: {
-            path?: Record<string, string>
-            query?: Record<string, string>
-        }
-    ): Promise<PostResponse<Path>> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
-        const options = { body, params } as any
+    public async init() {
+        if (!this.initialized) {
+            // call the /v2/version endpoint on the current client
 
-        const resp = await this.client.POST(path, options)
-        return this.valueOrError(resp)
+            const versionFromClient =
+                await this.currentClient.GET('/v2/version')
+
+            // check if the result matches the local version
+            //   if not, but the version is supported, update `this.clientVersion`
+            //   if not, and version is unsupported, throw an error
+
+            //todo fix this
+
+            if (versionFromClient.data?.version.includes('3.3')) {
+                this.clientVersion = '3.3'
+                this.initialized = true
+            } else if (versionFromClient.data?.version.includes('3.4')) {
+                this.clientVersion = '3.4'
+                this.initialized = true
+            } else {
+                throw new Error(
+                    `Unsupported version - found ${versionFromClient.data?.version}`
+                )
+            }
+        }
     }
 
-    public async get<Path extends GetEndpoint>(
-        path: Path,
-        params?: {
-            path?: Record<string, string>
-            query?: Record<string, string>
-        }
-    ): Promise<GetResponse<Path>> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
-        const options = { params } as any
-
-        const resp = await this.client.GET(path, options)
-        return this.valueOrError(resp)
+    public getCurrentClient() {
+        return { client: this.currentClient, version: this.clientVersion }
     }
 
     /**
@@ -108,6 +141,7 @@ export class LedgerClient {
      * @returns A promise that resolves when the rights have been granted.
      */
     public async grantUserRights(userId: string, partyId: PartyId) {
+        this.init()
         // Wait for party to appear on participant
         let partyFound = false
         let tries = 0
@@ -160,6 +194,36 @@ export class LedgerClient {
         return
     }
 
+    public async post<Path extends PostEndpoint>(
+        path: Path,
+        body: PostRequest<Path>,
+        params?: {
+            path?: Record<string, string>
+            query?: Record<string, string>
+        }
+    ): Promise<PostResponse<Path>> {
+        this.init()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
+        const options = { body, params } as any
+
+        const resp = await this.currentClient.POST(path, options)
+        return this.valueOrError(resp)
+    }
+
+    public async get<Path extends GetEndpoint>(
+        path: Path,
+        params?: {
+            path?: Record<string, string>
+            query?: Record<string, string>
+        }
+    ): Promise<GetResponse<Path>> {
+        this.init()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
+        const options = { params } as any
+        const resp = await this.currentClient.GET(path, options)
+        return this.valueOrError(resp)
+    }
+
     private async valueOrError<T>(response: {
         data?: T
         error?: unknown
@@ -170,4 +234,6 @@ export class LedgerClient {
             return Promise.resolve(response.data)
         }
     }
+
+    // ... for each method, ensure that the LedgerClient.initialize is true, and throw if not
 }
