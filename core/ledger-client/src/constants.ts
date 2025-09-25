@@ -8,6 +8,7 @@ import {
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
     HOLDING_INTERFACE_ID,
     ALLOCATION_INTERFACE_ID,
+    ALLOCATION_REQUEST_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 export interface InterfaceIdParts {
     packageName: string
@@ -51,6 +52,7 @@ export const AllocationFactoryInterface = ALLOCATION_FACTORY_INTERFACE_ID
 export const AllocationInstructionInterface =
     ALLOCATION_INSTRUCTION_INTERFACE_ID
 export const AllocationInterface = ALLOCATION_INTERFACE_ID
+export const AllocationRequestInterface = ALLOCATION_REQUEST_INTERFACE_ID
 
 export const TokenStandardTransactionInterfaces = [
     HoldingInterface,

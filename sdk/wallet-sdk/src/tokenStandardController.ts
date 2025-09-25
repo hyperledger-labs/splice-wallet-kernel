@@ -463,6 +463,100 @@ export class TokenStandardController {
             throw error
         }
     }
+
+    /**
+     * Execute Allocation choice on the provided Allocation.
+     * @param allocationCid The Allocation contract ID.
+     * @param allocationChoice 'ExecuteTransfer' | 'Withdraw' | 'Cancel'
+     */
+    async exerciseAllocationChoice(
+        allocationCid: string,
+        allocationChoice: 'ExecuteTransfer' | 'Withdraw' | 'Cancel'
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        let ExerciseCommand: ExerciseCommand
+        let disclosedContracts: DisclosedContract[] = []
+        try {
+            switch (allocationChoice) {
+                case 'ExecuteTransfer':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createExecuteTransferAllocation(
+                            allocationCid,
+                            this.getTransferFactoryRegistryUrl().href // same registry base
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+
+                case 'Withdraw':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createWithdrawAllocation(
+                            allocationCid,
+                            this.getTransferFactoryRegistryUrl().href
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+
+                case 'Cancel':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createCancelAllocation(
+                            allocationCid,
+                            this.getTransferFactoryRegistryUrl().href
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+
+                default:
+                    throw new Error('Unexpected allocation choice')
+            }
+        } catch (error) {
+            this.logger.error({ error }, 'Failed to exercise allocation choice')
+            throw error
+        }
+    }
+
+    /**
+     * Execute AllocationInstruction choice on the provided AllocationInstruction.
+     * @param allocationInstructionCid The AllocationInstruction contract ID.
+     * @param instructionChoice 'Withdraw' | 'Update'
+     * @param extraActors Optional extra actors for 'Update' (registry-controlled).
+     */
+    async exerciseAllocationInstructionChoice(
+        allocationInstructionCid: string,
+        instructionChoice: 'Withdraw' | 'Update',
+        extraActors: PartyId[] = []
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        let ExerciseCommand: ExerciseCommand
+        let disclosedContracts: DisclosedContract[] = []
+        try {
+            switch (instructionChoice) {
+                case 'Withdraw':
+                    // Unassisted (no registry endpoint); service builds the command with empty context/meta.
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createWithdrawAllocationInstruction(
+                            allocationInstructionCid
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+
+                case 'Update':
+                    // Typically exercised by the registry/admin; requires extraActors when the impl demands them.
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createUpdateAllocationInstruction(
+                            allocationInstructionCid,
+                            extraActors
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+
+                default:
+                    throw new Error('Unexpected allocation-instruction choice')
+            }
+        } catch (error) {
+            this.logger.error(
+                { error },
+                'Failed to exercise allocation-instruction choice'
+            )
+            throw error
+        }
+    }
 }
 
 /**

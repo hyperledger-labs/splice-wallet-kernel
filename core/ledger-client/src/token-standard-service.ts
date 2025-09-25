@@ -14,6 +14,8 @@ import {
     TokenStandardTransactionInterfaces,
     TransferFactoryInterface,
     TransferInstructionInterface,
+    AllocationInstructionInterface,
+    AllocationRequestInterface,
 } from './constants.js'
 import {
     ensureInterfaceViewIsPresent,
@@ -364,6 +366,82 @@ export class TokenStandardService {
             )
             throw e
         }
+    }
+
+    async createWithdrawAllocationInstruction(
+        allocationInstructionCid: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        // TODO registry?
+        const exercise: ExerciseCommand = {
+            templateId: AllocationInstructionInterface,
+            contractId: allocationInstructionCid,
+            choice: 'AllocationInstruction_Withdraw',
+            choiceArgument: {
+                extraArgs: {
+                    context: { values: {} },
+                    meta: { values: {} },
+                },
+            },
+        }
+        return [exercise, []]
+    }
+
+    async createUpdateAllocationInstruction(
+        allocationInstructionCid: string,
+        extraActors: PartyId[] = [],
+        extraArgsContext: Record<string, unknown> = {},
+        extraArgsMeta: Record<string, unknown> = {}
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        // TODO registry?
+        const exercise: ExerciseCommand = {
+            templateId: AllocationInstructionInterface,
+            contractId: allocationInstructionCid,
+            choice: 'AllocationInstruction_Update',
+            choiceArgument: {
+                extraActors,
+                extraArgs: {
+                    context: { values: extraArgsContext },
+                    meta: { values: extraArgsMeta },
+                },
+            },
+        }
+        return [exercise, []]
+    }
+
+    async createRejectAllocationRequest(
+        allocationRequestCid: string,
+        actor: PartyId
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const exercise: ExerciseCommand = {
+            templateId: AllocationRequestInterface,
+            contractId: allocationRequestCid,
+            choice: 'AllocationRequest_Reject',
+            choiceArgument: {
+                actor,
+                extraArgs: {
+                    context: { values: {} },
+                    meta: { values: {} },
+                },
+            },
+        }
+        return [exercise, []]
+    }
+
+    async createWithdrawAllocationRequest(
+        allocationRequestCid: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const exercise: ExerciseCommand = {
+            templateId: AllocationRequestInterface,
+            contractId: allocationRequestCid,
+            choice: 'AllocationRequest_Withdraw',
+            choiceArgument: {
+                extraArgs: {
+                    context: { values: {} },
+                    meta: { values: {} },
+                },
+            },
+        }
+        return [exercise, []]
     }
 
     // <T> is shape of viewValue related to queried interface.
