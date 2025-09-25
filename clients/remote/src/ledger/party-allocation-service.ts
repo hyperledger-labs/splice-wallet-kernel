@@ -70,7 +70,12 @@ export class PartyAllocationService {
         signingCallback?: SigningCbFn
     ): Promise<AllocatedParty> {
         if (publicKey !== undefined && signingCallback !== undefined) {
-            return this.allocateExternalParty(hint, publicKey, signingCallback)
+            return this.allocateExternalParty(
+                userId,
+                hint,
+                publicKey,
+                signingCallback
+            )
         } else {
             return this.allocateInternalParty(userId, hint)
         }
@@ -98,6 +103,7 @@ export class PartyAllocationService {
     }
 
     private async allocateExternalParty(
+        userId: string,
         hint: string,
         publicKey: string,
         signingCallback: SigningCbFn
@@ -126,7 +132,7 @@ export class PartyAllocationService {
             ]
         )
 
-        // await this.ledgerClient.grantUserRights(userId, partyId)
+        await this.ledgerClient.grantUserRights(userId, res.partyId)
         return { hint, partyId: res.partyId, namespace }
     }
 }

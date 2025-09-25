@@ -19,7 +19,6 @@ import {
 } from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
-import { SigningPublicKey } from '@canton-network/core-ledger-client/src/_proto/com/digitalasset/canton/crypto/v30/crypto'
 import { TopologyController } from './topologyController.js'
 import { PartyId } from '@canton-network/core-types'
 
@@ -104,20 +103,9 @@ export class LedgerController {
      * @returns true if verification succeeded or false if it failed
      */
 
-    verifyTxHash(
-        txHash: string,
-        publicKey: SigningPublicKey | PublicKey,
-        signature: string
-    ) {
-        let key: string
-        if (typeof publicKey === 'string') {
-            key = publicKey
-        } else {
-            key = btoa(String.fromCodePoint(...publicKey.publicKey))
-        }
-
+    verifyTxHash(txHash: string, publicKey: PublicKey, signature: string) {
         try {
-            return verifySignedTxHash(txHash, key, signature)
+            return verifySignedTxHash(txHash, publicKey, signature)
         } catch (e: unknown) {
             this.logger.error(e)
             return false

@@ -5,7 +5,6 @@ import {
     Enums_ParticipantPermission,
     LedgerClient,
     PreparedTransaction,
-    // SigningPublicKey,
     TopologyWriteService,
 } from '@canton-network/core-ledger-client'
 import {
@@ -256,32 +255,8 @@ export class TopologyController {
         )
 
         this.logger.info(preparedParty, 'created external party')
-        //start after first because we've already onboarded an external party and authorized the mapping
-        // on the participant specified in the wallet.sdk.configure
-        // now we need to authorize the party to participant transaction on the others
-
-        // for (const endpoint of participantEndpoints.slice(1)) {
-        //     // const lc = new LedgerClient(
-        //     //     endpoint.baseUrl,
-        //     //     endpoint.accessToken,
-        //     //     this.logger
-        //     // )
-
-        //     // const service = new TopologyWriteService(
-        //     //     synchronizerId,
-        //     //     endpoint.adminApiUrl,
-        //     //     endpoint.accessToken,
-        //     //     lc
-        //     // )
-
-        //     // await service.authorizePartyToParticipant(preparedParty.partyId)
-        // }
-
-        // the PartyToParticipant mapping needs to be authorized on each HostingParticipant
-        // before we can grantUserRights to the party
 
         await this.client.grantUserRights(this.userId, preparedParty.partyId)
-
         return { partyId: preparedParty.partyId }
     }
 }
