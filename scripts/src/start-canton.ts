@@ -6,18 +6,38 @@
  */
 
 import {
-    CANTON_BIN,
     CANTON_BOOTSTRAP,
+    CANTON_VERSION,
     CANTON_CONF,
     error,
     info,
     trimNewline,
+    CANTON_VERSION_34,
 } from './utils.js'
 import { existsSync } from 'fs'
 import pm2 from 'pm2'
+import path from 'path'
 
 const processName = 'canton'
+const VERSION_MAP: Record<string, string | undefined> = {
+    '3.3': CANTON_VERSION,
+    '3.4': CANTON_VERSION_34,
+}
+
 async function main() {
+    const inputVersion = process.argv[2] ?? '3.3'
+
+    if (!(inputVersion in VERSION_MAP)) {
+        console.error(
+            error(
+                `Unsupported canton version ${inputVersion}. Please use "3.3" or "3.4"`
+            )
+        )
+        process.exit(1)
+    }
+    const version = VERSION_MAP[inputVersion]
+    const CANTON_BIN = path.resolve(`.canton/${version}/bin/canton`)
+
     if (existsSync(CANTON_BIN)) {
         console.log(
             info(`Starting Canton participant using binary at ${CANTON_BIN}...`)
