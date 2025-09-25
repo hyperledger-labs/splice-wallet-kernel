@@ -106,16 +106,9 @@ export class LedgerClient {
 
     public async init() {
         if (!this.initialized) {
-            // call the /v2/version endpoint on the current client
-
             const versionFromClient =
                 await this.currentClient.GET('/v2/version')
 
-            // check if the result matches the local version
-            //   if not, but the version is supported, update `this.clientVersion`
-            //   if not, and version is unsupported, throw an error
-
-            //todo fix this
             this.clientVersion = this.parseSupportedVersions(
                 versionFromClient.data?.version
             )
