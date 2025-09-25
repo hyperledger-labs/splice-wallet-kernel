@@ -44,11 +44,13 @@ Application Rewards and Featured Activity Markers
 .. A featured app marker contains an approved featured app party
 
 **Application Rewards**
+
 * Transactions which include Canton Coin and featured application transactions earn application rewards.
 * The percentage of Canton Coin awarded to applications is significant and will grow over time.
 * The current amount of CC awarded to applications can be seen in the 'Canton Coin Reward Split By Role Over Time' chart `here <https://canton.thetie.io/>`__.
 
 **Featured application activity markers**
+
 * Applications which generate valuable activity for the canton network, and have 'featured application' status can earn more application rewards.
 * By applying a ``FeaturedAppActivityMarker`` to a transaction and qualifying as a Featured Application (apply `here <https://sync.global/featured-app-request/>`__) then you recieve a higher proportion of the application rewards.
 * A weighting is applied to each transaction in that Canton Coin minting round.
@@ -61,6 +63,7 @@ Gaining Application Rewards as a Wallet/Custodian/Exchange
     * On DevNet you can self-feature through the wallet UI.
 
 **Enabling Pre-approval / 1-step Transfers**
+
 * One way that wallets can earn app rewards is by enabling direct / 1 step / pre-approval transfers
 * Setting up pre-approvals costs around $1 per 90 days per party
 * By enabling 1-step transfers your party is added as the operator party to incoming deposits
