@@ -4,7 +4,6 @@ import {
     localNetLedgerDefault,
     localNetTokenStandardDefault,
 } from '@canton-network/wallet-sdk'
-import { v4 } from 'uuid'
 
 const sdk = new WalletSDKImpl().configure({
     logger: console,
@@ -13,40 +12,29 @@ const sdk = new WalletSDKImpl().configure({
     tokenStandardFactory: localNetTokenStandardDefault,
 })
 
+await sdk.connect()
+
 const sender = 'sender-party'
-const senderKey = 'private-key-for-my-party'
+const receiver = 'receiver-party'
 const instrumentAdminPartyId = 'Admin of the instrument'
 
-const receiver = 'receiver-party'
+const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
 
-await sdk.connect()
-await sdk.setPartyId(sender)
+//let's assume we have 3 utxos of 100,50,25
+const utxosToUse = utxos?.filter((t) => t.amount != 50) //we filter out the 50, since we want to send 125
 
-const [transferCommand, disclosedContracts2] =
+//we only want the recipient to have 1 minute to accept
+const expireDate = new Date(Date.now() + 60 * 1000)
+const [transferCommand, disclosedContracts] =
     await sdk.tokenStandard!.createTransfer(
         sender,
         receiver,
-        '100',
+        '125',
         {
             instrumentId: 'Amulet',
             instrumentAdmin: instrumentAdminPartyId,
         },
-        [],
-        'memo-ref'
+        utxosToUse.map((t) => t.contractId),
+        'memo-ref',
+        expireDate
     )
-
-const offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
-
-const transferCommandId =
-    await sdk.userLedger?.prepareSignAndExecuteTransaction(
-        [{ ExerciseCommand: transferCommand }],
-        senderKey,
-        v4(),
-        disclosedContracts2
-    )
-
-const completion = await sdk.userLedger?.waitForCompletion(
-    offsetLatest,
-    5000,
-    transferCommandId!
-)

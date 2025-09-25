@@ -47,7 +47,7 @@ when calling the endpoint again. This will allow you to easily ensure you do not
 transactions that have happened after.
 
 
-.. literalinclude:: ../../examples/snippets/monitor-transaction-holding.ts
+.. literalinclude:: ../../examples/snippets/monitor-transaction-holdings.ts
     :language: typescript
     :dedent:
 
@@ -106,7 +106,10 @@ Creating a transfer
 In order to create a simple transfer you can use the `createTransfer` on the token standard. Then like any other operation
 you can the `prepareSubmission` endpoint, sign the returned hash and finally `executeSubmission`.
 
-.. TODO: ADD SCRIPT
+
+.. literalinclude:: ../../examples/snippets/create-transfer-command.ts
+    :language: typescript
+    :dedent:
 
 UTXO management and locked funds
 --------------------------------
@@ -115,20 +118,62 @@ The default script for creating a transfer above uses automated utxo selection, 
 In a more professional you would want to carefully pick which utxo's you would like to use as input for your transfers, alongside
 you might also want to define a custom expiration time for when the transaction should automatically expire.
 
-.. TODO: ADD SCRIPT
+
+.. literalinclude:: ../../examples/snippets/create-transfer-command-full.ts
+    :language: typescript
+    :dedent:
+
+if we call `sdk.tokenStandard?.listHoldingUtxos(false)` then it will show 1 utxo of 50 (then one we excluded).
+
+if we call `sdk.tokenStandard?.listHoldingUtxos(true)` then it will show all 3 utxos (100 and 25 both will have a lock).
 
 2-step transfer vs 1-step transfer
 ----------------------------------
 
-The default behavior for all tokens are a 2-step transfer, this matches how funds are usually transferred in TradFi, but it is
-counter-intuitive in the blockchain world. Canton Coin and potentially other token standard can
+The default behavior for all tokens are a 2-step transfer, this matches how funds are usually transferred in TradFi, however this is
+counter-intuitive in the blockchain world. Canton Coin supports setting up a "Transfer Pre-approval", this allows a party to designate
+that he wants to auto-accept all incoming transfer, giving a similar behavior of the blockchain world.
 
+.. literalinclude:: ../../examples/snippets/create-transfer-preapproval.ts
+    :language: typescript
+    :dedent:
 
 Accepting or rejecting a 2-step transfer
 ----------------------------------------
 
+If no Transfer pre-approval have been set up, then it is required to main incoming transfer instructions and consume either the `Accept`
+or `Reject` choice, this can be done easily using the Wallet SDK.
+
+.. literalinclude:: ../../examples/snippets/read-pending-transfer-instructions.ts
+    :language: typescript
+    :dedent:
+
+
+the above give a list of pending transfer instructions, you can then exercise the accept or reject choice on them:
+
+.. literalinclude:: ../../examples/snippets/accept-or-reject-transfer.ts
+    :language: typescript
+    :dedent:
+
+
 Withdrawing a 2-step transfer before it gets accepted
 -----------------------------------------------------
 
+Apart from accepting or rejecting a transfer instruction, it is also possible for the sender to `withdraw` the offer, thereby retrieving
+the locked funds.
+
+.. literalinclude:: ../../examples/snippets/withdraw-transfer-instruction.ts
+    :language: typescript
+    :dedent:
+
+How do i quickly setup transfer preapproval?
+--------------------------------------------
+
+It is worth nothing that using the validator operator party as the providing party causes the transfer pre-approval to auto-renew.
+The below script setup transfer preapproval for Bob and performs a 1-step transfer from Alice to Bob:
+
+.. literalinclude:: ../../examples/scripts/05-token-standard-transfer-autoaccept.ts
+    :language: typescript
+    :dedent:
 
 
