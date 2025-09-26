@@ -64,8 +64,6 @@ export class LedgerClient {
     private initialized: boolean = false
     private readonly logger: Logger
 
-    // ...
-
     constructor(
         baseUrl: URL,
         token: string,
@@ -234,6 +232,4 @@ export class LedgerClient {
             return Promise.resolve(response.data)
         }
     }
-
-    // ... for each method, ensure that the LedgerClient.initialize is true, and throw if not
 }
