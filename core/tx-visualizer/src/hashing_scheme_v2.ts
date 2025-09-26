@@ -23,7 +23,7 @@ import {
     TextMap_Entry,
     Value,
 } from '@canton-network/core-ledger-proto'
-import { mkByteArray, sha256 } from './utils.js'
+import { mkByteArray, sha256, toHex } from './utils.js'
 
 // Hash purpose reserved for prepared transaction
 const PREPARED_TRANSACTION_HASH_PURPOSE = Uint8Array.from([
@@ -115,13 +115,10 @@ async function encodeRepeated<T>(
 function findSeed(
     nodeId: string,
     nodeSeeds: DamlTransaction_NodeSeed[]
-): Uint8Array {
+): Uint8Array | undefined {
     const seed = nodeSeeds.find(
         (seed) => seed.nodeId.toString() === nodeId
     )?.seed
-    if (!seed) {
-        throw new Error(`Seed for node ID ${nodeId} not found`)
-    }
 
     return seed
 }
@@ -190,11 +187,12 @@ async function encodeExerciseNode(
         NODE_ENCODING_VERSION,
         await encodeString(exercise.lfVersion),
         1 /** Exercise node tag */,
-        await encodeHash(findSeed(nodeId, nodeSeeds)),
+        await encodeHash(findSeed(nodeId, nodeSeeds)!),
         await encodeHexString(exercise.contractId),
         await encodeString(exercise.packageName),
         await encodeIdentifier(exercise.templateId!),
         await encodeRepeated(exercise.signatories, encodeString),
+        await encodeRepeated(exercise.stakeholders, encodeString),
         await encodeRepeated(exercise.actingParties, encodeString),
         await encodeProtoOptional(
             exercise,
@@ -509,7 +507,9 @@ async function encodePreparedTransaction(
         preparedTransaction.transaction!,
         nodesDict
     )
+    console.log(`transaction hash ${toHex(transactionHash)}`)
     const metadataHash = await hashMetadata(preparedTransaction.metadata!)
+    console.log(`metadata hash ${toHex(metadataHash)}`)
 
     return mkByteArray(
         PREPARED_TRANSACTION_HASH_PURPOSE,
