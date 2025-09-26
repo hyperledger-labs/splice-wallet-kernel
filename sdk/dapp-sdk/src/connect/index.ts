@@ -32,7 +32,7 @@ export async function open(): Promise<void> {
         throw new Error('No previous session found')
     }
 
-    openKernelUserUI(discovery.walletType, session.userUrl ?? '')
+    openKernelUserUI(discovery.walletType, session.kernel.userUrl ?? '')
 }
 
 export async function connect(): Promise<dappAPI.ConnectResult> {

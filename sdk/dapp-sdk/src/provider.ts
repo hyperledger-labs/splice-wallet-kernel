@@ -167,10 +167,11 @@ export const dappController = (provider: SpliceProvider) =>
 
             return promise
         },
-        darsAvailable: async () =>
-            provider.request<dappRemoteAPI.DarsAvailableResult>({
+        darsAvailable: async () => {
+            return provider.request<dappRemoteAPI.DarsAvailableResult>({
                 method: 'darsAvailable',
-            }),
+            })
+        },
         ledgerApi: async (params: LedgerApiParams) =>
             provider.request<dappRemoteAPI.LedgerApiResult>({
                 method: 'ledgerApi',
@@ -212,8 +213,9 @@ export const dappController = (provider: SpliceProvider) =>
                 method: 'prepareReturn',
                 params,
             }),
-        status: async () =>
-            provider.request<dappAPI.StatusResult>({ method: 'status' }),
+        status: async () => {
+            return provider.request<dappAPI.StatusResult>({ method: 'status' })
+        },
         requestAccounts: async () =>
             provider.request<dappRemoteAPI.RequestAccountsResult>({
                 method: 'requestAccounts',
