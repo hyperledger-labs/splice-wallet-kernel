@@ -28,11 +28,11 @@ export const setKernelDiscovery = (discovery: DiscoverResult): void => {
     )
 }
 
-export const getKernelSession = (): dappAPI.OnConnectedEvent | undefined => {
+export const getKernelSession = (): dappAPI.ConnectResult | undefined => {
     const session = localStorage.getItem(LOCAL_STORAGE.KERNEL_SESSION)
     if (session) {
         try {
-            return JSON.parse(session) as dappAPI.OnConnectedEvent
+            return JSON.parse(session) as dappAPI.ConnectResult
         } catch (e) {
             console.error('Failed to parse stored kernel session:', e)
         }
@@ -40,7 +40,7 @@ export const getKernelSession = (): dappAPI.OnConnectedEvent | undefined => {
     return undefined
 }
 
-export const setKernelSession = (session: dappAPI.OnConnectedEvent): void => {
+export const setKernelSession = (session: dappAPI.ConnectResult): void => {
     localStorage.setItem(LOCAL_STORAGE.KERNEL_SESSION, JSON.stringify(session))
 }
 
