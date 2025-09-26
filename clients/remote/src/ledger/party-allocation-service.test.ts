@@ -17,11 +17,16 @@ const MockTopologyWriteService: jest.MockedClass<any> = jest
     .fn()
     .mockImplementation(() => ({
         generateTransactions: jest.fn<AsyncFn>().mockResolvedValue({
-            generatedTransactions: [],
+            partyId: 'party2::mypublickey',
+            publicKeyFingerprint: 'mypublickey',
+            topologyTransactions: ['tx1'],
+            multiHash: 'combinedHash',
         }),
         addTransactions: jest.fn<AsyncFn>(),
         authorizePartyToParticipant: jest.fn<AsyncFn>(),
-        submitExternalPartyTopology: jest.fn<AsyncFn>(),
+        allocateExternalParty: jest
+            .fn<AsyncFn>()
+            .mockResolvedValue({ partyId: 'party2::mypublickey' }),
     }))
 
 // Add static method to the mock class
