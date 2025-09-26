@@ -52,6 +52,7 @@ export class LedgerController {
      */
     constructor(userId: string, baseUrl: URL, token: string) {
         this.client = new LedgerClient(baseUrl, token, this.logger)
+        this.client.init()
         this.userId = userId
         return this
     }
