@@ -23,6 +23,10 @@ test('decode a base 64 encoded prepared tx', async () => {
     const camelCasePreparedTx = camelcaseKeys(preapredTXJson, { deep: true })
     const message = PreparedTransaction.fromJson(camelCasePreparedTx)
 
+    expect(message === preparedTx)
+})
+
+test('hash from preparedTx ledger api call should match calculated hash', async () => {
     const preparedTxFromLedgerAPi =
         'f97Cv1BO7QS7jmSY03p56JGsPf60Vx/ABXmRub7iiQI='
 
@@ -32,6 +36,4 @@ test('decode a base 64 encoded prepared tx', async () => {
     const hashResult = await hashPreparedTransaction(preparedTx2, 'base64')
 
     expect(hashResult === preparedTxFromLedgerAPi)
-
-    expect(message === preparedTx)
 })
