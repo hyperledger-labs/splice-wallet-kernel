@@ -3,3 +3,15 @@
 
 export * from './connect'
 export * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'
+
+export enum ErrorCode {
+    UserCancelled,
+    Timeout,
+    Other,
+}
+
+export type ConnectError = {
+    status: 'error'
+    error: ErrorCode
+    details: string
+}

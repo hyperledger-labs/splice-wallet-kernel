@@ -14,7 +14,7 @@ function App() {
     )
 
     useEffect(() => {
-        const provider = window.splice
+        const provider = window.splice // either postMsg provider or httpProvider
 
         if (!provider) {
             setStatus('Splice provider not found')
