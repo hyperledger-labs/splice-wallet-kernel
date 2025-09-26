@@ -5,10 +5,10 @@ import {
     localNetTopologyDefault,
     localNetTokenStandardDefault,
     createKeyPair,
+    localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
-import { LOCALNET_REGISTRY_API_URL, LOCALNET_VALIDATOR_URL } from '../config.js'
 
 const logger = pino({
     name: '07-token-standard-reject-expire-withdraw',
@@ -85,7 +85,7 @@ const keyPairSender = createKeyPair()
 const keyPairReceiver = createKeyPair()
 
 await sdk.connectAdmin()
-await sdk.connectTopology(LOCALNET_VALIDATOR_URL)
+await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
 const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairSender.privateKey,
@@ -109,7 +109,9 @@ await sdk.userLedger
         logger.error({ error }, 'Error listing wallets')
     })
 
-sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL)
+sdk.tokenStandard?.setTransferFactoryRegistryUrl(
+    localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+)
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 

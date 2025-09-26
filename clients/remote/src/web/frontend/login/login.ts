@@ -5,7 +5,7 @@ import { html, LitElement } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 
 import '@canton-network/core-wallet-ui-components'
-import { userClient } from '../rpc-client'
+import { createUserClient } from '../rpc-client'
 import { Network } from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from '../state-manager'
 
@@ -23,6 +23,7 @@ export class LoginUI extends LitElement {
     }
 
     private async loadNetworks() {
+        const userClient = createUserClient(stateManager.accessToken.get())
         const response = await userClient.request('listNetworks')
         return response.networks
     }

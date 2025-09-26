@@ -52,6 +52,7 @@ export class LedgerController {
      */
     constructor(userId: string, baseUrl: URL, token: string) {
         this.client = new LedgerClient(baseUrl, token, this.logger)
+        this.client.init()
         this.userId = userId
         return this
     }
@@ -352,16 +353,17 @@ export class LedgerController {
 
     /**
      * This creates a TransferPreapprovalCommand
-     * The validator auto accepts when the provider is the validator operatory party
      * And this allows us to auto accept incoming transfer for the receiver party
-     * @param validatorOperatorParty operator party retrieved through the getValidatorUser call
+     * it is recommended to use the validator operator party as the provider party
+     * this causes the transfer pre-approval to auto-renew
+     * @param providerParty providing party retrieved through the getValidatorUser call
      * @param receiverParty party for which the auto accept is created for
      * @param dsoParty Party that the sender expects to represent the DSO party of the AmuletRules contract they are calling
      * dsoParty is required for splice-wallet package versions equal or higher than 0.1.11
      */
 
     async createTransferPreapprovalCommand(
-        validatorOperatorParty: PartyId,
+        providerParty: PartyId,
         receiverParty: PartyId,
         dsoParty?: PartyId
     ) {
@@ -387,7 +389,7 @@ export class LedgerController {
                     templateId:
                         '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
                     createArguments: {
-                        provider: validatorOperatorParty,
+                        provider: providerParty,
                         receiver: receiverParty,
                     },
                 },
@@ -399,7 +401,7 @@ export class LedgerController {
                         templateId:
                             '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
                         createArguments: {
-                            provider: validatorOperatorParty,
+                            provider: providerParty,
                             receiver: receiverParty,
                             expectedDso: dsoParty,
                         },

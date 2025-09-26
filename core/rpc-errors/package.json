@@ -1,0 +1,26 @@
+{
+    "name": "@canton-network/core-rpc-errors",
+    "version": "0.1.0",
+    "type": "module",
+    "description": "Wrapper for JSON-RPC error objects",
+    "author": "Alex Matson <alex.matson@digitalasset.com>",
+    "repository": "github:hyperledger-labs/splice-wallet-kernel",
+    "license": "Apache-2.0",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist/**"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "build": "tsc --build"
+    },
+    "dependencies": {
+        "@metamask/rpc-errors": "^7.0.3"
+    },
+    "devDependencies": {
+        "typescript": "^5.9.2"
+    }
+}

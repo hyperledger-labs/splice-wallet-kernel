@@ -4,8 +4,8 @@ import {
     localNetAuthDefault,
     localNetLedgerDefault,
     localNetTopologyDefault,
+    localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
-import { LOCALNET_VALIDATOR_URL } from '../config.js'
 
 export default async function () {
     // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
@@ -15,7 +15,7 @@ export default async function () {
         ledgerFactory: localNetLedgerDefault, // or use your specific configuration
         topologyFactory: localNetTopologyDefault, // or use your specific configuration
     })
-    await sdk.connectTopology(LOCALNET_VALIDATOR_URL)
+    await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
     const key = createKeyPair()
 

@@ -29,6 +29,7 @@ const makeLedgerClientFromEventsResponses = (
         ])
     )
 
+    const getCurrentClientVersion = jest.fn(() => '3.3')
     const post = jest.fn(async (url: string, body: { contractId: string }) => {
         if (url !== EVENTS_BY_CID_PATH) {
             throw new Error(`Unexpected URL in mock LedgerClient: ${url}`)
@@ -43,7 +44,7 @@ const makeLedgerClientFromEventsResponses = (
         return entry
     })
 
-    return { post } as unknown as LedgerClient
+    return { post, getCurrentClientVersion } as unknown as LedgerClient
 }
 
 const mockLedgerClient: LedgerClient = makeLedgerClientFromEventsResponses(
