@@ -136,7 +136,7 @@ async function encodeIdentifier(identifier: Identifier): Promise<Uint8Array> {
 
 async function encodeMetadata(metadata: Metadata): Promise<Uint8Array> {
     return mkByteArray(
-        1,
+        Uint8Array.from([0x01]),
         await encodeRepeated(metadata.submitterInfo?.actAs, encodeString),
         await encodeString(metadata.submitterInfo?.commandId),
         await encodeString(metadata.transactionUuid),
@@ -154,6 +154,7 @@ async function encodeMetadata(metadata: Metadata): Promise<Uint8Array> {
             metadata.maxLedgerEffectiveTime,
             encodeInt64
         ),
+        await encodeInt64(metadata.preparationTime),
         await encodeRepeated(metadata.inputContracts, encodeInputContract)
     )
 }
@@ -272,24 +273,48 @@ async function encodeValue(value: Value): Promise<Uint8Array> {
     if (value.sum.oneofKind === 'unit') {
         return Uint8Array.from([0]) // Unit value
     } else if (value.sum.oneofKind === 'bool') {
-        return mkByteArray(0x01, await encodeBool(value.sum.bool))
+        return mkByteArray(
+            Uint8Array.from([0x01]),
+            await encodeBool(value.sum.bool)
+        )
     } else if (value.sum.oneofKind === 'int64') {
-        return mkByteArray(0x02, await encodeInt64(parseInt(value.sum.int64)))
+        return mkByteArray(
+            Uint8Array.from([0x02]),
+            await encodeInt64(parseInt(value.sum.int64))
+        )
     } else if (value.sum.oneofKind === 'numeric') {
-        return mkByteArray(0x03, await encodeString(value.sum.numeric))
+        return mkByteArray(
+            Uint8Array.from([0x03]),
+            await encodeString(value.sum.numeric)
+        )
     } else if (value.sum.oneofKind === 'timestamp') {
-        return mkByteArray(0x04, await encodeString(value.sum.timestamp))
+        return mkByteArray(
+            Uint8Array.from([0x04]),
+            await encodeInt64(BigInt(value.sum.timestamp))
+        )
     } else if (value.sum.oneofKind === 'date') {
-        return mkByteArray(0x05, await encodeInt32(value.sum.date))
+        return mkByteArray(
+            Uint8Array.from([0x05]),
+            await encodeInt32(value.sum.date)
+        )
     } else if (value.sum.oneofKind === 'party') {
-        return mkByteArray(0x06, await encodeString(value.sum.party))
+        return mkByteArray(
+            Uint8Array.from([0x06]),
+            await encodeString(value.sum.party)
+        )
     } else if (value.sum.oneofKind === 'text') {
-        return mkByteArray(0x07, await encodeString(value.sum.text))
+        return mkByteArray(
+            Uint8Array.from([0x07]),
+            await encodeString(value.sum.text)
+        )
     } else if (value.sum.oneofKind === 'contractId') {
-        return mkByteArray(0x08, await encodeHexString(value.sum.contractId))
+        return mkByteArray(
+            Uint8Array.from([0x08]),
+            await encodeHexString(value.sum.contractId)
+        )
     } else if (value.sum.oneofKind === 'optional') {
         return mkByteArray(
-            0x09,
+            Uint8Array.from([0x09]),
             await encodeProtoOptional(
                 value.sum.optional,
                 'value',
@@ -299,17 +324,17 @@ async function encodeValue(value: Value): Promise<Uint8Array> {
         )
     } else if (value.sum.oneofKind === 'list') {
         return mkByteArray(
-            0x0a,
+            Uint8Array.from([0x0a]),
             await encodeRepeated(value.sum.list.elements, encodeValue)
         )
     } else if (value.sum.oneofKind === 'textMap') {
         return mkByteArray(
-            0x0b,
+            Uint8Array.from([0x0b]),
             await encodeRepeated(value.sum.textMap?.entries, encodeTextMapEntry)
         )
     } else if (value.sum.oneofKind === 'record') {
         return mkByteArray(
-            0x0c,
+            Uint8Array.from([0x0c]),
             await encodeProtoOptional(
                 value.sum.record,
                 'recordId',
@@ -320,7 +345,7 @@ async function encodeValue(value: Value): Promise<Uint8Array> {
         )
     } else if (value.sum.oneofKind === 'variant') {
         return mkByteArray(
-            0x0d,
+            Uint8Array.from([0x0d]),
             await encodeProtoOptional(
                 value.sum.variant,
                 'variantId',
@@ -332,7 +357,7 @@ async function encodeValue(value: Value): Promise<Uint8Array> {
         )
     } else if (value.sum.oneofKind === 'enum') {
         return mkByteArray(
-            0x0e,
+            Uint8Array.from([0x0e]),
             await encodeProtoOptional(
                 value.sum.enum,
                 'enumId',
@@ -343,7 +368,7 @@ async function encodeValue(value: Value): Promise<Uint8Array> {
         )
     } else if (value.sum.oneofKind === 'genMap') {
         return mkByteArray(
-            0x0f,
+            Uint8Array.from([0x0f]),
             await encodeRepeated(value.sum.genMap?.entries, encodeGenMapEntry)
         )
     }
