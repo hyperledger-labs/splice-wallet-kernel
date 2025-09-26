@@ -23,7 +23,7 @@ import {
     TextMap_Entry,
     Value,
 } from '@canton-network/core-ledger-proto'
-import { mkByteArray, sha256, toHex } from './utils.js'
+import { mkByteArray, sha256 } from './utils.js'
 
 // Hash purpose reserved for prepared transaction
 const PREPARED_TRANSACTION_HASH_PURPOSE = Uint8Array.from([
@@ -507,9 +507,7 @@ async function encodePreparedTransaction(
         preparedTransaction.transaction!,
         nodesDict
     )
-    console.log(`transaction hash ${toHex(transactionHash)}`)
     const metadataHash = await hashMetadata(preparedTransaction.metadata!)
-    console.log(`metadata hash ${toHex(metadataHash)}`)
 
     return mkByteArray(
         PREPARED_TRANSACTION_HASH_PURPOSE,
