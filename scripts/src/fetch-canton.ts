@@ -9,7 +9,7 @@
 import path from 'path'
 import {
     API_SPECS_PATH,
-    supported_canton_versions,
+    SUPPORTED_VERSIONS,
     CANTON_PATH,
     downloadAndUnpackTarball,
     CantonVersionAndHash,
@@ -45,9 +45,11 @@ async function fetchCanton(cantonVersions: CantonVersionAndHash) {
 }
 
 async function main() {
-    for (const v of supported_canton_versions) {
-        fetchCanton(v)
-    }
+    Object.entries(SUPPORTED_VERSIONS).map(async ([env, data]) => {
+        const { version, hash } = data.canton
+        console.debug(`fetching canton for ${env}`)
+        await fetchCanton({ version, hash })
+    })
 }
 
 main().catch((e) => {

@@ -33,8 +33,6 @@ export type CantonVersionAndHash = {
 }
 // Canton versions
 export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20250417.0'
-export const CANTON_VERSION = '3.3.0-snapshot.20250910.16087.0.v82d35a4d'
-export const CANTON_VERSION_34 = '3.4.0-snapshot.20250922.16951.0.v1eb3f268'
 
 export const LOCALNET_ARCHIVE_HASH =
     'd64e6474e4e640fa9df17b332ffd2d3eb6fbe09f96c3f788620fe266c2f493e6'
@@ -46,13 +44,20 @@ export const CANTON_ARCHIVE_HASH =
     '43c89d9833886fc68cac4951ba1959b7f6cc5269abfff1ba5129859203aa8cd3'
 export const SPLICE_VERSION = '0.4.17'
 
-export const supported_canton_versions = [
-    { version: CANTON_VERSION, hash: CANTON_ARCHIVE_HASH },
-    {
-        version: CANTON_VERSION_34,
-        hash: 'e0f59a7b5015b56479ef4786662c5935a0fee9ac803465bb0f70bdc6c3bf4dff',
+export const SUPPORTED_VERSIONS = {
+    devnet: {
+        canton: {
+            version: '3.4.0-snapshot.20250922.16951.0.v1eb3f268',
+            hash: 'e0f59a7b5015b56479ef4786662c5935a0fee9ac803465bb0f70bdc6c3bf4dff',
+        },
     },
-]
+    mainnet: {
+        canton: {
+            version: '3.3.0-snapshot.20250910.16087.0.v82d35a4d',
+            hash: '43c89d9833886fc68cac4951ba1959b7f6cc5269abfff1ba5129859203aa8cd3',
+        },
+    },
+}
 
 export async function downloadToFile(
     url: string | URL,
