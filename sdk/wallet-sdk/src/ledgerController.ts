@@ -130,7 +130,7 @@ export class LedgerController {
      * @param privateKey the private key to sign the transaction with.
      * @param commandId an unique identifier used to track the transaction, if not provided a random UUID will be used.
      * @param disclosedContracts off-ledger sourced contractIds needed to perform the transaction.
-     * @returns the commandId used to track the transaction.
+     * @returns the submissionId used to track the transaction.
      */
     async prepareSignAndExecuteTransaction(
         commands: WrappedCommand | WrappedCommand[] | unknown,
@@ -160,8 +160,7 @@ export class LedgerController {
         )
         const publicKey = getPublicKeyFromPrivate(privateKey)
 
-        await this.executeSubmission(prepared, signature, publicKey, commandId)
-        return commandId
+        return this.executeSubmission(prepared, signature, publicKey, commandId)
     }
 
     /**
@@ -280,7 +279,7 @@ export class LedgerController {
         signature: string,
         publicKey: SigningPublicKey | PublicKey,
         submissionId: string
-    ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
+    ): Promise<string> {
         if (prepared.preparedTransaction === undefined) {
             throw new Error('preparedTransaction is undefined')
         }
@@ -325,10 +324,8 @@ export class LedgerController {
             },
         }
 
-        return await this.client.post(
-            '/v2/interactive-submission/execute',
-            request
-        )
+        await this.client.post('/v2/interactive-submission/execute', request)
+        return submissionId
     }
 
     /**
