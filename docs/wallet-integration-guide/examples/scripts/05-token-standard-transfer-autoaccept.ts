@@ -41,125 +41,125 @@ const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
 logger.info(`Created party: ${sender!.partyId}`)
 await sdk.setPartyId(sender!.partyId)
 
-// const receiver = await sdk.topology?.prepareSignAndSubmitExternalParty(
-//     keyPairReceiver.privateKey,
-//     'bob'
-// )
-// logger.info(`Created party: ${receiver!.partyId}`)
+const receiver = await sdk.topology?.prepareSignAndSubmitExternalParty(
+    keyPairReceiver.privateKey,
+    'bob'
+)
+logger.info(`Created party: ${receiver!.partyId}`)
 
-// const synchronizers = await sdk.userLedger?.listSynchronizers()
+const synchronizers = await sdk.userLedger?.listSynchronizers()
 
-// const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
+const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
 
-// await sdk.userLedger
-//     ?.listWallets()
-//     .then((wallets) => {
-//         logger.info(wallets, 'Wallets:')
-//     })
-//     .catch((error) => {
-//         logger.error({ error }, 'Error listing wallets')
-//     })
+await sdk.userLedger
+    ?.listWallets()
+    .then((wallets) => {
+        logger.info(wallets, 'Wallets:')
+    })
+    .catch((error) => {
+        logger.error({ error }, 'Error listing wallets')
+    })
 
-// sdk.tokenStandard?.setSynchronizerId(synchonizerId)
+sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 
-// sdk.tokenStandard?.setTransferFactoryRegistryUrl(
-//     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
-// )
-// await new Promise((res) => setTimeout(res, 5000))
+sdk.tokenStandard?.setTransferFactoryRegistryUrl(
+    localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+)
+await new Promise((res) => setTimeout(res, 5000))
 
-// await sdk.setPartyId(receiver?.partyId!)
-// const validatorOperatorParty = await sdk.validator?.getValidatorUser()
+await sdk.setPartyId(receiver?.partyId!)
+const validatorOperatorParty = await sdk.validator?.getValidatorUser()
 
-// const instrumentAdminPartyId =
-//     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
+const instrumentAdminPartyId =
+    (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
-// await new Promise((res) => setTimeout(res, 5000))
+await new Promise((res) => setTimeout(res, 5000))
 
-// logger.info('creating transfer preapproval proposal')
+logger.info('creating transfer preapproval proposal')
 
-// const transferPreApprovalProposal =
-//     await sdk.userLedger?.createTransferPreapprovalCommand(
-//         validatorOperatorParty!, // TODO: find out how to get this not through validator api
-//         receiver?.partyId!,
-//         instrumentAdminPartyId
-//     )
+const transferPreApprovalProposal =
+    await sdk.userLedger?.createTransferPreapprovalCommand(
+        validatorOperatorParty!, // TODO: find out how to get this not through validator api
+        receiver?.partyId!,
+        instrumentAdminPartyId
+    )
 
-// await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-//     [transferPreApprovalProposal],
-//     keyPairReceiver.privateKey,
-//     v4()
-// )
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    [transferPreApprovalProposal],
+    keyPairReceiver.privateKey,
+    v4()
+)
 
-// logger.info('transfer pre approval proposal is created')
+logger.info('transfer pre approval proposal is created')
 
-// await sdk.setPartyId(sender?.partyId!)
+await sdk.setPartyId(sender?.partyId!)
 
-// const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
-//     sender!.partyId,
-//     '20000000',
-//     {
-//         instrumentId: 'Amulet',
-//         instrumentAdmin: instrumentAdminPartyId,
-//     }
-// )
+const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
+    sender!.partyId,
+    '20000000',
+    {
+        instrumentId: 'Amulet',
+        instrumentAdmin: instrumentAdminPartyId,
+    }
+)
 
-// await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-//     tapCommand,
-//     keyPairSender.privateKey,
-//     v4(),
-//     disclosedContracts
-// )
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    tapCommand,
+    keyPairSender.privateKey,
+    v4(),
+    disclosedContracts
+)
 
-// const utxos = await sdk.tokenStandard?.listHoldingUtxos()
-// logger.info(utxos, 'List Token Standard Holding UTXOs')
+const utxos = await sdk.tokenStandard?.listHoldingUtxos()
+logger.info(utxos, 'List Token Standard Holding UTXOs')
 
-// await sdk.tokenStandard
-//     ?.listHoldingTransactions()
-//     .then((transactions) => {
-//         logger.info(transactions, 'Token Standard Holding Transactions:')
-//     })
-//     .catch((error) => {
-//         logger.error(
-//             { error },
-//             'Error listing token standard holding transactions:'
-//         )
-//     })
+await sdk.tokenStandard
+    ?.listHoldingTransactions()
+    .then((transactions) => {
+        logger.info(transactions, 'Token Standard Holding Transactions:')
+    })
+    .catch((error) => {
+        logger.error(
+            { error },
+            'Error listing token standard holding transactions:'
+        )
+    })
 
-// logger.info('Creating transfer transaction')
+logger.info('Creating transfer transaction')
 
-// const [transferCommand, disclosedContracts2] =
-//     await sdk.tokenStandard!.createTransfer(
-//         sender!.partyId,
-//         receiver!.partyId,
-//         '100',
-//         {
-//             instrumentId: 'Amulet',
-//             instrumentAdmin: instrumentAdminPartyId,
-//         },
-//         [],
-//         'memo-ref'
-//     )
+const [transferCommand, disclosedContracts2] =
+    await sdk.tokenStandard!.createTransfer(
+        sender!.partyId,
+        receiver!.partyId,
+        '100',
+        {
+            instrumentId: 'Amulet',
+            instrumentAdmin: instrumentAdminPartyId,
+        },
+        [],
+        'memo-ref'
+    )
 
-// await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-//     transferCommand,
-//     keyPairSender.privateKey,
-//     v4(),
-//     disclosedContracts2
-// )
-// logger.info('Submitted transfer transaction')
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    transferCommand,
+    keyPairSender.privateKey,
+    v4(),
+    disclosedContracts2
+)
+logger.info('Submitted transfer transaction')
 
-// {
-//     await sdk.setPartyId(sender!.partyId)
-//     const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
-//     logger.info(aliceHoldings, '[ALICE] holding transactions')
+{
+    await sdk.setPartyId(sender!.partyId)
+    const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
+    logger.info(aliceHoldings, '[ALICE] holding transactions')
 
-//     await sdk.setPartyId(receiver!.partyId)
-//     const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
-//     logger.info(bobHoldings, '[BOB] holding transactions')
-//     const transferPreApprovalStatus =
-//         await sdk.tokenStandard?.getTransferPreApprovalByParty(
-//             receiver!.partyId,
-//             'Amulet'
-//         )
-//     logger.info(transferPreApprovalStatus, '[BOB] transfer preapproval status')
-// }
+    await sdk.setPartyId(receiver!.partyId)
+    const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
+    logger.info(bobHoldings, '[BOB] holding transactions')
+    const transferPreApprovalStatus =
+        await sdk.tokenStandard?.getTransferPreApprovalByParty(
+            receiver!.partyId,
+            'Amulet'
+        )
+    logger.info(transferPreApprovalStatus, '[BOB] transfer preapproval status')
+}

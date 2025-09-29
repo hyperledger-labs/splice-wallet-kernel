@@ -525,15 +525,12 @@ export async function computePreparedTransaction(
 }
 
 export async function computeRawHash(purpose: number, bytes: Uint8Array) {
-    console.log(purpose)
     const encodedPurpose = await encodeInt32(purpose)
 
     const hashInput = await mkByteArray(encodedPurpose, bytes)
     const hashBytes = await sha256(hashInput)
     const multiprefix = new Uint8Array([0x12, 0x20])
-    const t = mkByteArray(multiprefix, hashBytes)
-
-    return t
+    return mkByteArray(multiprefix, hashBytes)
 }
 
 export async function combineHashes(hashes: Uint8Array[]) {

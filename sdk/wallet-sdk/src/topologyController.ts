@@ -141,15 +141,8 @@ export class TopologyController {
         const combinedHash = TopologyWriteService.combineHashes(txHashes)
 
         const computedHash =
-            TopologyController.computeTopologyTxHash(partyTransactions)
+            await TopologyController.computeTopologyTxHash(partyTransactions)
 
-        const combined2 =
-            await TopologyController.computeTopologyTxHas2h(partyTransactions)
-
-        this.logger.info(`calculatedHash: ${combinedHash}`)
-        this.logger.info(
-            `calculatedHash2: ${Buffer.from(combined2).toString('base64')}`
-        )
         if (combinedHash !== computedHash) {
             this.logger.error(
                 `Calculated hash doesn't match hash from the ledger api. Got ${combinedHash}, expected ${computedHash}`
@@ -170,33 +163,17 @@ export class TopologyController {
     /** Calculates the MultiTopologyTransaction hash
      * @param preparedTransactions The 3 topology transactions from the generateTransactions endpoint
      */
-    static computeTopologyTxHash(
-        preparedTransactions: Uint8Array<ArrayBufferLike>[]
-    ): string {
-        const topologyTxHashes = preparedTransactions.map((tx) => {
-            const r = TopologyWriteService.computeRawHash(11, tx)
-            console.log(`hash is: ${Buffer.from(r).toString('hex')}`)
-            return TopologyWriteService.computeRawHash(11, tx)
-        })
-        return TopologyWriteService.combineHashes(topologyTxHashes)
-    }
-
-    /** Calculates the MultiTopologyTransaction hash
-     * @param preparedTransactions The 3 topology transactions from the generateTransactions endpoint
-     */
-    static async computeTopologyTxHas2h(
+    static async computeTopologyTxHash(
         preparedTransactions: Uint8Array<ArrayBufferLike>[]
     ) {
         const rawHashes = await Promise.all(
             preparedTransactions.map((tx) => computeRawHash(11, tx))
         )
-
-        rawHashes.forEach((t) =>
-            console.log(`hash is ${Buffer.from(t).toString('hex')}`)
-        )
         const combinedHashes = await combineHashes(rawHashes)
 
-        return await computeRawHash(55, combinedHashes)
+        const computedHash = await computeRawHash(55, combinedHashes)
+
+        return Buffer.from(computedHash).toString('base64')
     }
     /** Submits a prepared and signed external party topology to the ledger.
      * This will also authorize the new party to the participant and grant the user rights to the party.
