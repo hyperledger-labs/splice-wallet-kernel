@@ -98,7 +98,7 @@ const signedCommandHash = signTransactionHash(
 
 logger.info('Submit command')
 
-const response = await sdk.userLedger?.executeSubmission(
+const response = await sdk.userLedger?.executeSubmissionAndWaitFor(
     prepareResponse!,
     signedCommandHash,
     keyPair.publicKey,

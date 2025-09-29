@@ -84,7 +84,7 @@ const transferPreApprovalProposal =
         instrumentAdminPartyId
     )
 
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     [transferPreApprovalProposal],
     keyPairReceiver.privateKey,
     v4()
@@ -103,14 +103,12 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     }
 )
 
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts
 )
-
-await new Promise((res) => setTimeout(res, 5000))
 
 const utxos = await sdk.tokenStandard?.listHoldingUtxos()
 logger.info(utxos, 'List Token Standard Holding UTXOs')
@@ -142,15 +140,13 @@ const [transferCommand, disclosedContracts2] =
         'memo-ref'
     )
 
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     transferCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts2
 )
 logger.info('Submitted transfer transaction')
-
-await new Promise((res) => setTimeout(res, 5000))
 
 {
     await sdk.setPartyId(sender!.partyId)
