@@ -163,7 +163,7 @@ export class TopologyController {
         preparedTransactions: Uint8Array<ArrayBufferLike>[]
     ): string {
         const topologyTxHashes = preparedTransactions.map((tx) => {
-            return TopologyWriteService.computeRawCantonHash(11, tx)
+            return TopologyWriteService.computeRawHash(11, tx)
         })
         return TopologyWriteService.combineHashes(topologyTxHashes)
     }
