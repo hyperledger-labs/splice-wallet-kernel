@@ -16,8 +16,8 @@ import {
 import { pino } from 'pino'
 import {
     hashPreparedTransaction,
-    computeRawHash,
-    combineHashes,
+    computeMultiHashForTopology,
+    computeSha256CantonHash,
 } from '@canton-network/core-tx-visualizer'
 import { PartyId } from '@canton-network/core-types'
 import {
@@ -167,11 +167,11 @@ export class TopologyController {
         preparedTransactions: Uint8Array<ArrayBufferLike>[]
     ) {
         const rawHashes = await Promise.all(
-            preparedTransactions.map((tx) => computeRawHash(11, tx))
+            preparedTransactions.map((tx) => computeSha256CantonHash(11, tx))
         )
-        const combinedHashes = await combineHashes(rawHashes)
+        const combinedHashes = await computeMultiHashForTopology(rawHashes)
 
-        const computedHash = await computeRawHash(55, combinedHashes)
+        const computedHash = await computeSha256CantonHash(55, combinedHashes)
 
         return Buffer.from(computedHash).toString('base64')
     }

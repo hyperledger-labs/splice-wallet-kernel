@@ -524,7 +524,10 @@ export async function computePreparedTransaction(
     return sha256(await encodePreparedTransaction(preparedTransaction))
 }
 
-export async function computeRawHash(purpose: number, bytes: Uint8Array) {
+export async function computeSha256CantonHash(
+    purpose: number,
+    bytes: Uint8Array
+) {
     const encodedPurpose = await encodeInt32(purpose)
 
     const hashInput = await mkByteArray(encodedPurpose, bytes)
@@ -533,19 +536,19 @@ export async function computeRawHash(purpose: number, bytes: Uint8Array) {
     return mkByteArray(multiprefix, hashBytes)
 }
 
-export async function combineHashes(hashes: Uint8Array[]) {
+export async function computeMultiHashForTopology(hashes: Uint8Array[]) {
     const sortedHashes = hashes
         .slice()
         .sort((a, b) => toHex(a).localeCompare(toHex(b)))
 
     const numHashesBytes = await encodeInt32(sortedHashes.length)
 
-    const concatenatedParts = [numHashesBytes]
+    const concatenatedHashes = [numHashesBytes]
 
     for (const h of sortedHashes) {
-        const lengthBYtes = await encodeInt32(h.length)
-        concatenatedParts.push(lengthBYtes, h)
+        const lengthBytes = await encodeInt32(h.length)
+        concatenatedHashes.push(lengthBytes, h)
     }
 
-    return mkByteArray(...concatenatedParts)
+    return mkByteArray(...concatenatedHashes)
 }
