@@ -24,6 +24,7 @@ import {
     TRANSFER_INSTRUCTION_INTERFACE_ID,
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
     ALLOCATION_INTERFACE_ID,
+    ALLOCATION_REQUEST_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController'
@@ -243,6 +244,17 @@ export class TokenStandardController {
         )
     }
 
+    // TODO jsdoc
+    async fetchPendingAllocationRequestView(): Promise<
+        // TODO add type for interfaceViewValue
+        PrettyContract[]
+    > {
+        return await this.service.listContractsByInterface(
+            ALLOCATION_REQUEST_INTERFACE_ID,
+            this.getPartyId()
+        )
+    }
+
     /**
      * Fetches all allocations pending execute_transfer, cancel, or withdraw
      * @returns a promise containing prettyContract for AllocationView.
@@ -389,7 +401,6 @@ export class TokenStandardController {
                     amount,
                     instrument.instrumentAdmin,
                     instrument.instrumentId,
-                    // If you later add a dedicated getter, replace with getAllocationFactoryRegistryUrl().href
                     this.getTransferFactoryRegistryUrl().href,
                     executor,
                     inputUtxos,
@@ -483,7 +494,7 @@ export class TokenStandardController {
                     ;[ExerciseCommand, disclosedContracts] =
                         await this.service.createExecuteTransferAllocation(
                             allocationCid,
-                            this.getTransferFactoryRegistryUrl().href // same registry base
+                            this.getTransferFactoryRegistryUrl().href
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
 
@@ -557,6 +568,8 @@ export class TokenStandardController {
             throw error
         }
     }
+
+    // TODO allocation request choice
 }
 
 /**

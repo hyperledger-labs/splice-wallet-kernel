@@ -9,6 +9,9 @@ import {
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { LOCALNET_REGISTRY_API_URL, LOCALNET_VALIDATOR_URL } from '../config.js'
+import fs from 'fs/promises'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 const logger = pino({
     name: '08-token-standard-allocation-localnet',
@@ -31,9 +34,32 @@ logger.info('Connected to ledger')
 
 const keyPairSender = createKeyPair()
 const keyPairReceiver = createKeyPair()
+const keyPairVenue = createKeyPair()
 
 await sdk.connectAdmin()
 await sdk.connectTopology(LOCALNET_VALIDATOR_URL)
+
+const here = path.dirname(fileURLToPath(import.meta.url))
+
+const tradingDarPath = path.join(
+    here,
+    '../../../../.localnet/dars/splice-token-test-trading-app-1.0.0.dar'
+)
+
+try {
+    const darBytes = await fs.readFile(tradingDarPath)
+    const resp = await sdk.adminLedger?.ensureDarUploaded(darBytes)
+    logger.info(
+        { tradingDarPath, resp },
+        'Trading app DAR ensured on participant (uploaded or already present)'
+    )
+} catch (e) {
+    logger.error({ e, tradingDarPath }, 'Failed to ensure trading app DAR')
+    throw e
+}
+
+const isDarThere = await sdk.adminLedger?.checkTestApp()
+logger.info({ isDarThere })
 
 const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairSender.privateKey,
@@ -47,6 +73,12 @@ const receiver = await sdk.topology?.prepareSignAndSubmitExternalParty(
     'bob'
 )
 logger.info(`Created party: ${receiver!.partyId}`)
+
+const venue = await sdk.topology?.prepareSignAndSubmitExternalParty(
+    keyPairReceiver.privateKey,
+    'venue'
+)
+logger.info(`Created party: ${venue!.partyId}`)
 
 await sdk.userLedger
     ?.listWallets()
@@ -94,38 +126,154 @@ await sdk.tokenStandard
         )
     })
 
-logger.info('Creating allocation instruction')
+type InstrumentId = {
+    admin: string
+    id: string
+}
 
-const [allocateCmd, allocateDisclosed] =
-    await sdk.tokenStandard!.createAllocationInstruction(
+type Metadata = {
+    values: { [key: string]: string }
+}
+
+type TransferLeg = {
+    sender: string
+    receiver: string
+    amount: string
+    instrumentId: InstrumentId
+    meta: Metadata
+}
+
+const mkLeg = (
+    sender: string,
+    receiver: string,
+    amount: string,
+    admin: string,
+    id: string
+): TransferLeg => ({
+    sender,
+    receiver,
+    amount,
+    instrumentId: { admin, id },
+    meta: { values: {} },
+})
+
+const transferLegs = {
+    leg0: mkLeg(
         sender!.partyId,
         receiver!.partyId,
         '100',
-        { instrumentId: 'Amulet', instrumentAdmin: instrumentAdminPartyId },
-        sender!.partyId,
-        utxos?.map((u) => u.contractId),
-        'demo-allocation',
-        {},
-        {},
-        new Date(Date.now() + 5 * 60_000),
-        new Date(Date.now() + 30 * 60_000),
-        'leg-1',
-        'demo-settlement'
+        instrumentAdminPartyId,
+        'Amulet'
+    ),
+}
+
+const createProposal = {
+    CreateCommand: {
+        templateId:
+            '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
+        createArguments: {
+            venue: venue!.partyId,
+            tradeCid: null,
+            transferLegs,
+            approvers: [sender!.partyId],
+        },
+    },
+}
+
+const cmdId = await sdk.userLedger!.prepareSignAndExecuteTransaction(
+    createProposal,
+    keyPairSender.privateKey,
+    v4()
+)
+
+await sdk.userLedger?.waitForCompletion(
+    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
+    15000,
+    cmdId!
+)
+
+await sdk.setPartyId(receiver!.partyId)
+const activeTradeProposals = await sdk.userLedger?.activeContracts({
+    offset: (await sdk.userLedger!.ledgerEnd()).offset,
+    templateIds: [
+        '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
+    ],
+    parties: [receiver!.partyId],
+    filterByParty: true,
+})
+
+const otcpCid =
+    activeTradeProposals?.[0]?.contractEntry?.JsActiveContract?.createdEvent
+        .contractId
+const acceptCmd = [
+    {
+        ExerciseCommand: {
+            templateId:
+                '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
+            contractId: otcpCid,
+            choice: 'OTCTradeProposal_Accept',
+            choiceArgument: { approver: receiver!.partyId },
+        },
+    },
+]
+const offsetAcceptOtcp = (await sdk.userLedger!.ledgerEnd()).offset || 0
+const acceptOtcpCommandId =
+    await sdk.userLedger!.prepareSignAndExecuteTransaction(
+        acceptCmd,
+        keyPairReceiver.privateKey,
+        v4()
     )
+await sdk.userLedger!.waitForCompletion(
+    offsetAcceptOtcp,
+    60_000,
+    acceptOtcpCommandId
+)
 
-const offsetAlloc = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
-const allocateCommandId =
-    await sdk.userLedger?.prepareSignAndExecuteTransaction(
-        allocateCmd,
-        keyPairSender.privateKey,
-        v4(),
-        allocateDisclosed
+await sdk.setPartyId(venue!.partyId)
+const activeTradeProposals2 = await sdk.userLedger?.activeContracts({
+    offset: (await sdk.userLedger!.ledgerEnd()).offset,
+    templateIds: [
+        '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
+    ],
+    parties: [venue!.partyId],
+    filterByParty: true,
+})
+
+const now = new Date()
+const prepareUntil = new Date(now.getTime() + 60 * 60 * 1000).toISOString()
+const settleBefore = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString()
+
+const otcpCid2 =
+    activeTradeProposals2?.[0]?.contractEntry?.JsActiveContract?.createdEvent
+        .contractId
+const initiateSettlementCmd = [
+    {
+        ExerciseCommand: {
+            templateId:
+                '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
+            contractId: otcpCid2,
+            choice: 'OTCTradeProposal_InitiateSettlement',
+            choiceArgument: { prepareUntil, settleBefore },
+        },
+    },
+]
+const offsetInitiateSettlementOtcp =
+    (await sdk.userLedger!.ledgerEnd()).offset || 0
+const initiateSettlementOtcpCommandId =
+    await sdk.userLedger!.prepareSignAndExecuteTransaction(
+        initiateSettlementCmd,
+        keyPairReceiver.privateKey,
+        v4()
     )
-logger.info('Submitted allocation instruction')
+await sdk.userLedger!.waitForCompletion(
+    offsetInitiateSettlementOtcp,
+    60_000,
+    initiateSettlementOtcpCommandId
+)
 
-await sdk.userLedger?.waitForCompletion(offsetAlloc, 5000, allocateCommandId!)
-logger.info('Allocation instruction transaction completed')
-
+await sdk.setPartyId(sender!.partyId)
+const pendingAllocationRequestSender =
+    await sdk.tokenStandard?.fetchPendingAllocationRequestView()
 const pendingAllocationInstructionsSender =
     await sdk.tokenStandard?.fetchPendingAllocationInstructionView()
 
@@ -133,11 +281,17 @@ const pendingAllocationsSender =
     await sdk.tokenStandard?.fetchPendingAllocationView()
 
 logger.info(
-    { pendingAllocationInstructionsSender, pendingAllocationsSender },
-    'Pending AllocationInstructions (Alice)'
+    {
+        pendingAllocationRequestSender,
+        pendingAllocationInstructionsSender,
+        pendingAllocationsSender,
+    },
+    'Pending Allocation (Alice)'
 )
 
 await sdk.setPartyId(receiver!.partyId)
+const pendingAllocationRequestReceiver =
+    await sdk.tokenStandard?.fetchPendingAllocationRequestView()
 const pendingAllocationInstructionsReceiver =
     await sdk.tokenStandard?.fetchPendingAllocationInstructionView()
 
@@ -145,6 +299,28 @@ const pendingAllocationsReceiver =
     await sdk.tokenStandard?.fetchPendingAllocationView()
 
 logger.info(
-    { pendingAllocationInstructionsReceiver, pendingAllocationsReceiver },
-    'Pending AllocationInstructions (Bob)'
+    {
+        pendingAllocationRequestReceiver,
+        pendingAllocationInstructionsReceiver,
+        pendingAllocationsReceiver,
+    },
+    'Pending Allocation (Bob)'
+)
+
+await sdk.setPartyId(venue!.partyId)
+const pendingAllocationRequestVenue =
+    await sdk.tokenStandard?.fetchPendingAllocationRequestView()
+const pendingAllocationInstructionsVenue =
+    await sdk.tokenStandard?.fetchPendingAllocationInstructionView()
+
+const pendingAllocationsVenue =
+    await sdk.tokenStandard?.fetchPendingAllocationView()
+
+logger.info(
+    {
+        pendingAllocationRequestVenue,
+        pendingAllocationInstructionsVenue,
+        pendingAllocationsVenue,
+    },
+    'Pending Allocation (Venue)'
 )

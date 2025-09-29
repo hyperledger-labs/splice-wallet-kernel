@@ -61,6 +61,7 @@ export const TokenStandardTransactionInterfaces = [
     AllocationFactoryInterface,
     AllocationInstructionInterface,
     AllocationInterface,
+    AllocationRequestInterface,
 ]
 
 const SpliceMetaKeyPrefix = 'splice.lfdecentralizedtrust.org/'
