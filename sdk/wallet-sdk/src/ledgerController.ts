@@ -199,7 +199,7 @@ export class LedgerController {
      * @throws An error if the timeout is reached before the command is completed.
      */
     async waitForCompletion(
-        ledgerEnd: number | { offset: number },
+        ledgerEnd: number | Types['GetLedgerEndResponse'],
         timeoutMs: number,
         commandId?: string,
         submissionId?: string
