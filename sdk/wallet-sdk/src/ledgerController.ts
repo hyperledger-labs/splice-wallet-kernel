@@ -52,6 +52,7 @@ export class LedgerController {
      */
     constructor(userId: string, baseUrl: URL, token: string) {
         this.client = new LedgerClient(baseUrl, token, this.logger)
+        this.client.init()
         this.userId = userId
         return this
     }
@@ -123,7 +124,6 @@ export class LedgerController {
             return false
         }
     }
-
     /**
      * Prepares, signs and executes a transaction on the ledger (using interactive submission).
      * @param commands the commands to be executed.
@@ -145,6 +145,15 @@ export class LedgerController {
             disclosedContracts
         )
 
+        const calculatedTxHash = await TopologyController.createTransactionHash(
+            prepared.preparedTransaction!
+        )
+
+        if (calculatedTxHash !== prepared.preparedTransactionHash) {
+            this.logger.error(
+                `Calculated tx hash ${calculatedTxHash}, got ${prepared.preparedTransactionHash} from ledger api`
+            )
+        }
         const signature = signTransactionHash(
             prepared.preparedTransactionHash,
             privateKey
