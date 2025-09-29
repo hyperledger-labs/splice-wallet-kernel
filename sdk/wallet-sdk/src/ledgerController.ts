@@ -177,7 +177,7 @@ export class LedgerController {
         privateKey: PrivateKey,
         commandId: string,
         disclosedContracts?: Types['DisclosedContract'][],
-        timeoutMs: number = 5000
+        timeoutMs: number = 15000
     ): Promise<Types['Completion']['value']> {
         const ledgerEnd = await this.ledgerEnd()
         await this.prepareSignAndExecuteTransaction(
@@ -342,7 +342,7 @@ export class LedgerController {
         signature: string,
         publicKey: SigningPublicKey | PublicKey,
         submissionId: string,
-        timeoutMs: number = 5000
+        timeoutMs: number = 15000
     ): Promise<Types['Completion']['value']> {
         const ledgerEnd = await this.ledgerEnd()
         await this.executeSubmission(
