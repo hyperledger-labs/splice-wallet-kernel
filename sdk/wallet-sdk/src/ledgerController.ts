@@ -352,7 +352,12 @@ export class LedgerController {
             submissionId
         )
 
-        return this.waitForCompletion(ledgerEnd, timeoutMs, submissionId)
+        return this.waitForCompletion(
+            ledgerEnd,
+            timeoutMs,
+            undefined,
+            submissionId
+        )
     }
 
     /**
