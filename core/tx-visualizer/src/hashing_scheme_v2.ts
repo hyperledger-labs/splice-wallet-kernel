@@ -23,12 +23,13 @@ import {
     TextMap_Entry,
     Value,
 } from '@canton-network/core-ledger-proto'
-import { mkByteArray, sha256 } from './utils.js'
+import { mkByteArray, sha256, toHex } from './utils.js'
 
 // Hash purpose reserved for prepared transaction
 const PREPARED_TRANSACTION_HASH_PURPOSE = Uint8Array.from([
     0x00, 0x00, 0x00, 0x30,
 ])
+
 const NODE_ENCODING_VERSION = Uint8Array.from([0x01])
 
 const HASHING_SCHEME_VERSION = Uint8Array.from([HashingSchemeVersion.V2])
@@ -521,4 +522,33 @@ export async function computePreparedTransaction(
     preparedTransaction: PreparedTransaction
 ): Promise<Uint8Array> {
     return sha256(await encodePreparedTransaction(preparedTransaction))
+}
+
+export async function computeSha256CantonHash(
+    purpose: number,
+    bytes: Uint8Array
+) {
+    const encodedPurpose = await encodeInt32(purpose)
+
+    const hashInput = await mkByteArray(encodedPurpose, bytes)
+    const hashBytes = await sha256(hashInput)
+    const multiprefix = new Uint8Array([0x12, 0x20])
+    return mkByteArray(multiprefix, hashBytes)
+}
+
+export async function computeMultiHashForTopology(hashes: Uint8Array[]) {
+    const sortedHashes = hashes
+        .slice()
+        .sort((a, b) => toHex(a).localeCompare(toHex(b)))
+
+    const numHashesBytes = await encodeInt32(sortedHashes.length)
+
+    const concatenatedHashes = [numHashesBytes]
+
+    for (const h of sortedHashes) {
+        const lengthBytes = await encodeInt32(h.length)
+        concatenatedHashes.push(lengthBytes, h)
+    }
+
+    return mkByteArray(...concatenatedHashes)
 }
