@@ -1,7 +1,13 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerClient, PostResponse, Types } from './ledger-client.js'
+import {
+    AllocateExternalPartyResponse,
+    GenerateTransactionResponse,
+    LedgerClient,
+    MultiHashSignatures,
+    OnboardingTransactions,
+} from './ledger-client.js'
 import { createHash } from 'node:crypto'
 import { PartyId } from '@canton-network/core-types'
 import {
@@ -38,20 +44,6 @@ import {
 } from '@canton-network/core-ledger-proto'
 import { GrpcTransport } from '@protobuf-ts/grpc-transport'
 import { ChannelCredentials } from '@grpc/grpc-js'
-
-type GenerateTransactionResponse =
-    PostResponse<'/v2/parties/external/generate-topology'>
-
-type AllocateExternalPartyResponse =
-    PostResponse<'/v2/parties/external/allocate'>
-
-type OnboardingTransactions = NonNullable<
-    Types['AllocateExternalPartyRequest']['onboardingTransactions']
->
-
-type MultiHashSignatures = NonNullable<
-    Types['AllocateExternalPartyRequest']['multiHashSignatures']
->
 
 function prefixedInt(value: number, bytes: Buffer | Uint8Array): Buffer {
     const buffer = Buffer.alloc(4 + bytes.length)
@@ -282,12 +274,11 @@ export class TopologyWriteService {
         onboardingTransactions: OnboardingTransactions,
         multiHashSignatures: MultiHashSignatures
     ): Promise<AllocateExternalPartyResponse> {
-        return this.ledgerClient.post('/v2/parties/external/allocate', {
-            synchronizer: this.synchronizerId,
-            identityProviderId: '',
+        return this.ledgerClient.allocateExternalParty(
+            this.synchronizerId,
             onboardingTransactions,
-            multiHashSignatures,
-        })
+            multiHashSignatures
+        )
     }
 
     async generateTopology(
@@ -297,20 +288,13 @@ export class TopologyWriteService {
         confirmationThreshold: number = 1,
         otherConfirmingParticipantUids: string[] = []
     ): Promise<GenerateTransactionResponse> {
-        return this.ledgerClient.post(
-            '/v2/parties/external/generate-topology',
-            {
-                synchronizer: this.synchronizerId,
-                partyHint,
-                publicKey: {
-                    format: 'CRYPTO_KEY_FORMAT_RAW',
-                    keyData: publicKey,
-                    keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
-                },
-                localParticipantObservationOnly,
-                confirmationThreshold,
-                otherConfirmingParticipantUids,
-            }
+        return this.ledgerClient.generateTopology(
+            this.synchronizerId,
+            publicKey,
+            partyHint,
+            localParticipantObservationOnly,
+            confirmationThreshold,
+            otherConfirmingParticipantUids
         )
     }
 

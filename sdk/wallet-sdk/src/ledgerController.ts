@@ -295,21 +295,21 @@ export class LedgerController {
         signature: string,
         publicKey: PublicKey,
         submissionId: string
-    ): Promise<PostResponse<'/v2/interactive-submission/execute'>>
+    ): Promise<string>
     /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
     async executeSubmission(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
         signature: string,
         publicKey: SigningPublicKey,
         submissionId: string
-    ): Promise<PostResponse<'/v2/interactive-submission/execute'>>
+    ): Promise<string>
     /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
     async executeSubmission(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
         signature: string,
         publicKey: SigningPublicKey | PublicKey,
         submissionId: string
-    ): Promise<PostResponse<'/v2/interactive-submission/execute'>>
+    ): Promise<string>
     async executeSubmission(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
         signature: string,

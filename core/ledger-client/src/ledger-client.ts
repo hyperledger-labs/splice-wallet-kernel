@@ -56,6 +56,21 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
     ? Res
     : never
 
+// Explicitly use the 3.3 schema here, as there has not been a 3.4 snapshot containing these yet
+export type GenerateTransactionResponse =
+    v3_3.components['schemas']['GenerateExternalPartyTopologyResponse']
+
+export type AllocateExternalPartyResponse =
+    v3_3.components['schemas']['AllocateExternalPartyResponse']
+
+export type OnboardingTransactions = NonNullable<
+    v3_3.components['schemas']['AllocateExternalPartyRequest']['onboardingTransactions']
+>
+
+export type MultiHashSignatures = NonNullable<
+    v3_3.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
+>
+
 export class LedgerClient {
     // privately manage the active connected version and associated client codegen
     private readonly clients: Record<SupportedVersions, Client<paths>>
@@ -190,6 +205,74 @@ export class LedgerClient {
         }
 
         return
+    }
+
+    /** TODO: simplify once 3.4 snapshot contains this endpoint */
+    public async allocateExternalParty(
+        synchronizerId: string,
+        onboardingTransactions: OnboardingTransactions,
+        multiHashSignatures: MultiHashSignatures
+    ): Promise<AllocateExternalPartyResponse> {
+        await this.init()
+
+        if (this.clientVersion !== '3.3') {
+            throw new Error(
+                'allocateExternalParty is only supported on 3.3 clients'
+            )
+        }
+
+        const client: Client<v3_3.paths> = this.clients['3.3']
+
+        const resp = await client.POST('/v2/parties/external/allocate', {
+            body: {
+                synchronizer: synchronizerId,
+                identityProviderId: '',
+                onboardingTransactions,
+                multiHashSignatures,
+            },
+        })
+
+        return this.valueOrError(resp)
+    }
+
+    /** TODO: simplify once 3.4 snapshot contains this endpoint  */
+    public async generateTopology(
+        synchronizerId: string,
+        publicKey: string,
+        partyHint: PartyId = '',
+        localParticipantObservationOnly: boolean = false,
+        confirmationThreshold: number = 1,
+        otherConfirmingParticipantUids: string[] = []
+    ): Promise<GenerateTransactionResponse> {
+        await this.init()
+
+        if (this.clientVersion !== '3.3') {
+            throw new Error(
+                'allocateExternalParty is only supported on 3.3 clients'
+            )
+        }
+
+        const client: Client<v3_3.paths> = this.clients['3.3']
+
+        const resp = await client.POST(
+            '/v2/parties/external/generate-topology',
+            {
+                body: {
+                    synchronizer: synchronizerId,
+                    partyHint,
+                    publicKey: {
+                        format: 'CRYPTO_KEY_FORMAT_RAW',
+                        keyData: publicKey,
+                        keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
+                    },
+                    localParticipantObservationOnly,
+                    confirmationThreshold,
+                    otherConfirmingParticipantUids,
+                },
+            }
+        )
+
+        return this.valueOrError(resp)
     }
 
     public async post<Path extends PostEndpoint>(
