@@ -3,7 +3,7 @@
     "info": {
         "title": "Splice Wallet JSON-RPC Remote dApp API",
         "version": "0.1.0",
-        "description": "An OpenRPC specification for the dapp to interact with a wallet kernel."
+        "description": "An OpenRPC specification for remotely hosted wallet kernels. Due to the remote nature, an implementing provider must bridge certain functionality on the client-side to satisfy the general dApp API spec."
     },
     "methods": [
         {
