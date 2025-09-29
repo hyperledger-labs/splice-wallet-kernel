@@ -1,9 +1,9 @@
 {
     "openrpc": "1.2.6",
     "info": {
-        "title": "Splice Wallet JSON-RPC dApp API",
+        "title": "Splice Wallet JSON-RPC Remote dApp API",
         "version": "0.1.0",
-        "description": "An OpenRPC specification for the dapp to interact with a wallet kernel."
+        "description": "An OpenRPC specification for remotely hosted wallet kernels. Due to the remote nature, an implementing provider must bridge certain functionality on the client-side to satisfy the general dApp API spec."
     },
     "methods": [
         {
@@ -58,17 +58,12 @@
                         },
                         "userUrl": {
                             "$ref": "#/components/schemas/UserUrl"
-                        },
-                        "sessionToken": {
-                            "title": "sessionToken",
-                            "type": "string",
-                            "description": "JWT authentication token (if applicable)."
                         }
                     },
-                    "required": ["kernel", "isConnected", "sessionToken"]
+                    "required": ["kernel", "isConnected", "userUrl"]
                 }
             },
-            "description": "Ensures ledger connectivity. Returns the connected network information along with the user access token."
+            "description": "Ensures ledger connectivity. Returns the current chainId if connected, or the user url if disconnected."
         },
         {
             "name": "darsAvailable",
@@ -147,11 +142,11 @@
                     "title": "prepareExecuteResult",
                     "type": "object",
                     "properties": {
-                        "tx": {
-                            "$ref": "#/components/schemas/TxChangedExecutedEvent"
+                        "userUrl": {
+                            "$ref": "#/components/schemas/UserUrl"
                         }
                     },
-                    "required": ["tx"]
+                    "required": ["userUrl"]
                 }
             },
             "description": "Prepares, signs, and executes a transaction."
@@ -190,6 +185,34 @@
                 }
             },
             "description": "Proxy for the JSON-API endpoints. Injects authorization headers automatically."
+        },
+        {
+            "name": "onConnected",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "OnConnectedEvent",
+                    "type": "object",
+                    "properties": {
+                        "kernel": {
+                            "$ref": "#/components/schemas/KernelInfo"
+                        },
+                        "chainId": {
+                            "title": "chainId",
+                            "type": "string",
+                            "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
+                        },
+                        "sessionToken": {
+                            "title": "sessionToken",
+                            "type": "string",
+                            "description": "JWT authentication token (if applicable)."
+                        }
+                    },
+                    "required": ["kernel", "chainId"]
+                }
+            },
+            "description": "Informs when the user connects to a network."
         },
         {
             "name": "onAccountsChanged",
