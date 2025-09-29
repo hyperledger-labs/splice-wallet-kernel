@@ -43,7 +43,7 @@ const createPingCommand = sdk.userLedger?.createPingCommand(
 )
 
 logger.info('Prepare command submission for ping create command')
-const prepareResponse = await sdk.userLedger?.prepareSignAndExecuteTransaction(
+const prepareResponse = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     createPingCommand,
     keyPair.privateKey,
     v4()

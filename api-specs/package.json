@@ -6,6 +6,7 @@
     "type": "module",
     "scripts": {
         "dapp-mock-server": "open-rpc-mock-server -d openrpc-dapp-api.json",
+        "dapp-remote-mock-server": "open-rpc-mock-server -d openrpc-dapp-remote-api.json",
         "user-mock-server": "open-rpc-mock-server -d openrpc-user-api.json",
         "signing-mock-server": "open-rpc-mock-server -d openrpc-signing-api.json"
     },

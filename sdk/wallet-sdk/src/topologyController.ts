@@ -17,10 +17,11 @@ import { pino } from 'pino'
 import { hashPreparedTransaction } from '@canton-network/core-tx-visualizer'
 import { PartyId } from '@canton-network/core-types'
 import {
-    PreparedTransaction,
     Enums_ParticipantPermission,
+    PreparedTransaction,
     SigningPublicKey,
 } from '@canton-network/core-ledger-proto'
+export { Enums_ParticipantPermission } from '@canton-network/core-ledger-proto'
 
 export type PreparedParty = {
     // TODO (breaking): return the transactions as a string directly

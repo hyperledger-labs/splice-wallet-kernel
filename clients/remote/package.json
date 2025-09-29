@@ -8,9 +8,10 @@
     "scripts": {
         "build": "tsc -b; tsc -b tsconfig.frontend.json && yarn db:migrate:reset && yarn db:bootstrap",
         "clean": "tsc -b --clean && rm -rf ./dist && rm ./store.sqlite || true",
-        "dev": "tsx watch src/index.ts | pino-pretty",
+        "dev": "tsx watch src --include *.config.ts --include *.json src/index.ts | pino-pretty",
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)",
         "start": "yarn node dist/index.js",
+        "debug": "yarn node --inspect-brk dist/index.js",
         "db:bootstrap": "tsx ./src/scripts/db.ts bootstrap",
         "db:migrate:up": "tsx ./src/scripts/db.ts up",
         "db:migrate:down": "tsx ./src/scripts/db.ts down",
