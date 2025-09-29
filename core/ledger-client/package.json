@@ -32,6 +32,8 @@
         "@canton-network/core-splice-client": "workspace:^",
         "@canton-network/core-token-standard": "workspace:^",
         "@canton-network/core-types": "workspace:^",
+        "@grpc/grpc-js": "^1.14.0",
+        "@protobuf-ts/grpc-transport": "^2.11.1",
         "bignumber.js": "^9.2.1",
         "dayjs": "^1.11.13",
         "openapi-fetch": "^0.14.0",

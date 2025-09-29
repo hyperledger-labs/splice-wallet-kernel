@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    Enums_ParticipantPermission,
     LedgerClient,
-    PreparedTransaction,
     TopologyWriteService,
 } from '@canton-network/core-ledger-client'
 import {
@@ -18,10 +16,17 @@ import {
 import { pino } from 'pino'
 import { hashPreparedTransaction } from '@canton-network/core-tx-visualizer'
 import { PartyId } from '@canton-network/core-types'
-export { Enums_ParticipantPermission } from '@canton-network/core-ledger-proto'
+import {
+    PreparedTransaction,
+    Enums_ParticipantPermission,
+    SigningPublicKey,
+} from '@canton-network/core-ledger-proto'
 
 export type PreparedParty = {
+    // TODO (breaking): return the transactions as a string directly
     partyTransactions: Uint8Array<ArrayBufferLike>[]
+
+    // TODO (breaking): rename combinedHash to multiHash to match JSON API field
     combinedHash: string
     txHashes: Buffer<ArrayBuffer>[]
     namespace: string
@@ -88,11 +93,22 @@ export class TopologyController {
      * This is a utility function that uses the same fingerprinting scheme as the ledger.
      * @param publicKey
      */
-    static createFingerprintFromPublicKey(publicKey: PublicKey): string {
+    static createFingerprintFromPublicKey(publicKey: string): string
+    /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
+    static createFingerprintFromPublicKey(publicKey: SigningPublicKey): string
+    /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
+    static createFingerprintFromPublicKey(
+        publicKey: SigningPublicKey | string
+    ): string
+    static createFingerprintFromPublicKey(
+        publicKey: SigningPublicKey | PublicKey
+    ): string {
         return TopologyWriteService.createFingerprintFromKey(publicKey)
     }
 
     /** Creates a prepared topology transaction that can be signed and submitted in order th create a new external party.
+     *
+     * @deprecated use generateExternalPartyTopology instead
      *
      * @param publicKey
      * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
@@ -104,12 +120,49 @@ export class TopologyController {
         publicKey: PublicKey,
         partyHint?: string,
         confirmingThreshold?: number,
-        // TODO (breaking): remove this
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        _hostingParticipantPermissions?: Map<
-            string,
-            Enums_ParticipantPermission
-        >
+        hostingParticipantPermissions?: Map<string, Enums_ParticipantPermission>
+    ): Promise<PreparedParty> {
+        const namespace =
+            TopologyController.createFingerprintFromPublicKey(publicKey)
+        const partyId: PartyId = partyHint
+            ? `${partyHint}::${namespace}`
+            : `${namespace.slice(0, 5)}::${namespace}`
+
+        const transactions = await this.topologyClient
+            .generateTransactions(
+                publicKey,
+                partyId,
+                confirmingThreshold,
+                hostingParticipantPermissions
+            )
+            .then((resp) => resp.generatedTransactions)
+
+        const txHashes = transactions.map((tx) =>
+            Buffer.from(tx.transactionHash)
+        )
+
+        const partyTransactions = transactions.map(
+            (tx) => tx.serializedTransaction
+        )
+
+        const combinedHash = TopologyWriteService.combineHashes(txHashes)
+
+        const result = {
+            partyTransactions,
+            combinedHash,
+            txHashes,
+            namespace,
+            partyId,
+        }
+
+        return Promise.resolve(result)
+    }
+
+    async generateExternalPartyTopology(
+        publicKey: PublicKey,
+        partyHint?: string,
+        confirmingThreshold?: number,
+        hostingParticipantUids?: string[]
     ): Promise<PreparedParty> {
         const namespace =
             TopologyController.createFingerprintFromPublicKey(publicKey)
@@ -118,10 +171,12 @@ export class TopologyController {
             ? `${partyHint}::${namespace}`
             : `${namespace.slice(0, 5)}::${namespace}`
 
-        const transactions = await this.topologyClient.generateTransactions(
+        const transactions = await this.topologyClient.generateTopology(
             publicKey,
             partyHint || namespace.slice(0, 5),
-            confirmingThreshold
+            false,
+            confirmingThreshold,
+            hostingParticipantUids
         )
 
         return {
@@ -129,7 +184,6 @@ export class TopologyController {
             partyTransactions: transactions.topologyTransactions!.map((tx) =>
                 Buffer.from(tx, 'base64')
             ),
-            // TODO (breaking): rename combinedHash to multiHash
             combinedHash: transactions.multiHash,
             txHashes: [], // TODO: get hashes?
             namespace,

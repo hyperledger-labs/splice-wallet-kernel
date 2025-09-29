@@ -19,6 +19,7 @@ import {
 } from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
+import { SigningPublicKey } from '@canton-network/core-ledger-proto'
 import { TopologyController } from './topologyController.js'
 import { PartyId } from '@canton-network/core-types'
 
@@ -102,16 +103,42 @@ export class LedgerController {
      * @param signature the signed signature of the preparedTransactionHash from the prepareSubmission method.
      * @returns true if verification succeeded or false if it failed
      */
+    verifyTxHash(
+        txHash: string,
+        publicKey: PublicKey,
+        signature: string
+    ): boolean
+    /** @deprecated protobuf version of public key is unsupported, use the `PublicKey` type instead */
+    verifyTxHash(
+        txHash: string,
+        publicKey: SigningPublicKey,
+        signature: string
+    ): boolean
+    /** @deprecated protobuf version of public key is unsupported, use the `PublicKey` type instead */
+    verifyTxHash(
+        txHash: string,
+        publicKey: SigningPublicKey | PublicKey,
+        signature: string
+    ): boolean
+    verifyTxHash(
+        txHash: string,
+        publicKey: SigningPublicKey | PublicKey,
+        signature: string
+    ): boolean {
+        let key: string
+        if (typeof publicKey === 'string') {
+            key = publicKey
+        } else {
+            key = btoa(String.fromCodePoint(...publicKey.publicKey))
+        }
 
-    verifyTxHash(txHash: string, publicKey: PublicKey, signature: string) {
         try {
-            return verifySignedTxHash(txHash, publicKey, signature)
+            return verifySignedTxHash(txHash, key, signature)
         } catch (e: unknown) {
             this.logger.error(e)
             return false
         }
     }
-
     /**
      * Prepares, signs and executes a transaction on the ledger (using interactive submission).
      * @param commands the commands to be executed.
@@ -230,6 +257,26 @@ export class LedgerController {
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
         signature: string,
         publicKey: PublicKey,
+        submissionId: string
+    ): Promise<PostResponse<'/v2/interactive-submission/execute'>>
+    /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
+    async executeSubmission(
+        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        signature: string,
+        publicKey: SigningPublicKey,
+        submissionId: string
+    ): Promise<PostResponse<'/v2/interactive-submission/execute'>>
+    /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
+    async executeSubmission(
+        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        signature: string,
+        publicKey: SigningPublicKey | PublicKey,
+        submissionId: string
+    ): Promise<PostResponse<'/v2/interactive-submission/execute'>>
+    async executeSubmission(
+        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        signature: string,
+        publicKey: SigningPublicKey | PublicKey,
         submissionId: string
     ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
         if (prepared.preparedTransaction === undefined) {
