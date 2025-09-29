@@ -19,7 +19,7 @@ import {
 } from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
-import { SigningPublicKey } from '@canton-network/core-ledger-client/src/_proto/com/digitalasset/canton/crypto/v30/crypto'
+import { SigningPublicKey } from '@canton-network/core-ledger-proto'
 import { TopologyController } from './topologyController.js'
 import { PartyId } from '@canton-network/core-types'
 
