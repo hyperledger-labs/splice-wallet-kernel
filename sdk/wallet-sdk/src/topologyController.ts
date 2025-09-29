@@ -2,10 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    Enums_ParticipantPermission,
     LedgerClient,
-    PreparedTransaction,
-    SigningPublicKey,
     TopologyWriteService,
 } from '@canton-network/core-ledger-client'
 import {
@@ -19,6 +16,11 @@ import {
 import { pino } from 'pino'
 import { hashPreparedTransaction } from '@canton-network/core-tx-visualizer'
 import { PartyId } from '@canton-network/core-types'
+import {
+    Enums_ParticipantPermission,
+    PreparedTransaction,
+    SigningPublicKey,
+} from '@canton-network/core-ledger-proto'
 export { Enums_ParticipantPermission } from '@canton-network/core-ledger-proto'
 
 export type PreparedParty = {
