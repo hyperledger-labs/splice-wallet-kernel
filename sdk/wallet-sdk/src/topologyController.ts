@@ -86,7 +86,6 @@ export class TopologyController {
     ): Promise<string> {
         return hashPreparedTransaction(preparedTransaction, 'base64')
     }
-
     /** Creates a fingerprint from a public key.
      * This is a utility function that uses the same fingerprinting scheme as the ledger.
      * @param publicKey
@@ -137,6 +136,15 @@ export class TopologyController {
 
         const combinedHash = TopologyWriteService.combineHashes(txHashes)
 
+        const computedHash =
+            TopologyController.computeTopologyTxHash(partyTransactions)
+
+        if (combinedHash !== computedHash) {
+            this.logger.error(
+                `Calculated hash doesn't match hash from the ledger api. Got ${combinedHash}, expected ${computedHash}`
+            )
+        }
+
         const result = {
             partyTransactions,
             combinedHash,
@@ -146,6 +154,18 @@ export class TopologyController {
         }
 
         return Promise.resolve(result)
+    }
+
+    /** Calculates the MultiTopologyTransaction hash
+     * @param preparedTransactions The 3 topology transactions from the generateTransactions endpoint
+     */
+    static computeTopologyTxHash(
+        preparedTransactions: Uint8Array<ArrayBufferLike>[]
+    ): string {
+        const topologyTxHashes = preparedTransactions.map((tx) => {
+            return TopologyWriteService.computeRawCantonHash(11, tx)
+        })
+        return TopologyWriteService.combineHashes(topologyTxHashes)
     }
 
     /** Submits a prepared and signed external party topology to the ledger.
@@ -205,7 +225,6 @@ export class TopologyController {
             confirmingThreshold,
             hostingParticipantPermissions
         )
-
         const signedHash = signTransactionHash(
             preparedParty!.combinedHash,
             privateKey

@@ -100,6 +100,15 @@ export class TopologyWriteService {
         })
     }
 
+    static computeRawHash(purpose: number, bytes: Uint8Array): Buffer {
+        const hashInput = prefixedInt(purpose, bytes)
+
+        const hash = createHash('sha256').update(hashInput).digest()
+        const multiprefix = Buffer.from([0x12, 0x20])
+
+        return Buffer.concat([multiprefix, hash])
+    }
+
     static combineHashes(hashes: Buffer[]): string {
         // Sort the hashes by their hex representation
         const sortedHashes = hashes.sort((a, b) =>
