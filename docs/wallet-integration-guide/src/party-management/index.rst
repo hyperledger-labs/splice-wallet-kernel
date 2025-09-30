@@ -108,7 +108,7 @@ entities in case of malicious actors.
 To facilitate multi-hosting we simply need to extend `partyToParticipant` and `ParticipantToParty` to include new validators. This
 requires sourcing signed transaction from the validators the client is interested in being hosted on.
 
-The below script allows you (by using the SDK) to host a single party on both the `app-user` and `app-provider` validator.
+The below script allows you (by using the SDK) to host a single party on both `app-user` and `app-provider` validators.
 
 .. literalinclude:: ../../examples/scripts/06-multi-hosted-party.ts
 
