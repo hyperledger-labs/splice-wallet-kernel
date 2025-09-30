@@ -100,7 +100,7 @@ The wallet SDK has a helper function to submit the transactions:
 Multi-hosting a party
 ---------------------
 Since only relevant data is shared between validator nodes, and nodes don't contain all data, backup and recovery are important.
-Another important aspect is to prevent having a validator being a single source a failure, this can be handled on a party basis by
+Another important aspect is to prevent having a validator being a single source of failure, this can be handled on a party basis by
 doing multi hosting. Multi hosting a party means replication all the information related to that party onto multiple validators,
 this can either be multiple validators run by the same entity (most common case for wallets) or even validators run by different
 entities in case of malicious actors.
