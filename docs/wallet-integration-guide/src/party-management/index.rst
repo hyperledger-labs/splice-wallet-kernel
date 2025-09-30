@@ -112,7 +112,7 @@ The below script allows you (by using the SDK) to host a single party on both `a
 
 .. literalinclude:: ../../examples/scripts/06-multi-hosted-party.ts
 
-now since both validators use the same unsafe auth we can replicate the `admintoken.accesstoken` for both, in a non-localnet setup you want to source
+Now since both validators use the same unsafe auth we can replicate the `adminToken.accessToken` for both. In a non-localnet setup you want to source
 these from your identity provider.
 
 
