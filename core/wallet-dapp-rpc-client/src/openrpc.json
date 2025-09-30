@@ -56,9 +56,6 @@
                             "type": "string",
                             "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
                         },
-                        "userUrl": {
-                            "$ref": "#/components/schemas/UserUrl"
-                        },
                         "sessionToken": {
                             "title": "sessionToken",
                             "type": "string",
@@ -249,6 +246,9 @@
                         "title": "url",
                         "type": "string",
                         "description": "The URL of the wallet kernel."
+                    },
+                    "userUrl": {
+                        "$ref": "#/components/schemas/UserUrl"
                     }
                 },
                 "required": ["id", "clientType"]
