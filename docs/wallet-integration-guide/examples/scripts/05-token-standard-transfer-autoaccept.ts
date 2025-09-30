@@ -79,7 +79,7 @@ logger.info('creating transfer preapproval proposal')
 
 const transferPreApprovalProposal =
     await sdk.userLedger?.createTransferPreapprovalCommand(
-        validatorOperatorParty!, // TODO: find out how to get this not through validator api
+        validatorOperatorParty!,
         receiver?.partyId!,
         instrumentAdminPartyId
     )
