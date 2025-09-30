@@ -29,12 +29,14 @@ export const dappController = (store?: Store) =>
                 isConnected: false,
                 chainId: 'default-chain-id',
                 userUrl: Browser.runtime.getURL('pages/user.html'),
+                sessionToken: 'default-session-token',
             }),
         darsAvailable: async () => Promise.resolve({ dars: ['default-dar'] }),
         ledgerApi: async (params: LedgerApiParams) =>
             Promise.resolve({ response: 'default-response' }),
-        prepareExecute: async (params: PrepareExecuteParams) =>
-            Promise.resolve({ userUrl: 'default-url' }),
+        prepareExecute: async (params: PrepareExecuteParams) => {
+            throw new Error('Function not implemented.')
+        },
         prepareReturn: async (params: PrepareReturnParams) =>
             Promise.resolve({}),
         status: async () => {
@@ -43,9 +45,6 @@ export const dappController = (store?: Store) =>
         requestAccounts: async () => {
             const wallets = await store!.getWallets()
             return wallets
-        },
-        onConnected: async () => {
-            throw new Error('Only for events.')
         },
         onAccountsChanged: async () => {
             throw new Error('Only for events.')

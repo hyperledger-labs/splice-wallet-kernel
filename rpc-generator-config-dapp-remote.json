@@ -1,0 +1,22 @@
+{
+    "openrpcDocument": "./api-specs/openrpc-dapp-remote-api.json",
+    "outDir": ".",
+    "components": [
+        {
+            "type": "custom",
+            "name": "@canton-network/core-wallet-dapp-remote-rpc-client",
+            "language": "typescript",
+            "outPath": "./core/wallet-dapp-remote-rpc-client",
+            "customComponent": "./core/rpc-generator/dist/components/client.js"
+        },
+        {
+            "type": "custom",
+            "name": "@canton-network/wallet-dapp-rpc-remote-server",
+            "language": "typescript",
+            "openRPCPath": null,
+            "outPath": "./clients/remote/src/dapp-api/rpc-gen",
+            "customComponent": "./core/rpc-generator/dist/components/controller.js",
+            "customType": "controller"
+        }
+    ]
+}

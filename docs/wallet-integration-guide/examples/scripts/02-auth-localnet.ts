@@ -6,8 +6,8 @@ import {
     localNetTokenStandardDefault,
     createKeyPair,
     signTransactionHash,
+    localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
-import { LOCALNET_VALIDATOR_URL } from '../config.js'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
 
@@ -48,7 +48,7 @@ await sdk.adminLedger
         logger.error(error, 'Error listing wallets')
     })
 
-await sdk.connectTopology(LOCALNET_VALIDATOR_URL)
+await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 logger.info('Connected to topology')
 
 const keyPair = createKeyPair()
@@ -98,7 +98,7 @@ const signedCommandHash = signTransactionHash(
 
 logger.info('Submit command')
 
-const response = await sdk.userLedger?.executeSubmission(
+const response = await sdk.userLedger?.executeSubmissionAndWaitFor(
     prepareResponse!,
     signedCommandHash,
     keyPair.publicKey,

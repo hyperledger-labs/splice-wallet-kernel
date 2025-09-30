@@ -1433,10 +1433,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/clients-extension@workspace:clients/extension"
   dependencies:
+    "@canton-network/core-rpc-errors": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-store": "workspace:^"
     "@canton-network/core-wallet-ui-components": "workspace:^"
-    "@metamask/rpc-errors": "npm:^7.0.2"
     "@types/node": "npm:^24.0.4"
     "@types/webextension-polyfill": "npm:^0.12.0"
     esbuild: "npm:^0.25.5"
@@ -1453,6 +1453,7 @@ __metadata:
   resolution: "@canton-network/clients-remote@workspace:clients/remote"
   dependencies:
     "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-rpc-errors": "workspace:^"
     "@canton-network/core-signing-internal": "workspace:^"
     "@canton-network/core-signing-lib": "workspace:^"
     "@canton-network/core-signing-participant": "workspace:^"
@@ -1466,7 +1467,6 @@ __metadata:
     "@canton-network/core-wallet-ui-components": "workspace:^"
     "@canton-network/core-wallet-user-rpc-client": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
-    "@metamask/rpc-errors": "npm:^7.0.2"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"
     "@types/cors": "npm:^2"
@@ -1536,6 +1536,15 @@ __metadata:
     "@swc/core": "npm:^1.11.31"
     "@types/node": "npm:^22.15.30"
     typescript: "npm:^5.8.3"
+  languageName: unknown
+  linkType: soft
+
+"@canton-network/core-rpc-errors@workspace:^, @canton-network/core-rpc-errors@workspace:core/rpc-errors":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-rpc-errors@workspace:core/rpc-errors"
+  dependencies:
+    "@metamask/rpc-errors": "npm:^7.0.3"
+    typescript: "npm:^5.9.2"
   languageName: unknown
   linkType: soft
 
@@ -1735,20 +1744,34 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-wallet-dapp-rpc-client@workspace:^, @canton-network/core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client":
+"@canton-network/core-wallet-dapp-remote-rpc-client@workspace:^, @canton-network/core-wallet-dapp-remote-rpc-client@workspace:core/wallet-dapp-remote-rpc-client":
   version: 0.0.0-use.local
-  resolution: "@canton-network/core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client"
+  resolution: "@canton-network/core-wallet-dapp-remote-rpc-client@workspace:core/wallet-dapp-remote-rpc-client"
   dependencies:
     "@canton-network/core-types": "workspace:^"
-    "@eslint/js": "npm:9.21.0"
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
     "@types/lodash": "npm:^4.14.149"
     "@types/ws": "npm:^6.0.1"
-    "@typescript-eslint/eslint-plugin": "npm:^8.25.0"
-    eslint-config-prettier: "npm:^10.0.1"
-    eslint-plugin-prettier: "npm:^5.2.3"
+    globals: "npm:^16.0.0"
+    lodash: "npm:^4.17.15"
+    prettier: "npm:^3.5.2"
+    typedoc: "npm:^0.27.9"
+    typescript: "npm:^5.0.0"
+  languageName: unknown
+  linkType: soft
+
+"@canton-network/core-wallet-dapp-rpc-client@workspace:^, @canton-network/core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client"
+  dependencies:
+    "@canton-network/core-types": "workspace:^"
+    "@types/isomorphic-fetch": "npm:^0.0.39"
+    "@types/jest": "npm:^29.5.12"
+    "@types/json-schema": "npm:7.0.3"
+    "@types/lodash": "npm:^4.14.149"
+    "@types/ws": "npm:^6.0.1"
     globals: "npm:^16.0.0"
     lodash: "npm:^4.17.15"
     prettier: "npm:^3.5.2"
@@ -1762,6 +1785,7 @@ __metadata:
   resolution: "@canton-network/core-wallet-store-inmemory@workspace:core/wallet-store-inmemory"
   dependencies:
     "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-rpc-errors": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
     "@canton-network/core-wallet-store": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
@@ -1783,6 +1807,7 @@ __metadata:
   resolution: "@canton-network/core-wallet-store-sql@workspace:core/wallet-store-sql"
   dependencies:
     "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-rpc-errors": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
     "@canton-network/core-wallet-store": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
@@ -1841,15 +1866,11 @@ __metadata:
   resolution: "@canton-network/core-wallet-user-rpc-client@workspace:core/wallet-user-rpc-client"
   dependencies:
     "@canton-network/core-types": "workspace:^"
-    "@eslint/js": "npm:9.21.0"
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
     "@types/lodash": "npm:^4.14.149"
     "@types/ws": "npm:^6.0.1"
-    "@typescript-eslint/eslint-plugin": "npm:^8.25.0"
-    eslint-config-prettier: "npm:^10.0.1"
-    eslint-plugin-prettier: "npm:^5.2.3"
     globals: "npm:^16.0.0"
     lodash: "npm:^4.17.15"
     prettier: "npm:^3.5.2"
@@ -1864,6 +1885,7 @@ __metadata:
   dependencies:
     "@canton-network/core-splice-provider": "workspace:^"
     "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^"
     "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
     "@canton-network/core-wallet-ui-components": "workspace:^"
     typescript: "npm:^5.8.3"
@@ -1876,7 +1898,7 @@ __metadata:
   dependencies:
     "@canton-network/dapp-sdk": "workspace:^"
     "@eslint/js": "npm:^9.25.0"
-    "@playwright/test": "npm:^1.54.2"
+    "@playwright/test": "npm:^1.55.0"
     "@types/node": "npm:^24.3.0"
     "@types/react": "npm:^19.1.2"
     "@types/react-dom": "npm:^19.1.2"
@@ -1921,7 +1943,7 @@ __metadata:
     jsonc-parser: "npm:^3.3.1"
     openapi-typescript: "npm:^6.0.0"
     pm2: "npm:^6.0.8"
-    tar-fs: "npm:^3.1.0"
+    tar-fs: "npm:^3.1.1"
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.8.3"
     yoctocolors: "npm:^2.1.1"
@@ -2697,13 +2719,6 @@ __metadata:
   version: 8.57.1
   resolution: "@eslint/js@npm:8.57.1"
   checksum: 10c0/b489c474a3b5b54381c62e82b3f7f65f4b8a5eaaed126546520bf2fede5532a8ed53212919fed1e9048dcf7f37167c8561d58d0ba4492a4244004e7793805223
-  languageName: node
-  linkType: hard
-
-"@eslint/js@npm:9.21.0":
-  version: 9.21.0
-  resolution: "@eslint/js@npm:9.21.0"
-  checksum: 10c0/86c24a2668808995037e3f40c758335df2ae277c553ac0cf84381a1a8698f3099d8a22dd9c388947e6b7f93fcc1142f62406072faaa2b83c43ca79993fc01bb3
   languageName: node
   linkType: hard
 
@@ -4024,7 +4039,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/rpc-errors@npm:^7.0.2":
+"@metamask/rpc-errors@npm:^7.0.3":
   version: 7.0.3
   resolution: "@metamask/rpc-errors@npm:7.0.3"
   dependencies:
@@ -4254,7 +4269,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nx/js@npm:21.5.1, @nx/js@npm:^21.3.11":
+"@nx/js@npm:21.5.1":
   version: 21.5.1
   resolution: "@nx/js@npm:21.5.1"
   dependencies:
@@ -4820,7 +4835,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.36.0, @playwright/test@npm:^1.54.2":
+"@playwright/test@npm:^1.55.0":
   version: 1.55.0
   resolution: "@playwright/test@npm:1.55.0"
   dependencies:
@@ -5632,6 +5647,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@swc/helpers@npm:~0.5.11":
+  version: 0.5.17
+  resolution: "@swc/helpers@npm:0.5.17"
+  dependencies:
+    tslib: "npm:^2.8.0"
+  checksum: 10c0/fe1f33ebb968558c5a0c595e54f2e479e4609bff844f9ca9a2d1ffd8dd8504c26f862a11b031f48f75c95b0381c2966c3dd156e25942f90089badd24341e7dbb
+  languageName: node
+  linkType: hard
+
 "@swc/jest@npm:^0.2.38":
   version: 0.2.39
   resolution: "@swc/jest@npm:0.2.39"
@@ -6035,6 +6059,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:20.19.9":
+  version: 20.19.9
+  resolution: "@types/node@npm:20.19.9"
+  dependencies:
+    undici-types: "npm:~6.21.0"
+  checksum: 10c0/c6738131f1698258a5ac1e0185e4fc56977f7f566cd0ee11167f93f2339478470257bd82c5e1908a936a204e0ad7996d741356a1a07c04997a236161ea23a874
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:^20.10.7":
   version: 20.19.13
   resolution: "@types/node@npm:20.19.13"
@@ -6230,7 +6263,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/eslint-plugin@npm:8.43.0, @typescript-eslint/eslint-plugin@npm:^8.25.0":
+"@typescript-eslint/eslint-plugin@npm:8.43.0":
   version: 8.43.0
   resolution: "@typescript-eslint/eslint-plugin@npm:8.43.0"
   dependencies:
@@ -9342,17 +9375,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-config-prettier@npm:^10.0.1":
-  version: 10.1.8
-  resolution: "eslint-config-prettier@npm:10.1.8"
-  peerDependencies:
-    eslint: ">=7.0.0"
-  bin:
-    eslint-config-prettier: bin/cli.js
-  checksum: 10c0/e1bcfadc9eccd526c240056b1e59c5cd26544fe59feb85f38f4f1f116caed96aea0b3b87868e68b3099e55caaac3f2e5b9f58110f85db893e83a332751192682
-  languageName: node
-  linkType: hard
-
 "eslint-plugin-headers@npm:^1.3.3":
   version: 1.3.3
   resolution: "eslint-plugin-headers@npm:1.3.3"
@@ -9368,26 +9390,6 @@ __metadata:
   peerDependencies:
     eslint: ^8 || ^9
   checksum: 10c0/c62bbfc02e8a73adc7ff9fdbbf8131a2a843eaebc6e8eb5f311c4db8a641bb46535bd066052857c7daea6c6d2a6c38bec66e06ad5704319083a1e2c467e71a4a
-  languageName: node
-  linkType: hard
-
-"eslint-plugin-prettier@npm:^5.2.3":
-  version: 5.5.4
-  resolution: "eslint-plugin-prettier@npm:5.5.4"
-  dependencies:
-    prettier-linter-helpers: "npm:^1.0.0"
-    synckit: "npm:^0.11.7"
-  peerDependencies:
-    "@types/eslint": ">=8.0.0"
-    eslint: ">=8.0.0"
-    eslint-config-prettier: ">= 7.0.0 <10.0.0 || >=10.1.0"
-    prettier: ">=3.0.0"
-  peerDependenciesMeta:
-    "@types/eslint":
-      optional: true
-    eslint-config-prettier:
-      optional: true
-  checksum: 10c0/5cc780e0ab002f838ad8057409e86de4ff8281aa2704a50fa8511abff87028060c2e45741bc9cbcbd498712e8d189de8026e70aed9e20e50fe5ba534ee5a8442
   languageName: node
   linkType: hard
 
@@ -9823,13 +9825,6 @@ __metadata:
   version: 3.1.3
   resolution: "fast-deep-equal@npm:3.1.3"
   checksum: 10c0/40dedc862eb8992c54579c66d914635afbec43350afbbe991235fdcb4e3a8d5af1b23ae7e79bef7d4882d0ecee06c3197488026998fb19f72dc95acff1d1b1d0
-  languageName: node
-  linkType: hard
-
-"fast-diff@npm:^1.1.2":
-  version: 1.3.0
-  resolution: "fast-diff@npm:1.3.0"
-  checksum: 10c0/5c19af237edb5d5effda008c891a18a585f74bf12953be57923f17a3a4d0979565fc64dbc73b9e20926b9d895f5b690c618cbb969af0cf022e3222471220ad29
   languageName: node
   linkType: hard
 
@@ -14737,15 +14732,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier-linter-helpers@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "prettier-linter-helpers@npm:1.0.0"
-  dependencies:
-    fast-diff: "npm:^1.1.2"
-  checksum: 10c0/81e0027d731b7b3697ccd2129470ed9913ecb111e4ec175a12f0fcfab0096516373bf0af2fef132af50cafb0a905b74ff57996d615f59512bb9ac7378fcc64ab
-  languageName: node
-  linkType: hard
-
 "prettier@npm:^3.5.2, prettier@npm:^3.5.3":
   version: 3.6.2
   resolution: "prettier@npm:3.6.2"
@@ -15921,19 +15907,22 @@ __metadata:
     "@eslint/js": "npm:^9.28.0"
     "@nx/eslint": "npm:21.5.1"
     "@nx/eslint-plugin": "npm:^21.5.2"
-    "@nx/js": "npm:^21.3.11"
+    "@nx/js": "npm:21.5.1"
     "@nx/playwright": "npm:21.5.1"
     "@open-rpc/generator": "npm:^2.0.0"
-    "@playwright/test": "npm:^1.36.0"
+    "@playwright/test": "npm:^1.55.0"
     "@protobuf-ts/plugin": "npm:^2.11.1"
     "@swc-node/register": "npm:^1.11.1"
     "@swc/core": "npm:^1.13.4"
+    "@swc/helpers": "npm:~0.5.11"
+    "@types/node": "npm:20.19.9"
     commitlint: "npm:^19.8.1"
     eslint: "npm:^9.28.0"
     eslint-plugin-headers: "npm:^1.3.3"
     globals: "npm:^16.2.0"
     grpc-tools: "npm:^1.13.0"
     husky: "npm:^9.1.7"
+    jsonc-eslint-parser: "npm:^2.1.0"
     lint-staged: "npm:^16.1.0"
     nx: "npm:^21.3.11"
     oauth2-mock-server: "npm:^8.1.0"
@@ -15941,6 +15930,7 @@ __metadata:
     pm2: "npm:^6.0.8"
     prettier: "npm:^3.5.3"
     ts-proto: "npm:^2.7.7"
+    tslib: "npm:^2.3.0"
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.8.3"
     typescript-eslint: "npm:^8.33.1"
@@ -16264,7 +16254,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"synckit@npm:^0.11.7, synckit@npm:^0.11.8":
+"synckit@npm:^0.11.8":
   version: 0.11.11
   resolution: "synckit@npm:0.11.11"
   dependencies:
@@ -16294,9 +16284,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar-fs@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "tar-fs@npm:3.1.0"
+"tar-fs@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "tar-fs@npm:3.1.1"
   dependencies:
     bare-fs: "npm:^4.0.1"
     bare-path: "npm:^3.0.0"
@@ -16307,7 +16297,7 @@ __metadata:
       optional: true
     bare-path:
       optional: true
-  checksum: 10c0/760309677543c03fbc253b5ef1ab4bb2ceafb554471b6cbe4930d1633f35662ec26a1414c66fa6754f5aa7e8c65003f73849242f624c322d3dcba7a8888a6915
+  checksum: 10c0/0c677d711c4aa41f94e1a712aa647022ba1910ff84430739e5d9e95a615e3ea1b7112dc93164fc8ce30dc715befcf9cfdc64da27d4e7958d73c59bda06aa0d8e
   languageName: node
   linkType: hard
 
@@ -16638,7 +16628,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.1, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0, tslib@npm:^2.8.1":
+"tslib@npm:^2.0.1, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0, tslib@npm:^2.8.0, tslib@npm:^2.8.1":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62
@@ -16824,7 +16814,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^5.0.0, typescript@npm:^5.8.3, typescript@npm:~5.9.2":
+"typescript@npm:^5.0.0, typescript@npm:^5.8.3, typescript@npm:^5.9.2, typescript@npm:~5.9.2":
   version: 5.9.2
   resolution: "typescript@npm:5.9.2"
   bin:
@@ -16864,7 +16854,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A^5.0.0#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.8.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A~5.9.2#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A^5.0.0#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.8.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.9.2#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A~5.9.2#optional!builtin<compat/typescript>":
   version: 5.9.2
   resolution: "typescript@patch:typescript@npm%3A5.9.2#optional!builtin<compat/typescript>::version=5.9.2&hash=5786d5"
   bin:

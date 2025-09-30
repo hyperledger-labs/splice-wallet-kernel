@@ -7,11 +7,12 @@ import { customElement, query, state } from 'lit/decorators.js'
 import '@canton-network/core-wallet-ui-components'
 
 import { Wallet } from '@canton-network/core-wallet-store'
-import { userClient } from '../rpc-client'
+import { createUserClient } from '../rpc-client'
 import { CreateWalletParams } from '@canton-network/core-wallet-user-rpc-client'
 import { SigningProvider } from '@canton-network/core-signing-lib'
 
 import '../index'
+import { stateManager } from '../state-manager'
 
 @customElement('user-ui-wallets')
 export class UserUiWallets extends LitElement {
@@ -83,6 +84,9 @@ export class UserUiWallets extends LitElement {
                         const select = e.target as HTMLSelectElement
                         const selectedWalletId = select.value
                         if (selectedWalletId) {
+                            const userClient = createUserClient(
+                                stateManager.accessToken.get()
+                            )
                             await userClient.request('setPrimaryWallet', {
                                 partyId: selectedWalletId,
                             })
@@ -175,12 +179,14 @@ export class UserUiWallets extends LitElement {
     }
 
     private async updateNetworks() {
+        const userClient = createUserClient(stateManager.accessToken.get())
         userClient.request('listNetworks').then(({ networks }) => {
             this.networks = networks.map((network) => network.chainId)
         })
     }
 
     private async updateWallets() {
+        const userClient = createUserClient(stateManager.accessToken.get())
         userClient.request('listWallets', []).then((wallets) => {
             this.wallets = wallets || []
         })
@@ -201,6 +207,7 @@ export class UserUiWallets extends LitElement {
             signingProviderId,
         }
 
+        const userClient = createUserClient(stateManager.accessToken.get())
         await userClient.request('createWallet', body)
 
         this.loading = false

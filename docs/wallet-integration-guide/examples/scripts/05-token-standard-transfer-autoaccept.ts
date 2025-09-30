@@ -6,9 +6,9 @@ import {
     localNetTokenStandardDefault,
     createKeyPair,
     localValidatorDefault,
+    localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
-import { LOCALNET_REGISTRY_API_URL, LOCALNET_VALIDATOR_URL } from '../config.js'
 import { v4 } from 'uuid'
 
 const logger = pino({ name: '05-external-party-setup', level: 'info' })
@@ -32,7 +32,7 @@ const keyPairSender = createKeyPair()
 const keyPairReceiver = createKeyPair()
 
 await sdk.connectAdmin()
-await sdk.connectTopology(LOCALNET_VALIDATOR_URL)
+await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
 const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairSender.privateKey,
@@ -62,13 +62,13 @@ await sdk.userLedger
 
 sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 
-sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL)
+sdk.tokenStandard?.setTransferFactoryRegistryUrl(
+    localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+)
 await new Promise((res) => setTimeout(res, 5000))
 
 await sdk.setPartyId(receiver?.partyId!)
 const validatorOperatorParty = await sdk.validator?.getValidatorUser()
-
-sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL)
 
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
@@ -84,7 +84,7 @@ const transferPreApprovalProposal =
         instrumentAdminPartyId
     )
 
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     [transferPreApprovalProposal],
     keyPairReceiver.privateKey,
     v4()
@@ -103,14 +103,12 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     }
 )
 
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
-    [{ ExerciseCommand: tapCommand }],
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    tapCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts
 )
-
-await new Promise((res) => setTimeout(res, 5000))
 
 const utxos = await sdk.tokenStandard?.listHoldingUtxos()
 logger.info(utxos, 'List Token Standard Holding UTXOs')
@@ -142,15 +140,13 @@ const [transferCommand, disclosedContracts2] =
         'memo-ref'
     )
 
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
-    [{ ExerciseCommand: transferCommand }],
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    transferCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts2
 )
 logger.info('Submitted transfer transaction')
-
-await new Promise((res) => setTimeout(res, 5000))
 
 {
     await sdk.setPartyId(sender!.partyId)
@@ -160,4 +156,10 @@ await new Promise((res) => setTimeout(res, 5000))
     await sdk.setPartyId(receiver!.partyId)
     const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
     logger.info(bobHoldings, '[BOB] holding transactions')
+    const transferPreApprovalStatus =
+        await sdk.tokenStandard?.getTransferPreApprovalByParty(
+            receiver!.partyId,
+            'Amulet'
+        )
+    logger.info(transferPreApprovalStatus, '[BOB] transfer preapproval status')
 }

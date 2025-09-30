@@ -1,0 +1,480 @@
+{
+    "openrpc": "1.2.6",
+    "info": {
+        "title": "Splice Wallet JSON-RPC Remote dApp API",
+        "version": "0.1.0",
+        "description": "An OpenRPC specification for remotely hosted wallet kernels. Due to the remote nature, an implementing provider must bridge certain functionality on the client-side to satisfy the general dApp API spec."
+    },
+    "methods": [
+        {
+            "name": "status",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "StatusResult",
+                    "type": "object",
+                    "properties": {
+                        "kernel": {
+                            "$ref": "#/components/schemas/KernelInfo"
+                        },
+                        "isConnected": {
+                            "title": "isConnected",
+                            "type": "boolean",
+                            "description": "Whether or not a connection to a network is established."
+                        },
+                        "chainId": {
+                            "title": "chainId",
+                            "type": "string",
+                            "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
+                        }
+                    },
+                    "required": ["kernel", "isConnected"]
+                }
+            },
+            "description": "Returns the current chainId if connected."
+        },
+        {
+            "name": "connect",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "ConnectResult",
+                    "type": "object",
+                    "properties": {
+                        "kernel": {
+                            "$ref": "#/components/schemas/KernelInfo"
+                        },
+                        "isConnected": {
+                            "title": "isConnected",
+                            "type": "boolean",
+                            "description": "Whether or not a connection to a network is esablished."
+                        },
+                        "chainId": {
+                            "title": "chainId",
+                            "type": "string",
+                            "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
+                        },
+                        "userUrl": {
+                            "$ref": "#/components/schemas/UserUrl"
+                        }
+                    },
+                    "required": ["kernel", "isConnected", "userUrl"]
+                }
+            },
+            "description": "Ensures ledger connectivity. Returns the current chainId if connected, or the user url if disconnected."
+        },
+        {
+            "name": "darsAvailable",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "darsAvailableResult",
+                    "type": "object",
+                    "properties": {
+                        "dars": {
+                            "title": "dars",
+                            "type": "array",
+                            "items": {
+                                "title": "dar",
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "required": ["dars"]
+                }
+            },
+            "description": "Lists DARs currently available on the connected Validator node."
+        },
+        {
+            "name": "prepareReturn",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "prepareReturnParams",
+                        "type": "object",
+                        "properties": {
+                            "commands": {
+                                "$ref": "#/components/schemas/JsCommands"
+                            }
+                        },
+                        "required": ["commands"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "prepareReturnResult",
+                    "properties": {
+                        "response": {
+                            "$ref": "#/components/schemas/JsPrepareSubmissionResponse"
+                        }
+                    },
+                    "required": ["response"]
+                }
+            },
+            "description": "Processes the prepare step and returns the data to sign."
+        },
+        {
+            "name": "prepareExecute",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "prepareExecuteParams",
+                        "type": "object",
+                        "properties": {
+                            "commands": {
+                                "$ref": "#/components/schemas/JsCommands"
+                            }
+                        },
+                        "required": ["commands"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "prepareExecuteResult",
+                    "type": "object",
+                    "properties": {
+                        "userUrl": {
+                            "$ref": "#/components/schemas/UserUrl"
+                        }
+                    },
+                    "required": ["userUrl"]
+                }
+            },
+            "description": "Prepares, signs, and executes a transaction."
+        },
+        {
+            "name": "ledgerApi",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "ledgerApiParams",
+                        "type": "object",
+                        "properties": {
+                            "requestMethod": {
+                                "title": "requestMethod",
+                                "type": "string",
+                                "enum": ["GET", "POST", "PUT", "DELETE"]
+                            },
+                            "resource": {
+                                "title": "resource",
+                                "type": "string"
+                            },
+                            "body": {
+                                "title": "body",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["requestMethod", "resource"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/LedgerApiResult"
+                }
+            },
+            "description": "Proxy for the JSON-API endpoints. Injects authorization headers automatically."
+        },
+        {
+            "name": "onConnected",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "OnConnectedEvent",
+                    "type": "object",
+                    "properties": {
+                        "kernel": {
+                            "$ref": "#/components/schemas/KernelInfo"
+                        },
+                        "chainId": {
+                            "title": "chainId",
+                            "type": "string",
+                            "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
+                        },
+                        "sessionToken": {
+                            "title": "sessionToken",
+                            "type": "string",
+                            "description": "JWT authentication token (if applicable)."
+                        }
+                    },
+                    "required": ["kernel", "chainId"]
+                }
+            },
+            "description": "Informs when the user connects to a network."
+        },
+        {
+            "name": "onAccountsChanged",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/AccountsChangedEvent"
+                }
+            }
+        },
+        {
+            "name": "requestAccounts",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/RequestAccountsResult"
+                }
+            }
+        },
+        {
+            "name": "onTxChanged",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/TxChangedEvent"
+                }
+            }
+        }
+    ],
+    "components": {
+        "schemas": {
+            "Null": {
+                "title": "Null",
+                "type": "null",
+                "description": "Represents a null value, used in responses where no data is returned."
+            },
+            "KernelInfo": {
+                "title": "KernelInfo",
+                "type": "object",
+                "description": "Represents a wallet kernel.",
+                "properties": {
+                    "id": {
+                        "title": "id",
+                        "type": "string",
+                        "description": "The unique identifier of the wallet kernel."
+                    },
+                    "clientType": {
+                        "title": "clientType",
+                        "type": "string",
+                        "enum": ["browser", "desktop", "mobile", "remote"],
+                        "description": "The type of client that implements the wallet kernel."
+                    },
+                    "url": {
+                        "title": "url",
+                        "type": "string",
+                        "description": "The URL of the wallet kernel."
+                    }
+                },
+                "required": ["id", "clientType"]
+            },
+            "LedgerApiResult": {
+                "title": "LedgerApiResult",
+                "type": "object",
+                "description": "Ledger Api configuration options",
+                "properties": {
+                    "response": {
+                        "title": "response",
+                        "type": "string"
+                    }
+                },
+                "required": ["response"]
+            },
+            "UserUrl": {
+                "title": "UserUrl",
+                "type": "string",
+                "format": "uri",
+                "description": "A URL that points to a user interface."
+            },
+            "JsCommands": {
+                "title": "JsCommands",
+                "type": "object",
+                "description": "Structure representing JS commands for transaction execution"
+            },
+            "JsPrepareSubmissionResponse": {
+                "title": "JsPrepareSubmissionResponse",
+                "type": "object",
+                "description": "Structure representing the result of a prepareReturn call",
+                "properties": {
+                    "preparedTransaction": {
+                        "title": "preparedTransaction",
+                        "type": "string",
+                        "description": "The prepared transaction data."
+                    },
+                    "preparedTransactionHash": {
+                        "title": "preparedTransactionHash",
+                        "type": "string",
+                        "description": "The hash of the prepared transaction."
+                    }
+                }
+            },
+            "AccountsChangedEvent": {
+                "title": "AccountsChangedEvent",
+                "type": "array",
+                "description": "Event emitted when the user's accounts change.",
+                "items": {
+                    "$ref": "api-specs/openrpc-user-api.json#/components/schemas/Wallet"
+                }
+            },
+            "RequestAccountsResult": {
+                "title": "RequestAccountsResult",
+                "type": "array",
+                "description": "An array of accounts that the user has authorized the dapp to access..",
+                "items": {
+                    "$ref": "api-specs/openrpc-user-api.json#/components/schemas/Wallet"
+                }
+            },
+            "CommandId": {
+                "title": "CommandId",
+                "type": "string",
+                "description": "The unique identifier of the command associated with the transaction."
+            },
+            "TxChangedPendingEvent": {
+                "title": "TxChangedPendingEvent",
+                "description": "Event emitted when a transaction is pending.",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "status": {
+                        "title": "statusPending",
+                        "type": "string",
+                        "enum": ["pending"],
+                        "description": "The status of the transaction."
+                    },
+                    "commandId": {
+                        "$ref": "#/components/schemas/CommandId"
+                    }
+                },
+                "required": ["status", "commandId"]
+            },
+            "TxChangedSignedPayload": {
+                "type": "object",
+                "title": "TxChangedSignedPayload",
+                "description": "Payload for the TxChangedSignedEvent.",
+                "additionalProperties": false,
+                "properties": {
+                    "signature": {
+                        "title": "signature",
+                        "type": "string",
+                        "description": "The signature of the transaction."
+                    },
+                    "signedBy": {
+                        "title": "signedBy",
+                        "type": "string",
+                        "description": "The identifier of the provider that signed the transaction."
+                    },
+                    "party": {
+                        "title": "party",
+                        "type": "string",
+                        "description": "The party that signed the transaction."
+                    }
+                },
+                "required": ["signature", "signedBy", "party"]
+            },
+            "TxChangedSignedEvent": {
+                "title": "TxChangedSignedEvent",
+                "description": "Event emitted when a transaction has been signed.",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "status": {
+                        "title": "statusSigned",
+                        "type": "string",
+                        "enum": ["signed"],
+                        "description": "The status of the transaction."
+                    },
+                    "commandId": {
+                        "$ref": "#/components/schemas/CommandId"
+                    },
+                    "payload": {
+                        "$ref": "#/components/schemas/TxChangedSignedPayload"
+                    }
+                },
+                "required": ["status", "commandId", "payload"]
+            },
+            "TxChangedExecutedPayload": {
+                "type": "object",
+                "title": "TxChangedExecutedPayload",
+                "description": "Payload for the TxChangedExecutedEvent.",
+                "additionalProperties": false,
+                "properties": {
+                    "updateId": {
+                        "title": "updateId",
+                        "type": "string",
+                        "description": "The update ID corresponding to the transaction."
+                    },
+                    "completionOffset": {
+                        "title": "completionOffset",
+                        "type": "integer"
+                    }
+                },
+                "required": ["updateId", "completionOffset"]
+            },
+            "TxChangedExecutedEvent": {
+                "title": "TxChangedExecutedEvent",
+                "description": "Event emitted when a transaction is executed against the participant.",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "status": {
+                        "title": "statusExecuted",
+                        "type": "string",
+                        "enum": ["executed"],
+                        "description": "The status of the transaction."
+                    },
+                    "commandId": {
+                        "$ref": "#/components/schemas/CommandId"
+                    },
+                    "payload": {
+                        "$ref": "#/components/schemas/TxChangedExecutedPayload"
+                    }
+                },
+                "required": ["status", "commandId", "payload"]
+            },
+            "TxChangedFailedEvent": {
+                "title": "TxChangedFailedEvent",
+                "description": "Event emitted when a transaction has failed.",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "status": {
+                        "title": "statusFailed",
+                        "type": "string",
+                        "enum": ["failed"],
+                        "description": "The status of the transaction."
+                    },
+                    "commandId": {
+                        "$ref": "#/components/schemas/CommandId"
+                    }
+                },
+                "required": ["status", "commandId"]
+            },
+            "TxChangedEvent": {
+                "title": "TxChangedEvent",
+                "description": "Event emitted when a transaction changes.",
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/TxChangedPendingEvent"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TxChangedSignedEvent"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TxChangedExecutedEvent"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TxChangedFailedEvent"
+                    }
+                ]
+            }
+        }
+    }
+}

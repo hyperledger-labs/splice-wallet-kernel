@@ -2,10 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    Enums_ParticipantPermission,
     LedgerClient,
-    PreparedTransaction,
-    SigningPublicKey,
     TopologyWriteService,
 } from '@canton-network/core-ledger-client'
 import {
@@ -17,8 +14,17 @@ import {
     PublicKey,
 } from '@canton-network/core-signing-lib'
 import { pino } from 'pino'
-import { hashPreparedTransaction } from '@canton-network/core-tx-visualizer'
+import {
+    hashPreparedTransaction,
+    computeMultiHashForTopology,
+    computeSha256CantonHash,
+} from '@canton-network/core-tx-visualizer'
 import { PartyId } from '@canton-network/core-types'
+import {
+    Enums_ParticipantPermission,
+    PreparedTransaction,
+    SigningPublicKey,
+} from '@canton-network/core-ledger-proto'
 export { Enums_ParticipantPermission } from '@canton-network/core-ledger-proto'
 
 export type PreparedParty = {
@@ -84,7 +90,6 @@ export class TopologyController {
     ): Promise<string> {
         return hashPreparedTransaction(preparedTransaction, 'base64')
     }
-
     /** Creates a fingerprint from a public key.
      * This is a utility function that uses the same fingerprinting scheme as the ledger.
      * @param publicKey
@@ -99,6 +104,8 @@ export class TopologyController {
      *
      * @param publicKey
      * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold optional parameter for multi-hosted parties (default is 1).
+     * @param hostingParticipantPermissions optional participant permission for multi-hosted party.
      * @returns A PreparedParty object containing the prepared transactions.
      */
     async prepareExternalPartyTopology(
@@ -133,6 +140,15 @@ export class TopologyController {
 
         const combinedHash = TopologyWriteService.combineHashes(txHashes)
 
+        const computedHash =
+            await TopologyController.computeTopologyTxHash(partyTransactions)
+
+        if (combinedHash !== computedHash) {
+            this.logger.error(
+                `Calculated hash doesn't match hash from the ledger api. Got ${combinedHash}, expected ${computedHash}`
+            )
+        }
+
         const result = {
             partyTransactions,
             combinedHash,
@@ -144,10 +160,26 @@ export class TopologyController {
         return Promise.resolve(result)
     }
 
+    /** Calculates the MultiTopologyTransaction hash
+     * @param preparedTransactions The 3 topology transactions from the generateTransactions endpoint
+     */
+    static async computeTopologyTxHash(
+        preparedTransactions: Uint8Array<ArrayBufferLike>[]
+    ) {
+        const rawHashes = await Promise.all(
+            preparedTransactions.map((tx) => computeSha256CantonHash(11, tx))
+        )
+        const combinedHashes = await computeMultiHashForTopology(rawHashes)
+
+        const computedHash = await computeSha256CantonHash(55, combinedHashes)
+
+        return Buffer.from(computedHash).toString('base64')
+    }
     /** Submits a prepared and signed external party topology to the ledger.
      * This will also authorize the new party to the participant and grant the user rights to the party.
      * @param signedHash The signed combined hash of the prepared transactions.
      * @param preparedParty The prepared party object from prepareExternalPartyTopology.
+     * @param grantUserRights Defines if the transaction should also grant user right to current user (default is true)
      * @returns An AllocatedParty object containing the partyId of the new party.
      */
     async submitExternalPartyTopology(
@@ -184,6 +216,8 @@ export class TopologyController {
      * This will also authorize the new party to the participant and grant the user rights to the party.
      * @param privateKey The private key of the new external party, used to sign the topology transactions.
      * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold optional parameter for multi-hosted parties (default is 1).
+     * @param hostingParticipantPermissions optional participant permission for multi-hosted party.
      * @returns An AllocatedParty object containing the partyId of the new party.
      */
     async prepareSignAndSubmitExternalParty(
@@ -198,7 +232,6 @@ export class TopologyController {
             confirmingThreshold,
             hostingParticipantPermissions
         )
-
         const signedHash = signTransactionHash(
             preparedParty!.combinedHash,
             privateKey
@@ -236,18 +269,18 @@ export class TopologyController {
 
     /** Prepares, signs and submits a new external party topology in one step.
      * This will also authorize the new party to the participant and grant the user rights to the party.
-     * @param participant_endpoints List of endpoints to the respective hosting participant Admin APIs and ledger API.
+     * @param participantEndpoints List of endpoints to the respective hosting participant Admin APIs and ledger API.
      * @param privateKey The private key of the new external party, used to sign the topology transactions.
-     * @param synchronizer_id  ID of the synchronizer on which the party will be registered.
+     * @param synchronizerId  ID of the synchronizer on which the party will be registered.
      * @param hostingParticipantPermissions Map of participant id and permission level for participant
      * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
-     * @param confirming_threshold Minimum number of confirmations that must be received from the confirming participants to authorize a transaction.
+     * @param confirmingThreshold Minimum number of confirmations that must be received from the confirming participants to authorize a transaction.
      * @returns An AllocatedParty object containing the partyId of the new party.
      */
     async prepareSignAndSubmitMultiHostExternalParty(
         participantEndpoints: MultiHostPartyParticipantConfig[],
         privateKey: string,
-        synchronizerId: string,
+        synchronizerId: PartyId,
         hostingParticipantPermissions: Map<string, Enums_ParticipantPermission>,
         partyHint?: string,
         confirmingThreshold?: number

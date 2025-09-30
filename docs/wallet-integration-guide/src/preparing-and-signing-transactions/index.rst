@@ -19,12 +19,10 @@ The basic steps of preparing and signing a transaction using an external party a
 In the examples below, the SDK examples use the Pint app which comes pre-installed with the validator
 and the cURL examples show the underlying HTTP requests using Canton Coin following a token standard transfer.
 
-How do I quickly execute a ping Command?
+How do I quickly execute a Ping?
 ----------------------------------------
 
-The following example uses the Ping app to show the whole transaction flow.
-
-Below shows how to quickly execute a ping command against yourself on Splice LocalNet:
+Below shows how to quickly execute a ping command against yourself on a running Splice LocalNet:
 
 .. literalinclude:: ../../examples/scripts/03-ping-localnet.ts
     :language: typescript
@@ -54,8 +52,8 @@ The general process for forming a transaction is:
 4. Assemble the data into the full command using the OpenAPI/JSON or gRPC schemas.
 
 
-In the examples below, the SDK example uses the AdminWorkflow inside the a validator to create a simple ping command.
-The ping command is sent to a recepient party who can then exercise the pong choice on the created contract (thereby archiving it).
+In the examples below, the SDK example uses the Token Standards inside the a validator to create a simple transfer command.
+The transfer command is sent to a recipient party who can then exercise `accept` or `reject` on the created contract (thereby archiving it).
 In the cURL example, we show the steps above gaining information from a validator and context information from the Canton Coin scan API.
 
 The Wallet SDK allow us to build such a command easily:
@@ -73,7 +71,7 @@ The Wallet SDK allow us to build such a command easily:
 
     .. tab:: SDK
 
-        .. literalinclude:: ../../examples/snippets/create-ping-command.ts
+        .. literalinclude:: ../../examples/snippets/create-transfer-command.ts
             :language: typescript
             :dedent:
 
@@ -83,25 +81,6 @@ The Wallet SDK allow us to build such a command easily:
             :language: bash
             :dedent:
 
-
-For the SDK ping example, the underlying code that creates the command is:
-
-.. code-block::
-
-    createPingCommand(partyId: string) {
-            return [
-                {
-                    CreateCommand: { // we are performing a CreateCommand
-                        templateId: '#AdminWorkflows:Canton.Internal.Ping:Ping', //template id of the ping contract
-                        createArguments: { // the arguments to the ping contract
-                            id: v4(), // an unique id for the ping. Here we use the JS uuid library to generate a v4 UUID
-                            initiator: this.partyId, //our party id
-                            responder: partyId, //the party we are pinging
-                        },
-                    },
-                },
-            ]
-        }
 
 Preparing the Transaction
 -------------------------
@@ -118,7 +97,7 @@ To prepare a transaction we need to send the commands to the ledger.
 
     .. tab:: SDK
 
-        .. literalinclude:: ../../examples/snippets/prepare-ping-transaction.ts
+        .. literalinclude:: ../../examples/snippets/prepare-transfer-transaction.ts
             :language: typescript
             :dedent:
 

@@ -4,8 +4,8 @@
 import { WalletEvent } from '@canton-network/core-types'
 import { LitElement, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
-import { userClient } from '../rpc-client'
 import { stateManager } from '../state-manager'
+import { createUserClient } from '../rpc-client'
 
 @customElement('login-callback')
 export class LoginCallback extends LitElement {
@@ -59,11 +59,12 @@ export class LoginCallback extends LitElement {
 
                 stateManager.accessToken.set(tokenResponse.access_token)
 
-                await userClient.transport.submit({
-                    method: 'addSession',
-                    params: {
-                        chainId: stateManager.chainId.get(),
-                    },
+                const authenticatedUserClient = createUserClient(
+                    tokenResponse.access_token
+                )
+
+                await authenticatedUserClient.request('addSession', {
+                    chainId: stateManager.chainId.get() || '',
                 })
 
                 window.location.replace('/')

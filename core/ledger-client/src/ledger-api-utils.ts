@@ -30,39 +30,40 @@ type Completion = Types['Completion']['value']
 export function filtersByParty(
     party: PartyId,
     interfaceNames: string[],
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     includeWildcard: boolean
 ): TransactionFilter['filtersByParty'] {
+    const wildcardFilter = includeWildcard
+        ? [
+              {
+                  identifierFilter: {
+                      WildcardFilter: {
+                          value: {
+                              includeCreatedEventBlob: true,
+                          },
+                      },
+                  },
+              },
+          ]
+        : []
+
     return {
         [party]: {
-            cumulative: interfaceNames.map((interfaceName) => {
-                return {
-                    identifierFilter: {
-                        InterfaceFilter: {
-                            value: {
-                                interfaceId: interfaceName,
-                                includeInterfaceView: true,
-                                includeCreatedEventBlob: true,
+            cumulative: [
+                ...interfaceNames.map((interfaceName) => {
+                    return {
+                        identifierFilter: {
+                            InterfaceFilter: {
+                                value: {
+                                    interfaceId: interfaceName,
+                                    includeInterfaceView: true,
+                                    includeCreatedEventBlob: true,
+                                },
                             },
                         },
-                    },
-                }
-            }),
-            // .concat(
-            //     includeWildcard
-            //         ? [
-            //             {
-            //                 identifierFilter: {
-            //                     WildcardFilter: {
-            //                         value: {
-            //                             includeCreatedEventBlob: true,
-            //                         },
-            //                     },
-            //                 },
-            //             },
-            //         ]
-            //         : [],
-            // ),
+                    }
+                }),
+                ...wildcardFilter,
+            ],
         },
     }
 }

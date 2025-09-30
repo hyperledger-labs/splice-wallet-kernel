@@ -3,11 +3,132 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+0.9.0
+-----
+
+**Released on September 26th, 2025**
+
+* Supporting both canton 3.3 and 3.4 at the same timeout
+
+*since canton 3.4 will soon come to splice being able to support both versions is imperative before*
+
+* `localNetStaticConfig` added
+
+*since the wallet api and registry are static for localnet, a new config has been added to make early development easier*
+
+.. code-block:: javascript
+
+    import {
+        WalletSDKImpl,
+        localNetAuthDefault,
+        localNetLedgerDefault,
+        localNetTopologyDefault,
+        localNetTokenStandardDefault,
+        localNetStaticConfig,
+    } from '@canton-network/wallet-sdk'
+
+    const sdk = new WalletSDKImpl().configure({
+        logger,
+        authFactory: localNetAuthDefault,
+        ledgerFactory: localNetLedgerDefault,
+        topologyFactory: localNetTopologyDefault,
+        tokenStandardFactory: localNetTokenStandardDefault,
+    })
+
+    await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
+
+    sdk.tokenStandard?.setTransferFactoryRegistryUrl(
+        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+    )
+
+0.8.0
+-----
+
+**Release on September 24th, 2025**
+
+* **Important!: The flow has been simplified for prepare and execute of commands, however this means code needs to be converted**
+
+.. code-block:: javascript
+
+    // previous prepare and submit flow
+    const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
+        sender!.partyId,
+        '2000000',
+        {
+            instrumentId: 'Amulet',
+            instrumentAdmin: instrumentAdminPartyId,
+        }
+    )
+
+    await sdk.userLedger?.prepareSignAndExecuteTransaction(
+        [{ ExerciseCommand: tapCommand }],
+        keyPairSender.privateKey,
+        v4(),
+        disclosedContracts
+    )
+
+in the new flow it is no longer needed to perform the array wrapping `[{ ExerciseCommand: tapCommand }]`
+and you can instead pass the `tapCommand` directly
+
+
+.. code-block:: javascript
+
+    // new prepare and submit flow
+    const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
+        sender!.partyId,
+        '2000000',
+        {
+            instrumentId: 'Amulet',
+            instrumentAdmin: instrumentAdminPartyId,
+        }
+    )
+
+    await sdk.userLedger?.prepareSignAndExecuteTransaction(
+        tapCommand,
+        keyPairSender.privateKey,
+        v4(),
+        disclosedContracts
+    )
+
+this goes for all transaction!
+
+* Support Withdrawal flow for 2-step transfer
+
+it is now possible for sender to withdraw a 2-step transfer that have previously been send
+
+.. code-block:: javascript
+
+    // Alice withdraws the transfer
+    const [withdrawTransferCommand, disclosedContracts] =
+        await sdk.tokenStandard!.exerciseTransferInstructionChoice(
+            transferCid!,
+            'Withdraw'
+        )
+
+note: this does not work if the receiver have already perform `Accept` or `Reject`
+
+* Allow validating if receiver have set up transfer pre-approval before performing a transaction
+
+.. code-block:: javascript
+
+    //check if bob have set up transfer pre approval before sending
+    const transferPreApprovalStatus =
+            await sdk.tokenStandard?.getTransferPreApprovalByParty(
+                receiver!.partyId,
+                'Amulet'
+            )
+        logger.info(transferPreApprovalStatus, '[BOB] transfer preapproval status')
+
+* Tested and verified against Splice 0.4.17
+* Fix endless loop bug when onboarding a party
+
+
 0.7.0
 -----
 
 **Release on September 18th, 2025**
 
+* **Important!: scan api is not longer used for methods like `connectTopology` use scan proxy instead**
 * Added support for multi-hosting a party upon creation against multiple validators
 
 .. code-block:: javascript

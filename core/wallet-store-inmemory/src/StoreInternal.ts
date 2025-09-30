@@ -17,6 +17,7 @@ import {
     Network,
 } from '@canton-network/core-wallet-store'
 import { LedgerClient } from '@canton-network/core-ledger-client'
+import { providerErrors } from '@canton-network/core-rpc-errors'
 
 interface UserStorage {
     wallets: Array<Wallet>
@@ -71,7 +72,9 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
 
     private assertConnected(): UserId {
         if (!this.authContext) {
-            throw new Error('User is not connected')
+            throw providerErrors.unauthorized({
+                message: 'User is not connected',
+            })
         }
         return this.authContext.userId
     }

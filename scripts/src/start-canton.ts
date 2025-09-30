@@ -6,8 +6,8 @@
  */
 
 import {
-    CANTON_BIN,
     CANTON_BOOTSTRAP,
+    SUPPORTED_VERSIONS,
     CANTON_CONF,
     error,
     info,
@@ -15,9 +15,28 @@ import {
 } from './utils.js'
 import { existsSync } from 'fs'
 import pm2 from 'pm2'
+import path from 'path'
 
 const processName = 'canton'
+
 async function main() {
+    const inputEnv =
+        (process.argv[2] as keyof typeof SUPPORTED_VERSIONS) ?? 'mainnet'
+
+    const envConfig = SUPPORTED_VERSIONS[inputEnv]?.canton
+    if (!envConfig) {
+        console.error(
+            error(
+                `Unsupported canton version ${inputEnv}. Please use "mainnet" or "devnet. If no argument is supplied, will use mainnet as a default"`
+            )
+        )
+        process.exit(1)
+    }
+
+    const { version } = envConfig
+
+    const CANTON_BIN = path.resolve(`.canton/${version}/bin/canton`)
+
     if (existsSync(CANTON_BIN)) {
         console.log(
             info(`Starting Canton participant using binary at ${CANTON_BIN}...`)

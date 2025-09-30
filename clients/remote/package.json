@@ -8,9 +8,10 @@
     "scripts": {
         "build": "tsc -b; tsc -b tsconfig.frontend.json && yarn db:migrate:reset && yarn db:bootstrap",
         "clean": "tsc -b --clean && rm -rf ./dist && rm ./store.sqlite || true",
-        "dev": "tsx watch src/index.ts | pino-pretty",
+        "dev": "tsx watch src --include *.config.ts --include *.json src/index.ts | pino-pretty",
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)",
         "start": "yarn node dist/index.js",
+        "debug": "yarn node --inspect-brk dist/index.js",
         "db:bootstrap": "tsx ./src/scripts/db.ts bootstrap",
         "db:migrate:up": "tsx ./src/scripts/db.ts up",
         "db:migrate:down": "tsx ./src/scripts/db.ts down",
@@ -22,6 +23,7 @@
     "license": "ISC",
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
+        "@canton-network/core-rpc-errors": "workspace:^",
         "@canton-network/core-signing-internal": "workspace:^",
         "@canton-network/core-signing-lib": "workspace:^",
         "@canton-network/core-signing-participant": "workspace:^",
@@ -33,7 +35,6 @@
         "@canton-network/core-wallet-store-sql": "workspace:^",
         "@canton-network/core-wallet-ui-components": "workspace:^",
         "@canton-network/core-wallet-user-rpc-client": "workspace:^",
-        "@metamask/rpc-errors": "^7.0.2",
         "cors": "^2.8.5",
         "express": "^5.1.0",
         "google-protobuf": "^3.21.4",
