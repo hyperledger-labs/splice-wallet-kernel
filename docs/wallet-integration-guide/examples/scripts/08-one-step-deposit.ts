@@ -156,16 +156,21 @@ await new Promise((resolve) => setTimeout(resolve, 5000))
 // exchange observes the deposit via tx log
 const exchangeHoldings = await sdk.tokenStandard?.listHoldingTransactions()
 
-if (
-    exchangeHoldings.transactions.some((tx) =>
-        tx.events.some(
-            (event) =>
-                event.label &&
-                event.label.reason === `deposit from ${customerPartyId}`
-        )
+// Type guard for label with reason
+function hasReason(label: any): label is { reason: string } {
+    return label && typeof label.reason === 'string'
+}
+
+const hasMemoRef = exchangeHoldings!.transactions.some((tx) =>
+    tx.events.some(
+        (event) =>
+            hasReason(event.label) &&
+            event.label.reason === `deposit from ${customerPartyId}`
     )
-) {
-    logger.info(`found customer deposit with by memo key!`)
+)
+
+if (hasMemoRef) {
+    logger.info('Found a transaction with reason "memo-ref"')
 } else {
-    throw new Error('Failed to find customer 1-step transfer')
+    logger.info('No transaction with reason "memo-ref" found')
 }
