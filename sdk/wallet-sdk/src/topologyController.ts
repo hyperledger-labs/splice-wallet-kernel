@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+    GenerateTransactionResponse,
     LedgerClient,
     TopologyWriteService,
 } from '@canton-network/core-ledger-client'
@@ -14,7 +15,11 @@ import {
     PublicKey,
 } from '@canton-network/core-signing-lib'
 import { pino } from 'pino'
-import { hashPreparedTransaction } from '@canton-network/core-tx-visualizer'
+import {
+    hashPreparedTransaction,
+    computeMultiHashForTopology,
+    computeSha256CantonHash,
+} from '@canton-network/core-tx-visualizer'
 import { PartyId } from '@canton-network/core-types'
 import {
     Enums_ParticipantPermission,
@@ -24,10 +29,7 @@ import {
 export { Enums_ParticipantPermission } from '@canton-network/core-ledger-proto'
 
 export type PreparedParty = {
-    // TODO (breaking): return the transactions as a string directly
     partyTransactions: Uint8Array<ArrayBufferLike>[]
-
-    // TODO (breaking): rename combinedHash to multiHash to match JSON API field
     combinedHash: string
     txHashes: Buffer<ArrayBuffer>[]
     namespace: string
@@ -89,7 +91,6 @@ export class TopologyController {
     ): Promise<string> {
         return hashPreparedTransaction(preparedTransaction, 'base64')
     }
-
     /** Creates a fingerprint from a public key.
      * This is a utility function that uses the same fingerprinting scheme as the ledger.
      * @param publicKey
@@ -148,6 +149,15 @@ export class TopologyController {
 
         const combinedHash = TopologyWriteService.combineHashes(txHashes)
 
+        const computedHash =
+            await TopologyController.computeTopologyTxHash(partyTransactions)
+
+        if (combinedHash !== computedHash) {
+            this.logger.error(
+                `Calculated hash doesn't match hash from the ledger api. Got ${combinedHash}, expected ${computedHash}`
+            )
+        }
+
         const result = {
             partyTransactions,
             combinedHash,
@@ -159,39 +169,45 @@ export class TopologyController {
         return Promise.resolve(result)
     }
 
+    /**
+     * Generate topology transactions for an external party that can be signed and submitted in order to create a new external party.
+     *
+     * @param publicKey
+     * @param partyHint (optional) hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold (optional) parameter for multi-hosted parties (default is 1).
+     * @param hostingParticipantUids (optional) list of participant UIDs that will host the party.
+     * @returns
+     */
     async generateExternalPartyTopology(
         publicKey: PublicKey,
         partyHint?: string,
         confirmingThreshold?: number,
         hostingParticipantUids?: string[]
-    ): Promise<PreparedParty> {
-        const namespace =
-            TopologyController.createFingerprintFromPublicKey(publicKey)
-
-        const partyId: PartyId = partyHint
-            ? `${partyHint}::${namespace}`
-            : `${namespace.slice(0, 5)}::${namespace}`
-
-        const transactions = await this.topologyClient.generateTopology(
+    ): Promise<GenerateTransactionResponse> {
+        return this.topologyClient.generateTopology(
             publicKey,
-            partyHint || namespace.slice(0, 5),
+            partyHint,
             false,
             confirmingThreshold,
             hostingParticipantUids
         )
-
-        return {
-            // TODO (breaking): return the transactions as a string directly
-            partyTransactions: transactions.topologyTransactions!.map((tx) =>
-                Buffer.from(tx, 'base64')
-            ),
-            combinedHash: transactions.multiHash,
-            txHashes: [], // TODO: get hashes?
-            namespace,
-            partyId,
-        }
     }
 
+    /** Calculates the MultiTopologyTransaction hash
+     * @param preparedTransactions The 3 topology transactions from the generateTransactions endpoint
+     */
+    static async computeTopologyTxHash(
+        preparedTransactions: Uint8Array<ArrayBufferLike>[]
+    ) {
+        const rawHashes = await Promise.all(
+            preparedTransactions.map((tx) => computeSha256CantonHash(11, tx))
+        )
+        const combinedHashes = await computeMultiHashForTopology(rawHashes)
+
+        const computedHash = await computeSha256CantonHash(55, combinedHashes)
+
+        return Buffer.from(computedHash).toString('base64')
+    }
     /** Submits a prepared and signed external party topology to the ledger.
      * This will also authorize the new party to the participant and grant the user rights to the party.
      * @param signedHash The signed combined hash of the prepared transactions.
@@ -248,7 +264,6 @@ export class TopologyController {
             confirmingThreshold,
             hostingParticipantPermissions
         )
-
         const signedHash = signTransactionHash(
             preparedParty!.combinedHash,
             privateKey
@@ -295,9 +310,9 @@ export class TopologyController {
      * @returns An AllocatedParty object containing the partyId of the new party.
      */
     async prepareSignAndSubmitMultiHostExternalParty(
-        _participantEndpoints: MultiHostPartyParticipantConfig[],
+        participantEndpoints: MultiHostPartyParticipantConfig[],
         privateKey: string,
-        _synchronizerId: PartyId,
+        synchronizerId: PartyId,
         hostingParticipantPermissions: Map<string, Enums_ParticipantPermission>,
         partyHint?: string,
         confirmingThreshold?: number
@@ -311,7 +326,32 @@ export class TopologyController {
 
         this.logger.info(preparedParty, 'created external party')
 
+        //start after first because we've already onboarded an external party and authorized the mapping
+        // on the participant specified in the wallet.sdk.configure
+        // now we need to authorize the party to participant transaction on the others
+
+        for (const endpoint of participantEndpoints.slice(1)) {
+            const lc = new LedgerClient(
+                endpoint.baseUrl,
+                endpoint.accessToken,
+                this.logger
+            )
+
+            const service = new TopologyWriteService(
+                synchronizerId,
+                endpoint.adminApiUrl,
+                endpoint.accessToken,
+                lc
+            )
+
+            await service.authorizePartyToParticipant(preparedParty.partyId)
+        }
+
+        // the PartyToParticipant mapping needs to be authorized on each HostingParticipant
+        // before we can grantUserRights to the party
+
         await this.client.grantUserRights(this.userId, preparedParty.partyId)
+
         return { partyId: preparedParty.partyId }
     }
 }
