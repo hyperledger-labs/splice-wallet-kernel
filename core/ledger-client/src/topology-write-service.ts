@@ -283,7 +283,7 @@ export class TopologyWriteService {
 
     async generateTopology(
         publicKey: string,
-        partyHint: PartyId = '',
+        partyHint?: PartyId,
         localParticipantObservationOnly: boolean = false,
         confirmationThreshold: number = 1,
         otherConfirmingParticipantUids: string[] = []

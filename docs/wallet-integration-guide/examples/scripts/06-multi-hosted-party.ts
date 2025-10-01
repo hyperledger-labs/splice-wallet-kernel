@@ -58,9 +58,7 @@ const multiHostedParticipantEndpointConfig = [
 logger.info('multi host party starting...')
 
 const participantIdPromises = multiHostedParticipantEndpointConfig.map(
-    async (endpoint) => {
-        return await sdk.topology!.getParticipantId(endpoint)
-    }
+    (endpoint) => sdk.topology!.getParticipantId(endpoint)
 )
 
 const participantIds = await Promise.all(participantIdPromises)
