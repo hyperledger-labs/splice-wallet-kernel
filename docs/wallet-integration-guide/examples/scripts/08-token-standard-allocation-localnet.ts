@@ -75,7 +75,7 @@ const receiver = await sdk.topology?.prepareSignAndSubmitExternalParty(
 logger.info(`Created party: ${receiver!.partyId}`)
 
 const venue = await sdk.topology?.prepareSignAndSubmitExternalParty(
-    keyPairReceiver.privateKey,
+    keyPairVenue.privateKey,
     'venue'
 )
 logger.info(`Created party: ${venue!.partyId}`)
@@ -180,17 +180,14 @@ const createProposal = {
     },
 }
 
+const offsetCreateProposal = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
 const cmdId = await sdk.userLedger!.prepareSignAndExecuteTransaction(
     createProposal,
     keyPairSender.privateKey,
     v4()
 )
 
-await sdk.userLedger?.waitForCompletion(
-    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
-    15000,
-    cmdId!
-)
+await sdk.userLedger?.waitForCompletion(offsetCreateProposal, 15000, cmdId!)
 
 await sdk.setPartyId(receiver!.partyId)
 const activeTradeProposals = await sdk.userLedger?.activeContracts({
@@ -262,7 +259,7 @@ const offsetInitiateSettlementOtcp =
 const initiateSettlementOtcpCommandId =
     await sdk.userLedger!.prepareSignAndExecuteTransaction(
         initiateSettlementCmd,
-        keyPairReceiver.privateKey,
+        keyPairVenue.privateKey,
         v4()
     )
 await sdk.userLedger!.waitForCompletion(
@@ -270,6 +267,147 @@ await sdk.userLedger!.waitForCompletion(
     60_000,
     initiateSettlementOtcpCommandId
 )
+
+await sdk?.setPartyId(sender!.partyId)
+const pendingAllocationRequestSenderTemp =
+    await sdk.tokenStandard?.fetchPendingAllocationRequestView()
+
+const allocationRequestView =
+    pendingAllocationRequestSenderTemp?.[0].interfaceViewValue
+
+const legEntries: Array<[string, any]> = allocationRequestView.transferLegs
+    ?.values
+    ? Object.entries(allocationRequestView.transferLegs.values)
+    : allocationRequestView.transferLegs?.map
+      ? allocationRequestView.transferLegs.map(({ key, value }: any) => [
+            key,
+            value,
+        ])
+      : Object.entries(allocationRequestView.transferLegs)
+
+const myLegEntry = legEntries.find(([, leg]) => leg.sender === sender!.partyId)
+if (!myLegEntry) throw new Error(`No leg found for sender ${sender!.partyId}`)
+
+const [transferLegId, leg] = myLegEntry
+
+const { settlement } = allocationRequestView
+
+const legMeta = leg.meta?.values ?? {}
+
+const inputUtxos = undefined
+
+const [allocateCmd, allocateDisclosed] =
+    await sdk.tokenStandard!.createAllocationInstruction(
+        leg.sender,
+        leg.receiver,
+        String(leg.amount),
+        {
+            instrumentId: leg.instrumentId.id,
+            instrumentAdmin: leg.instrumentId.admin,
+        },
+        settlement.executor,
+        inputUtxos,
+        undefined,
+        legMeta,
+        settlement.meta.values ?? {},
+        new Date(settlement.allocateBefore),
+        new Date(settlement.settleBefore),
+        transferLegId,
+        settlement.settlementRef.id
+    )
+
+const arg = allocateCmd.ExerciseCommand.choiceArgument
+
+arg.allocation.settlement.requestedAt = settlement.requestedAt
+arg.allocation.settlement.allocateBefore = settlement.allocateBefore
+arg.allocation.settlement.settleBefore = settlement.settleBefore
+arg.requestedAt = settlement.requestedAt
+
+arg.allocation.settlement.settlementRef = {
+    id: settlement.settlementRef.id,
+    cid: otcpCid,
+}
+
+arg.allocation.settlement.meta = { values: settlement.meta?.values ?? {} }
+arg.allocation.transferLeg.meta = { values: leg.meta?.values ?? {} }
+
+arg.allocation.transferLegId = transferLegId
+
+const offset = (await sdk.userLedger!.ledgerEnd()).offset
+const cmdId2 = await sdk.userLedger!.prepareSignAndExecuteTransaction(
+    allocateCmd,
+    keyPairSender.privateKey,
+    v4(),
+    allocateDisclosed
+)
+await sdk.userLedger!.waitForCompletion(offset, 60000, cmdId2)
+
+await sdk.setPartyId(venue!.partyId)
+
+const otcTrades = await sdk.userLedger!.activeContracts({
+    offset: (await sdk.userLedger!.ledgerEnd()).offset,
+    templateIds: [
+        '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTrade',
+    ],
+    parties: [venue!.partyId],
+    filterByParty: true,
+})
+const otcTradeCid =
+    otcTrades?.[0]?.contractEntry?.JsActiveContract?.createdEvent.contractId
+if (!otcTradeCid) throw new Error('OTCTrade not found for venue')
+
+const allocsVenue = await sdk.tokenStandard!.fetchPendingAllocationView()
+
+const wantedLegIds = new Set(['leg0']) // TODO try 2 legs
+
+const pickedAllocs = allocsVenue
+    .map((a) => ({
+        legId: a.interfaceViewValue.allocation.transferLegId,
+        cid: a.contractId,
+        executor: a.interfaceViewValue.allocation.settlement.executor,
+    }))
+    .filter((a) => a.executor === venue!.partyId && wantedLegIds.has(a.legId))
+
+if (pickedAllocs.length === 0)
+    throw new Error('No matching allocations for this trade')
+
+const allocationsWithContext: Record<string, { _1: string; _2: any }> = {}
+let allDisclosures: any[] = []
+
+for (const a of pickedAllocs) {
+    const [execCmd, discs] = await sdk.tokenStandard!.exerciseAllocationChoice(
+        a.cid,
+        'ExecuteTransfer'
+    )
+
+    allocationsWithContext[a.legId] = {
+        _1: a.cid,
+        _2: execCmd.ExerciseCommand.choiceArgument.extraArgs,
+    }
+
+    allDisclosures.push(...discs)
+}
+
+const settleCmd = [
+    {
+        ExerciseCommand: {
+            templateId:
+                '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTrade',
+            contractId: otcTradeCid,
+            choice: 'OTCTrade_Settle',
+            choiceArgument: { allocationsWithContext },
+        },
+    },
+]
+
+const off = (await sdk.userLedger!.ledgerEnd()).offset || 0
+const settleId = await sdk.userLedger!.prepareSignAndExecuteTransaction(
+    settleCmd,
+    keyPairVenue.privateKey,
+    v4(),
+    allDisclosures
+)
+await sdk.userLedger!.waitForCompletion(off, 60_000, settleId)
 
 await sdk.setPartyId(sender!.partyId)
 const pendingAllocationRequestSender =
@@ -289,6 +427,21 @@ logger.info(
     'Pending Allocation (Alice)'
 )
 
+await sdk.tokenStandard
+    ?.listHoldingTransactions()
+    .then((transactions) => {
+        logger.info(
+            transactions,
+            'Token Standard Holding Transactions (Alice):'
+        )
+    })
+    .catch((error) => {
+        logger.error(
+            { error },
+            'Error listing token standard holding transactions (Alice):'
+        )
+    })
+
 await sdk.setPartyId(receiver!.partyId)
 const pendingAllocationRequestReceiver =
     await sdk.tokenStandard?.fetchPendingAllocationRequestView()
@@ -297,6 +450,18 @@ const pendingAllocationInstructionsReceiver =
 
 const pendingAllocationsReceiver =
     await sdk.tokenStandard?.fetchPendingAllocationView()
+
+await sdk.tokenStandard
+    ?.listHoldingTransactions()
+    .then((transactions) => {
+        logger.info(transactions, 'Token Standard Holding Transactions (Bob):')
+    })
+    .catch((error) => {
+        logger.error(
+            { error },
+            'Error listing token standard holding transactions (Bob):'
+        )
+    })
 
 logger.info(
     {
@@ -324,3 +489,18 @@ logger.info(
     },
     'Pending Allocation (Venue)'
 )
+
+await sdk.tokenStandard
+    ?.listHoldingTransactions()
+    .then((transactions) => {
+        logger.info(
+            transactions,
+            'Token Standard Holding Transactions (Venue):'
+        )
+    })
+    .catch((error) => {
+        logger.error(
+            { error },
+            'Error listing token standard holding transactions (Venue):'
+        )
+    })
