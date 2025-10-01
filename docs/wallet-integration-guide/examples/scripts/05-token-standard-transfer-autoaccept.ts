@@ -51,14 +51,14 @@ const synchronizers = await sdk.userLedger?.listSynchronizers()
 
 const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
 
-// await sdk.userLedger
-//     ?.listWallets()
-//     .then((wallets) => {
-//         logger.info(wallets, 'Wallets:')
-//     })
-//     .catch((error) => {
-//         logger.error({ error }, 'Error listing wallets')
-//     })
+await sdk.userLedger
+    ?.listWallets()
+    .then((wallets) => {
+        logger.info(wallets, 'Wallets:')
+    })
+    .catch((error) => {
+        logger.error({ error }, 'Error listing wallets')
+    })
 
 sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 
@@ -110,19 +110,6 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     disclosedContracts
 )
 
-const [featuredAppCommand, disclosedContractsApp] =
-    await sdk.tokenStandard!.selfGrantRights()
-
-await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-    featuredAppCommand,
-    keyPairSender.privateKey,
-    v4(),
-    disclosedContractsApp
-)
-
-const featuredApps = await sdk.tokenStandard!.lookupFeaturedApps()
-logger.info(featuredApps, `Look up featured app rights`)
-
 const utxos = await sdk.tokenStandard?.listHoldingUtxos()
 logger.info(utxos, 'List Token Standard Holding UTXOs')
 
@@ -160,6 +147,16 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     disclosedContracts2
 )
 logger.info('Submitted transfer transaction')
+
+await sdk.setPartyId(validatorOperatorParty!)
+
+const validatorFeatureAppRights =
+    await sdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
+
+logger.info(
+    validatorFeatureAppRights,
+    `Featured App Rights for validator ${validatorOperatorParty}`
+)
 
 {
     await sdk.setPartyId(sender!.partyId)

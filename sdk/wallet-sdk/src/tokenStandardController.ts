@@ -16,6 +16,7 @@ import {
 } from '@canton-network/core-ledger-client'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { pino } from 'pino'
+import { v4 } from 'uuid'
 import {
     HOLDING_INTERFACE_ID,
     TRANSFER_INSTRUCTION_INTERFACE_ID,
@@ -302,6 +303,37 @@ export class TokenStandardController {
      */
     async lookupFeaturedApps() {
         return this.service.getFeaturedAppsByParty(this.getPartyId())
+    }
+
+    /**
+     * Submits a command to grant feature app rights for an internal party such as the validator operator user
+     * @returns A contract of Daml template `Splice.Amulet.FeaturedAppRight`.
+     */
+    async grantFeatureAppRightsForInternalParty() {
+        const featuredAppRights = await this.lookupFeaturedApps()
+
+        if (featuredAppRights) {
+            return featuredAppRights
+        }
+
+        const [featuredAppCommand, disclosedContractsApp] =
+            await this.selfGrantRights()
+
+        const request = {
+            commands: [featuredAppCommand],
+            commandId: v4(),
+            userId: this.userId,
+            actAs: [this.getPartyId()],
+            readAs: [],
+            disclosedContracts: disclosedContractsApp || [],
+            synchronizerId: this.getSynchronizerId(),
+            verboseHashing: false,
+            packageIdSelectionPreference: [],
+        }
+
+        await this.client.post('/v2/commands/submit-and-wait', request)
+
+        return this.lookupFeaturedApps()
     }
 
     /**
