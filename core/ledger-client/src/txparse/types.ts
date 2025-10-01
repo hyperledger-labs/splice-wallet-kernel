@@ -104,39 +104,39 @@ export interface TokenStandardChoice {
     exerciseResult: any
 }
 
-interface TransferOut extends KnownLabel {
+export interface TransferOut extends KnownLabel {
     type: 'TransferOut'
     receiverAmounts: Array<{ receiver: string; amount: string }>
 }
 
-interface TransferIn extends KnownLabel {
+export interface TransferIn extends KnownLabel {
     type: 'TransferIn'
     sender: string
 }
 
-interface MergeSplit extends KnownLabel {
+export interface MergeSplit extends KnownLabel {
     type: 'MergeSplit'
 }
 
 // Same as MergeSplit, but is more precise (tx-kind=burn)
-interface Burn extends KnownLabel {
+export interface Burn extends KnownLabel {
     type: 'Burn'
 }
 
 // Same as MergeSplit, but is more precise (tx-kind=mint)
-interface Mint extends KnownLabel {
+export interface Mint extends KnownLabel {
     type: 'Mint'
 }
 
-interface Unlock extends KnownLabel {
+export interface Unlock extends KnownLabel {
     type: 'Unlock'
 }
 
-interface ExpireDust extends KnownLabel {
+export interface ExpireDust extends KnownLabel {
     type: 'ExpireDust'
 }
 
-interface RawArchive extends BaseLabel {
+export interface RawArchive extends BaseLabel {
     type: 'Archive'
     parentChoice: string
     contractId: string
@@ -147,7 +147,7 @@ interface RawArchive extends BaseLabel {
     payload: any
     meta: any
 }
-interface RawCreate extends BaseLabel {
+export interface RawCreate extends BaseLabel {
     type: 'Create'
     parentChoice: string
     contractId: string

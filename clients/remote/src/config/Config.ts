@@ -13,6 +13,7 @@ export const kernelInfoSchema = z.object({
         z.literal('remote'),
     ]),
     url: z.string().url(),
+    userUrl: z.string().url(),
 })
 
 export const configSchema = z.object({

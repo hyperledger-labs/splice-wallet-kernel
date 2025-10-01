@@ -38,6 +38,8 @@ you posses across different instruments.
 the above script can safely be used to determine used in a transfer, if you provide no boolean value or true then you need to filter
 out the locked ones manually.
 
+.. _list-holding-transactions:
+
 Listing holding transactions
 ----------------------------
 

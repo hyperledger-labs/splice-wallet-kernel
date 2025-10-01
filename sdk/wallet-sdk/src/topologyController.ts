@@ -364,10 +364,31 @@ export const localNetTopologyDefault = (
     userId: string,
     userAdminToken: string,
     synchronizerId: PartyId
+): TopologyController =>
+    localNetTopologyAppUser(userId, userAdminToken, synchronizerId)
+
+export const localNetTopologyAppUser = (
+    userId: string,
+    userAdminToken: string,
+    synchronizerId: PartyId
 ): TopologyController => {
     return new TopologyController(
         '127.0.0.1:2902',
         new URL('http://127.0.0.1:2975'),
+        userId,
+        userAdminToken,
+        synchronizerId
+    )
+}
+
+export const localNetTopologyAppProvider = (
+    userId: string,
+    userAdminToken: string,
+    synchronizerId: PartyId
+): TopologyController => {
+    return new TopologyController(
+        '127.0.0.1:3902',
+        new URL('http://127.0.0.1:3975'),
         userId,
         userAdminToken,
         synchronizerId

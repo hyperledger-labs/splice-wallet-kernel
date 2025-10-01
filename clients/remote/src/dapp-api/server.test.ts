@@ -52,6 +52,7 @@ test('call connect rpc', async () => {
                 id: 'remote-da',
                 clientType: 'remote',
                 url: 'http://localhost:3008/rpc',
+                userUrl: 'http://localhost:3002',
             },
             isConnected: false,
             userUrl: 'http://localhost:3002/login/',

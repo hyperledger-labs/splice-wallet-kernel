@@ -61,3 +61,18 @@ Sharing application rewards is an optional steps.
 * :ref:`withdrawal-app-rewards`
 * :ref:`deposit-app-rewards`
 * :ref:`share-rewards-with-customers`
+
+
+Integration support code
+-------------------------
+
+Use the following support code to simplify your integration development for:
+
+  * **JavaScript/TypeScript**: use the functions from the
+    :ref:`Wallet SDK <install-wallet-sdk>` to simplify building your integration.
+
+  * **Java/JVM**: use the sample code
+    from the https://github.com/digital-asset/ex-java-json-api-bindings repository
+    as a starting point.
+
+  * **Other languages**: use the code from the Wallet SDK or the Java sample code as a blueprint.
