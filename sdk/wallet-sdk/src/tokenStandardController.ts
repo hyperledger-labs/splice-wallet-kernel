@@ -123,7 +123,7 @@ export class TokenStandardController {
     getTransferFactoryRegistryUrl(): URL {
         if (!this.transferFactoryRegistryUrl)
             throw new Error(
-                'transferFactoryRegistryUrl is not defined, called setTransferFactoryRegistryUrl'
+                'transferFactoryRegistryUrl is not defined, call setTransferFactoryRegistryUrl'
             )
         else return this.transferFactoryRegistryUrl
     }
@@ -406,10 +406,29 @@ export const localNetTokenStandardDefault = (
     userId: string,
     token: string
 ): TokenStandardController => {
+    return localNetTokenStandardAppUser(userId, token)
+}
+
+export const localNetTokenStandardAppUser = (
+    userId: string,
+    token: string
+): TokenStandardController => {
     return new TokenStandardController(
         userId,
         new URL('http://127.0.0.1:2975'),
         new URL('http://wallet.localhost:2000/api/validator'),
+        token
+    )
+}
+
+export const localNetTokenStandardAppProvider = (
+    userId: string,
+    token: string
+): TokenStandardController => {
+    return new TokenStandardController(
+        userId,
+        new URL('http://127.0.0.1:3975'),
+        new URL('http://wallet.localhost:3000/api/validator'),
         token
     )
 }

@@ -586,5 +586,19 @@ export const localNetLedgerDefault = (
     userId: string,
     token: string
 ): LedgerController => {
+    return localNetLedgerAppUser(userId, token)
+}
+
+export const localNetLedgerAppUser = (
+    userId: string,
+    token: string
+): LedgerController => {
     return new LedgerController(userId, new URL('http://127.0.0.1:2975'), token)
+}
+
+export const localNetLedgerAppProvider = (
+    userId: string,
+    token: string
+): LedgerController => {
+    return new LedgerController(userId, new URL('http://127.0.0.1:3975'), token)
 }
