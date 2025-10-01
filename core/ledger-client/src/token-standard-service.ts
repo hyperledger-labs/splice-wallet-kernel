@@ -83,6 +83,19 @@ export class TokenStandardService {
         return transfer_preapproval
     }
 
+    async getFeaturedAppsByParty(partyId: PartyId) {
+        const { featured_app_right } = await this.scanProxyClient.get(
+            '/v0/scan-proxy/featured-apps/{provider_party_id}',
+            {
+                path: {
+                    provider_party_id: partyId,
+                },
+            }
+        )
+
+        return featured_app_right
+    }
+
     async getInstrumentById(
         transferFactoryRegistryUrl: string,
         instrumentId: string
@@ -555,6 +568,31 @@ export class TokenStandardService {
                 },
             },
             disclosedContracts,
+        ]
+    }
+
+    async selfGrantFeatureAppRight(
+        providerPartyId: PartyId,
+        synchronizerId: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const amuletRules = await this.scanProxyClient.getAmuletRules()
+        const disclosedContracts = {
+            templateId: amuletRules.template_id,
+            contractId: amuletRules.contract_id,
+            createdEventBlob: amuletRules.created_event_blob,
+            synchronizerId: synchronizerId,
+        }
+
+        return [
+            {
+                templateId: amuletRules.template_id,
+                contractId: amuletRules.contract_id,
+                choice: 'AmuletRules_DevNet_FeatureApp',
+                choiceArgument: {
+                    provider: providerPartyId,
+                },
+            },
+            [disclosedContracts],
         ]
     }
 
