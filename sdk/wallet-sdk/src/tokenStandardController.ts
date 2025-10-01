@@ -285,7 +285,7 @@ export class TokenStandardController {
      * Creates ExerciseCommand for granting featured app rights.
      * @returns AmuletRules_DevNet_FeatureApp command and disclosed contracts.
      */
-    async selfGrantRights(): Promise<
+    async selfGrantFeatureAppRights(): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         const [featuredAppCommand, disclosedContracts] =
@@ -307,6 +307,7 @@ export class TokenStandardController {
 
     /**
      * Submits a command to grant feature app rights for an internal party such as the validator operator user
+     * For external parties, use prepareSignAndExecuteTransaction in LedgerController
      * @returns A contract of Daml template `Splice.Amulet.FeaturedAppRight`.
      */
     async grantFeatureAppRightsForInternalParty() {
@@ -317,7 +318,7 @@ export class TokenStandardController {
         }
 
         const [featuredAppCommand, disclosedContractsApp] =
-            await this.selfGrantRights()
+            await this.selfGrantFeatureAppRights()
 
         const request = {
             commands: [featuredAppCommand],
