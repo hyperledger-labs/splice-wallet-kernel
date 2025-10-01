@@ -24,6 +24,7 @@ const amuletIdentifier = {
 }
 
 // transfer to exchange
+const exchangeLedgerEnd = await exchangeSdk.userLedger?.ledgerEnd()
 const memoUUID = v4()
 const [customerTransferCommand, customerTransferDisclosedContracts] =
     await customerSdk.tokenStandard!.createTransfer(
@@ -38,12 +39,19 @@ const [customerTransferCommand, customerTransferDisclosedContracts] =
 await customerSdk.userLedger?.prepareSignExecuteAndWaitFor(
     customerTransferCommand,
     customerKeyPair.privateKey,
-    v4(),
+    memoUUID,
     customerTransferDisclosedContracts
 )
 
 logger.info(
     `transferred ${transferAmount} from ${customerParty} to ${treasuryParty}`
+)
+
+// the exchange ledger waits for seeing the command completion
+await exchangeSdk.userLedger?.waitForCompletion(
+    exchangeLedgerEnd,
+    30000,
+    memoUUID
 )
 
 // exchange observes the deposit via tx log
