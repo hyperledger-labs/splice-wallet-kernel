@@ -28,12 +28,23 @@ Transaction Parsing
 
 As part of the :ref:`integration-workflows`, Tx History Ingestion is
 expected to extract a number of fields for both deposits and
-withdrawals. The easiest way of handling this is using the `token
-standard history parser
-<https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/core/ledger-client/src/txparse/parser.ts>`_. However,
-in some cases you might not be able to use that and need to write your
-own parser. This section provides information on the transaction
-structure and parsing strategy.
+withdrawals. Below we provide details on the transaction
+structure of the :ref:`integration-workflows` and how to parse it.
+
+.. note::
+
+  The following code is available to help you implement your own parsing logic:
+
+  * **JavaScript/TypeScript**: use the
+    :ref:`token standard history parser <list-holding-transactions>` provided in the wallet SDK.
+  * **Java/JVM**: use the the Java
+    `TransactionParser <https://github.com/digital-asset/ex-java-json-api-bindings/blob/main/JsonLedgerApiSample/src/main/java/com/example/store/TransactionParser.java>`__
+    from the https://github.com/digital-asset/ex-java-json-api-bindings repository
+    as a blueprint.
+  * **Other languages**: use the
+    Java
+    `TransactionParser <https://github.com/digital-asset/ex-java-json-api-bindings/blob/main/JsonLedgerApiSample/src/main/java/com/example/store/TransactionParser.java>`__
+    referenced above as a blueprint.
 
 1-Step Transfers
 ~~~~~~~~~~~~~~~~
