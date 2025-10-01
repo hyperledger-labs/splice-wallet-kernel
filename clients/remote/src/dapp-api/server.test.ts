@@ -55,6 +55,7 @@ test('call connect rpc', async () => {
                 userUrl: 'http://localhost:3002',
             },
             isConnected: false,
+            userUrl: 'http://localhost:3002/login/',
         },
     })
 })
