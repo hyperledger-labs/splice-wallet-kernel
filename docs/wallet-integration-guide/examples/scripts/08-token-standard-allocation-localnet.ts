@@ -93,6 +93,7 @@ sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL)
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
+const aliceTapOffset = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     sender!.partyId,
     '2000000',
@@ -102,29 +103,46 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     }
 )
 
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
+const aliceTapCmdId = await sdk.userLedger?.prepareSignAndExecuteTransaction(
     tapCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts
 )
 
-await new Promise((res) => setTimeout(res, 5000))
+await sdk.userLedger?.waitForCompletion(aliceTapOffset, 15000, aliceTapCmdId!)
+
+// await new Promise((res) => setTimeout(res, 5000))
+await sdk.setPartyId(receiver!.partyId)
+const bobTapOffset = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
+const [tapCmdBob, tapDiscBob] = await sdk.tokenStandard!.createTap(
+    receiver!.partyId,
+    '2000000',
+    { instrumentId: 'Amulet', instrumentAdmin: instrumentAdminPartyId }
+)
+const bobTapCmdId = await sdk.userLedger!.prepareSignAndExecuteTransaction(
+    tapCmdBob,
+    keyPairReceiver.privateKey,
+    v4(),
+    tapDiscBob
+)
+await sdk.userLedger?.waitForCompletion(bobTapOffset, 15000, bobTapCmdId!)
 
 const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
-logger.info(utxos, 'List Available Token Standard Holding UTXOs')
+// logger.info(utxos, 'List Available Token Standard Holding UTXOs')
 
-await sdk.tokenStandard
-    ?.listHoldingTransactions()
-    .then((transactions) => {
-        logger.info(transactions, 'Token Standard Holding Transactions:')
-    })
-    .catch((error) => {
-        logger.error(
-            { error },
-            'Error listing token standard holding transactions:'
-        )
-    })
+await sdk.setPartyId(sender!.partyId)
+// await sdk.tokenStandard
+//     ?.listHoldingTransactions()
+//     .then((transactions) => {
+//         logger.info(transactions, 'Token Standard Holding Transactions:')
+//     })
+//     .catch((error) => {
+//         logger.error(
+//             { error },
+//             'Error listing token standard holding transactions:'
+//         )
+//     })
 
 type InstrumentId = {
     admin: string
@@ -165,6 +183,13 @@ const transferLegs = {
         instrumentAdminPartyId,
         'Amulet'
     ),
+    leg1: mkLeg(
+        receiver!.partyId,
+        sender!.partyId,
+        '20',
+        instrumentAdminPartyId,
+        'Amulet'
+    ),
 }
 
 const createProposal = {
@@ -202,6 +227,9 @@ const activeTradeProposals = await sdk.userLedger?.activeContracts({
 const otcpCid =
     activeTradeProposals?.[0]?.contractEntry?.JsActiveContract?.createdEvent
         .contractId
+
+if (otcpCid === undefined)
+    throw new Error('Unexpected lack of OTCTradeProposal contract')
 const acceptCmd = [
     {
         ExerciseCommand: {
@@ -243,6 +271,9 @@ const settleBefore = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString()
 const otcpCid2 =
     activeTradeProposals2?.[0]?.contractEntry?.JsActiveContract?.createdEvent
         .contractId
+
+if (otcpCid2 === undefined)
+    throw new Error('Unexpected lack of OTCTradeProposal contract')
 const initiateSettlementCmd = [
     {
         ExerciseCommand: {
@@ -268,79 +299,127 @@ await sdk.userLedger!.waitForCompletion(
     initiateSettlementOtcpCommandId
 )
 
+// Alice's leg allocation
 await sdk?.setPartyId(sender!.partyId)
-const pendingAllocationRequestSenderTemp =
+const pendingAllocationRequestsSender =
     await sdk.tokenStandard?.fetchPendingAllocationRequestView()
 
-const allocationRequestView =
-    pendingAllocationRequestSenderTemp?.[0].interfaceViewValue
+const allocationRequestViewSender =
+    pendingAllocationRequestsSender?.[0].interfaceViewValue!
 
-const legEntries: Array<[string, any]> = allocationRequestView.transferLegs
-    ?.values
-    ? Object.entries(allocationRequestView.transferLegs.values)
-    : allocationRequestView.transferLegs?.map
-      ? allocationRequestView.transferLegs.map(({ key, value }: any) => [
-            key,
-            value,
-        ])
-      : Object.entries(allocationRequestView.transferLegs)
+const legEntriesAlice = Object.entries(allocationRequestViewSender.transferLegs)
 
-const myLegEntry = legEntries.find(([, leg]) => leg.sender === sender!.partyId)
-if (!myLegEntry) throw new Error(`No leg found for sender ${sender!.partyId}`)
+const legEntryAlice = legEntriesAlice.find(
+    ([, leg]) => leg.sender === sender!.partyId
+)
+if (!legEntryAlice)
+    throw new Error(`No leg found for sender ${sender!.partyId}`)
+const [legIdAlice, legAlice] = legEntryAlice
 
-const [transferLegId, leg] = myLegEntry
+const settlementSender = allocationRequestViewSender.settlement
 
-const { settlement } = allocationRequestView
-
-const legMeta = leg.meta?.values ?? {}
-
-const inputUtxos = undefined
-
-const [allocateCmd, allocateDisclosed] =
-    await sdk.tokenStandard!.createAllocationInstruction(
-        leg.sender,
-        leg.receiver,
-        String(leg.amount),
-        {
-            instrumentId: leg.instrumentId.id,
-            instrumentAdmin: leg.instrumentId.admin,
+const specAlice = {
+    settlement: {
+        executor: allocationRequestViewSender.settlement.executor,
+        settlementRef: {
+            id: allocationRequestViewSender.settlement.settlementRef.id,
+            cid: otcpCid2,
+        }, // ← proposal CID
+        requestedAt: allocationRequestViewSender.settlement.requestedAt,
+        allocateBefore: allocationRequestViewSender.settlement.allocateBefore,
+        settleBefore: allocationRequestViewSender.settlement.settleBefore,
+        meta: {
+            values: allocationRequestViewSender.settlement.meta?.values ?? {},
         },
-        settlement.executor,
-        inputUtxos,
-        undefined,
-        legMeta,
-        settlement.meta.values ?? {},
-        new Date(settlement.allocateBefore),
-        new Date(settlement.settleBefore),
-        transferLegId,
-        settlement.settlementRef.id
-    )
-
-const arg = allocateCmd.ExerciseCommand.choiceArgument
-
-arg.allocation.settlement.requestedAt = settlement.requestedAt
-arg.allocation.settlement.allocateBefore = settlement.allocateBefore
-arg.allocation.settlement.settleBefore = settlement.settleBefore
-arg.requestedAt = settlement.requestedAt
-
-arg.allocation.settlement.settlementRef = {
-    id: settlement.settlementRef.id,
-    cid: otcpCid,
+    },
+    transferLegId: legIdAlice,
+    transferLeg: {
+        sender: legAlice.sender,
+        receiver: legAlice.receiver,
+        amount: String(legAlice.amount),
+        instrumentId: {
+            admin: legAlice.instrumentId.admin,
+            id: legAlice.instrumentId.id,
+        },
+        meta: { values: legAlice.meta?.values ?? {} },
+    },
 }
 
-arg.allocation.settlement.meta = { values: settlement.meta?.values ?? {} }
-arg.allocation.transferLeg.meta = { values: leg.meta?.values ?? {} }
-
-arg.allocation.transferLegId = transferLegId
+const [allocateCmdAlice, allocateDisclosed] =
+    await sdk.tokenStandard!.createAllocationInstruction(
+        specAlice,
+        legAlice.instrumentId.admin
+    )
 
 const offset = (await sdk.userLedger!.ledgerEnd()).offset
 const cmdId2 = await sdk.userLedger!.prepareSignAndExecuteTransaction(
-    allocateCmd,
+    allocateCmdAlice,
     keyPairSender.privateKey,
     v4(),
     allocateDisclosed
 )
 await sdk.userLedger!.waitForCompletion(offset, 60000, cmdId2)
+
+// Bob's leg allocation
+await sdk.setPartyId(receiver!.partyId)
+
+const pendingAllocationRequestReceiver =
+    await sdk.tokenStandard?.fetchPendingAllocationRequestView()
+
+const allocationRequestViewReceiver =
+    pendingAllocationRequestReceiver?.[0].interfaceViewValue!
+const legEntriesBob = Object.entries(allocationRequestViewReceiver.transferLegs)
+
+const legEntryBob = legEntriesBob.find(
+    ([, leg]) => leg.sender === receiver!.partyId
+)
+if (!legEntryBob)
+    throw new Error(`No leg found for sender ${receiver!.partyId}`)
+const [legIdBob, legBob] = legEntryBob
+
+const specBob = {
+    settlement: {
+        executor: allocationRequestViewReceiver.settlement.executor,
+        settlementRef: {
+            id: allocationRequestViewReceiver.settlement.settlementRef.id,
+            cid: otcpCid2,
+        }, // ← proposal CID
+        requestedAt: allocationRequestViewReceiver.settlement.requestedAt,
+        allocateBefore: allocationRequestViewReceiver.settlement.allocateBefore,
+        settleBefore: allocationRequestViewReceiver.settlement.settleBefore,
+        meta: {
+            values: allocationRequestViewReceiver.settlement.meta?.values ?? {},
+        },
+    },
+    transferLegId: legIdBob,
+    transferLeg: {
+        sender: legBob.sender,
+        receiver: legBob.receiver,
+        amount: String(legBob.amount),
+        instrumentId: {
+            admin: legBob.instrumentId.admin,
+            id: legBob.instrumentId.id,
+        },
+        meta: { values: legBob.meta?.values ?? {} },
+    },
+}
+
+const [allocateCmdBob, discsR] =
+    await sdk.tokenStandard!.createAllocationInstruction(
+        specBob,
+        legBob.instrumentId.admin
+    )
+
+{
+    const off = (await sdk.userLedger!.ledgerEnd()).offset
+    const id = await sdk.userLedger!.prepareSignAndExecuteTransaction(
+        allocateCmdBob,
+        keyPairReceiver.privateKey,
+        v4(),
+        discsR
+    )
+    await sdk.userLedger!.waitForCompletion(off, 60_000, id)
+}
 
 await sdk.setPartyId(venue!.partyId)
 
@@ -358,7 +437,7 @@ if (!otcTradeCid) throw new Error('OTCTrade not found for venue')
 
 const allocsVenue = await sdk.tokenStandard!.fetchPendingAllocationView()
 
-const wantedLegIds = new Set(['leg0']) // TODO try 2 legs
+const wantedLegIds = new Set(['leg0', 'leg1']) // TODO try 2 legs
 
 const pickedAllocs = allocsVenue
     .map((a) => ({
@@ -388,6 +467,13 @@ for (const a of pickedAllocs) {
     allDisclosures.push(...discs)
 }
 
+const uniqMap = new Map<string, (typeof allDisclosures)[number]>()
+for (const d of allDisclosures) {
+    // If two entries have the same contractId, keep the first (or last — either is fine)
+    uniqMap.set(d.contractId, d)
+}
+const uniqueDisclosures = [...uniqMap.values()]
+
 const settleCmd = [
     {
         ExerciseCommand: {
@@ -401,106 +487,111 @@ const settleCmd = [
 ]
 
 const off = (await sdk.userLedger!.ledgerEnd()).offset || 0
+// TODO error here
 const settleId = await sdk.userLedger!.prepareSignAndExecuteTransaction(
     settleCmd,
     keyPairVenue.privateKey,
     v4(),
-    allDisclosures
+    uniqueDisclosures
 )
 await sdk.userLedger!.waitForCompletion(off, 60_000, settleId)
+{
+    await sdk.setPartyId(sender!.partyId)
+    const pendingAllocationRequestSender =
+        await sdk.tokenStandard?.fetchPendingAllocationRequestView()
+    const pendingAllocationInstructionsSender =
+        await sdk.tokenStandard?.fetchPendingAllocationInstructionView()
 
-await sdk.setPartyId(sender!.partyId)
-const pendingAllocationRequestSender =
-    await sdk.tokenStandard?.fetchPendingAllocationRequestView()
-const pendingAllocationInstructionsSender =
-    await sdk.tokenStandard?.fetchPendingAllocationInstructionView()
+    const pendingAllocationsSender =
+        await sdk.tokenStandard?.fetchPendingAllocationView()
 
-const pendingAllocationsSender =
-    await sdk.tokenStandard?.fetchPendingAllocationView()
+    logger.info(
+        {
+            pendingAllocationRequestSender,
+            pendingAllocationInstructionsSender,
+            pendingAllocationsSender,
+        },
+        'Pending Allocation (Alice)'
+    )
 
-logger.info(
-    {
-        pendingAllocationRequestSender,
-        pendingAllocationInstructionsSender,
-        pendingAllocationsSender,
-    },
-    'Pending Allocation (Alice)'
-)
+    await sdk.tokenStandard
+        ?.listHoldingTransactions()
+        .then((transactions) => {
+            logger.info(
+                transactions,
+                'Token Standard Holding Transactions (Alice):'
+            )
+        })
+        .catch((error) => {
+            logger.error(
+                { error },
+                'Error listing token standard holding transactions (Alice):'
+            )
+        })
 
-await sdk.tokenStandard
-    ?.listHoldingTransactions()
-    .then((transactions) => {
-        logger.info(
-            transactions,
-            'Token Standard Holding Transactions (Alice):'
-        )
-    })
-    .catch((error) => {
-        logger.error(
-            { error },
-            'Error listing token standard holding transactions (Alice):'
-        )
-    })
+    await sdk.setPartyId(receiver!.partyId)
+    const pendingAllocationRequestReceiver =
+        await sdk.tokenStandard?.fetchPendingAllocationRequestView()
+    const pendingAllocationInstructionsReceiver =
+        await sdk.tokenStandard?.fetchPendingAllocationInstructionView()
 
-await sdk.setPartyId(receiver!.partyId)
-const pendingAllocationRequestReceiver =
-    await sdk.tokenStandard?.fetchPendingAllocationRequestView()
-const pendingAllocationInstructionsReceiver =
-    await sdk.tokenStandard?.fetchPendingAllocationInstructionView()
+    const pendingAllocationsReceiver =
+        await sdk.tokenStandard?.fetchPendingAllocationView()
 
-const pendingAllocationsReceiver =
-    await sdk.tokenStandard?.fetchPendingAllocationView()
+    await sdk.tokenStandard
+        ?.listHoldingTransactions()
+        .then((transactions) => {
+            logger.info(
+                transactions,
+                'Token Standard Holding Transactions (Bob):'
+            )
+        })
+        .catch((error) => {
+            logger.error(
+                { error },
+                'Error listing token standard holding transactions (Bob):'
+            )
+        })
 
-await sdk.tokenStandard
-    ?.listHoldingTransactions()
-    .then((transactions) => {
-        logger.info(transactions, 'Token Standard Holding Transactions (Bob):')
-    })
-    .catch((error) => {
-        logger.error(
-            { error },
-            'Error listing token standard holding transactions (Bob):'
-        )
-    })
+    logger.info(
+        {
+            pendingAllocationRequestReceiver,
+            pendingAllocationInstructionsReceiver,
+            pendingAllocationsReceiver,
+        },
+        'Pending Allocation (Bob)'
+    )
 
-logger.info(
-    {
-        pendingAllocationRequestReceiver,
-        pendingAllocationInstructionsReceiver,
-        pendingAllocationsReceiver,
-    },
-    'Pending Allocation (Bob)'
-)
+    await sdk.setPartyId(venue!.partyId)
+    const pendingAllocationRequestVenue =
+        await sdk.tokenStandard?.fetchPendingAllocationRequestView()
+    const pendingAllocationInstructionsVenue =
+        await sdk.tokenStandard?.fetchPendingAllocationInstructionView()
 
-await sdk.setPartyId(venue!.partyId)
-const pendingAllocationRequestVenue =
-    await sdk.tokenStandard?.fetchPendingAllocationRequestView()
-const pendingAllocationInstructionsVenue =
-    await sdk.tokenStandard?.fetchPendingAllocationInstructionView()
+    const pendingAllocationsVenue =
+        await sdk.tokenStandard?.fetchPendingAllocationView()
 
-const pendingAllocationsVenue =
-    await sdk.tokenStandard?.fetchPendingAllocationView()
+    logger.info(
+        {
+            pendingAllocationRequestVenue,
+            pendingAllocationInstructionsVenue,
+            pendingAllocationsVenue,
+        },
+        'Pending Allocation (Venue)'
+    )
 
-logger.info(
-    {
-        pendingAllocationRequestVenue,
-        pendingAllocationInstructionsVenue,
-        pendingAllocationsVenue,
-    },
-    'Pending Allocation (Venue)'
-)
-
-await sdk.tokenStandard
-    ?.listHoldingTransactions()
-    .then((transactions) => {
-        logger.info(
-            transactions,
-            'Token Standard Holding Transactions (Venue):'
-        )
-    })
-    .catch((error) => {
-        logger.error(
-            { error },
-            'Error listing token standard holding transactions (Venue):'
-        )
-    })
+    await sdk.tokenStandard
+        ?.listHoldingTransactions()
+        .then((transactions) => {
+            logger.info(
+                transactions,
+                'Token Standard Holding Transactions (Venue):'
+            )
+        })
+        .catch((error) => {
+            logger.error(
+                { error },
+                'Error listing token standard holding transactions (Venue):'
+            )
+        })
+}

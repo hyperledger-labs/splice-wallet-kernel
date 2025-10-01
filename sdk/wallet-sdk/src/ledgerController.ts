@@ -498,6 +498,40 @@ export class LedgerController {
         //TODO: figure out if this should automatically be converted to a format that is more user friendly
         return await this.client.post('/v2/state/active-contracts', filter)
     }
+
+    async ensureDarUploaded(
+        darBytes: Uint8Array | Buffer
+    ): Promise<
+        | import('@canton-network/core-ledger-client').PostResponse<'/v2/packages'>
+        | void
+    > {
+        try {
+            return await this.client.post(
+                '/v2/packages',
+                darBytes as never,
+                {},
+                {
+                    // @ts-expect-error reason test
+                    bodySerializer: (b) => b, // prevents jsonification of bytes
+                    headers: { 'Content-Type': 'application/octet-stream' },
+                }
+            )
+        } catch (e: unknown) {
+            // @ts-expect-error reason: test
+            const msg = `${e.message ?? ''} ${e?.body ?? ''}`
+            // @ts-expect-error reason: test
+            if (
+                e?.status === 409 ||
+                /already\s*exist/i.test(msg) ||
+                e?.errorCategory === 'ALREADY_EXISTS'
+            ) {
+                this['logger'].info('DAR already present—continuing.')
+                return
+            }
+            this['logger'].error({ err: e }, 'DAR upload failed')
+            throw e
+        }
+    }
 }
 
 /**

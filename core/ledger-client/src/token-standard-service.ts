@@ -4,6 +4,9 @@
 import {
     TokenStandardClient,
     HoldingView,
+    AllocationFactory_Allocate,
+    AllocationSpecification,
+    AllocationContextValue,
 } from '@canton-network/core-token-standard'
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
@@ -577,6 +580,38 @@ export class TokenStandardService {
         )
     }
 
+    private async getInputHoldingsCids(sender: PartyId, inputUtxos?: string[]) {
+        const now = new Date()
+        if (inputUtxos && inputUtxos.length > 0) {
+            return inputUtxos
+        }
+        const senderHoldings = await this.listContractsByInterface<HoldingView>(
+            HoldingInterface,
+            sender
+        )
+        if (senderHoldings.length === 0) {
+            throw new Error(
+                "Sender has no holdings, so transfer can't be executed."
+            )
+        }
+
+        return senderHoldings
+            .filter((utxo) => {
+                //filter out locked holdings
+                const lock = utxo.interfaceViewValue.lock
+                if (!lock) return true
+
+                const expiresAt = lock.expiresAt
+                if (!expiresAt) return false
+
+                const expiresAtDate = new Date(expiresAt)
+                return expiresAtDate <= now
+            })
+            .map((h) => h.contractId)
+        /* TODO: optimize input holding selection, currently if you transfer 10 CC and have 10 inputs of 1000 CC,
+                then all 10 of those are chose as input.
+             */
+    }
     async createTransfer(
         sender: PartyId,
         receiver: PartyId,
@@ -590,40 +625,12 @@ export class TokenStandardService {
         meta?: Record<string, unknown>
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            let inputHoldingCids: string[]
+            const inputHoldingCids: string[] = await this.getInputHoldingsCids(
+                sender,
+                inputUtxos
+            )
             const now = new Date()
 
-            if (inputUtxos && inputUtxos.length > 0) {
-                inputHoldingCids = inputUtxos
-            } else {
-                const senderHoldings =
-                    await this.listContractsByInterface<HoldingView>(
-                        HoldingInterface,
-                        sender
-                    )
-                if (senderHoldings.length === 0) {
-                    throw new Error(
-                        "Sender has no holdings, so transfer can't be executed."
-                    )
-                }
-
-                inputHoldingCids = senderHoldings
-                    .filter((utxo) => {
-                        //filter out locked holdings
-                        const lock = utxo.interfaceViewValue.lock
-                        if (!lock) return true
-
-                        const expiresAt = lock.expiresAt
-                        if (!expiresAt) return false
-
-                        const expiresAtDate = new Date(expiresAt)
-                        return expiresAtDate <= now
-                    })
-                    .map((h) => h.contractId)
-                /* TODO: optimize input holding selection, currently if you transfer 10 CC and have 10 inputs of 1000 CC,
-                    then all 10 of those are chose as input.
-                 */
-            }
             const choiceArgs = {
                 expectedAdmin: instrumentAdmin,
                 transfer: {
@@ -762,130 +769,63 @@ export class TokenStandardService {
     }
 
     async createAllocationInstruction(
-        sender: PartyId,
-        receiver: PartyId,
-        amount: string,
-        instrumentAdmin: PartyId,
-        instrumentId: string,
-        allocationFactoryRegistryUrl: string,
-        executor: PartyId,
+        allocationSpecification: AllocationSpecification,
+        expectedAdmin: PartyId,
+        factoryRegistryUrl: string,
         inputUtxos?: string[],
-        memo?: string,
-        meta?: Record<string, unknown>, // goes into transferLeg.meta TODO maybe rename?
-        settlementMeta?: Record<string, unknown>,
-        allocateBefore?: Date,
-        settleBefore?: Date,
-        transferLegId?: string,
-        settlementRefId?: string
+        requestedAt?: string,
+        extraContext?: AllocationContextValue
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        try {
-            let inputHoldingCids: string[]
-            const now = new Date()
-
-            if (inputUtxos && inputUtxos.length > 0) {
-                inputHoldingCids = inputUtxos
-            } else {
-                const senderHoldings =
-                    await this.listContractsByInterface<HoldingView>(
-                        HoldingInterface,
-                        sender
-                    )
-
-                if (senderHoldings.length === 0) {
-                    throw new Error(
-                        "Sender has no holdings, so allocation can't be executed."
-                    )
-                }
-
-                inputHoldingCids = senderHoldings
-                    .filter((utxo) => {
-                        // filter locked holdings
-                        const lock = utxo.interfaceViewValue.lock
-                        if (!lock) return true
-                        const expiresAt = lock.expiresAt
-                        if (!expiresAt) return false
-                        return new Date(expiresAt) <= now
-                    })
-                    .map((h) => h.contractId)
-                // TODO same as transfer: optimize input selection to avoid over-consuming inputs.
-            }
-
-            const allocBefore = (
-                allocateBefore ?? new Date(now.getTime() + 24 * 60 * 60 * 1000)
-            ).toISOString()
-            const settleBef = (
-                settleBefore ??
-                new Date(new Date(allocBefore).getTime() + 24 * 60 * 60 * 1000)
-            ).toISOString()
-
-            const settlementRef = { id: settlementRefId ?? '' }
-
-            const choiceArgs = {
-                expectedAdmin: instrumentAdmin,
-                allocation: {
-                    settlement: {
-                        executor,
-                        settlementRef,
-                        requestedAt: now.toISOString(),
-                        allocateBefore: allocBefore,
-                        settleBefore: settleBef,
-                        meta: { values: { ...(settlementMeta ?? {}) } },
-                    },
-                    transferLegId: transferLegId ?? `leg-${Date.now()}`,
-                    transferLeg: {
-                        sender,
-                        receiver,
-                        amount,
-                        instrumentId: {
-                            admin: instrumentAdmin,
-                            id: instrumentId,
-                        },
-                        meta: {
-                            values: { [MEMO_KEY]: memo || '', ...(meta ?? {}) },
-                        },
-                    },
+        const allocationSpecificationNormalized: AllocationSpecification = {
+            ...allocationSpecification,
+            settlement: {
+                ...allocationSpecification.settlement,
+                meta: allocationSpecification.settlement.meta ?? { values: {} },
+            },
+            transferLeg: {
+                ...allocationSpecification.transferLeg,
+                meta: allocationSpecification.transferLeg.meta ?? {
+                    values: {},
                 },
-                requestedAt: now.toISOString(),
-                inputHoldingCids,
-                extraArgs: {
-                    context: { values: {} },
-                    meta: { values: {} },
-                },
-            }
-
-            this.logger.debug('Creating allocation factory...')
-
-            const allocationFactory = await this.getTokenStandardClient(
-                allocationFactoryRegistryUrl
-            ).post('/registry/allocation-instruction/v1/allocation-factory', {
-                choiceArguments: choiceArgs as unknown as Record<string, never>,
-            })
-
-            this.logger.debug(allocationFactory, 'Allocation factory created')
-
-            // Merge returned choice-context
-            choiceArgs.extraArgs.context = {
-                ...allocationFactory.choiceContext.choiceContextData,
-                values:
-                    allocationFactory.choiceContext.choiceContextData?.values ??
-                    {},
-            }
-
-            const exercise: ExerciseCommand = {
-                templateId: AllocationFactoryInterface,
-                contractId: allocationFactory.factoryId,
-                choice: 'AllocationFactory_Allocate',
-                choiceArgument: choiceArgs,
-            }
-
-            return [
-                exercise,
-                allocationFactory.choiceContext.disclosedContracts,
-            ]
-        } catch (e) {
-            this.logger.error('Failed to create allocation instruction:', e)
-            throw e
+            },
         }
+
+        const inputHoldingCids = await this.getInputHoldingsCids(
+            allocationSpecificationNormalized.transferLeg.sender,
+            inputUtxos
+        )
+
+        const choiceArgs: AllocationFactory_Allocate = {
+            expectedAdmin: expectedAdmin,
+            allocation: allocationSpecificationNormalized,
+            requestedAt: requestedAt ?? new Date().toISOString(),
+            inputHoldingCids,
+            extraArgs: {
+                context: { values: { ...(extraContext ?? {}) } },
+                meta: { values: {} },
+            },
+        }
+
+        const allocationFactory = await this.getTokenStandardClient(
+            factoryRegistryUrl
+        ).post('/registry/allocation-instruction/v1/allocation-factory', {
+            choiceArguments: choiceArgs as unknown as Record<string, never>,
+        })
+
+        choiceArgs.extraArgs.context = {
+            ...allocationFactory.choiceContext.choiceContextData,
+            values:
+                allocationFactory.choiceContext.choiceContextData?.values ?? {},
+        }
+
+        const exercise: ExerciseCommand = {
+            templateId: AllocationFactoryInterface,
+            contractId: allocationFactory.factoryId,
+            choice: 'AllocationFactory_Allocate',
+            choiceArgument: choiceArgs,
+        }
+
+        return [exercise, allocationFactory.choiceContext.disclosedContracts]
     }
 
     private async toPrettyTransactions(

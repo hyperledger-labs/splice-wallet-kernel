@@ -25,6 +25,9 @@ import {
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
     ALLOCATION_INTERFACE_ID,
     ALLOCATION_REQUEST_INTERFACE_ID,
+    AllocationSpecification,
+    AllocationContextValue,
+    AllocationRequestView,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController'
@@ -246,10 +249,9 @@ export class TokenStandardController {
 
     // TODO jsdoc
     async fetchPendingAllocationRequestView(): Promise<
-        // TODO add type for interfaceViewValue
-        PrettyContract[]
+        PrettyContract<AllocationRequestView>[]
     > {
-        return await this.service.listContractsByInterface(
+        return await this.service.listContractsByInterface<AllocationRequestView>(
             ALLOCATION_REQUEST_INTERFACE_ID,
             this.getPartyId()
         )
@@ -377,40 +379,23 @@ export class TokenStandardController {
     }
 
     async createAllocationInstruction(
-        sender: PartyId,
-        receiver: PartyId,
-        amount: string,
-        instrument: { instrumentId: string; instrumentAdmin: PartyId },
-        executor: PartyId,
+        allocationSpecification: AllocationSpecification,
+        expectedAdmin: PartyId,
         inputUtxos?: string[],
-        memo?: string,
-        meta?: Record<string, unknown>,
-        settlementMeta?: Record<string, unknown>,
-        allocateBefore?: Date,
-        settleBefore?: Date,
-        transferLegId?: string,
-        settlementRefId?: string
+        requestedAt?: string,
+        extraContext?: AllocationContextValue
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         try {
             const [exercise, disclosed] =
                 await this.service.createAllocationInstruction(
-                    sender,
-                    receiver,
-                    amount,
-                    instrument.instrumentAdmin,
-                    instrument.instrumentId,
+                    allocationSpecification,
+                    expectedAdmin,
                     this.getTransferFactoryRegistryUrl().href,
-                    executor,
                     inputUtxos,
-                    memo,
-                    meta,
-                    settlementMeta,
-                    allocateBefore,
-                    settleBefore,
-                    transferLegId,
-                    settlementRefId
+                    requestedAt,
+                    extraContext
                 )
 
             return [{ ExerciseCommand: exercise }, disclosed]
