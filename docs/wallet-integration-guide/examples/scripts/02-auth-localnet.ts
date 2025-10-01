@@ -55,35 +55,32 @@ const keyPair = createKeyPair()
 
 logger.info('generated keypair')
 
-const preparedParty = await sdk.topology?.prepareExternalPartyTopology(
+const generatedParty = await sdk.topology?.generateExternalPartyTopology(
     keyPair.publicKey
 )
 
-logger.info('Prepared external topology')
-
-if (preparedParty) {
-    logger.info('Signing the hash')
-    const signedHash = signTransactionHash(
-        preparedParty?.combinedHash,
-        keyPair.privateKey
-    )
-
-    const allocatedParty = await sdk.topology?.submitExternalPartyTopology(
-        signedHash,
-        preparedParty
-    )
-
-    logger.info(allocatedParty!.partyId, 'Allocated party')
-    await sdk.setPartyId(allocatedParty!.partyId!)
-} else {
-    logger.error('Error creating prepared party.')
+if (!generatedParty) {
+    throw new Error('Error creating prepared party')
 }
 
-logger.info('Create ping command for party:', preparedParty!.partyId!)
+const { multiHash, partyId } = generatedParty
 
-const createPingCommand = sdk.userLedger?.createPingCommand(
-    preparedParty!.partyId!
+logger.info('Prepared external topology')
+
+logger.info('Signing the hash')
+const signedHash = signTransactionHash(multiHash, keyPair.privateKey)
+
+const allocatedParty = await sdk.topology?.submitExternalPartyTopology(
+    signedHash,
+    generatedParty
 )
+
+logger.info(allocatedParty!.partyId, 'Allocated party')
+await sdk.setPartyId(allocatedParty!.partyId!)
+
+logger.info('Create ping command for party:', partyId)
+
+const createPingCommand = sdk.userLedger?.createPingCommand(partyId)
 
 logger.info('Prepare command submission for ping create command')
 const prepareResponse =

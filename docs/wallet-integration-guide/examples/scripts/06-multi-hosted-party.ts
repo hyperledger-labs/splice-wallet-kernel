@@ -7,7 +7,6 @@ import {
     createKeyPair,
     localValidatorDefault,
     localNetStaticConfig,
-    Enums_ParticipantPermission,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 
@@ -60,23 +59,17 @@ logger.info('multi host party starting...')
 
 const participantIdPromises = multiHostedParticipantEndpointConfig.map(
     async (endpoint) => {
-        return await sdk.topology?.getParticipantId(endpoint)
+        return await sdk.topology!.getParticipantId(endpoint)
     }
 )
 
 const participantIds = await Promise.all(participantIdPromises)
 
-const participantPermissionMap = new Map<string, Enums_ParticipantPermission>()
-
-participantIds.map((pId) =>
-    participantPermissionMap.set(pId!, Enums_ParticipantPermission.CONFIRMATION)
-)
-
 await sdk.topology?.prepareSignAndSubmitMultiHostExternalParty(
     multiHostedParticipantEndpointConfig,
     multiHostedParty.privateKey,
     sdk.userLedger!.getSynchronizerId(),
-    participantPermissionMap,
+    participantIds,
     'bob'
 )
 

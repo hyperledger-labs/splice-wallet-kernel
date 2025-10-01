@@ -217,31 +217,55 @@ export class TopologyController {
      */
     async submitExternalPartyTopology(
         signedHash: string,
+        preparedParty: GenerateTransactionResponse,
+        grantUserRights?: boolean
+    ): Promise<AllocatedParty>
+    /** @deprecated: use the result of new generateExternalPartyTopology() method for preparedParty */
+    async submitExternalPartyTopology(
+        signedHash: string,
         preparedParty: PreparedParty,
+        grantUserRights?: boolean
+    ): Promise<AllocatedParty>
+    async submitExternalPartyTopology(
+        signedHash: string,
+        preparedParty: PreparedParty | GenerateTransactionResponse,
         grantUserRights: boolean = true
     ): Promise<AllocatedParty> {
+        let normalized: GenerateTransactionResponse
+
+        if ('partyTransactions' in preparedParty) {
+            normalized = {
+                topologyTransactions: preparedParty.partyTransactions.map(
+                    (transaction) => Buffer.from(transaction).toString('base64')
+                ),
+                multiHash: preparedParty.combinedHash,
+                publicKeyFingerprint: preparedParty.namespace,
+                partyId: preparedParty.partyId,
+            }
+        } else {
+            normalized = preparedParty
+        }
+
+        const { publicKeyFingerprint, partyId, topologyTransactions } =
+            normalized
+
         await this.topologyClient.allocateExternalParty(
-            preparedParty.partyTransactions.map((transaction) => ({
-                transaction: Buffer.from(transaction).toString('base64'),
-            })),
+            topologyTransactions!.map((transaction) => ({ transaction })),
             [
                 {
                     format: 'SIGNATURE_FORMAT_CONCAT',
                     signature: signedHash,
-                    signedBy: preparedParty.namespace,
+                    signedBy: publicKeyFingerprint,
                     signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
                 },
             ]
         )
 
         if (grantUserRights) {
-            await this.client.grantUserRights(
-                this.userId,
-                preparedParty.partyId
-            )
+            await this.client.grantUserRights(this.userId, partyId)
         }
 
-        return { partyId: preparedParty.partyId }
+        return { partyId }
     }
 
     /** Prepares, signs and submits a new external party topology in one step.
@@ -256,25 +280,55 @@ export class TopologyController {
         privateKey: PrivateKey,
         partyHint?: string,
         confirmingThreshold?: number,
-        hostingParticipantPermissions?: Map<string, Enums_ParticipantPermission>
+        hostingParticipantUids?: string[]
+    ): Promise<AllocatedParty>
+    /** @deprecated -- hostingParticipantUids must be an array of strings corresponding to hosting participant IDs */
+    async prepareSignAndSubmitExternalParty(
+        privateKey: PrivateKey,
+        partyHint?: string,
+        confirmingThreshold?: number,
+        hostingParticipantUids?: Map<string, Enums_ParticipantPermission>
+    ): Promise<AllocatedParty>
+    async prepareSignAndSubmitExternalParty(
+        privateKey: PrivateKey,
+        partyHint?: string,
+        confirmingThreshold?: number,
+        hostingParticipantUids?:
+            | Map<string, Enums_ParticipantPermission>
+            | string[]
     ): Promise<AllocatedParty> {
-        const preparedParty = await this.prepareExternalPartyTopology(
-            getPublicKeyFromPrivate(privateKey),
-            partyHint,
-            confirmingThreshold,
-            hostingParticipantPermissions
-        )
-        const signedHash = signTransactionHash(
-            preparedParty!.combinedHash,
-            privateKey
-        )
-
         // grant user rights automatically if the party is hosted on 1 participant
         // if hosted on multiple participants, then we need to authorize each PartyToParticipant mapping
         // before granting the user rights
-        const grantUserRights =
-            hostingParticipantPermissions === undefined ||
-            hostingParticipantPermissions.size === 1
+        let grantUserRights = false
+        let hostingParticipantIds: string[] = []
+
+        if (!hostingParticipantUids) {
+            hostingParticipantIds = []
+            grantUserRights = true
+        } else if (Array.isArray(hostingParticipantUids)) {
+            hostingParticipantIds = hostingParticipantUids
+            grantUserRights = hostingParticipantIds.length === 1
+        } else {
+            hostingParticipantIds = Array.from(hostingParticipantUids.keys())
+            grantUserRights = hostingParticipantUids.size === 1
+        }
+
+        const preparedParty = await this.generateExternalPartyTopology(
+            getPublicKeyFromPrivate(privateKey),
+            partyHint,
+            confirmingThreshold,
+            hostingParticipantIds
+        )
+
+        if (!preparedParty) {
+            throw new Error('Error creating prepared party')
+        }
+
+        const signedHash = signTransactionHash(
+            preparedParty.multiHash,
+            privateKey
+        )
 
         return await this.submitExternalPartyTopology(
             signedHash,
@@ -313,15 +367,42 @@ export class TopologyController {
         participantEndpoints: MultiHostPartyParticipantConfig[],
         privateKey: string,
         synchronizerId: PartyId,
-        hostingParticipantPermissions: Map<string, Enums_ParticipantPermission>,
+        hostingParticipantUids: string[],
         partyHint?: string,
         confirmingThreshold?: number
-    ) {
+    ): Promise<AllocatedParty>
+    /** @deprecated hostedParticipantUids should be an array of participant IDs */
+    async prepareSignAndSubmitMultiHostExternalParty(
+        participantEndpoints: MultiHostPartyParticipantConfig[],
+        privateKey: string,
+        synchronizerId: PartyId,
+        hostingParticipantUids: Map<string, Enums_ParticipantPermission>,
+        partyHint?: string,
+        confirmingThreshold?: number
+    ): Promise<AllocatedParty>
+    async prepareSignAndSubmitMultiHostExternalParty(
+        participantEndpoints: MultiHostPartyParticipantConfig[],
+        privateKey: string,
+        synchronizerId: PartyId,
+        hostingParticipantUids:
+            | Map<string, Enums_ParticipantPermission>
+            | string[],
+        partyHint?: string,
+        confirmingThreshold?: number
+    ): Promise<AllocatedParty> {
+        let hostingIds: string[] = []
+
+        if (Array.isArray(hostingParticipantUids)) {
+            hostingIds = hostingParticipantUids
+        } else {
+            hostingIds = Array.from(hostingParticipantUids.keys())
+        }
+
         const preparedParty = await this.prepareSignAndSubmitExternalParty(
             privateKey,
             partyHint,
             confirmingThreshold,
-            hostingParticipantPermissions
+            hostingIds
         )
 
         this.logger.info(preparedParty, 'created external party')

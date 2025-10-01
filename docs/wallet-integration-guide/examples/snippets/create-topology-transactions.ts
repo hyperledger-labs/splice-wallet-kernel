@@ -23,7 +23,7 @@ export default async function () {
     //partyHint is optional but recommended to make it easier to identify the party
     const partyHint = 'my-wallet-1'
 
-    return await sdk.topology?.prepareExternalPartyTopology(
+    return await sdk.topology?.generateExternalPartyTopology(
         privateKey,
         partyHint
     )

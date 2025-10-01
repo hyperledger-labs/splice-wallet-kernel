@@ -17,6 +17,9 @@ const MockTopologyWriteService: jest.MockedClass<any> = jest
     .fn()
     .mockImplementation(() => ({
         generateTransactions: jest.fn<AsyncFn>().mockResolvedValue({
+            generatedTransactions: [],
+        }),
+        generateTopology: jest.fn<AsyncFn>().mockResolvedValue({
             partyId: 'party2::mypublickey',
             publicKeyFingerprint: 'mypublickey',
             topologyTransactions: ['tx1'],
