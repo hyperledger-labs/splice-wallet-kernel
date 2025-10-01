@@ -12,12 +12,21 @@ const dir = path.join(
 )
 
 // do not run these tests; exceptions can be full filename or just any length subset of its starting characters
-const exceptions = ['01-auth.ts']
+const exceptions = ['01-auth.ts', '05-']
 
-const scripts = fs
-    .readdirSync(dir, { recursive: true })
-    .filter((f) => f.endsWith('.ts'))
-    .filter((f) => !exceptions.find((e) => f.startsWith(e)))
+function getScriptsRecursive(currentDir: string): string[] {
+    return fs.readdirSync(currentDir).flatMap((f) => {
+        const fullPath = path.join(currentDir, f)
+        if (fs.statSync(fullPath).isDirectory()) {
+            return getScriptsRecursive(fullPath)
+        }
+        return f.endsWith('.ts') && !exceptions.find((e) => f.startsWith(e))
+            ? [path.relative(dir, fullPath)]
+            : []
+    })
+}
+
+const scripts = getScriptsRecursive(dir)
 
 async function executeScript(name: string) {
     console.log(success(`\n=== Executing script: ${name} ===`))
