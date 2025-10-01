@@ -34,6 +34,12 @@ export type ClientType = 'browser' | 'desktop' | 'mobile' | 'remote'
 export type Url = string
 /**
  *
+ * A URL that points to a user interface.
+ *
+ */
+export type UserUrl = string
+/**
+ *
  * Represents a wallet kernel.
  *
  */
@@ -41,6 +47,7 @@ export interface KernelInfo {
     id: Id
     clientType: ClientType
     url?: Url
+    userUrl?: UserUrl
     [k: string]: any
 }
 /**
@@ -55,12 +62,6 @@ export type IsConnected = boolean
  *
  */
 export type ChainId = string
-/**
- *
- * A URL that points to a user interface.
- *
- */
-export type UserUrl = string
 /**
  *
  * JWT authentication token (if applicable).
@@ -279,7 +280,6 @@ export interface ConnectResult {
     kernel: KernelInfo
     isConnected: IsConnected
     chainId?: ChainId
-    userUrl?: UserUrl
     sessionToken: SessionToken
     [k: string]: any
 }
