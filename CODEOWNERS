@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
-# Splice wallet kernel maintainers (Default)
+# wallet Gateway maintainers (Default)
 *                  @hyperledger-labs/splice-wallet-kernel-admins @hyperledger-labs/splice-wallet-kernel-contributors
 
-# Splice wallet kernel admins
+# wallet Gateway admins
 .github/*              @hyperledger-labs/splice-wallet-kernel-admins
 .vscode/*              @hyperledger-labs/splice-wallet-kernel-admins
 CODEOWNERS             @hyperledger-labs/splice-wallet-kernel-admins

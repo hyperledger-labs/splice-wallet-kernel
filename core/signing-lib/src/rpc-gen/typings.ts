@@ -23,13 +23,13 @@ export type TxHash = string
 export type PublicKey = string
 /**
  *
- * Internal txId used by the Wallet Kernel to store the transaction.
+ * Internal txId used by the Wallet Gateway to store the transaction.
  *
  */
 export type InternalTxId = string
 /**
  *
- * Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Kernel.
+ * Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway.
  *
  */
 export type TxId = string

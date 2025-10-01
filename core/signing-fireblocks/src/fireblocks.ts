@@ -143,7 +143,7 @@ export class FireblocksHandler {
 
     /**
      * Takes a Fireblocks response from a transactions call and extracts the transaction information
-     * relevant to the Wallet Kernel. This will potentially fetch the public key since unsigned transactions
+     * relevant to the Wallet Gateway. This will potentially fetch the public key since unsigned transactions
      * do  not include it
      * @returns FireblocksTransaction
      */
@@ -307,7 +307,7 @@ export class FireblocksHandler {
      * Sign a transaction using a public key
      * @param tx - The transaction to sign, as a string
      * @param publicKey - The public key to use for signing
-     * @param externalTxId - The transaction ID assigned by the wallet kernel
+     * @param externalTxId - The transaction ID assigned by the Wallet Gateway
      * @return The transaction object from Fireblocks
      */
     public async signTransaction(
