@@ -6,7 +6,7 @@
 
 The Wallet Gateway repo contains two major components to help developers and integrators:
 
-**The Wallet Gateway:** Primary component of this repo, it is a javascript & typescript based library that help facilitate communication between a Validator node, a canton developed dApp and a Wallet Provider.
+**Wallet Gateway:** Primary component of this repo, it is a javascript & typescript based library that help facilitate communication between a Validator node, a canton developed dApp and a Wallet Provider.
 
 **Wallet SDK:** A Set of functionality to help Wallet Providers and Exchanges to quickly developed their workflows directly against ledger api.
 
