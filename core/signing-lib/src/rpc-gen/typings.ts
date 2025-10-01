@@ -102,7 +102,7 @@ export interface Transaction {
  *
  */
 export type Transactions = Transaction[]
-export interface ObjectOfTransactionsNe2GhqhN {
+export interface ObjectOfTransactionsUOtaZpXE {
     transactions?: Transactions
     [k: string]: any
 }
@@ -158,7 +158,7 @@ export interface SubscribeTransactionsParams {
 }
 export type SignTransactionResult = Error | Transaction
 export type GetTransactionResult = Error | Transaction
-export type GetTransactionsResult = Error | ObjectOfTransactionsNe2GhqhN
+export type GetTransactionsResult = Error | ObjectOfTransactionsUOtaZpXE
 export interface GetKeysResult {
     keys?: Keys
     [k: string]: any

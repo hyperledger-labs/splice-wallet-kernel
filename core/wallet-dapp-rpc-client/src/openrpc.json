@@ -16,7 +16,6 @@
                     "type": "object",
                     "properties": {
                         "kernel": {
-                            //TODO: Rename Variable
                             "$ref": "#/components/schemas/KernelInfo"
                         },
                         "isConnected": {
