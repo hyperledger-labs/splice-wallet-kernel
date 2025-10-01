@@ -111,7 +111,7 @@ export class PartyAllocationService {
         const namespace =
             TopologyWriteService.createFingerprintFromKey(publicKey)
 
-        const transactions = await this.topologyClient.generateTransactions(
+        const transactions = await this.topologyClient.generateTopology(
             publicKey,
             hint
         )
