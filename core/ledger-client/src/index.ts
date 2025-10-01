@@ -18,6 +18,16 @@ export type {
     PrettyTransactions,
     PrettyContract,
     ViewValue,
+    Label,
+    TransferIn,
+    TransferOut,
+    MergeSplit,
+    Burn,
+    Mint,
+    Unlock,
+    ExpireDust,
+    RawArchive,
+    RawCreate,
 } from './txparse/types.js'
 
 export { awaitCompletion, promiseWithTimeout } from './ledger-api-utils.js'
