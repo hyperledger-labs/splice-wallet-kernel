@@ -281,6 +281,30 @@ export class TokenStandardController {
     }
 
     /**
+     * Creates ExerciseCommand for granting featured app rights.
+     * @returns AmuletRules_DevNet_FeatureApp command and disclosed contracts.
+     */
+    async selfGrantRights(): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const [featuredAppCommand, disclosedContracts] =
+            await this.service.selfGrantFeatureAppRight(
+                this.getPartyId(),
+                this.getSynchronizerId()
+            )
+
+        return [{ ExerciseCommand: featuredAppCommand }, disclosedContracts]
+    }
+
+    /**
+     * Looks up if a party has FeaturedAppRight.
+     * @returns If defined, a contract of Daml template `Splice.Amulet.FeaturedAppRight`.
+     */
+    async lookupFeaturedApps() {
+        return this.service.getFeaturedAppsByParty(this.getPartyId())
+    }
+
+    /**
      * Creates a new transfer for the specified sender, receiver, amount, and instrument.
      * @param sender The party of the sender.
      * @param receiver The party of the receiver.
