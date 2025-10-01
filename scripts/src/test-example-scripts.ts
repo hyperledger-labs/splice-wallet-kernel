@@ -12,10 +12,10 @@ const dir = path.join(
 )
 
 // do not run these tests; exceptions can be full filename or just any length subset of its starting characters
-const exceptions = ['01-auth.ts', '05-']
+const exceptions = ['01-auth.ts']
 
 const scripts = fs
-    .readdirSync(dir)
+    .readdirSync(dir, { recursive: true })
     .filter((f) => f.endsWith('.ts'))
     .filter((f) => !exceptions.find((e) => f.startsWith(e)))
 

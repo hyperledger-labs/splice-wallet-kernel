@@ -12,7 +12,7 @@ import { pino } from 'pino'
 import { v4 } from 'uuid'
 
 //this follows the steps of https://docs.digitalasset.com/integrate/devnet/exchange-integration/node-operations.html#setup-exchange-parties
-export async function setupExchange() {
+export async function setupExchange(transferPreapproval: boolean = false) {
     const logger = pino({ name: 'setup-exchange', level: 'info' })
 
     const exchangeSdk = new WalletSDKImpl().configure({
@@ -50,28 +50,30 @@ export async function setupExchange() {
 
     await exchangeSdk.setPartyId(treasuryParty)
 
-    const instrumentAdminPartyId =
-        (await exchangeSdk.tokenStandard?.getInstrumentAdmin()) || ''
-
     // using the validator operator party as exchange party
     const exchangeParty = await exchangeSdk.validator!.getValidatorUser()!
 
-    // Setup preapproval
-    const cmd = await exchangeSdk.userLedger?.createTransferPreapprovalCommand(
-        exchangeParty,
-        treasuryParty,
-        instrumentAdminPartyId
-    )
+    if (transferPreapproval) {
+        const instrumentAdminPartyId =
+            (await exchangeSdk.tokenStandard?.getInstrumentAdmin()) || ''
 
-    await exchangeSdk.userLedger?.prepareSignExecuteAndWaitFor(
-        cmd,
-        treasuryKeyPair.privateKey,
-        v4(),
-        []
-    )
+        // Setup preapproval
+        const cmd =
+            await exchangeSdk.userLedger?.createTransferPreapprovalCommand(
+                exchangeParty,
+                treasuryParty,
+                instrumentAdminPartyId
+            )
 
-    logger.info(`Created transfer preapproval for: ${treasuryParty}`)
+        await exchangeSdk.userLedger?.prepareSignExecuteAndWaitFor(
+            cmd,
+            treasuryKeyPair.privateKey,
+            v4(),
+            []
+        )
 
+        logger.info(`Created transfer preapproval for: ${treasuryParty}`)
+    }
     // TODO: featured app right
-    return { exchangeParty, treasuryParty, exchangeSdk }
+    return { exchangeParty, treasuryParty, treasuryKeyPair, exchangeSdk }
 }

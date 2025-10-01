@@ -231,7 +231,9 @@ export class TokenStandardController {
     async getTransferPreApprovalByParty(
         receiverId: PartyId,
         instrumentId: string
-    ) {
+    ): Promise<
+        { receiverId: PartyId; expiresAt: Date; dso: PartyId } | undefined
+    > {
         try {
             await this.service.getInstrumentById(
                 this.getTransferFactoryRegistryUrl().href,
@@ -243,12 +245,13 @@ export class TokenStandardController {
 
             const { dso, expiresAt } = transfer_preapproval.contract.payload
             return {
-                receiverId,
-                expiresAt,
-                dso,
+                receiverId: receiverId as PartyId,
+                expiresAt: new Date(expiresAt),
+                dso: dso as PartyId,
             }
         } catch (e) {
             this.logger.error(e)
+            return undefined
         }
     }
 
