@@ -62,6 +62,8 @@ export const stripAnyOfTypes = (content: string): string => {
     return content.replace(/export type AnyOf[A-Za-z0-9]+ =[\s\S]*?;/gm, '')
 }
 
+const versionMap = new Map<string, string>()
+
 const hooks: IHooks = {
     afterCopyStatic: [
         async (dest, frm, component): Promise<void> => {
@@ -76,6 +78,18 @@ const hooks: IHooks = {
             }
         },
     ],
+    beforeCopyStatic: [
+        async (dest, frm, component): Promise<void> => {
+            if (component.language === 'typescript') {
+                const packagePath = path.join(dest, 'package.json')
+                const fileContents = await readFile(packagePath)
+                const pkg = JSON.parse(fileContents.toString())
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const currentVersion = (pkg as any).version
+                versionMap.set(component.name, currentVersion!)
+            }
+        },
+    ],
     afterCompileTemplate: [
         async (dest, frm, component, openrpcDocument): Promise<void> => {
             if (component.language === 'typescript') {
@@ -85,10 +99,11 @@ const hooks: IHooks = {
                 const updatedPkg = JSON.stringify({
                     ...pkg,
                     name: component.name,
-                    version: openrpcDocument.info.version,
+                    version:
+                        versionMap.get(component.name) ??
+                        openrpcDocument.info.version,
                 })
                 execSync(`yarn prettier --write ${dest}/**/*`)
-
                 return await writeFile(packagePath, updatedPkg)
             }
             if (component.language === 'rust') {

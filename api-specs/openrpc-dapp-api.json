@@ -2,7 +2,7 @@
     "openrpc": "1.2.6",
     "info": {
         "title": "Splice Wallet JSON-RPC dApp API",
-        "version": "0.1.0",
+        "version": "0.5.0",
         "description": "An OpenRPC specification for the dapp to interact with a Wallet Gateway."
     },
     "methods": [
@@ -55,9 +55,6 @@
                             "title": "chainId",
                             "type": "string",
                             "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
-                        },
-                        "userUrl": {
-                            "$ref": "#/components/schemas/UserUrl"
                         },
                         "sessionToken": {
                             "title": "sessionToken",
@@ -249,6 +246,9 @@
                         "title": "url",
                         "type": "string",
                         "description": "The URL of the Wallet Gateway."
+                    },
+                    "userUrl": {
+                        "$ref": "#/components/schemas/UserUrl"
                     }
                 },
                 "required": ["id", "clientType"]
