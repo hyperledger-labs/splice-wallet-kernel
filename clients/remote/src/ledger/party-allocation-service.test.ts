@@ -51,6 +51,8 @@ jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
             get: mockLedgerGet,
             post: mockLedgerPost,
             grantUserRights: mockLedgerGrantUserRights,
+            generateTopology: jest.fn(),
+            allocateExternalParty: jest.fn(),
         }
     }),
     TopologyWriteService: MockTopologyWriteService,
