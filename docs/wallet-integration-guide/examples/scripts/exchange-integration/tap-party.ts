@@ -4,7 +4,7 @@ import { PartyId } from '@canton-network/core-types'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
 
-export async function tapParty(
+export async function tapDevNetFaucet(
     sdk: WalletSDK,
     party: PartyId,
     keyPair: KeyPair,

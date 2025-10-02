@@ -41,9 +41,9 @@ if (verifyPreApproval!.expiresAt < new Date(Date.now() + 60 * 1000)) {
     )
 }
 
-// transfer to customer
+// Execute transfer withdrawal by customer
 const memoUUID = v4()
-const [customerTransferCommand, customerTransferDisclosedContracts] =
+const [withdrawalTransferCommand, withdrawalTransferDisclosedContracts] =
     await exchangeSdk.tokenStandard!.createTransfer(
         treasuryParty,
         customerParty,

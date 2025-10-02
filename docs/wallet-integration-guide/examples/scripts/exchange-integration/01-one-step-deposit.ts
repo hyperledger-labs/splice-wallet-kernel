@@ -44,7 +44,7 @@ await customerSdk.userLedger?.prepareSignExecuteAndWaitFor(
 )
 
 logger.info(
-    `transferred ${transferAmount} from ${customerParty} to ${treasuryParty}`
+    `Instructed transfer of ${transferAmount} from ${customerParty} to ${treasuryParty}`
 )
 
 await exchangeSdk.userLedger?.waitForCompletion(
