@@ -2,18 +2,15 @@ import {
     WalletSDKImpl,
     createKeyPair,
     localNetAuthDefault,
-    localNetLedgerAppProvider,
     localNetLedgerAppUser,
     localNetTokenStandardAppUser,
-    localNetTokenStandardAppProvider,
-    localNetTopologyAppProvider,
     localNetTopologyAppUser,
-    localValidatorDefault,
     localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
+import { v4 } from 'uuid'
 
-export async function setupCustomer() {
+export async function setupDemoCustomer({ transferPreapproval = false }) {
     const logger = pino({ name: 'setup-customer', level: 'info' })
     const customerSdk = new WalletSDKImpl().configure({
         logger,
@@ -42,8 +39,33 @@ export async function setupCustomer() {
         )
     )?.partyId!
 
-    await customerSdk.setPartyId(customerParty)
     logger.info(`Created customer party: ${customerParty}`)
+    await customerSdk.setPartyId(customerParty)
+
+    if (transferPreapproval) {
+        const instrumentAdminPartyId =
+            (await customerSdk.tokenStandard?.getInstrumentAdmin()) || ''
+
+        // using the validator operator party as exchange party
+        const validatorOperatorParty =
+            await customerSdk.validator!.getValidatorUser()!
+
+        // Setup preapproval
+        const cmd =
+            await customerSdk.userLedger?.createTransferPreapprovalCommand(
+                validatorOperatorParty,
+                customerParty,
+                instrumentAdminPartyId
+            )
+
+        await customerSdk.userLedger?.prepareSignExecuteAndWaitFor(
+            cmd,
+            customerKeyPair.privateKey,
+            v4(),
+            []
+        )
+        logger.info(`Created transfer preapproval for: ${customerParty}}`)
+    }
 
     return { customerParty, customerKeyPair, customerSdk }
 }
