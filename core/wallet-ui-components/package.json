@@ -13,13 +13,17 @@
         "./themes": "./themes"
     },
     "scripts": {
-        "build": "tsc -b",
+        "copy-css": "tsx src/scripts/copy-css.ts",
+        "build": "tsc -b && yarn copy-css",
         "build:watch": "tsc -b --watch",
         "clean": "tsc -b --clean; tsc -b tsconfig.dev.json --clean; rm -rf dist; [ -d public/js ] && rm -rf public/js/* || true",
         "dev": "vite --port 8000"
     },
     "devDependencies": {
         "@types/bootstrap": "^5",
+        "@types/fs-extra": "^11",
+        "fs-extra": "^11.3.2",
+        "tsx": "^4.20.4",
         "typescript": "^5.8.3",
         "vite": "^6.3.5"
     },
