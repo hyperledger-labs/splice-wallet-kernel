@@ -1,6 +1,6 @@
 # Wallet UI Components
 
-This workspace contains UI components for the Wallet Kernel, implemented with [Web Components](https://www.webcomponents.org/introduction).
+This workspace contains UI components for the Wallet Gateway, implemented with [Web Components](https://www.webcomponents.org/introduction).
 
 ## Overview
 

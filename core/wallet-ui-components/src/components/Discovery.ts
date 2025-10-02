@@ -4,7 +4,7 @@
 import { DiscoverResult, SpliceMessageEvent } from '@canton-network/core-types'
 
 /**
- * Discovery implements the view of the Wallet Kernel selection window.
+ * Discovery implements the view of the Wallet Gateway selection window.
  * It is implemented directly as a Web Component without using LitElement, so to avoid having external dependencies.
  */
 export class Discovery extends HTMLElement {
@@ -124,7 +124,7 @@ export class Discovery extends HTMLElement {
         const root = document.createElement('div')
 
         const header = document.createElement('h1')
-        header.innerText = 'Add Remote Wallet Kernel'
+        header.innerText = 'Add Remote Wallet Gateway'
 
         const input = document.createElement('input')
         input.setAttribute('autofocus', '')
@@ -137,7 +137,7 @@ export class Discovery extends HTMLElement {
         button.innerText = 'Connect'
         button.addEventListener('click', () => {
             const url = input.value
-            console.log('Connecting to Wallet Kernel...' + url)
+            console.log('Connecting to Wallet Gateway...' + url)
             this.selectKernel({ url, walletType: 'remote' })
         })
 

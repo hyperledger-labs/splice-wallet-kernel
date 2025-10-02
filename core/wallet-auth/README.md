@@ -1,6 +1,6 @@
 # Wallet Auth
 
-This workspace contains the authentication logic and interfaces used by the Splice Wallet Kernel.
+This workspace contains the authentication logic and interfaces used by the Wallet Gateway.
 It provides abstractions for authentication services, user identity management, and integration points for different identity providers (IDPs), such as password-based and OAuth2/OIDC-based authentication.
 
 ## Installation
@@ -39,7 +39,7 @@ The `verifyToken` method takes an access token and returns an `AuthContext` if t
 ## JWT Implementation
 
 For JWT-based authentication, see the [`JwtAuthService`](../clients/remote/src/auth/JwtAuthService.ts) implementation.
-This service verifies JWT tokens using remote JWK sets and integrates with the wallet kernel's network configuration to dynamically resolve the appropriate identity provider for each request.
+This service verifies JWT tokens using remote JWK sets and integrates with the Wallet Gateway's network configuration to dynamically resolve the appropriate identity provider for each request.
 
-It is important to note that, since the wallet kernel supports multiple identity providers (IDPs), the token issuer (iss) is used as the unique identifier for each IDP.
+It is important to note that, since the Wallet Gateway supports multiple identity providers (IDPs), the token issuer (iss) is used as the unique identifier for each IDP.
 This component therefore collaborates with the [Store](../wallet-store/src/Store.ts), which enables lookup of the configured IDP based on the issuer value.

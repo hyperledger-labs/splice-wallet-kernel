@@ -2,7 +2,7 @@
     "name": "@canton-network/clients-extension",
     "version": "1.0.0",
     "private": true,
-    "description": "Web extension for the wallet kernel",
+    "description": "Web extension for the wallet Gateway",
     "author": "Alex Matson <alex.matson@digitalasset.com>",
     "license": "Apache-2.0",
     "type": "module",

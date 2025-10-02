@@ -61,7 +61,7 @@ you can build each repo separately by going into the repo and running `yarn buil
 
 ### API generation
 
-Run `yarn generate:<api>` from the root to regen RPC clients/servers for a particular Wallet Kernel API. For example:
+Run `yarn generate:<api>` from the root to regen RPC clients/servers for a particular Wallet Gateway API. For example:
 
 - `yarn generate:dapp`: dApp API
 - `yarn generate:user`: User API

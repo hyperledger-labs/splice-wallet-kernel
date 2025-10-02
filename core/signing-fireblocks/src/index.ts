@@ -191,7 +191,7 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
                 return {
                     error: 'not_allowed',
                     error_description:
-                        'Creating a Fireblocks key through the Wallet Kernel is not allowed, please create new keys directly in Fireblocks.',
+                        'Creating a Fireblocks key through the Wallet Gateway is not allowed, please create new keys directly in Fireblocks.',
                 }
             },
 

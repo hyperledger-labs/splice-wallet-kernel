@@ -74,6 +74,16 @@ export async function setupExchange(transferPreapproval: boolean = false) {
 
         logger.info(`Created transfer preapproval for: ${treasuryParty}`)
     }
-    // TODO: featured app right
+
+    await exchangeSdk.setPartyId(exchangeParty!)
+
+    const exchangePartyFeaturedAppRights =
+        await exchangeSdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
+
+    logger.info(
+        exchangePartyFeaturedAppRights,
+        `Featured App Rights for validator ${exchangePartyFeaturedAppRights}`
+    )
+
     return { exchangeParty, treasuryParty, treasuryKeyPair, exchangeSdk }
 }
