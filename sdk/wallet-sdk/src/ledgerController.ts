@@ -293,6 +293,8 @@ export class LedgerController {
         const { publicKeyFingerprint, partyId, topologyTransactions } =
             preparedParty
 
+        this.logger.debug(topologyTransactions, 'Submitting topology txs')
+
         await this.client.allocateExternalParty(
             this.getSynchronizerId(),
             topologyTransactions!.map((transaction) => ({ transaction })),
@@ -326,7 +328,7 @@ export class LedgerController {
         partyHint?: string,
         confirmingThreshold?: number,
         hostingParticipantEndpoints?: { accessToken: string; url: URL }[]
-    ): Promise<AllocateExternalPartyResponse> {
+    ): Promise<GenerateTransactionResponse> {
         const otherHostingParticipantUids = await Promise.all(
             hostingParticipantEndpoints
                 ?.map(
@@ -365,11 +367,13 @@ export class LedgerController {
         // before granting the user rights
         const grantUserRights = !hostingParticipantEndpoints
 
-        return await this.allocateExternalParty(
+        await this.allocateExternalParty(
             signedHash,
             preparedParty,
             grantUserRights
         )
+
+        return preparedParty
     }
 
     /**

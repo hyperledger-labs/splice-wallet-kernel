@@ -42,12 +42,6 @@ const alice = await sdk.userLedger?.signAndAllocateExternalParty(
 logger.info(alice?.partyId!, 'created single hosted party to get synchronzerId')
 await sdk.setPartyId(alice?.partyId!)
 
-// const userParticipantConfig = {
-//     adminApiUrl: '127.0.0.1:2902',
-//     baseUrl: new URL('http://127.0.0.1:2975'),
-//     accessToken: adminToken.accessToken,
-// }
-
 const multiHostedParticipantEndpointConfig = [
     {
         url: new URL('http://127.0.0.1:3975'),
