@@ -112,7 +112,6 @@ const aliceTapCmdId = await sdk.userLedger?.prepareSignAndExecuteTransaction(
 
 await sdk.userLedger?.waitForCompletion(aliceTapOffset, 15000, aliceTapCmdId!)
 
-// await new Promise((res) => setTimeout(res, 5000))
 await sdk.setPartyId(receiver!.partyId)
 const bobTapOffset = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
 const [tapCmdBob, tapDiscBob] = await sdk.tokenStandard!.createTap(
@@ -128,21 +127,7 @@ const bobTapCmdId = await sdk.userLedger!.prepareSignAndExecuteTransaction(
 )
 await sdk.userLedger?.waitForCompletion(bobTapOffset, 15000, bobTapCmdId!)
 
-const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
-// logger.info(utxos, 'List Available Token Standard Holding UTXOs')
-
 await sdk.setPartyId(sender!.partyId)
-// await sdk.tokenStandard
-//     ?.listHoldingTransactions()
-//     .then((transactions) => {
-//         logger.info(transactions, 'Token Standard Holding Transactions:')
-//     })
-//     .catch((error) => {
-//         logger.error(
-//             { error },
-//             'Error listing token standard holding transactions:'
-//         )
-//     })
 
 type InstrumentId = {
     admin: string
@@ -299,6 +284,18 @@ await sdk.userLedger!.waitForCompletion(
     initiateSettlementOtcpCommandId
 )
 
+const otcTrades = await sdk.userLedger!.activeContracts({
+    offset: (await sdk.userLedger!.ledgerEnd()).offset,
+    templateIds: [
+        '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTrade',
+    ],
+    parties: [venue!.partyId],
+    filterByParty: true,
+})
+const otcTradeCid =
+    otcTrades?.[0]?.contractEntry?.JsActiveContract?.createdEvent.contractId
+if (!otcTradeCid) throw new Error('OTCTrade not found for venue')
+
 // Alice's leg allocation
 await sdk?.setPartyId(sender!.partyId)
 const pendingAllocationRequestsSender =
@@ -306,6 +303,8 @@ const pendingAllocationRequestsSender =
 
 const allocationRequestViewSender =
     pendingAllocationRequestsSender?.[0].interfaceViewValue!
+
+const settlementRefId = allocationRequestViewSender.settlement.settlementRef.id
 
 const legEntriesAlice = Object.entries(allocationRequestViewSender.transferLegs)
 
@@ -316,33 +315,10 @@ if (!legEntryAlice)
     throw new Error(`No leg found for sender ${sender!.partyId}`)
 const [legIdAlice, legAlice] = legEntryAlice
 
-const settlementSender = allocationRequestViewSender.settlement
-
 const specAlice = {
-    settlement: {
-        executor: allocationRequestViewSender.settlement.executor,
-        settlementRef: {
-            id: allocationRequestViewSender.settlement.settlementRef.id,
-            cid: otcpCid2,
-        }, // ← proposal CID
-        requestedAt: allocationRequestViewSender.settlement.requestedAt,
-        allocateBefore: allocationRequestViewSender.settlement.allocateBefore,
-        settleBefore: allocationRequestViewSender.settlement.settleBefore,
-        meta: {
-            values: allocationRequestViewSender.settlement.meta?.values ?? {},
-        },
-    },
+    settlement: allocationRequestViewSender.settlement,
     transferLegId: legIdAlice,
-    transferLeg: {
-        sender: legAlice.sender,
-        receiver: legAlice.receiver,
-        amount: String(legAlice.amount),
-        instrumentId: {
-            admin: legAlice.instrumentId.admin,
-            id: legAlice.instrumentId.id,
-        },
-        meta: { values: legAlice.meta?.values ?? {} },
-    },
+    transferLeg: legAlice,
 }
 
 const [allocateCmdAlice, allocateDisclosed] =
@@ -378,30 +354,9 @@ if (!legEntryBob)
 const [legIdBob, legBob] = legEntryBob
 
 const specBob = {
-    settlement: {
-        executor: allocationRequestViewReceiver.settlement.executor,
-        settlementRef: {
-            id: allocationRequestViewReceiver.settlement.settlementRef.id,
-            cid: otcpCid2,
-        }, // ← proposal CID
-        requestedAt: allocationRequestViewReceiver.settlement.requestedAt,
-        allocateBefore: allocationRequestViewReceiver.settlement.allocateBefore,
-        settleBefore: allocationRequestViewReceiver.settlement.settleBefore,
-        meta: {
-            values: allocationRequestViewReceiver.settlement.meta?.values ?? {},
-        },
-    },
+    settlement: allocationRequestViewReceiver.settlement,
     transferLegId: legIdBob,
-    transferLeg: {
-        sender: legBob.sender,
-        receiver: legBob.receiver,
-        amount: String(legBob.amount),
-        instrumentId: {
-            admin: legBob.instrumentId.admin,
-            id: legBob.instrumentId.id,
-        },
-        meta: { values: legBob.meta?.values ?? {} },
-    },
+    transferLeg: legBob,
 }
 
 const [allocateCmdBob, discsR] =
@@ -423,29 +378,20 @@ const [allocateCmdBob, discsR] =
 
 await sdk.setPartyId(venue!.partyId)
 
-const otcTrades = await sdk.userLedger!.activeContracts({
-    offset: (await sdk.userLedger!.ledgerEnd()).offset,
-    templateIds: [
-        '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTrade',
-    ],
-    parties: [venue!.partyId],
-    filterByParty: true,
-})
-const otcTradeCid =
-    otcTrades?.[0]?.contractEntry?.JsActiveContract?.createdEvent.contractId
-if (!otcTradeCid) throw new Error('OTCTrade not found for venue')
-
 const allocsVenue = await sdk.tokenStandard!.fetchPendingAllocationView()
 
-const wantedLegIds = new Set(['leg0', 'leg1']) // TODO try 2 legs
-
 const pickedAllocs = allocsVenue
+    .filter(
+        (a) =>
+            a.interfaceViewValue.allocation.settlement.settlementRef.id ===
+            settlementRefId
+    )
     .map((a) => ({
         legId: a.interfaceViewValue.allocation.transferLegId,
         cid: a.contractId,
         executor: a.interfaceViewValue.allocation.settlement.executor,
     }))
-    .filter((a) => a.executor === venue!.partyId && wantedLegIds.has(a.legId))
+    .filter((a) => a.executor === venue!.partyId)
 
 if (pickedAllocs.length === 0)
     throw new Error('No matching allocations for this trade')
@@ -469,7 +415,6 @@ for (const a of pickedAllocs) {
 
 const uniqMap = new Map<string, (typeof allDisclosures)[number]>()
 for (const d of allDisclosures) {
-    // If two entries have the same contractId, keep the first (or last — either is fine)
     uniqMap.set(d.contractId, d)
 }
 const uniqueDisclosures = [...uniqMap.values()]
@@ -487,7 +432,6 @@ const settleCmd = [
 ]
 
 const off = (await sdk.userLedger!.ledgerEnd()).offset || 0
-// TODO error here
 const settleId = await sdk.userLedger!.prepareSignAndExecuteTransaction(
     settleCmd,
     keyPairVenue.privateKey,
