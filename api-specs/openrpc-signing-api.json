@@ -3,7 +3,7 @@
     "info": {
         "title": "Wallet JSON-RPC Signing API",
         "version": "0.1.0",
-        "description": "An OpenRPC specification for the Signing API which allows the wallet kernel to interact with a Wallet Providers."
+        "description": "An OpenRPC specification for the Signing API which allows the Wallet Gateway to interact with a Wallet Providers."
     },
     "methods": [
         {
@@ -33,7 +33,7 @@
                             "internalTxId": {
                                 "title": "internalTxId",
                                 "type": "string",
-                                "description": "Internal txId used by the Wallet Kernel to store the transaction."
+                                "description": "Internal txId used by the Wallet Gateway to store the transaction."
                             }
                         },
                         "required": ["tx", "txHash", "publicKey"]
@@ -331,7 +331,7 @@
                     "txId": {
                         "title": "txId",
                         "type": "string",
-                        "description": "Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Kernel."
+                        "description": "Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway."
                     },
                     "status": {
                         "$ref": "#/components/schemas/SigningStatus",

@@ -14,12 +14,12 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
     const discoverPopupPromise = dappPage.waitForEvent('popup')
 
     await dappPage
-        .getByRole('button', { name: 'connect to wallet kernel' })
+        .getByRole('button', { name: 'connect to Wallet Gateway' })
         .click()
 
     const discoverPopup = await discoverPopupPromise
 
-    // Connect to remote wallet kernel
+    // Connect to remote Wallet Gateway
     await discoverPopup
         .getByRole('textbox', { name: 'RPC URL' })
         .fill(`http://localhost:${dappApiPort}/rpc`)

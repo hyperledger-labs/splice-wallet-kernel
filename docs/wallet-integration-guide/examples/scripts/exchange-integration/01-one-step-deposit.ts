@@ -2,44 +2,39 @@ import { Label, TransferIn } from '@canton-network/core-ledger-client'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { setupExchange } from './setup-exchange.js'
-import { setupCustomer } from './setup-customer.js'
+import { setupDemoCustomer } from './setup-demo-customer.js'
+import { tapDevNetFaucet } from './tap-devnet-faucet.js'
+import { validateTransferIn } from './validate-transfers.js'
 
-const logger = pino({ name: '08-one-step-deposit', level: 'info' })
+const logger = pino({ name: '01-one-step-deposit', level: 'info' })
 
-const { exchangeParty, treasuryParty, exchangeSdk } = await setupExchange()
+const { exchangeParty, treasuryParty, exchangeSdk } = await setupExchange({
+    transferPreapproval: true,
+})
 
-const { customerParty, customerKeyPair, customerSdk } = await setupCustomer()
+const { customerParty, customerKeyPair, customerSdk } = await setupDemoCustomer(
+    {}
+)
+
+await tapDevNetFaucet(customerSdk, customerParty, customerKeyPair, 100)
 
 const instrumentAdminPartyId =
     (await exchangeSdk.tokenStandard?.getInstrumentAdmin()) || ''
 
+const transferAmount = 100
 const amuletIdentifier = {
     instrumentId: 'Amulet',
     instrumentAdmin: instrumentAdminPartyId,
 }
-const [tapCommand, tapDisclosedContracts] =
-    await customerSdk.tokenStandard!.createTap(
-        customerParty,
-        '100',
-        amuletIdentifier
-    )
-
-await customerSdk.userLedger?.prepareSignExecuteAndWaitFor(
-    tapCommand,
-    customerKeyPair.privateKey,
-    v4(),
-    tapDisclosedContracts
-)
-
-logger.info(`Tapped for ${customerParty}`)
 
 // transfer to exchange
+const exchangeLedgerEnd = await exchangeSdk.userLedger!.ledgerEnd()
 const memoUUID = v4()
 const [customerTransferCommand, customerTransferDisclosedContracts] =
     await customerSdk.tokenStandard!.createTransfer(
         customerParty,
         treasuryParty,
-        '100',
+        transferAmount.toString(),
         amuletIdentifier,
         [],
         `${memoUUID}`
@@ -48,40 +43,28 @@ const [customerTransferCommand, customerTransferDisclosedContracts] =
 await customerSdk.userLedger?.prepareSignExecuteAndWaitFor(
     customerTransferCommand,
     customerKeyPair.privateKey,
-    v4(),
+    memoUUID,
     customerTransferDisclosedContracts
 )
 
-logger.info(`transferred 100 from ${customerParty} to ${treasuryParty}`)
-
-// exchange observes the deposit via tx log
-const exchangeHoldings =
-    await exchangeSdk.tokenStandard?.listHoldingTransactions()
-
-// Type guard for TransferIn
-function isTransferIn(label: Label): label is TransferIn {
-    return (
-        label.type === 'TransferIn' && typeof (label as any).sender === 'string'
-    )
-}
-
-const isCustomerTransfer = exchangeHoldings!.transactions.some((tx) =>
-    tx.events.some(
-        (event) =>
-            isTransferIn(event.label) &&
-            (event.label as TransferIn).reason === `${memoUUID}` &&
-            (event.label as TransferIn).sender === customerParty &&
-            event.unlockedHoldingsChange.creates.some(
-                (holding) =>
-                    Number(holding.amount) === 100 &&
-                    holding.instrumentId.admin ===
-                        amuletIdentifier.instrumentAdmin &&
-                    holding.instrumentId.id === amuletIdentifier.instrumentId
-            )
-    )
+logger.info(
+    `Instructed transfer of ${transferAmount} from ${customerParty} to ${treasuryParty}`
 )
 
-if (isCustomerTransfer) {
+// exchange observes the deposit via tx log
+let exchangeHoldings =
+    await exchangeSdk.tokenStandard?.listHoldingTransactions()
+
+if (
+    validateTransferIn(
+        exchangeHoldings!.transactions,
+        customerParty,
+        transferAmount,
+        memoUUID,
+        amuletIdentifier.instrumentId,
+        amuletIdentifier.instrumentAdmin
+    )
+) {
     logger.info(`Found a matching transaction with reason "${memoUUID}"`)
 } else {
     throw new Error(`No matching transaction with reason "${memoUUID}" found`)

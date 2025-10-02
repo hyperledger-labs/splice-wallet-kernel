@@ -171,6 +171,19 @@ Finality usually takes 3-10s.
             :language: bash
             :dedent:
 
+How to use the SDK to Offline sign a Transaction
+------------------------------------------------
+
+The SDK exposes functionality that can be used in an offline environment to sign and validate transactions the below script shows an entire
+interaction between `Alice` and `Bob` with signing happening in an offline environment and online environment that performs the prepare and
+submit.
+
+
+.. literalinclude:: ../../examples/scripts/08-offline-signing-localnet.ts
+    :language: typescript
+    :dedent:
+
+
 
 .. Link to this afterwards - https://docs.digitalasset.com/operate/3.3/howtos/troubleshoot/troubleshooting_guide.html#key-knowledge
 

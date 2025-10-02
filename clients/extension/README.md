@@ -21,5 +21,5 @@ Run `yarn start` to start an isolated FF instance with the extension loaded. To 
 
 1. Navigate to `about:debugging`
 2. Click on "This Firefox"
-3. Click on the "Inspect" button under the Splice Wallet Kernel
+3. Click on the "Inspect" button under the Splice Wallet Gateway
 4. (Optional) open the three dot menu on the right, and click "Disable Popup Auto-Hide" to prevent the extension window from closing automatically when switching between the Dev Tools window and the main browser window

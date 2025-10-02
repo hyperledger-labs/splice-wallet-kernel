@@ -1,8 +1,8 @@
 {
     "name": "@canton-network/core-wallet-auth",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "type": "module",
-    "description": "Provides authentication middleware and user management for the wallet kernel",
+    "description": "Provides authentication middleware and user management for the Wallet Gateway",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",

@@ -156,9 +156,8 @@ export class LedgerController {
         commandId: string,
         disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<string> {
-        const commandArray = Array.isArray(commands) ? commands : [commands]
         const prepared = await this.prepareSubmission(
-            commandArray,
+            commands,
             commandId,
             disclosedContracts
         )
@@ -381,13 +380,14 @@ export class LedgerController {
      * @param disclosedContracts additional contracts used to resolve contract & contract key lookups.
      */
     async prepareSubmission(
-        commands: unknown,
+        commands: WrappedCommand | WrappedCommand[] | unknown,
         commandId?: string,
         disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
+        const commandArray = Array.isArray(commands) ? commands : [commands]
         const prepareParams: Types['JsPrepareSubmissionRequest'] = {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-            commands: commands as any,
+            commands: commandArray as any,
             commandId: commandId || v4(),
             userId: this.userId,
             actAs: [this.getPartyId()],

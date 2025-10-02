@@ -18,7 +18,9 @@
         "run-05": "tsx ./scripts/05-token-standard-transfer-autoaccept.ts| pino-pretty",
         "run-06": "tsx ./scripts/06-multi-hosted-party.ts | pino-pretty",
         "run-07": "tsx ./scripts/07-token-standard-reject-expire-withdraw-localnet.ts | pino-pretty",
-        "run-exch-01": "tsx ./scripts/exchange-integration/01-one-step-deposit.ts | pino-pretty"
+        "run-08": "tsx ./scripts/08-offline-signing-localnet.ts | pino-pretty",
+        "run-exch-01": "tsx ./scripts/exchange-integration/01-one-step-deposit.ts | pino-pretty",
+        "run-exch-02": "tsx ./scripts/exchange-integration/02-one-step-withdrawal.ts | pino-pretty"
     },
     "devDependencies": {
         "@canton-network/core-signing-lib": "workspace:^",
@@ -35,6 +37,8 @@
     },
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
+        "@canton-network/core-signing-lib": "workspace:^",
+        "@canton-network/core-types": "workspace:^",
         "@canton-network/wallet-sdk": "workspace:^",
         "pino": "9.7.0",
         "uuid": "^11.1.0"

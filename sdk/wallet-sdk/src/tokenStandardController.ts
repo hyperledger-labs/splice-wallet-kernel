@@ -16,6 +16,7 @@ import {
 } from '@canton-network/core-ledger-client'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { pino } from 'pino'
+import { v4 } from 'uuid'
 import {
     HOLDING_INTERFACE_ID,
     TRANSFER_INSTRUCTION_INTERFACE_ID,
@@ -231,7 +232,9 @@ export class TokenStandardController {
     async getTransferPreApprovalByParty(
         receiverId: PartyId,
         instrumentId: string
-    ) {
+    ): Promise<
+        { receiverId: PartyId; expiresAt: Date; dso: PartyId } | undefined
+    > {
         try {
             await this.service.getInstrumentById(
                 this.getTransferFactoryRegistryUrl().href,
@@ -243,12 +246,13 @@ export class TokenStandardController {
 
             const { dso, expiresAt } = transfer_preapproval.contract.payload
             return {
-                receiverId,
-                expiresAt,
-                dso,
+                receiverId: receiverId as PartyId,
+                expiresAt: new Date(expiresAt),
+                dso: dso as PartyId,
             }
         } catch (e) {
             this.logger.error(e)
+            return undefined
         }
     }
 
@@ -278,6 +282,62 @@ export class TokenStandardController {
         )
 
         return [{ ExerciseCommand: tapCommand }, disclosedContracts]
+    }
+
+    /**
+     * Creates ExerciseCommand for granting featured app rights.
+     * @returns AmuletRules_DevNet_FeatureApp command and disclosed contracts.
+     */
+    async selfGrantFeatureAppRights(): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const [featuredAppCommand, disclosedContracts] =
+            await this.service.selfGrantFeatureAppRight(
+                this.getPartyId(),
+                this.getSynchronizerId()
+            )
+
+        return [{ ExerciseCommand: featuredAppCommand }, disclosedContracts]
+    }
+
+    /**
+     * Looks up if a party has FeaturedAppRight.
+     * @returns If defined, a contract of Daml template `Splice.Amulet.FeaturedAppRight`.
+     */
+    async lookupFeaturedApps() {
+        return this.service.getFeaturedAppsByParty(this.getPartyId())
+    }
+
+    /**
+     * Submits a command to grant feature app rights for an internal party such as the validator operator user
+     * For external parties, use prepareSignAndExecuteTransaction in LedgerController
+     * @returns A contract of Daml template `Splice.Amulet.FeaturedAppRight`.
+     */
+    async grantFeatureAppRightsForInternalParty() {
+        const featuredAppRights = await this.lookupFeaturedApps()
+
+        if (featuredAppRights) {
+            return featuredAppRights
+        }
+
+        const [featuredAppCommand, disclosedContractsApp] =
+            await this.selfGrantFeatureAppRights()
+
+        const request = {
+            commands: [featuredAppCommand],
+            commandId: v4(),
+            userId: this.userId,
+            actAs: [this.getPartyId()],
+            readAs: [],
+            disclosedContracts: disclosedContractsApp || [],
+            synchronizerId: this.getSynchronizerId(),
+            verboseHashing: false,
+            packageIdSelectionPreference: [],
+        }
+
+        await this.client.post('/v2/commands/submit-and-wait', request)
+
+        return this.lookupFeaturedApps()
     }
 
     /**
