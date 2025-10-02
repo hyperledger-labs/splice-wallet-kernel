@@ -77,6 +77,7 @@ await new Promise((res) => setTimeout(res, 5000))
 
 logger.info('creating transfer preapproval proposal')
 
+//TODO: Tap validator operator party to ensure they have funds to setup the pre-approval
 const transferPreApprovalProposal =
     await sdk.userLedger?.createTransferPreapprovalCommand(
         validatorOperatorParty!,

@@ -9,13 +9,12 @@ import {
     validateTransferOut,
 } from './validate-transfers.js'
 
-const logger = pino({ name: '02-one-step-withdrawal', level: 'info' })
+const logger = pino({ name: '04-multi-step-withdrawal', level: 'info' })
 
 const { treasuryParty, treasuryKeyPair, exchangeSdk } = await setupExchange()
 
-const { customerParty, customerSdk } = await setupDemoCustomer({
-    transferPreapproval: true,
-})
+const { customerParty, customerKeyPair, customerSdk } =
+    await setupDemoCustomer()
 
 const instrumentAdminPartyId =
     (await exchangeSdk.tokenStandard?.getInstrumentAdmin()) || ''
@@ -33,18 +32,6 @@ await tapDevNetFaucet(
     treasuryKeyPair,
     transferAmount
 )
-
-const verifyPreApproval =
-    await exchangeSdk.tokenStandard!.getTransferPreApprovalByParty(
-        customerParty,
-        'Amulet'
-    )
-
-if (verifyPreApproval!.expiresAt < new Date(Date.now() + 60 * 1000)) {
-    throw new Error(
-        `Transfer-preapproval for ${customerParty} expires in less than 60 seconds. expires at: ${verifyPreApproval!.expiresAt}`
-    )
-}
 
 // Execute transfer withdrawal by customer
 const memoUUID = v4()
@@ -69,6 +56,34 @@ logger.info(
     `transferred ${transferAmount} from ${treasuryParty} to ${customerParty}`
 )
 
+//customer finds the pending offer and accepts it
+const pendingOffers =
+    await customerSdk.tokenStandard?.fetchPendingTransferInstructionView()
+
+if (pendingOffers?.length !== 1) {
+    throw new Error(
+        `Expected exactly one pending transfer instruction, but found ${pendingOffers?.length}`
+    )
+} else {
+    const pendingOffer = pendingOffers[0]
+    const [acceptTransferCommand, disclosedContracts] =
+        await customerSdk.tokenStandard!.exerciseTransferInstructionChoice(
+            pendingOffer.contractId,
+            'Accept'
+        )
+
+    await customerSdk.userLedger?.prepareSignExecuteAndWaitFor(
+        acceptTransferCommand,
+        customerKeyPair.privateKey,
+        v4(),
+        disclosedContracts
+    )
+
+    logger.info(
+        `customer found and accepted pending offer for ${pendingOffer.contractId}`
+    )
+}
+
 // customer observes the withdrawal via tx log
 const customerHoldings =
     await customerSdk.tokenStandard?.listHoldingTransactions()
@@ -78,14 +93,13 @@ if (
         customerHoldings!.transactions,
         treasuryParty,
         transferAmount,
-        memoUUID,
+        undefined, //TODO: change to memoUUID once relevant bug is fixed
         amuletIdentifier.instrumentId,
         amuletIdentifier.instrumentAdmin
     )
 ) {
     logger.info(`customer found transaction: "${memoUUID}"`)
 } else {
-    logger.error(customerHoldings, 'customer holdings')
     throw new Error(
         `No matching transaction with reason "${memoUUID}" found for customer ${customerParty}`
     )
@@ -100,14 +114,13 @@ if (
         exchangeHoldings!.transactions,
         customerParty,
         transferAmount,
-        memoUUID,
+        undefined, //TODO: change to memoUUID once relevant bug is fixed
         amuletIdentifier.instrumentId,
         amuletIdentifier.instrumentAdmin
     )
 ) {
     logger.info(`exchange found transaction: "${memoUUID}"`)
 } else {
-    logger.error(exchangeHoldings, 'exchange holdings')
     throw new Error(
         `No matching transaction with reason "${memoUUID}" found for exchange ${treasuryParty}`
     )

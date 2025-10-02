@@ -12,9 +12,9 @@ import { pino } from 'pino'
 import { v4 } from 'uuid'
 
 //this follows the steps of https://docs.digitalasset.com/integrate/devnet/exchange-integration/node-operations.html#setup-exchange-parties
-export async function setupExchange({
-    transferPreapproval = false,
-    grantFeatureAppRights = false,
+export async function setupExchange(options?: {
+    transferPreapproval?: boolean
+    grantFeatureAppRights?: boolean
 }) {
     const logger = pino({ name: 'setup-exchange', level: 'info' })
 
@@ -56,7 +56,8 @@ export async function setupExchange({
     // using the validator operator party as exchange party
     const exchangeParty = await exchangeSdk.validator!.getValidatorUser()!
 
-    if (transferPreapproval) {
+    if (options?.transferPreapproval) {
+        //TODO: Tap exchange party to ensure they have funds to setup the pre-approval
         const instrumentAdminPartyId =
             (await exchangeSdk.tokenStandard?.getInstrumentAdmin()) || ''
 
@@ -78,7 +79,7 @@ export async function setupExchange({
         logger.info(`Created transfer preapproval for: ${treasuryParty}`)
     }
 
-    if (grantFeatureAppRights) {
+    if (options?.grantFeatureAppRights) {
         await exchangeSdk.setPartyId(exchangeParty)
 
         const exchangePartyFeaturedAppRights =
