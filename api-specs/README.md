@@ -1,6 +1,6 @@
-# Wallet Kernel API specification
+# Wallet Gateway API specification
 
-This folder contains the OpenRPC specification for the Wallet Kernel JSON-RPC API.
+This folder contains the OpenRPC specification for the Wallet Gateway JSON-RPC API.
 
 ## Contribute
 
@@ -12,7 +12,7 @@ You can contribute to the API specs using the following steps.
 
 ## Mock Server
 
-This project comes with an OpenRPC Mock Server to test against the Wallet Kernel API.
+This project comes with an OpenRPC Mock Server to test against the Wallet Gateway API.
 
 Start either of the servers (from the repository root):
 

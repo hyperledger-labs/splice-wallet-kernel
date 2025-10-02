@@ -6,7 +6,7 @@
         "noEmit": true
     },
     "include": [
-        "scripts/*.ts",
+        "scripts/**/*.ts",
         "snippets/*.ts",
         "config.ts",
         "snippets.test.ts"

@@ -68,9 +68,9 @@ When onboarding using external signing, multiple topology transactions are requi
 This is because both the keyHolder (the party) and the node (the validator) need to agree on the hosting relationship.
 The three transactions that needs to be generated are:
 
-- PartyToParticipant: This transaction indicates that the party agrees to be hosted by the participant (validator).
-- ParticipantToParty: This transaction indicates that the participant (validator) agrees to host the party.
-- KeyToParty: This transaction indicates that the key (public key) is associated with the party.
+- `PartyToParticipant`: This transaction indicates that the party agrees to be hosted by the participant (validator).
+- `ParticipantToParty`: This transaction indicates that the participant (validator) agrees to host the party.
+- `KeyToParty`: This transaction indicates that the key (public key) is associated with the party.
 
 Once all the transactions are built they can be combined into a single hash and submitted as part of a single signature.
 The wallet SDK has helper functions to generate these transactions:
@@ -96,3 +96,23 @@ The wallet SDK has a helper function to submit the transactions:
 .. literalinclude:: ../../examples/snippets/submit-signed-topology-transaction.ts
    :language: typescript
    :dedent:
+
+Multi-hosting a party
+---------------------
+Since only relevant data is shared between validator nodes, and nodes don't contain all data, backup and recovery are important.
+Another important aspect is to prevent having a validator being a single source of failure, this can be handled on a party basis by
+doing multi hosting. Multi hosting of a party means replication of all the information related to that party onto multiple validators,
+this can either be multiple validators run by the same entity (most common case for wallets) or even validators run by different
+entities in case of malicious actors.
+
+To facilitate multi-hosting we simply need to extend `partyToParticipant` and `ParticipantToParty` to include new validators. This
+requires sourcing signed transaction from the validators the client is interested in being hosted on.
+
+The below script allows you (by using the SDK) to host a single party on both `app-user` and `app-provider` validators.
+
+.. literalinclude:: ../../examples/scripts/06-multi-hosted-party.ts
+
+Now since both validators use the same unsafe auth we can replicate the `adminToken.accessToken` for both. In a non-localnet setup you want to source
+these from your identity provider.
+
+

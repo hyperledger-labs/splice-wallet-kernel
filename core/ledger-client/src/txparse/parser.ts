@@ -684,19 +684,26 @@ export class TransactionParser {
         if (!(archivedEvent.witnessParties || []).includes(this.partyId)) {
             return null
         }
+
+        const basePayload = {
+            contractId: archivedEvent.contractId,
+            eventFormat: {
+                filtersByParty: filtersByParty(
+                    this.partyId,
+                    [HoldingInterface, TransferInstructionInterface],
+                    true
+                ),
+                verbose: false,
+            },
+        }
+
+        const payload =
+            this.ledgerClient.getCurrentClientVersion() === '3.3'
+                ? { ...basePayload, requestingParties: [] }
+                : basePayload
+
         const events = await this.ledgerClient
-            .post('/v2/events/events-by-contract-id', {
-                contractId: archivedEvent.contractId,
-                eventFormat: {
-                    filtersByParty: filtersByParty(
-                        this.partyId,
-                        [HoldingInterface, TransferInstructionInterface],
-                        true
-                    ),
-                    verbose: false,
-                },
-                requestingParties: [],
-            })
+            .post('/v2/events/events-by-contract-id', payload)
             .catch((err) => {
                 // This will happen for holdings with consuming choices
                 // where the party the script is running on is an actor on the choice

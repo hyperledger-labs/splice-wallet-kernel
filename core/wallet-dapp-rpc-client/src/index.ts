@@ -16,31 +16,38 @@ export type Resource = string
 export type Body = string
 /**
  *
- * The unique identifier of the wallet kernel.
+ * The unique identifier of the Wallet Gateway.
  *
  */
 export type Id = string
 /**
  *
- * The type of client that implements the wallet kernel.
+ * The type of client that implements the Wallet Gateway.
  *
  */
 export type ClientType = 'browser' | 'desktop' | 'mobile' | 'remote'
 /**
  *
- * The URL of the wallet kernel.
+ * The URL of the Wallet Gateway.
  *
  */
 export type Url = string
 /**
  *
- * Represents a wallet kernel.
+ * A URL that points to a user interface.
+ *
+ */
+export type UserUrl = string
+/**
+ *
+ * Represents a Wallet Gateway.
  *
  */
 export interface KernelInfo {
     id: Id
     clientType: ClientType
     url?: Url
+    userUrl?: UserUrl
     [k: string]: any
 }
 /**
@@ -57,10 +64,10 @@ export type IsConnected = boolean
 export type ChainId = string
 /**
  *
- * A URL that points to a user interface.
+ * JWT authentication token (if applicable).
  *
  */
-export type UserUrl = string
+export type SessionToken = string
 export type Dar = string
 export type Dars = Dar[]
 /**
@@ -85,13 +92,45 @@ export interface JsPrepareSubmissionResponse {
     preparedTransactionHash?: PreparedTransactionHash
     [k: string]: any
 }
-export type Response = string
 /**
  *
- * JWT authentication token (if applicable).
+ * The status of the transaction.
  *
  */
-export type SessionToken = string
+export type StatusExecuted = 'executed'
+/**
+ *
+ * The unique identifier of the command associated with the transaction.
+ *
+ */
+export type CommandId = string
+/**
+ *
+ * The update ID corresponding to the transaction.
+ *
+ */
+export type UpdateId = string
+export type CompletionOffset = number
+/**
+ *
+ * Payload for the TxChangedExecutedEvent.
+ *
+ */
+export interface TxChangedExecutedPayload {
+    updateId: UpdateId
+    completionOffset: CompletionOffset
+}
+/**
+ *
+ * Event emitted when a transaction is executed against the participant.
+ *
+ */
+export interface TxChangedExecutedEvent {
+    status: StatusExecuted
+    commandId: CommandId
+    payload: TxChangedExecutedPayload
+}
+export type Response = string
 /**
  *
  * Set as primary wallet for dApp usage.
@@ -151,12 +190,6 @@ export interface Wallet {
 export type StatusPending = 'pending'
 /**
  *
- * The unique identifier of the command associated with the transaction.
- *
- */
-export type CommandId = string
-/**
- *
  * Event emitted when a transaction is pending.
  *
  */
@@ -213,38 +246,6 @@ export interface TxChangedSignedEvent {
  * The status of the transaction.
  *
  */
-export type StatusExecuted = 'executed'
-/**
- *
- * The update ID corresponding to the transaction.
- *
- */
-export type UpdateId = string
-export type CompletionOffset = number
-/**
- *
- * Payload for the TxChangedExecutedEvent.
- *
- */
-export interface TxChangedExecutedPayload {
-    updateId: UpdateId
-    completionOffset: CompletionOffset
-}
-/**
- *
- * Event emitted when a transaction is executed against the participant.
- *
- */
-export interface TxChangedExecutedEvent {
-    status: StatusExecuted
-    commandId: CommandId
-    payload: TxChangedExecutedPayload
-}
-/**
- *
- * The status of the transaction.
- *
- */
 export type StatusFailed = 'failed'
 /**
  *
@@ -279,7 +280,7 @@ export interface ConnectResult {
     kernel: KernelInfo
     isConnected: IsConnected
     chainId?: ChainId
-    userUrl: UserUrl
+    sessionToken: SessionToken
     [k: string]: any
 }
 export interface DarsAvailableResult {
@@ -288,7 +289,7 @@ export interface DarsAvailableResult {
 }
 export type PrepareReturnResult = any
 export interface PrepareExecuteResult {
-    userUrl: UserUrl
+    tx: TxChangedExecutedEvent
     [k: string]: any
 }
 /**
@@ -298,12 +299,6 @@ export interface PrepareExecuteResult {
  */
 export interface LedgerApiResult {
     response: Response
-    [k: string]: any
-}
-export interface OnConnectedEvent {
-    kernel: KernelInfo
-    chainId: ChainId
-    sessionToken?: SessionToken
     [k: string]: any
 }
 /**
@@ -344,7 +339,6 @@ export type PrepareExecute = (
     params: PrepareExecuteParams
 ) => Promise<PrepareExecuteResult>
 export type LedgerApi = (params: LedgerApiParams) => Promise<LedgerApiResult>
-export type OnConnected = () => Promise<OnConnectedEvent>
 export type OnAccountsChanged = () => Promise<AccountsChangedEvent>
 export type RequestAccounts = () => Promise<RequestAccountsResult>
 export type OnTxChanged = () => Promise<TxChangedEvent>
@@ -409,15 +403,6 @@ export class SpliceWalletJSONRPCDAppAPI {
         method: 'ledgerApi',
         ...params: Parameters<LedgerApi>
     ): ReturnType<LedgerApi>
-
-    /**
-     *
-     */
-    // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'onConnected',
-        ...params: Parameters<OnConnected>
-    ): ReturnType<OnConnected>
 
     /**
      *

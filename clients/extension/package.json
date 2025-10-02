@@ -2,7 +2,7 @@
     "name": "@canton-network/clients-extension",
     "version": "1.0.0",
     "private": true,
-    "description": "Web extension for the wallet kernel",
+    "description": "Web extension for the wallet Gateway",
     "author": "Alex Matson <alex.matson@digitalasset.com>",
     "license": "Apache-2.0",
     "type": "module",
@@ -23,10 +23,10 @@
         "web-ext": "^8.8.0"
     },
     "dependencies": {
+        "@canton-network/core-rpc-errors": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-store": "workspace:^",
         "@canton-network/core-wallet-ui-components": "workspace:^",
-        "@metamask/rpc-errors": "^7.0.2",
         "lit": "^3.3.0",
         "webextension-polyfill": "^0.12.0"
     }

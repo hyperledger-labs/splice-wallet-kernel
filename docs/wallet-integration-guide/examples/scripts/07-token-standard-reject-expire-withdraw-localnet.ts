@@ -5,10 +5,10 @@ import {
     localNetTopologyDefault,
     localNetTokenStandardDefault,
     createKeyPair,
+    localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
-import { LOCALNET_REGISTRY_API_URL, LOCALNET_VALIDATOR_URL } from '../config.js'
 
 const logger = pino({
     name: '07-token-standard-reject-expire-withdraw',
@@ -85,7 +85,7 @@ const keyPairSender = createKeyPair()
 const keyPairReceiver = createKeyPair()
 
 await sdk.connectAdmin()
-await sdk.connectTopology(LOCALNET_VALIDATOR_URL)
+await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
 const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairSender.privateKey,
@@ -109,7 +109,9 @@ await sdk.userLedger
         logger.error({ error }, 'Error listing wallets')
     })
 
-sdk.tokenStandard?.setTransferFactoryRegistryUrl(LOCALNET_REGISTRY_API_URL)
+sdk.tokenStandard?.setTransferFactoryRegistryUrl(
+    localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+)
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
@@ -123,17 +125,11 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     }
 )
 
-const commandIdTap = await sdk.userLedger?.prepareSignAndExecuteTransaction(
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts
-)
-
-await sdk.userLedger?.waitForCompletion(
-    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
-    5000,
-    commandIdTap!
 )
 
 // Alice creates transfer to Bob
@@ -151,20 +147,13 @@ const [transferCommandToReject, disclosedContracts2] =
         'memo-ref'
     )
 
-const transferCommandId =
-    await sdk.userLedger?.prepareSignAndExecuteTransaction(
-        transferCommandToReject,
-        keyPairSender.privateKey,
-        v4(),
-        disclosedContracts2
-    )
-logger.info('Submitted transfer transaction (reject)')
-
-await sdk.userLedger?.waitForCompletion(
-    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
-    5000,
-    transferCommandId!
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    transferCommandToReject,
+    keyPairSender.privateKey,
+    v4(),
+    disclosedContracts2
 )
+logger.info('Submitted transfer transaction (reject)')
 
 const senderUtxosBeforeRejected = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosBeforeRejected })
@@ -183,7 +172,7 @@ const [rejectTransferCommand, disclosedContracts3] =
         'Reject'
     )
 
-const rejectCommandId = await sdk.userLedger?.prepareSignAndExecuteTransaction(
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     rejectTransferCommand,
     keyPairReceiver.privateKey,
     v4(),
@@ -191,12 +180,6 @@ const rejectCommandId = await sdk.userLedger?.prepareSignAndExecuteTransaction(
 )
 
 logger.info('Rejected transfer instruction')
-
-await sdk.userLedger?.waitForCompletion(
-    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
-    5000,
-    rejectCommandId!
-)
 
 // Alice creates transfer to Bob with expiry date
 await sdk.setPartyId(sender!.partyId)
@@ -226,20 +209,13 @@ const [transferCommandToExpire, disclosedContracts4] =
         expiryDate
     )
 
-const transferCommandId2 =
-    await sdk.userLedger?.prepareSignAndExecuteTransaction(
-        transferCommandToExpire,
-        keyPairSender.privateKey,
-        v4(),
-        disclosedContracts4
-    )
-logger.info('Submitted transfer transaction (expire)')
-
-await sdk.userLedger?.waitForCompletion(
-    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
-    5000,
-    transferCommandId2!
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    transferCommandToExpire,
+    keyPairSender.privateKey,
+    v4(),
+    disclosedContracts4
 )
+logger.info('Submitted transfer transaction (expire)')
 
 const senderUtxosBeforeExpired = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosBeforeExpired })
@@ -276,20 +252,13 @@ const [transferCommandToWithdraw, disclosedContracts5] =
         'memo-ref'
     )
 
-const transferCommandId3 =
-    await sdk.userLedger?.prepareSignAndExecuteTransaction(
-        transferCommandToWithdraw,
-        keyPairSender.privateKey,
-        v4(),
-        disclosedContracts5
-    )
-logger.info('Submitted transfer transaction (withdraw)')
-
-await sdk.userLedger?.waitForCompletion(
-    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
-    5000,
-    transferCommandId3!
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    transferCommandToWithdraw,
+    keyPairSender.privateKey,
+    v4(),
+    disclosedContracts5
 )
+logger.info('Submitted transfer transaction (withdraw)')
 
 const senderUtxosBeforeWithdraw = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosBeforeWithdraw })
@@ -312,20 +281,14 @@ const [withdrawTransferCommand, disclosedContracts6] =
         'Withdraw'
     )
 
-const withdrawCommandId =
-    await sdk.userLedger?.prepareSignAndExecuteTransaction(
-        withdrawTransferCommand,
-        keyPairSender.privateKey,
-        v4(),
-        disclosedContracts6
-    )
+const withdrawCommandId = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    withdrawTransferCommand,
+    keyPairSender.privateKey,
+    v4(),
+    disclosedContracts6
+)
 
 logger.info('Withdrawn transfer instruction')
-await sdk.userLedger?.waitForCompletion(
-    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
-    5000,
-    withdrawCommandId!
-)
 
 const senderUtxosAfterWithdraw = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosAfterWithdraw })
@@ -349,20 +312,13 @@ const [transferCommandToAccept, disclosedContracts7] =
         'memo-ref'
     )
 
-const transferCommandId4 =
-    await sdk.userLedger?.prepareSignAndExecuteTransaction(
-        transferCommandToAccept,
-        keyPairSender.privateKey,
-        v4(),
-        disclosedContracts7
-    )
-logger.info('Submitted transfer transaction')
-
-await sdk.userLedger?.waitForCompletion(
-    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
-    5000,
-    transferCommandId4!
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    transferCommandToAccept,
+    keyPairSender.privateKey,
+    v4(),
+    disclosedContracts7
 )
+logger.info('Submitted transfer transaction')
 
 // Bob accepts the transfer
 await sdk.setPartyId(receiver!.partyId)
@@ -381,17 +337,10 @@ const [acceptTransferCommand, disclosedContracts8] =
         'Accept'
     )
 
-const transferCommandId5 =
-    await sdk.userLedger?.prepareSignAndExecuteTransaction(
-        acceptTransferCommand,
-        keyPairReceiver.privateKey,
-        v4(),
-        disclosedContracts8
-    )
-logger.info('Accepted transfer instruction')
-
-await sdk.userLedger?.waitForCompletion(
-    (await sdk.userLedger?.ledgerEnd())?.offset ?? 0,
-    5000,
-    transferCommandId5!
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    acceptTransferCommand,
+    keyPairReceiver.privateKey,
+    v4(),
+    disclosedContracts8
 )
+logger.info('Accepted transfer instruction')

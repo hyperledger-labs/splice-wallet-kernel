@@ -10,7 +10,7 @@ export class Configuration extends LitElement {
         return html`
             <div>
                 <h1>Configuration</h1>
-                <p>Wallet Kernel configuration page.</p>
+                <p>Wallet Gateway configuration page.</p>
             </div>
         `
     }

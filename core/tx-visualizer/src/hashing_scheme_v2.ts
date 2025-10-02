@@ -23,12 +23,13 @@ import {
     TextMap_Entry,
     Value,
 } from '@canton-network/core-ledger-proto'
-import { mkByteArray, sha256 } from './utils.js'
+import { mkByteArray, sha256, toHex } from './utils.js'
 
 // Hash purpose reserved for prepared transaction
 const PREPARED_TRANSACTION_HASH_PURPOSE = Uint8Array.from([
     0x00, 0x00, 0x00, 0x30,
 ])
+
 const NODE_ENCODING_VERSION = Uint8Array.from([0x01])
 
 const HASHING_SCHEME_VERSION = Uint8Array.from([HashingSchemeVersion.V2])
@@ -115,13 +116,10 @@ async function encodeRepeated<T>(
 function findSeed(
     nodeId: string,
     nodeSeeds: DamlTransaction_NodeSeed[]
-): Uint8Array {
+): Uint8Array | undefined {
     const seed = nodeSeeds.find(
         (seed) => seed.nodeId.toString() === nodeId
     )?.seed
-    if (!seed) {
-        throw new Error(`Seed for node ID ${nodeId} not found`)
-    }
 
     return seed
 }
@@ -136,7 +134,7 @@ async function encodeIdentifier(identifier: Identifier): Promise<Uint8Array> {
 
 async function encodeMetadata(metadata: Metadata): Promise<Uint8Array> {
     return mkByteArray(
-        1,
+        Uint8Array.from([0x01]),
         await encodeRepeated(metadata.submitterInfo?.actAs, encodeString),
         await encodeString(metadata.submitterInfo?.commandId),
         await encodeString(metadata.transactionUuid),
@@ -154,6 +152,7 @@ async function encodeMetadata(metadata: Metadata): Promise<Uint8Array> {
             metadata.maxLedgerEffectiveTime,
             encodeInt64
         ),
+        await encodeInt64(metadata.preparationTime),
         await encodeRepeated(metadata.inputContracts, encodeInputContract)
     )
 }
@@ -189,11 +188,12 @@ async function encodeExerciseNode(
         NODE_ENCODING_VERSION,
         await encodeString(exercise.lfVersion),
         1 /** Exercise node tag */,
-        await encodeHash(findSeed(nodeId, nodeSeeds)),
+        await encodeHash(findSeed(nodeId, nodeSeeds)!),
         await encodeHexString(exercise.contractId),
         await encodeString(exercise.packageName),
         await encodeIdentifier(exercise.templateId!),
         await encodeRepeated(exercise.signatories, encodeString),
+        await encodeRepeated(exercise.stakeholders, encodeString),
         await encodeRepeated(exercise.actingParties, encodeString),
         await encodeProtoOptional(
             exercise,
@@ -272,24 +272,48 @@ async function encodeValue(value: Value): Promise<Uint8Array> {
     if (value.sum.oneofKind === 'unit') {
         return Uint8Array.from([0]) // Unit value
     } else if (value.sum.oneofKind === 'bool') {
-        return mkByteArray(0x01, await encodeBool(value.sum.bool))
+        return mkByteArray(
+            Uint8Array.from([0x01]),
+            await encodeBool(value.sum.bool)
+        )
     } else if (value.sum.oneofKind === 'int64') {
-        return mkByteArray(0x02, await encodeInt64(parseInt(value.sum.int64)))
+        return mkByteArray(
+            Uint8Array.from([0x02]),
+            await encodeInt64(parseInt(value.sum.int64))
+        )
     } else if (value.sum.oneofKind === 'numeric') {
-        return mkByteArray(0x03, await encodeString(value.sum.numeric))
+        return mkByteArray(
+            Uint8Array.from([0x03]),
+            await encodeString(value.sum.numeric)
+        )
     } else if (value.sum.oneofKind === 'timestamp') {
-        return mkByteArray(0x04, await encodeString(value.sum.timestamp))
+        return mkByteArray(
+            Uint8Array.from([0x04]),
+            await encodeInt64(BigInt(value.sum.timestamp))
+        )
     } else if (value.sum.oneofKind === 'date') {
-        return mkByteArray(0x05, await encodeInt32(value.sum.date))
+        return mkByteArray(
+            Uint8Array.from([0x05]),
+            await encodeInt32(value.sum.date)
+        )
     } else if (value.sum.oneofKind === 'party') {
-        return mkByteArray(0x06, await encodeString(value.sum.party))
+        return mkByteArray(
+            Uint8Array.from([0x06]),
+            await encodeString(value.sum.party)
+        )
     } else if (value.sum.oneofKind === 'text') {
-        return mkByteArray(0x07, await encodeString(value.sum.text))
+        return mkByteArray(
+            Uint8Array.from([0x07]),
+            await encodeString(value.sum.text)
+        )
     } else if (value.sum.oneofKind === 'contractId') {
-        return mkByteArray(0x08, await encodeHexString(value.sum.contractId))
+        return mkByteArray(
+            Uint8Array.from([0x08]),
+            await encodeHexString(value.sum.contractId)
+        )
     } else if (value.sum.oneofKind === 'optional') {
         return mkByteArray(
-            0x09,
+            Uint8Array.from([0x09]),
             await encodeProtoOptional(
                 value.sum.optional,
                 'value',
@@ -299,17 +323,17 @@ async function encodeValue(value: Value): Promise<Uint8Array> {
         )
     } else if (value.sum.oneofKind === 'list') {
         return mkByteArray(
-            0x0a,
+            Uint8Array.from([0x0a]),
             await encodeRepeated(value.sum.list.elements, encodeValue)
         )
     } else if (value.sum.oneofKind === 'textMap') {
         return mkByteArray(
-            0x0b,
+            Uint8Array.from([0x0b]),
             await encodeRepeated(value.sum.textMap?.entries, encodeTextMapEntry)
         )
     } else if (value.sum.oneofKind === 'record') {
         return mkByteArray(
-            0x0c,
+            Uint8Array.from([0x0c]),
             await encodeProtoOptional(
                 value.sum.record,
                 'recordId',
@@ -320,7 +344,7 @@ async function encodeValue(value: Value): Promise<Uint8Array> {
         )
     } else if (value.sum.oneofKind === 'variant') {
         return mkByteArray(
-            0x0d,
+            Uint8Array.from([0x0d]),
             await encodeProtoOptional(
                 value.sum.variant,
                 'variantId',
@@ -332,7 +356,7 @@ async function encodeValue(value: Value): Promise<Uint8Array> {
         )
     } else if (value.sum.oneofKind === 'enum') {
         return mkByteArray(
-            0x0e,
+            Uint8Array.from([0x0e]),
             await encodeProtoOptional(
                 value.sum.enum,
                 'enumId',
@@ -343,7 +367,7 @@ async function encodeValue(value: Value): Promise<Uint8Array> {
         )
     } else if (value.sum.oneofKind === 'genMap') {
         return mkByteArray(
-            0x0f,
+            Uint8Array.from([0x0f]),
             await encodeRepeated(value.sum.genMap?.entries, encodeGenMapEntry)
         )
     }
@@ -498,4 +522,33 @@ export async function computePreparedTransaction(
     preparedTransaction: PreparedTransaction
 ): Promise<Uint8Array> {
     return sha256(await encodePreparedTransaction(preparedTransaction))
+}
+
+export async function computeSha256CantonHash(
+    purpose: number,
+    bytes: Uint8Array
+) {
+    const encodedPurpose = await encodeInt32(purpose)
+
+    const hashInput = await mkByteArray(encodedPurpose, bytes)
+    const hashBytes = await sha256(hashInput)
+    const multiprefix = new Uint8Array([0x12, 0x20])
+    return mkByteArray(multiprefix, hashBytes)
+}
+
+export async function computeMultiHashForTopology(hashes: Uint8Array[]) {
+    const sortedHashes = hashes
+        .slice()
+        .sort((a, b) => toHex(a).localeCompare(toHex(b)))
+
+    const numHashesBytes = await encodeInt32(sortedHashes.length)
+
+    const concatenatedHashes = [numHashesBytes]
+
+    for (const h of sortedHashes) {
+        const lengthBytes = await encodeInt32(h.length)
+        concatenatedHashes.push(lengthBytes, h)
+    }
+
+    return mkByteArray(...concatenatedHashes)
 }

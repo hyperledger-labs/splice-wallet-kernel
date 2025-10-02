@@ -14,7 +14,7 @@ function App() {
     )
 
     useEffect(() => {
-        const provider = window.splice
+        const provider = window.splice // either postMsg provider or httpProvider
 
         if (!provider) {
             setStatus('Splice provider not found')
@@ -26,7 +26,7 @@ function App() {
             .request<sdk.dappAPI.StatusResult>({ method: 'status' })
             .then((result) => {
                 setStatus(
-                    `Wallet Kernel: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
+                    `Wallet Gateway: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
                 )
             })
             .catch(() => setStatus('disconnected'))
@@ -59,14 +59,6 @@ function App() {
             setMessages((prev) => [...prev, JSON.stringify(event)])
         }
 
-        const onConnected = (result: sdk.dappAPI.OnConnectedEvent) => {
-            console.log('DAPP: Connected to Wallet Kernel:', result)
-            messageListener(result)
-            setStatus(
-                `Wallet Kernel: ${result.kernel.id}, status: connected, chain: ${result.chainId}`
-            )
-        }
-
         const onAccountsChanged = (
             wallets: sdk.dappAPI.AccountsChangedEvent
         ) => {
@@ -80,8 +72,7 @@ function App() {
         }
 
         // Listen for connected events from the provider
-        // This will be triggered when the user connects to the wallet kernel
-        provider.on<sdk.dappAPI.OnConnectedEvent>('onConnected', onConnected)
+        // This will be triggered when the user connects to the Wallet Gateway
         provider.on<sdk.dappAPI.TxChangedEvent>('txChanged', messageListener)
         provider.on<sdk.dappAPI.AccountsChangedEvent>(
             'accountsChanged',
@@ -89,7 +80,6 @@ function App() {
         )
 
         return () => {
-            provider.removeListener('onConnected', onConnected)
             provider.removeListener('txChanged', messageListener)
             provider.removeListener('accountsChanged', onAccountsChanged)
         }
@@ -132,13 +122,13 @@ function App() {
                     <button
                         disabled={loading}
                         onClick={() => {
-                            console.log('Connecting to Wallet Kernel...')
+                            console.log('Connecting to Wallet Gateway...')
                             setLoading(true)
                             sdk.connect()
                                 .then(({ kernel, isConnected, chainId }) => {
                                     setLoading(false)
                                     setStatus(
-                                        `Wallet Kernel: ${kernel.id}, status: ${isConnected ? 'connected' : 'disconnected'}, chain: ${chainId}`
+                                        `Wallet Gateway: ${kernel.id}, status: ${isConnected ? 'connected' : 'disconnected'}, chain: ${chainId}`
                                     )
                                     setError('')
                                 })
@@ -150,7 +140,16 @@ function App() {
                                 })
                         }}
                     >
-                        connect to wallet kernel
+                        connect to Wallet Gateway
+                    </button>
+                    <button
+                        disabled={status.includes('disconnected') || loading}
+                        onClick={() => {
+                            console.log('Opening to Wallet Gateway...')
+                            sdk.open()
+                        }}
+                    >
+                        open Wallet Gateway
                     </button>
                     <button
                         disabled={!primaryParty}

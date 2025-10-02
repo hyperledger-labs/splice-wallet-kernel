@@ -29,6 +29,7 @@ import {
     toTransaction,
     toWallet,
 } from './schema.js'
+import { providerErrors } from '@canton-network/core-rpc-errors'
 
 export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     authContext: AuthContext | undefined
@@ -50,7 +51,9 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
 
     private assertConnected(): UserId {
         if (!this.authContext) {
-            throw new Error('User is not connected')
+            throw providerErrors.unauthorized({
+                message: 'User is not connected',
+            })
         }
         return this.authContext.userId
     }

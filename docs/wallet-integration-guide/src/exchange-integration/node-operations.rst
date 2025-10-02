@@ -44,8 +44,8 @@ Setup Exchange Parties
 
 .. _exchange-party-setup:
 
-Setup up the featured exchange party
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Setup the featured exchange party
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 As explained above in :ref:`reward-minting-and-traffic-funding`, we recommend to use the validator operator party
 as your featured ``exchangeParty``. This party is automatically created when you

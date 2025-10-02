@@ -1,8 +1,8 @@
 {
     "name": "@canton-network/core-signing-fireblocks",
-    "version": "0.3.2",
+    "version": "0.4.0",
     "type": "module",
-    "description": "Wallet Kernel signing driver for Fireblocks",
+    "description": "Wallet Gateway signing driver for Fireblocks",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
     "packageManager": "yarn@4.9.4",
