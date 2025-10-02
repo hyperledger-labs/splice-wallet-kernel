@@ -9,5 +9,5 @@
         "module": "nodenext",
         "moduleResolution": "nodenext"
     },
-    "include": ["src", "themes"]
+    "include": ["src"]
 }
