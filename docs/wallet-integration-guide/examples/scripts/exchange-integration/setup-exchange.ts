@@ -12,7 +12,10 @@ import { pino } from 'pino'
 import { v4 } from 'uuid'
 
 //this follows the steps of https://docs.digitalasset.com/integrate/devnet/exchange-integration/node-operations.html#setup-exchange-parties
-export async function setupExchange(transferPreapproval: boolean = false) {
+export async function setupExchange({
+    transferPreapproval = false,
+    grantFeatureAppRights = false,
+}) {
     const logger = pino({ name: 'setup-exchange', level: 'info' })
 
     const exchangeSdk = new WalletSDKImpl().configure({
@@ -75,15 +78,14 @@ export async function setupExchange(transferPreapproval: boolean = false) {
         logger.info(`Created transfer preapproval for: ${treasuryParty}`)
     }
 
-    await exchangeSdk.setPartyId(exchangeParty!)
+    if (grantFeatureAppRights) {
+        await exchangeSdk.setPartyId(exchangeParty)
 
-    const exchangePartyFeaturedAppRights =
-        await exchangeSdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
+        const exchangePartyFeaturedAppRights =
+            await exchangeSdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
 
-    logger.info(
-        exchangePartyFeaturedAppRights,
-        `Featured App Rights for validator ${exchangePartyFeaturedAppRights}`
-    )
-
+        logger.info(`Featured App Rights for validator ${exchangeParty}`)
+        await exchangeSdk.setPartyId(treasuryParty)
+    }
     return { exchangeParty, treasuryParty, treasuryKeyPair, exchangeSdk }
 }

@@ -10,7 +10,7 @@ import {
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 
-export async function setupCustomer(transferPreapproval: boolean = false) {
+export async function setupDemoCustomer({ transferPreapproval = false }) {
     const logger = pino({ name: 'setup-customer', level: 'info' })
     const customerSdk = new WalletSDKImpl().configure({
         logger,

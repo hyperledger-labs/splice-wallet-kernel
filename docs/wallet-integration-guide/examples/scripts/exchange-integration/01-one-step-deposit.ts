@@ -2,15 +2,20 @@ import { Label, TransferIn } from '@canton-network/core-ledger-client'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { setupExchange } from './setup-exchange.js'
-import { setupCustomer } from './setup-customer.js'
+import { setupDemoCustomer } from './setup-demo-customer.js'
 import { tapParty } from './tap-party.js'
 import { validateTransferIn } from './validate-transfers.js'
 
 const logger = pino({ name: '01-one-step-deposit', level: 'info' })
 
-const { exchangeParty, treasuryParty, exchangeSdk } = await setupExchange(true)
+const { exchangeParty, treasuryParty, exchangeSdk } = await setupExchange({
+    transferPreapproval: true,
+    grantFeatureAppRights: true,
+})
 
-const { customerParty, customerKeyPair, customerSdk } = await setupCustomer()
+const { customerParty, customerKeyPair, customerSdk } = await setupDemoCustomer(
+    {}
+)
 
 await tapParty(customerSdk, customerParty, customerKeyPair, 100)
 

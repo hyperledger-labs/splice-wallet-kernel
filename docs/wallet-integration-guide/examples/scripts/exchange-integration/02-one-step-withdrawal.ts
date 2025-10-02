@@ -2,7 +2,7 @@ import { Label, TransferIn } from '@canton-network/core-ledger-client'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { setupExchange } from './setup-exchange.js'
-import { setupCustomer } from './setup-customer.js'
+import { setupDemoCustomer } from './setup-demo-customer.js'
 import { tapParty } from './tap-party.js'
 import {
     validateTransferIn,
@@ -12,10 +12,11 @@ import {
 const logger = pino({ name: '02-one-step-withdrawal', level: 'info' })
 
 const { exchangeParty, treasuryParty, treasuryKeyPair, exchangeSdk } =
-    await setupExchange()
+    await setupExchange({})
 
-const { customerParty, customerKeyPair, customerSdk } =
-    await setupCustomer(true)
+const { customerParty, customerKeyPair, customerSdk } = await setupDemoCustomer(
+    { transferPreapproval: true }
+)
 
 const instrumentAdminPartyId =
     (await exchangeSdk.tokenStandard?.getInstrumentAdmin()) || ''

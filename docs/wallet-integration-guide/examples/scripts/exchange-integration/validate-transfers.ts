@@ -19,20 +19,22 @@ export function validateTransferIn(
         return label.type === 'TransferIn'
     }
 
-    return transactions.some((tx) =>
-        tx.events.some(
-            (event) =>
-                isTransferIn(event.label) &&
-                (event.label as TransferIn).reason === `${memoUUID}` &&
-                (event.label as TransferIn).sender === sender &&
-                event.unlockedHoldingsChange.creates.some(
-                    (holding) =>
-                        Number(holding.amount) === amount &&
-                        holding.instrumentId.admin === AmuletAdmin &&
-                        holding.instrumentId.id === AmuletId
-                )
-        )
-    )
+    return (
+        transactions.filter((tx) =>
+            tx.events.some(
+                (event) =>
+                    isTransferIn(event.label) &&
+                    (event.label as TransferIn).reason === `${memoUUID}` &&
+                    (event.label as TransferIn).sender === sender &&
+                    event.unlockedHoldingsChange.creates.some(
+                        (holding) =>
+                            Number(holding.amount) === amount &&
+                            holding.instrumentId.admin === AmuletAdmin &&
+                            holding.instrumentId.id === AmuletId
+                    )
+            )
+        ).length === 1
+    ) // we filter and ensure length is exactly 1 to show no double spends exists
 }
 
 export function validateTransferOut(
@@ -48,21 +50,24 @@ export function validateTransferOut(
         return label.type === 'TransferOut'
     }
 
-    return transactions.some((tx) =>
-        tx.events.some(
-            (event) =>
-                isTransferOut(event.label) &&
-                (event.label as TransferOut).reason === `${memoUUID}` &&
-                (event.label as TransferOut).receiverAmounts.some(
-                    (r) =>
-                        r.receiver === receiver && Number(r.amount) === amount
-                ) &&
-                event.unlockedHoldingsChange.archives.some(
-                    (holding) =>
-                        Number(holding.amount) === amount &&
-                        holding.instrumentId.admin === AmuletAdmin &&
-                        holding.instrumentId.id === AmuletId
-                )
-        )
-    )
+    return (
+        transactions.filter((tx) =>
+            tx.events.some(
+                (event) =>
+                    isTransferOut(event.label) &&
+                    (event.label as TransferOut).reason === `${memoUUID}` &&
+                    (event.label as TransferOut).receiverAmounts.some(
+                        (r) =>
+                            r.receiver === receiver &&
+                            Number(r.amount) === amount
+                    ) &&
+                    event.unlockedHoldingsChange.archives.some(
+                        (holding) =>
+                            Number(holding.amount) === amount &&
+                            holding.instrumentId.admin === AmuletAdmin &&
+                            holding.instrumentId.id === AmuletId
+                    )
+            )
+        ).length === 1
+    ) // we filter and ensure length is exactly 1 to show no double spends exists
 }
