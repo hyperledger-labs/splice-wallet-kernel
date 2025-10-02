@@ -28,5 +28,5 @@ export default async function () {
         partyHint
     )
 
-    return party
+    return party?.partyId
 }

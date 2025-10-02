@@ -190,8 +190,20 @@ jobs:
             - name: Start Localnet
               run: yarn start:localnet
 
+            - name: Check memory usage
+              run: |
+                  echo "Memory usage:"
+                  free -h
+                  df -h
+
             - name: Test example snippets
               run: yarn nx snippets docs-wallet-integration-guide-examples
+
+            - name: Check memory usage
+              run: |
+                  echo "Memory usage:"
+                  free -h
+                  df -h
 
             - name: Test example scripts
               run: yarn script:test:examples
@@ -201,6 +213,10 @@ jobs:
               run: |
                   #!/usr/bin/env bash
                   set -euo pipefail
+
+                  echo "Memory usage:"
+                  free -h
+                  df -h
 
                   mkdir -p logs
 
