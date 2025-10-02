@@ -3,7 +3,7 @@
     "info": {
         "title": "Splice Wallet JSON-RPC Remote dApp API",
         "version": "0.1.0",
-        "description": "An OpenRPC specification for remotely hosted wallet kernels. Due to the remote nature, an implementing provider must bridge certain functionality on the client-side to satisfy the general dApp API spec."
+        "description": "An OpenRPC specification for remotely hosted Wallet Gateways. Due to the remote nature, an implementing provider must bridge certain functionality on the client-side to satisfy the general dApp API spec."
     },
     "methods": [
         {
@@ -255,23 +255,23 @@
             "KernelInfo": {
                 "title": "KernelInfo",
                 "type": "object",
-                "description": "Represents a wallet kernel.",
+                "description": "Represents a Wallet Gateway.",
                 "properties": {
                     "id": {
                         "title": "id",
                         "type": "string",
-                        "description": "The unique identifier of the wallet kernel."
+                        "description": "The unique identifier of the Wallet Gateway."
                     },
                     "clientType": {
                         "title": "clientType",
                         "type": "string",
                         "enum": ["browser", "desktop", "mobile", "remote"],
-                        "description": "The type of client that implements the wallet kernel."
+                        "description": "The type of client that implements the Wallet Gateway."
                     },
                     "url": {
                         "title": "url",
                         "type": "string",
-                        "description": "The URL of the wallet kernel."
+                        "description": "The URL of the Wallet Gateway."
                     }
                 },
                 "required": ["id", "clientType"]

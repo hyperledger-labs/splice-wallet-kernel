@@ -16,19 +16,19 @@ export type Resource = string
 export type Body = string
 /**
  *
- * The unique identifier of the wallet kernel.
+ * The unique identifier of the Wallet Gateway.
  *
  */
 export type Id = string
 /**
  *
- * The type of client that implements the wallet kernel.
+ * The type of client that implements the Wallet Gateway.
  *
  */
 export type ClientType = 'browser' | 'desktop' | 'mobile' | 'remote'
 /**
  *
- * The URL of the wallet kernel.
+ * The URL of the Wallet Gateway.
  *
  */
 export type Url = string
@@ -40,7 +40,7 @@ export type Url = string
 export type UserUrl = string
 /**
  *
- * Represents a wallet kernel.
+ * Represents a Wallet Gateway.
  *
  */
 export interface KernelInfo {

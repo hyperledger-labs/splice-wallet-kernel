@@ -19,6 +19,6 @@ To see a simple example of a signing driver, see [core/singing-internal](../sign
 
 ### Important Note
 
-Other than the optional `internalTxId` parameter in `signTransaction`, ALL instances of `txId` refer to the TransactionID given by the **signing provider**, not the Wallet Kernel.
+Other than the optional `internalTxId` parameter in `signTransaction`, ALL instances of `txId` refer to the TransactionID given by the **signing provider**, not the Wallet Gateway.
 
-While some signing providers allow an external transaction to be stored with the transaction, this _cannot_ be relied upon, therefore in order to lookup specific transactions, the Wallet Kernel must store and use the transaction ID given by the signing provider (which is returned by the `signTransaction` method).
+While some signing providers allow an external transaction to be stored with the transaction, this _cannot_ be relied upon, therefore in order to lookup specific transactions, the Wallet Gateway must store and use the transaction ID given by the signing provider (which is returned by the `signTransaction` method).
