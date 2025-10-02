@@ -267,6 +267,8 @@ export class LedgerClient {
             otherConfirmingParticipantUids,
         }
 
+        this.logger.debug(body, 'generateTopology request body')
+
         const resp = await client.POST(
             '/v2/parties/external/generate-topology',
             { body }

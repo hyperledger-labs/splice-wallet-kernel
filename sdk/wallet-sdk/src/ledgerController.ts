@@ -289,7 +289,7 @@ export class LedgerController {
     async allocateExternalParty(
         signedHash: string,
         preparedParty: GenerateTransactionResponse,
-        grantUserRights?: boolean
+        grantUserRights: boolean = true
     ): Promise<AllocateExternalPartyResponse> {
         const { publicKeyFingerprint, partyId, topologyTransactions } =
             preparedParty

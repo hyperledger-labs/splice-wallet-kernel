@@ -25,12 +25,12 @@ export class PartyAllocationService {
         private synchronizerId: string,
         adminToken: string,
         httpLedgerUrl: string,
-        logger: Logger
+        private logger: Logger
     ) {
         this.ledgerClient = new LedgerClient(
             new URL(httpLedgerUrl),
             adminToken,
-            logger
+            this.logger
         )
     }
 
@@ -104,6 +104,7 @@ export class PartyAllocationService {
             TopologyWriteService.createFingerprintFromKey(publicKey)
 
         const transactions = await this.ledgerClient.generateTopology(
+            this.synchronizerId,
             publicKey,
             hint
         )
