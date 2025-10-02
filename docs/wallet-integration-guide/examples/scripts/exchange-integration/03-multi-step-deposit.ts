@@ -28,7 +28,7 @@ const amuletIdentifier = {
 }
 
 // transfer to exchange
-const memoUUID = v4()
+const depositUUID = v4()
 const [customerTransferCommand, customerTransferDisclosedContracts] =
     await customerSdk.tokenStandard!.createTransfer(
         customerParty,
@@ -36,13 +36,13 @@ const [customerTransferCommand, customerTransferDisclosedContracts] =
         transferAmount.toString(),
         amuletIdentifier,
         [],
-        `${memoUUID}`
+        `${depositUUID}`
     )
 
 await customerSdk.userLedger?.prepareSignExecuteAndWaitFor(
     customerTransferCommand,
     customerKeyPair.privateKey,
-    memoUUID,
+    depositUUID,
     customerTransferDisclosedContracts
 )
 
@@ -92,10 +92,12 @@ if (
         amuletIdentifier.instrumentAdmin
     )
 ) {
-    logger.info(`Found a matching transaction with reason "${memoUUID}"`)
+    logger.info(`Found a matching transaction with reason "${depositUUID}"`)
 } else {
     logger.error(exchangeHoldings, 'exchange holdings')
-    throw new Error(`No matching transaction with reason "${memoUUID}" found`)
+    throw new Error(
+        `No matching transaction with reason "${depositUUID}" found`
+    )
 }
 
 // customer observes the withdrawal via tx log
@@ -112,10 +114,10 @@ if (
         amuletIdentifier.instrumentAdmin
     )
 ) {
-    logger.info(`customer found transaction: "${memoUUID}"`)
+    logger.info(`customer found transaction: "${depositUUID}"`)
 } else {
     logger.error(customerHoldings, 'customer holdings')
     throw new Error(
-        `No matching transaction with reason "${memoUUID}" found for customer ${customerParty}`
+        `No matching transaction with reason "${depositUUID}" found for customer ${customerParty}`
     )
 }

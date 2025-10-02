@@ -27,7 +27,7 @@ const amuletIdentifier = {
 }
 
 // transfer to exchange
-const memoUUID = v4()
+const depositUUID = v4()
 const [customerTransferCommand, customerTransferDisclosedContracts] =
     await customerSdk.tokenStandard!.createTransfer(
         customerParty,
@@ -35,13 +35,13 @@ const [customerTransferCommand, customerTransferDisclosedContracts] =
         transferAmount.toString(),
         amuletIdentifier,
         [],
-        `${memoUUID}`
+        `${depositUUID}`
     )
 
 await customerSdk.userLedger?.prepareSignExecuteAndWaitFor(
     customerTransferCommand,
     customerKeyPair.privateKey,
-    memoUUID,
+    depositUUID,
     customerTransferDisclosedContracts
 )
 
@@ -58,13 +58,15 @@ if (
         exchangeHoldings!.transactions,
         customerParty,
         transferAmount,
-        memoUUID,
+        depositUUID,
         amuletIdentifier.instrumentId,
         amuletIdentifier.instrumentAdmin
     )
 ) {
-    logger.info(`Found a matching transaction with reason "${memoUUID}"`)
+    logger.info(`Found a matching transaction with reason "${depositUUID}"`)
 } else {
     logger.error(exchangeHoldings, 'exchange holdings')
-    throw new Error(`No matching transaction with reason "${memoUUID}" found`)
+    throw new Error(
+        `No matching transaction with reason "${depositUUID}" found`
+    )
 }

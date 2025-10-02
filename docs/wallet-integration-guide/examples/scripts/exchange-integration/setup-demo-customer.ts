@@ -45,7 +45,7 @@ export async function setupDemoCustomer(options?: {
     await customerSdk.setPartyId(customerParty)
 
     if (options?.transferPreapproval) {
-        //TODO: Tap validator operator party to ensure they have funds to setup the pre-approval
+        //TODO(#537): Tap validator operator party to ensure they have funds to setup the pre-approval
         const instrumentAdminPartyId =
             (await customerSdk.tokenStandard?.getInstrumentAdmin()) || ''
 

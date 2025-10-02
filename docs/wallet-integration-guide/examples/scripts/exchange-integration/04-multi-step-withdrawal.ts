@@ -34,7 +34,7 @@ await tapDevNetFaucet(
 )
 
 // Execute transfer withdrawal by customer
-const memoUUID = v4()
+const withdrawalUUID = v4()
 const [withdrawalTransferCommand, withdrawalTransferDisclosedContracts] =
     await exchangeSdk.tokenStandard!.createTransfer(
         treasuryParty,
@@ -42,7 +42,7 @@ const [withdrawalTransferCommand, withdrawalTransferDisclosedContracts] =
         transferAmount.toString(),
         amuletIdentifier,
         [],
-        `${memoUUID}`
+        `${withdrawalUUID}`
     )
 
 await exchangeSdk.userLedger?.prepareSignExecuteAndWaitFor(
@@ -98,10 +98,10 @@ if (
         amuletIdentifier.instrumentAdmin
     )
 ) {
-    logger.info(`customer found transaction: "${memoUUID}"`)
+    logger.info(`customer found transaction: "${withdrawalUUID}"`)
 } else {
     throw new Error(
-        `No matching transaction with reason "${memoUUID}" found for customer ${customerParty}`
+        `No matching transaction with reason "${withdrawalUUID}" found for customer ${customerParty}`
     )
 }
 
@@ -119,9 +119,9 @@ if (
         amuletIdentifier.instrumentAdmin
     )
 ) {
-    logger.info(`exchange found transaction: "${memoUUID}"`)
+    logger.info(`exchange found transaction: "${withdrawalUUID}"`)
 } else {
     throw new Error(
-        `No matching transaction with reason "${memoUUID}" found for exchange ${treasuryParty}`
+        `No matching transaction with reason "${withdrawalUUID}" found for exchange ${treasuryParty}`
     )
 }
