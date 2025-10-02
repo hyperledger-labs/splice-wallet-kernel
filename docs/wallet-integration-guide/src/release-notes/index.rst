@@ -28,6 +28,7 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
     await sdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
 
 * localNet variation for AppProvider & AppUser
+
 *you can now use both the appProvider and AppUser easily for show operations between two validators*
 
 .. code-block:: javascript
@@ -53,6 +54,7 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
 *LocalNet..Default still exists, they as previously defaults to the appUser validator*
 
 * topology transaction recalculate hash
+
 *you can now offline validate a topology transaction by recomputing the hash*
 
 .. code-block:: javascript
@@ -68,6 +70,7 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
     }
 
 * new awaiting variation with `prepareSignExecuteAndWaitFor` & `executeSubmissionAndWaitFor`
+
 *release 0.7.0 introduced the `waitForCompletion`, we have now backed that into the executions*
 
 .. code-block:: javascript
