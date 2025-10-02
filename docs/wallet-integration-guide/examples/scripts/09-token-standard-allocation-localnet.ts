@@ -95,7 +95,6 @@ sdk.tokenStandard?.setTransferFactoryRegistryUrl(
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
-const aliceTapOffset = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     sender!.partyId,
     '2000000',
@@ -105,29 +104,25 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     }
 )
 
-const aliceTapCmdId = await sdk.userLedger?.prepareSignAndExecuteTransaction(
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts
 )
 
-await sdk.userLedger?.waitForCompletion(aliceTapOffset, 15000, aliceTapCmdId!)
-
 await sdk.setPartyId(receiver!.partyId)
-const bobTapOffset = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
 const [tapCmdBob, tapDiscBob] = await sdk.tokenStandard!.createTap(
     receiver!.partyId,
     '2000000',
     { instrumentId: 'Amulet', instrumentAdmin: instrumentAdminPartyId }
 )
-const bobTapCmdId = await sdk.userLedger!.prepareSignAndExecuteTransaction(
+const bobTapCmdId = await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     tapCmdBob,
     keyPairReceiver.privateKey,
     v4(),
     tapDiscBob
 )
-await sdk.userLedger?.waitForCompletion(bobTapOffset, 15000, bobTapCmdId!)
 
 await sdk.setPartyId(sender!.partyId)
 
@@ -192,14 +187,11 @@ const createProposal = {
     },
 }
 
-const offsetCreateProposal = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
-const cmdId = await sdk.userLedger!.prepareSignAndExecuteTransaction(
+await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     createProposal,
     keyPairSender.privateKey,
     v4()
 )
-
-await sdk.userLedger?.waitForCompletion(offsetCreateProposal, 15000, cmdId!)
 
 await sdk.setPartyId(receiver!.partyId)
 const activeTradeProposals = await sdk.userLedger?.activeContracts({
@@ -228,17 +220,10 @@ const acceptCmd = [
         },
     },
 ]
-const offsetAcceptOtcp = (await sdk.userLedger!.ledgerEnd()).offset || 0
-const acceptOtcpCommandId =
-    await sdk.userLedger!.prepareSignAndExecuteTransaction(
-        acceptCmd,
-        keyPairReceiver.privateKey,
-        v4()
-    )
-await sdk.userLedger!.waitForCompletion(
-    offsetAcceptOtcp,
-    60_000,
-    acceptOtcpCommandId
+await sdk.userLedger!.prepareSignExecuteAndWaitFor(
+    acceptCmd,
+    keyPairReceiver.privateKey,
+    v4()
 )
 
 await sdk.setPartyId(venue!.partyId)
@@ -272,18 +257,11 @@ const initiateSettlementCmd = [
         },
     },
 ]
-const offsetInitiateSettlementOtcp =
-    (await sdk.userLedger!.ledgerEnd()).offset || 0
-const initiateSettlementOtcpCommandId =
-    await sdk.userLedger!.prepareSignAndExecuteTransaction(
-        initiateSettlementCmd,
-        keyPairVenue.privateKey,
-        v4()
-    )
-await sdk.userLedger!.waitForCompletion(
-    offsetInitiateSettlementOtcp,
-    60_000,
-    initiateSettlementOtcpCommandId
+
+await sdk.userLedger!.prepareSignExecuteAndWaitFor(
+    initiateSettlementCmd,
+    keyPairVenue.privateKey,
+    v4()
 )
 
 const otcTrades = await sdk.userLedger!.activeContracts({
@@ -329,14 +307,12 @@ const [allocateCmdAlice, allocateDisclosed] =
         legAlice.instrumentId.admin
     )
 
-const offset = (await sdk.userLedger!.ledgerEnd()).offset
-const cmdId2 = await sdk.userLedger!.prepareSignAndExecuteTransaction(
+await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     allocateCmdAlice,
     keyPairSender.privateKey,
     v4(),
     allocateDisclosed
 )
-await sdk.userLedger!.waitForCompletion(offset, 60000, cmdId2)
 
 // Bob's leg allocation
 await sdk.setPartyId(receiver!.partyId)
@@ -367,16 +343,12 @@ const [allocateCmdBob, discsR] =
         legBob.instrumentId.admin
     )
 
-{
-    const off = (await sdk.userLedger!.ledgerEnd()).offset
-    const id = await sdk.userLedger!.prepareSignAndExecuteTransaction(
-        allocateCmdBob,
-        keyPairReceiver.privateKey,
-        v4(),
-        discsR
-    )
-    await sdk.userLedger!.waitForCompletion(off, 60_000, id)
-}
+await sdk.userLedger!.prepareSignExecuteAndWaitFor(
+    allocateCmdBob,
+    keyPairReceiver.privateKey,
+    v4(),
+    discsR
+)
 
 await sdk.setPartyId(venue!.partyId)
 
@@ -433,14 +405,13 @@ const settleCmd = [
     },
 ]
 
-const off = (await sdk.userLedger!.ledgerEnd()).offset || 0
-const settleId = await sdk.userLedger!.prepareSignAndExecuteTransaction(
+await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     settleCmd,
     keyPairVenue.privateKey,
     v4(),
     uniqueDisclosures
 )
-await sdk.userLedger!.waitForCompletion(off, 60_000, settleId)
+
 {
     await sdk.setPartyId(sender!.partyId)
     const pendingAllocationRequestSender =
