@@ -3,21 +3,20 @@ import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { setupExchange } from './setup-exchange.js'
 import { setupDemoCustomer } from './setup-demo-customer.js'
-import { tapParty } from './tap-party.js'
+import { tapDevNetFaucet } from './tap-devnet-faucet.js'
 import { validateTransferIn } from './validate-transfers.js'
 
 const logger = pino({ name: '01-one-step-deposit', level: 'info' })
 
 const { exchangeParty, treasuryParty, exchangeSdk } = await setupExchange({
     transferPreapproval: true,
-    grantFeatureAppRights: true,
 })
 
 const { customerParty, customerKeyPair, customerSdk } = await setupDemoCustomer(
     {}
 )
 
-await tapParty(customerSdk, customerParty, customerKeyPair, 100)
+await tapDevNetFaucet(customerSdk, customerParty, customerKeyPair, 100)
 
 const instrumentAdminPartyId =
     (await exchangeSdk.tokenStandard?.getInstrumentAdmin()) || ''
@@ -52,15 +51,16 @@ logger.info(
     `Instructed transfer of ${transferAmount} from ${customerParty} to ${treasuryParty}`
 )
 
-await exchangeSdk.userLedger?.waitForCompletion(
-    exchangeLedgerEnd,
-    30000,
-    memoUUID
-)
-
 // exchange observes the deposit via tx log
-const exchangeHoldings =
+let exchangeHoldings =
     await exchangeSdk.tokenStandard?.listHoldingTransactions()
+
+// we wait until the exchange can see the transaction
+while (exchangeHoldings.transactions.length === 0) {
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    exchangeHoldings =
+        await exchangeSdk.tokenStandard?.listHoldingTransactions()
+}
 
 if (
     validateTransferIn(

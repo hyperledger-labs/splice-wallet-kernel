@@ -3,7 +3,7 @@ import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { setupExchange } from './setup-exchange.js'
 import { setupDemoCustomer } from './setup-demo-customer.js'
-import { tapParty } from './tap-party.js'
+import { tapDevNetFaucet } from './tap-devnet-faucet.js'
 import {
     validateTransferIn,
     validateTransferOut,
@@ -28,7 +28,12 @@ const amuletIdentifier = {
 
 const transferAmount = 100
 
-await tapParty(exchangeSdk, treasuryParty, treasuryKeyPair, transferAmount)
+await tapDevNetFaucet(
+    exchangeSdk,
+    treasuryParty,
+    treasuryKeyPair,
+    transferAmount
+)
 
 const verifyPreApproval =
     await exchangeSdk.tokenStandard!.getTransferPreApprovalByParty(
@@ -55,10 +60,10 @@ const [withdrawalTransferCommand, withdrawalTransferDisclosedContracts] =
     )
 
 await exchangeSdk.userLedger?.prepareSignExecuteAndWaitFor(
-    customerTransferCommand,
+    withdrawalTransferCommand,
     treasuryKeyPair.privateKey,
     v4(),
-    customerTransferDisclosedContracts
+    withdrawalTransferDisclosedContracts
 )
 
 logger.info(
@@ -87,9 +92,15 @@ if (
 }
 
 // exchange observes the withdrawal via tx log
-const exchangeHoldings =
+let exchangeHoldings =
     await exchangeSdk.tokenStandard?.listHoldingTransactions()
 
+// we wait until the exchange can see the transaction
+while (exchangeHoldings.transactions.length === 0) {
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    exchangeHoldings =
+        await exchangeSdk.tokenStandard?.listHoldingTransactions()
+}
 if (
     validateTransferOut(
         exchangeHoldings!.transactions,
