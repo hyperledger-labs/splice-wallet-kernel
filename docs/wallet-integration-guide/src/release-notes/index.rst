@@ -3,6 +3,136 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+0.10.0
+------
+
+**Released on October 2nd, 2025**
+
+* Self-issue feature app rights
+
+*you can now grant yourself feature app rights (similar to the wallet UI) for both internal and external parties*
+
+.. code-block:: javascript
+
+    import {
+        WalletSDKImpl,
+        localNetAuthDefault,
+        localNetLedgerDefault,
+        localNetTopologyDefault,
+        localNetTokenStandardDefault,
+        localNetStaticConfig,
+    } from '@canton-network/wallet-sdk'
+
+    const sdk = new WalletSDKImpl().configure({
+        logger,
+        authFactory: localNetAuthDefault,
+        ledgerFactory: localNetLedgerDefault,
+        topologyFactory: localNetTopologyDefault,
+        tokenStandardFactory: localNetTokenStandardDefault,
+    })
+
+    // For external parties
+    const [command,disclosedContracts] = sdk.tokenStandard!.selfGrantFeatureAppRights()
+
+    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+        command,
+        keyPair.privateKey,
+        v4(),
+        disclosedContracts
+    )
+
+    // For internal parties
+    await sdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
+
+* localNet variation for AppProvider & AppUser
+*you can now use both the appProvider and AppUser easily for show operations between two validators*
+
+.. code-block:: javascript
+
+        const providerSDK = new WalletSDKImpl().configure({
+            logger,
+            authFactory: localNetAuthDefault,
+            ledgerFactory: localNetLedgerAppProvider,
+            topologyFactory: localNetTopologyAppProvider,
+            tokenStandardFactory: localNetTokenStandardAppProvider,
+            validatorFactory: localValidatorDefault,
+        })
+
+            const userSDK = new WalletSDKImpl().configure({
+                logger,
+                authFactory: localNetAuthDefault,
+                ledgerFactory: localNetLedgerAppUser,
+                topologyFactory: localNetTopologyAppUser,
+                tokenStandardFactory: localNetTokenStandardAppUser,
+                validatorFactory: localValidatorDefault,
+            })
+
+*LocalNet..Default still exists, they as previously defaults to the appUser validator*
+
+* topology transaction recalculate hash
+*you can now offline validate a topology transaction by recomputing the hash*
+
+.. code-block:: javascript
+
+    const recomputeHash = await TopologyController.computeTopologyTxHash(
+        prepared!.partyTransactions
+    )
+
+    if (recomputeHash !== prepared!.combinedHash) {
+        throw new Error(
+            'Recomputed hash does not match prepared combined hash'
+        )
+    }
+
+* new awaiting variation with `prepareSignExecuteAndWaitFor` & `executeSubmissionAndWaitFor`
+*release 0.7.0 introduced the `waitForCompletion`, we have now backed that into the executions*
+
+.. code-block:: javascript
+
+    // PREVIOUS CODE EXAMPLE
+    //it is recommended to fetch ledger offset before preparing your command
+    const offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
+
+    const transferCommandId =
+        // prepareSignAndExecuteTransaction & prepareSign now returns the commandId
+        await sdk.userLedger?.prepareSignAndExecuteTransaction(
+            [{ ExerciseCommand: transferCommand }],
+            keyPairSender.privateKey,
+            v4(),
+            disclosedContracts2
+        )
+
+    //new command that scans the ledger to ensure the command have completed
+    const completion = await sdk.userLedger?.waitForCompletion(
+        offsetLatest, //where to start from
+        5000, //optional timeout in ms
+        transferCommandId! //the command to look for
+    )
+
+    // NEW VARIATION
+    const completion =
+            await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+                transferCommand,
+                keyPairSender.privateKey,
+                v4(),
+                disclosedContracts,
+                10000 // 10 second timeout, if no value is provided here a default of 15 seconds is used
+            )
+
+    // VARIATION FOR `ExecuteSubmission`
+    const completion =
+            await onlineSDK.userLedger?.executeSubmissionAndWaitFor(
+                transferCommand,
+                signedHash,
+                keyPairSender.publicKey,
+                v4()
+            )
+
+
+
+* `executeSubmission` now returns the submissionId similarly to `prepareSignAndExecuteTransaction`
+* fixed thrown exception for missing seed when using `TopologyController.createTransactionHash`
+
 0.9.0
 -----
 
