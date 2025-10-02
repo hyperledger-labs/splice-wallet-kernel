@@ -4,7 +4,7 @@
 import { LitElement, html, css, unsafeCSS } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import bootstrapCss from 'bootstrap/dist/css/bootstrap.min.css?inline'
-import defaultTheme from '../../themes/default.css?inline'
+import defaultTheme from '../themes/default.css?inline'
 
 @customElement('app-layout')
 export class AppLayout extends LitElement {
