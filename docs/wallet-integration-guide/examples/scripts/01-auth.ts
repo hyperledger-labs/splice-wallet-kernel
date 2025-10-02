@@ -52,7 +52,7 @@ console.log('Connected to topology')
 const keyPair = createKeyPair()
 
 console.log('generated keypair')
-const generatedParty = await sdk.topology?.generateExternalPartyTopology(
+const generatedParty = await sdk.userLedger?.generateExternalParty(
     keyPair.publicKey
 )
 
@@ -67,8 +67,8 @@ const { partyId, multiHash } = generatedParty
 
 const signedHash = signTransactionHash(multiHash, keyPair.privateKey)
 
-await sdk.topology
-    ?.submitExternalPartyTopology(signedHash, generatedParty)
+await sdk.userLedger
+    ?.allocateExternalParty(signedHash, generatedParty)
     .then((allocatedParty) => {
         console.log('Alocated party ', allocatedParty.partyId)
     })

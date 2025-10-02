@@ -9,6 +9,8 @@ import {
     Types,
     awaitCompletion,
     promiseWithTimeout,
+    GenerateTransactionResponse,
+    AllocateExternalPartyResponse,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -86,6 +88,31 @@ export class LedgerController {
                 'synchronizer Id is not defined, call setSynchronizerId'
             )
         else return this.synchronizerId
+    }
+
+    /**
+     * Wait for and return the first connected synchronizer ID
+     */
+    async getFirstSynchronizerId(
+        setAsDefault: boolean = false
+    ): Promise<PartyId> {
+        if (this.synchronizerId) {
+            return this.synchronizerId
+        }
+
+        const response = await this.client.get(
+            '/v2/state/connected-synchronizers'
+        )
+        const first = response.connectedSynchronizers?.[0]
+
+        if (first) {
+            if (setAsDefault) {
+                this.setSynchronizerId(first.synchronizerId)
+            }
+            return first.synchronizerId
+        }
+
+        throw new Error('Failed to get first connected synchronizer ID')
     }
 
     /**
@@ -251,6 +278,236 @@ export class LedgerController {
             identityProviderId: '',
         })
     }
+
+    /**
+     * Generate topology transactions for an external party that can be signed and submitted in order to create a new external party.
+     *
+     * @param publicKey
+     * @param partyHint (optional) hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold (optional) parameter for multi-hosted parties (default is 1).
+     * @param hostingParticipantUids (optional) list of participant UIDs that will host the party.
+     * @returns
+     */
+    async generateExternalParty(
+        publicKey: PublicKey,
+        partyHint?: string,
+        confirmingThreshold?: number,
+        hostingParticipantUids?: string[]
+    ): Promise<GenerateTransactionResponse> {
+        return this.client.generateTopology(
+            this.getSynchronizerId(),
+            publicKey,
+            partyHint,
+            false,
+            confirmingThreshold,
+            hostingParticipantUids
+        )
+    }
+
+    /** Submits a prepared and signed external party topology to the ledger.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param signedHash The signed combined hash of the prepared transactions.
+     * @param preparedParty The prepared party object from prepareExternalPartyTopology.
+     * @param grantUserRights Defines if the transaction should also grant user right to current user (default is true)
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
+    async allocateExternalParty(
+        signedHash: string,
+        preparedParty: GenerateTransactionResponse,
+        grantUserRights?: boolean
+    ): Promise<AllocateExternalPartyResponse> {
+        const { publicKeyFingerprint, partyId, topologyTransactions } =
+            preparedParty
+
+        await this.client.allocateExternalParty(
+            this.getSynchronizerId(),
+            topologyTransactions!.map((transaction) => ({ transaction })),
+            [
+                {
+                    format: 'SIGNATURE_FORMAT_CONCAT',
+                    signature: signedHash,
+                    signedBy: publicKeyFingerprint,
+                    signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
+                },
+            ]
+        )
+
+        if (grantUserRights) {
+            await this.client.grantUserRights(this.userId, partyId)
+        }
+
+        return { partyId }
+    }
+
+    /** Prepares, signs and submits a new external party topology in one step.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param privateKey The private key of the new external party, used to sign the topology transactions.
+     * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold optional parameter for multi-hosted parties (default is 1).
+     * @param hostingParticipantEndpoints optional list of connection details for other participants to multi-host this party.
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
+    async signAndAllocateExternalParty(
+        privateKey: PrivateKey,
+        partyHint?: string,
+        confirmingThreshold?: number,
+        hostingParticipantEndpoints?: { accessToken: string; url: URL }[]
+    ): Promise<AllocateExternalPartyResponse> {
+        const otherHostingParticipantUids = await Promise.all(
+            hostingParticipantEndpoints
+                ?.map(
+                    (endpoint) =>
+                        new LedgerClient(
+                            endpoint.url,
+                            endpoint.accessToken,
+                            this.logger
+                        )
+                )
+                .map((client) =>
+                    client
+                        .get('/v2/parties/participant-id')
+                        .then((res) => res.participantId)
+                ) || []
+        )
+
+        const preparedParty = await this.generateExternalParty(
+            getPublicKeyFromPrivate(privateKey),
+            partyHint,
+            confirmingThreshold,
+            otherHostingParticipantUids
+        )
+
+        if (!preparedParty) {
+            throw new Error('Error creating prepared party')
+        }
+
+        const signedHash = signTransactionHash(
+            preparedParty.multiHash,
+            privateKey
+        )
+
+        // grant user rights automatically if the party is hosted on 1 participant
+        // if hosted on multiple participants, then we need to authorize each PartyToParticipant mapping
+        // before granting the user rights
+        const grantUserRights = !hostingParticipantEndpoints
+
+        return await this.allocateExternalParty(
+            signedHash,
+            preparedParty,
+            grantUserRights
+        )
+    }
+
+    // /** Gets a participantId for a specified participant
+    //  * @param participantEndpoints the config to connect to a ledger
+    //  * @returns A participant id
+    //  */
+    // async getParticipantId(
+    //     participantEndpoints: MultiHostPartyParticipantConfig
+    // ): Promise<string> {
+    //     const lc = new LedgerClient(
+    //         participantEndpoints.baseUrl,
+    //         participantEndpoints.accessToken,
+    //         this.logger
+    //     )
+
+    //     return (await lc.get('/v2/parties/participant-id')).participantId
+    // }
+
+    //     /** Prepares, signs and submits a new external party topology in one step.
+    //      * This will also authorize the new party to the participant and grant the user rights to the party.
+    //      * @param participantEndpoints List of endpoints to the respective hosting participant Admin APIs and ledger API.
+    //      * @param privateKey The private key of the new external party, used to sign the topology transactions.
+    //      * @param synchronizerId  ID of the synchronizer on which the party will be registered.
+    //      * @param hostingParticipantPermissions Map of participant id and permission level for participant
+    //      * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
+    //      * @param confirmingThreshold Minimum number of confirmations that must be received from the confirming participants to authorize a transaction.
+    //      * @returns An AllocatedParty object containing the partyId of the new party.
+    //      */
+    //     async prepareSignAndSubmitMultiHostExternalParty(
+    //         participantEndpoints: MultiHostPartyParticipantConfig[],
+    //         privateKey: string,
+    //         synchronizerId: PartyId,
+    //         hostingParticipantUids: string[],
+    //         partyHint?: string,
+    //         confirmingThreshold?: number
+    //     ): Promise<AllocatedParty>
+    //     /** @deprecated hostedParticipantUids should be an array of participant IDs */
+    //     async prepareSignAndSubmitMultiHostExternalParty(
+    //         participantEndpoints: MultiHostPartyParticipantConfig[],
+    //         privateKey: string,
+    //         synchronizerId: PartyId,
+    //         hostingParticipantUids: Map<string, Enums_ParticipantPermission>,
+    //         partyHint?: string,
+    //         confirmingThreshold?: number
+    //     ): Promise<AllocatedParty>
+    //     async prepareSignAndSubmitMultiHostExternalParty(
+    //         participantEndpoints: MultiHostPartyParticipantConfig[],
+    //         privateKey: string,
+    //         synchronizerId: PartyId,
+    //         hostingParticipantUids:
+    //             | Map<string, Enums_ParticipantPermission>
+    //             | string[],
+    //         partyHint?: string,
+    //         confirmingThreshold?: number
+    //     ): Promise<AllocatedParty> {
+    //         let hostingIds: string[] = []
+
+    //         if (Array.isArray(hostingParticipantUids)) {
+    //             hostingIds = hostingParticipantUids
+    //         } else {
+    //             hostingIds = Array.from(hostingParticipantUids.keys())
+    //         }
+
+    //         const preparedParty = await this.generateExternalPartyTopology(
+    //             getPublicKeyFromPrivate(privateKey),
+    //             partyHint,
+    //             confirmingThreshold,
+    //             hostingIds
+    //         )
+
+    //         const { partyId } = await this.prepareSignAndSubmitExternalParty(
+    //             privateKey,
+    //             partyHint,
+    //             confirmingThreshold,
+    //             hostingIds
+    //         )
+
+    //         this.logger.info(preparedParty, 'created external party')
+
+    //         // start after first because we've already onboarded an external party and authorized the mapping
+    //         // on the participant specified in the wallet.sdk.configure
+    //         // now we need to authorize the party to participant transaction on the others
+    //         for (const endpoint of participantEndpoints) {
+    //             const lc = new LedgerClient(
+    //                 endpoint.baseUrl,
+    //                 endpoint.accessToken,
+    //                 this.logger
+    //             )
+
+    //             // const service = new TopologyWriteService(
+    //             //     synchronizerId,
+    //             //     endpoint.adminApiUrl,
+    //             //     endpoint.accessToken,
+    //             //     lc
+    //             // )
+
+    //             // await service.authorizePartyToParticipant(preparedParty.partyId)
+
+    //             await lc.allocateExternalParty(
+    //                 synchronizerId,
+    //                 preparedParty.topologyTransactions!.map((transaction) => ({
+    //                     transaction,
+    //                 })),
+    //                 []
+    //             )
+    //         }
+
+    //         await this.client.grantUserRights(this.userId, partyId)
+
+    //         return { partyId }
+    //     }
+    // }
 
     /**
      * Performs the prepare step of the interactive submission flow.

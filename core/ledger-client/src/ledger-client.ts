@@ -254,22 +254,22 @@ export class LedgerClient {
 
         const client: Client<v3_3.paths> = this.clients['3.3']
 
+        const body = {
+            synchronizer: synchronizerId,
+            partyHint: partyHint || publicKey.slice(0, 5),
+            publicKey: {
+                format: 'CRYPTO_KEY_FORMAT_RAW',
+                keyData: publicKey,
+                keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
+            },
+            localParticipantObservationOnly,
+            confirmationThreshold,
+            otherConfirmingParticipantUids,
+        }
+
         const resp = await client.POST(
             '/v2/parties/external/generate-topology',
-            {
-                body: {
-                    synchronizer: synchronizerId,
-                    partyHint: partyHint || publicKey.slice(0, 5),
-                    publicKey: {
-                        format: 'CRYPTO_KEY_FORMAT_RAW',
-                        keyData: publicKey,
-                        keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
-                    },
-                    localParticipantObservationOnly,
-                    confirmationThreshold,
-                    otherConfirmingParticipantUids,
-                },
-            }
+            { body }
         )
 
         return this.valueOrError(resp)

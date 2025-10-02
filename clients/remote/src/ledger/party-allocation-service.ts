@@ -20,25 +20,17 @@ type SigningCbFn = (hash: string) => Promise<string>
  */
 export class PartyAllocationService {
     private ledgerClient: LedgerClient
-    private topologyClient: TopologyWriteService
 
     constructor(
         private synchronizerId: string,
         adminToken: string,
         httpLedgerUrl: string,
-        adminApiUrl: string,
         logger: Logger
     ) {
         this.ledgerClient = new LedgerClient(
             new URL(httpLedgerUrl),
             adminToken,
             logger
-        )
-        this.topologyClient = new TopologyWriteService(
-            this.synchronizerId,
-            adminApiUrl,
-            adminToken,
-            this.ledgerClient
         )
     }
 
@@ -111,14 +103,15 @@ export class PartyAllocationService {
         const namespace =
             TopologyWriteService.createFingerprintFromKey(publicKey)
 
-        const transactions = await this.topologyClient.generateTopology(
+        const transactions = await this.ledgerClient.generateTopology(
             publicKey,
             hint
         )
 
         const signature = await signingCallback(transactions.multiHash)
 
-        const res = await this.topologyClient.allocateExternalParty(
+        const res = await this.ledgerClient.allocateExternalParty(
+            this.synchronizerId,
             transactions.topologyTransactions!.map((transaction) => ({
                 transaction,
             })),

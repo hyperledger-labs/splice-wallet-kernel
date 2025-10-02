@@ -89,7 +89,6 @@ describe('PartyAllocationService', () => {
             network.synchronizerId,
             'admin.jwt',
             network.ledgerApi.baseUrl,
-            network.ledgerApi.adminGrpcUrl,
             mockLogger
         )
     })

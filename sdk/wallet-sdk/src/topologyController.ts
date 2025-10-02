@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    GenerateTransactionResponse,
     LedgerClient,
     TopologyWriteService,
 } from '@canton-network/core-ledger-client'
@@ -95,13 +94,6 @@ export class TopologyController {
      * This is a utility function that uses the same fingerprinting scheme as the ledger.
      * @param publicKey
      */
-    static createFingerprintFromPublicKey(publicKey: string): string
-    /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
-    static createFingerprintFromPublicKey(publicKey: SigningPublicKey): string
-    /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
-    static createFingerprintFromPublicKey(
-        publicKey: SigningPublicKey | string
-    ): string
     static createFingerprintFromPublicKey(
         publicKey: SigningPublicKey | PublicKey
     ): string {
@@ -110,7 +102,7 @@ export class TopologyController {
 
     /** Creates a prepared topology transaction that can be signed and submitted in order th create a new external party.
      *
-     * @deprecated use generateExternalPartyTopology instead
+     * @deprecated use LedgerController.generateExternalParty instead
      *
      * @param publicKey
      * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
@@ -169,30 +161,6 @@ export class TopologyController {
         return Promise.resolve(result)
     }
 
-    /**
-     * Generate topology transactions for an external party that can be signed and submitted in order to create a new external party.
-     *
-     * @param publicKey
-     * @param partyHint (optional) hint to use for the partyId, if not provided the publicKey will be used.
-     * @param confirmingThreshold (optional) parameter for multi-hosted parties (default is 1).
-     * @param hostingParticipantUids (optional) list of participant UIDs that will host the party.
-     * @returns
-     */
-    async generateExternalPartyTopology(
-        publicKey: PublicKey,
-        partyHint?: string,
-        confirmingThreshold?: number,
-        hostingParticipantUids?: string[]
-    ): Promise<GenerateTransactionResponse> {
-        return this.topologyClient.generateTopology(
-            publicKey,
-            partyHint,
-            false,
-            confirmingThreshold,
-            hostingParticipantUids
-        )
-    }
-
     /** Calculates the MultiTopologyTransaction hash
      * @param preparedTransactions The 3 topology transactions from the generateTransactions endpoint
      */
@@ -217,55 +185,32 @@ export class TopologyController {
      */
     async submitExternalPartyTopology(
         signedHash: string,
-        preparedParty: GenerateTransactionResponse,
-        grantUserRights?: boolean
-    ): Promise<AllocatedParty>
-    /** @deprecated: use the result of new generateExternalPartyTopology() method for preparedParty */
-    async submitExternalPartyTopology(
-        signedHash: string,
         preparedParty: PreparedParty,
-        grantUserRights?: boolean
-    ): Promise<AllocatedParty>
-    async submitExternalPartyTopology(
-        signedHash: string,
-        preparedParty: PreparedParty | GenerateTransactionResponse,
         grantUserRights: boolean = true
     ): Promise<AllocatedParty> {
-        let normalized: GenerateTransactionResponse
+        const signedTopologyTxs = preparedParty.partyTransactions.map(
+            (transaction) =>
+                TopologyWriteService.toSignedTopologyTransaction(
+                    preparedParty.txHashes,
+                    transaction,
+                    signedHash,
+                    preparedParty.namespace
+                )
+        )
 
-        if ('partyTransactions' in preparedParty) {
-            normalized = {
-                topologyTransactions: preparedParty.partyTransactions.map(
-                    (transaction) => Buffer.from(transaction).toString('base64')
-                ),
-                multiHash: preparedParty.combinedHash,
-                publicKeyFingerprint: preparedParty.namespace,
-                partyId: preparedParty.partyId,
-            }
-        } else {
-            normalized = preparedParty
-        }
-
-        const { publicKeyFingerprint, partyId, topologyTransactions } =
-            normalized
-
-        await this.topologyClient.allocateExternalParty(
-            topologyTransactions!.map((transaction) => ({ transaction })),
-            [
-                {
-                    format: 'SIGNATURE_FORMAT_CONCAT',
-                    signature: signedHash,
-                    signedBy: publicKeyFingerprint,
-                    signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
-                },
-            ]
+        await this.topologyClient.submitExternalPartyTopology(
+            signedTopologyTxs,
+            preparedParty.partyId
         )
 
         if (grantUserRights) {
-            await this.client.grantUserRights(this.userId, partyId)
+            await this.client.grantUserRights(
+                this.userId,
+                preparedParty.partyId
+            )
         }
 
-        return { partyId }
+        return { partyId: preparedParty.partyId }
     }
 
     /** Prepares, signs and submits a new external party topology in one step.
@@ -280,55 +225,25 @@ export class TopologyController {
         privateKey: PrivateKey,
         partyHint?: string,
         confirmingThreshold?: number,
-        hostingParticipantUids?: string[]
-    ): Promise<AllocatedParty>
-    /** @deprecated -- hostingParticipantUids must be an array of strings corresponding to hosting participant IDs */
-    async prepareSignAndSubmitExternalParty(
-        privateKey: PrivateKey,
-        partyHint?: string,
-        confirmingThreshold?: number,
-        hostingParticipantUids?: Map<string, Enums_ParticipantPermission>
-    ): Promise<AllocatedParty>
-    async prepareSignAndSubmitExternalParty(
-        privateKey: PrivateKey,
-        partyHint?: string,
-        confirmingThreshold?: number,
-        hostingParticipantUids?:
-            | Map<string, Enums_ParticipantPermission>
-            | string[]
+        hostingParticipantPermissions?: Map<string, Enums_ParticipantPermission>
     ): Promise<AllocatedParty> {
-        // grant user rights automatically if the party is hosted on 1 participant
-        // if hosted on multiple participants, then we need to authorize each PartyToParticipant mapping
-        // before granting the user rights
-        let grantUserRights = false
-        let hostingParticipantIds: string[] = []
-
-        if (!hostingParticipantUids) {
-            hostingParticipantIds = []
-            grantUserRights = true
-        } else if (Array.isArray(hostingParticipantUids)) {
-            hostingParticipantIds = hostingParticipantUids
-            grantUserRights = hostingParticipantIds.length === 1
-        } else {
-            hostingParticipantIds = Array.from(hostingParticipantUids.keys())
-            grantUserRights = hostingParticipantUids.size === 1
-        }
-
-        const preparedParty = await this.generateExternalPartyTopology(
+        const preparedParty = await this.prepareExternalPartyTopology(
             getPublicKeyFromPrivate(privateKey),
             partyHint,
             confirmingThreshold,
-            hostingParticipantIds
+            hostingParticipantPermissions
         )
-
-        if (!preparedParty) {
-            throw new Error('Error creating prepared party')
-        }
-
         const signedHash = signTransactionHash(
-            preparedParty.multiHash,
+            preparedParty!.combinedHash,
             privateKey
         )
+
+        // grant user rights automatically if the party is hosted on 1 participant
+        // if hosted on multiple participants, then we need to authorize each PartyToParticipant mapping
+        // before granting the user rights
+        const grantUserRights =
+            hostingParticipantPermissions === undefined ||
+            hostingParticipantPermissions.size === 1
 
         return await this.submitExternalPartyTopology(
             signedHash,
@@ -367,50 +282,22 @@ export class TopologyController {
         participantEndpoints: MultiHostPartyParticipantConfig[],
         privateKey: string,
         synchronizerId: PartyId,
-        hostingParticipantUids: string[],
-        partyHint?: string,
-        confirmingThreshold?: number
-    ): Promise<AllocatedParty>
-    /** @deprecated hostedParticipantUids should be an array of participant IDs */
-    async prepareSignAndSubmitMultiHostExternalParty(
-        participantEndpoints: MultiHostPartyParticipantConfig[],
-        privateKey: string,
-        synchronizerId: PartyId,
-        hostingParticipantUids: Map<string, Enums_ParticipantPermission>,
-        partyHint?: string,
-        confirmingThreshold?: number
-    ): Promise<AllocatedParty>
-    async prepareSignAndSubmitMultiHostExternalParty(
-        participantEndpoints: MultiHostPartyParticipantConfig[],
-        privateKey: string,
-        synchronizerId: PartyId,
-        hostingParticipantUids:
-            | Map<string, Enums_ParticipantPermission>
-            | string[],
+        hostingParticipantPermissions: Map<string, Enums_ParticipantPermission>,
         partyHint?: string,
         confirmingThreshold?: number
     ): Promise<AllocatedParty> {
-        let hostingIds: string[] = []
-
-        if (Array.isArray(hostingParticipantUids)) {
-            hostingIds = hostingParticipantUids
-        } else {
-            hostingIds = Array.from(hostingParticipantUids.keys())
-        }
-
         const preparedParty = await this.prepareSignAndSubmitExternalParty(
-            privateKey,
+            getPublicKeyFromPrivate(privateKey),
             partyHint,
             confirmingThreshold,
-            hostingIds
+            hostingParticipantPermissions
         )
 
         this.logger.info(preparedParty, 'created external party')
 
-        //start after first because we've already onboarded an external party and authorized the mapping
+        // start after first because we've already onboarded an external party and authorized the mapping
         // on the participant specified in the wallet.sdk.configure
         // now we need to authorize the party to participant transaction on the others
-
         for (const endpoint of participantEndpoints.slice(1)) {
             const lc = new LedgerClient(
                 endpoint.baseUrl,
@@ -427,9 +314,6 @@ export class TopologyController {
 
             await service.authorizePartyToParticipant(preparedParty.partyId)
         }
-
-        // the PartyToParticipant mapping needs to be authorized on each HostingParticipant
-        // before we can grantUserRights to the party
 
         await this.client.grantUserRights(this.userId, preparedParty.partyId)
 

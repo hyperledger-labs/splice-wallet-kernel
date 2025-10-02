@@ -55,7 +55,7 @@ const keyPair = createKeyPair()
 
 logger.info('generated keypair')
 
-const generatedParty = await sdk.topology?.generateExternalPartyTopology(
+const generatedParty = await sdk.userLedger?.generateExternalParty(
     keyPair.publicKey
 )
 
@@ -70,7 +70,7 @@ logger.info('Prepared external topology')
 logger.info('Signing the hash')
 const signedHash = signTransactionHash(multiHash, keyPair.privateKey)
 
-const allocatedParty = await sdk.topology?.submitExternalPartyTopology(
+const allocatedParty = await sdk.userLedger?.allocateExternalParty(
     signedHash,
     generatedParty
 )

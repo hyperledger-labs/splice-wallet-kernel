@@ -35,40 +35,33 @@ await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
 const adminToken = await sdk.auth.getAdminToken()
 
-const alice = await sdk.topology?.prepareSignAndSubmitExternalParty(
+const alice = await sdk.userLedger?.signAndAllocateExternalParty(
     singleHostedPartyKeyPair.privateKey,
     'alice'
 )
 logger.info(alice?.partyId!, 'created single hosted party to get synchronzerId')
 await sdk.setPartyId(alice?.partyId!)
 
+// const userParticipantConfig = {
+//     adminApiUrl: '127.0.0.1:2902',
+//     baseUrl: new URL('http://127.0.0.1:2975'),
+//     accessToken: adminToken.accessToken,
+// }
+
 const multiHostedParticipantEndpointConfig = [
     {
-        adminApiUrl: '127.0.0.1:2902',
-        baseUrl: new URL('http://127.0.0.1:2975'),
-        accessToken: adminToken.accessToken,
-    },
-    {
-        adminApiUrl: '127.0.0.1:3902',
-        baseUrl: new URL('http://127.0.0.1:3975'),
+        url: new URL('http://127.0.0.1:3975'),
         accessToken: adminToken.accessToken,
     },
 ]
 
 logger.info('multi host party starting...')
 
-const participantIdPromises = multiHostedParticipantEndpointConfig.map(
-    (endpoint) => sdk.topology!.getParticipantId(endpoint)
-)
-
-const participantIds = await Promise.all(participantIdPromises)
-
-await sdk.topology?.prepareSignAndSubmitMultiHostExternalParty(
-    multiHostedParticipantEndpointConfig,
+await sdk.userLedger?.signAndAllocateExternalParty(
     multiHostedParty.privateKey,
-    sdk.userLedger!.getSynchronizerId(),
-    participantIds,
-    'bob'
+    'bob',
+    1,
+    multiHostedParticipantEndpointConfig
 )
 
 logger.info('multi hosted party succeeded!')

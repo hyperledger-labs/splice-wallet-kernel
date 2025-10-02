@@ -1,13 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    AllocateExternalPartyResponse,
-    GenerateTransactionResponse,
-    LedgerClient,
-    MultiHashSignatures,
-    OnboardingTransactions,
-} from './ledger-client.js'
+import { LedgerClient } from './ledger-client.js'
 import { createHash } from 'node:crypto'
 import { PartyId } from '@canton-network/core-types'
 import {
@@ -268,34 +262,6 @@ export class TopologyWriteService {
     ) {
         await this.addTransactions(signedTopologyTxs)
         await this.authorizePartyToParticipant(partyId)
-    }
-
-    async allocateExternalParty(
-        onboardingTransactions: OnboardingTransactions,
-        multiHashSignatures: MultiHashSignatures
-    ): Promise<AllocateExternalPartyResponse> {
-        return this.ledgerClient.allocateExternalParty(
-            this.synchronizerId,
-            onboardingTransactions,
-            multiHashSignatures
-        )
-    }
-
-    async generateTopology(
-        publicKey: string,
-        partyHint?: PartyId,
-        localParticipantObservationOnly: boolean = false,
-        confirmationThreshold: number = 1,
-        otherConfirmingParticipantUids: string[] = []
-    ): Promise<GenerateTransactionResponse> {
-        return this.ledgerClient.generateTopology(
-            this.synchronizerId,
-            publicKey,
-            partyHint,
-            localParticipantObservationOnly,
-            confirmationThreshold,
-            otherConfirmingParticipantUids
-        )
     }
 
     /** @deprecated use generateTopology() */
