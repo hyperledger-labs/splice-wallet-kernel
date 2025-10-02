@@ -14,23 +14,6 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
 
 .. code-block:: javascript
 
-    import {
-        WalletSDKImpl,
-        localNetAuthDefault,
-        localNetLedgerDefault,
-        localNetTopologyDefault,
-        localNetTokenStandardDefault,
-        localNetStaticConfig,
-    } from '@canton-network/wallet-sdk'
-
-    const sdk = new WalletSDKImpl().configure({
-        logger,
-        authFactory: localNetAuthDefault,
-        ledgerFactory: localNetLedgerDefault,
-        topologyFactory: localNetTopologyDefault,
-        tokenStandardFactory: localNetTokenStandardDefault,
-    })
-
     // For external parties
     const [command,disclosedContracts] = sdk.tokenStandard!.selfGrantFeatureAppRights()
 
@@ -52,20 +35,20 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
         const providerSDK = new WalletSDKImpl().configure({
             logger,
             authFactory: localNetAuthDefault,
-            ledgerFactory: localNetLedgerAppProvider,
-            topologyFactory: localNetTopologyAppProvider,
-            tokenStandardFactory: localNetTokenStandardAppProvider,
+            ledgerFactory: localNetLedgerAppProvider, //new variations here
+            topologyFactory: localNetTopologyAppProvider, //new variations here
+            tokenStandardFactory: localNetTokenStandardAppProvider, //new variations here
             validatorFactory: localValidatorDefault,
         })
 
-            const userSDK = new WalletSDKImpl().configure({
-                logger,
-                authFactory: localNetAuthDefault,
-                ledgerFactory: localNetLedgerAppUser,
-                topologyFactory: localNetTopologyAppUser,
-                tokenStandardFactory: localNetTokenStandardAppUser,
-                validatorFactory: localValidatorDefault,
-            })
+        const userSDK = new WalletSDKImpl().configure({
+            logger,
+            authFactory: localNetAuthDefault,
+            ledgerFactory: localNetLedgerAppUser, //new variations here
+            topologyFactory: localNetTopologyAppUser, //new variations here
+            tokenStandardFactory: localNetTokenStandardAppUser, //new variations here
+            validatorFactory: localValidatorDefault,
+        })
 
 *LocalNet..Default still exists, they as previously defaults to the appUser validator*
 
@@ -132,6 +115,7 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
 
 * `executeSubmission` now returns the submissionId similarly to `prepareSignAndExecuteTransaction`
 * fixed thrown exception for missing seed when using `TopologyController.createTransactionHash`
+* `prepareSubmission` now has same command input signature as `prepareSignAndExecuteTransaction`
 
 0.9.0
 -----
