@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Splice Wallet Kernel",
+    "name": "Splice Wallet Gateway",
     "version": "1.0",
-    "description": "Browser extension for the Splice Wallet Kernel.",
+    "description": "Browser extension for the Splice Wallet Gateway.",
     "permissions": ["storage", "activeTab", "identity"],
     "host_permissions": ["<all_urls>"],
     "action": {

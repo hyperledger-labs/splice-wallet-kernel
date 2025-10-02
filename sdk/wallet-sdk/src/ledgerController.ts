@@ -19,7 +19,7 @@ import {
 } from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
-import { SigningPublicKey } from '@canton-network/core-ledger-client/src/_proto/com/digitalasset/canton/crypto/v30/crypto'
+import { SigningPublicKey } from '@canton-network/core-ledger-proto'
 import { TopologyController } from './topologyController.js'
 import { PartyId } from '@canton-network/core-types'
 
@@ -124,14 +124,13 @@ export class LedgerController {
             return false
         }
     }
-
     /**
      * Prepares, signs and executes a transaction on the ledger (using interactive submission).
      * @param commands the commands to be executed.
      * @param privateKey the private key to sign the transaction with.
      * @param commandId an unique identifier used to track the transaction, if not provided a random UUID will be used.
      * @param disclosedContracts off-ledger sourced contractIds needed to perform the transaction.
-     * @returns the commandId used to track the transaction.
+     * @returns the submissionId used to track the transaction.
      */
     async prepareSignAndExecuteTransaction(
         commands: WrappedCommand | WrappedCommand[] | unknown,
@@ -139,21 +138,54 @@ export class LedgerController {
         commandId: string,
         disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<string> {
-        const commandArray = Array.isArray(commands) ? commands : [commands]
         const prepared = await this.prepareSubmission(
-            commandArray,
+            commands,
             commandId,
             disclosedContracts
         )
 
+        const calculatedTxHash = await TopologyController.createTransactionHash(
+            prepared.preparedTransaction!
+        )
+
+        if (calculatedTxHash !== prepared.preparedTransactionHash) {
+            this.logger.error(
+                `Calculated tx hash ${calculatedTxHash}, got ${prepared.preparedTransactionHash} from ledger api`
+            )
+        }
         const signature = signTransactionHash(
             prepared.preparedTransactionHash,
             privateKey
         )
         const publicKey = getPublicKeyFromPrivate(privateKey)
 
-        await this.executeSubmission(prepared, signature, publicKey, commandId)
-        return commandId
+        return this.executeSubmission(prepared, signature, publicKey, commandId)
+    }
+
+    /**
+     * Prepares, signs and executes a transaction on the ledger (using interactive submission).
+     * @param commands the commands to be executed.
+     * @param privateKey the private key to sign the transaction with.
+     * @param commandId an unique identifier used to track the transaction, if not provided a random UUID will be used.
+     * @param disclosedContracts off-ledger sourced contractIds needed to perform the transaction.
+     * @param timeoutMs The maximum time to wait in milliseconds.
+     * @returns the commandId used to track the transaction.
+     */
+    async prepareSignExecuteAndWaitFor(
+        commands: WrappedCommand | WrappedCommand[] | unknown,
+        privateKey: PrivateKey,
+        commandId: string,
+        disclosedContracts?: Types['DisclosedContract'][],
+        timeoutMs: number = 15000
+    ): Promise<Types['Completion']['value']> {
+        const ledgerEnd = await this.ledgerEnd()
+        await this.prepareSignAndExecuteTransaction(
+            commands,
+            privateKey,
+            commandId,
+            disclosedContracts
+        )
+        return this.waitForCompletion(ledgerEnd, timeoutMs, commandId)
     }
 
     /**
@@ -166,14 +198,16 @@ export class LedgerController {
      * @throws An error if the timeout is reached before the command is completed.
      */
     async waitForCompletion(
-        ledgerEnd: number,
+        ledgerEnd: number | Types['GetLedgerEndResponse'],
         timeoutMs: number,
         commandId?: string,
         submissionId?: string
     ): Promise<Types['Completion']['value']> {
+        const ledgerEndNumber: number =
+            typeof ledgerEnd === 'number' ? ledgerEnd : ledgerEnd.offset
         const completionPromise = awaitCompletion(
             this.client,
-            ledgerEnd,
+            ledgerEndNumber,
             this.getPartyId(),
             this.userId,
             commandId,
@@ -209,13 +243,14 @@ export class LedgerController {
      * @param disclosedContracts additional contracts used to resolve contract & contract key lookups.
      */
     async prepareSubmission(
-        commands: unknown,
+        commands: WrappedCommand | WrappedCommand[] | unknown,
         commandId?: string,
         disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
+        const commandArray = Array.isArray(commands) ? commands : [commands]
         const prepareParams: Types['JsPrepareSubmissionRequest'] = {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-            commands: commands as any,
+            commands: commandArray as any,
             commandId: commandId || v4(),
             userId: this.userId,
             actAs: [this.getPartyId()],
@@ -244,7 +279,7 @@ export class LedgerController {
         signature: string,
         publicKey: SigningPublicKey | PublicKey,
         submissionId: string
-    ): Promise<PostResponse<'/v2/interactive-submission/execute'>> {
+    ): Promise<string> {
         if (prepared.preparedTransaction === undefined) {
             throw new Error('preparedTransaction is undefined')
         }
@@ -289,9 +324,39 @@ export class LedgerController {
             },
         }
 
-        return await this.client.post(
-            '/v2/interactive-submission/execute',
-            request
+        await this.client.post('/v2/interactive-submission/execute', request)
+        return submissionId
+    }
+
+    /**
+     * Performs the execute step of the interactive submission flow.
+     * @param prepared the prepared transaction from the prepareSubmission method.
+     * @param signature the signed signature of the preparedTransactionHash from the prepareSubmission method.
+     * @param publicKey the public key correlating to the private key used to sign the signature.
+     * @param submissionId the unique identifier used to track the transaction, must be the same as used in prepareSubmission.
+     * @param timeoutMs The maximum time to wait in milliseconds.
+     * @returns The completion value of the command.
+     */
+    async executeSubmissionAndWaitFor(
+        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        signature: string,
+        publicKey: SigningPublicKey | PublicKey,
+        submissionId: string,
+        timeoutMs: number = 15000
+    ): Promise<Types['Completion']['value']> {
+        const ledgerEnd = await this.ledgerEnd()
+        await this.executeSubmission(
+            prepared,
+            signature,
+            publicKey,
+            submissionId
+        )
+
+        return this.waitForCompletion(
+            ledgerEnd,
+            timeoutMs,
+            undefined,
+            submissionId
         )
     }
 
@@ -521,5 +586,19 @@ export const localNetLedgerDefault = (
     userId: string,
     token: string
 ): LedgerController => {
+    return localNetLedgerAppUser(userId, token)
+}
+
+export const localNetLedgerAppUser = (
+    userId: string,
+    token: string
+): LedgerController => {
     return new LedgerController(userId, new URL('http://127.0.0.1:2975'), token)
+}
+
+export const localNetLedgerAppProvider = (
+    userId: string,
+    token: string
+): LedgerController => {
+    return new LedgerController(userId, new URL('http://127.0.0.1:3975'), token)
 }

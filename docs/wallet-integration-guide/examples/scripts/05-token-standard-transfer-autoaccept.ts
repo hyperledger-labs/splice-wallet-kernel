@@ -79,12 +79,12 @@ logger.info('creating transfer preapproval proposal')
 
 const transferPreApprovalProposal =
     await sdk.userLedger?.createTransferPreapprovalCommand(
-        validatorOperatorParty!, // TODO: find out how to get this not through validator api
+        validatorOperatorParty!,
         receiver?.partyId!,
         instrumentAdminPartyId
     )
 
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     [transferPreApprovalProposal],
     keyPairReceiver.privateKey,
     v4()
@@ -103,14 +103,12 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     }
 )
 
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts
 )
-
-await new Promise((res) => setTimeout(res, 5000))
 
 const utxos = await sdk.tokenStandard?.listHoldingUtxos()
 logger.info(utxos, 'List Token Standard Holding UTXOs')
@@ -142,7 +140,7 @@ const [transferCommand, disclosedContracts2] =
         'memo-ref'
     )
 
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     transferCommand,
     keyPairSender.privateKey,
     v4(),
@@ -150,7 +148,15 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
 )
 logger.info('Submitted transfer transaction')
 
-await new Promise((res) => setTimeout(res, 5000))
+await sdk.setPartyId(validatorOperatorParty!)
+
+const validatorFeatureAppRights =
+    await sdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
+
+logger.info(
+    validatorFeatureAppRights,
+    `Featured App Rights for validator ${validatorOperatorParty}`
+)
 
 {
     await sdk.setPartyId(sender!.partyId)

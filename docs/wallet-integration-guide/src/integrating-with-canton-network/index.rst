@@ -1,6 +1,7 @@
 Integrating with the Canton Network
 ===================================
 
+.. _install-wallet-sdk:
 
 How to install the Wallet SDK
 -----------------------------

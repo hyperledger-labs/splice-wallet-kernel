@@ -2,10 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    Enums_ParticipantPermission,
     LedgerClient,
-    PreparedTransaction,
-    SigningPublicKey,
     TopologyWriteService,
 } from '@canton-network/core-ledger-client'
 import {
@@ -17,8 +14,17 @@ import {
     PublicKey,
 } from '@canton-network/core-signing-lib'
 import { pino } from 'pino'
-import { hashPreparedTransaction } from '@canton-network/core-tx-visualizer'
+import {
+    hashPreparedTransaction,
+    computeMultiHashForTopology,
+    computeSha256CantonHash,
+} from '@canton-network/core-tx-visualizer'
 import { PartyId } from '@canton-network/core-types'
+import {
+    Enums_ParticipantPermission,
+    PreparedTransaction,
+    SigningPublicKey,
+} from '@canton-network/core-ledger-proto'
 export { Enums_ParticipantPermission } from '@canton-network/core-ledger-proto'
 
 export type PreparedParty = {
@@ -84,7 +90,6 @@ export class TopologyController {
     ): Promise<string> {
         return hashPreparedTransaction(preparedTransaction, 'base64')
     }
-
     /** Creates a fingerprint from a public key.
      * This is a utility function that uses the same fingerprinting scheme as the ledger.
      * @param publicKey
@@ -135,6 +140,15 @@ export class TopologyController {
 
         const combinedHash = TopologyWriteService.combineHashes(txHashes)
 
+        const computedHash =
+            await TopologyController.computeTopologyTxHash(partyTransactions)
+
+        if (combinedHash !== computedHash) {
+            this.logger.error(
+                `Calculated hash doesn't match hash from the ledger api. Got ${combinedHash}, expected ${computedHash}`
+            )
+        }
+
         const result = {
             partyTransactions,
             combinedHash,
@@ -146,6 +160,21 @@ export class TopologyController {
         return Promise.resolve(result)
     }
 
+    /** Calculates the MultiTopologyTransaction hash
+     * @param preparedTransactions The 3 topology transactions from the generateTransactions endpoint
+     */
+    static async computeTopologyTxHash(
+        preparedTransactions: Uint8Array<ArrayBufferLike>[]
+    ) {
+        const rawHashes = await Promise.all(
+            preparedTransactions.map((tx) => computeSha256CantonHash(11, tx))
+        )
+        const combinedHashes = await computeMultiHashForTopology(rawHashes)
+
+        const computedHash = await computeSha256CantonHash(55, combinedHashes)
+
+        return Buffer.from(computedHash).toString('base64')
+    }
     /** Submits a prepared and signed external party topology to the ledger.
      * This will also authorize the new party to the participant and grant the user rights to the party.
      * @param signedHash The signed combined hash of the prepared transactions.
@@ -203,7 +232,6 @@ export class TopologyController {
             confirmingThreshold,
             hostingParticipantPermissions
         )
-
         const signedHash = signTransactionHash(
             preparedParty!.combinedHash,
             privateKey
@@ -303,10 +331,31 @@ export const localNetTopologyDefault = (
     userId: string,
     userAdminToken: string,
     synchronizerId: PartyId
+): TopologyController =>
+    localNetTopologyAppUser(userId, userAdminToken, synchronizerId)
+
+export const localNetTopologyAppUser = (
+    userId: string,
+    userAdminToken: string,
+    synchronizerId: PartyId
 ): TopologyController => {
     return new TopologyController(
         '127.0.0.1:2902',
         new URL('http://127.0.0.1:2975'),
+        userId,
+        userAdminToken,
+        synchronizerId
+    )
+}
+
+export const localNetTopologyAppProvider = (
+    userId: string,
+    userAdminToken: string,
+    synchronizerId: PartyId
+): TopologyController => {
+    return new TopologyController(
+        '127.0.0.1:3902',
+        new URL('http://127.0.0.1:3975'),
         userId,
         userAdminToken,
         synchronizerId

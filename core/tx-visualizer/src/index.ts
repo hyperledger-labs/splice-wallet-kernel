@@ -4,6 +4,10 @@
 import { PreparedTransaction } from '@canton-network/core-ledger-proto'
 import { computePreparedTransaction } from './hashing_scheme_v2.js'
 import { fromBase64, toBase64, toHex } from './utils.js'
+export {
+    computeSha256CantonHash,
+    computeMultiHashForTopology,
+} from './hashing_scheme_v2.js'
 
 /**
  * Decodes a base64 encoded prepared transaction into a well-typed data model, generated directly from Protobuf definitions.

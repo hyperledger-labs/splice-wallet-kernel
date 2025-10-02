@@ -1,8 +1,8 @@
 # Clean Coding Guidelines
 
-In here is contained the clean coding guidelines for the Hyperledger Wallet Kernel project.
+In here is contained the clean coding guidelines for the Wallet Gateway repo.
 These guidelines are meant to help maintain a high standard of code quality and readability across the codebase.
-These guidelines are decided within the Hyperledger Wallet Kernel team, and are subject to change as the project evolves.
+These guidelines are decided within the Wallet team, and are subject to change as the repo evolves.
 
 ## General Principles
 

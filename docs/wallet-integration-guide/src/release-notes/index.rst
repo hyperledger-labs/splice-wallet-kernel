@@ -3,6 +3,44 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+0.9.0
+-----
+
+**Released on September 26th, 2025**
+
+* Supporting both canton 3.3 and 3.4 at the same timeout
+
+*since canton 3.4 will soon come to splice being able to support both versions is imperative before*
+
+* `localNetStaticConfig` added
+
+*since the wallet api and registry are static for localnet, a new config has been added to make early development easier*
+
+.. code-block:: javascript
+
+    import {
+        WalletSDKImpl,
+        localNetAuthDefault,
+        localNetLedgerDefault,
+        localNetTopologyDefault,
+        localNetTokenStandardDefault,
+        localNetStaticConfig,
+    } from '@canton-network/wallet-sdk'
+
+    const sdk = new WalletSDKImpl().configure({
+        logger,
+        authFactory: localNetAuthDefault,
+        ledgerFactory: localNetLedgerDefault,
+        topologyFactory: localNetTopologyDefault,
+        tokenStandardFactory: localNetTokenStandardDefault,
+    })
+
+    await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
+
+    sdk.tokenStandard?.setTransferFactoryRegistryUrl(
+        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+    )
+
 0.8.0
 -----
 

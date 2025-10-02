@@ -76,14 +76,12 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
 )
 let offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
 
-const tapCommandId = await sdk.userLedger?.prepareSignAndExecuteTransaction(
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts
 )
-
-await sdk.userLedger?.waitForCompletion(offsetLatest, 5000, tapCommandId!)
 
 const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
 logger.info(utxos, 'List Available Token Standard Holding UTXOs')
@@ -117,16 +115,13 @@ const [transferCommand, disclosedContracts2] =
 
 offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? offsetLatest
 
-const transferCommandId =
-    await sdk.userLedger?.prepareSignAndExecuteTransaction(
-        transferCommand,
-        keyPairSender.privateKey,
-        v4(),
-        disclosedContracts2
-    )
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    transferCommand,
+    keyPairSender.privateKey,
+    v4(),
+    disclosedContracts2
+)
 logger.info('Submitted transfer transaction')
-
-await sdk.userLedger?.waitForCompletion(offsetLatest, 5000, transferCommandId!)
 
 await sdk.setPartyId(receiver!.partyId)
 
@@ -141,7 +136,7 @@ const [acceptTransferCommand, disclosedContracts3] =
         'Accept'
     )
 
-await sdk.userLedger?.prepareSignAndExecuteTransaction(
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     acceptTransferCommand,
     keyPairReceiver.privateKey,
     v4(),
@@ -149,8 +144,6 @@ await sdk.userLedger?.prepareSignAndExecuteTransaction(
 )
 
 logger.info('Accepted transfer instruction')
-
-await new Promise((res) => setTimeout(res, 5000))
 
 {
     await sdk.setPartyId(sender!.partyId)
