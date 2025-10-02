@@ -96,7 +96,7 @@ let exchangeHoldings =
     await exchangeSdk.tokenStandard?.listHoldingTransactions()
 
 // we wait until the exchange can see the transaction
-while (exchangeHoldings.transactions.length === 0) {
+while (exchangeHoldings!.transactions.length === 0) {
     await new Promise((resolve) => setTimeout(resolve, 1000))
     exchangeHoldings =
         await exchangeSdk.tokenStandard?.listHoldingTransactions()
