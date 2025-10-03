@@ -13,6 +13,7 @@ import {
     ALLOCATION_REQUEST_INTERFACE_ID,
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
     TRANSFER_INSTRUCTION_INTERFACE_ID,
+    TRANSFER_FACTORY_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
@@ -360,7 +361,7 @@ export class TokenStandardService {
             )
 
             const exercise: ExerciseCommand = {
-                templateId: ALLOCATION_REQUEST_INTERFACE_ID,
+                templateId: ALLOCATION_INTERFACE_ID,
                 contractId: allocationCid,
                 choice: 'Allocation_Cancel',
                 choiceArgument: {
@@ -681,7 +682,7 @@ export class TokenStandardService {
             }
 
             const exercise: ExerciseCommand = {
-                templateId: ALLOCATION_FACTORY_INTERFACE_ID,
+                templateId: TRANSFER_FACTORY_INTERFACE_ID,
                 contractId: transferFactory.factoryId,
                 choice: 'TransferFactory_Transfer',
                 choiceArgument: choiceArgs,
