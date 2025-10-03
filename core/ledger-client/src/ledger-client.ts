@@ -160,8 +160,6 @@ export class LedgerClient {
         let tries = 0
         const maxTries = 20
 
-        this.logger.info('waiting for party to appear')
-
         while (!partyFound && tries < maxTries) {
             const parties = await this.get('/v2/parties')
             partyFound =
@@ -176,8 +174,6 @@ export class LedgerClient {
         if (tries >= maxTries) {
             throw new Error('timed out waiting for new party to appear')
         }
-
-        this.logger.info(`Party ${partyId} found on participant`)
 
         // Assign user rights to party
         const result = await this.post(

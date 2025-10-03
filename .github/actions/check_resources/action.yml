@@ -11,4 +11,4 @@ runs:
         - name: Check CPU usage
           if: always()
           shell: bash
-          run: top -n10 -stats pid,command,cpu,threads,mem,time
+          run: ps -eo pid,comm,%cpu,%mem,exe,time --sort=-%cpu | head -n 20
