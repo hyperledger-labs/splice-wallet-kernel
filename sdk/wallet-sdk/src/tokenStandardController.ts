@@ -16,8 +16,6 @@ import {
 } from '@canton-network/core-ledger-client'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 
-// TODO get somehow Allocation/AllocationInstruction ViewValue types
-
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 import {
@@ -29,11 +27,16 @@ import {
     AllocationSpecification,
     AllocationContextValue,
     AllocationRequestView,
+    AllocationInstructionView,
+    AllocationView,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
-import { WrappedCommand } from './ledgerController'
+import { WrappedCommand } from './ledgerController.js'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject' | 'Withdraw'
+export type AllocationInstructionChoice = 'Withdraw'
+export type AllocationChoice = 'ExecuteTransfer' | 'Withdraw' | 'Cancel'
+export type AllocationRequestChoice = 'Reject' | 'Withdraw'
 
 /**
  * TokenStandardController handles token standard management tasks.
@@ -234,21 +237,23 @@ export class TokenStandardController {
     }
 
     /**
-     * Fetches all allocation instructions pending withdraw or update
+     * Fetches all pending allocation instructions
      * @returns a promise containing prettyContract for AllocationInstructionView.
      */
 
     async fetchPendingAllocationInstructionView(): Promise<
-        // TODO add type for interfaceViewValue
-        PrettyContract[]
+        PrettyContract<AllocationInstructionView>[]
     > {
-        return await this.service.listContractsByInterface(
+        return await this.service.listContractsByInterface<AllocationInstructionView>(
             ALLOCATION_INSTRUCTION_INTERFACE_ID,
             this.getPartyId()
         )
     }
 
-    // TODO jsdoc
+    /**
+     * Fetches all pending allocation requests
+     * @returns a promise containing prettyContract for AllocationRequestView.
+     */
     async fetchPendingAllocationRequestView(): Promise<
         PrettyContract<AllocationRequestView>[]
     > {
@@ -264,10 +269,9 @@ export class TokenStandardController {
      */
 
     async fetchPendingAllocationView(): Promise<
-        // TODO add type for interfaceViewValue
-        PrettyContract[]
+        PrettyContract<AllocationView>[]
     > {
-        return await this.service.listContractsByInterface(
+        return await this.service.listContractsByInterface<AllocationView>(
             ALLOCATION_INTERFACE_ID,
             this.getPartyId()
         )
@@ -509,7 +513,7 @@ export class TokenStandardController {
 
                     return [{ ExerciseCommand }, disclosedContracts]
                 default:
-                    throw new Error('Unexpected instruction choice')
+                    throw new Error('Unexpected transfer instruction choice')
             }
         } catch (error) {
             this.logger.error(
@@ -527,7 +531,7 @@ export class TokenStandardController {
      */
     async exerciseAllocationChoice(
         allocationCid: string,
-        allocationChoice: 'ExecuteTransfer' | 'Withdraw' | 'Cancel'
+        allocationChoice: AllocationChoice
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -571,13 +575,11 @@ export class TokenStandardController {
     /**
      * Execute AllocationInstruction choice on the provided AllocationInstruction.
      * @param allocationInstructionCid The AllocationInstruction contract ID.
-     * @param instructionChoice 'Withdraw' | 'Update'
-     * @param extraActors Optional extra actors for 'Update' (registry-controlled).
+     * @param instructionChoice 'Withdraw'
      */
     async exerciseAllocationInstructionChoice(
         allocationInstructionCid: string,
-        instructionChoice: 'Withdraw' | 'Update',
-        extraActors: PartyId[] = []
+        instructionChoice: AllocationInstructionChoice
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -586,35 +588,61 @@ export class TokenStandardController {
         try {
             switch (instructionChoice) {
                 case 'Withdraw':
-                    // Unassisted (no registry endpoint); service builds the command with empty context/meta.
                     ;[ExerciseCommand, disclosedContracts] =
                         await this.service.createWithdrawAllocationInstruction(
                             allocationInstructionCid
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
 
-                case 'Update':
-                    // Typically exercised by the registry/admin; requires extraActors when the impl demands them.
-                    ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createUpdateAllocationInstruction(
-                            allocationInstructionCid,
-                            extraActors
-                        )
-                    return [{ ExerciseCommand }, disclosedContracts]
-
                 default:
-                    throw new Error('Unexpected allocation-instruction choice')
+                    throw new Error('Unexpected allocation instruction choice')
             }
         } catch (error) {
             this.logger.error(
                 { error },
-                'Failed to exercise allocation-instruction choice'
+                'Failed to exercise allocation instruction choice'
             )
             throw error
         }
     }
 
-    // TODO allocation request choice
+    async exerciseAllocationRequestChoice(
+        allocationRequestCid: string,
+        requestChoice: AllocationRequestChoice,
+        actor: PartyId
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        let ExerciseCommand: ExerciseCommand
+        let disclosedContracts: DisclosedContract[] = []
+        try {
+            switch (requestChoice) {
+                case 'Reject':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createRejectAllocationRequest(
+                            allocationRequestCid,
+                            actor
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+
+                case 'Withdraw':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createWithdrawAllocationRequest(
+                            allocationRequestCid
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+
+                default:
+                    throw new Error('Unexpected allocation request choice')
+            }
+        } catch (error) {
+            this.logger.error(
+                { error },
+                'Failed to exercise allocation request choice'
+            )
+            throw error
+        }
+    }
 }
 
 /**

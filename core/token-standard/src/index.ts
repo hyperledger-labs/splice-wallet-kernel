@@ -2,12 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './token-standard-client.js'
-
-// Codegen outputs are treated as separate package
-// this gets around issues with relative paths imports in dist
-// That arisen because of daml codegen outputting only .js and .d.ts files
-
-// Constants
 export * from './interface-ids.const.js'
 
 type InstrumentId = {
@@ -77,15 +71,23 @@ export interface ExtraArgs {
 
 export interface AllocationFactory_Allocate {
     expectedAdmin: string
-
     allocation: AllocationSpecification
-
-    /** Submission/request time (ledger time bound checks use this alongside settlement.requestedAt) */
     requestedAt: string
-
-    /** Inputs to spend for the sender; array of Holding contractIds */
     inputHoldingCids: string[]
-
-    /** Extra args, including registry-provided choiceContext */
     extraArgs: ExtraArgs
+}
+
+export type AllocationInstructionView = {
+    originalInstructionCid: string | null
+    allocation: AllocationSpecification
+    pendingActions: Record<string, string>
+    requestedAt: string
+    inputHoldingCids: string[]
+    meta: Metadata
+}
+
+export type AllocationView = {
+    allocation: AllocationSpecification
+    holdingCids: string[]
+    meta: Metadata
 }
