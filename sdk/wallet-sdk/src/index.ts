@@ -179,7 +179,7 @@ export class WalletSDKImpl implements WalletSDK {
 
         if (!this.userLedger) {
             this.logger?.warn(
-                'userLedger is not defined, synchronizerId will not be set automatically'
+                'userLedger is not defined, synchronizerId will not be set automatically. Consider calling sdk.connect() first'
             )
         }
 

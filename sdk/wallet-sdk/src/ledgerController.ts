@@ -293,8 +293,6 @@ export class LedgerController {
         const { publicKeyFingerprint, partyId, topologyTransactions } =
             preparedParty
 
-        this.logger.debug(topologyTransactions, 'Submitting topology txs')
-
         await this.client.allocateExternalParty(
             this.getSynchronizerId(),
             topologyTransactions!.map((transaction) => ({ transaction })),
@@ -308,13 +306,9 @@ export class LedgerController {
             ]
         )
 
-        this.logger.info('Allocated party ' + partyId)
-
         if (grantUserRights) {
             await this.client.grantUserRights(this.userId, partyId)
         }
-
-        this.logger.info('granted user rights')
 
         return { partyId }
     }
@@ -350,7 +344,6 @@ export class LedgerController {
                 ) || []
         )
 
-        this.logger.info('preparing party')
         const preparedParty = await this.generateExternalParty(
             getPublicKeyFromPrivate(privateKey),
             partyHint,
@@ -362,7 +355,6 @@ export class LedgerController {
             throw new Error('Error creating prepared party')
         }
 
-        this.logger.info('signing hash')
         const signedHash = signTransactionHash(
             preparedParty.multiHash,
             privateKey
@@ -373,7 +365,6 @@ export class LedgerController {
         // before granting the user rights
         const grantUserRights = !hostingParticipantEndpoints
 
-        this.logger.info('allocating party')
         await this.allocateExternalParty(
             signedHash,
             preparedParty,

@@ -208,10 +208,6 @@ jobs:
                   #!/usr/bin/env bash
                   set -euo pipefail
 
-                  echo "Memory usage:"
-                  free -h
-                  df -h
-
                   mkdir -p logs
 
                   # Dump logs of each running container once (not streaming)
