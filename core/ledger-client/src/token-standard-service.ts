@@ -4,15 +4,20 @@
 import {
     TokenStandardClient,
     HoldingView,
+    AllocationFactory_Allocate,
+    AllocationSpecification,
+    AllocationContextValue,
+    HOLDING_INTERFACE_ID,
+    ALLOCATION_FACTORY_INTERFACE_ID,
+    ALLOCATION_INTERFACE_ID,
+    ALLOCATION_REQUEST_INTERFACE_ID,
+    ALLOCATION_INSTRUCTION_INTERFACE_ID,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+    TRANSFER_FACTORY_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
-import {
-    HoldingInterface,
-    TokenStandardTransactionInterfaces,
-    TransferFactoryInterface,
-    TransferInstructionInterface,
-} from './constants.js'
+import { TokenStandardTransactionInterfaces } from './constants.js'
 import {
     ensureInterfaceViewIsPresent,
     filtersByParty,
@@ -61,6 +66,8 @@ export class TokenStandardService {
         private readonly logger: Logger,
         private accessToken: string
     ) {}
+
+    // TODO group methods below. with allocations it will get pretty long
 
     private getTokenStandardClient(registryUrl: string): TokenStandardClient {
         return new TokenStandardClient(
@@ -142,7 +149,7 @@ export class TokenStandardService {
             )
 
             const exercise: ExerciseCommand = {
-                templateId: TransferInstructionInterface,
+                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID,
                 contractId: transferInstructionCid,
                 choice: 'TransferInstruction_Accept',
                 choiceArgument: {
@@ -192,7 +199,7 @@ export class TokenStandardService {
             )
 
             const exercise: ExerciseCommand = {
-                templateId: TransferInstructionInterface,
+                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID,
                 contractId: transferInstructionCid,
                 choice: 'TransferInstruction_Reject',
                 choiceArgument: {
@@ -233,7 +240,7 @@ export class TokenStandardService {
             )
 
             const exercise: ExerciseCommand = {
-                templateId: TransferInstructionInterface,
+                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID,
                 contractId: transferInstructionCid,
                 choice: 'TransferInstruction_Withdraw',
                 choiceArgument: {
@@ -252,6 +259,203 @@ export class TokenStandardService {
             )
             throw e
         }
+    }
+
+    // TODO that naming seems off
+    async createExecuteTransferAllocation(
+        allocationCid: string,
+        allocationFactoryRegistryUrl: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
+            const client = this.getTokenStandardClient(
+                allocationFactoryRegistryUrl
+            )
+
+            const choiceContext = await client.post(
+                '/registry/allocations/v1/{allocationId}/choice-contexts/execute-transfer',
+                {},
+                {
+                    path: {
+                        allocationId: allocationCid,
+                    },
+                }
+            )
+
+            const exercise: ExerciseCommand = {
+                templateId: ALLOCATION_INTERFACE_ID,
+                contractId: allocationCid,
+                choice: 'Allocation_ExecuteTransfer',
+                choiceArgument: {
+                    extraArgs: {
+                        context: choiceContext.choiceContextData,
+                        meta: { values: {} },
+                    },
+                },
+            }
+
+            return [exercise, choiceContext.disclosedContracts]
+        } catch (e) {
+            this.logger.error(
+                'Failed to create allocation execute transfer:',
+                e
+            )
+            throw e
+        }
+    }
+
+    async createWithdrawAllocation(
+        allocationCid: string,
+        allocationFactoryRegistryUrl: string // TODO those are not actually factories, rename all to avoid confusion
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
+            const client = this.getTokenStandardClient(
+                allocationFactoryRegistryUrl
+            )
+
+            const choiceContext = await client.post(
+                '/registry/allocations/v1/{allocationId}/choice-contexts/withdraw',
+                {},
+                {
+                    path: {
+                        allocationId: allocationCid,
+                    },
+                }
+            )
+
+            const exercise: ExerciseCommand = {
+                templateId: ALLOCATION_INTERFACE_ID,
+                contractId: allocationCid,
+                choice: 'Allocation_Withdraw',
+                choiceArgument: {
+                    extraArgs: {
+                        context: choiceContext.choiceContextData,
+                        meta: { values: {} },
+                    },
+                },
+            }
+
+            return [exercise, choiceContext.disclosedContracts]
+        } catch (e) {
+            this.logger.error('Failed to create withdraw allocation:', e)
+            throw e
+        }
+    }
+
+    async createCancelAllocation(
+        allocationCid: string,
+        allocationFactoryRegistryUrl: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
+            const client = this.getTokenStandardClient(
+                allocationFactoryRegistryUrl
+            )
+
+            const choiceContext = await client.post(
+                '/registry/allocations/v1/{allocationId}/choice-contexts/cancel',
+                {},
+                {
+                    path: {
+                        allocationId: allocationCid,
+                    },
+                }
+            )
+
+            const exercise: ExerciseCommand = {
+                templateId: ALLOCATION_INTERFACE_ID,
+                contractId: allocationCid,
+                choice: 'Allocation_Cancel',
+                choiceArgument: {
+                    extraArgs: {
+                        context: choiceContext.choiceContextData,
+                        meta: { values: {} },
+                    },
+                },
+            }
+
+            return [exercise, choiceContext.disclosedContracts]
+        } catch (e) {
+            this.logger.error(
+                'Failed to create withdraw transfer instruction:',
+                e
+            )
+            throw e
+        }
+    }
+
+    async createWithdrawAllocationInstruction(
+        allocationInstructionCid: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        // TODO registry?
+        const exercise: ExerciseCommand = {
+            templateId: ALLOCATION_INSTRUCTION_INTERFACE_ID,
+            contractId: allocationInstructionCid,
+            choice: 'AllocationInstruction_Withdraw',
+            choiceArgument: {
+                extraArgs: {
+                    context: { values: {} },
+                    meta: { values: {} },
+                },
+            },
+        }
+        return [exercise, []]
+    }
+
+    async createUpdateAllocationInstruction(
+        allocationInstructionCid: string,
+        extraActors: PartyId[] = [],
+        extraArgsContext: Record<string, unknown> = {},
+        extraArgsMeta: Record<string, unknown> = {}
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        // TODO registry?
+        const exercise: ExerciseCommand = {
+            templateId: ALLOCATION_INSTRUCTION_INTERFACE_ID,
+            contractId: allocationInstructionCid,
+            choice: 'AllocationInstruction_Update',
+            choiceArgument: {
+                extraActors,
+                extraArgs: {
+                    context: { values: extraArgsContext },
+                    meta: { values: extraArgsMeta },
+                },
+            },
+        }
+        return [exercise, []]
+    }
+
+    async createRejectAllocationRequest(
+        allocationRequestCid: string,
+        actor: PartyId
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const exercise: ExerciseCommand = {
+            templateId: ALLOCATION_REQUEST_INTERFACE_ID,
+            contractId: allocationRequestCid,
+            choice: 'AllocationRequest_Reject',
+            choiceArgument: {
+                actor,
+                extraArgs: {
+                    context: { values: {} },
+                    meta: { values: {} },
+                },
+            },
+        }
+        return [exercise, []]
+    }
+
+    async createWithdrawAllocationRequest(
+        allocationRequestCid: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const exercise: ExerciseCommand = {
+            templateId: ALLOCATION_REQUEST_INTERFACE_ID,
+            contractId: allocationRequestCid,
+            choice: 'AllocationRequest_Withdraw',
+            choiceArgument: {
+                extraArgs: {
+                    context: { values: {} },
+                    meta: { values: {} },
+                },
+            },
+        }
+        return [exercise, []]
     }
 
     // <T> is shape of viewValue related to queried interface.
@@ -387,6 +591,38 @@ export class TokenStandardService {
         )
     }
 
+    private async getInputHoldingsCids(sender: PartyId, inputUtxos?: string[]) {
+        const now = new Date()
+        if (inputUtxos && inputUtxos.length > 0) {
+            return inputUtxos
+        }
+        const senderHoldings = await this.listContractsByInterface<HoldingView>(
+            HOLDING_INTERFACE_ID,
+            sender
+        )
+        if (senderHoldings.length === 0) {
+            throw new Error(
+                "Sender has no holdings, so transfer can't be executed."
+            )
+        }
+
+        return senderHoldings
+            .filter((utxo) => {
+                //filter out locked holdings
+                const lock = utxo.interfaceViewValue.lock
+                if (!lock) return true
+
+                const expiresAt = lock.expiresAt
+                if (!expiresAt) return false
+
+                const expiresAtDate = new Date(expiresAt)
+                return expiresAtDate <= now
+            })
+            .map((h) => h.contractId)
+        /* TODO: optimize input holding selection, currently if you transfer 10 CC and have 10 inputs of 1000 CC,
+                then all 10 of those are chose as input.
+             */
+    }
     async createTransfer(
         sender: PartyId,
         receiver: PartyId,
@@ -400,40 +636,12 @@ export class TokenStandardService {
         meta?: Record<string, unknown>
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            let inputHoldingCids: string[]
+            const inputHoldingCids: string[] = await this.getInputHoldingsCids(
+                sender,
+                inputUtxos
+            )
             const now = new Date()
 
-            if (inputUtxos && inputUtxos.length > 0) {
-                inputHoldingCids = inputUtxos
-            } else {
-                const senderHoldings =
-                    await this.listContractsByInterface<HoldingView>(
-                        HoldingInterface,
-                        sender
-                    )
-                if (senderHoldings.length === 0) {
-                    throw new Error(
-                        "Sender has no holdings, so transfer can't be executed."
-                    )
-                }
-
-                inputHoldingCids = senderHoldings
-                    .filter((utxo) => {
-                        //filter out locked holdings
-                        const lock = utxo.interfaceViewValue.lock
-                        if (!lock) return true
-
-                        const expiresAt = lock.expiresAt
-                        if (!expiresAt) return false
-
-                        const expiresAtDate = new Date(expiresAt)
-                        return expiresAtDate <= now
-                    })
-                    .map((h) => h.contractId)
-                /* TODO: optimize input holding selection, currently if you transfer 10 CC and have 10 inputs of 1000 CC,
-                    then all 10 of those are chose as input.
-                 */
-            }
             const choiceArgs = {
                 expectedAdmin: instrumentAdmin,
                 transfer: {
@@ -474,7 +682,7 @@ export class TokenStandardService {
             }
 
             const exercise: ExerciseCommand = {
-                templateId: TransferFactoryInterface,
+                templateId: TRANSFER_FACTORY_INTERFACE_ID,
                 contractId: transferFactory.factoryId,
                 choice: 'TransferFactory_Transfer',
                 choiceArgument: choiceArgs,
@@ -594,6 +802,66 @@ export class TokenStandardService {
             },
             [disclosedContracts],
         ]
+    }
+
+    async createAllocationInstruction(
+        allocationSpecification: AllocationSpecification,
+        expectedAdmin: PartyId,
+        factoryRegistryUrl: string,
+        inputUtxos?: string[],
+        requestedAt?: string,
+        extraContext?: AllocationContextValue
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const allocationSpecificationNormalized: AllocationSpecification = {
+            ...allocationSpecification,
+            settlement: {
+                ...allocationSpecification.settlement,
+                meta: allocationSpecification.settlement.meta ?? { values: {} },
+            },
+            transferLeg: {
+                ...allocationSpecification.transferLeg,
+                meta: allocationSpecification.transferLeg.meta ?? {
+                    values: {},
+                },
+            },
+        }
+
+        const inputHoldingCids = await this.getInputHoldingsCids(
+            allocationSpecificationNormalized.transferLeg.sender,
+            inputUtxos
+        )
+
+        const choiceArgs: AllocationFactory_Allocate = {
+            expectedAdmin: expectedAdmin,
+            allocation: allocationSpecificationNormalized,
+            requestedAt: requestedAt ?? new Date().toISOString(),
+            inputHoldingCids,
+            extraArgs: {
+                context: { values: { ...(extraContext ?? {}) } },
+                meta: { values: {} },
+            },
+        }
+
+        const allocationFactory = await this.getTokenStandardClient(
+            factoryRegistryUrl
+        ).post('/registry/allocation-instruction/v1/allocation-factory', {
+            choiceArguments: choiceArgs as unknown as Record<string, never>,
+        })
+
+        choiceArgs.extraArgs.context = {
+            ...allocationFactory.choiceContext.choiceContextData,
+            values:
+                allocationFactory.choiceContext.choiceContextData?.values ?? {},
+        }
+
+        const exercise: ExerciseCommand = {
+            templateId: ALLOCATION_FACTORY_INTERFACE_ID,
+            contractId: allocationFactory.factoryId,
+            choice: 'AllocationFactory_Allocate',
+            choiceArgument: choiceArgs,
+        }
+
+        return [exercise, allocationFactory.choiceContext.disclosedContracts]
     }
 
     private async toPrettyTransactions(

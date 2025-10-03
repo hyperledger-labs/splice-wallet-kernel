@@ -565,6 +565,52 @@ export class LedgerController {
         //TODO: figure out if this should automatically be converted to a format that is more user friendly
         return await this.client.post('/v2/state/active-contracts', filter)
     }
+
+    async ensureDarUploaded(
+        darBytes: Uint8Array | Buffer
+    ): Promise<PostResponse<'/v2/packages'> | void> {
+        try {
+            return await this.client.post(
+                '/v2/packages',
+                darBytes as never,
+                {},
+                {
+                    // @ts-expect-error TODO fix
+                    bodySerializer: (b) => b, // prevents jsonification of bytes
+                    headers: { 'Content-Type': 'application/octet-stream' },
+                }
+            )
+        } catch (e: unknown) {
+            // @ts-expect-error reason: test
+            const msg = `${e.message ?? ''} ${e?.body ?? ''}`
+            if (
+                // @ts-expect-error reason: TODO fix
+                e?.status === 409 ||
+                /already\s*exist/i.test(msg) ||
+                // @ts-expect-error reason: TODO fix
+                e?.errorCategory === 'ALREADY_EXISTS'
+            ) {
+                this['logger'].info('DAR already present—continuing.')
+                return
+            }
+            this['logger'].error({ err: e }, 'DAR upload failed')
+            throw e
+        }
+    }
+
+    async checkTestApp() {
+        const SPLICE_TOKEN_TEST_TRADING_APP =
+            'e5c9847d5a88d3b8d65436f01765fc5ba142cc58529692e2dacdd865d9939f71'
+        const { packageIds } = await this.client!.get('/v2/packages')
+        if (
+            Array.isArray(packageIds) &&
+            packageIds.includes(SPLICE_TOKEN_TEST_TRADING_APP)
+        ) {
+            return true
+        }
+
+        return packageIds
+    }
 }
 
 /**
