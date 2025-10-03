@@ -32,7 +32,7 @@ const keyPair = createKeyPair()
 await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
 logger.info('generated keypair')
-const allocatedParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
+const allocatedParty = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPair.privateKey
 )
 await sdk.setPartyId(allocatedParty!.partyId)

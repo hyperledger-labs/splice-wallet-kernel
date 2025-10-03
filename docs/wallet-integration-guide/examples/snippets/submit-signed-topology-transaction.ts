@@ -18,13 +18,12 @@ export default async function () {
     await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
     const preparedParty = {
-        partyTransactions: [], // array of topology transactions
-        combinedHash: 'the-combined-hash',
-        txHashes: [], // the individual transaction hashes
-        namespace: 'your-namespace-here',
+        transactions: [], // array of topology transactions
+        multiHash: 'the-combined-hash',
+        publicKeyFingerprint: 'your-namespace-here',
         partyId: 'your-party-id-here',
     }
     const signature = 'your-signed-hash-here'
 
-    return sdk.topology?.submitExternalPartyTopology(signature, preparedParty)
+    return sdk.userLedger?.allocateExternalParty(signature, preparedParty)
 }

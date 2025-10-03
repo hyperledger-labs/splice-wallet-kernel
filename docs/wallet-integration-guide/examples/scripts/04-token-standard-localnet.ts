@@ -32,14 +32,14 @@ const keyPairReceiver = createKeyPair()
 await sdk.connectAdmin()
 await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
-const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
+const sender = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairSender.privateKey,
     'alice'
 )
 logger.info(`Created party: ${sender!.partyId}`)
 await sdk.setPartyId(sender!.partyId)
 
-const receiver = await sdk.topology?.prepareSignAndSubmitExternalParty(
+const receiver = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairReceiver.privateKey,
     'bob'
 )
