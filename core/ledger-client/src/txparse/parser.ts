@@ -14,11 +14,9 @@ import {
 } from '../ledger-api-utils.js'
 import {
     BurnedMetaKey,
-    HoldingInterface,
     matchInterfaceIds,
     ReasonMetaKey,
     SenderMetaKey,
-    TransferInstructionInterface,
     TxKindMetaKey,
 } from '../constants.js'
 import {
@@ -38,6 +36,10 @@ import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
 import { LedgerClient } from '../ledger-client'
 import BigNumber from 'bignumber.js'
 import { PartyId } from '@canton-network/core-types'
+import {
+    HOLDING_INTERFACE_ID,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+} from '@canton-network/core-token-standard'
 
 type ArchivedEvent = components['schemas']['ArchivedEvent']
 type CreatedEvent = components['schemas']['CreatedEvent']
@@ -507,7 +509,7 @@ export class TransactionParser {
         }
         const transferInstructionView = ensureInterfaceViewIsPresent(
             transferInstructionEvents.created.createdEvent,
-            TransferInstructionInterface
+            TRANSFER_INSTRUCTION_INTERFACE_ID
         ).viewValue as TransferInstructionView
         const transferInstruction: TransferInstructionView = {
             originalInstructionCid:
@@ -589,13 +591,13 @@ export class TransactionParser {
 
         if (
             exercisedEvent.consuming &&
-            hasInterface(HoldingInterface, exercisedEvent)
+            hasInterface(HOLDING_INTERFACE_ID, exercisedEvent)
         ) {
             const selfEvent = await this.getEventsForArchive(exercisedEvent)
             if (selfEvent) {
                 const holdingView = ensureInterfaceViewIsPresent(
                     selfEvent.created.createdEvent,
-                    HoldingInterface
+                    HOLDING_INTERFACE_ID
                 ).viewValue as Holding
                 mutatingResult.archives.push({
                     amount: holdingView.amount,
@@ -618,7 +620,7 @@ export class TransactionParser {
                 if (
                     interfaceView &&
                     matchInterfaceIds(
-                        HoldingInterface,
+                        HOLDING_INTERFACE_ID,
                         interfaceView.interfaceId
                     )
                 ) {
@@ -634,10 +636,10 @@ export class TransactionParser {
                 }
             } else if (
                 (archivedEvent &&
-                    hasInterface(HoldingInterface, archivedEvent)) ||
+                    hasInterface(HOLDING_INTERFACE_ID, archivedEvent)) ||
                 (exercisedEvent &&
                     exercisedEvent.consuming &&
-                    hasInterface(HoldingInterface, exercisedEvent))
+                    hasInterface(HOLDING_INTERFACE_ID, exercisedEvent))
             ) {
                 const contractEvents = await this.getEventsForArchive(
                     archivedEvent || exercisedEvent!
@@ -645,7 +647,7 @@ export class TransactionParser {
                 if (contractEvents) {
                     const holdingView = ensureInterfaceViewIsPresent(
                         contractEvents.created?.createdEvent,
-                        HoldingInterface
+                        HOLDING_INTERFACE_ID
                     ).viewValue as Holding
                     mutatingResult.archives.push({
                         amount: holdingView.amount,
@@ -690,7 +692,7 @@ export class TransactionParser {
             eventFormat: {
                 filtersByParty: filtersByParty(
                     this.partyId,
-                    [HoldingInterface, TransferInstructionInterface],
+                    [HOLDING_INTERFACE_ID, TRANSFER_INSTRUCTION_INTERFACE_ID],
                     true
                 ),
                 verbose: false,

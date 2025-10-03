@@ -14,7 +14,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 const logger = pino({
-    name: '08-token-standard-allocation-localnet',
+    name: '09-token-standard-allocation-localnet',
     level: 'info',
 })
 
@@ -117,7 +117,7 @@ const [tapCmdBob, tapDiscBob] = await sdk.tokenStandard!.createTap(
     '2000000',
     { instrumentId: 'Amulet', instrumentAdmin: instrumentAdminPartyId }
 )
-const bobTapCmdId = await sdk.userLedger!.prepareSignExecuteAndWaitFor(
+await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     tapCmdBob,
     keyPairReceiver.privateKey,
     v4(),

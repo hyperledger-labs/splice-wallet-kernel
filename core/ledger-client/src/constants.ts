@@ -44,24 +44,14 @@ export function matchInterfaceIds(a: string, b: string): boolean {
     )
 }
 
-// TODO get rid of those aliases
-export const HoldingInterface = HOLDING_INTERFACE_ID
-export const TransferFactoryInterface = TRANSFER_FACTORY_INTERFACE_ID
-export const TransferInstructionInterface = TRANSFER_INSTRUCTION_INTERFACE_ID
-export const AllocationFactoryInterface = ALLOCATION_FACTORY_INTERFACE_ID
-export const AllocationInstructionInterface =
-    ALLOCATION_INSTRUCTION_INTERFACE_ID
-export const AllocationInterface = ALLOCATION_INTERFACE_ID
-export const AllocationRequestInterface = ALLOCATION_REQUEST_INTERFACE_ID
-
 export const TokenStandardTransactionInterfaces = [
-    HoldingInterface,
-    TransferFactoryInterface,
-    TransferInstructionInterface,
-    AllocationFactoryInterface,
-    AllocationInstructionInterface,
-    AllocationInterface,
-    AllocationRequestInterface,
+    HOLDING_INTERFACE_ID,
+    TRANSFER_FACTORY_INTERFACE_ID,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+    ALLOCATION_FACTORY_INTERFACE_ID,
+    ALLOCATION_INSTRUCTION_INTERFACE_ID,
+    ALLOCATION_INTERFACE_ID,
+    ALLOCATION_REQUEST_INTERFACE_ID,
 ]
 
 const SpliceMetaKeyPrefix = 'splice.lfdecentralizedtrust.org/'

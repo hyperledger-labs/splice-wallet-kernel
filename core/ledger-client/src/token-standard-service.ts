@@ -7,19 +7,16 @@ import {
     AllocationFactory_Allocate,
     AllocationSpecification,
     AllocationContextValue,
+    HOLDING_INTERFACE_ID,
+    ALLOCATION_FACTORY_INTERFACE_ID,
+    ALLOCATION_INTERFACE_ID,
+    ALLOCATION_REQUEST_INTERFACE_ID,
+    ALLOCATION_INSTRUCTION_INTERFACE_ID,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
-import {
-    AllocationFactoryInterface,
-    AllocationInterface,
-    HoldingInterface,
-    TokenStandardTransactionInterfaces,
-    TransferFactoryInterface,
-    TransferInstructionInterface,
-    AllocationInstructionInterface,
-    AllocationRequestInterface,
-} from './constants.js'
+import { TokenStandardTransactionInterfaces } from './constants.js'
 import {
     ensureInterfaceViewIsPresent,
     filtersByParty,
@@ -151,7 +148,7 @@ export class TokenStandardService {
             )
 
             const exercise: ExerciseCommand = {
-                templateId: TransferInstructionInterface,
+                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID,
                 contractId: transferInstructionCid,
                 choice: 'TransferInstruction_Accept',
                 choiceArgument: {
@@ -201,7 +198,7 @@ export class TokenStandardService {
             )
 
             const exercise: ExerciseCommand = {
-                templateId: TransferInstructionInterface,
+                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID,
                 contractId: transferInstructionCid,
                 choice: 'TransferInstruction_Reject',
                 choiceArgument: {
@@ -242,7 +239,7 @@ export class TokenStandardService {
             )
 
             const exercise: ExerciseCommand = {
-                templateId: TransferInstructionInterface,
+                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID,
                 contractId: transferInstructionCid,
                 choice: 'TransferInstruction_Withdraw',
                 choiceArgument: {
@@ -284,7 +281,7 @@ export class TokenStandardService {
             )
 
             const exercise: ExerciseCommand = {
-                templateId: AllocationInterface,
+                templateId: ALLOCATION_INTERFACE_ID,
                 contractId: allocationCid,
                 choice: 'Allocation_ExecuteTransfer',
                 choiceArgument: {
@@ -325,7 +322,7 @@ export class TokenStandardService {
             )
 
             const exercise: ExerciseCommand = {
-                templateId: AllocationInterface,
+                templateId: ALLOCATION_INTERFACE_ID,
                 contractId: allocationCid,
                 choice: 'Allocation_Withdraw',
                 choiceArgument: {
@@ -363,7 +360,7 @@ export class TokenStandardService {
             )
 
             const exercise: ExerciseCommand = {
-                templateId: AllocationInterface,
+                templateId: ALLOCATION_REQUEST_INTERFACE_ID,
                 contractId: allocationCid,
                 choice: 'Allocation_Cancel',
                 choiceArgument: {
@@ -389,7 +386,7 @@ export class TokenStandardService {
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         // TODO registry?
         const exercise: ExerciseCommand = {
-            templateId: AllocationInstructionInterface,
+            templateId: ALLOCATION_INSTRUCTION_INTERFACE_ID,
             contractId: allocationInstructionCid,
             choice: 'AllocationInstruction_Withdraw',
             choiceArgument: {
@@ -410,7 +407,7 @@ export class TokenStandardService {
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         // TODO registry?
         const exercise: ExerciseCommand = {
-            templateId: AllocationInstructionInterface,
+            templateId: ALLOCATION_INSTRUCTION_INTERFACE_ID,
             contractId: allocationInstructionCid,
             choice: 'AllocationInstruction_Update',
             choiceArgument: {
@@ -429,7 +426,7 @@ export class TokenStandardService {
         actor: PartyId
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         const exercise: ExerciseCommand = {
-            templateId: AllocationRequestInterface,
+            templateId: ALLOCATION_REQUEST_INTERFACE_ID,
             contractId: allocationRequestCid,
             choice: 'AllocationRequest_Reject',
             choiceArgument: {
@@ -447,7 +444,7 @@ export class TokenStandardService {
         allocationRequestCid: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         const exercise: ExerciseCommand = {
-            templateId: AllocationRequestInterface,
+            templateId: ALLOCATION_REQUEST_INTERFACE_ID,
             contractId: allocationRequestCid,
             choice: 'AllocationRequest_Withdraw',
             choiceArgument: {
@@ -599,7 +596,7 @@ export class TokenStandardService {
             return inputUtxos
         }
         const senderHoldings = await this.listContractsByInterface<HoldingView>(
-            HoldingInterface,
+            HOLDING_INTERFACE_ID,
             sender
         )
         if (senderHoldings.length === 0) {
@@ -684,7 +681,7 @@ export class TokenStandardService {
             }
 
             const exercise: ExerciseCommand = {
-                templateId: TransferFactoryInterface,
+                templateId: ALLOCATION_FACTORY_INTERFACE_ID,
                 contractId: transferFactory.factoryId,
                 choice: 'TransferFactory_Transfer',
                 choiceArgument: choiceArgs,
@@ -857,7 +854,7 @@ export class TokenStandardService {
         }
 
         const exercise: ExerciseCommand = {
-            templateId: AllocationFactoryInterface,
+            templateId: ALLOCATION_FACTORY_INTERFACE_ID,
             contractId: allocationFactory.factoryId,
             choice: 'AllocationFactory_Allocate',
             choiceArgument: choiceArgs,
