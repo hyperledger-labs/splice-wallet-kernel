@@ -400,6 +400,25 @@ export interface paths {
     '/v0/backfilling/import-updates': {
         post: operations['getImportUpdates']
     }
+    '/v0/events': {
+        /**
+         * @description Returns the event history in ascending order, paged, from ledger begin or optionally starting after a record time.
+         * An event bears some combination of a transaction, a contract reassignment, and a verdict.
+         * Events are ordered lexicographically by `(migration id, record time)`.
+         * For a given migration id, each event has a unique record time.
+         * The record time ranges of different migrations may overlap, i.e.,
+         * it is not guaranteed that the maximum record time of one migration is smaller than the minimum record time of the next migration,
+         * and there may be two updates with the same record time but different migration ids.
+         */
+        post: operations['getEventHistory']
+    }
+    '/v0/events/{update_id}': {
+        /**
+         * @description Returns the event with the given update_id.
+         * An event bears some combination of a transaction, a contract reassignment, and a verdict.
+         */
+        get: operations['getEventById']
+    }
 }
 
 export type webhooks = Record<string, never>
@@ -1644,6 +1663,82 @@ export interface components {
              */
             complete: boolean
         }
+        EventHistoryRequest: {
+            /**
+             * @description The events returned will either have a higher migration id or
+             * the same migration id and a record_time greater than the migration id and record time
+             * specified.
+             */
+            after?: components['schemas']['UpdateHistoryRequestAfter']
+            /**
+             * Format: int32
+             * @description The maximum number of events returned for this request.
+             */
+            page_size: number
+            daml_value_encoding?: components['schemas']['DamlValueEncoding']
+        }
+        EventHistoryResponse: {
+            events: components['schemas']['EventHistoryItem'][]
+        }
+        /**
+         * @description An event history item may contain a transaction update, a verdict from a mediator, both, or a contract reassignment.
+         * If an event pertains to a contract reassignment, there will be no verdict data.
+         * If an event pertains to a wholly private transaction, there will only be verdict data.
+         * If an event pertains to a transaction that is partially private, it may also bear verdict information for the private portions.
+         * When both fields are present, the transaction and verdict have the same `update_id` and `record_time`.
+         */
+        EventHistoryItem: {
+            update?: components['schemas']['UpdateHistoryItemV2']
+            verdict?: components['schemas']['EventHistoryVerdict']
+        }
+        EventHistoryVerdict: {
+            /** @description The ID of the transaction update associated with this verdict. */
+            update_id: string
+            /**
+             * Format: int64
+             * @description The migration id of the domain through which this event was sequenced.
+             */
+            migration_id: number
+            /** @description The id of the domain through which this event was sequenced. */
+            domain_id: string
+            /** @description The record_time of the transaction the verdict corresponds to. */
+            record_time: string
+            /** @description The finalization_time of the transaction the verdict corresponds to. */
+            finalization_time: string
+            /** @description Parties on whose behalf the transaction was submitted. */
+            submitting_parties: string[]
+            /** @description UID of the submitting participant. */
+            submitting_participant_uid: string
+            /** @description Result of the verdict. */
+            verdict_result: components['schemas']['VerdictResult']
+            /**
+             * Format: int32
+             * @description The mediator group which finalized this verdict.
+             */
+            mediator_group: number
+            transaction_views: components['schemas']['TransactionViews']
+        }
+        TransactionViews: {
+            views: components['schemas']['TransactionView'][]
+            root_views: number[]
+        }
+        TransactionView: {
+            /** Format: int32 */
+            view_id: number
+            informees: string[]
+            confirming_parties: components['schemas']['Quorum'][]
+            sub_views: number[]
+        }
+        Quorum: {
+            parties: string[]
+            /** Format: int32 */
+            threshold: number
+        }
+        /** @enum {string} */
+        VerdictResult:
+            | 'VERDICT_RESULT_UNSPECIFIED'
+            | 'VERDICT_RESULT_ACCEPTED'
+            | 'VERDICT_RESULT_REJECTED'
         Status: {
             id: string
             uptime: string
@@ -1797,7 +1892,7 @@ export interface components {
             dso_rules_vote_results: Record<string, never>[]
         }
         FeatureSupportResponse: {
-            my_feature: boolean
+            no_holding_fees_on_transfers: boolean
         }
     }
     responses: {
@@ -3062,6 +3157,57 @@ export interface operations {
                 }
             }
             404: components['responses']['404']
+        }
+    }
+    /**
+     * @description Returns the event history in ascending order, paged, from ledger begin or optionally starting after a record time.
+     * An event bears some combination of a transaction, a contract reassignment, and a verdict.
+     * Events are ordered lexicographically by `(migration id, record time)`.
+     * For a given migration id, each event has a unique record time.
+     * The record time ranges of different migrations may overlap, i.e.,
+     * it is not guaranteed that the maximum record time of one migration is smaller than the minimum record time of the next migration,
+     * and there may be two updates with the same record time but different migration ids.
+     */
+    getEventHistory: {
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['EventHistoryRequest']
+            }
+        }
+        responses: {
+            /** @description ok */
+            200: {
+                content: {
+                    'application/json': components['schemas']['EventHistoryResponse']
+                }
+            }
+            400: components['responses']['400']
+            500: components['responses']['500']
+        }
+    }
+    /**
+     * @description Returns the event with the given update_id.
+     * An event bears some combination of a transaction, a contract reassignment, and a verdict.
+     */
+    getEventById: {
+        parameters: {
+            query?: {
+                daml_value_encoding?: components['schemas']['DamlValueEncoding']
+            }
+            path: {
+                update_id: string
+            }
+        }
+        responses: {
+            /** @description ok */
+            200: {
+                content: {
+                    'application/json': components['schemas']['EventHistoryItem']
+                }
+            }
+            400: components['responses']['400']
+            404: components['responses']['404']
+            500: components['responses']['500']
         }
     }
 }
