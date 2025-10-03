@@ -13,8 +13,8 @@ import {
     WalletEvent,
 } from '@canton-network/core-types'
 import { popupHref } from '@canton-network/core-wallet-ui-components'
-import { SpliceProviderWindow } from '@canton-network/core-splice-provider/src/SpliceProviderWindow'
-import { SpliceProviderHttp } from '@canton-network/core-splice-provider/src/SpliceProviderHttp'
+import { SpliceProviderWindow } from '@canton-network/core-splice-provider'
+import { SpliceProviderHttp } from '@canton-network/core-splice-provider'
 import buildController from './dapp-api/rpc-gen'
 import * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'
 import * as dappRemoteAPI from '@canton-network/core-wallet-dapp-remote-rpc-client'
