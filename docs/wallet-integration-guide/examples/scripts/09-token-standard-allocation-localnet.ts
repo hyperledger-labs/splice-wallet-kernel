@@ -32,8 +32,8 @@ logger.info('SDK initialized')
 await sdk.connect()
 logger.info('Connected to ledger')
 
-const keyPairSender = createKeyPair()
-const keyPairReceiver = createKeyPair()
+const keyPairAlice = createKeyPair()
+const keyPairBob = createKeyPair()
 const keyPairVenue = createKeyPair()
 
 await sdk.connectAdmin()
@@ -61,18 +61,18 @@ try {
 const isDarThere = await sdk.adminLedger?.checkTestApp()
 logger.info({ isDarThere })
 
-const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
-    keyPairSender.privateKey,
+const alice = await sdk.topology?.prepareSignAndSubmitExternalParty(
+    keyPairAlice.privateKey,
     'alice'
 )
-logger.info(`Created party: ${sender!.partyId}`)
-await sdk.setPartyId(sender!.partyId)
+logger.info(`Created party: ${alice!.partyId}`)
+await sdk.setPartyId(alice!.partyId)
 
-const receiver = await sdk.topology?.prepareSignAndSubmitExternalParty(
-    keyPairReceiver.privateKey,
+const bob = await sdk.topology?.prepareSignAndSubmitExternalParty(
+    keyPairBob.privateKey,
     'bob'
 )
-logger.info(`Created party: ${receiver!.partyId}`)
+logger.info(`Created party: ${bob!.partyId}`)
 
 const venue = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairVenue.privateKey,
@@ -80,23 +80,15 @@ const venue = await sdk.topology?.prepareSignAndSubmitExternalParty(
 )
 logger.info(`Created party: ${venue!.partyId}`)
 
-await sdk.userLedger
-    ?.listWallets()
-    .then((wallets) => {
-        logger.info(wallets, 'Wallets:')
-    })
-    .catch((error) => {
-        logger.error({ error }, 'Error listing wallets')
-    })
-
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(
     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
 )
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
+// Mint holdings for Alice
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
-    sender!.partyId,
+    alice!.partyId,
     '2000000',
     {
         instrumentId: 'Amulet',
@@ -106,72 +98,44 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand,
-    keyPairSender.privateKey,
+    keyPairAlice.privateKey,
     v4(),
     disclosedContracts
 )
 
-await sdk.setPartyId(receiver!.partyId)
+// Mint holdings for Bob
+await sdk.setPartyId(bob!.partyId)
 const [tapCmdBob, tapDiscBob] = await sdk.tokenStandard!.createTap(
-    receiver!.partyId,
+    bob!.partyId,
     '2000000',
     { instrumentId: 'Amulet', instrumentAdmin: instrumentAdminPartyId }
 )
 await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     tapCmdBob,
-    keyPairReceiver.privateKey,
+    keyPairBob.privateKey,
     v4(),
     tapDiscBob
 )
 
-await sdk.setPartyId(sender!.partyId)
+// Alice creates OTCTradeProposal
+await sdk.setPartyId(alice!.partyId)
 
-type InstrumentId = {
-    admin: string
-    id: string
-}
-
-type Metadata = {
-    values: { [key: string]: string }
-}
-
-type TransferLeg = {
-    sender: string
-    receiver: string
-    amount: string
-    instrumentId: InstrumentId
-    meta: Metadata
-}
-
-const mkLeg = (
-    sender: string,
-    receiver: string,
-    amount: string,
-    admin: string,
-    id: string
-): TransferLeg => ({
-    sender,
-    receiver,
-    amount,
-    instrumentId: { admin, id },
-    meta: { values: {} },
-})
-
+// Define what holdings each party will trade
 const transferLegs = {
-    leg0: mkLeg(
-        sender!.partyId,
-        receiver!.partyId,
-        '100',
-        instrumentAdminPartyId,
-        'Amulet'
-    ),
-    leg1: mkLeg(
-        receiver!.partyId,
-        sender!.partyId,
-        '20',
-        instrumentAdminPartyId,
-        'Amulet'
-    ),
+    leg0: {
+        sender: alice!.partyId,
+        receiver: bob!.partyId,
+        amount: '100',
+        instrumentId: { admin: instrumentAdminPartyId, id: 'Amulet' },
+        meta: { values: {} },
+    },
+    leg1: {
+        sender: bob!.partyId,
+        receiver: alice!.partyId,
+        amount: '20',
+        instrumentId: { admin: instrumentAdminPartyId, id: 'Amulet' },
+        meta: { values: {} },
+    },
 }
 
 const createProposal = {
@@ -182,33 +146,37 @@ const createProposal = {
             venue: venue!.partyId,
             tradeCid: null,
             transferLegs,
-            approvers: [sender!.partyId],
+            approvers: [alice!.partyId],
         },
     },
 }
 
 await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     createProposal,
-    keyPairSender.privateKey,
+    keyPairAlice.privateKey,
     v4()
 )
 
-await sdk.setPartyId(receiver!.partyId)
+logger.info('Alice created OTCTradeProposal')
+
+// Bob accepts the OTCTradeProposal
+await sdk.setPartyId(bob!.partyId)
 const activeTradeProposals = await sdk.userLedger?.activeContracts({
     offset: (await sdk.userLedger!.ledgerEnd()).offset,
     templateIds: [
         '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
     ],
-    parties: [receiver!.partyId],
+    parties: [bob!.partyId],
     filterByParty: true,
 })
-
 const otcpCid =
     activeTradeProposals?.[0]?.contractEntry?.JsActiveContract?.createdEvent
         .contractId
 
-if (otcpCid === undefined)
+if (otcpCid === undefined) {
     throw new Error('Unexpected lack of OTCTradeProposal contract')
+}
+
 const acceptCmd = [
     {
         ExerciseCommand: {
@@ -216,16 +184,19 @@ const acceptCmd = [
                 '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
             contractId: otcpCid,
             choice: 'OTCTradeProposal_Accept',
-            choiceArgument: { approver: receiver!.partyId },
+            choiceArgument: { approver: bob!.partyId },
         },
     },
 ]
 await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     acceptCmd,
-    keyPairReceiver.privateKey,
+    keyPairBob.privateKey,
     v4()
 )
 
+logger.info('Bob accepted OTCTradeProposal')
+
+// Venue initiates settlement of OTCTradeProposal
 await sdk.setPartyId(venue!.partyId)
 const activeTradeProposals2 = await sdk.userLedger?.activeContracts({
     offset: (await sdk.userLedger!.ledgerEnd()).offset,
@@ -264,6 +235,8 @@ await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     v4()
 )
 
+logger.info('Venue initated settlement of OTCTradeProposal')
+
 const otcTrades = await sdk.userLedger!.activeContracts({
     offset: (await sdk.userLedger!.ledgerEnd()).offset,
     templateIds: [
@@ -277,31 +250,30 @@ const otcTradeCid =
 if (!otcTradeCid) throw new Error('OTCTrade not found for venue')
 
 // Alice's leg allocation
-await sdk?.setPartyId(sender!.partyId)
-const pendingAllocationRequestsSender =
+await sdk?.setPartyId(alice!.partyId)
+const pendingAllocationRequestsAlice =
     await sdk.tokenStandard?.fetchPendingAllocationRequestView()
 
-const allocationRequestViewSender =
-    pendingAllocationRequestsSender?.[0].interfaceViewValue!
+const allocationRequestViewAlice =
+    pendingAllocationRequestsAlice?.[0].interfaceViewValue!
 
-const settlementRefId = allocationRequestViewSender.settlement.settlementRef.id
+const settlementRefId = allocationRequestViewAlice.settlement.settlementRef.id
 
-const legEntriesAlice = Object.entries(allocationRequestViewSender.transferLegs)
+const legIdAlice = Object.keys(allocationRequestViewAlice.transferLegs).find(
+    (key) =>
+        allocationRequestViewAlice.transferLegs[key].sender === alice!.partyId
+)!
+if (!legIdAlice) throw new Error(`No leg found for Alice`)
 
-const legEntryAlice = legEntriesAlice.find(
-    ([, leg]) => leg.sender === sender!.partyId
-)
-if (!legEntryAlice)
-    throw new Error(`No leg found for sender ${sender!.partyId}`)
-const [legIdAlice, legAlice] = legEntryAlice
+const legAlice = allocationRequestViewAlice.transferLegs[legIdAlice]
 
 const specAlice = {
-    settlement: allocationRequestViewSender.settlement,
+    settlement: allocationRequestViewAlice.settlement,
     transferLegId: legIdAlice,
     transferLeg: legAlice,
 }
 
-const [allocateCmdAlice, allocateDisclosed] =
+const [allocateCmdAlice, allocateDisclosedAlice] =
     await sdk.tokenStandard!.createAllocationInstruction(
         specAlice,
         legAlice.instrumentId.admin
@@ -309,35 +281,37 @@ const [allocateCmdAlice, allocateDisclosed] =
 
 await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     allocateCmdAlice,
-    keyPairSender.privateKey,
+    keyPairAlice.privateKey,
     v4(),
-    allocateDisclosed
+    allocateDisclosedAlice
 )
+
+logger.info('Alice created Allocation for her TransferLeg')
 
 // Bob's leg allocation
-await sdk.setPartyId(receiver!.partyId)
+await sdk.setPartyId(bob!.partyId)
 
-const pendingAllocationRequestReceiver =
+const pendingAllocationRequestBob =
     await sdk.tokenStandard?.fetchPendingAllocationRequestView()
 
-const allocationRequestViewReceiver =
-    pendingAllocationRequestReceiver?.[0].interfaceViewValue!
-const legEntriesBob = Object.entries(allocationRequestViewReceiver.transferLegs)
+const allocationRequestViewBob =
+    pendingAllocationRequestBob?.[0].interfaceViewValue!
 
-const legEntryBob = legEntriesBob.find(
-    ([, leg]) => leg.sender === receiver!.partyId
-)
-if (!legEntryBob)
-    throw new Error(`No leg found for sender ${receiver!.partyId}`)
-const [legIdBob, legBob] = legEntryBob
+const legIdBob = Object.keys(allocationRequestViewAlice.transferLegs).find(
+    (key) =>
+        allocationRequestViewAlice.transferLegs[key].sender === bob!.partyId
+)!
+if (!legIdBob) throw new Error(`No leg found for Bob`)
+
+const legBob = allocationRequestViewAlice.transferLegs[legIdBob]
 
 const specBob = {
-    settlement: allocationRequestViewReceiver.settlement,
+    settlement: allocationRequestViewBob.settlement,
     transferLegId: legIdBob,
     transferLeg: legBob,
 }
 
-const [allocateCmdBob, discsR] =
+const [allocateCmdBob, AllocateDisclosedABob] =
     await sdk.tokenStandard!.createAllocationInstruction(
         specBob,
         legBob.instrumentId.admin
@@ -345,11 +319,13 @@ const [allocateCmdBob, discsR] =
 
 await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     allocateCmdBob,
-    keyPairReceiver.privateKey,
+    keyPairBob.privateKey,
     v4(),
-    discsR
+    AllocateDisclosedABob
 )
+logger.info('Bob created Allocation for her TransferLeg')
 
+// Once the legs have been allocated, venue settles the trade triggering transfer of holdings
 await sdk.setPartyId(venue!.partyId)
 
 const allocationsVenue = await sdk.tokenStandard!.fetchPendingAllocationView()
@@ -417,103 +393,21 @@ await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     uniqueDisclosedContracts
 )
 
+logger.info(
+    'Venue settled the OTCTrade, holdings are transfered to Alice and Bob'
+)
+
 {
-    await sdk.setPartyId(sender!.partyId)
-    const pendingAllocationRequestSender =
-        await sdk.tokenStandard?.fetchPendingAllocationRequestView()
-    const pendingAllocationInstructionsSender =
-        await sdk.tokenStandard?.fetchPendingAllocationInstructionView()
+    await sdk.setPartyId(alice!.partyId)
+    await sdk.tokenStandard?.listHoldingTransactions().then((transactions) => {
+        logger.info(
+            transactions,
+            'Token Standard Holding Transactions (Alice):'
+        )
+    })
 
-    const pendingAllocationsSender =
-        await sdk.tokenStandard?.fetchPendingAllocationView()
-
-    logger.info(
-        {
-            pendingAllocationRequestSender,
-            pendingAllocationInstructionsSender,
-            pendingAllocationsSender,
-        },
-        'Pending Allocation (Alice)'
-    )
-
-    await sdk.tokenStandard
-        ?.listHoldingTransactions()
-        .then((transactions) => {
-            logger.info(
-                transactions,
-                'Token Standard Holding Transactions (Alice):'
-            )
-        })
-        .catch((error) => {
-            logger.error(
-                { error },
-                'Error listing token standard holding transactions (Alice):'
-            )
-        })
-
-    await sdk.setPartyId(receiver!.partyId)
-    const pendingAllocationRequestReceiver =
-        await sdk.tokenStandard?.fetchPendingAllocationRequestView()
-    const pendingAllocationInstructionsReceiver =
-        await sdk.tokenStandard?.fetchPendingAllocationInstructionView()
-
-    const pendingAllocationsReceiver =
-        await sdk.tokenStandard?.fetchPendingAllocationView()
-
-    await sdk.tokenStandard
-        ?.listHoldingTransactions()
-        .then((transactions) => {
-            logger.info(
-                transactions,
-                'Token Standard Holding Transactions (Bob):'
-            )
-        })
-        .catch((error) => {
-            logger.error(
-                { error },
-                'Error listing token standard holding transactions (Bob):'
-            )
-        })
-
-    logger.info(
-        {
-            pendingAllocationRequestReceiver,
-            pendingAllocationInstructionsReceiver,
-            pendingAllocationsReceiver,
-        },
-        'Pending Allocation (Bob)'
-    )
-
-    await sdk.setPartyId(venue!.partyId)
-    const pendingAllocationRequestVenue =
-        await sdk.tokenStandard?.fetchPendingAllocationRequestView()
-    const pendingAllocationInstructionsVenue =
-        await sdk.tokenStandard?.fetchPendingAllocationInstructionView()
-
-    const pendingAllocationsVenue =
-        await sdk.tokenStandard?.fetchPendingAllocationView()
-
-    logger.info(
-        {
-            pendingAllocationRequestVenue,
-            pendingAllocationInstructionsVenue,
-            pendingAllocationsVenue,
-        },
-        'Pending Allocation (Venue)'
-    )
-
-    await sdk.tokenStandard
-        ?.listHoldingTransactions()
-        .then((transactions) => {
-            logger.info(
-                transactions,
-                'Token Standard Holding Transactions (Venue):'
-            )
-        })
-        .catch((error) => {
-            logger.error(
-                { error },
-                'Error listing token standard holding transactions (Venue):'
-            )
-        })
+    await sdk.setPartyId(bob!.partyId)
+    await sdk.tokenStandard?.listHoldingTransactions().then((transactions) => {
+        logger.info(transactions, 'Token Standard Holding Transactions (Bob):')
+    })
 }
