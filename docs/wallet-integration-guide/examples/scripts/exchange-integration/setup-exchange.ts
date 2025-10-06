@@ -57,17 +57,9 @@ export async function setupExchange(options?: {
     const exchangeParty = await exchangeSdk.validator!.getValidatorUser()!
 
     if (options?.transferPreapproval) {
+        //TODO(#537): Tap exchange party to ensure they have funds to setup the pre-approval
         const instrumentAdminPartyId =
             (await exchangeSdk.tokenStandard?.getInstrumentAdmin()) || ''
-
-        await exchangeSdk.tokenStandard?.createTapInternal(
-            exchangeParty,
-            '20000000',
-            {
-                instrumentId: 'Amulet',
-                instrumentAdmin: instrumentAdminPartyId,
-            }
-        )
 
         // Setup preapproval
         const cmd =
