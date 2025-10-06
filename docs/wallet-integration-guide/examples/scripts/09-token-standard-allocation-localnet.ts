@@ -60,6 +60,22 @@ const isDarUploaded = await sdk.userLedger?.isPackageUploaded(
 )
 logger.info({ isDarUploaded }, 'Status of TradingApp dar upload')
 
+if (!isDarUploaded) {
+    try {
+        const darBytes = await fs.readFile(tradingDarPath)
+        await sdk.adminLedger?.uploadDar(darBytes)
+        logger.info(
+            'Trading app DAR ensured on participant (uploaded or already present)'
+        )
+    } catch (e) {
+        logger.error(
+            { e, tradingDarPath },
+            'Failed to ensure trading app DAR uploaded'
+        )
+        throw e
+    }
+}
+
 const alice = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairAlice.privateKey,
     'alice'
