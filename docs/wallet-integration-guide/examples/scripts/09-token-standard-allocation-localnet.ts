@@ -55,21 +55,7 @@ const tradingDarPath = path.join(
     PATH_TO_DAR_IN_LOCALNET
 )
 
-try {
-    const darBytes = await fs.readFile(tradingDarPath)
-    await sdk.adminLedger?.ensureDarUploaded(darBytes)
-    logger.info(
-        'Trading app DAR ensured on participant (uploaded or already present)'
-    )
-} catch (e) {
-    logger.error(
-        { e, tradingDarPath },
-        'Failed to ensure trading app DAR uploaded'
-    )
-    throw e
-}
-
-const isDarUploaded = await sdk.adminLedger?.isPackageUploaded(
+const isDarUploaded = await sdk.userLedger?.isPackageUploaded(
     TRADING_APP_PACKAGE_ID
 )
 logger.info({ isDarUploaded }, 'Status of TradingApp dar upload')

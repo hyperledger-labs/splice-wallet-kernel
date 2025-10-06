@@ -446,3 +446,7 @@ export async function promiseWithTimeout<T>(
         }
     }
 }
+
+// Helper for differentiating ledger errors from others and satisfying TS when checking error properties
+export const isJsCantonError = (e: unknown): e is Types['JsCantonError'] =>
+    typeof e === 'object' && e !== null && 'status' in e && 'errorCategory' in e

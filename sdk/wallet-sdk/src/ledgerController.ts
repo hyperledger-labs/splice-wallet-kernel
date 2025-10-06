@@ -9,6 +9,7 @@ import {
     Types,
     awaitCompletion,
     promiseWithTimeout,
+    isJsCantonError,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -40,6 +41,7 @@ export type WrappedCommand<
 export class LedgerController {
     private readonly client: LedgerClient
     private readonly userId: string
+    private readonly isAdmin: boolean
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
     private logger = pino({ name: 'LedgerController', level: 'info' })
@@ -50,10 +52,16 @@ export class LedgerController {
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
      * @param token the access token from the user, usually provided by an auth controller.
      */
-    constructor(userId: string, baseUrl: URL, token: string) {
+    constructor(
+        userId: string,
+        baseUrl: URL,
+        token: string,
+        isAdmin: boolean = false
+    ) {
         this.client = new LedgerClient(baseUrl, token, this.logger)
         this.client.init()
         this.userId = userId
+        this.isAdmin = isAdmin
         return this
     }
 
@@ -566,18 +574,12 @@ export class LedgerController {
         return await this.client.post('/v2/state/active-contracts', filter)
     }
 
-    private isJsCantonError(e: unknown): e is Types['JsCantonError'] {
-        return (
-            typeof e === 'object' &&
-            e !== null &&
-            'status' in e &&
-            'errorCategory' in e
-        )
-    }
-
-    async ensureDarUploaded(
+    async uploadDar(
         darBytes: Uint8Array | Buffer
     ): Promise<PostResponse<'/v2/packages'> | void> {
+        if (!this.isAdmin) {
+            throw new Error('Use adminLedger to call uploadDar')
+        }
         try {
             return await this.client.post(
                 '/v2/packages',
@@ -590,7 +592,7 @@ export class LedgerController {
             )
         } catch (e: unknown) {
             // Check first for already uploaded error, which means dar upload status is ensured true
-            if (this.isJsCantonError(e)) {
+            if (isJsCantonError(e)) {
                 const msg = [
                     e.code,
                     e.cause,
@@ -607,7 +609,7 @@ export class LedgerController {
                     (e as { status?: number }).status === 409
 
                 if (alreadyExists) {
-                    this['logger'].info('DAR already present—continuing.')
+                    this.logger.info('DAR already present - continuing')
                     return
                 }
 
