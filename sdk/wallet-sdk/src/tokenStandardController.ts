@@ -285,6 +285,45 @@ export class TokenStandardController {
     }
 
     /**
+     * Creates a new tap for the specified receiver and amount for an internal party.
+     * This does not require external signing.
+     * @param receiver The party of the receiver.
+     * @param amount The amount to be tapped.
+     * @param instrument The instrument to be used for the tap.
+     * @returns An update id and completion offset.
+     */
+    async createAndSubmitTapInternal(
+        receiver: PartyId,
+        amount: string,
+        instrument: {
+            instrumentId: string
+            instrumentAdmin: PartyId
+        }
+    ) {
+        const [tapCommand, disclosedContracts] = await this.service.createTap(
+            receiver,
+            amount,
+            instrument.instrumentAdmin,
+            instrument.instrumentId,
+            this.getTransferFactoryRegistryUrl().href
+        )
+
+        const request = {
+            commands: [{ ExerciseCommand: tapCommand }],
+            commandId: v4(),
+            userId: this.userId,
+            actAs: [this.getPartyId()],
+            readAs: [],
+            disclosedContracts: disclosedContracts || [],
+            synchronizerId: this.getSynchronizerId(),
+            verboseHashing: false,
+            packageIdSelectionPreference: [],
+        }
+
+        return await this.client.post('/v2/commands/submit-and-wait', request)
+    }
+
+    /**
      * Creates ExerciseCommand for granting featured app rights.
      * @returns AmuletRules_DevNet_FeatureApp command and disclosed contracts.
      */
