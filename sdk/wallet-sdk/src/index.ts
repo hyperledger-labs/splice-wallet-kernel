@@ -38,7 +38,7 @@ type AuthFactory = () => AuthController
 type LedgerFactory = (
     userId: string,
     token: string,
-    isAdmin?: boolean
+    isAdmin: boolean
 ) => LedgerController
 type TopologyFactory = (
     userId: string,
@@ -125,7 +125,7 @@ export class WalletSDKImpl implements WalletSDK {
      */
     async connect(): Promise<WalletSDK> {
         const { userId, accessToken } = await this.auth.getUserToken()
-        this.userLedger = this.ledgerFactory(userId, accessToken)
+        this.userLedger = this.ledgerFactory(userId, accessToken, false)
         this.tokenStandard = this.tokenStandardFactory(userId, accessToken)
         this.validator = this.validatorFactory(userId, accessToken)
         return this

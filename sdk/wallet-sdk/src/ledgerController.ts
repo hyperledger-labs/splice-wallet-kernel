@@ -51,13 +51,9 @@ export class LedgerController {
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
      * @param token the access token from the user, usually provided by an auth controller.
+     * @param isAdmin optional flag to set true when creating adminLedger.
      */
-    constructor(
-        userId: string,
-        baseUrl: URL,
-        token: string,
-        isAdmin: boolean = false
-    ) {
+    constructor(userId: string, baseUrl: URL, token: string, isAdmin: boolean) {
         this.client = new LedgerClient(baseUrl, token, this.logger)
         this.client.init()
         this.userId = userId
@@ -634,9 +630,15 @@ export class LedgerController {
  */
 export const localLedgerDefault = (
     userId: string,
-    token: string
+    token: string,
+    isAdmin: boolean
 ): LedgerController => {
-    return new LedgerController(userId, new URL('http://127.0.0.1:5003'), token)
+    return new LedgerController(
+        userId,
+        new URL('http://127.0.0.1:5003'),
+        token,
+        isAdmin
+    )
 }
 
 /**
@@ -645,21 +647,34 @@ export const localLedgerDefault = (
  */
 export const localNetLedgerDefault = (
     userId: string,
-    token: string
+    token: string,
+    isAdmin: boolean
 ): LedgerController => {
-    return localNetLedgerAppUser(userId, token)
+    return localNetLedgerAppUser(userId, token, isAdmin)
 }
 
 export const localNetLedgerAppUser = (
     userId: string,
-    token: string
+    token: string,
+    isAdmin: boolean
 ): LedgerController => {
-    return new LedgerController(userId, new URL('http://127.0.0.1:2975'), token)
+    return new LedgerController(
+        userId,
+        new URL('http://127.0.0.1:2975'),
+        token,
+        isAdmin
+    )
 }
 
 export const localNetLedgerAppProvider = (
     userId: string,
-    token: string
+    token: string,
+    isAdmin: boolean
 ): LedgerController => {
-    return new LedgerController(userId, new URL('http://127.0.0.1:3975'), token)
+    return new LedgerController(
+        userId,
+        new URL('http://127.0.0.1:3975'),
+        token,
+        isAdmin
+    )
 }
