@@ -4,16 +4,15 @@
 import crypto from 'crypto'
 import { randomUUID } from 'node:crypto'
 import { readFileSync } from 'node:fs'
-import {
-    AllKnownMetaKeys,
-    HoldingInterface,
-    matchInterfaceIds,
-    TransferInstructionInterface,
-} from './constants.js'
+import { AllKnownMetaKeys, matchInterfaceIds } from './constants.js'
 import { LedgerClient } from './ledger-client.js'
 import { Holding, TransferInstructionView } from './txparse/types.js'
 import { Types } from './ledger-client.js'
 import { PartyId } from '@canton-network/core-types'
+import {
+    HOLDING_INTERFACE_ID,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+} from '@canton-network/core-token-standard'
 
 type TransactionFilter = Types['TransactionFilter']
 type CreatedEvent = Types['CreatedEvent']
@@ -94,14 +93,16 @@ export function getKnownInterfaceView(
     const interfaceView = getInterfaceView(createdEvent)
     if (!interfaceView) {
         return null
-    } else if (matchInterfaceIds(HoldingInterface, interfaceView.interfaceId)) {
+    } else if (
+        matchInterfaceIds(HOLDING_INTERFACE_ID, interfaceView.interfaceId)
+    ) {
         return {
             type: 'Holding',
             viewValue: interfaceView.viewValue as Holding,
         }
     } else if (
         matchInterfaceIds(
-            TransferInstructionInterface,
+            TRANSFER_INSTRUCTION_INTERFACE_ID,
             interfaceView.interfaceId
         )
     ) {
@@ -445,3 +446,7 @@ export async function promiseWithTimeout<T>(
         }
     }
 }
+
+// Helper for differentiating ledger errors from others and satisfying TS when checking error properties
+export const isJsCantonError = (e: unknown): e is Types['JsCantonError'] =>
+    typeof e === 'object' && e !== null && 'status' in e && 'errorCategory' in e

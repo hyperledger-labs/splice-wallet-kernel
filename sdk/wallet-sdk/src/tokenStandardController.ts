@@ -15,16 +15,28 @@ import {
     DisclosedContract,
 } from '@canton-network/core-ledger-client'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
+
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 import {
     HOLDING_INTERFACE_ID,
     TRANSFER_INSTRUCTION_INTERFACE_ID,
+    ALLOCATION_INSTRUCTION_INTERFACE_ID,
+    ALLOCATION_INTERFACE_ID,
+    ALLOCATION_REQUEST_INTERFACE_ID,
+    AllocationSpecification,
+    AllocationContextValue,
+    AllocationRequestView,
+    AllocationInstructionView,
+    AllocationView,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
-import { WrappedCommand } from './ledgerController'
+import { WrappedCommand } from './ledgerController.js'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject' | 'Withdraw'
+export type AllocationInstructionChoice = 'Withdraw'
+export type AllocationChoice = 'ExecuteTransfer' | 'Withdraw' | 'Cancel'
+export type AllocationRequestChoice = 'Reject' | 'Withdraw'
 
 /**
  * TokenStandardController handles token standard management tasks.
@@ -211,7 +223,7 @@ export class TokenStandardController {
     }
 
     /**
-     * Fetches all 2-step transfer pending either accept or reject.
+     * Fetches all 2-step transfers pending accept, reject, or withdraw.
      * @returns a promise containing prettyContract for TransferInstructionView.
      */
 
@@ -220,6 +232,47 @@ export class TokenStandardController {
     > {
         return await this.service.listContractsByInterface<TransferInstructionView>(
             TRANSFER_INSTRUCTION_INTERFACE_ID,
+            this.getPartyId()
+        )
+    }
+
+    /**
+     * Fetches all pending allocation instructions
+     * @returns a promise containing prettyContract for AllocationInstructionView.
+     */
+
+    async fetchPendingAllocationInstructionView(): Promise<
+        PrettyContract<AllocationInstructionView>[]
+    > {
+        return await this.service.listContractsByInterface<AllocationInstructionView>(
+            ALLOCATION_INSTRUCTION_INTERFACE_ID,
+            this.getPartyId()
+        )
+    }
+
+    /**
+     * Fetches all pending allocation requests
+     * @returns a promise containing prettyContract for AllocationRequestView.
+     */
+    async fetchPendingAllocationRequestView(): Promise<
+        PrettyContract<AllocationRequestView>[]
+    > {
+        return await this.service.listContractsByInterface<AllocationRequestView>(
+            ALLOCATION_REQUEST_INTERFACE_ID,
+            this.getPartyId()
+        )
+    }
+
+    /**
+     * Fetches all allocations pending execute_transfer, cancel, or withdraw
+     * @returns a promise containing prettyContract for AllocationView.
+     */
+
+    async fetchPendingAllocationView(): Promise<
+        PrettyContract<AllocationView>[]
+    > {
+        return await this.service.listContractsByInterface<AllocationView>(
+            ALLOCATION_INTERFACE_ID,
             this.getPartyId()
         )
     }
@@ -428,6 +481,36 @@ export class TokenStandardController {
         }
     }
 
+    async createAllocationInstruction(
+        allocationSpecification: AllocationSpecification,
+        expectedAdmin: PartyId,
+        inputUtxos?: string[],
+        requestedAt?: string,
+        extraContext?: AllocationContextValue
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        try {
+            const [exercise, disclosed] =
+                await this.service.createAllocationInstruction(
+                    allocationSpecification,
+                    expectedAdmin,
+                    this.getTransferFactoryRegistryUrl().href,
+                    inputUtxos,
+                    requestedAt,
+                    extraContext
+                )
+
+            return [{ ExerciseCommand: exercise }, disclosed]
+        } catch (error) {
+            this.logger.error(
+                { error },
+                'Failed to create allocation instruction'
+            )
+            throw error
+        }
+    }
+
     /** Execute the choice TransferInstruction_Accept or TransferInstruction_Reject
      *  on the provided transfer instruction.
      * @param transferInstructionCid The contract ID of the transfer instruction to accept or reject
@@ -469,12 +552,143 @@ export class TokenStandardController {
 
                     return [{ ExerciseCommand }, disclosedContracts]
                 default:
-                    throw new Error('Unexpected instruction choice')
+                    throw new Error('Unexpected transfer instruction choice')
             }
         } catch (error) {
             this.logger.error(
                 { error },
                 'Failed to exercise transfer instruction choice'
+            )
+            throw error
+        }
+    }
+
+    /**
+     * Execute Allocation choice on the provided Allocation.
+     * @param allocationCid The Allocation contract ID.
+     * @param allocationChoice 'ExecuteTransfer' | 'Withdraw' | 'Cancel'
+     */
+    async exerciseAllocationChoice(
+        allocationCid: string,
+        allocationChoice: AllocationChoice
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        let ExerciseCommand: ExerciseCommand
+        let disclosedContracts: DisclosedContract[] = []
+        try {
+            switch (allocationChoice) {
+                case 'ExecuteTransfer':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createExecuteTransferAllocation(
+                            allocationCid,
+                            this.getTransferFactoryRegistryUrl().href
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+
+                case 'Withdraw':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createWithdrawAllocation(
+                            allocationCid,
+                            this.getTransferFactoryRegistryUrl().href
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+
+                case 'Cancel':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createCancelAllocation(
+                            allocationCid,
+                            this.getTransferFactoryRegistryUrl().href
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+
+                default:
+                    throw new Error('Unexpected allocation choice')
+            }
+        } catch (error) {
+            this.logger.error({ error }, 'Failed to exercise allocation choice')
+            throw error
+        }
+    }
+
+    /**
+     * Fetch choice context from registry for Allocation ExecuteTransfer.
+     * @param allocationCid The Allocation contract ID.
+     */
+    async getAllocationExecuteTransferChoiceContext(allocationCid: string) {
+        return this.service.getAllocationExecuteTransferChoiceContext(
+            allocationCid,
+            this.getTransferFactoryRegistryUrl().href
+        )
+    }
+
+    /**
+     * Execute AllocationInstruction choice on the provided AllocationInstruction.
+     * @param allocationInstructionCid The AllocationInstruction contract ID.
+     * @param instructionChoice 'Withdraw'
+     */
+    async exerciseAllocationInstructionChoice(
+        allocationInstructionCid: string,
+        instructionChoice: AllocationInstructionChoice
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        let ExerciseCommand: ExerciseCommand
+        let disclosedContracts: DisclosedContract[] = []
+        try {
+            switch (instructionChoice) {
+                case 'Withdraw':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createWithdrawAllocationInstruction(
+                            allocationInstructionCid
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+
+                default:
+                    throw new Error('Unexpected allocation instruction choice')
+            }
+        } catch (error) {
+            this.logger.error(
+                { error },
+                'Failed to exercise allocation instruction choice'
+            )
+            throw error
+        }
+    }
+
+    async exerciseAllocationRequestChoice(
+        allocationRequestCid: string,
+        requestChoice: AllocationRequestChoice,
+        actor: PartyId
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        let ExerciseCommand: ExerciseCommand
+        let disclosedContracts: DisclosedContract[] = []
+        try {
+            switch (requestChoice) {
+                case 'Reject':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createRejectAllocationRequest(
+                            allocationRequestCid,
+                            actor
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+
+                case 'Withdraw':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.createWithdrawAllocationRequest(
+                            allocationRequestCid
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+
+                default:
+                    throw new Error('Unexpected allocation request choice')
+            }
+        } catch (error) {
+            this.logger.error(
+                { error },
+                'Failed to exercise allocation request choice'
             )
             throw error
         }
