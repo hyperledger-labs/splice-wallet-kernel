@@ -292,7 +292,7 @@ export class TokenStandardController {
      * @param instrument The instrument to be used for the tap.
      * @returns An update id and completion offset.
      */
-    async createTapInternal(
+    async createAndSubmitTapInternal(
         receiver: PartyId,
         amount: string,
         instrument: {

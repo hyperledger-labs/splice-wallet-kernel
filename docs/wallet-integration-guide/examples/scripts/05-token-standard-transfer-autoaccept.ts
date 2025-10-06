@@ -78,7 +78,7 @@ await new Promise((res) => setTimeout(res, 5000))
 logger.info('creating transfer preapproval proposal')
 
 await sdk.setPartyId(validatorOperatorParty!)
-await sdk.tokenStandard?.createTapInternal(
+await sdk.tokenStandard?.createAndSubmitTapInternal(
     validatorOperatorParty!,
     '20000000',
     {
