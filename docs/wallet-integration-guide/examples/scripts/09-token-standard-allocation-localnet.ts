@@ -352,46 +352,51 @@ await sdk.userLedger!.prepareSignExecuteAndWaitFor(
 
 await sdk.setPartyId(venue!.partyId)
 
-const allocsVenue = await sdk.tokenStandard!.fetchPendingAllocationView()
-
-const pickedAllocs = allocsVenue
-    .filter(
-        (a) =>
-            a.interfaceViewValue.allocation.settlement.settlementRef.id ===
+const allocationsVenue = await sdk.tokenStandard!.fetchPendingAllocationView()
+const relevantAllocations = allocationsVenue.filter(
+    (a) =>
+        a.interfaceViewValue.allocation.settlement.executor ===
+            venue!.partyId &&
+        a.interfaceViewValue.allocation.settlement.settlementRef.id ===
             settlementRefId
-    )
-    .map((a) => ({
-        legId: a.interfaceViewValue.allocation.transferLegId,
-        cid: a.contractId,
-        executor: a.interfaceViewValue.allocation.settlement.executor,
-    }))
-    .filter((a) => a.executor === venue!.partyId)
-
-if (pickedAllocs.length === 0)
+)
+if (relevantAllocations.length === 0)
     throw new Error('No matching allocations for this trade')
 
-const allocationsWithContext: Record<string, { _1: string; _2: any }> = {}
-let allDisclosures: any[] = []
+const allocationEntries = await Promise.all(
+    relevantAllocations.map(async (a) => {
+        const cid = a.contractId
+        const choiceContext =
+            await sdk.tokenStandard!.getAllocationExecuteTransferChoiceContext(
+                cid
+            )
 
-for (const a of pickedAllocs) {
-    const [execCmd, discs] = await sdk.tokenStandard!.exerciseAllocationChoice(
-        a.cid,
-        'ExecuteTransfer'
+        return {
+            cid,
+            legId: a.interfaceViewValue.allocation.transferLegId,
+            extraArgs: {
+                context: {
+                    values: choiceContext.choiceContextData?.values ?? {},
+                },
+                meta: { values: {} },
+            },
+            disclosedContracts: choiceContext.disclosedContracts ?? [],
+        }
+    })
+)
+
+const allocationsWithContext: Record<string, { _1: string; _2: any }> =
+    Object.fromEntries(
+        allocationEntries.map((e) => [e.legId, { _1: e.cid, _2: e.extraArgs }])
     )
 
-    allocationsWithContext[a.legId] = {
-        _1: a.cid,
-        _2: execCmd.ExerciseCommand.choiceArgument.extraArgs,
-    }
-
-    allDisclosures.push(...discs)
-}
-
-const uniqMap = new Map<string, (typeof allDisclosures)[number]>()
-for (const d of allDisclosures) {
-    uniqMap.set(d.contractId, d)
-}
-const uniqueDisclosures = [...uniqMap.values()]
+const uniqueDisclosedContracts = Array.from(
+    new Map(
+        allocationEntries
+            .flatMap((e) => e.disclosedContracts)
+            .map((d: any) => [d.contractId, d])
+    ).values()
+)
 
 const settleCmd = [
     {
@@ -409,7 +414,7 @@ await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     settleCmd,
     keyPairVenue.privateKey,
     v4(),
-    uniqueDisclosures
+    uniqueDisclosedContracts
 )
 
 {

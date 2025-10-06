@@ -261,25 +261,32 @@ export class TokenStandardService {
         }
     }
 
+    // TODO return type
+    async getAllocationExecuteTransferChoiceContext(
+        allocationId: string,
+        registryUrl: string
+    ) {
+        return this.getTokenStandardClient(registryUrl).post(
+            '/registry/allocations/v1/{allocationId}/choice-contexts/execute-transfer',
+            {},
+            {
+                path: {
+                    allocationId,
+                },
+            }
+        )
+    }
     // TODO that naming seems off
     async createExecuteTransferAllocation(
         allocationCid: string,
         allocationFactoryRegistryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const client = this.getTokenStandardClient(
-                allocationFactoryRegistryUrl
-            )
-
-            const choiceContext = await client.post(
-                '/registry/allocations/v1/{allocationId}/choice-contexts/execute-transfer',
-                {},
-                {
-                    path: {
-                        allocationId: allocationCid,
-                    },
-                }
-            )
+            const choiceContext =
+                await this.getAllocationExecuteTransferChoiceContext(
+                    allocationCid,
+                    allocationFactoryRegistryUrl
+                )
 
             const exercise: ExerciseCommand = {
                 templateId: ALLOCATION_INTERFACE_ID,

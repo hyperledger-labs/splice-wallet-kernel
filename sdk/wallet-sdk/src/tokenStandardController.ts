@@ -573,6 +573,17 @@ export class TokenStandardController {
     }
 
     /**
+     * Fetch choice context from registry for Allocation ExecuteTransfer.
+     * @param allocationCid The Allocation contract ID.
+     */
+    async getAllocationExecuteTransferChoiceContext(allocationCid: string) {
+        return this.service.getAllocationExecuteTransferChoiceContext(
+            allocationCid,
+            this.getTransferFactoryRegistryUrl().href
+        )
+    }
+
+    /**
      * Execute AllocationInstruction choice on the provided AllocationInstruction.
      * @param allocationInstructionCid The AllocationInstruction contract ID.
      * @param instructionChoice 'Withdraw'
