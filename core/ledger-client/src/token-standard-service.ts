@@ -67,8 +67,6 @@ export class TokenStandardService {
         private accessToken: string
     ) {}
 
-    // TODO group methods below. with allocations it will get pretty long
-
     private getTokenStandardClient(registryUrl: string): TokenStandardClient {
         return new TokenStandardClient(
             registryUrl,
@@ -103,10 +101,7 @@ export class TokenStandardService {
         return featured_app_right
     }
 
-    async getInstrumentById(
-        transferFactoryRegistryUrl: string,
-        instrumentId: string
-    ) {
+    async getInstrumentById(registryUrl: string, instrumentId: string) {
         try {
             const params: Record<string, unknown> = {
                 path: {
@@ -114,9 +109,7 @@ export class TokenStandardService {
                 },
             }
 
-            const client = this.getTokenStandardClient(
-                transferFactoryRegistryUrl
-            )
+            const client = this.getTokenStandardClient(registryUrl)
 
             return client.get(
                 '/registry/metadata/v1/instruments/{instrumentId}',
@@ -130,14 +123,20 @@ export class TokenStandardService {
         }
     }
 
+    async getInstrumentAdmin(registryUrl: string): Promise<string | undefined> {
+        const client = this.getTokenStandardClient(registryUrl)
+
+        const info = await client.get('/registry/metadata/v1/info')
+
+        return info.adminId
+    }
+
     async createAcceptTransferInstruction(
         transferInstructionCid: string,
-        transferFactoryRegistryUrl: string
+        registryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const client = this.getTokenStandardClient(
-                transferFactoryRegistryUrl
-            )
+            const client = this.getTokenStandardClient(registryUrl)
             const choiceContext = await client.post(
                 '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/accept',
                 {},
@@ -170,24 +169,12 @@ export class TokenStandardService {
         }
     }
 
-    async getInstrumentAdmin(
-        transferFactoryRegistryUrl: string
-    ): Promise<string | undefined> {
-        const client = this.getTokenStandardClient(transferFactoryRegistryUrl)
-
-        const info = await client.get('/registry/metadata/v1/info')
-
-        return info.adminId
-    }
-
     async createRejectTransferInstruction(
         transferInstructionCid: string,
-        transferFactoryRegistryUrl: string
+        registryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const client = this.getTokenStandardClient(
-                transferFactoryRegistryUrl
-            )
+            const client = this.getTokenStandardClient(registryUrl)
             const choiceContext = await client.post(
                 '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/reject',
                 {},
@@ -222,12 +209,10 @@ export class TokenStandardService {
 
     async createWithdrawTransferInstruction(
         transferInstructionCid: string,
-        transferFactoryRegistryUrl: string
+        registryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const client = this.getTokenStandardClient(
-                transferFactoryRegistryUrl
-            )
+            const client = this.getTokenStandardClient(registryUrl)
 
             const choiceContext = await client.post(
                 '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/withdraw',
@@ -261,7 +246,65 @@ export class TokenStandardService {
         }
     }
 
-    // TODO return type
+    async createAllocationInstruction(
+        allocationSpecification: AllocationSpecification,
+        expectedAdmin: PartyId,
+        registryUrl: string,
+        inputUtxos?: string[],
+        requestedAt?: string,
+        extraContext?: AllocationContextValue
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const allocationSpecificationNormalized: AllocationSpecification = {
+            ...allocationSpecification,
+            settlement: {
+                ...allocationSpecification.settlement,
+                meta: allocationSpecification.settlement.meta ?? { values: {} },
+            },
+            transferLeg: {
+                ...allocationSpecification.transferLeg,
+                meta: allocationSpecification.transferLeg.meta ?? {
+                    values: {},
+                },
+            },
+        }
+
+        const inputHoldingCids = await this.getInputHoldingsCids(
+            allocationSpecificationNormalized.transferLeg.sender,
+            inputUtxos
+        )
+
+        const choiceArgs: AllocationFactory_Allocate = {
+            expectedAdmin: expectedAdmin,
+            allocation: allocationSpecificationNormalized,
+            requestedAt: requestedAt ?? new Date().toISOString(),
+            inputHoldingCids,
+            extraArgs: {
+                context: { values: { ...(extraContext ?? {}) } },
+                meta: { values: {} },
+            },
+        }
+
+        const allocationFactory = await this.getTokenStandardClient(
+            registryUrl
+        ).post('/registry/allocation-instruction/v1/allocation-factory', {
+            choiceArguments: choiceArgs as unknown as Record<string, never>,
+        })
+
+        choiceArgs.extraArgs.context = {
+            ...allocationFactory.choiceContext.choiceContextData,
+            values:
+                allocationFactory.choiceContext.choiceContextData?.values ?? {},
+        }
+
+        const exercise: ExerciseCommand = {
+            templateId: ALLOCATION_FACTORY_INTERFACE_ID,
+            contractId: allocationFactory.factoryId,
+            choice: 'AllocationFactory_Allocate',
+            choiceArgument: choiceArgs,
+        }
+
+        return [exercise, allocationFactory.choiceContext.disclosedContracts]
+    }
     async getAllocationExecuteTransferChoiceContext(
         allocationId: string,
         registryUrl: string
@@ -276,16 +319,16 @@ export class TokenStandardService {
             }
         )
     }
-    // TODO that naming seems off
+
     async createExecuteTransferAllocation(
         allocationCid: string,
-        allocationFactoryRegistryUrl: string
+        registryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
             const choiceContext =
                 await this.getAllocationExecuteTransferChoiceContext(
                     allocationCid,
-                    allocationFactoryRegistryUrl
+                    registryUrl
                 )
 
             const exercise: ExerciseCommand = {
@@ -312,12 +355,10 @@ export class TokenStandardService {
 
     async createWithdrawAllocation(
         allocationCid: string,
-        allocationFactoryRegistryUrl: string // TODO those are not actually factories, rename all to avoid confusion
+        registryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const client = this.getTokenStandardClient(
-                allocationFactoryRegistryUrl
-            )
+            const client = this.getTokenStandardClient(registryUrl)
 
             const choiceContext = await client.post(
                 '/registry/allocations/v1/{allocationId}/choice-contexts/withdraw',
@@ -350,12 +391,10 @@ export class TokenStandardService {
 
     async createCancelAllocation(
         allocationCid: string,
-        allocationFactoryRegistryUrl: string
+        registryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const client = this.getTokenStandardClient(
-                allocationFactoryRegistryUrl
-            )
+            const client = this.getTokenStandardClient(registryUrl)
 
             const choiceContext = await client.post(
                 '/registry/allocations/v1/{allocationId}/choice-contexts/cancel',
@@ -390,12 +429,11 @@ export class TokenStandardService {
     }
 
     async createWithdrawAllocationInstruction(
-        allocationInstructionCid: string
+        registryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        // TODO registry?
         const exercise: ExerciseCommand = {
             templateId: ALLOCATION_INSTRUCTION_INTERFACE_ID,
-            contractId: allocationInstructionCid,
+            contractId: registryUrl,
             choice: 'AllocationInstruction_Withdraw',
             choiceArgument: {
                 extraArgs: {
@@ -413,7 +451,6 @@ export class TokenStandardService {
         extraArgsContext: Record<string, unknown> = {},
         extraArgsMeta: Record<string, unknown> = {}
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        // TODO registry?
         const exercise: ExerciseCommand = {
             templateId: ALLOCATION_INSTRUCTION_INTERFACE_ID,
             contractId: allocationInstructionCid,
@@ -636,7 +673,7 @@ export class TokenStandardService {
         amount: string,
         instrumentAdmin: PartyId, // TODO (#907): replace with registry call
         instrumentId: string,
-        transferFactoryRegistryUrl: string,
+        registryUrl: string,
         inputUtxos?: string[],
         memo?: string,
         expiryDate?: Date,
@@ -674,7 +711,7 @@ export class TokenStandardService {
             this.logger.debug('Creating transfer factory...')
 
             const transferFactory = await this.getTokenStandardClient(
-                transferFactoryRegistryUrl
+                registryUrl
             ).post('/registry/transfer-instruction/v1/transfer-factory', {
                 choiceArguments: choiceArgs as unknown as Record<string, never>,
             })
@@ -707,7 +744,7 @@ export class TokenStandardService {
         amount: string,
         instrumentAdmin: string, // TODO (#907): replace with registry call
         instrumentId: string,
-        transferFactoryRegistryUrl: string
+        registryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         const now = new Date()
         const tomorrow = new Date(now)
@@ -732,7 +769,7 @@ export class TokenStandardService {
         }
 
         const transferFactory = await this.getTokenStandardClient(
-            transferFactoryRegistryUrl
+            registryUrl
         ).post('/registry/transfer-instruction/v1/transfer-factory', {
             choiceArguments: choiceArgs as unknown as Record<string, never>,
         })
@@ -809,66 +846,6 @@ export class TokenStandardService {
             },
             [disclosedContracts],
         ]
-    }
-
-    async createAllocationInstruction(
-        allocationSpecification: AllocationSpecification,
-        expectedAdmin: PartyId,
-        factoryRegistryUrl: string,
-        inputUtxos?: string[],
-        requestedAt?: string,
-        extraContext?: AllocationContextValue
-    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        const allocationSpecificationNormalized: AllocationSpecification = {
-            ...allocationSpecification,
-            settlement: {
-                ...allocationSpecification.settlement,
-                meta: allocationSpecification.settlement.meta ?? { values: {} },
-            },
-            transferLeg: {
-                ...allocationSpecification.transferLeg,
-                meta: allocationSpecification.transferLeg.meta ?? {
-                    values: {},
-                },
-            },
-        }
-
-        const inputHoldingCids = await this.getInputHoldingsCids(
-            allocationSpecificationNormalized.transferLeg.sender,
-            inputUtxos
-        )
-
-        const choiceArgs: AllocationFactory_Allocate = {
-            expectedAdmin: expectedAdmin,
-            allocation: allocationSpecificationNormalized,
-            requestedAt: requestedAt ?? new Date().toISOString(),
-            inputHoldingCids,
-            extraArgs: {
-                context: { values: { ...(extraContext ?? {}) } },
-                meta: { values: {} },
-            },
-        }
-
-        const allocationFactory = await this.getTokenStandardClient(
-            factoryRegistryUrl
-        ).post('/registry/allocation-instruction/v1/allocation-factory', {
-            choiceArguments: choiceArgs as unknown as Record<string, never>,
-        })
-
-        choiceArgs.extraArgs.context = {
-            ...allocationFactory.choiceContext.choiceContextData,
-            values:
-                allocationFactory.choiceContext.choiceContextData?.values ?? {},
-        }
-
-        const exercise: ExerciseCommand = {
-            templateId: ALLOCATION_FACTORY_INTERFACE_ID,
-            contractId: allocationFactory.factoryId,
-            choice: 'AllocationFactory_Allocate',
-            choiceArgument: choiceArgs,
-        }
-
-        return [exercise, allocationFactory.choiceContext.disclosedContracts]
     }
 
     private async toPrettyTransactions(

@@ -566,6 +566,15 @@ export class LedgerController {
         return await this.client.post('/v2/state/active-contracts', filter)
     }
 
+    private isJsCantonError(e: unknown): e is Types['JsCantonError'] {
+        return (
+            typeof e === 'object' &&
+            e !== null &&
+            'status' in e &&
+            'errorCategory' in e
+        )
+    }
+
     async ensureDarUploaded(
         darBytes: Uint8Array | Buffer
     ): Promise<PostResponse<'/v2/packages'> | void> {
@@ -575,41 +584,45 @@ export class LedgerController {
                 darBytes as never,
                 {},
                 {
-                    // @ts-expect-error TODO fix
-                    bodySerializer: (b) => b, // prevents jsonification of bytes
+                    bodySerializer: (b: unknown) => b, // prevents jsonification of bytes
                     headers: { 'Content-Type': 'application/octet-stream' },
                 }
             )
         } catch (e: unknown) {
-            // @ts-expect-error reason: test
-            const msg = `${e.message ?? ''} ${e?.body ?? ''}`
-            if (
-                // @ts-expect-error reason: TODO fix
-                e?.status === 409 ||
-                /already\s*exist/i.test(msg) ||
-                // @ts-expect-error reason: TODO fix
-                e?.errorCategory === 'ALREADY_EXISTS'
-            ) {
-                this['logger'].info('DAR already present—continuing.')
-                return
+            // Check first for already uploaded error, which means dar upload status is ensured true
+            if (this.isJsCantonError(e)) {
+                const msg = [
+                    e.code,
+                    e.cause,
+                    ...(e.context ? Object.values(e.context) : []),
+                ]
+                    .filter(Boolean)
+                    .join(' ')
+
+                const GRPC_ALREADY_EXISTS = 6 as const
+                const alreadyExists =
+                    e.code?.toUpperCase() === 'ALREADY_EXISTS' ||
+                    e.grpcCodeValue === GRPC_ALREADY_EXISTS ||
+                    /already\s*exist/i.test(msg) ||
+                    (e as { status?: number }).status === 409
+
+                if (alreadyExists) {
+                    this['logger'].info('DAR already present—continuing.')
+                    return
+                }
+
+                // In case of other errors throw
+                this.logger.error({ errror: e }, 'DAR upload failed')
+                throw e
             }
-            this['logger'].error({ err: e }, 'DAR upload failed')
+            this.logger.error({ error: e }, 'DAR upload failed')
             throw e
         }
     }
 
-    async checkTestApp() {
-        const SPLICE_TOKEN_TEST_TRADING_APP =
-            'e5c9847d5a88d3b8d65436f01765fc5ba142cc58529692e2dacdd865d9939f71'
+    async isPackageUploaded(packageId: string): Promise<boolean> {
         const { packageIds } = await this.client!.get('/v2/packages')
-        if (
-            Array.isArray(packageIds) &&
-            packageIds.includes(SPLICE_TOKEN_TEST_TRADING_APP)
-        ) {
-            return true
-        }
-
-        return packageIds
+        return Array.isArray(packageIds) && packageIds.includes(packageId)
     }
 }
 
