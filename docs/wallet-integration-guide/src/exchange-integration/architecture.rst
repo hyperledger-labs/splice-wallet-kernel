@@ -75,7 +75,7 @@ There are five Canton integration components:
 * The **Exchange Validator Node** is a :ref:`Splice validator node <validator_nodes>` that hosts
   your ``treasuryParty``, which is the party you setup to control funds, receive deposits, and
   execute transfers for withdrawals. See :ref:`exchange-parties-setup` for details on how to setup the ``treasuryParty``.
-  You can `deploy and oeprate a valiator yourself <https://docs.dev.sync.global/validator_operator/index.html#validators>`__
+  You can `deploy and operate a validator yourself <https://docs.dev.sync.global/validator_operator/index.html#validators>`__
   or use a node-as-a-service provider to operate it for you.
 * The **Canton Integration DB** is used to keep track of the state of withdrawals and
   the customer-attribution of the funds held by the ``treasuryParty``.
