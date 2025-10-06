@@ -77,8 +77,6 @@ await new Promise((res) => setTimeout(res, 5000))
 
 logger.info('creating transfer preapproval proposal')
 
-//TODO(#537): Tap validator operator party to ensure they have funds to setup the pre-approval
-
 await sdk.setPartyId(validatorOperatorParty!)
 await sdk.tokenStandard?.createTapInternal(
     validatorOperatorParty!,
