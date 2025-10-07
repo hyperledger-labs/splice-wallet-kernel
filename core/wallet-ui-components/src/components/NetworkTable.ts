@@ -2,16 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Network } from '@canton-network/core-wallet-store'
-import { LitElement, html, css } from 'lit'
+import { html, css } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 
-import { styles } from '../themes/styles.js'
+import { styles } from '../styles/network.js'
+import { BaseElement } from '../internal/BaseElement.js'
 
 @customElement('network-table')
-export class NetworkTable extends LitElement {
+export class NetworkTable extends BaseElement {
     @property({ type: Array }) networks: Network[] = []
 
     static styles = [
+        BaseElement.styles,
         styles,
         css`
             .card-list {

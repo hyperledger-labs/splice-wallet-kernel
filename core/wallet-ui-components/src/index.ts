@@ -12,7 +12,6 @@ export * from './windows/discovery.js'
 export * from './windows/popup.js'
 
 import './components/Discovery.js'
-import './components/Configuration.js'
 import './components/NetworkTable.js'
 import './components/NetworkForm.js'
 import { html as htmlStatic, literal } from 'lit/static-html.js'
@@ -32,10 +31,6 @@ export class AppUi extends LitElement {
         {
             name: 'Discovery.ts',
             element: literal`swk-discovery`,
-        },
-        {
-            name: 'Configuration.ts',
-            element: literal`swk-configuration`,
         },
     ]
 

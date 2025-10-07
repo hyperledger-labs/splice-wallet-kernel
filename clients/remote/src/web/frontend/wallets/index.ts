@@ -52,7 +52,7 @@ export class UserUiWallets extends LitElement {
             box-sizing: border-box;
             max-width: 900px;
             margin: 0 auto;
-            font-family: var(--swk-font, Arial, sans-serif);
+            font-family: var(--wg-theme-font-family, Arial, sans-serif);
         }
         .header {
             margin-bottom: 1rem;
@@ -144,10 +144,7 @@ export class UserUiWallets extends LitElement {
 
     protected render() {
         return html`
-            <div
-                class="header"
-                style="display:flex;align-items:center;justify-content:space-between;"
-            >
+            <div class="header">
                 <h1>Wallets</h1>
                 <button
                     class="buttons"
@@ -167,7 +164,7 @@ export class UserUiWallets extends LitElement {
                                   @submit=${this._onCreateWalletSubmit}
                               >
                                   <label for="party-id-hint"
-                                      >Party ID hint:</label
+                                      >Party ID Hint:</label
                                   >
                                   <input
                                       ?disabled=${this.loading}

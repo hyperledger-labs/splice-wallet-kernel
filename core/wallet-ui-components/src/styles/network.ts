@@ -6,7 +6,7 @@ export const styles = css`
     .table-wrapper {
         max-height: 300px;
         overflow-y: auto;
-        border: 1px solid var(--splice-wk-border-color, #ccc);
+        border: 1px solid var(--wg-theme-border-color, #ccc);
         border-radius: 4px;
     }
 
@@ -21,16 +21,16 @@ export const styles = css`
         z-index: 1;
         text-align: left;
         padding: 8px 12px;
-        border-bottom: 1px solid var(--splice-wk-border-color, #ccc);
+        border-bottom: 1px solid var(--wg-theme-border-color, #ccc);
     }
 
     tbody td {
         padding: 8px 12px;
-        border-bottom: 1px solid var(--splice-wk-border-color, #ccc);
+        border-bottom: 1px solid var(--wg-theme-border-color, #ccc);
     }
 
     tr:nth-child(even) {
-        background-color: var(--splice-wk-background-color, none);
+        background-color: var(--wg-theme-background-color, none);
     }
 
     .actions button {
@@ -47,7 +47,7 @@ export const styles = css`
     }
 
     .modal-content {
-        background: var(--splice-wk-background-color, none);
+        background: var(--wg-theme-background-color, none);
         padding: 1.5rem;
         border-radius: 8px;
         width: 400px;

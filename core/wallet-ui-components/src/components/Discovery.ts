@@ -31,8 +31,8 @@ export class Discovery extends HTMLElement {
         const styles = document.createElement('style')
         styles.textContent = `
         * {
-            color: var(--splice-wk-text-color, black);
-            font-family: var(--splice-wk-font-family);
+            color: var(--wg-theme-text-color, black);
+            font-family: var(--wg-theme-font-family);
         }
 
         h1 {
@@ -40,7 +40,7 @@ export class Discovery extends HTMLElement {
         }
 
         div {
-            background-color: var(--splice-wk-background-color, none);
+            background-color: var(--wg-theme-background-color, none);
             width: 100%;
             height: 100%;
         }
