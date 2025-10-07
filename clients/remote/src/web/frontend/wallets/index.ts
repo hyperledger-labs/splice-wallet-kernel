@@ -44,132 +44,212 @@ export class UserUiWallets extends LitElement {
     accessor _primaryCheckbox: HTMLInputElement | null = null
 
     static styles = css`
-        #create-wallet-form {
-            max-width: 300px;
+        :host {
+            display: block;
+            box-sizing: border-box;
+            // padding: 1rem;
+            max-width: 900px;
+            margin: 0 auto;
+            font-family: var(--swk-font, Arial, sans-serif);
+        }
+        .header {
+            margin-bottom: 1rem;
+        }
+        .form-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            max-width: 400px;
+        }
+        form {
             display: flex;
             flex-direction: column;
-
-            label {
-                margin-bottom: 0.5rem;
+            gap: 1rem;
+        }
+        label {
+            font-weight: 500;
+            margin-bottom: 0.2rem;
+        }
+        .form-control {
+            padding: 0.5rem;
+            border: 1px solid var(--splice-wk-border-color, #ccc);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .inline {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .buttons {
+            padding: 0.4rem 0.8rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background: #f5f5f5;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .buttons:hover {
+            background: #e2e6ea;
+        }
+        .card-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .wallet-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-width: 0;
+        }
+        .wallet-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #0052cc;
+            word-break: break-all;
+        }
+        .wallet-meta {
+            font-size: 0.95rem;
+            color: #555;
+            margin-bottom: 0.5rem;
+            word-break: break-all;
+        }
+        .wallet-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.2rem;
             }
-
-            .form-control {
-                margin-bottom: 1.5rem;
-                padding: 0.5rem;
-                border: 1px solid var(--splice-wk-border-color, #ccc);
-                border-radius: 4px;
-
-                &.inline {
-                    padding: 0;
-                    border: none;
-                }
+            .card-list {
+                grid-template-columns: 1fr;
+            }
+            .wallet-card,
+            .form-card {
+                padding: 0.7rem;
+            }
+            .buttons {
+                font-size: 0.9rem;
+                padding: 0.3rem 0.6rem;
             }
         }
     `
 
     protected render() {
-        return html`<div>
+        return html`
             <user-ui-nav></user-ui-nav>
-            <h1>Wallets UI</h1>
 
-            <h2>Primary Wallet</h2>
-            <form id="primary-wallet-form">
-                <label for="primary-wallet-select"
-                    >Select Primary Wallet:</label
+            <div class="form-card">
+                <div class="header"><h1>Create a Wallet</h1></div>
+                <form
+                    id="create-wallet-form"
+                    @submit=${this._onCreateWalletSubmit}
                 >
-                <select
-                    class="form-control"
-                    id="primary-wallet-select"
-                    @change=${async (e: Event) => {
-                        const select = e.target as HTMLSelectElement
-                        const selectedWalletId = select.value
-                        if (selectedWalletId) {
-                            const userClient = createUserClient(
-                                stateManager.accessToken.get()
-                            )
-                            await userClient.request('setPrimaryWallet', {
-                                partyId: selectedWalletId,
-                            })
-                            this.updateWallets()
-                        }
-                    }}
-                >
-                    <option disabled value="">Select a wallet</option>
-                    ${this.wallets.map(
-                        (wallet) =>
-                            html` <option
-                                value=${wallet.partyId}
-                                .selected=${wallet.primary}
-                            >
-                                ${wallet.hint}
-                                ${wallet.primary ? '(Primary)' : ''}
-                            </option>`
-                    )}
-                </select>
-            </form>
+                    <label for="party-id-hint">Party ID hint:</label>
+                    <input
+                        ?disabled=${this.loading}
+                        class="form-control"
+                        id="party-id-hint"
+                        type="text"
+                        placeholder="Enter party ID hint"
+                    />
 
-            <h2>Create a Wallet</h2>
+                    <label for="signing-provider-id">Signing Provider:</label>
+                    <select class="form-control" id="signing-provider-id">
+                        <option disabled value="">
+                            Signing provider for wallet
+                        </option>
+                        ${this.signingProviders.map(
+                            (providerId) =>
+                                html`<option value=${providerId}>
+                                    ${providerId}
+                                </option>`
+                        )}
+                    </select>
 
-            <form id="create-wallet-form">
-                <label for="party-id-hint">Party ID hint:</label>
-                <input
-                    ?disabled=${this.loading}
-                    class="form-control"
-                    id="party-id-hint"
-                    type="text"
-                    placeholder="Enter party ID hint"
-                />
+                    <label for="network-id">Network:</label>
+                    <select class="form-control" id="network-id">
+                        <option disabled value="">Select a network</option>
+                        ${this.networks.map(
+                            (networkId) =>
+                                html`<option value=${networkId}>
+                                    ${networkId}
+                                </option>`
+                        )}
+                    </select>
 
-                <label for="signing-provider-id">Signing Provider:</label>
-                <select class="form-control" id="signing-provider-id">
-                    <option disabled value="">
-                        Signing provider for wallet
-                    </option>
-                    ${this.signingProviders.map(
-                        (providerId) =>
-                            html`<option value=${providerId}>
-                                ${providerId}
-                            </option>`
-                    )}
-                </select>
+                    <div class="inline">
+                        <label for="primary">Set as primary wallet:</label>
+                        <input id="primary" type="checkbox" />
+                    </div>
 
-                <label for="network-id">Network:</label>
-                <select class="form-control" id="network-id">
-                    <option disabled value="">Select a network</option>
-                    ${this.networks.map(
-                        (networkId) =>
-                            html`<option value=${networkId}>
-                                ${networkId}
-                            </option>`
-                    )}
-                </select>
+                    <button
+                        class="buttons"
+                        ?disabled=${this.loading}
+                        type="submit"
+                    >
+                        Create
+                    </button>
+                </form>
+                ${this.createdParty
+                    ? html`<p>Created party ID: ${this.createdParty}</p>`
+                    : ''}
+            </div>
 
-                <div class="form-control inline">
-                    <label for="primary">Set as primary wallet:</label>
-                    <input id="primary" type="checkbox" />
-                </div>
-            </form>
-
-            ${this.createdParty
-                ? html`<p>Created party ID: ${this.createdParty}</p>`
-                : ''}
-            <button ?disabled=${this.loading} @click=${this.createWallet}>
-                Create
-            </button>
-
-            <h2>Existing Wallets</h2>
-            <ul>
+            <div class="header"><h1>Existing Wallets</h1></div>
+            <div class="card-list">
                 ${this.wallets.map(
-                    (wallet) =>
-                        html`<li>
-                            <strong>${wallet.hint || wallet.partyId}</strong>
-                            <span style="font-style: italic;"
-                                >${wallet.primary ? '(Primary)' : ''}</span
-                            >
-                        </li>`
+                    (wallet) => html`
+                        <div class="wallet-card">
+                            <div class="wallet-title">
+                                ${wallet.hint || wallet.partyId}
+                                ${wallet.primary
+                                    ? html`<span
+                                          style="font-size:0.95rem; color:#009900;"
+                                          >(Primary)</span
+                                      >`
+                                    : ''}
+                            </div>
+                            <div class="wallet-meta">
+                                <strong>Party ID:</strong>
+                                ${wallet.partyId}<br />
+                                <strong>Network:</strong>
+                                ${wallet.chainId}<br />
+                                <strong>Signing Provider:</strong>
+                                ${wallet.signingProviderId}
+                            </div>
+                            <div class="wallet-actions">
+                                <button
+                                    class="buttons"
+                                    @click=${() => this._setPrimary(wallet)}
+                                >
+                                    Set Primary
+                                </button>
+                                <button
+                                    class="buttons"
+                                    @click=${() =>
+                                        this._copyPartyId(wallet.partyId)}
+                                >
+                                    Copy Party ID
+                                </button>
+                            </div>
+                        </div>
+                    `
                 )}
-            </ul>
-        </div>`
+            </div>
+        `
     }
 
     connectedCallback(): void {
@@ -192,7 +272,20 @@ export class UserUiWallets extends LitElement {
         })
     }
 
-    private async createWallet() {
+    private async _setPrimary(wallet: Wallet) {
+        const userClient = createUserClient(stateManager.accessToken.get())
+        await userClient.request('setPrimaryWallet', {
+            partyId: wallet.partyId,
+        })
+        this.updateWallets()
+    }
+
+    private _copyPartyId(partyId: string) {
+        navigator.clipboard.writeText(partyId)
+    }
+
+    private async _onCreateWalletSubmit(e: Event) {
+        e.preventDefault()
         this.loading = true
 
         const partyHint = this._partyHintInput?.value || ''
