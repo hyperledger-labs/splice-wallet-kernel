@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SignJWT } from 'jose'
+import { decodeJwt, SignJWT } from 'jose'
 import { Logger } from '@canton-network/core-types'
 import {
     AuthContext,
@@ -159,20 +159,38 @@ export class UnsafeAuthController implements AuthController {
 
     private _logger: Logger | undefined
 
+    private _adminAccessToken: string | undefined
+    private _userAccessToken: string | undefined
+
     constructor(logger?: Logger) {
         this._logger = logger
     }
 
     async getAdminToken(): Promise<AuthContext> {
-        return this._createJwtToken(this.adminId || 'admin')
+        return this._getOrCreateJwtToken(this.adminId || 'admin', 'admin')
     }
 
     async getUserToken(): Promise<AuthContext> {
-        return this._createJwtToken(this.userId || 'user')
+        return this._getOrCreateJwtToken(this.userId || 'user', 'user')
     }
 
-    private async _createJwtToken(sub: string): Promise<AuthContext> {
+    private async _getOrCreateJwtToken(
+        sub: string,
+        subIdentifier: string
+    ): Promise<AuthContext> {
         if (!this.unsafeSecret) throw new Error('unsafeSecret is not set')
+        if (subIdentifier === 'admin' && this._adminAccessToken) {
+            const payload = decodeJwt(this._adminAccessToken)
+            const now = Math.floor(Date.now() / 1000)
+            if (payload.exp && payload.exp > now)
+                return { userId: sub, accessToken: this._adminAccessToken }
+        } else if (subIdentifier === 'user' && this._userAccessToken) {
+            const payload = decodeJwt(this._userAccessToken)
+            const now = Math.floor(Date.now() / 1000)
+            if (payload.exp && payload.exp > now)
+                return { userId: sub, accessToken: this._userAccessToken }
+        }
+        this._logger?.info('Live token was not found. Requesting a new one...')
         const secret = new TextEncoder().encode(this.unsafeSecret)
         const now = Math.floor(Date.now() / 1000)
         const jwt = await new SignJWT({
@@ -184,6 +202,11 @@ export class UnsafeAuthController implements AuthController {
         })
             .setProtectedHeader({ alg: 'HS256' })
             .sign(secret)
+        if (subIdentifier === 'admin') {
+            this._adminAccessToken = jwt
+        } else {
+            this._userAccessToken = jwt
+        }
         return { userId: sub, accessToken: jwt }
     }
 }
