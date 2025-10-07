@@ -35,7 +35,11 @@ export * from './config.js'
 import { PartyId } from '@canton-network/core-types'
 
 type AuthFactory = () => AuthController
-type LedgerFactory = (userId: string, token: string) => LedgerController
+type LedgerFactory = (
+    userId: string,
+    token: string,
+    isAdmin: boolean
+) => LedgerController
 type TopologyFactory = (
     userId: string,
     adminAccessToken: string,
@@ -121,7 +125,7 @@ export class WalletSDKImpl implements WalletSDK {
      */
     async connect(): Promise<WalletSDK> {
         const { userId, accessToken } = await this.auth.getUserToken()
-        this.userLedger = this.ledgerFactory(userId, accessToken)
+        this.userLedger = this.ledgerFactory(userId, accessToken, false)
         this.tokenStandard = this.tokenStandardFactory(userId, accessToken)
         this.validator = this.validatorFactory(userId, accessToken)
         return this
@@ -132,7 +136,7 @@ export class WalletSDKImpl implements WalletSDK {
      */
     async connectAdmin(): Promise<WalletSDK> {
         const { userId, accessToken } = await this.auth.getAdminToken()
-        this.adminLedger = this.ledgerFactory(userId, accessToken)
+        this.adminLedger = this.ledgerFactory(userId, accessToken, true)
         return this
     }
 

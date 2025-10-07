@@ -11,6 +11,7 @@ import {
     promiseWithTimeout,
     GenerateTransactionResponse,
     AllocateExternalPartyResponse,
+    isJsCantonError,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -42,6 +43,7 @@ export type WrappedCommand<
 export class LedgerController {
     private readonly client: LedgerClient
     private readonly userId: string
+    private readonly isAdmin: boolean
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
     private logger = pino({ name: 'LedgerController', level: 'info' })
@@ -51,11 +53,13 @@ export class LedgerController {
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
      * @param token the access token from the user, usually provided by an auth controller.
+     * @param isAdmin optional flag to set true when creating adminLedger.
      */
-    constructor(userId: string, baseUrl: URL, token: string) {
+    constructor(userId: string, baseUrl: URL, token: string, isAdmin: boolean) {
         this.client = new LedgerClient(baseUrl, token, this.logger)
         this.client.init()
         this.userId = userId
+        this.isAdmin = isAdmin
         return this
     }
 
@@ -724,6 +728,59 @@ export class LedgerController {
         //TODO: figure out if this should automatically be converted to a format that is more user friendly
         return await this.client.post('/v2/state/active-contracts', filter)
     }
+
+    async uploadDar(
+        darBytes: Uint8Array | Buffer
+    ): Promise<PostResponse<'/v2/packages'> | void> {
+        if (!this.isAdmin) {
+            throw new Error('Use adminLedger to call uploadDar')
+        }
+        try {
+            return await this.client.post(
+                '/v2/packages',
+                darBytes as never,
+                {},
+                {
+                    bodySerializer: (b: unknown) => b, // prevents jsonification of bytes
+                    headers: { 'Content-Type': 'application/octet-stream' },
+                }
+            )
+        } catch (e: unknown) {
+            // Check first for already uploaded error, which means dar upload status is ensured true
+            if (isJsCantonError(e)) {
+                const msg = [
+                    e.code,
+                    e.cause,
+                    ...(e.context ? Object.values(e.context) : []),
+                ]
+                    .filter(Boolean)
+                    .join(' ')
+
+                const GRPC_ALREADY_EXISTS = 6 as const
+                const alreadyExists =
+                    e.code?.toUpperCase() === 'ALREADY_EXISTS' ||
+                    e.grpcCodeValue === GRPC_ALREADY_EXISTS ||
+                    /already\s*exist/i.test(msg) ||
+                    (e as { status?: number }).status === 409
+
+                if (alreadyExists) {
+                    this.logger.info('DAR already present - continuing')
+                    return
+                }
+
+                // In case of other errors throw
+                this.logger.error({ errror: e }, 'DAR upload failed')
+                throw e
+            }
+            this.logger.error({ error: e }, 'DAR upload failed')
+            throw e
+        }
+    }
+
+    async isPackageUploaded(packageId: string): Promise<boolean> {
+        const { packageIds } = await this.client!.get('/v2/packages')
+        return Array.isArray(packageIds) && packageIds.includes(packageId)
+    }
 }
 
 /**
@@ -732,9 +789,15 @@ export class LedgerController {
  */
 export const localLedgerDefault = (
     userId: string,
-    token: string
+    token: string,
+    isAdmin: boolean
 ): LedgerController => {
-    return new LedgerController(userId, new URL('http://127.0.0.1:5003'), token)
+    return new LedgerController(
+        userId,
+        new URL('http://127.0.0.1:5003'),
+        token,
+        isAdmin
+    )
 }
 
 /**
@@ -743,21 +806,34 @@ export const localLedgerDefault = (
  */
 export const localNetLedgerDefault = (
     userId: string,
-    token: string
+    token: string,
+    isAdmin: boolean
 ): LedgerController => {
-    return localNetLedgerAppUser(userId, token)
+    return localNetLedgerAppUser(userId, token, isAdmin)
 }
 
 export const localNetLedgerAppUser = (
     userId: string,
-    token: string
+    token: string,
+    isAdmin: boolean
 ): LedgerController => {
-    return new LedgerController(userId, new URL('http://127.0.0.1:2975'), token)
+    return new LedgerController(
+        userId,
+        new URL('http://127.0.0.1:2975'),
+        token,
+        isAdmin
+    )
 }
 
 export const localNetLedgerAppProvider = (
     userId: string,
-    token: string
+    token: string,
+    isAdmin: boolean
 ): LedgerController => {
-    return new LedgerController(userId, new URL('http://127.0.0.1:3975'), token)
+    return new LedgerController(
+        userId,
+        new URL('http://127.0.0.1:3975'),
+        token,
+        isAdmin
+    )
 }

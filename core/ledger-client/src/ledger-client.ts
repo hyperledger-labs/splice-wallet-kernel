@@ -4,7 +4,7 @@
 import * as v3_3 from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 
 import * as v3_4 from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
-import createClient, { Client } from 'openapi-fetch'
+import createClient, { Client, FetchOptions } from 'openapi-fetch'
 import { Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
 
@@ -70,6 +70,8 @@ export type OnboardingTransactions = NonNullable<
 export type MultiHashSignatures = NonNullable<
     v3_3.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
 >
+// Any options the client accepts besides body/params
+type ExtraPostOpts = Omit<FetchOptions<paths>, 'body' | 'params'>
 
 export class LedgerClient {
     // privately manage the active connected version and associated client codegen
@@ -283,11 +285,12 @@ export class LedgerClient {
         params?: {
             path?: Record<string, string>
             query?: Record<string, string>
-        }
+        },
+        // needed when posting to /packages, so content type and jsonification of bytes can be overriden
+        additionalOptions?: ExtraPostOpts
     ): Promise<PostResponse<Path>> {
-        this.init()
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
-        const options = { body, params } as any
+        const options = { body, params, ...additionalOptions } as any
 
         const resp = await this.currentClient.POST(path, options)
         return this.valueOrError(resp)
