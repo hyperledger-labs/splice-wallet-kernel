@@ -135,6 +135,20 @@ export class LedgerClient {
     }
 
     /**
+     * Check if a party exists
+     *
+     * @param partyId The ID of the party to look for
+     * @returns A promise to resolves to a boolean.
+     */
+    public async checkIfPartyExists(partyId: PartyId): Promise<boolean> {
+        const parties = await this.get('/v2/parties')
+        return (
+            parties.partyDetails?.some((party) => party.party === partyId) ||
+            false
+        )
+    }
+
+    /**
      * Grants a user the right to act as a party, while ensuring the party exists.
      *
      * @param userId The ID of the user to grant rights to.
@@ -142,18 +156,14 @@ export class LedgerClient {
      * @returns A promise that resolves when the rights have been granted.
      */
     public async grantUserRights(userId: string, partyId: PartyId) {
-        this.init()
+        await this.init()
         // Wait for party to appear on participant
         let partyFound = false
         let tries = 0
         const maxTries = 20
 
         while (!partyFound && tries < maxTries) {
-            const parties = await this.get('/v2/parties')
-            partyFound =
-                parties.partyDetails?.some(
-                    (party) => party.party === partyId
-                ) || false
+            partyFound = await this.checkIfPartyExists(partyId)
 
             await new Promise((resolve) => setTimeout(resolve, 1000))
             tries++
@@ -219,7 +229,7 @@ export class LedgerClient {
             query?: Record<string, string>
         }
     ): Promise<GetResponse<Path>> {
-        this.init()
+        await this.init()
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
         const options = { params } as any
         const resp = await this.currentClient.GET(path, options)

@@ -187,6 +187,9 @@ export class TopologyController {
         preparedParty: PreparedParty,
         grantUserRights: boolean = true
     ): Promise<AllocatedParty> {
+        if (await this.client.checkIfPartyExists(preparedParty.partyId))
+            return { partyId: preparedParty.partyId }
+
         const signedTopologyTxs = preparedParty.partyTransactions.map(
             (transaction) =>
                 TopologyWriteService.toSignedTopologyTransaction(

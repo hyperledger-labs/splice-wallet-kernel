@@ -10,7 +10,7 @@ import {
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 
-const logger = pino({ name: '04-token-standard-localnet', level: 'info' })
+const logger = pino({ name: '10-idempotent-and-error', level: 'info' })
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
@@ -37,6 +37,19 @@ const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
     'alice'
 )
 logger.info(`Created party: ${sender!.partyId}`)
+
+logger.info(`checking idempotent behavior of onboarding`)
+const sender2 = await sdk.topology?.prepareSignAndSubmitExternalParty(
+    keyPairSender.privateKey,
+    'alice'
+)
+
+if (sender?.partyId !== sender2?.partyId) {
+    throw new Error('onboarding external party is not idempotent')
+} else {
+    logger.info('alice successfully onboarded twice (idempotent behavior)')
+}
+
 await sdk.setPartyId(sender!.partyId)
 
 const receiver = await sdk.topology?.prepareSignAndSubmitExternalParty(
@@ -44,15 +57,6 @@ const receiver = await sdk.topology?.prepareSignAndSubmitExternalParty(
     'bob'
 )
 logger.info(`Created party: ${receiver!.partyId}`)
-
-await sdk.userLedger
-    ?.listWallets()
-    .then((wallets) => {
-        logger.info(wallets, 'Wallets:')
-    })
-    .catch((error) => {
-        logger.error({ error }, 'Error listing wallets')
-    })
 
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(
     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
@@ -78,23 +82,8 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 )
 
 const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
-logger.info(utxos, 'List Available Token Standard Holding UTXOs')
 
-await sdk.tokenStandard
-    ?.listHoldingTransactions()
-    .then((transactions) => {
-        logger.info(transactions, 'Token Standard Holding Transactions:')
-    })
-    .catch((error) => {
-        logger.error(
-            { error },
-            'Error listing token standard holding transactions:'
-        )
-    })
-
-logger.info('Creating transfer transaction')
-
-const [transferCommand, disclosedContracts2] =
+const [firstSpendCommand, disclosedContracts2] =
     await sdk.tokenStandard!.createTransfer(
         sender!.partyId,
         receiver!.partyId,
@@ -107,44 +96,53 @@ const [transferCommand, disclosedContracts2] =
         'memo-ref'
     )
 
+logger.info('creating double spend')
+const [secondSpendCommand, disclosedContracts3] =
+    await sdk.tokenStandard!.createTransfer(
+        sender!.partyId,
+        receiver!.partyId,
+        '200',
+        {
+            instrumentId: 'Amulet',
+            instrumentAdmin: instrumentAdminPartyId,
+        },
+        utxos?.map((t) => t.contractId),
+        'memo-ref'
+    )
+
 offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? offsetLatest
 
-await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-    transferCommand,
+//one of these two commands will fail
+
+const firstSpendCommandId = sdk.userLedger?.prepareSignAndExecuteTransaction(
+    firstSpendCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts2
 )
-logger.info('Submitted transfer transaction')
-
-await sdk.setPartyId(receiver!.partyId)
-
-const pendingInstructions =
-    await sdk.tokenStandard?.fetchPendingTransferInstructionView()
-
-const transferCid = pendingInstructions?.[0].contractId!
-
-const [acceptTransferCommand, disclosedContracts3] =
-    await sdk.tokenStandard!.exerciseTransferInstructionChoice(
-        transferCid,
-        'Accept'
-    )
-
-await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-    acceptTransferCommand,
-    keyPairReceiver.privateKey,
+const secondSpendCommandId = sdk.userLedger?.prepareSignAndExecuteTransaction(
+    secondSpendCommand,
+    keyPairSender.privateKey,
     v4(),
     disclosedContracts3
 )
 
-logger.info('Accepted transfer instruction')
+logger.info('Created two transaction using same utxo (double spend)')
 
-{
-    await sdk.setPartyId(sender!.partyId)
-    const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
-    logger.info(aliceHoldings, '[ALICE] holding transactions')
-
-    await sdk.setPartyId(receiver!.partyId)
-    const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
-    logger.info(bobHoldings, '[BOB] holding transactions')
+try {
+    await sdk.userLedger?.waitForCompletion(
+        offsetLatest,
+        5000,
+        await firstSpendCommandId
+    )
+    await sdk.userLedger?.waitForCompletion(
+        offsetLatest,
+        5000,
+        await secondSpendCommandId
+    )
+} catch (e) {
+    logger.info(
+        e,
+        'got double spend exception (LOCAL_VERDICT_LOCKED_CONTRACTS)'
+    )
 }
