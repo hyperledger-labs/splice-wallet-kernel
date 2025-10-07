@@ -181,9 +181,9 @@ export class UnsafeAuthController implements AuthController {
     ): Promise<AuthContext> {
         if (!this.unsafeSecret) throw new Error('unsafeSecret is not set')
 
-        const cached = this._accessTokens[subIdentifier]
-        if (cached && this._isJwtValid(cached)) {
-            return { userId: sub, accessToken: cached }
+        const cachedAccessToken = this._accessTokens[subIdentifier]
+        if (cachedAccessToken && this._isJwtValid(cachedAccessToken)) {
+            return { userId: sub, accessToken: cachedAccessToken }
         }
         this._logger?.info('Live token was not found. Requesting a new one...')
         const secret = new TextEncoder().encode(this.unsafeSecret)
