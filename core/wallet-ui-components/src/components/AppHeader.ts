@@ -8,7 +8,7 @@ import { customElement, property, state } from 'lit/decorators.js'
 export class AppHeader extends LitElement {
     @property({ type: String }) iconSrc: string = 'images/icon.png'
     @state() private menuOpen = false
-    @state() private darkMode = localStorage.getItem('theme') !== 'light'
+    @state() private darkMode = localStorage.getItem('theme') === 'dark'
 
     static styles = css`
         :host {
@@ -56,13 +56,13 @@ export class AppHeader extends LitElement {
 
         /* Hamburger */
         .hamburger {
-            background: none; /* no box */
-            border: none; /* remove default button border */
-            font-size: 1.8rem; /* make it larger */
+            background: none;
+            border: none;
+            font-size: 1.8rem;
             cursor: pointer;
-            color: #000; /* black lines */
-            padding: 0; /* remove any padding */
-            line-height: 1; /* tight vertical spacing */
+            color: var(--text-color);
+            padding: 0;
+            line-height: 1;
         }
 
         /* Dropdown menu */
@@ -116,6 +116,7 @@ export class AppHeader extends LitElement {
             padding: 0.5rem 1rem;
             border-top: 1px solid var(--border-color);
             margin-top: 0.25rem;
+            cursor: pointer;
         }
 
         .toggle-switch {
@@ -124,7 +125,6 @@ export class AppHeader extends LitElement {
             height: 20px;
             background: #ccc;
             border-radius: 20px;
-            cursor: pointer;
             transition: background 0.15s;
             flex-shrink: 0;
         }
@@ -144,10 +144,24 @@ export class AppHeader extends LitElement {
         .toggle-switch.on {
             background: #4caf50;
         }
+
         .toggle-switch.on::after {
             transform: translateX(20px);
         }
     `
+
+    connectedCallback() {
+        super.connectedCallback()
+        this.updateThemeAttribute()
+    }
+
+    private updateThemeAttribute() {
+        if (this.darkMode) {
+            this.setAttribute('theme', 'dark')
+        } else {
+            this.removeAttribute('theme')
+        }
+    }
 
     private toggleMenu() {
         this.menuOpen = !this.menuOpen
@@ -155,18 +169,14 @@ export class AppHeader extends LitElement {
 
     private toggleTheme() {
         this.darkMode = !this.darkMode
-        if (this.darkMode) {
-            this.removeAttribute('theme')
-            localStorage.setItem('theme', 'dark')
-        } else {
-            this.setAttribute('theme', 'dark')
-            localStorage.setItem('theme', 'light')
-        }
+        localStorage.setItem('theme', this.darkMode ? 'dark' : 'light')
+        this.updateThemeAttribute()
     }
 
     private navigateTo(url: string) {
         window.location.href = url
     }
+
     private logout() {
         localStorage.clear()
         window.location.href = '/login'
@@ -179,7 +189,6 @@ export class AppHeader extends LitElement {
                     <img src="${this.iconSrc}" alt="App Icon" /> Splice Wallet
                 </div>
 
-                <!-- Hamburger triggers dropdown -->
                 <button
                     class="hamburger"
                     @click=${this.toggleMenu}
@@ -189,11 +198,15 @@ export class AppHeader extends LitElement {
                 </button>
 
                 <div class="dropdown ${this.menuOpen ? 'open' : ''}">
+                    <button @click=${() => this.navigateTo('/wallets/')}>
+                        💰 Wallets
+                    </button>
                     <button @click=${() => this.navigateTo('/networks/')}>
                         ⚙️ Settings
                     </button>
                     <button @click=${this.logout}>🚪 Logout</button>
-                    <div class="theme-toggle">
+
+                    <div class="theme-toggle" @click=${this.toggleTheme}>
                         <span
                             >${this.darkMode
                                 ? '🌙 Dark Mode'
@@ -201,7 +214,6 @@ export class AppHeader extends LitElement {
                         >
                         <div
                             class="toggle-switch ${this.darkMode ? 'on' : ''}"
-                            @click=${this.toggleTheme}
                         ></div>
                     </div>
                 </div>
