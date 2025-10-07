@@ -144,8 +144,6 @@ export class UserUiWallets extends LitElement {
 
     protected render() {
         return html`
-            <user-ui-nav></user-ui-nav>
-
             <div
                 class="header"
                 style="display:flex;align-items:center;justify-content:space-between;"

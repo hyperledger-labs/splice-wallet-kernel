@@ -236,7 +236,6 @@ export class UserUiNetworks extends LitElement {
 
     protected render() {
         return html`
-            <user-ui-nav></user-ui-nav>
             <div class="header"><h1>Sessions</h1></div>
             <div class="table-container">
                 <table>
