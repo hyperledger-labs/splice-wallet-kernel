@@ -129,7 +129,6 @@ export const userController = (
                 network.synchronizerId,
                 adminToken,
                 network.ledgerApi.baseUrl,
-                network.ledgerApi.adminGrpcUrl,
                 logger
             )
             const driver = drivers[

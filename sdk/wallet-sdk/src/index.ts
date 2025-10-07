@@ -180,6 +180,14 @@ export class WalletSDKImpl implements WalletSDK {
             accessToken,
             synchronizerId
         )
+
+        if (!this.userLedger) {
+            this.logger?.warn(
+                'userLedger is not defined, synchronizerId will not be set automatically. Consider calling sdk.connect() first'
+            )
+        }
+
+        this.userLedger?.setSynchronizerId(synchronizerId)
         return this
     }
 

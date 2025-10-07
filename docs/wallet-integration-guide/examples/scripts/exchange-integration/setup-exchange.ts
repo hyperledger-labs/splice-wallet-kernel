@@ -43,7 +43,7 @@ export async function setupExchange(options?: {
     // Setup the treasury party
     const treasuryKeyPair = createKeyPair()
     const treasuryParty = (
-        await exchangeSdk.topology?.prepareSignAndSubmitExternalParty(
+        await exchangeSdk.userLedger?.signAndAllocateExternalParty(
             treasuryKeyPair.privateKey,
             'treasury'
         )

@@ -9,7 +9,6 @@ import {
     signTransactionHash,
     TopologyController,
 } from '@canton-network/wallet-sdk'
-import { on } from 'events'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 
@@ -66,19 +65,29 @@ onlineLogger.info(
     '===================== PREPARING ONBOARDING ====================='
 )
 
-const senderPrepared = await onlineSDK.topology?.prepareExternalPartyTopology(
+const senderPrepared = await onlineSDK.userLedger?.generateExternalParty(
     keyPairSender.publicKey,
     'alice'
 )
+
+if (!senderPrepared) {
+    throw new Error('Failed to prepare sender onboarding')
+}
+
 onlineLogger.info(
-    `Prepared sender onboarding with combined hash: ${senderPrepared!.combinedHash}`
+    `Prepared sender onboarding with multi hash: ${senderPrepared!.multiHash}`
 )
-const receiverPrepared = await onlineSDK.topology?.prepareExternalPartyTopology(
+const receiverPrepared = await onlineSDK.userLedger?.generateExternalParty(
     keyPairReceiver.publicKey,
     'bob'
 )
+
+if (!receiverPrepared) {
+    throw new Error('Failed to prepare receiver onboarding')
+}
+
 onlineLogger.info(
-    `Prepared receiver onboarding with combined hash: ${receiverPrepared!.combinedHash}`
+    `Prepared receiver onboarding with multi hash: ${receiverPrepared!.multiHash}`
 )
 
 //this can go to fast, so sleep to make logging clearer
@@ -88,33 +97,33 @@ offlineLogger.info(
 )
 
 const recomputedSenderHash = await TopologyController.computeTopologyTxHash(
-    senderPrepared!.partyTransactions
+    senderPrepared.topologyTransactions!
 )
 
-if (recomputedSenderHash !== senderPrepared!.combinedHash) {
+if (recomputedSenderHash !== senderPrepared.multiHash) {
     throw new Error(
         'Recomputed sender hash does not match prepared combined hash'
     )
 }
 
 const senderSigned = signTransactionHash(
-    senderPrepared!.combinedHash,
+    senderPrepared.multiHash,
     keyPairSender.privateKey
 )
 offlineLogger.info(`Signed sender onboarding hash: ${senderSigned}`)
 
 const recomputedReceiverHash = await TopologyController.computeTopologyTxHash(
-    receiverPrepared!.partyTransactions
+    receiverPrepared.topologyTransactions!
 )
 
-if (recomputedReceiverHash !== receiverPrepared!.combinedHash) {
+if (recomputedReceiverHash !== receiverPrepared.multiHash) {
     throw new Error(
-        'Recomputed receiver hash does not match prepared combined hash'
+        'Recomputed receiver hash does not match prepared multi hash'
     )
 }
 
 const receiverSigned = signTransactionHash(
-    receiverPrepared!.combinedHash,
+    receiverPrepared.multiHash,
     keyPairReceiver.privateKey
 )
 offlineLogger.info(`Signed receiver onboarding hash: ${receiverSigned}`)
@@ -125,16 +134,16 @@ onlineLogger.info(
     '===================== SUBMITTING ONBOARDING ====================='
 )
 
-const senderParty = await onlineSDK.topology?.submitExternalPartyTopology(
+const senderParty = await onlineSDK.userLedger?.allocateExternalParty(
     senderSigned,
-    senderPrepared!
+    senderPrepared
 )
 
 onlineLogger.info(`created sender: ${senderParty!.partyId}`)
 
-const receiverParty = await onlineSDK.topology?.submitExternalPartyTopology(
+const receiverParty = await onlineSDK.userLedger?.allocateExternalParty(
     receiverSigned,
-    receiverPrepared!
+    receiverPrepared
 )
 
 onlineLogger.info(`created receiver: ${receiverParty!.partyId}`)

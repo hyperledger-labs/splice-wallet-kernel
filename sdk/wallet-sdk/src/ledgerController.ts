@@ -9,6 +9,8 @@ import {
     Types,
     awaitCompletion,
     promiseWithTimeout,
+    GenerateTransactionResponse,
+    AllocateExternalPartyResponse,
     isJsCantonError,
 } from '@canton-network/core-ledger-client'
 import {
@@ -108,12 +110,28 @@ export class LedgerController {
      * @param signature the signed signature of the preparedTransactionHash from the prepareSubmission method.
      * @returns true if verification succeeded or false if it failed
      */
-
+    verifyTxHash(
+        txHash: string,
+        publicKey: PublicKey,
+        signature: string
+    ): boolean
+    /** @deprecated protobuf version of public key is unsupported, use the `PublicKey` type instead */
+    verifyTxHash(
+        txHash: string,
+        publicKey: SigningPublicKey,
+        signature: string
+    ): boolean
+    /** @deprecated protobuf version of public key is unsupported, use the `PublicKey` type instead */
     verifyTxHash(
         txHash: string,
         publicKey: SigningPublicKey | PublicKey,
         signature: string
-    ) {
+    ): boolean
+    verifyTxHash(
+        txHash: string,
+        publicKey: SigningPublicKey | PublicKey,
+        signature: string
+    ): boolean {
         let key: string
         if (typeof publicKey === 'string') {
             key = publicKey
@@ -240,6 +258,127 @@ export class LedgerController {
     }
 
     /**
+     * Generate topology transactions for an external party that can be signed and submitted in order to create a new external party.
+     *
+     * @param publicKey
+     * @param partyHint (optional) hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold (optional) parameter for multi-hosted parties (default is 1).
+     * @param hostingParticipantUids (optional) list of participant UIDs that will host the party.
+     * @returns
+     */
+    async generateExternalParty(
+        publicKey: PublicKey,
+        partyHint?: string,
+        confirmingThreshold?: number,
+        hostingParticipantUids?: string[]
+    ): Promise<GenerateTransactionResponse> {
+        return this.client.generateTopology(
+            this.getSynchronizerId(),
+            publicKey,
+            partyHint || v4(),
+            false,
+            confirmingThreshold,
+            hostingParticipantUids
+        )
+    }
+
+    /** Submits a prepared and signed external party topology to the ledger.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param signedHash The signed combined hash of the prepared transactions.
+     * @param preparedParty The prepared party object from prepareExternalPartyTopology.
+     * @param grantUserRights Defines if the transaction should also grant user right to current user (default is true)
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
+    async allocateExternalParty(
+        signedHash: string,
+        preparedParty: GenerateTransactionResponse,
+        grantUserRights: boolean = true
+    ): Promise<AllocateExternalPartyResponse> {
+        const { publicKeyFingerprint, partyId, topologyTransactions } =
+            preparedParty
+
+        await this.client.allocateExternalParty(
+            this.getSynchronizerId(),
+            topologyTransactions!.map((transaction) => ({ transaction })),
+            [
+                {
+                    format: 'SIGNATURE_FORMAT_CONCAT',
+                    signature: signedHash,
+                    signedBy: publicKeyFingerprint,
+                    signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
+                },
+            ]
+        )
+
+        if (grantUserRights) {
+            await this.client.grantUserRights(this.userId, partyId)
+        }
+
+        return { partyId }
+    }
+
+    /** Prepares, signs and submits a new external party topology in one step.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param privateKey The private key of the new external party, used to sign the topology transactions.
+     * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold optional parameter for multi-hosted parties (default is 1).
+     * @param hostingParticipantEndpoints optional list of connection details for other participants to multi-host this party.
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
+    async signAndAllocateExternalParty(
+        privateKey: PrivateKey,
+        partyHint?: string,
+        confirmingThreshold?: number,
+        hostingParticipantEndpoints?: { accessToken: string; url: URL }[]
+    ): Promise<GenerateTransactionResponse> {
+        const otherHostingParticipantUids = await Promise.all(
+            hostingParticipantEndpoints
+                ?.map(
+                    (endpoint) =>
+                        new LedgerClient(
+                            endpoint.url,
+                            endpoint.accessToken,
+                            this.logger
+                        )
+                )
+                .map((client) =>
+                    client
+                        .get('/v2/parties/participant-id')
+                        .then((res) => res.participantId)
+                ) || []
+        )
+
+        const preparedParty = await this.generateExternalParty(
+            getPublicKeyFromPrivate(privateKey),
+            partyHint,
+            confirmingThreshold,
+            otherHostingParticipantUids
+        )
+
+        if (!preparedParty) {
+            throw new Error('Error creating prepared party')
+        }
+
+        const signedHash = signTransactionHash(
+            preparedParty.multiHash,
+            privateKey
+        )
+
+        // grant user rights automatically if the party is hosted on 1 participant
+        // if hosted on multiple participants, then we need to authorize each PartyToParticipant mapping
+        // before granting the user rights
+        const grantUserRights = !hostingParticipantEndpoints
+
+        await this.allocateExternalParty(
+            signedHash,
+            preparedParty,
+            grantUserRights
+        )
+
+        return preparedParty
+    }
+
+    /**
      * Performs the prepare step of the interactive submission flow.
      * @remarks The returned prepared transaction must be signed and executed using the executeSubmission method.
      * @param commands the commands to be executed.
@@ -278,6 +417,26 @@ export class LedgerController {
      * @param publicKey the public key correlating to the private key used to sign the signature.
      * @param submissionId the unique identifier used to track the transaction, must be the same as used in prepareSubmission.
      */
+    async executeSubmission(
+        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        signature: string,
+        publicKey: PublicKey,
+        submissionId: string
+    ): Promise<string>
+    /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
+    async executeSubmission(
+        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        signature: string,
+        publicKey: SigningPublicKey,
+        submissionId: string
+    ): Promise<string>
+    /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
+    async executeSubmission(
+        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        signature: string,
+        publicKey: SigningPublicKey | PublicKey,
+        submissionId: string
+    ): Promise<string>
     async executeSubmission(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
         signature: string,

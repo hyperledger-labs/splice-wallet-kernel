@@ -20,25 +20,17 @@ type SigningCbFn = (hash: string) => Promise<string>
  */
 export class PartyAllocationService {
     private ledgerClient: LedgerClient
-    private topologyClient: TopologyWriteService
 
     constructor(
         private synchronizerId: string,
         adminToken: string,
         httpLedgerUrl: string,
-        adminApiUrl: string,
-        logger: Logger
+        private logger: Logger
     ) {
         this.ledgerClient = new LedgerClient(
             new URL(httpLedgerUrl),
             adminToken,
-            logger
-        )
-        this.topologyClient = new TopologyWriteService(
-            this.synchronizerId,
-            adminApiUrl,
-            adminToken,
-            this.ledgerClient
+            this.logger
         )
     }
 
@@ -110,35 +102,31 @@ export class PartyAllocationService {
     ): Promise<AllocatedParty> {
         const namespace =
             TopologyWriteService.createFingerprintFromKey(publicKey)
-        const partyId = `${hint}::${namespace}`
 
-        const transactions = await this.topologyClient
-            .generateTransactions(publicKey, partyId)
-            .then((resp) => resp.generatedTransactions)
-
-        const txHashes = transactions.map((tx) =>
-            Buffer.from(tx.transactionHash)
+        const transactions = await this.ledgerClient.generateTopology(
+            this.synchronizerId,
+            publicKey,
+            hint
         )
 
-        const combinedHash = TopologyWriteService.combineHashes(txHashes)
+        const signature = await signingCallback(transactions.multiHash)
 
-        const signature = await signingCallback(combinedHash)
-
-        const signedTopologyTxs = transactions.map((transaction) =>
-            TopologyWriteService.toSignedTopologyTransaction(
-                txHashes,
-                transaction.serializedTransaction,
-                signature,
-                namespace
-            )
+        const res = await this.ledgerClient.allocateExternalParty(
+            this.synchronizerId,
+            transactions.topologyTransactions!.map((transaction) => ({
+                transaction,
+            })),
+            [
+                {
+                    format: 'SIGNATURE_FORMAT_CONCAT',
+                    signature: signature,
+                    signedBy: namespace,
+                    signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
+                },
+            ]
         )
 
-        await this.topologyClient.submitExternalPartyTopology(
-            signedTopologyTxs,
-            partyId
-        )
-        await this.ledgerClient.grantUserRights(userId, partyId)
-
-        return { hint, partyId, namespace }
+        await this.ledgerClient.grantUserRights(userId, res.partyId)
+        return { hint, partyId: res.partyId, namespace }
     }
 }
