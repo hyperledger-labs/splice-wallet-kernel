@@ -376,9 +376,12 @@ export class TransactionParser {
     private async buildTransfer(
         exercisedEvent: ExercisedEvent,
         tokenStandardChoice: TokenStandardChoice | null,
-        senderFromTransferInstruction?: string
+        transferInstructions?: TransferInstructionView
     ): Promise<ParsedKnownExercisedEvent | null> {
-        const meta = mergeMetas(exercisedEvent)
+        const meta = mergeMetas(
+            exercisedEvent,
+            transferInstructions?.transfer?.meta
+        )
         const reason = getMetaKeyValue(ReasonMetaKey, meta)
         const choiceArgumentTransfer = (
             exercisedEvent.choiceArgument as {
@@ -387,7 +390,7 @@ export class TransactionParser {
         ).transfer
 
         const sender: string =
-            senderFromTransferInstruction ||
+            transferInstructions?.transfer?.sender ||
             getMetaKeyValue(SenderMetaKey, meta) ||
             choiceArgumentTransfer.sender
         if (!sender) {
@@ -539,7 +542,7 @@ export class TransactionParser {
                 result = await this.buildTransfer(
                     exercisedEvent,
                     tokenStandardChoice,
-                    transferInstruction.transfer.sender
+                    transferInstruction
                 )
                 break
             default:
