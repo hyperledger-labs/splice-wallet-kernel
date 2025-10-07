@@ -294,6 +294,9 @@ export class LedgerController {
         preparedParty: GenerateTransactionResponse,
         grantUserRights: boolean = true
     ): Promise<AllocateExternalPartyResponse> {
+        if (await this.client.checkIfPartyExists(preparedParty.partyId))
+            return { partyId: preparedParty.partyId }
+
         const { publicKeyFingerprint, partyId, topologyTransactions } =
             preparedParty
 
