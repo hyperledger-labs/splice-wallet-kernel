@@ -13,24 +13,12 @@ const mockLedgerPost = jest.fn<AsyncFn>()
 const mockLedgerGrantUserRights = jest.fn()
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const MockTopologyWriteService: jest.MockedClass<any> = jest
-    .fn()
-    .mockImplementation(() => ({
-        generateTransactions: jest.fn<AsyncFn>().mockResolvedValue({
-            generatedTransactions: [],
-        }),
-        addTransactions: jest.fn<AsyncFn>(),
-        authorizePartyToParticipant: jest.fn<AsyncFn>(),
-        submitExternalPartyTopology: jest.fn<AsyncFn>(),
-    }))
+const MockTopologyWriteService: jest.MockedClass<any> = jest.fn()
 
 // Add static method to the mock class
 MockTopologyWriteService.createFingerprintFromKey = jest
     .fn()
     .mockReturnValue('mypublickey')
-MockTopologyWriteService.combineHashes = jest
-    .fn()
-    .mockReturnValue('combinedhash')
 
 jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
     Signature: jest.fn(),
@@ -43,6 +31,15 @@ jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
             get: mockLedgerGet,
             post: mockLedgerPost,
             grantUserRights: mockLedgerGrantUserRights,
+            generateTopology: jest.fn<AsyncFn>().mockResolvedValue({
+                partyId: 'party2::mypublickey',
+                publicKeyFingerprint: 'mypublickey',
+                topologyTransactions: ['tx1'],
+                multiHash: 'combinedHash',
+            }),
+            allocateExternalParty: jest
+                .fn<AsyncFn>()
+                .mockResolvedValue({ partyId: 'party2::mypublickey' }),
         }
     }),
     TopologyWriteService: MockTopologyWriteService,
@@ -81,7 +78,6 @@ describe('PartyAllocationService', () => {
             network.synchronizerId,
             'admin.jwt',
             network.ledgerApi.baseUrl,
-            network.ledgerApi.adminGrpcUrl,
             mockLogger
         )
     })
