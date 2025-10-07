@@ -31,6 +31,9 @@ export class UserUiWallets extends LitElement {
     @state()
     accessor loading = false
 
+    @state()
+    accessor showCreateCard = false
+
     @query('#party-id-hint')
     accessor _partyHintInput: HTMLInputElement | null = null
 
@@ -47,7 +50,6 @@ export class UserUiWallets extends LitElement {
         :host {
             display: block;
             box-sizing: border-box;
-            // padding: 1rem;
             max-width: 900px;
             margin: 0 auto;
             font-family: var(--swk-font, Arial, sans-serif);
@@ -55,13 +57,22 @@ export class UserUiWallets extends LitElement {
         .header {
             margin-bottom: 1rem;
         }
-        .form-card {
+        .card-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .form-card,
+        .wallet-card {
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            max-width: 400px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-width: 0;
         }
         form {
             display: flex;
@@ -94,22 +105,6 @@ export class UserUiWallets extends LitElement {
         }
         .buttons:hover {
             background: #e2e6ea;
-        }
-        .card-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1rem;
-            margin: 1rem 0;
-        }
-        .wallet-card {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            min-width: 0;
         }
         .wallet-title {
             font-size: 1.1rem;
@@ -151,64 +146,94 @@ export class UserUiWallets extends LitElement {
         return html`
             <user-ui-nav></user-ui-nav>
 
-            <div class="form-card">
-                <div class="header"><h1>Create a Wallet</h1></div>
-                <form
-                    id="create-wallet-form"
-                    @submit=${this._onCreateWalletSubmit}
+            <div
+                class="header"
+                style="display:flex;align-items:center;justify-content:space-between;"
+            >
+                <h1>Wallets</h1>
+                <button
+                    class="buttons"
+                    @click=${() => (this.showCreateCard = !this.showCreateCard)}
+                    style="margin-left:1rem;"
                 >
-                    <label for="party-id-hint">Party ID hint:</label>
-                    <input
-                        ?disabled=${this.loading}
-                        class="form-control"
-                        id="party-id-hint"
-                        type="text"
-                        placeholder="Enter party ID hint"
-                    />
-
-                    <label for="signing-provider-id">Signing Provider:</label>
-                    <select class="form-control" id="signing-provider-id">
-                        <option disabled value="">
-                            Signing provider for wallet
-                        </option>
-                        ${this.signingProviders.map(
-                            (providerId) =>
-                                html`<option value=${providerId}>
-                                    ${providerId}
-                                </option>`
-                        )}
-                    </select>
-
-                    <label for="network-id">Network:</label>
-                    <select class="form-control" id="network-id">
-                        <option disabled value="">Select a network</option>
-                        ${this.networks.map(
-                            (networkId) =>
-                                html`<option value=${networkId}>
-                                    ${networkId}
-                                </option>`
-                        )}
-                    </select>
-
-                    <div class="inline">
-                        <label for="primary">Set as primary wallet:</label>
-                        <input id="primary" type="checkbox" />
-                    </div>
-
-                    <button
-                        class="buttons"
-                        ?disabled=${this.loading}
-                        type="submit"
-                    >
-                        Create
-                    </button>
-                </form>
-                ${this.createdParty
-                    ? html`<p>Created party ID: ${this.createdParty}</p>`
-                    : ''}
+                    ${this.showCreateCard ? 'Close' : 'Create New'}
+                </button>
             </div>
 
-            <div class="header"><h1>Existing Wallets</h1></div>
+            <div class="card-list">
+                ${this.showCreateCard
+                    ? html`
+                          <div class="form-card">
+                              <form
+                                  id="create-wallet-form"
+                                  @submit=${this._onCreateWalletSubmit}
+                              >
+                                  <label for="party-id-hint"
+                                      >Party ID hint:</label
+                                  >
+                                  <input
+                                      ?disabled=${this.loading}
+                                      class="form-control"
+                                      id="party-id-hint"
+                                      type="text"
+                                      placeholder="Enter party ID hint"
+                                  />
+
+                                  <label for="signing-provider-id"
+                                      >Signing Provider:</label
+                                  >
+                                  <select
+                                      class="form-control"
+                                      id="signing-provider-id"
+                                  >
+                                      <option disabled value="">
+                                          Signing provider for wallet
+                                      </option>
+                                      ${this.signingProviders.map(
+                                          (providerId) =>
+                                              html`<option value=${providerId}>
+                                                  ${providerId}
+                                              </option>`
+                                      )}
+                                  </select>
+
+                                  <label for="network-id">Network:</label>
+                                  <select class="form-control" id="network-id">
+                                      <option disabled value="">
+                                          Select a network
+                                      </option>
+                                      ${this.networks.map(
+                                          (networkId) =>
+                                              html`<option value=${networkId}>
+                                                  ${networkId}
+                                              </option>`
+                                      )}
+                                  </select>
+
+                                  <div class="inline">
+                                      <label for="primary"
+                                          >Set as primary wallet:</label
+                                      >
+                                      <input id="primary" type="checkbox" />
+                                  </div>
+
+                                  <button
+                                      class="buttons"
+                                      ?disabled=${this.loading}
+                                      type="submit"
+                                  >
+                                      Create
+                                  </button>
+                              </form>
+                              ${this.createdParty
+                                  ? html`<p>
+                                        Created party ID: ${this.createdParty}
+                                    </p>`
+                                  : ''}
+                          </div>
+                      `
+                    : ''}
+            </div>
             <div class="card-list">
                 ${this.wallets.map(
                     (wallet) => html`
