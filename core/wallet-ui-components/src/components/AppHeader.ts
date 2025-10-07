@@ -8,15 +8,28 @@ import { customElement, property, state } from 'lit/decorators.js'
 export class AppHeader extends LitElement {
     @property({ type: String }) iconSrc: string = 'images/icon.png'
     @state() private menuOpen = false
+    @state() private darkMode = localStorage.getItem('theme') !== 'light'
 
     static styles = css`
         :host {
             display: block;
             width: 100%;
-            background-color: #fff;
+            background-color: var(--header-bg, #fff);
             border-bottom: 1px solid #e5e7eb;
             position: relative;
             z-index: 10;
+            --header-bg: #fff;
+            --menu-bg: #fff;
+            --text-color: #222;
+            --border-color: #ccc;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        :host([theme='dark']) {
+            --header-bg: #1e1e1e;
+            --menu-bg: #2b2b2b;
+            --text-color: #fff;
+            --border-color: #555;
         }
 
         .header {
@@ -24,7 +37,6 @@ export class AppHeader extends LitElement {
             justify-content: space-between;
             align-items: center;
             padding: 0.75rem 1rem;
-            max-width: 100%;
         }
 
         .logo-box {
@@ -33,7 +45,7 @@ export class AppHeader extends LitElement {
             gap: 8px;
             font-weight: 600;
             cursor: pointer;
-            color: #222;
+            color: var(--text-color);
             user-select: none;
         }
 
@@ -42,84 +54,98 @@ export class AppHeader extends LitElement {
             height: 24px;
         }
 
-        /* Desktop menu */
-        .menu {
+        /* Hamburger */
+        .hamburger {
+            background: none; /* no box */
+            border: none; /* remove default button border */
+            font-size: 1.8rem; /* make it larger */
+            cursor: pointer;
+            color: #000; /* black lines */
+            padding: 0; /* remove any padding */
+            line-height: 1; /* tight vertical spacing */
+        }
+
+        /* Dropdown menu */
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            right: 1rem;
+            background: var(--menu-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
             display: flex;
-            align-items: center;
-            gap: 0.75rem;
+            flex-direction: column;
+            min-width: 200px;
+            margin-top: 0.25rem;
+            padding: 0.25rem 0;
+            opacity: 0;
+            transform: translateY(-5px);
+            pointer-events: none;
+            transition:
+                opacity 0.15s ease,
+                transform 0.15s ease;
+            z-index: 1000;
         }
 
-        .menu button {
-            background: none;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            padding: 6px 10px;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.9rem;
+        .dropdown.open {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
         }
 
-        .menu button:hover {
-            background: #f5f5f5;
-        }
-
-        /* Hamburger button (hidden on desktop) */
-        .menu-toggle {
-            display: none;
-            background: none;
+        .dropdown button {
+            width: 100%;
+            text-align: left;
             border: none;
-            font-size: 1.6rem;
+            background: transparent;
+            padding: 0.5rem 1rem;
             cursor: pointer;
-            color: #333;
+            transition: background 0.15s ease;
+            color: var(--text-color);
+            font-size: 0.95rem;
         }
 
-        /* Mobile styles */
-        @media (max-width: 768px) {
-            .menu-toggle {
-                display: block;
-            }
+        .dropdown button:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
 
-            .menu {
-                display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 56px;
-                right: 1rem;
-                background: white;
-                border: 1px solid #ddd;
-                border-radius: 10px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                padding: 0.5rem;
-                width: 180px;
-                animation: fadeIn 0.2s ease-in-out;
-            }
+        .theme-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 0.25rem;
+        }
 
-            .menu.open {
-                display: flex;
-            }
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background: #ccc;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.15s;
+            flex-shrink: 0;
+        }
 
-            .menu button {
-                width: 100%;
-                text-align: left;
-                border: none;
-                padding: 0.75rem 1rem;
-                font-size: 1rem;
-            }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.15s;
+        }
 
-            .menu button:hover {
-                background: #f2f2f2;
-            }
-
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                    transform: translateY(-5px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
+        .toggle-switch.on {
+            background: #4caf50;
+        }
+        .toggle-switch.on::after {
+            transform: translateX(20px);
         }
     `
 
@@ -127,10 +153,20 @@ export class AppHeader extends LitElement {
         this.menuOpen = !this.menuOpen
     }
 
+    private toggleTheme() {
+        this.darkMode = !this.darkMode
+        if (this.darkMode) {
+            this.removeAttribute('theme')
+            localStorage.setItem('theme', 'dark')
+        } else {
+            this.setAttribute('theme', 'dark')
+            localStorage.setItem('theme', 'light')
+        }
+    }
+
     private navigateTo(url: string) {
         window.location.href = url
     }
-
     private logout() {
         localStorage.clear()
         window.location.href = '/login'
@@ -139,31 +175,36 @@ export class AppHeader extends LitElement {
     render() {
         return html`
             <header class="header">
-                <div
-                    class="logo-box"
-                    @click=${() => this.navigateTo('/')}
-                    aria-label="Go to home"
-                >
-                    <img src="${this.iconSrc}" alt="App Icon" />
-                    <span>Splice Wallet</span>
+                <div class="logo-box" @click=${() => this.navigateTo('/')}>
+                    <img src="${this.iconSrc}" alt="App Icon" /> Splice Wallet
                 </div>
 
-                <!-- Desktop Menu -->
-                <nav class="menu ${this.menuOpen ? 'open' : ''}">
-                    <button @click=${() => this.navigateTo('/networks/')}>
-                        Settings
-                    </button>
-                    <button @click=${this.logout}>Logout</button>
-                </nav>
-
-                <!-- Hamburger toggle (only visible on mobile) -->
+                <!-- Hamburger triggers dropdown -->
                 <button
-                    class="menu-toggle"
+                    class="hamburger"
                     @click=${this.toggleMenu}
                     aria-label="Toggle menu"
                 >
                     ☰
                 </button>
+
+                <div class="dropdown ${this.menuOpen ? 'open' : ''}">
+                    <button @click=${() => this.navigateTo('/networks/')}>
+                        ⚙️ Settings
+                    </button>
+                    <button @click=${this.logout}>🚪 Logout</button>
+                    <div class="theme-toggle">
+                        <span
+                            >${this.darkMode
+                                ? '🌙 Dark Mode'
+                                : '☀️ Light Mode'}</span
+                        >
+                        <div
+                            class="toggle-switch ${this.darkMode ? 'on' : ''}"
+                            @click=${this.toggleTheme}
+                        ></div>
+                    </div>
+                </div>
             </header>
         `
     }
