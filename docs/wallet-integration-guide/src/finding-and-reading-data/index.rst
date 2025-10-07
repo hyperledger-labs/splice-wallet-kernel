@@ -2,9 +2,6 @@ Finding and Reading Data
 ========================
 
 
-Reading from ledger
--------------------
-
 .. todo:: improve writing of the text below
 
 Parties and synchronizers are considered a core component on the Ledger API and they are therefore a common filter on requests.
@@ -16,7 +13,8 @@ This is to ensure that you always have the correct context when reading data fro
     :language: typescript
     :dedent:
 
-**Reading Available Parties**
+Reading Available Parties
+-------------------------
 
 Reading all available parties to you can easily be done using the wallet SDK as shown in the example below, and the result is paginated.
 It's worth noting that the call to read all available parties doesn't use the the party and synchronizer fields therefore changing them has no effect on the result.
@@ -25,7 +23,8 @@ It's worth noting that the call to read all available parties doesn't use the th
     :language: typescript
     :dedent:
 
-**Reading Ledger End**
+Reading Ledger End
+------------------
 
 A lot of different requests will take a ledger offset to ensure the requested time correlates with ledger time. A Validator does not have a block height since
 there is no total state replication. There are two values that correlate:
@@ -42,7 +41,8 @@ Ledger end can easily be derived from with the wallet SDK:
     :language: typescript
     :dedent:
 
-**Reading Active Contracts**
+Reading Active Contracts
+------------------------
 
 Using the above ledger time we can figure out what the current state of all active contracts are. Contracts can be in two states - active and archived - which correlates
 to the UTXO mode of unspent and spent. Active contracts are contracts that are unspent and thereby can be used in new transactions or to exercise choices.
