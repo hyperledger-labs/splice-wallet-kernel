@@ -684,7 +684,6 @@ export class TokenStandardService {
                 sender,
                 inputUtxos
             )
-            const now = new Date()
 
             const choiceArgs = {
                 expectedAdmin: instrumentAdmin,
@@ -694,7 +693,7 @@ export class TokenStandardService {
                     amount,
                     instrumentId: { admin: instrumentAdmin, id: instrumentId },
                     lock: null,
-                    requestedAt: now.toISOString(),
+                    requestedAt: new Date(Date.now() - 60 * 1000).toISOString(),
                     //given expiryDate or 24 hours
                     executeBefore: (
                         expiryDate ?? new Date(Date.now() + 24 * 60 * 60 * 1000)
