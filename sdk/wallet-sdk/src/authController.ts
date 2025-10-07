@@ -8,6 +8,8 @@ import {
     ClientCredentialsService,
 } from '@canton-network/core-wallet-auth'
 
+type SubjectIdentifier = 'admin' | 'user'
+
 export interface AuthController {
     /** gets an auth context correlating to the admin user provided.
      */
@@ -159,8 +161,7 @@ export class UnsafeAuthController implements AuthController {
 
     private _logger: Logger | undefined
 
-    private _adminAccessToken: string | undefined
-    private _userAccessToken: string | undefined
+    private _accessTokens: Partial<Record<SubjectIdentifier, string>> = {}
 
     constructor(logger?: Logger) {
         this._logger = logger
@@ -176,19 +177,13 @@ export class UnsafeAuthController implements AuthController {
 
     private async _getOrCreateJwtToken(
         sub: string,
-        subIdentifier: string
+        subIdentifier: SubjectIdentifier
     ): Promise<AuthContext> {
         if (!this.unsafeSecret) throw new Error('unsafeSecret is not set')
-        if (subIdentifier === 'admin' && this._adminAccessToken) {
-            const payload = decodeJwt(this._adminAccessToken)
-            const now = Math.floor(Date.now() / 1000)
-            if (payload.exp && payload.exp > now)
-                return { userId: sub, accessToken: this._adminAccessToken }
-        } else if (subIdentifier === 'user' && this._userAccessToken) {
-            const payload = decodeJwt(this._userAccessToken)
-            const now = Math.floor(Date.now() / 1000)
-            if (payload.exp && payload.exp > now)
-                return { userId: sub, accessToken: this._userAccessToken }
+
+        const cached = this._accessTokens[subIdentifier]
+        if (cached && this._isJwtValid(cached)) {
+            return { userId: sub, accessToken: cached }
         }
         this._logger?.info('Live token was not found. Requesting a new one...')
         const secret = new TextEncoder().encode(this.unsafeSecret)
@@ -202,12 +197,14 @@ export class UnsafeAuthController implements AuthController {
         })
             .setProtectedHeader({ alg: 'HS256' })
             .sign(secret)
-        if (subIdentifier === 'admin') {
-            this._adminAccessToken = jwt
-        } else {
-            this._userAccessToken = jwt
-        }
+        this._accessTokens[subIdentifier] = jwt
         return { userId: sub, accessToken: jwt }
+    }
+
+    private _isJwtValid(token: string): boolean {
+        const payload = decodeJwt(token)
+        const now = Math.floor(Date.now() / 1000)
+        return typeof payload.exp === 'number' && payload.exp > now
     }
 }
 
