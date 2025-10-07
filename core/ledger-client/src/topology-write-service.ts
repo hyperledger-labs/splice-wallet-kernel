@@ -325,10 +325,9 @@ export class TopologyWriteService {
     async waitForPartyToParticipantProposal(
         partyId: PartyId
     ): Promise<Uint8Array | undefined> {
+        let counter = 0
         return new Promise((resolve, reject) => {
             const interval = setInterval(async () => {
-                let counter = 0
-
                 const result =
                     await this.topologyReadService.listPartyToParticipant(
                         ListPartyToParticipantRequest.create({
@@ -363,7 +362,6 @@ export class TopologyWriteService {
         partyId: PartyId
     ): Promise<AuthorizeResponse> {
         const hash = await this.waitForPartyToParticipantProposal(partyId)
-
         if (!hash) {
             throw new Error('No topology transaction found for authorization')
         }

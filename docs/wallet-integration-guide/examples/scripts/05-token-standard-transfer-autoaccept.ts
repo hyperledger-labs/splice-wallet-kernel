@@ -47,10 +47,6 @@ const receiver = await sdk.userLedger?.signAndAllocateExternalParty(
 )
 logger.info(`Created party: ${receiver!.partyId}`)
 
-const synchronizers = await sdk.userLedger?.listSynchronizers()
-
-const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
-
 await sdk.userLedger
     ?.listWallets()
     .then((wallets) => {
@@ -60,12 +56,9 @@ await sdk.userLedger
         logger.error({ error }, 'Error listing wallets')
     })
 
-sdk.tokenStandard?.setSynchronizerId(synchonizerId)
-
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(
     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
 )
-await new Promise((res) => setTimeout(res, 5000))
 
 await sdk.setPartyId(receiver?.partyId!)
 const validatorOperatorParty = await sdk.validator?.getValidatorUser()
