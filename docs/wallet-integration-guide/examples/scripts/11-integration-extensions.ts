@@ -41,7 +41,6 @@ await sdk.connect()
 logger.info('Connected to ledger')
 
 const keyPairTreasury = createKeyPair()
-const keyPairReceiver = createKeyPair()
 
 await sdk.connectAdmin()
 await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
