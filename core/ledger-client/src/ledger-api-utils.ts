@@ -144,7 +144,7 @@ export function ensureInterfaceViewIsPresent(
 
 type Meta = { values: { [key: string]: string } } | undefined
 
-export function mergeMetas(event: ExercisedEvent): Meta {
+export function mergeMetas(event: ExercisedEvent, extra?: Meta): Meta {
     // Add a type assertion to help TypeScript understand the shape of choiceArgument
     const choiceArgument = event.choiceArgument as
         | {
@@ -158,6 +158,7 @@ export function mergeMetas(event: ExercisedEvent): Meta {
         choiceArgument?.transfer?.meta,
         choiceArgument?.extraArgs?.meta,
         choiceArgument?.meta,
+        extra,
         (event.exerciseResult as { meta?: Meta } | undefined)?.meta,
     ]
     const result: { [key: string]: string } = {}
