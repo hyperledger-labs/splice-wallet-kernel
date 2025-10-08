@@ -19,29 +19,32 @@ export class AppHeader extends BaseElement {
                 width: 100%;
                 background-color: var(--header-bg, #fff);
                 border-bottom: 1px solid #e5e7eb;
-                position: relative;
-                z-index: 10;
+                position: sticky; /* Make sticky */
+                top: 0; /* Stick to top */
+                z-index: 1000; /* Ensure above other content */
                 --header-bg: #fff;
                 --menu-bg: #fff;
                 --text-color: #222;
                 --border-color: #ccc;
                 --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                --hover-bg: rgba(0, 0, 0, 0.05);
             }
 
-            :host([data-bs-theme='dark']) {
+            :host([theme='dark']) {
                 --header-bg: #1e1e1e;
                 --menu-bg: #2b2b2b;
                 --text-color: #fff;
                 --border-color: #555;
+                --hover-bg: rgba(255, 255, 255, 0.1);
             }
 
-            header {
+            .header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 padding: 0.75rem 1rem;
-                background-color: #f8f9fa;
-                border-bottom: 1px solid #dee2e6;
+                width: 100%;
+                box-sizing: border-box;
             }
 
             header img {
@@ -63,9 +66,26 @@ export class AppHeader extends BaseElement {
                 user-select: none;
             }
 
-            .logo-box img {
-                width: 24px;
-                height: 24px;
+            /* Dropdown menu */
+            .dropdown {
+                position: absolute;
+                top: 100%;
+                right: 1rem;
+                background: var(--menu-bg);
+                border-radius: 12px;
+                box-shadow: var(--shadow);
+                display: flex;
+                flex-direction: column;
+                min-width: 200px;
+                margin-top: 0.25rem;
+                padding: 0.25rem 0;
+                opacity: 0;
+                transform: translateY(-5px);
+                pointer-events: none;
+                transition:
+                    opacity 0.15s ease,
+                    transform 0.15s ease;
+                z-index: 1100; /* Above other content */
             }
 
             /* Hamburger */
@@ -101,20 +121,22 @@ export class AppHeader extends BaseElement {
                 z-index: 1000;
             }
 
-            .dropdown.open {
-                opacity: 1;
-                transform: translateY(0);
-                pointer-events: auto;
+            .dropdown button:hover {
+                background: var(--hover-bg);
             }
 
-            .dropdown button {
-                width: 100%;
-                text-align: left;
-                border: none;
-                background: transparent;
+            .theme-toggle {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
                 padding: 0.5rem 1rem;
+                border-top: 1px solid var(--border-color);
+                margin-top: 0.25rem;
                 cursor: pointer;
-                transition: background 0.15s ease;
+                color: var(--text-color);
+            }
+
+            .theme-toggle span {
                 color: var(--text-color);
                 font-size: 0.95rem;
             }
