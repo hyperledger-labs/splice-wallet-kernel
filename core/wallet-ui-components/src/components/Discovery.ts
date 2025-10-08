@@ -124,7 +124,7 @@ export class Discovery extends HTMLElement {
         const root = document.createElement('div')
 
         const header = document.createElement('h1')
-        header.innerText = 'Add Remote Wallet Gateway'
+        header.innerText = 'Add a Wallet Gateway'
 
         const input = document.createElement('input')
         input.setAttribute('autofocus', '')
