@@ -4,7 +4,6 @@
 import { Network } from '@canton-network/core-wallet-store'
 import { html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
-import { styles } from '../styles/network.js'
 import { BaseElement } from '../internal/BaseElement.js'
 
 @customElement('network-form')
@@ -12,7 +11,7 @@ export class NetworkForm extends BaseElement {
     @property({ type: Object }) editingNetwork: Network | null = null
     @property({ type: String }) authType: string = 'implicit'
 
-    static styles = [BaseElement.styles, styles]
+    static styles = [BaseElement.styles]
 
     private getAuthField(field: string): string {
         if (!this.editingNetwork) return ''

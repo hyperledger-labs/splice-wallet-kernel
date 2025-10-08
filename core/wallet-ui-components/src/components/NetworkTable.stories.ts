@@ -44,3 +44,16 @@ const networks: Network[] = [
 export const Default: StoryObj = {
     render: () => html`<network-table .networks=${networks}></network-table>`,
 }
+
+export const Multiple: StoryObj = {
+    render: () =>
+        html`<network-table
+            .networks=${[
+                ...networks,
+                ...networks,
+                ...networks,
+                ...networks,
+                ...networks,
+            ]}
+        ></network-table>`,
+}

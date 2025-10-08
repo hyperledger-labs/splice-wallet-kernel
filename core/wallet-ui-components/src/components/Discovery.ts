@@ -2,34 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { DiscoverResult, SpliceMessageEvent } from '@canton-network/core-types'
+import { css } from 'lit'
+import { BaseElement } from '../internal/BaseElement'
+import { cssToString } from '../utils'
 
-/**
- * Discovery implements the view of the Wallet Gateway selection window.
- * It is implemented directly as a Web Component without using LitElement, so to avoid having external dependencies.
- */
-export class Discovery extends HTMLElement {
-    static observedAttributes = ['wallet-extension-loaded']
-
-    get walletExtensionLoaded() {
-        return this.hasAttribute('wallet-extension-loaded')
-    }
-
-    set walletExtensionLoaded(val) {
-        if (val) {
-            this.setAttribute('wallet-extension-loaded', '')
-        } else {
-            this.removeAttribute('wallet-extension-loaded')
-        }
-    }
-
-    private root: HTMLElement
-
-    constructor() {
-        super()
-        this.attachShadow({ mode: 'open' })
-
-        const styles = document.createElement('style')
-        styles.textContent = `
+const SUBSTITUTABLE_CSS = cssToString([
+    BaseElement.styles,
+    css`
         * {
             color: var(--wg-theme-text-color, black);
             font-family: var(--wg-theme-font-family);
@@ -57,7 +36,38 @@ export class Discovery extends HTMLElement {
         input {
             margin-left: 8px;
         }
-        `
+    `,
+])
+
+/**
+ * Discovery implements the view of the Wallet Gateway selection window.
+ * It is implemented directly as a Web Component without using LitElement, so to avoid having external dependencies.
+ */
+export class Discovery extends HTMLElement {
+    static observedAttributes = ['wallet-extension-loaded']
+
+    static styles = SUBSTITUTABLE_CSS
+
+    get walletExtensionLoaded() {
+        return this.hasAttribute('wallet-extension-loaded')
+    }
+
+    set walletExtensionLoaded(val) {
+        if (val) {
+            this.setAttribute('wallet-extension-loaded', '')
+        } else {
+            this.removeAttribute('wallet-extension-loaded')
+        }
+    }
+
+    private root: HTMLElement
+
+    constructor() {
+        super()
+        this.attachShadow({ mode: 'open' })
+
+        const styles = document.createElement('style')
+        styles.textContent = Discovery.styles
 
         this.root = document.createElement('div')
         this.root.id = 'discovery-root'
@@ -100,8 +110,10 @@ export class Discovery extends HTMLElement {
                 break
         }
 
-        const button = document.createElement('button')
-        button.innerText = `Connect`
+        const button = this.mkButton('Connect', {
+            class: 'btn btn-primary',
+        })
+
         button.addEventListener('click', () => {
             this.selectKernel(kernel)
         })
@@ -120,10 +132,21 @@ export class Discovery extends HTMLElement {
         }
     }
 
+    private mkButton(value: string, attrs: Record<string, string> = {}) {
+        const button = document.createElement('button')
+        button.innerText = value
+
+        Object.entries(attrs).forEach(([key, val]) => {
+            button.setAttribute(key, val)
+        })
+
+        return button
+    }
+
     render() {
         const root = document.createElement('div')
 
-        const header = document.createElement('h1')
+        const header = document.createElement('h3')
         header.innerText = 'Add a Wallet Gateway'
 
         const input = document.createElement('input')
@@ -132,9 +155,11 @@ export class Discovery extends HTMLElement {
         input.setAttribute('type', 'text')
         input.setAttribute('placeholder', 'RPC URL')
 
-        const button = document.createElement('button')
-        button.setAttribute('id', 'connect')
-        button.innerText = 'Connect'
+        const button = this.mkButton('Connect', {
+            class: 'btn btn-primary',
+            id: 'connect',
+        })
+
         button.addEventListener('click', () => {
             const url = input.value
             console.log('Connecting to Wallet Gateway...' + url)

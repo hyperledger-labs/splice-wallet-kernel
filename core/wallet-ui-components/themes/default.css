@@ -1,7 +1,6 @@
 :root,
 :host {
-    --wg-theme-background-color: rgb(194, 138, 138);
+    --wg-theme-background-color: snow;
     --wg-theme-text-color: rgba(0, 0, 0, 0.65);
     --wg-theme-font-family: sans-serif;
-    --wg-theme-primary-color: #007bff;
 }

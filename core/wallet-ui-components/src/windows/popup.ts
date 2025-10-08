@@ -1,8 +1,6 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import styles from '../../themes/default.css?inline'
-
 interface PopupOptions {
     title?: string
     target?: string
@@ -12,8 +10,13 @@ interface PopupOptions {
     screenY?: number
 }
 
+interface StyledElement {
+    new (): HTMLElement
+    styles: string
+}
+
 export function popup(
-    component: new () => HTMLElement,
+    component: StyledElement,
     options?: PopupOptions
 ): Promise<Window> {
     const {
@@ -24,6 +27,23 @@ export function popup(
         screenX = 200,
         screenY = 200,
     } = options || {}
+
+    const sanitizedStyles = component.styles
+        .replaceAll('\n', ' ')
+        .replaceAll("'", "\\'")
+        .replaceAll('"', '\\"')
+
+    let element = component
+        .toString()
+        .replace('SUBSTITUTABLE_CSS', `'${sanitizedStyles}'`)
+
+    // Ugly hack to workaround the format of the class post-bundling, where static methods are set at runtime for compatibility
+    if (sanitizedStyles && !element.includes('static styles')) {
+        element = element.replace(
+            'constructor() {',
+            `static styles = '${sanitizedStyles}';\nconstructor() {`
+        )
+    }
 
     const html = `<!DOCTYPE html>
     <html>
@@ -41,13 +61,12 @@ export function popup(
                     display: flex;
                 }
             </style>
-            <style>${styles}</style>
         </head>
         <body>
         </body>
 
         <script>
-            customElements.define('popup-content', ${component})
+            customElements.define('popup-content', ${element})
 
             const root = document.getElementsByTagName('body')[0]
 
