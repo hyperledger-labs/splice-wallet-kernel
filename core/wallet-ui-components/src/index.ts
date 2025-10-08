@@ -32,6 +32,10 @@ export class AppUi extends LitElement {
             name: 'Discovery.ts',
             element: literal`swk-discovery`,
         },
+        {
+            name: 'AppHeader.ts',
+            element: literal`app-header`,
+        },
     ]
 
     private addWalletExtensionLoaded() {

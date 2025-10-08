@@ -38,7 +38,7 @@ export class AppHeader extends BaseElement {
                 --hover-bg: rgba(255, 255, 255, 0.1);
             }
 
-            .header {
+            header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -226,6 +226,8 @@ export class AppHeader extends BaseElement {
                 <div class="logo-box" @click=${() => this.navigateTo('/')}>
                     <img src="${this.iconSrc}" alt="App Icon" />Wallet Gateway
                 </div>
+
+                <button class="btn btn-primary">hi</button>
 
                 <button
                     class="hamburger"

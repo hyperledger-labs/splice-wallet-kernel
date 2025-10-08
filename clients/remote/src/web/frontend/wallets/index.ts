@@ -146,6 +146,7 @@ export class UserUiWallets extends LitElement {
         return html`
             <div class="header">
                 <h1>Wallets</h1>
+                <button class="btn">Testing</button>
                 <button
                     class="buttons"
                     @click=${() => (this.showCreateCard = !this.showCreateCard)}
@@ -270,6 +271,10 @@ export class UserUiWallets extends LitElement {
                 )}
             </div>
         `
+    }
+
+    createRenderRoot() {
+        return this
     }
 
     connectedCallback(): void {
