@@ -484,6 +484,64 @@ export class TokenStandardController {
         }
     }
 
+    async createTransferUsingDelegateProxy(
+        proxyCid: string,
+        featuredAppRightCid: string,
+        createdEventBlob: string,
+        sender: PartyId,
+        receiver: PartyId,
+        amount: string,
+        instrument: {
+            instrumentId: string
+            instrumentAdmin: PartyId
+        },
+        inputUtxos?: string[],
+        memo?: string,
+        expiryDate?: Date,
+        meta?: Record<string, unknown>
+    ): Promise<[WrappedCommand<'ExerciseCommand'>]> {
+        const choiceArgs = {
+            featuredAppRightCid: featuredAppRightCid,
+            expectedAdmin: instrument.instrumentAdmin,
+            transfer: {
+                sender,
+                receiver,
+                amount,
+                instrumentId: {
+                    admin: instrument.instrumentAdmin,
+                    id: instrument.instrumentId,
+                },
+                lock: null,
+                requestedAt: new Date(Date.now() - 60 * 1000).toISOString(),
+                //given expiryDate or 24 hours
+                executeBefore: (
+                    expiryDate ?? new Date(Date.now() + 24 * 60 * 60 * 1000)
+                ).toISOString(),
+                inputUtxos,
+                meta: {
+                    values: {
+                        ['splice.lfdecentralizedtrust.org/reason']: memo || '',
+                        ...meta,
+                    },
+                },
+            },
+            extraArgs: {
+                context: { values: {} },
+                meta: { values: {} },
+            },
+        }
+
+        const exercise: ExerciseCommand = {
+            templateId:
+                '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+            contractId: proxyCid,
+            choice: 'DelegateProxy_TransferFactory_Transfer',
+            choiceArgument: choiceArgs,
+        }
+
+        return [{ ExerciseCommand: exercise }]
+    }
+
     async createAllocationInstruction(
         allocationSpecification: AllocationSpecification,
         expectedAdmin: PartyId,
