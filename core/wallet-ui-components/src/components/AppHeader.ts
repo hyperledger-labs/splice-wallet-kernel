@@ -16,8 +16,9 @@ export class AppHeader extends LitElement {
             width: 100%;
             background-color: var(--header-bg, #fff);
             border-bottom: 1px solid #e5e7eb;
-            position: relative;
-            z-index: 10;
+            position: sticky; /* Make sticky */
+            top: 0; /* Stick to top */
+            z-index: 1000; /* Ensure above other content */
             --header-bg: #fff;
             --menu-bg: #fff;
             --text-color: #222;
@@ -39,6 +40,8 @@ export class AppHeader extends LitElement {
             justify-content: space-between;
             align-items: center;
             padding: 0.75rem 1rem;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .logo-box {
@@ -86,7 +89,7 @@ export class AppHeader extends LitElement {
             transition:
                 opacity 0.15s ease,
                 transform 0.15s ease;
-            z-index: 1000;
+            z-index: 1100; /* Above other content */
         }
 
         .dropdown.open {
