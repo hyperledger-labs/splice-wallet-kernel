@@ -3,11 +3,6 @@
 
 import {
     TokenStandardClient,
-    HoldingView,
-    AllocationFactory_Allocate,
-    AllocationSpecification,
-    AllocationContextValue,
-    // Transfer,
     TRANSFER_FACTORY_INTERFACE_ID,
     HOLDING_INTERFACE_ID,
     ALLOCATION_FACTORY_INTERFACE_ID,
@@ -15,6 +10,17 @@ import {
     ALLOCATION_REQUEST_INTERFACE_ID,
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
     TRANSFER_INSTRUCTION_INTERFACE_ID,
+    HoldingView,
+    AllocationFactory_Allocate,
+    AllocationSpecification,
+    AllocationContextValue,
+    Transfer,
+    // allocationRegistryTypes,
+    // metadataRegistryTypes,
+    transferInstructionRegistryTypes,
+    allocationInstructionRegistryTypes,
+    ExtraArgs,
+    Metadata,
 } from '@canton-network/core-token-standard'
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
@@ -240,14 +246,13 @@ class CoreService {
 class AllocationService {
     constructor(private core: CoreService) {}
 
-    async createAllocationInstruction(
+    private async buildAllocationFactoryChoiceArgs(
         allocationSpecification: AllocationSpecification,
         expectedAdmin: PartyId,
-        registryUrl: string,
         inputUtxos?: string[],
         requestedAt?: string,
         extraContext?: AllocationContextValue
-    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+    ): Promise<AllocationFactory_Allocate> {
         const allocationSpecificationNormalized: AllocationSpecification = {
             ...allocationSpecification,
             settlement: {
@@ -277,28 +282,67 @@ class AllocationService {
                 meta: { values: {} },
             },
         }
+        return choiceArgs
+    }
 
-        const allocationFactory = await this.core
+    async fetchAllocationFactoryChoiceContext(
+        registryUrl: string,
+        choiceArgs: AllocationFactory_Allocate
+    ): Promise<
+        allocationInstructionRegistryTypes['schemas']['FactoryWithChoiceContext']
+    > {
+        return this.core
             .getTokenStandardClient(registryUrl)
             .post('/registry/allocation-instruction/v1/allocation-factory', {
                 choiceArguments: choiceArgs as unknown as Record<string, never>,
             })
+    }
 
+    async createAllocationInstructionFromContext(
+        factoryId: string,
+        choiceArgs: AllocationFactory_Allocate,
+        choiceContext: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         choiceArgs.extraArgs.context = {
-            ...allocationFactory.choiceContext.choiceContextData,
-            values:
-                allocationFactory.choiceContext.choiceContextData?.values ?? {},
+            ...choiceContext.choiceContextData,
+            values: choiceContext.choiceContextData?.values ?? {},
         }
-
         const exercise: ExerciseCommand = {
             templateId: ALLOCATION_FACTORY_INTERFACE_ID,
-            contractId: allocationFactory.factoryId,
+            contractId: factoryId,
             choice: 'AllocationFactory_Allocate',
             choiceArgument: choiceArgs,
         }
-
-        return [exercise, allocationFactory.choiceContext.disclosedContracts]
+        return [exercise, choiceContext.disclosedContracts]
     }
+
+    async createAllocationInstruction(
+        allocationSpecification: AllocationSpecification,
+        expectedAdmin: PartyId,
+        registryUrl: string,
+        inputUtxos?: string[],
+        requestedAt?: string,
+        extraContext?: AllocationContextValue
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const choiceArgs = await this.buildAllocationFactoryChoiceArgs(
+            allocationSpecification,
+            expectedAdmin,
+            inputUtxos,
+            requestedAt,
+            extraContext
+        )
+        const { factoryId, choiceContext } =
+            await this.fetchAllocationFactoryChoiceContext(
+                registryUrl,
+                choiceArgs
+            )
+        return this.createAllocationInstructionFromContext(
+            factoryId,
+            choiceArgs,
+            choiceContext
+        )
+    }
+
     async getAllocationExecuteTransferChoiceContext(
         allocationId: string,
         registryUrl: string
@@ -314,17 +358,14 @@ class AllocationService {
         )
     }
 
-    async createExecuteTransferAllocation(
+    async createExecuteTransferAllocationFromContext(
         allocationCid: string,
-        registryUrl: string
+        choiceContext: {
+            choiceContextData: unknown
+            disclosedContracts: DisclosedContract[]
+        }
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const choiceContext =
-                await this.getAllocationExecuteTransferChoiceContext(
-                    allocationCid,
-                    registryUrl
-                )
-
             const exercise: ExerciseCommand = {
                 templateId: ALLOCATION_INTERFACE_ID,
                 contractId: allocationCid,
@@ -336,7 +377,6 @@ class AllocationService {
                     },
                 },
             }
-
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
             this.core.logger.error(
@@ -347,23 +387,52 @@ class AllocationService {
         }
     }
 
-    async createWithdrawAllocation(
+    async createExecuteTransferAllocation(
         allocationCid: string,
         registryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        try {
-            const client = this.core.getTokenStandardClient(registryUrl)
-
-            const choiceContext = await client.post(
-                '/registry/allocations/v1/{allocationId}/choice-contexts/withdraw',
-                {},
-                {
-                    path: {
-                        allocationId: allocationCid,
-                    },
-                }
+        const choiceContext =
+            await this.getAllocationExecuteTransferChoiceContext(
+                allocationCid,
+                registryUrl
             )
+        return this.createExecuteTransferAllocationFromContext(
+            allocationCid,
+            choiceContext
+        )
+    }
 
+    async fetchWithdrawAllocationChoiceContext(
+        allocationCid: string,
+        registryUrl: string
+    ): Promise<{
+        choiceContextData: unknown
+        disclosedContracts: DisclosedContract[]
+    }> {
+        const client = this.core.getTokenStandardClient(registryUrl)
+        const choiceContext = await client.post(
+            '/registry/allocations/v1/{allocationId}/choice-contexts/withdraw',
+            {},
+            {
+                path: {
+                    allocationId: allocationCid,
+                },
+            }
+        )
+        return {
+            choiceContextData: choiceContext.choiceContextData,
+            disclosedContracts: choiceContext.disclosedContracts,
+        }
+    }
+
+    async createWithdrawAllocationFromContext(
+        allocationCid: string,
+        choiceContext: {
+            choiceContextData: unknown
+            disclosedContracts: DisclosedContract[]
+        }
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
             const exercise: ExerciseCommand = {
                 templateId: ALLOCATION_INTERFACE_ID,
                 contractId: allocationCid,
@@ -375,7 +444,6 @@ class AllocationService {
                     },
                 },
             }
-
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
             this.core.logger.error('Failed to create withdraw allocation:', e)
@@ -383,23 +451,48 @@ class AllocationService {
         }
     }
 
-    async createCancelAllocation(
+    async createWithdrawAllocation(
         allocationCid: string,
         registryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const ctx = await this.fetchWithdrawAllocationChoiceContext(
+            allocationCid,
+            registryUrl
+        )
+        return this.createWithdrawAllocationFromContext(allocationCid, ctx)
+    }
+
+    async fetchCancelAllocationChoiceContext(
+        allocationCid: string,
+        registryUrl: string
+    ): Promise<{
+        choiceContextData: unknown
+        disclosedContracts: DisclosedContract[]
+    }> {
+        const client = this.core.getTokenStandardClient(registryUrl)
+        const choiceContext = await client.post(
+            '/registry/allocations/v1/{allocationId}/choice-contexts/cancel',
+            {},
+            {
+                path: {
+                    allocationId: allocationCid,
+                },
+            }
+        )
+        return {
+            choiceContextData: choiceContext.choiceContextData,
+            disclosedContracts: choiceContext.disclosedContracts,
+        }
+    }
+
+    async createCancelAllocationFromContext(
+        allocationCid: string,
+        choiceContext: {
+            choiceContextData: unknown
+            disclosedContracts: DisclosedContract[]
+        }
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const client = this.core.getTokenStandardClient(registryUrl)
-
-            const choiceContext = await client.post(
-                '/registry/allocations/v1/{allocationId}/choice-contexts/cancel',
-                {},
-                {
-                    path: {
-                        allocationId: allocationCid,
-                    },
-                }
-            )
-
             const exercise: ExerciseCommand = {
                 templateId: ALLOCATION_INTERFACE_ID,
                 contractId: allocationCid,
@@ -411,7 +504,6 @@ class AllocationService {
                     },
                 },
             }
-
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
             this.core.logger.error(
@@ -420,6 +512,17 @@ class AllocationService {
             )
             throw e
         }
+    }
+
+    async createCancelAllocation(
+        allocationCid: string,
+        registryUrl: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const ctx = await this.fetchCancelAllocationChoiceContext(
+            allocationCid,
+            registryUrl
+        )
+        return this.createCancelAllocationFromContext(allocationCid, ctx)
     }
 
     async createWithdrawAllocationInstruction(
@@ -496,9 +599,84 @@ class AllocationService {
         return [exercise, []]
     }
 }
-
+// TODO note here
+type CreateTransferChoiceArgs = {
+    expectedAdmin: PartyId
+    transfer: Transfer
+    extraArgs: ExtraArgs
+}
 class TransferService {
     constructor(private core: CoreService) {}
+
+    private async buildTransferChoiceArgs(
+        sender: PartyId,
+        receiver: PartyId,
+        amount: string,
+        instrumentAdmin: PartyId,
+        instrumentId: string,
+        inputUtxos?: string[],
+        memo?: string,
+        expiryDate?: Date,
+        meta?: Metadata
+    ): Promise<CreateTransferChoiceArgs> {
+        const inputHoldingCids: string[] = await this.core.getInputHoldingsCids(
+            sender,
+            inputUtxos
+        )
+
+        return {
+            expectedAdmin: instrumentAdmin,
+            transfer: {
+                sender,
+                receiver,
+                amount,
+                instrumentId: { admin: instrumentAdmin, id: instrumentId },
+                lock: null, // TODO probably should delete
+                requestedAt: new Date(Date.now() - 60 * 1000).toISOString(), // TODO probably should add 1 min skew
+                executeBefore: (
+                    expiryDate ?? new Date(Date.now() + 24 * 60 * 60 * 1000)
+                ).toISOString(),
+                inputHoldingCids,
+                meta: { values: { [MEMO_KEY]: memo || '', ...meta } },
+            },
+            extraArgs: {
+                context: { values: {} },
+                meta: { values: {} },
+            },
+        }
+    }
+
+    async fetchTransferFactoryChoiceContext(
+        registryUrl: string,
+        choiceArgs: transferInstructionRegistryTypes['schemas']['GetFactoryRequest']['choiceArguments']
+    ): Promise<
+        transferInstructionRegistryTypes['schemas']['TransferFactoryWithChoiceContext']
+    > {
+        return await this.core
+            .getTokenStandardClient(registryUrl)
+            .post('/registry/transfer-instruction/v1/transfer-factory', {
+                choiceArguments: choiceArgs,
+            })
+    }
+
+    async createTransferFromContext(
+        factoryId: string,
+        choiceArgs: CreateTransferChoiceArgs,
+        choiceContext: transferInstructionRegistryTypes['schemas']['ChoiceContext']
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        this.core.logger.debug('Creating transfer from pre-fetched context...')
+        choiceArgs.extraArgs.context = {
+            ...choiceContext.choiceContextData,
+            values: choiceContext.choiceContextData?.values ?? {},
+        }
+        const exercise: ExerciseCommand = {
+            templateId: TRANSFER_FACTORY_INTERFACE_ID,
+            contractId: factoryId,
+            choice: 'TransferFactory_Transfer',
+            choiceArgument: choiceArgs,
+        }
+        return [exercise, choiceContext.disclosedContracts]
+    }
 
     async createTransfer(
         sender: PartyId,
@@ -513,80 +691,66 @@ class TransferService {
         meta?: Record<string, unknown>
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const inputHoldingCids: string[] =
-                await this.core.getInputHoldingsCids(sender, inputUtxos)
-
-            const choiceArgs = {
-                expectedAdmin: instrumentAdmin,
-                transfer: {
-                    sender,
-                    receiver,
-                    amount,
-                    instrumentId: { admin: instrumentAdmin, id: instrumentId },
-                    lock: null,
-                    requestedAt: new Date(Date.now() - 60 * 1000).toISOString(),
-                    //given expiryDate or 24 hours
-                    executeBefore: (
-                        expiryDate ?? new Date(Date.now() + 24 * 60 * 60 * 1000)
-                    ).toISOString(),
-                    inputHoldingCids,
-                    meta: { values: { [MEMO_KEY]: memo || '', ...meta } },
-                },
-                extraArgs: {
-                    context: { values: {} },
-                    meta: { values: {} },
-                },
-            }
-
+            const choiceArgs = await this.buildTransferChoiceArgs(
+                sender,
+                receiver,
+                amount,
+                instrumentAdmin,
+                instrumentId,
+                inputUtxos,
+                memo,
+                expiryDate,
+                meta
+            )
             this.core.logger.debug('Creating transfer factory...')
-
-            const transferFactory = await this.core
-                .getTokenStandardClient(registryUrl)
-                .post('/registry/transfer-instruction/v1/transfer-factory', {
-                    choiceArguments: choiceArgs as unknown as Record<
-                        string,
-                        never
-                    >,
-                })
-
-            this.core.logger.debug(transferFactory, 'Transfer factory created')
-
-            choiceArgs.extraArgs.context = {
-                ...transferFactory.choiceContext.choiceContextData,
-                values:
-                    transferFactory.choiceContext.choiceContextData?.values ??
-                    {},
-            }
-
-            const exercise: ExerciseCommand = {
-                templateId: TRANSFER_FACTORY_INTERFACE_ID,
-                contractId: transferFactory.factoryId,
-                choice: 'TransferFactory_Transfer',
-                choiceArgument: choiceArgs,
-            }
-
-            return [exercise, transferFactory.choiceContext.disclosedContracts]
+            const { factoryId, choiceContext } =
+                await this.fetchTransferFactoryChoiceContext(
+                    registryUrl,
+                    choiceArgs
+                )
+            this.core.logger.debug({ factoryId }, 'Transfer factory created')
+            return this.createTransferFromContext(
+                factoryId,
+                choiceArgs,
+                choiceContext
+            )
         } catch (e) {
             this.core.logger.error('Failed to execute transfer:', e)
             throw e
         }
     }
-    async createAcceptTransferInstruction(
+
+    async fetchAcceptTransferInstructionChoiceContext(
         transferInstructionCid: string,
         registryUrl: string
+    ): Promise<{
+        choiceContextData: unknown
+        disclosedContracts: DisclosedContract[]
+    }> {
+        const client = this.core.getTokenStandardClient(registryUrl)
+        const choiceContext = await client.post(
+            '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/accept',
+            {},
+            {
+                path: {
+                    transferInstructionId: transferInstructionCid,
+                },
+            }
+        )
+        return {
+            choiceContextData: choiceContext.choiceContextData,
+            disclosedContracts: choiceContext.disclosedContracts,
+        }
+    }
+
+    async createAcceptTransferInstructionFromContext(
+        transferInstructionCid: string,
+        choiceContext: {
+            choiceContextData: unknown
+            disclosedContracts: DisclosedContract[]
+        }
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const client = this.core.getTokenStandardClient(registryUrl)
-            const choiceContext = await client.post(
-                '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/accept',
-                {},
-                {
-                    path: {
-                        transferInstructionId: transferInstructionCid,
-                    },
-                }
-            )
-
             const exercise: ExerciseCommand = {
                 templateId: TRANSFER_INSTRUCTION_INTERFACE_ID,
                 contractId: transferInstructionCid,
@@ -598,7 +762,6 @@ class TransferService {
                     },
                 },
             }
-
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
             this.core.logger.error(
@@ -609,22 +772,51 @@ class TransferService {
         }
     }
 
-    async createRejectTransferInstruction(
+    async createAcceptTransferInstruction(
         transferInstructionCid: string,
         registryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        try {
-            const client = this.core.getTokenStandardClient(registryUrl)
-            const choiceContext = await client.post(
-                '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/reject',
-                {},
-                {
-                    path: {
-                        transferInstructionId: transferInstructionCid,
-                    },
-                }
-            )
+        const ctx = await this.fetchAcceptTransferInstructionChoiceContext(
+            transferInstructionCid,
+            registryUrl
+        )
+        return this.createAcceptTransferInstructionFromContext(
+            transferInstructionCid,
+            ctx
+        )
+    }
 
+    async fetchRejectTransferInstructionChoiceContext(
+        transferInstructionCid: string,
+        registryUrl: string
+    ): Promise<{
+        choiceContextData: unknown
+        disclosedContracts: DisclosedContract[]
+    }> {
+        const client = this.core.getTokenStandardClient(registryUrl)
+        const choiceContext = await client.post(
+            '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/reject',
+            {},
+            {
+                path: {
+                    transferInstructionId: transferInstructionCid,
+                },
+            }
+        )
+        return {
+            choiceContextData: choiceContext.choiceContextData,
+            disclosedContracts: choiceContext.disclosedContracts,
+        }
+    }
+
+    async createRejectTransferInstructionFromContext(
+        transferInstructionCid: string,
+        choiceContext: {
+            choiceContextData: unknown
+            disclosedContracts: DisclosedContract[]
+        }
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
             const exercise: ExerciseCommand = {
                 templateId: TRANSFER_INSTRUCTION_INTERFACE_ID,
                 contractId: transferInstructionCid,
@@ -636,7 +828,6 @@ class TransferService {
                     },
                 },
             }
-
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
             this.core.logger.error(
@@ -647,23 +838,52 @@ class TransferService {
         }
     }
 
-    async createWithdrawTransferInstruction(
+    async createRejectTransferInstruction(
         transferInstructionCid: string,
         registryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const ctx = await this.fetchRejectTransferInstructionChoiceContext(
+            transferInstructionCid,
+            registryUrl
+        )
+        return this.createRejectTransferInstructionFromContext(
+            transferInstructionCid,
+            ctx
+        )
+    }
+
+    async fetchWithdrawTransferInstructionChoiceContext(
+        transferInstructionCid: string,
+        registryUrl: string
+    ): Promise<{
+        choiceContextData: unknown
+        disclosedContracts: DisclosedContract[]
+    }> {
+        const client = this.core.getTokenStandardClient(registryUrl)
+
+        const choiceContext = await client.post(
+            '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/withdraw',
+            {},
+            {
+                path: {
+                    transferInstructionId: transferInstructionCid,
+                },
+            }
+        )
+        return {
+            choiceContextData: choiceContext.choiceContextData,
+            disclosedContracts: choiceContext.disclosedContracts,
+        }
+    }
+
+    async createWithdrawTransferInstructionFromContext(
+        transferInstructionCid: string,
+        choiceContext: {
+            choiceContextData: unknown
+            disclosedContracts: DisclosedContract[]
+        }
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const client = this.core.getTokenStandardClient(registryUrl)
-
-            const choiceContext = await client.post(
-                '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/withdraw',
-                {},
-                {
-                    path: {
-                        transferInstructionId: transferInstructionCid,
-                    },
-                }
-            )
-
             const exercise: ExerciseCommand = {
                 templateId: TRANSFER_INSTRUCTION_INTERFACE_ID,
                 contractId: transferInstructionCid,
@@ -675,7 +895,6 @@ class TransferService {
                     },
                 },
             }
-
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
             this.core.logger.error(
@@ -684,6 +903,20 @@ class TransferService {
             )
             throw e
         }
+    }
+
+    async createWithdrawTransferInstruction(
+        transferInstructionCid: string,
+        registryUrl: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const ctx = await this.fetchWithdrawTransferInstructionChoiceContext(
+            transferInstructionCid,
+            registryUrl
+        )
+        return this.createWithdrawTransferInstructionFromContext(
+            transferInstructionCid,
+            ctx
+        )
     }
 }
 
@@ -854,37 +1087,8 @@ export class TokenStandardService {
         )
     }
 
-    private async getInputHoldingsCids(sender: PartyId, inputUtxos?: string[]) {
-        const now = new Date()
-        if (inputUtxos && inputUtxos.length > 0) {
-            return inputUtxos
-        }
-        const senderHoldings = await this.listContractsByInterface<HoldingView>(
-            HOLDING_INTERFACE_ID,
-            sender
-        )
-        if (senderHoldings.length === 0) {
-            throw new Error(
-                "Sender has no holdings, so transfer can't be executed."
-            )
-        }
-
-        return senderHoldings
-            .filter((utxo) => {
-                //filter out locked holdings
-                const lock = utxo.interfaceViewValue.lock
-                if (!lock) return true
-
-                const expiresAt = lock.expiresAt
-                if (!expiresAt) return false
-
-                const expiresAtDate = new Date(expiresAt)
-                return expiresAtDate <= now
-            })
-            .map((h) => h.contractId)
-        /* TODO: optimize input holding selection, currently if you transfer 10 CC and have 10 inputs of 1000 CC,
-                then all 10 of those are chose as input.
-             */
+    async getInputHoldingsCids(sender: PartyId, inputUtxos?: string[]) {
+        return this.core.getInputHoldingsCids(sender, inputUtxos)
     }
 
     // TODO(#583) as it's not a part of token standard, should be moved somewhere else
