@@ -9,5 +9,11 @@
         "module": "nodenext",
         "moduleResolution": "nodenext"
     },
-    "include": ["src"]
+    "include": ["src"],
+    "exclude": ["**/*.stories.ts", "**/*.stories.js"],
+    "references": [
+        {
+            "path": "./tsconfig.storybook.json"
+        }
+    ]
 }
