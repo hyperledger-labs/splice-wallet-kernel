@@ -664,6 +664,112 @@ export class TokenStandardService {
                 then all 10 of those are chose as input.
              */
     }
+
+    async createDelegateProxyTranfser(
+        sender: PartyId,
+        receiver: PartyId,
+        exchangeParty: PartyId,
+        amount: string,
+        instrumentAdmin: PartyId, // TODO (#907): replace with registry call
+        instrumentId: string,
+        registryUrl: string,
+        featuredAppRightCid: string,
+        proxyCid: string,
+        inputUtxos?: string[],
+        memo?: string,
+        expiryDate?: Date,
+        meta?: Record<string, unknown>
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const inputHoldingCids: string[] = await this.getInputHoldingsCids(
+            sender,
+            inputUtxos
+        )
+
+        const [transferCommand, disclosedContracts] = await this.createTransfer(
+            sender,
+            receiver,
+            amount,
+            instrumentAdmin,
+            instrumentAdmin,
+            registryUrl,
+            inputUtxos,
+            memo,
+            expiryDate,
+            meta
+        )
+
+        const choiceArgs = {
+            cid: transferCommand.contractId,
+            proxyArg: {
+                featuredAppRightCid: featuredAppRightCid,
+                beneficiaries: [
+                    {
+                        beneficiary: exchangeParty,
+                        weight: 1.0,
+                    },
+                ],
+                choiceArg: {
+                    expectedAdmin: instrumentAdmin,
+                    transfer: {
+                        sender,
+                        receiver,
+                        amount,
+                        inputHoldingCids,
+                        instrumentId: {
+                            admin: instrumentAdmin,
+                            id: instrumentId,
+                        },
+                        // lock: null,
+                        requestedAt: new Date(
+                            Date.now() - 60 * 1000
+                        ).toISOString(),
+                        //given expiryDate or 24 hours
+                        executeBefore: (
+                            expiryDate ??
+                            new Date(Date.now() + 24 * 60 * 60 * 1000)
+                        ).toISOString(),
+                        // inputUtxos,
+                        meta: {
+                            values: {
+                                ['splice.lfdecentralizedtrust.org/reason']:
+                                    memo || '',
+                                ...meta,
+                            },
+                        },
+                    },
+                    extraArgs: {
+                        context: { values: {} },
+                        meta: { values: {} },
+                    },
+                },
+            },
+        }
+
+        // const transferFactory = await this.getTokenStandardClient(
+        //     registryUrl
+        // ).post('/registry/transfer-instruction/v1/transfer-factory', {
+        //     choiceArguments: choiceArgs as unknown as Record<string, never>,
+        // })
+
+        // this.logger.debug(transferFactory, 'Transfer factory created')
+
+        // choiceArgs.extraArgs.context = {
+        //     ...transferFactory.choiceContext.choiceContextData,
+        //     values:
+        //         transferFactory.choiceContext.choiceContextData?.values ?? {},
+        // }
+
+        const exercise: ExerciseCommand = {
+            templateId:
+                '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+            contractId: proxyCid,
+            choice: 'DelegateProxy_TransferFactory_Transfer',
+            choiceArgument: choiceArgs,
+        }
+
+        return [exercise, disclosedContracts]
+    }
+
     async createTransfer(
         sender: PartyId,
         receiver: PartyId,
