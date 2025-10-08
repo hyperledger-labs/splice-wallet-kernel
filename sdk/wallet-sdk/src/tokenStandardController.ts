@@ -487,7 +487,6 @@ export class TokenStandardController {
     async createTransferUsingDelegateProxy(
         proxyCid: string,
         featuredAppRightCid: string,
-        createdEventBlob: string,
         sender: PartyId,
         receiver: PartyId,
         amount: string,
