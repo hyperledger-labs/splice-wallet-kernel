@@ -6,14 +6,9 @@
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "useDefineForClassFields": false,
-        "module": "nodenext",
-        "moduleResolution": "nodenext"
+        "module": "esnext",
+        "moduleResolution": "bundler"
     },
     "include": ["src"],
-    "exclude": ["**/*.stories.ts", "**/*.stories.js"],
-    "references": [
-        {
-            "path": "./tsconfig.storybook.json"
-        }
-    ]
+    "exclude": ["**/*.stories.ts", "**/*.stories.js"]
 }

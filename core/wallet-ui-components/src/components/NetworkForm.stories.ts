@@ -2,16 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Meta, StoryObj } from '@storybook/web-components-vite'
-
 import { html } from 'lit'
 
 const meta: Meta = {
-    title: 'AppHeader',
+    title: 'NetworkForm',
 }
 
 export default meta
 
 export const Default: StoryObj = {
-    render: () =>
-        html`<app-header iconSrc="../../images/icon.png"></app-header>`,
+    render: () => html`<network-form></network-form>`,
 }

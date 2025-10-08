@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Meta, StoryObj } from '@storybook/web-components-vite'
-
-import '../components/Discovery'
-import '../../themes/default.css'
 import { discover } from './discovery'
-
 import { html } from 'lit'
 
 const meta: Meta = {
@@ -35,5 +31,8 @@ export const Default: StoryObj = {
 }
 
 export const Popup: StoryObj = {
-    render: () => html`<button @click=${discover}>connect</button>`,
+    render: () =>
+        html`<button class="btn btn-primary" @click=${discover}>
+            connect
+        </button>`,
 }
