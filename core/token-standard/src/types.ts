@@ -92,3 +92,14 @@ export type AllocationView = {
     holdingCids: string[]
     meta: Metadata
 }
+
+export type Transfer = {
+    sender: string
+    receiver: string
+    amount: string
+    instrumentId: InstrumentId
+    requestedAt: string
+    executeBefore: string
+    inputHoldingCids: string[]
+    meta: Metadata
+}

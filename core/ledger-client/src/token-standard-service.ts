@@ -7,13 +7,14 @@ import {
     AllocationFactory_Allocate,
     AllocationSpecification,
     AllocationContextValue,
+    // Transfer,
+    TRANSFER_FACTORY_INTERFACE_ID,
     HOLDING_INTERFACE_ID,
     ALLOCATION_FACTORY_INTERFACE_ID,
     ALLOCATION_INTERFACE_ID,
     ALLOCATION_REQUEST_INTERFACE_ID,
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
     TRANSFER_INSTRUCTION_INTERFACE_ID,
-    TRANSFER_FACTORY_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
@@ -59,15 +60,15 @@ type JsActiveContractEntryResponse = JsGetActiveContractsResponse & {
     }
 }
 
-export class TokenStandardService {
+class CoreService {
     constructor(
         private ledgerClient: LedgerClient,
         private scanProxyClient: ScanProxyClient,
-        private readonly logger: Logger,
+        readonly logger: Logger,
         private accessToken: string
     ) {}
 
-    private getTokenStandardClient(registryUrl: string): TokenStandardClient {
+    getTokenStandardClient(registryUrl: string): TokenStandardClient {
         return new TokenStandardClient(
             registryUrl,
             this.logger,
@@ -75,176 +76,169 @@ export class TokenStandardService {
         )
     }
 
-    async getTransferPreApprovalByParty(partyId: PartyId) {
-        const { transfer_preapproval } = await this.scanProxyClient.get(
-            '/v0/scan-proxy/transfer-preapprovals/by-party/{party}',
-            {
-                path: {
-                    party: partyId,
-                },
-            }
+    async getInputHoldingsCids(sender: PartyId, inputUtxos?: string[]) {
+        const now = new Date()
+        if (inputUtxos && inputUtxos.length > 0) {
+            return inputUtxos
+        }
+        const senderHoldings = await this.listContractsByInterface<HoldingView>(
+            HOLDING_INTERFACE_ID,
+            sender
         )
-
-        return transfer_preapproval
-    }
-
-    async getFeaturedAppsByParty(partyId: PartyId) {
-        const { featured_app_right } = await this.scanProxyClient.get(
-            '/v0/scan-proxy/featured-apps/{provider_party_id}',
-            {
-                path: {
-                    provider_party_id: partyId,
-                },
-            }
-        )
-
-        return featured_app_right
-    }
-
-    async getInstrumentById(registryUrl: string, instrumentId: string) {
-        try {
-            const params: Record<string, unknown> = {
-                path: {
-                    instrumentId,
-                },
-            }
-
-            const client = this.getTokenStandardClient(registryUrl)
-
-            return client.get(
-                '/registry/metadata/v1/instruments/{instrumentId}',
-                params
-            )
-        } catch (e) {
-            this.logger.error(e)
+        if (senderHoldings.length === 0) {
             throw new Error(
-                `Instrument id ${instrumentId} does not exist for this instrument admin.`
+                "Sender has no holdings, so transfer can't be executed."
             )
         }
+
+        return senderHoldings
+            .filter((utxo) => {
+                //filter out locked holdings
+                const lock = utxo.interfaceViewValue.lock
+                if (!lock) return true
+
+                const expiresAt = lock.expiresAt
+                if (!expiresAt) return false
+
+                const expiresAtDate = new Date(expiresAt)
+                return expiresAtDate <= now
+            })
+            .map((h) => h.contractId)
+        /* TODO: optimize input holding selection, currently if you transfer 10 CC and have 10 inputs of 1000 CC,
+                then all 10 of those are chose as input.
+             */
     }
 
-    async getInstrumentAdmin(registryUrl: string): Promise<string | undefined> {
-        const client = this.getTokenStandardClient(registryUrl)
-
-        const info = await client.get('/registry/metadata/v1/info')
-
-        return info.adminId
-    }
-
-    async createAcceptTransferInstruction(
-        transferInstructionCid: string,
-        registryUrl: string
-    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+    async listContractsByInterface<T = ViewValue>(
+        interfaceId: string,
+        partyId: PartyId
+    ): Promise<PrettyContract<T>[]> {
         try {
-            const client = this.getTokenStandardClient(registryUrl)
-            const choiceContext = await client.post(
-                '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/accept',
-                {},
-                {
-                    path: {
-                        transferInstructionId: transferInstructionCid,
-                    },
-                }
+            const ledgerEnd = await this.ledgerClient.get(
+                '/v2/state/ledger-end'
             )
-
-            const exercise: ExerciseCommand = {
-                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID,
-                contractId: transferInstructionCid,
-                choice: 'TransferInstruction_Accept',
-                choiceArgument: {
-                    extraArgs: {
-                        context: choiceContext.choiceContextData,
-                        meta: { values: {} },
+            const acsResponses: JsGetActiveContractsResponse[] =
+                await this.ledgerClient.post('/v2/state/active-contracts', {
+                    filter: {
+                        filtersByParty: filtersByParty(
+                            partyId,
+                            [interfaceId],
+                            false
+                        ),
                     },
-                },
-            }
+                    verbose: false,
+                    activeAtOffset: ledgerEnd.offset,
+                })
 
-            return [exercise, choiceContext.disclosedContracts]
-        } catch (e) {
+            /*  This filters out responses with entries of:
+                - JsEmpty
+                - JsIncompleteAssigned
+                - JsIncompleteUnassigned
+                while leaving JsActiveContract.
+                It works fine only with single synchronizer
+                TODO (#353) add support for multiple synchronizers
+             */
+            const isActiveContractEntry = (
+                acsResponse: JsGetActiveContractsResponse
+            ): acsResponse is JsActiveContractEntryResponse =>
+                !!acsResponse.contractEntry.JsActiveContract?.createdEvent
+
+            const activeContractEntries = acsResponses.filter(
+                isActiveContractEntry
+            )
+            return activeContractEntries.map(
+                (response: JsActiveContractEntryResponse) =>
+                    this.toPrettyContract<T>(interfaceId, response)
+            )
+        } catch (err) {
             this.logger.error(
-                'Failed to create accept transfer instruction:',
-                e
+                `Failed to list contracts of interface ${interfaceId}`,
+                err
             )
-            throw e
+            throw err
         }
     }
 
-    async createRejectTransferInstruction(
-        transferInstructionCid: string,
-        registryUrl: string
-    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        try {
-            const client = this.getTokenStandardClient(registryUrl)
-            const choiceContext = await client.post(
-                '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/reject',
-                {},
-                {
-                    path: {
-                        transferInstructionId: transferInstructionCid,
-                    },
-                }
-            )
+    async toPrettyTransactions(
+        updates: JsGetUpdatesResponse[],
+        partyId: PartyId,
+        ledgerClient: LedgerClient
+    ): Promise<PrettyTransactions> {
+        // Runtime filters that also let TS know which of OneOfs types to check against
+        const isOffsetCheckpointUpdate = (
+            updateResponse: JsGetUpdatesResponse
+        ): updateResponse is OffsetCheckpointUpdate =>
+            !!updateResponse?.update?.OffsetCheckpoint
+        const isTransactionUpdate = (
+            updateResponse: JsGetUpdatesResponse
+        ): updateResponse is TransactionUpdate =>
+            !!updateResponse.update?.Transaction?.value
 
-            const exercise: ExerciseCommand = {
-                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID,
-                contractId: transferInstructionCid,
-                choice: 'TransferInstruction_Reject',
-                choiceArgument: {
-                    extraArgs: {
-                        context: choiceContext.choiceContextData,
-                        meta: { values: {} },
-                    },
-                },
-            }
+        const offsetCheckpoints: number[] = updates
+            .filter(isOffsetCheckpointUpdate)
+            .map((update) => update.update.OffsetCheckpoint.value.offset)
+        const latestCheckpointOffset = Math.max(...offsetCheckpoints)
 
-            return [exercise, choiceContext.disclosedContracts]
-        } catch (e) {
-            this.logger.error(
-                'Failed to create reject transfer instruction:',
-                e
-            )
-            throw e
+        const transactions: Transaction[] = await Promise.all(
+            updates
+                // exclude OffsetCheckpoint, Reassignment, TopologyTransaction
+                .filter(isTransactionUpdate)
+                .map(async (update) => {
+                    const tx = update.update.Transaction.value
+                    const parser = new TransactionParser(
+                        tx,
+                        ledgerClient,
+                        partyId
+                    )
+
+                    return await parser.parseTransaction()
+                })
+        )
+
+        return {
+            // OffsetCheckpoint can be anywhere... or not at all, maybe
+            nextOffset: Math.max(
+                latestCheckpointOffset,
+                ...transactions.map((tx) => tx.offset)
+            ),
+            transactions: transactions
+                .filter((tx) => tx.events.length > 0)
+                .map(renderTransaction),
         }
     }
 
-    async createWithdrawTransferInstruction(
-        transferInstructionCid: string,
-        registryUrl: string
-    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        try {
-            const client = this.getTokenStandardClient(registryUrl)
+    async toPrettyTransaction(
+        getTransactionResponse: JsGetTransactionResponse,
+        partyId: PartyId,
+        ledgerClient: LedgerClient
+    ): Promise<Transaction> {
+        const tx = getTransactionResponse.transaction
+        const parser = new TransactionParser(tx, ledgerClient, partyId)
+        const parsedTx = await parser.parseTransaction()
+        return renderTransaction(parsedTx)
+    }
 
-            const choiceContext = await client.post(
-                '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/withdraw',
-                {},
-                {
-                    path: {
-                        transferInstructionId: transferInstructionCid,
-                    },
-                }
-            )
-
-            const exercise: ExerciseCommand = {
-                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID,
-                contractId: transferInstructionCid,
-                choice: 'TransferInstruction_Withdraw',
-                choiceArgument: {
-                    extraArgs: {
-                        context: choiceContext.choiceContextData,
-                        meta: { values: {} },
-                    },
-                },
-            }
-
-            return [exercise, choiceContext.disclosedContracts]
-        } catch (e) {
-            this.logger.error(
-                'Failed to create withdraw transfer instruction:',
-                e
-            )
-            throw e
+    // returns object with JsActiveContract content
+    // and contractId and interface view value extracted from it as separate fields for convenience
+    private toPrettyContract<T>(
+        interfaceId: string,
+        response: JsActiveContractEntryResponse
+    ): PrettyContract<T> {
+        const activeContract = response.contractEntry.JsActiveContract
+        const { createdEvent } = activeContract
+        return {
+            contractId: createdEvent.contractId,
+            activeContract,
+            interfaceViewValue: ensureInterfaceViewIsPresent(
+                createdEvent,
+                interfaceId
+            ).viewValue as T,
         }
     }
+}
+
+class AllocationService {
+    constructor(private core: CoreService) {}
 
     async createAllocationInstruction(
         allocationSpecification: AllocationSpecification,
@@ -268,7 +262,7 @@ export class TokenStandardService {
             },
         }
 
-        const inputHoldingCids = await this.getInputHoldingsCids(
+        const inputHoldingCids = await this.core.getInputHoldingsCids(
             allocationSpecificationNormalized.transferLeg.sender,
             inputUtxos
         )
@@ -284,11 +278,11 @@ export class TokenStandardService {
             },
         }
 
-        const allocationFactory = await this.getTokenStandardClient(
-            registryUrl
-        ).post('/registry/allocation-instruction/v1/allocation-factory', {
-            choiceArguments: choiceArgs as unknown as Record<string, never>,
-        })
+        const allocationFactory = await this.core
+            .getTokenStandardClient(registryUrl)
+            .post('/registry/allocation-instruction/v1/allocation-factory', {
+                choiceArguments: choiceArgs as unknown as Record<string, never>,
+            })
 
         choiceArgs.extraArgs.context = {
             ...allocationFactory.choiceContext.choiceContextData,
@@ -309,7 +303,7 @@ export class TokenStandardService {
         allocationId: string,
         registryUrl: string
     ) {
-        return this.getTokenStandardClient(registryUrl).post(
+        return this.core.getTokenStandardClient(registryUrl).post(
             '/registry/allocations/v1/{allocationId}/choice-contexts/execute-transfer',
             {},
             {
@@ -345,7 +339,7 @@ export class TokenStandardService {
 
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
-            this.logger.error(
+            this.core.logger.error(
                 'Failed to create allocation execute transfer:',
                 e
             )
@@ -358,7 +352,7 @@ export class TokenStandardService {
         registryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const client = this.getTokenStandardClient(registryUrl)
+            const client = this.core.getTokenStandardClient(registryUrl)
 
             const choiceContext = await client.post(
                 '/registry/allocations/v1/{allocationId}/choice-contexts/withdraw',
@@ -384,7 +378,7 @@ export class TokenStandardService {
 
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
-            this.logger.error('Failed to create withdraw allocation:', e)
+            this.core.logger.error('Failed to create withdraw allocation:', e)
             throw e
         }
     }
@@ -394,7 +388,7 @@ export class TokenStandardService {
         registryUrl: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
-            const client = this.getTokenStandardClient(registryUrl)
+            const client = this.core.getTokenStandardClient(registryUrl)
 
             const choiceContext = await client.post(
                 '/registry/allocations/v1/{allocationId}/choice-contexts/cancel',
@@ -420,7 +414,7 @@ export class TokenStandardService {
 
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
-            this.logger.error(
+            this.core.logger.error(
                 'Failed to create withdraw transfer instruction:',
                 e
             )
@@ -501,6 +495,274 @@ export class TokenStandardService {
         }
         return [exercise, []]
     }
+}
+
+class TransferService {
+    constructor(private core: CoreService) {}
+
+    async createTransfer(
+        sender: PartyId,
+        receiver: PartyId,
+        amount: string,
+        instrumentAdmin: PartyId, // TODO (#907): replace with registry call
+        instrumentId: string,
+        registryUrl: string,
+        inputUtxos?: string[],
+        memo?: string,
+        expiryDate?: Date,
+        meta?: Record<string, unknown>
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
+            const inputHoldingCids: string[] =
+                await this.core.getInputHoldingsCids(sender, inputUtxos)
+
+            const choiceArgs = {
+                expectedAdmin: instrumentAdmin,
+                transfer: {
+                    sender,
+                    receiver,
+                    amount,
+                    instrumentId: { admin: instrumentAdmin, id: instrumentId },
+                    lock: null,
+                    requestedAt: new Date(Date.now() - 60 * 1000).toISOString(),
+                    //given expiryDate or 24 hours
+                    executeBefore: (
+                        expiryDate ?? new Date(Date.now() + 24 * 60 * 60 * 1000)
+                    ).toISOString(),
+                    inputHoldingCids,
+                    meta: { values: { [MEMO_KEY]: memo || '', ...meta } },
+                },
+                extraArgs: {
+                    context: { values: {} },
+                    meta: { values: {} },
+                },
+            }
+
+            this.core.logger.debug('Creating transfer factory...')
+
+            const transferFactory = await this.core
+                .getTokenStandardClient(registryUrl)
+                .post('/registry/transfer-instruction/v1/transfer-factory', {
+                    choiceArguments: choiceArgs as unknown as Record<
+                        string,
+                        never
+                    >,
+                })
+
+            this.core.logger.debug(transferFactory, 'Transfer factory created')
+
+            choiceArgs.extraArgs.context = {
+                ...transferFactory.choiceContext.choiceContextData,
+                values:
+                    transferFactory.choiceContext.choiceContextData?.values ??
+                    {},
+            }
+
+            const exercise: ExerciseCommand = {
+                templateId: TRANSFER_FACTORY_INTERFACE_ID,
+                contractId: transferFactory.factoryId,
+                choice: 'TransferFactory_Transfer',
+                choiceArgument: choiceArgs,
+            }
+
+            return [exercise, transferFactory.choiceContext.disclosedContracts]
+        } catch (e) {
+            this.core.logger.error('Failed to execute transfer:', e)
+            throw e
+        }
+    }
+    async createAcceptTransferInstruction(
+        transferInstructionCid: string,
+        registryUrl: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
+            const client = this.core.getTokenStandardClient(registryUrl)
+            const choiceContext = await client.post(
+                '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/accept',
+                {},
+                {
+                    path: {
+                        transferInstructionId: transferInstructionCid,
+                    },
+                }
+            )
+
+            const exercise: ExerciseCommand = {
+                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID,
+                contractId: transferInstructionCid,
+                choice: 'TransferInstruction_Accept',
+                choiceArgument: {
+                    extraArgs: {
+                        context: choiceContext.choiceContextData,
+                        meta: { values: {} },
+                    },
+                },
+            }
+
+            return [exercise, choiceContext.disclosedContracts]
+        } catch (e) {
+            this.core.logger.error(
+                'Failed to create accept transfer instruction:',
+                e
+            )
+            throw e
+        }
+    }
+
+    async createRejectTransferInstruction(
+        transferInstructionCid: string,
+        registryUrl: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
+            const client = this.core.getTokenStandardClient(registryUrl)
+            const choiceContext = await client.post(
+                '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/reject',
+                {},
+                {
+                    path: {
+                        transferInstructionId: transferInstructionCid,
+                    },
+                }
+            )
+
+            const exercise: ExerciseCommand = {
+                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID,
+                contractId: transferInstructionCid,
+                choice: 'TransferInstruction_Reject',
+                choiceArgument: {
+                    extraArgs: {
+                        context: choiceContext.choiceContextData,
+                        meta: { values: {} },
+                    },
+                },
+            }
+
+            return [exercise, choiceContext.disclosedContracts]
+        } catch (e) {
+            this.core.logger.error(
+                'Failed to create reject transfer instruction:',
+                e
+            )
+            throw e
+        }
+    }
+
+    async createWithdrawTransferInstruction(
+        transferInstructionCid: string,
+        registryUrl: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        try {
+            const client = this.core.getTokenStandardClient(registryUrl)
+
+            const choiceContext = await client.post(
+                '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/withdraw',
+                {},
+                {
+                    path: {
+                        transferInstructionId: transferInstructionCid,
+                    },
+                }
+            )
+
+            const exercise: ExerciseCommand = {
+                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID,
+                contractId: transferInstructionCid,
+                choice: 'TransferInstruction_Withdraw',
+                choiceArgument: {
+                    extraArgs: {
+                        context: choiceContext.choiceContextData,
+                        meta: { values: {} },
+                    },
+                },
+            }
+
+            return [exercise, choiceContext.disclosedContracts]
+        } catch (e) {
+            this.core.logger.error(
+                'Failed to create withdraw transfer instruction:',
+                e
+            )
+            throw e
+        }
+    }
+}
+
+export class TokenStandardService {
+    private readonly core: CoreService
+    readonly allocation: AllocationService
+    readonly transfer: TransferService
+
+    constructor(
+        private ledgerClient: LedgerClient,
+        private scanProxyClient: ScanProxyClient,
+        private readonly logger: Logger,
+        private accessToken: string
+    ) {
+        this.core = new CoreService(
+            ledgerClient,
+            scanProxyClient,
+            logger,
+            accessToken
+        )
+        this.allocation = new AllocationService(this.core)
+        this.transfer = new TransferService(this.core)
+    }
+
+    async getTransferPreApprovalByParty(partyId: PartyId) {
+        const { transfer_preapproval } = await this.scanProxyClient.get(
+            '/v0/scan-proxy/transfer-preapprovals/by-party/{party}',
+            {
+                path: {
+                    party: partyId,
+                },
+            }
+        )
+
+        return transfer_preapproval
+    }
+
+    async getFeaturedAppsByParty(partyId: PartyId) {
+        const { featured_app_right } = await this.scanProxyClient.get(
+            '/v0/scan-proxy/featured-apps/{provider_party_id}',
+            {
+                path: {
+                    provider_party_id: partyId,
+                },
+            }
+        )
+
+        return featured_app_right
+    }
+
+    async getInstrumentById(registryUrl: string, instrumentId: string) {
+        try {
+            const params: Record<string, unknown> = {
+                path: {
+                    instrumentId,
+                },
+            }
+
+            const client = this.core.getTokenStandardClient(registryUrl)
+
+            return client.get(
+                '/registry/metadata/v1/instruments/{instrumentId}',
+                params
+            )
+        } catch (e) {
+            this.logger.error(e)
+            throw new Error(
+                `Instrument id ${instrumentId} does not exist for this instrument admin.`
+            )
+        }
+    }
+
+    async getInstrumentAdmin(registryUrl: string): Promise<string | undefined> {
+        const client = this.core.getTokenStandardClient(registryUrl)
+
+        const info = await client.get('/registry/metadata/v1/info')
+
+        return info.adminId
+    }
 
     // <T> is shape of viewValue related to queried interface.
     // i.e. when querying by TransferInstruction interfaceId, <T> would be TransferInstructionView from daml codegen
@@ -508,50 +770,7 @@ export class TokenStandardService {
         interfaceId: string,
         partyId: PartyId
     ): Promise<PrettyContract<T>[]> {
-        try {
-            const ledgerEnd = await this.ledgerClient.get(
-                '/v2/state/ledger-end'
-            )
-            const acsResponses: JsGetActiveContractsResponse[] =
-                await this.ledgerClient.post('/v2/state/active-contracts', {
-                    filter: {
-                        filtersByParty: filtersByParty(
-                            partyId,
-                            [interfaceId],
-                            false
-                        ),
-                    },
-                    verbose: false,
-                    activeAtOffset: ledgerEnd.offset,
-                })
-
-            /*  This filters out responses with entries of:
-                - JsEmpty
-                - JsIncompleteAssigned
-                - JsIncompleteUnassigned
-                while leaving JsActiveContract.
-                It works fine only with single synchronizer
-                TODO (#353) add support for multiple synchronizers
-             */
-            const isActiveContractEntry = (
-                acsResponse: JsGetActiveContractsResponse
-            ): acsResponse is JsActiveContractEntryResponse =>
-                !!acsResponse.contractEntry.JsActiveContract?.createdEvent
-
-            const activeContractEntries = acsResponses.filter(
-                isActiveContractEntry
-            )
-            return activeContractEntries.map(
-                (response: JsActiveContractEntryResponse) =>
-                    this.toPrettyContract<T>(interfaceId, response)
-            )
-        } catch (err) {
-            this.logger.error(
-                `Failed to list contracts of interface ${interfaceId}`,
-                err
-            )
-            throw err
-        }
+        return this.core.listContractsByInterface<T>(interfaceId, partyId)
     }
 
     async listHoldingTransactions(
@@ -591,7 +810,7 @@ export class TokenStandardService {
                     verbose: false,
                 })
 
-            return this.toPrettyTransactions(
+            return this.core.toPrettyTransactions(
                 updatesResponse,
                 partyId,
                 this.ledgerClient
@@ -628,7 +847,7 @@ export class TokenStandardService {
             }
         )
 
-        return this.toPrettyTransaction(
+        return this.core.toPrettyTransaction(
             getTransactionResponse,
             partyId,
             this.ledgerClient
@@ -667,77 +886,8 @@ export class TokenStandardService {
                 then all 10 of those are chose as input.
              */
     }
-    async createTransfer(
-        sender: PartyId,
-        receiver: PartyId,
-        amount: string,
-        instrumentAdmin: PartyId, // TODO (#907): replace with registry call
-        instrumentId: string,
-        registryUrl: string,
-        inputUtxos?: string[],
-        memo?: string,
-        expiryDate?: Date,
-        meta?: Record<string, unknown>
-    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        try {
-            const inputHoldingCids: string[] = await this.getInputHoldingsCids(
-                sender,
-                inputUtxos
-            )
 
-            const choiceArgs = {
-                expectedAdmin: instrumentAdmin,
-                transfer: {
-                    sender,
-                    receiver,
-                    amount,
-                    instrumentId: { admin: instrumentAdmin, id: instrumentId },
-                    lock: null,
-                    requestedAt: new Date(Date.now() - 60 * 1000).toISOString(),
-                    //given expiryDate or 24 hours
-                    executeBefore: (
-                        expiryDate ?? new Date(Date.now() + 24 * 60 * 60 * 1000)
-                    ).toISOString(),
-                    inputHoldingCids,
-                    meta: { values: { [MEMO_KEY]: memo || '', ...meta } },
-                },
-                extraArgs: {
-                    context: { values: {} },
-                    meta: { values: {} },
-                },
-            }
-
-            this.logger.debug('Creating transfer factory...')
-
-            const transferFactory = await this.getTokenStandardClient(
-                registryUrl
-            ).post('/registry/transfer-instruction/v1/transfer-factory', {
-                choiceArguments: choiceArgs as unknown as Record<string, never>,
-            })
-
-            this.logger.debug(transferFactory, 'Transfer factory created')
-
-            choiceArgs.extraArgs.context = {
-                ...transferFactory.choiceContext.choiceContextData,
-                values:
-                    transferFactory.choiceContext.choiceContextData?.values ??
-                    {},
-            }
-
-            const exercise: ExerciseCommand = {
-                templateId: TRANSFER_FACTORY_INTERFACE_ID,
-                contractId: transferFactory.factoryId,
-                choice: 'TransferFactory_Transfer',
-                choiceArgument: choiceArgs,
-            }
-
-            return [exercise, transferFactory.choiceContext.disclosedContracts]
-        } catch (e) {
-            this.logger.error('Failed to execute transfer:', e)
-            throw e
-        }
-    }
-
+    // TODO(#583) as it's not a part of token standard, should be moved somewhere else
     async createTap(
         receiver: string,
         amount: string,
@@ -767,11 +917,11 @@ export class TokenStandardService {
             },
         }
 
-        const transferFactory = await this.getTokenStandardClient(
-            registryUrl
-        ).post('/registry/transfer-instruction/v1/transfer-factory', {
-            choiceArguments: choiceArgs as unknown as Record<string, never>,
-        })
+        const transferFactory = await this.core
+            .getTokenStandardClient(registryUrl)
+            .post('/registry/transfer-instruction/v1/transfer-factory', {
+                choiceArguments: choiceArgs as unknown as Record<string, never>,
+            })
 
         const disclosedContracts =
             transferFactory.choiceContext.disclosedContracts
@@ -813,8 +963,8 @@ export class TokenStandardService {
                 contractId: amuletRules.contract_id,
                 choice: 'AmuletRules_DevNet_Tap',
                 choiceArgument: {
-                    receiver: receiver,
-                    amount: amount,
+                    receiver,
+                    amount,
                     openRound: latestOpenMiningRound.contract_id,
                 },
             },
@@ -831,7 +981,7 @@ export class TokenStandardService {
             templateId: amuletRules.template_id,
             contractId: amuletRules.contract_id,
             createdEventBlob: amuletRules.created_event_blob,
-            synchronizerId: synchronizerId,
+            synchronizerId,
         }
 
         return [
@@ -845,82 +995,5 @@ export class TokenStandardService {
             },
             [disclosedContracts],
         ]
-    }
-
-    private async toPrettyTransactions(
-        updates: JsGetUpdatesResponse[],
-        partyId: PartyId,
-        ledgerClient: LedgerClient
-    ): Promise<PrettyTransactions> {
-        // Runtime filters that also let TS know which of OneOfs types to check against
-        const isOffsetCheckpointUpdate = (
-            updateResponse: JsGetUpdatesResponse
-        ): updateResponse is OffsetCheckpointUpdate =>
-            !!updateResponse?.update?.OffsetCheckpoint
-        const isTransactionUpdate = (
-            updateResponse: JsGetUpdatesResponse
-        ): updateResponse is TransactionUpdate =>
-            !!updateResponse.update?.Transaction?.value
-
-        const offsetCheckpoints: number[] = updates
-            .filter(isOffsetCheckpointUpdate)
-            .map((update) => update.update.OffsetCheckpoint.value.offset)
-        const latestCheckpointOffset = Math.max(...offsetCheckpoints)
-
-        const transactions: Transaction[] = await Promise.all(
-            updates
-                // exclude OffsetCheckpoint, Reassignment, TopologyTransaction
-                .filter(isTransactionUpdate)
-                .map(async (update) => {
-                    const tx = update.update.Transaction.value
-                    const parser = new TransactionParser(
-                        tx,
-                        ledgerClient,
-                        partyId
-                    )
-
-                    return await parser.parseTransaction()
-                })
-        )
-
-        return {
-            // OffsetCheckpoint can be anywhere... or not at all, maybe
-            nextOffset: Math.max(
-                latestCheckpointOffset,
-                ...transactions.map((tx) => tx.offset)
-            ),
-            transactions: transactions
-                .filter((tx) => tx.events.length > 0)
-                .map(renderTransaction),
-        }
-    }
-
-    private async toPrettyTransaction(
-        getTransactionResponse: JsGetTransactionResponse,
-        partyId: PartyId,
-        ledgerClient: LedgerClient
-    ): Promise<Transaction> {
-        const tx = getTransactionResponse.transaction
-        const parser = new TransactionParser(tx, ledgerClient, partyId)
-        const parsedTx = await parser.parseTransaction()
-        return renderTransaction(parsedTx)
-    }
-
-    // returns object with JsActiveContract content
-    // and contractId and interface view value extracted from it as separate fields for convenience
-    private toPrettyContract<T>(
-        interfaceId: string,
-        response: JsActiveContractEntryResponse
-    ): PrettyContract<T> {
-        const activeContract = response.contractEntry.JsActiveContract
-        const { createdEvent } = activeContract
-        return {
-            contractId: createdEvent.contractId,
-            activeContract,
-            interfaceViewValue: ensureInterfaceViewIsPresent(
-                createdEvent,
-                interfaceId
-            ).viewValue as T,
-        }
     }
 }

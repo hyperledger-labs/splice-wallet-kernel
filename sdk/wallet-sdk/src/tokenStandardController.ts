@@ -461,7 +461,7 @@ export class TokenStandardController {
     > {
         try {
             const [transferCommand, disclosedContracts] =
-                await this.service.createTransfer(
+                await this.service.transfer.createTransfer(
                     sender,
                     receiver,
                     amount,
@@ -492,7 +492,7 @@ export class TokenStandardController {
     > {
         try {
             const [exercise, disclosed] =
-                await this.service.createAllocationInstruction(
+                await this.service.allocation.createAllocationInstruction(
                     allocationSpecification,
                     expectedAdmin,
                     this.getTransferFactoryRegistryUrl().href,
@@ -531,21 +531,21 @@ export class TokenStandardController {
             switch (instructionChoice) {
                 case 'Accept':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createAcceptTransferInstruction(
+                        await this.service.transfer.createAcceptTransferInstruction(
                             transferInstructionCid,
                             this.getTransferFactoryRegistryUrl().href
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
                 case 'Reject':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createRejectTransferInstruction(
+                        await this.service.transfer.createRejectTransferInstruction(
                             transferInstructionCid,
                             this.getTransferFactoryRegistryUrl().href
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
                 case 'Withdraw':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createWithdrawTransferInstruction(
+                        await this.service.transfer.createWithdrawTransferInstruction(
                             transferInstructionCid,
                             this.getTransferFactoryRegistryUrl().href
                         )
@@ -580,7 +580,7 @@ export class TokenStandardController {
             switch (allocationChoice) {
                 case 'ExecuteTransfer':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createExecuteTransferAllocation(
+                        await this.service.allocation.createExecuteTransferAllocation(
                             allocationCid,
                             this.getTransferFactoryRegistryUrl().href
                         )
@@ -588,7 +588,7 @@ export class TokenStandardController {
 
                 case 'Withdraw':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createWithdrawAllocation(
+                        await this.service.allocation.createWithdrawAllocation(
                             allocationCid,
                             this.getTransferFactoryRegistryUrl().href
                         )
@@ -596,7 +596,7 @@ export class TokenStandardController {
 
                 case 'Cancel':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createCancelAllocation(
+                        await this.service.allocation.createCancelAllocation(
                             allocationCid,
                             this.getTransferFactoryRegistryUrl().href
                         )
@@ -616,7 +616,7 @@ export class TokenStandardController {
      * @param allocationCid The Allocation contract ID.
      */
     async getAllocationExecuteTransferChoiceContext(allocationCid: string) {
-        return this.service.getAllocationExecuteTransferChoiceContext(
+        return this.service.allocation.getAllocationExecuteTransferChoiceContext(
             allocationCid,
             this.getTransferFactoryRegistryUrl().href
         )
@@ -639,7 +639,7 @@ export class TokenStandardController {
             switch (instructionChoice) {
                 case 'Withdraw':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createWithdrawAllocationInstruction(
+                        await this.service.allocation.createWithdrawAllocationInstruction(
                             allocationInstructionCid
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
@@ -669,7 +669,7 @@ export class TokenStandardController {
             switch (requestChoice) {
                 case 'Reject':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createRejectAllocationRequest(
+                        await this.service.allocation.createRejectAllocationRequest(
                             allocationRequestCid,
                             actor
                         )
@@ -677,7 +677,7 @@ export class TokenStandardController {
 
                 case 'Withdraw':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createWithdrawAllocationRequest(
+                        await this.service.allocation.createWithdrawAllocationRequest(
                             allocationRequestCid
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
