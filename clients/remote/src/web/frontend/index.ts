@@ -12,7 +12,7 @@ import { stateManager } from './state-manager'
 export class UserUI extends LitElement {
     protected render() {
         return html`<div>
-            <h1>User UI</h1>
+            <h1>Home</h1>
             <swk-configuration></swk-configuration>
         </div>`
     }

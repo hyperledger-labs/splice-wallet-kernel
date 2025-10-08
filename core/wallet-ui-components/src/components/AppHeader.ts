@@ -186,7 +186,7 @@ export class AppHeader extends LitElement {
         return html`
             <header class="header">
                 <div class="logo-box" @click=${() => this.navigateTo('/')}>
-                    <img src="${this.iconSrc}" alt="App Icon" /> Splice Wallet
+                    <img src="${this.iconSrc}" alt="App Icon" /> Wallet Gateway
                 </div>
 
                 <button
