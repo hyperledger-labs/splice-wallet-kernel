@@ -29,6 +29,9 @@
             "dependsOn": ["^build"],
             "cache": true
         },
+        "typecheck": {
+            "dependsOn": ["^build"]
+        },
         "lint": {
             "cache": true,
             "options": {

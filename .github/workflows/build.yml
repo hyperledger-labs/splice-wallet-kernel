@@ -81,6 +81,9 @@ jobs:
             - name: check package.json names
               run: yarn script:cleancoding
 
+            - name: run typechecking
+              run: yarn nx run-many -t typecheck --parallel
+
             - name: check open-rpc specs titles
               run: yarn script:openrpc:titles
 

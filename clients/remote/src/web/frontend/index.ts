@@ -5,6 +5,7 @@ import { html, LitElement } from 'lit'
 import { customElement } from 'lit/decorators.js'
 
 import '@canton-network/core-wallet-ui-components'
+import '@canton-network/core-wallet-ui-components/dist/index.css'
 import '/style.css'
 import { stateManager } from './state-manager'
 

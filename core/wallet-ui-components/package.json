@@ -13,10 +13,10 @@
         "./themes": "./themes"
     },
     "scripts": {
-        "copy-css": "tsx src/scripts/copy-css.ts",
-        "build": "tsc -b && yarn copy-css",
-        "build:watch": "tsc -b --watch",
-        "clean": "tsc -b --clean; tsc -b tsconfig.dev.json --clean; rm -rf dist; [ -d public/js ] && rm -rf public/js/* || true",
+        "build": "vite build && tsc --emitDeclarationOnly",
+        "build:watch": "vite build --watch & tsc --emitDeclarationOnly --watch",
+        "typecheck": "tsc --noEmit",
+        "clean": "tsc -b --clean; rm -rf dist",
         "dev": "vite --port 8000"
     },
     "devDependencies": {
@@ -36,7 +36,8 @@
         "lit": "^3.3.0"
     },
     "files": [
-        "dist/**"
+        "dist/**",
+        "themes/**"
     ],
     "publishConfig": {
         "access": "public"
