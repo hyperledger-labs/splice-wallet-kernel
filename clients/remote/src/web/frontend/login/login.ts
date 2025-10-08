@@ -227,7 +227,7 @@ export class LoginUI extends LitElement {
     protected render() {
         return html`
             <div class="card">
-                <h1>Sign in to Splice Wallet</h1>
+                <h1>Sign in to Canton Network</h1>
 
                 <select id="network" @change=${this.handleChange}>
                     <option value="">Select Network</option>
