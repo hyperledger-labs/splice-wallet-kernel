@@ -485,60 +485,86 @@ export class TokenStandardController {
     }
 
     async createTransferUsingDelegateProxy(
+        exchangeParty: PartyId,
         proxyCid: string,
         featuredAppRightCid: string,
         sender: PartyId,
         receiver: PartyId,
         amount: string,
-        instrument: {
-            instrumentId: string
-            instrumentAdmin: PartyId
-        },
+        instrumentId: string,
+        instrumentAdmin: PartyId,
         inputUtxos?: string[],
         memo?: string,
         expiryDate?: Date,
         meta?: Record<string, unknown>
-    ): Promise<[WrappedCommand<'ExerciseCommand'>]> {
-        const choiceArgs = {
-            featuredAppRightCid: featuredAppRightCid,
-            expectedAdmin: instrument.instrumentAdmin,
-            transfer: {
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        // const choiceArgs = {
+        //     cid: proxyCid,
+        //     proxyArg: {
+        //         featuredAppRightCid: featuredAppRightCid,
+        //         choiceArg: {
+        //             expectedAdmin: instrument.instrumentAdmin,
+        //             transfer: {
+        //                 sender,
+        //                 receiver,
+        //                 amount,
+        //                 instrumentId: {
+        //                     admin: instrument.instrumentAdmin,
+        //                     id: instrument.instrumentId,
+        //                 },
+        //                 lock: null,
+        //                 requestedAt: new Date(
+        //                     Date.now() - 60 * 1000
+        //                 ).toISOString(),
+        //                 //given expiryDate or 24 hours
+        //                 executeBefore: (
+        //                     expiryDate ??
+        //                     new Date(Date.now() + 24 * 60 * 60 * 1000)
+        //                 ).toISOString(),
+        //                 inputUtxos,
+        //                 meta: {
+        //                     values: {
+        //                         ['splice.lfdecentralizedtrust.org/reason']:
+        //                             memo || '',
+        //                         ...meta,
+        //                     },
+        //                 },
+        //             },
+        //         },
+        //     },
+        //     extraArgs: {
+        //         context: { values: {} },
+        //         meta: { values: {} },
+        //     },
+        // }
+
+        // const exercise: ExerciseCommand = {
+        //     templateId:
+        //         '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+        //     contractId: proxyCid,
+        //     choice: 'DelegateProxy_TransferFactory_Transfer',
+        //     choiceArgument: choiceArgs,
+        // }
+
+        const [exercise, disclosedContracts] =
+            await this.service.createDelegateProxyTranfser(
                 sender,
                 receiver,
+                exchangeParty,
                 amount,
-                instrumentId: {
-                    admin: instrument.instrumentAdmin,
-                    id: instrument.instrumentId,
-                },
-                lock: null,
-                requestedAt: new Date(Date.now() - 60 * 1000).toISOString(),
-                //given expiryDate or 24 hours
-                executeBefore: (
-                    expiryDate ?? new Date(Date.now() + 24 * 60 * 60 * 1000)
-                ).toISOString(),
+                instrumentAdmin,
+                instrumentId,
+                this.getTransferFactoryRegistryUrl().href,
+                featuredAppRightCid,
+                proxyCid,
                 inputUtxos,
-                meta: {
-                    values: {
-                        ['splice.lfdecentralizedtrust.org/reason']: memo || '',
-                        ...meta,
-                    },
-                },
-            },
-            extraArgs: {
-                context: { values: {} },
-                meta: { values: {} },
-            },
-        }
-
-        const exercise: ExerciseCommand = {
-            templateId:
-                '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
-            contractId: proxyCid,
-            choice: 'DelegateProxy_TransferFactory_Transfer',
-            choiceArgument: choiceArgs,
-        }
-
-        return [{ ExerciseCommand: exercise }]
+                memo,
+                expiryDate,
+                meta
+            )
+        return [{ ExerciseCommand: exercise }, disclosedContracts]
     }
 
     async createAllocationInstruction(

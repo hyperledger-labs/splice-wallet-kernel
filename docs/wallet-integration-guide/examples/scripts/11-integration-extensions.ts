@@ -45,6 +45,9 @@ const senderPartyKeyPair = createKeyPair()
 
 await sdk.connectAdmin()
 await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
+sdk.tokenStandard?.setTransferFactoryRegistryUrl(
+    localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+)
 
 const treasuryParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairTreasury.privateKey,
@@ -140,6 +143,8 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 
 logger.info('transfer pre approval proposal is created')
 
+await new Promise((res) => setTimeout(res, 5000))
+
 await sdk.setPartyId(exchangeParty!)
 
 const delegateCommand = await sdk.userLedger?.createDelegateProxyCommand(
@@ -208,30 +213,35 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 )
 
 // await sdk.setPartyId(exchangeParty!) set as exchange party or senderParty ?
+await new Promise((res) => setTimeout(res, 5000))
 
 try {
     await sdk.setPartyId(senderParty?.partyId!)
-    const delegateExerciseCommand =
-        await sdk.tokenStandard?.createTransferUsingDelegateProxy(
+
+    const [transferCommand, disclosedContracts2] =
+        await sdk.tokenStandard!.createTransferUsingDelegateProxy(
+            exchangeParty!,
             proxyCid!,
             featuredAppRights?.contract_id!,
             senderParty?.partyId!,
             treasuryParty?.partyId!,
             '100',
-            {
-                instrumentId: 'Amulet',
-                instrumentAdmin: instrumentAdminPartyId,
-            },
+            'Amulet',
+            instrumentAdminPartyId,
             [],
             'memo-ref'
         )
-    logger.info(delegateExerciseCommand, `created delegate exercise command`)
 
+    await new Promise((res) => setTimeout(res, 5000))
+
+    logger.info(transferCommand, `created delegate exercise command`)
+
+    // const p = [delegateProxyDisclosedContracts, ...disclosedContracts2]
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-        delegateExerciseCommand,
+        transferCommand,
         senderPartyKeyPair.privateKey,
         v4(),
-        [delegateProxyDisclosedContracts]
+        disclosedContracts2
     )
 } catch (e) {
     logger.error(e)
