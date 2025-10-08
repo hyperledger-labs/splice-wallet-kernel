@@ -14,7 +14,7 @@ import { v4 } from 'uuid'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
 
-const logger = pino({ name: '10-integration-extensions', level: 'info' })
+const logger = pino({ name: '11-integration-extensions', level: 'info' })
 
 // This example needs uploaded .dar for splice-token-test-trading-app
 // It's in files of localnet, but it's not uploaded to participant, so we need to do this in the script
@@ -41,6 +41,7 @@ await sdk.connect()
 logger.info('Connected to ledger')
 
 const keyPairTreasury = createKeyPair()
+const senderPartyKeyPair = createKeyPair()
 
 await sdk.connectAdmin()
 await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
@@ -49,6 +50,7 @@ const treasuryParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairTreasury.privateKey,
     'alice'
 )
+
 logger.info(`Created party: ${treasuryParty!.partyId}`)
 await sdk.setPartyId(treasuryParty!.partyId)
 
@@ -173,4 +175,64 @@ await sdk.setPartyId(exchangeParty!)
 const featuredAppRights =
     await sdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
 
-const createdEventBlob = featuredAppRights?.created_event_blob
+const delegateProxyDisclosedContracts = {
+    templateId: featuredAppRights?.template_id!,
+    contractId: featuredAppRights?.contract_id!,
+    createdEventBlob: featuredAppRights?.created_event_blob!,
+    synchronizerId: synchonizerId,
+}
+
+// const createdEventBlob = featuredAppRights?.created_event_blob
+
+const senderParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
+    senderPartyKeyPair.privateKey,
+    'bob'
+)
+
+await sdk.setPartyId(senderParty?.partyId!)
+
+const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
+    senderParty!.partyId,
+    '20000000',
+    {
+        instrumentId: 'Amulet',
+        instrumentAdmin: instrumentAdminPartyId,
+    }
+)
+
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    tapCommand,
+    senderPartyKeyPair.privateKey,
+    v4(),
+    disclosedContracts
+)
+
+// await sdk.setPartyId(exchangeParty!) set as exchange party or senderParty ?
+
+try {
+    await sdk.setPartyId(senderParty?.partyId!)
+    const delegateExerciseCommand =
+        await sdk.tokenStandard?.createTransferUsingDelegateProxy(
+            proxyCid!,
+            featuredAppRights?.contract_id!,
+            senderParty?.partyId!,
+            treasuryParty?.partyId!,
+            '100',
+            {
+                instrumentId: 'Amulet',
+                instrumentAdmin: instrumentAdminPartyId,
+            },
+            [],
+            'memo-ref'
+        )
+    logger.info(delegateExerciseCommand, `created delegate exercise command`)
+
+    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+        delegateExerciseCommand,
+        senderPartyKeyPair.privateKey,
+        v4(),
+        [delegateProxyDisclosedContracts]
+    )
+} catch (e) {
+    logger.error(e)
+}
