@@ -11,10 +11,6 @@ export class AppLayout extends BaseElement {
     @property({ type: String }) iconSrc: string = '/images/icon.png'
     @property({ type: String }) themeSrc?: string
 
-    createRenderRoot() {
-        return this
-    }
-
     static styles = [BaseElement.styles]
 
     private customThemeCss: string | null = null

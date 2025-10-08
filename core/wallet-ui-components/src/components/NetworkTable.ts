@@ -16,9 +16,9 @@ export class NetworkTable extends BaseElement {
         css`
             .network-card {
                 background: #fff;
+                border: none;
                 border-radius: 8px;
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-                padding: 1rem;
                 display: flex;
                 flex-direction: column;
                 gap: 0.5rem;
@@ -39,43 +39,49 @@ export class NetworkTable extends BaseElement {
 
     render() {
         return html`
-            <div class="row gx-2 gy-2">
-                ${this.networks.map(
-                    (net) => html`
-                        <div class="col card">
-                            <div class="card-body">
-                                <h6 class="card-title text-primary fw-bold">
-                                    ${net.name}
-                                </h6>
-                                <div class="network-meta">
-                                    <strong>ID:</strong> ${net.chainId}<br />
-                                    <strong>Auth:</strong> ${net.auth.type}<br />
-                                    <strong>Synchronizer:</strong>
-                                    ${net.synchronizerId}
-                                </div>
-                                <div class="network-desc">
-                                    ${net.description}
-                                </div>
-                                <div>
-                                    <button class="btn btn-secondary">
-                                        Update
-                                    </button>
-                                    <button
-                                        class="btn btn-danger"
-                                        @click=${() =>
-                                            this.dispatchEvent(
-                                                new CustomEvent('delete', {
-                                                    detail: net,
-                                                })
-                                            )}
-                                    >
-                                        Delete
-                                    </button>
+            <div class="container p-0 m-0">
+                <div
+                    class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-md-2 g-lg-2 g-0"
+                >
+                    ${this.networks.map(
+                        (net) => html`
+                            <div class="col card network-card">
+                                <div class="card-body">
+                                    <h6 class="card-title text-primary fw-bold">
+                                        ${net.name}
+                                    </h6>
+                                    <div class="network-meta">
+                                        <strong>ID:</strong>
+                                        ${net.chainId}<br />
+                                        <strong>Auth:</strong> ${net.auth
+                                            .type}<br />
+                                        <strong>Synchronizer:</strong>
+                                        ${net.synchronizerId}
+                                    </div>
+                                    <div class="network-desc">
+                                        ${net.description}
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-secondary">
+                                            Update
+                                        </button>
+                                        <button
+                                            class="btn btn-danger"
+                                            @click=${() =>
+                                                this.dispatchEvent(
+                                                    new CustomEvent('delete', {
+                                                        detail: net,
+                                                    })
+                                                )}
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `
-                )}
+                        `
+                    )}
+                </div>
             </div>
         `
     }

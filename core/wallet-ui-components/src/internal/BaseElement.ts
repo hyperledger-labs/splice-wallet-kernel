@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { css, CSSResultGroup, LitElement, unsafeCSS } from 'lit'
+
+import 'bootstrap/dist/css/bootstrap.min.css'
+import '../../themes/default.css'
+
 import bootstrapCss from 'bootstrap/dist/css/bootstrap.min.css?inline'
 import defaultTheme from '../../themes/default.css?inline'
 import mainStyles from '../styles/index.js'

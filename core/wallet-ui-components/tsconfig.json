@@ -5,7 +5,7 @@
         "outDir": "./dist",
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "useDefineForClassFields": true,
+        "useDefineForClassFields": false,
         "module": "esnext",
         "moduleResolution": "bundler"
     },

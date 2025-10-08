@@ -41,7 +41,11 @@ const SUBSTITUTABLE_CSS = cssToString([
 
 /**
  * Discovery implements the view of the Wallet Gateway selection window.
- * It is implemented directly as a Web Component without using LitElement, so to avoid having external dependencies.
+ *
+ * This component is a special case. It does not use Lit or BaseElement, because it is intended to be injected directly into client-side popup windows.
+ * This has some implications about how styles are handled. We want to rely on the same base styles as BaseElement, but do not want to depend on the Lit runtime.
+ *
+ * Therefore, we define the styles as a string constant (SUBSTITUTABLE_CSS), and inject them into the shadow DOM manually.
  */
 export class Discovery extends HTMLElement {
     static observedAttributes = ['wallet-extension-loaded']
