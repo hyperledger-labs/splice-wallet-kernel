@@ -23,6 +23,7 @@ export class AppHeader extends LitElement {
             --text-color: #222;
             --border-color: #ccc;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --hover-bg: rgba(0, 0, 0, 0.05);
         }
 
         :host([theme='dark']) {
@@ -30,6 +31,7 @@ export class AppHeader extends LitElement {
             --menu-bg: #2b2b2b;
             --text-color: #fff;
             --border-color: #555;
+            --hover-bg: rgba(255, 255, 255, 0.1);
         }
 
         .header {
@@ -106,7 +108,7 @@ export class AppHeader extends LitElement {
         }
 
         .dropdown button:hover {
-            background: rgba(0, 0, 0, 0.05);
+            background: var(--hover-bg);
         }
 
         .theme-toggle {
@@ -117,6 +119,12 @@ export class AppHeader extends LitElement {
             border-top: 1px solid var(--border-color);
             margin-top: 0.25rem;
             cursor: pointer;
+            color: var(--text-color);
+        }
+
+        .theme-toggle span {
+            color: var(--text-color);
+            font-size: 0.95rem;
         }
 
         .toggle-switch {
@@ -186,7 +194,7 @@ export class AppHeader extends LitElement {
         return html`
             <header class="header">
                 <div class="logo-box" @click=${() => this.navigateTo('/')}>
-                    <img src="${this.iconSrc}" alt="App Icon" /> Splice Wallet
+                    <img src="${this.iconSrc}" alt="App Icon" /> Wallet Gateway
                 </div>
 
                 <button
