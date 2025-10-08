@@ -29,7 +29,6 @@ export class AppHeader extends BaseElement {
                 --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
                 --hover-bg: rgba(0, 0, 0, 0.05);
             }
-
             :host([theme='dark']) {
                 --header-bg: #1e1e1e;
                 --menu-bg: #2b2b2b;
@@ -37,7 +36,6 @@ export class AppHeader extends BaseElement {
                 --border-color: #555;
                 --hover-bg: rgba(255, 255, 255, 0.1);
             }
-
             header {
                 display: flex;
                 justify-content: space-between;
@@ -46,16 +44,6 @@ export class AppHeader extends BaseElement {
                 width: 100%;
                 box-sizing: border-box;
             }
-
-            header img {
-                margin-right: 10px;
-            }
-
-            header .logo-box {
-                display: inline-block;
-                cursor: pointer;
-            }
-
             .logo-box {
                 display: flex;
                 align-items: center;
@@ -65,7 +53,20 @@ export class AppHeader extends BaseElement {
                 color: var(--text-color);
                 user-select: none;
             }
-
+            .logo-box img {
+                width: 24px;
+                height: 24px;
+            }
+            /* Hamburger */
+            .hamburger {
+                background: none;
+                border: none;
+                font-size: 1.8rem;
+                cursor: pointer;
+                color: var(--text-color);
+                padding: 0;
+                line-height: 1;
+            }
             /* Dropdown menu */
             .dropdown {
                 position: absolute;
@@ -87,44 +88,25 @@ export class AppHeader extends BaseElement {
                     transform 0.15s ease;
                 z-index: 1100; /* Above other content */
             }
-
-            /* Hamburger */
-            .hamburger {
-                background: none;
+            .dropdown.open {
+                opacity: 1;
+                transform: translateY(0);
+                pointer-events: auto;
+            }
+            .dropdown button {
+                width: 100%;
+                text-align: left;
                 border: none;
-                font-size: 1.8rem;
+                background: transparent;
+                padding: 0.5rem 1rem;
                 cursor: pointer;
+                transition: background 0.15s ease;
                 color: var(--text-color);
-                padding: 0;
-                line-height: 1;
+                font-size: 0.95rem;
             }
-
-            /* Dropdown menu */
-            .dropdown {
-                position: absolute;
-                top: 100%;
-                right: 1rem;
-                background: var(--menu-bg);
-                border-radius: 12px;
-                box-shadow: var(--shadow);
-                display: flex;
-                flex-direction: column;
-                min-width: 200px;
-                margin-top: 0.25rem;
-                padding: 0.25rem 0;
-                opacity: 0;
-                transform: translateY(-5px);
-                pointer-events: none;
-                transition:
-                    opacity 0.15s ease,
-                    transform 0.15s ease;
-                z-index: 1000;
-            }
-
             .dropdown button:hover {
                 background: var(--hover-bg);
             }
-
             .theme-toggle {
                 display: flex;
                 justify-content: space-between;
@@ -135,26 +117,10 @@ export class AppHeader extends BaseElement {
                 cursor: pointer;
                 color: var(--text-color);
             }
-
             .theme-toggle span {
                 color: var(--text-color);
                 font-size: 0.95rem;
             }
-
-            .dropdown button:hover {
-                background: rgba(0, 0, 0, 0.05);
-            }
-
-            .theme-toggle {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.5rem 1rem;
-                border-top: 1px solid var(--border-color);
-                margin-top: 0.25rem;
-                cursor: pointer;
-            }
-
             .toggle-switch {
                 position: relative;
                 width: 40px;
@@ -164,7 +130,6 @@ export class AppHeader extends BaseElement {
                 transition: background 0.15s;
                 flex-shrink: 0;
             }
-
             .toggle-switch::after {
                 content: '';
                 position: absolute;
@@ -176,11 +141,9 @@ export class AppHeader extends BaseElement {
                 border-radius: 50%;
                 transition: transform 0.15s;
             }
-
             .toggle-switch.on {
                 background: #4caf50;
             }
-
             .toggle-switch.on::after {
                 transform: translateX(20px);
             }
@@ -194,9 +157,9 @@ export class AppHeader extends BaseElement {
 
     private updateThemeAttribute() {
         if (this.darkMode) {
-            this.setAttribute('data-bs-theme', 'dark')
+            this.setAttribute('theme', 'dark')
         } else {
-            this.removeAttribute('data-bs-theme')
+            this.removeAttribute('theme')
         }
     }
 
@@ -226,8 +189,6 @@ export class AppHeader extends BaseElement {
                 <div class="logo-box" @click=${() => this.navigateTo('/')}>
                     <img src="${this.iconSrc}" alt="App Icon" />Wallet Gateway
                 </div>
-
-                <button class="btn btn-primary">hi</button>
 
                 <button
                     class="hamburger"
