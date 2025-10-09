@@ -114,8 +114,11 @@ export class WalletSDKImpl implements WalletSDK {
     configure(config: Config): WalletSDK {
         if (config.logger) this.logger = config.logger
         if (config.authFactory) {
-            this.auth = config.authFactory()
-            this.authTokenProvider = new AuthTokenProvider(this.auth)
+            if (!this.auth || this.authFactory !== config.authFactory) {
+                this.authFactory = config.authFactory
+                this.auth = this.authFactory()
+                this.authTokenProvider = new AuthTokenProvider(this.auth)
+            }
         }
         if (config.ledgerFactory) this.ledgerFactory = config.ledgerFactory
         if (config.topologyFactory)

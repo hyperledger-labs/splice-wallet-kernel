@@ -16,8 +16,7 @@ import {
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
     logger: console,
-    //authFactory: () => localAuthDefault(console),
-    authFactory: localAuthDefault,
+    authFactory: () => localAuthDefault(console),
     ledgerFactory: localLedgerDefault,
     topologyFactory: localTopologyDefault,
     tokenStandardFactory: localTokenStandardDefault,

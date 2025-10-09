@@ -80,6 +80,9 @@ export class ClientCredentialOAuthController implements AuthController {
     private _scope: string | undefined
     private _audience: string | undefined
     private _accessTokens: Partial<Record<SubjectIdentifier, string>> = {}
+    private _pendingTokenRequests: Partial<
+        Record<SubjectIdentifier, Promise<string>>
+    > = {}
 
     constructor(
         configUrl: string,
@@ -117,18 +120,32 @@ export class ClientCredentialOAuthController implements AuthController {
             this._logger?.info('Using cached user token')
             return { userId: this._userId!, accessToken: cachedAccessToken }
         }
+
+        if (this._pendingTokenRequests['user']) {
+            const accessToken = await this._pendingTokenRequests['user']
+            return { userId: this._userId!, accessToken }
+        }
+
         this._logger?.info('Creating new user token')
 
-        const accessToken = await this.service.fetchToken({
+        const tokenPromise = this.service.fetchToken({
             clientId: this._userId!,
             clientSecret: this._userSecret!,
             scope: this._scope,
             audience: this._audience,
         })
-        this._accessTokens['user'] = accessToken
-        return {
-            userId: this._adminId!,
-            accessToken,
+
+        this._pendingTokenRequests['user'] = tokenPromise
+
+        try {
+            const accessToken = await tokenPromise
+            this._accessTokens['user'] = accessToken
+            return {
+                userId: this._adminId!,
+                accessToken,
+            }
+        } finally {
+            delete this._pendingTokenRequests['user']
         }
     }
 
@@ -137,26 +154,42 @@ export class ClientCredentialOAuthController implements AuthController {
             throw new Error('AdminId is not defined.')
         if (this._adminSecret === undefined)
             throw new Error('AdminSecret is not defined.')
+
         const cachedAccessToken = this._accessTokens['admin']
         if (cachedAccessToken && this._isJwtValid(cachedAccessToken)) {
             console.log('Using cached admin token')
-
             this._logger?.info('Using cached admin token')
             return { userId: this._adminId!, accessToken: cachedAccessToken }
         }
-        console.log('Creating new admin token')
 
+        // Check if there's already a pending request for admin token
+        if (this._pendingTokenRequests['admin']) {
+            const accessToken = await this._pendingTokenRequests['admin']
+            return { userId: this._adminId!, accessToken }
+        }
+
+        console.log('Creating new admin token')
         this._logger?.info('Creating new admin token')
-        const accessToken = await this.service.fetchToken({
+
+        // Create and store the pending request
+        const tokenPromise = this.service.fetchToken({
             clientId: this._adminId!,
             clientSecret: this._adminSecret!,
             scope: this._scope,
             audience: this._audience,
         })
-        this._accessTokens['admin'] = accessToken
-        return {
-            userId: this._adminId!,
-            accessToken,
+
+        this._pendingTokenRequests['admin'] = tokenPromise
+
+        try {
+            const accessToken = await tokenPromise
+            this._accessTokens['admin'] = accessToken
+            return {
+                userId: this._adminId!,
+                accessToken,
+            }
+        } finally {
+            delete this._pendingTokenRequests['admin']
         }
     }
     private _isJwtValid(token: string): boolean {
@@ -262,20 +295,25 @@ export const localNetAuthDefault = (logger?: Logger): AuthController => {
  * A default factory function used for running against a local net initialized via docker.
  * This uses unsafe-auth and is started with the 'yarn start:localnet' or docker compose from localNet setup.
  */
-export const localAuthDefault = (logger?: Logger): AuthController => {
-    const controller = new ClientCredentialOAuthController(
-        'http://127.0.0.1:8889/.well-known/openid-configuration',
-        logger
-    )
-    // keep these values aligned with client/test/config.json
-    //TODO: Dynamically load these values
-    controller.userId = 'operator'
-    controller.userSecret = 'your-client-secret'
-    controller.adminId = 'participant_admin'
-    controller.adminSecret = 'admin-client-secret'
-    controller.audience =
-        'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424'
-    controller.scope = 'openid daml_ledger_api offline_access'
+let _localAuthDefaultInstance: AuthController | undefined
 
-    return controller
+export const localAuthDefault = (logger?: Logger): AuthController => {
+    if (!_localAuthDefaultInstance) {
+        const controller = new ClientCredentialOAuthController(
+            'http://127.0.0.1:8889/.well-known/openid-configuration',
+            logger
+        )
+        // keep these values aligned with client/test/config.json
+        //TODO: Dynamically load these values
+        controller.userId = 'operator'
+        controller.userSecret = 'your-client-secret'
+        controller.adminId = 'participant_admin'
+        controller.adminSecret = 'admin-client-secret'
+        controller.audience =
+            'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424'
+        controller.scope = 'openid daml_ledger_api offline_access'
+
+        _localAuthDefaultInstance = controller
+    }
+    return _localAuthDefaultInstance
 }
