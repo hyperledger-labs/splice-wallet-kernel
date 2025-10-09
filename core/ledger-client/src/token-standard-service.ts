@@ -41,6 +41,7 @@ import { Types } from './ledger-client.js'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 
 const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
+const REQUESTED_AT_SKEW_MS = 60_000
 
 export type ExerciseCommand = Types['ExerciseCommand']
 type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
@@ -275,7 +276,9 @@ class AllocationService {
         const choiceArgs: AllocationFactory_Allocate = {
             expectedAdmin: expectedAdmin,
             allocation: allocationSpecificationNormalized,
-            requestedAt: requestedAt ?? new Date().toISOString(),
+            requestedAt:
+                requestedAt ??
+                new Date(Date.now() - REQUESTED_AT_SKEW_MS).toISOString(),
             inputHoldingCids,
             extraArgs: {
                 context: { values: { ...(extraContext ?? {}) } },
@@ -506,10 +509,7 @@ class AllocationService {
             }
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
-            this.core.logger.error(
-                'Failed to create withdraw transfer instruction:',
-                e
-            )
+            this.core.logger.error('Failed to create cancel allocation', e)
             throw e
         }
     }
@@ -526,11 +526,11 @@ class AllocationService {
     }
 
     async createWithdrawAllocationInstruction(
-        registryUrl: string
+        allocationInstructionCid: string
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         const exercise: ExerciseCommand = {
             templateId: ALLOCATION_INSTRUCTION_INTERFACE_ID,
-            contractId: registryUrl,
+            contractId: allocationInstructionCid,
             choice: 'AllocationInstruction_Withdraw',
             choiceArgument: {
                 extraArgs: {
@@ -632,7 +632,9 @@ class TransferService {
                 amount,
                 instrumentId: { admin: instrumentAdmin, id: instrumentId },
                 // lock: null, // TODO probably should delete
-                requestedAt: new Date(Date.now() - 60 * 1000).toISOString(),
+                requestedAt: new Date(
+                    Date.now() - REQUESTED_AT_SKEW_MS
+                ).toISOString(),
                 executeBefore: (
                     expiryDate ?? new Date(Date.now() + 24 * 60 * 60 * 1000)
                 ).toISOString(),
@@ -1152,7 +1154,7 @@ export class TokenStandardService {
                 amount,
                 instrumentId: { admin: instrumentAdmin, id: instrumentId },
                 lock: null,
-                requestedAt: now.toISOString(),
+                requestedAt: now.toISOString() - REQUESTED_AT_SKEW_MS,
                 executeBefore: tomorrow.toISOString(),
                 inputHoldingCids: [],
                 meta: { values: {} },
