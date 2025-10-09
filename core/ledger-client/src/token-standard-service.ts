@@ -688,7 +688,11 @@ class TransferService {
         inputUtxos?: string[],
         memo?: string,
         expiryDate?: Date,
-        meta?: Metadata
+        meta?: Metadata,
+        offline?: {
+            factoryId: string
+            choiceContext: transferInstructionRegistryTypes['schemas']['ChoiceContext']
+        }
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
             const choiceArgs = await this.buildTransferChoiceArgs(
@@ -702,13 +706,21 @@ class TransferService {
                 expiryDate,
                 meta
             )
-            this.core.logger.debug('Creating transfer factory...')
+
+            if (offline) {
+                return this.createTransferFromContext(
+                    offline.factoryId,
+                    choiceArgs,
+                    offline.choiceContext
+                )
+            }
+
             const { factoryId, choiceContext } =
                 await this.fetchTransferFactoryChoiceContext(
                     registryUrl,
                     choiceArgs
                 )
-            this.core.logger.debug({ factoryId }, 'Transfer factory created')
+
             return this.createTransferFromContext(
                 factoryId,
                 choiceArgs,
@@ -774,8 +786,18 @@ class TransferService {
 
     async createAcceptTransferInstruction(
         transferInstructionCid: string,
-        registryUrl: string
+        registryUrl: string,
+        offline?: transferInstructionRegistryTypes['schemas']['ChoiceContext']
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        if (offline) {
+            return this.createAcceptTransferInstructionFromContext(
+                transferInstructionCid,
+                {
+                    choiceContextData: offline.choiceContextData,
+                    disclosedContracts: offline.disclosedContracts,
+                }
+            )
+        }
         const ctx = await this.fetchAcceptTransferInstructionChoiceContext(
             transferInstructionCid,
             registryUrl
@@ -840,8 +862,18 @@ class TransferService {
 
     async createRejectTransferInstruction(
         transferInstructionCid: string,
-        registryUrl: string
+        registryUrl: string,
+        offline?: transferInstructionRegistryTypes['schemas']['ChoiceContext']
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        if (offline) {
+            return this.createRejectTransferInstructionFromContext(
+                transferInstructionCid,
+                {
+                    choiceContextData: offline.choiceContextData,
+                    disclosedContracts: offline.disclosedContracts,
+                }
+            )
+        }
         const ctx = await this.fetchRejectTransferInstructionChoiceContext(
             transferInstructionCid,
             registryUrl
@@ -907,8 +939,18 @@ class TransferService {
 
     async createWithdrawTransferInstruction(
         transferInstructionCid: string,
-        registryUrl: string
+        registryUrl: string,
+        offline?: transferInstructionRegistryTypes['schemas']['ChoiceContext']
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        if (offline) {
+            return this.createWithdrawTransferInstructionFromContext(
+                transferInstructionCid,
+                {
+                    choiceContextData: offline.choiceContextData,
+                    disclosedContracts: offline.disclosedContracts,
+                }
+            )
+        }
         const ctx = await this.fetchWithdrawTransferInstructionChoiceContext(
             transferInstructionCid,
             registryUrl
