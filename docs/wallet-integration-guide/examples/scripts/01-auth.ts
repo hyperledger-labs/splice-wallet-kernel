@@ -7,10 +7,6 @@ import {
     createKeyPair,
     signTransactionHash,
     localTokenStandardDefault,
-    localNetAuthDefault,
-    localNetLedgerDefault,
-    localNetTopologyDefault,
-    localNetTokenStandardDefault,
 } from '@canton-network/wallet-sdk'
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues

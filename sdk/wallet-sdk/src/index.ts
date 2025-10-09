@@ -66,6 +66,7 @@ export interface Config {
 
 export interface WalletSDK {
     auth: AuthController
+    authTokenProvider: AuthTokenProvider
     configure(config: Config): WalletSDK
     connect(): Promise<WalletSDK>
     connectAdmin(): Promise<WalletSDK>
@@ -85,11 +86,15 @@ export interface WalletSDK {
  */
 export class WalletSDKImpl implements WalletSDK {
     auth: AuthController
-    private authTokenProvider: AuthTokenProvider
+    private _authTokenProvider: AuthTokenProvider
+
+    get authTokenProvider(): AuthTokenProvider {
+        return this._authTokenProvider
+    }
 
     constructor() {
         this.auth = this.authFactory()
-        this.authTokenProvider = new AuthTokenProvider(this.auth)
+        this._authTokenProvider = new AuthTokenProvider(this.auth)
     }
 
     private authFactory: AuthFactory = localAuthDefault
@@ -117,7 +122,7 @@ export class WalletSDKImpl implements WalletSDK {
             if (!this.auth || this.authFactory !== config.authFactory) {
                 this.authFactory = config.authFactory
                 this.auth = this.authFactory()
-                this.authTokenProvider = new AuthTokenProvider(this.auth)
+                this._authTokenProvider = new AuthTokenProvider(this.auth)
             }
         }
         if (config.ledgerFactory) this.ledgerFactory = config.ledgerFactory
@@ -137,12 +142,12 @@ export class WalletSDKImpl implements WalletSDK {
      */
     async connect(): Promise<WalletSDK> {
         const { userId } = await this.auth.getUserToken()
-        this.userLedger = this.ledgerFactory(userId, this.authTokenProvider)
+        this.userLedger = this.ledgerFactory(userId, this._authTokenProvider)
         this.tokenStandard = this.tokenStandardFactory(
             userId,
-            this.authTokenProvider
+            this._authTokenProvider
         )
-        this.validator = this.validatorFactory(userId, this.authTokenProvider)
+        this.validator = this.validatorFactory(userId, this._authTokenProvider)
         return this
     }
 
@@ -151,8 +156,8 @@ export class WalletSDKImpl implements WalletSDK {
      */
     async connectAdmin(): Promise<WalletSDK> {
         const { userId } = await this.auth.getAdminToken()
-        await this.authTokenProvider.getAdminAccessToken()
-        this.adminLedger = this.ledgerFactory(userId, this.authTokenProvider)
+        await this._authTokenProvider.getAdminAccessToken()
+        this.adminLedger = this.ledgerFactory(userId, this._authTokenProvider)
         return this
     }
 
@@ -176,7 +181,7 @@ export class WalletSDKImpl implements WalletSDK {
             const scanProxyClient = new ScanProxyClient(
                 synchronizer,
                 this.logger!,
-                this.authTokenProvider
+                this._authTokenProvider
             )
             const amuletSynchronizerId =
                 await scanProxyClient.getAmuletSynchronizerId()
@@ -193,7 +198,7 @@ export class WalletSDKImpl implements WalletSDK {
             )
         this.topology = this.topologyFactory(
             userId,
-            this.authTokenProvider,
+            this._authTokenProvider,
             synchronizerId
         )
         return this
