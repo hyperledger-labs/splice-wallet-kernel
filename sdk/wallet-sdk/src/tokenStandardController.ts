@@ -668,7 +668,7 @@ export class TokenStandardController {
      * @param allocationCid The Allocation contract ID.
      */
     async getAllocationExecuteTransferChoiceContext(allocationCid: string) {
-        return this.service.allocation.getAllocationExecuteTransferChoiceContext(
+        return this.service.allocation.fetchExecuteTransferChoiceContext(
             allocationCid,
             this.getTransferFactoryRegistryUrl().href
         )

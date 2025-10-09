@@ -44,6 +44,9 @@ const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
 const REQUESTED_AT_SKEW_MS = 60_000
 
 export type ExerciseCommand = Types['ExerciseCommand']
+export type DisclosedContract = Types['DisclosedContract']
+const EMPTY_META: Metadata = { values: {} }
+
 type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
 type JsGetTransactionResponse = Types['JsGetTransactionResponse']
@@ -57,7 +60,6 @@ type OffsetCheckpointUpdate = {
 type TransactionUpdate = {
     update: { Transaction: { value: JsTransaction } }
 }
-export type DisclosedContract = Types['DisclosedContract']
 
 type JsActiveContractEntryResponse = JsGetActiveContractsResponse & {
     contractEntry: {
@@ -273,8 +275,8 @@ class AllocationService {
             inputUtxos
         )
 
-        const choiceArgs: AllocationFactory_Allocate = {
-            expectedAdmin: expectedAdmin,
+        return {
+            expectedAdmin,
             allocation: allocationSpecificationNormalized,
             requestedAt:
                 requestedAt ??
@@ -285,7 +287,6 @@ class AllocationService {
                 meta: { values: {} },
             },
         }
-        return choiceArgs
     }
 
     async fetchAllocationFactoryChoiceContext(
@@ -325,7 +326,11 @@ class AllocationService {
         registryUrl: string,
         inputUtxos?: string[],
         requestedAt?: string,
-        extraContext?: AllocationContextValue
+        extraContext?: AllocationContextValue,
+        offline?: {
+            factoryId: string
+            choiceContext: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
+        }
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         const choiceArgs = await this.buildAllocationFactoryChoiceArgs(
             allocationSpecification,
@@ -334,6 +339,15 @@ class AllocationService {
             requestedAt,
             extraContext
         )
+
+        if (offline) {
+            return this.createAllocationInstructionFromContext(
+                offline.factoryId,
+                choiceArgs,
+                offline.choiceContext
+            )
+        }
+
         const { factoryId, choiceContext } =
             await this.fetchAllocationFactoryChoiceContext(
                 registryUrl,
@@ -346,7 +360,30 @@ class AllocationService {
         )
     }
 
-    async getAllocationExecuteTransferChoiceContext(
+    private buildAllocationExerciseWithContext(
+        templateId: string,
+        contractId: string,
+        choice:
+            | 'Allocation_ExecuteTransfer'
+            | 'Allocation_Withdraw'
+            | 'Allocation_Cancel',
+        ctx: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
+    ): [ExerciseCommand, DisclosedContract[]] {
+        const exercise: ExerciseCommand = {
+            templateId,
+            contractId,
+            choice,
+            choiceArgument: {
+                extraArgs: {
+                    context: ctx.choiceContextData,
+                    meta: EMPTY_META,
+                },
+            },
+        }
+        return [exercise, ctx.disclosedContracts ?? []]
+    }
+
+    async fetchExecuteTransferChoiceContext(
         allocationId: string,
         registryUrl: string
     ) {
@@ -361,103 +398,75 @@ class AllocationService {
         )
     }
 
-    async createExecuteTransferAllocationFromContext(
+    createExecuteTransferAllocationFromContext(
         allocationCid: string,
-        choiceContext: {
-            choiceContextData: unknown
-            disclosedContracts: DisclosedContract[]
-        }
-    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        try {
-            const exercise: ExerciseCommand = {
-                templateId: ALLOCATION_INTERFACE_ID,
-                contractId: allocationCid,
-                choice: 'Allocation_ExecuteTransfer',
-                choiceArgument: {
-                    extraArgs: {
-                        context: choiceContext.choiceContextData,
-                        meta: { values: {} },
-                    },
-                },
-            }
-            return [exercise, choiceContext.disclosedContracts]
-        } catch (e) {
-            this.core.logger.error(
-                'Failed to create allocation execute transfer:',
-                e
-            )
-            throw e
-        }
+        choiceContext: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
+    ): [ExerciseCommand, DisclosedContract[]] {
+        return this.buildAllocationExerciseWithContext(
+            ALLOCATION_INTERFACE_ID,
+            allocationCid,
+            'Allocation_ExecuteTransfer',
+            choiceContext
+        )
     }
 
     async createExecuteTransferAllocation(
         allocationCid: string,
-        registryUrl: string
+        registryUrl: string,
+        offline?: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        const choiceContext =
-            await this.getAllocationExecuteTransferChoiceContext(
+        if (offline) {
+            return this.createExecuteTransferAllocationFromContext(
                 allocationCid,
-                registryUrl
+                offline
             )
+        }
+        const ctx = await this.fetchExecuteTransferChoiceContext(
+            allocationCid,
+            registryUrl
+        )
         return this.createExecuteTransferAllocationFromContext(
             allocationCid,
-            choiceContext
+            ctx
         )
     }
 
     async fetchWithdrawAllocationChoiceContext(
         allocationCid: string,
         registryUrl: string
-    ): Promise<{
-        choiceContextData: unknown
-        disclosedContracts: DisclosedContract[]
-    }> {
-        const client = this.core.getTokenStandardClient(registryUrl)
-        const choiceContext = await client.post(
-            '/registry/allocations/v1/{allocationId}/choice-contexts/withdraw',
-            {},
-            {
-                path: {
-                    allocationId: allocationCid,
-                },
-            }
-        )
-        return {
-            choiceContextData: choiceContext.choiceContextData,
-            disclosedContracts: choiceContext.disclosedContracts,
-        }
+    ): Promise<allocationInstructionRegistryTypes['schemas']['ChoiceContext']> {
+        return this.core
+            .getTokenStandardClient(registryUrl)
+            .post(
+                '/registry/allocations/v1/{allocationId}/choice-contexts/withdraw',
+                {},
+                { path: { allocationId: allocationCid } }
+            )
     }
 
-    async createWithdrawAllocationFromContext(
+    createWithdrawAllocationFromContext(
         allocationCid: string,
-        choiceContext: {
-            choiceContextData: unknown
-            disclosedContracts: DisclosedContract[]
-        }
-    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        try {
-            const exercise: ExerciseCommand = {
-                templateId: ALLOCATION_INTERFACE_ID,
-                contractId: allocationCid,
-                choice: 'Allocation_Withdraw',
-                choiceArgument: {
-                    extraArgs: {
-                        context: choiceContext.choiceContextData,
-                        meta: { values: {} },
-                    },
-                },
-            }
-            return [exercise, choiceContext.disclosedContracts]
-        } catch (e) {
-            this.core.logger.error('Failed to create withdraw allocation:', e)
-            throw e
-        }
+        choiceContext: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
+    ): [ExerciseCommand, DisclosedContract[]] {
+        return this.buildAllocationExerciseWithContext(
+            ALLOCATION_INTERFACE_ID,
+            allocationCid,
+            'Allocation_Withdraw',
+            choiceContext
+        )
     }
 
     async createWithdrawAllocation(
         allocationCid: string,
-        registryUrl: string
+        registryUrl: string,
+        offline?: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        if (offline) {
+            return this.createWithdrawAllocationFromContext(
+                allocationCid,
+                offline
+            )
+        }
         const ctx = await this.fetchWithdrawAllocationChoiceContext(
             allocationCid,
             registryUrl
@@ -468,56 +477,39 @@ class AllocationService {
     async fetchCancelAllocationChoiceContext(
         allocationCid: string,
         registryUrl: string
-    ): Promise<{
-        choiceContextData: unknown
-        disclosedContracts: DisclosedContract[]
-    }> {
-        const client = this.core.getTokenStandardClient(registryUrl)
-        const choiceContext = await client.post(
-            '/registry/allocations/v1/{allocationId}/choice-contexts/cancel',
-            {},
-            {
-                path: {
-                    allocationId: allocationCid,
-                },
-            }
-        )
-        return {
-            choiceContextData: choiceContext.choiceContextData,
-            disclosedContracts: choiceContext.disclosedContracts,
-        }
+    ): Promise<allocationInstructionRegistryTypes['schemas']['ChoiceContext']> {
+        return this.core
+            .getTokenStandardClient(registryUrl)
+            .post(
+                '/registry/allocations/v1/{allocationId}/choice-contexts/cancel',
+                {},
+                { path: { allocationId: allocationCid } }
+            )
     }
 
-    async createCancelAllocationFromContext(
+    createCancelAllocationFromContext(
         allocationCid: string,
-        choiceContext: {
-            choiceContextData: unknown
-            disclosedContracts: DisclosedContract[]
-        }
-    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        try {
-            const exercise: ExerciseCommand = {
-                templateId: ALLOCATION_INTERFACE_ID,
-                contractId: allocationCid,
-                choice: 'Allocation_Cancel',
-                choiceArgument: {
-                    extraArgs: {
-                        context: choiceContext.choiceContextData,
-                        meta: { values: {} },
-                    },
-                },
-            }
-            return [exercise, choiceContext.disclosedContracts]
-        } catch (e) {
-            this.core.logger.error('Failed to create cancel allocation', e)
-            throw e
-        }
+        choiceContext: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
+    ): [ExerciseCommand, DisclosedContract[]] {
+        return this.buildAllocationExerciseWithContext(
+            ALLOCATION_INTERFACE_ID,
+            allocationCid,
+            'Allocation_Cancel',
+            choiceContext
+        )
     }
 
     async createCancelAllocation(
         allocationCid: string,
-        registryUrl: string
+        registryUrl: string,
+        offline?: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        if (offline) {
+            return this.createCancelAllocationFromContext(
+                allocationCid,
+                offline
+            )
+        }
         const ctx = await this.fetchCancelAllocationChoiceContext(
             allocationCid,
             registryUrl
@@ -1154,7 +1146,9 @@ export class TokenStandardService {
                 amount,
                 instrumentId: { admin: instrumentAdmin, id: instrumentId },
                 lock: null,
-                requestedAt: now.toISOString() - REQUESTED_AT_SKEW_MS,
+                requestedAt: new Date(
+                    Date.now() - REQUESTED_AT_SKEW_MS
+                ).toISOString(),
                 executeBefore: tomorrow.toISOString(),
                 inputHoldingCids: [],
                 meta: { values: {} },
