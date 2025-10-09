@@ -13,12 +13,11 @@
         "./themes": "./themes"
     },
     "scripts": {
-        "storybook": "storybook dev -p 6006",
         "build": "vite build && tsc --emitDeclarationOnly",
         "build:watch": "vite build --watch & tsc --emitDeclarationOnly --watch",
         "typecheck": "tsc --noEmit",
         "clean": "tsc -b --clean; rm -rf dist",
-        "dev": "vite --port 8000"
+        "dev": "storybook dev -p 6006"
     },
     "devDependencies": {
         "@storybook/web-components-vite": "^9.1.10",

@@ -2,13 +2,55 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { DiscoverResult, SpliceMessageEvent } from '@canton-network/core-types'
+import { css } from 'lit'
+import { BaseElement } from '../internal/BaseElement'
+import { cssToString } from '../utils'
+
+const SUBSTITUTABLE_CSS = cssToString([
+    BaseElement.styles,
+    css`
+        * {
+            color: var(--wg-theme-text-color, black);
+            font-family: var(--wg-theme-font-family);
+        }
+
+        h1 {
+            margin: 0px;
+        }
+
+        div {
+            background-color: var(--wg-theme-background-color, none);
+            width: 100%;
+            height: 100%;
+        }
+
+        .kernel {
+            height: auto;
+            margin-bottom: 8px;
+        }
+
+        .kernel button {
+            margin-left: 8px;
+        }
+
+        input {
+            margin-left: 8px;
+        }
+    `,
+])
 
 /**
  * Discovery implements the view of the Wallet Gateway selection window.
- * It is implemented directly as a Web Component without using LitElement, so to avoid having external dependencies.
+ *
+ * This component is a special case. It does not use Lit or BaseElement, because it is intended to be injected directly into client-side popup windows.
+ * This has some implications about how styles are handled. We want to rely on the same base styles as BaseElement, but do not want to depend on the Lit runtime.
+ *
+ * Therefore, we define the styles as a string constant (SUBSTITUTABLE_CSS), and inject them into the shadow DOM manually.
  */
 export class Discovery extends HTMLElement {
     static observedAttributes = ['wallet-extension-loaded']
+
+    static styles = SUBSTITUTABLE_CSS
 
     get walletExtensionLoaded() {
         return this.hasAttribute('wallet-extension-loaded')
@@ -29,35 +71,7 @@ export class Discovery extends HTMLElement {
         this.attachShadow({ mode: 'open' })
 
         const styles = document.createElement('style')
-        styles.textContent = `
-        * {
-            color: var(--splice-wk-text-color, black);
-            font-family: var(--splice-wk-font-family);
-        }
-
-        h1 {
-            margin: 0px;
-        }
-
-        div {
-            background-color: var(--splice-wk-background-color, none);
-            width: 100%;
-            height: 100%;
-        }
-
-        .kernel {
-            height: auto;
-            margin-bottom: 8px;
-        }
-
-        .kernel button {
-            margin-left: 8px;
-        }
-
-        input {
-            margin-left: 8px;
-        }
-        `
+        styles.textContent = Discovery.styles
 
         this.root = document.createElement('div')
         this.root.id = 'discovery-root'
@@ -100,8 +114,10 @@ export class Discovery extends HTMLElement {
                 break
         }
 
-        const button = document.createElement('button')
-        button.innerText = `Connect`
+        const button = this.mkButton('Connect', {
+            class: 'btn btn-primary',
+        })
+
         button.addEventListener('click', () => {
             this.selectKernel(kernel)
         })
@@ -120,10 +136,21 @@ export class Discovery extends HTMLElement {
         }
     }
 
+    private mkButton(value: string, attrs: Record<string, string> = {}) {
+        const button = document.createElement('button')
+        button.innerText = value
+
+        Object.entries(attrs).forEach(([key, val]) => {
+            button.setAttribute(key, val)
+        })
+
+        return button
+    }
+
     render() {
         const root = document.createElement('div')
 
-        const header = document.createElement('h1')
+        const header = document.createElement('h3')
         header.innerText = 'Add a Wallet Gateway'
 
         const input = document.createElement('input')
@@ -132,9 +159,11 @@ export class Discovery extends HTMLElement {
         input.setAttribute('type', 'text')
         input.setAttribute('placeholder', 'RPC URL')
 
-        const button = document.createElement('button')
-        button.setAttribute('id', 'connect')
-        button.innerText = 'Connect'
+        const button = this.mkButton('Connect', {
+            class: 'btn btn-primary',
+            id: 'connect',
+        })
+
         button.addEventListener('click', () => {
             const url = input.value
             console.log('Connecting to Wallet Gateway...' + url)
