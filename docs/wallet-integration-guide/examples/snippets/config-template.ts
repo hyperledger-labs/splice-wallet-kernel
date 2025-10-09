@@ -3,36 +3,43 @@ import {
     LedgerController,
     TopologyController,
     ValidatorController,
+    AuthTokenProvider,
     localNetAuthDefault,
 } from '@canton-network/wallet-sdk'
 
 // @disable-snapshot-test
 export default async function () {
-    const myLedgerFactory = (userId: string, token: string) => {
+    const myLedgerFactory = (
+        userId: string,
+        authTokenProvider: AuthTokenProvider
+    ) => {
         return new LedgerController(
             userId,
             new URL('http://my-json-ledger-api'),
-            token
+            authTokenProvider
         )
     }
     const myTopologyFactory = (
         userId: string,
-        userAdminToken: string,
+        authTokenProvider: AuthTokenProvider,
         synchronizerId: string
     ) => {
         return new TopologyController(
             'my-grpc-admin-api',
             new URL('http://my-json-ledger-api'),
             userId,
-            userAdminToken,
+            authTokenProvider,
             synchronizerId
         )
     }
-    const myValidatorFactory = (userId: string, token: string) => {
+    const myValidatorFactory = (
+        userId: string,
+        authTokenProvider: AuthTokenProvider
+    ) => {
         return new ValidatorController(
             userId,
             new URL('http://my-validator-app-api'),
-            token
+            authTokenProvider
         )
     }
     const sdk = new WalletSDKImpl().configure({
