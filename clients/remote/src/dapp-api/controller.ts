@@ -76,8 +76,8 @@ export const dappController = (
 
             const ledgerClient = new LedgerClient(
                 new URL(network.ledgerApi.baseUrl),
-                context.accessToken,
-                logger
+                logger,
+                context.accessToken
             )
 
             const userId = context.userId
@@ -122,8 +122,8 @@ export const dappController = (
 
             const ledgerClient = new LedgerClient(
                 new URL(network.ledgerApi.baseUrl),
-                context.accessToken,
-                logger
+                logger,
+                context.accessToken
             )
 
             return prepareSubmission(

@@ -6,7 +6,7 @@ import { paths as metadata } from './generated-clients/splice-api-token-metadata
 import { paths as transferInstruction } from './generated-clients/splice-api-token-transfer-instruction-v1/transfer-instruction-v1.js'
 import { paths as allocationInstruction } from './generated-clients/splice-api-token-allocation-instruction-v1/allocation-instruction-v1.js'
 import createClient, { Client } from 'openapi-fetch'
-import { Logger } from '@canton-network/core-types'
+import { AccessTokenProvider, Logger } from '@canton-network/core-types'
 
 type paths = allocation & metadata & transferInstruction & allocationInstruction
 
@@ -53,10 +53,20 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
 export class TokenStandardClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
+    private accessTokenProvider: AccessTokenProvider
 
-    constructor(baseUrl: string, logger: Logger, token?: string) {
+    constructor(
+        baseUrl: string,
+        logger: Logger,
+        accessTokenProvider: AccessTokenProvider
+    ) {
+        this.accessTokenProvider = accessTokenProvider
+        const adminAccessToken = accessTokenProvider.getAdminAccessToken()
         this.logger = logger
-        this.logger.debug({ baseUrl, token }, 'TokenStandardClient initialized')
+        this.logger.debug(
+            { baseUrl, adminAccessToken },
+            'TokenStandardClient initialized'
+        )
         this.client = createClient<paths>({
             baseUrl,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
@@ -64,7 +74,9 @@ export class TokenStandardClient {
                     ...options,
                     headers: {
                         ...(options.headers || {}),
-                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        ...(adminAccessToken
+                            ? { Authorization: `Bearer ${adminAccessToken}` }
+                            : {}),
                         'Content-Type': 'application/json',
                     },
                 })

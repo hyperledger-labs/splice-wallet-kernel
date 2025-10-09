@@ -7,16 +7,22 @@ import {
     createKeyPair,
     signTransactionHash,
     localTokenStandardDefault,
+    localNetAuthDefault,
+    localNetLedgerDefault,
+    localNetTopologyDefault,
+    localNetTokenStandardDefault,
 } from '@canton-network/wallet-sdk'
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
     logger: console,
+    //authFactory: () => localAuthDefault(console),
     authFactory: localAuthDefault,
     ledgerFactory: localLedgerDefault,
     topologyFactory: localTopologyDefault,
     tokenStandardFactory: localTokenStandardDefault,
 })
+
 const fixedLocalNetSynchronizer =
     'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd'
 
@@ -48,6 +54,10 @@ await sdk.adminLedger
 
 await sdk.connectTopology(fixedLocalNetSynchronizer)
 console.log('Connected to topology')
+
+console.log('10 secs timeout...')
+await new Promise((resolve) => setTimeout(resolve, 10_000))
+console.log('lets start')
 
 const keyPair = createKeyPair()
 

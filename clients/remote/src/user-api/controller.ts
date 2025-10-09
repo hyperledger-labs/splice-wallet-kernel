@@ -314,8 +314,8 @@ export const userController = (
 
             const ledgerClient = new LedgerClient(
                 new URL(network.ledgerApi.baseUrl),
-                authContext.accessToken,
-                logger
+                logger,
+                authContext.accessToken
             )
 
             switch (wallet.signingProviderId) {

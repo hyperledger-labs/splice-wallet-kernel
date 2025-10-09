@@ -31,7 +31,11 @@ async function main() {
         token.payload.sub = clientId // Mocked subject given the clientId
         token.payload.aud = aud
         token.payload.scope = 'daml_ledger_api'
-        logger.debug(`Payload before signing: ${JSON.stringify(token.payload)}`)
+
+        // Set token expiration to 5 seconds from now
+        const now = Math.floor(Date.now() / 1000)
+        token.payload.exp = now + 5 // 5 seconds
+        token.payload.iat = now // issued at
     })
 }
 

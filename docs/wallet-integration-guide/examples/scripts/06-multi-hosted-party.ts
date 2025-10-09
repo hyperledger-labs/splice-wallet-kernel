@@ -58,26 +58,26 @@ const multiHostedParticipantEndpointConfig = [
 
 logger.info('multi host party starting...')
 
-const participantIdPromises = multiHostedParticipantEndpointConfig.map(
-    async (endpoint) => {
-        return await sdk.topology?.getParticipantId(endpoint)
-    }
-)
+// const participantIdPromises = multiHostedParticipantEndpointConfig.map(
+//     async (endpoint) => {
+//         return await sdk.topology?.getParticipantId(endpoint)
+//     }
+// )
 
-const participantIds = await Promise.all(participantIdPromises)
+// const participantIds = await Promise.all(participantIdPromises)
 
-const participantPermissionMap = new Map<string, Enums_ParticipantPermission>()
+// const participantPermissionMap = new Map<string, Enums_ParticipantPermission>()
 
-participantIds.map((pId) =>
-    participantPermissionMap.set(pId!, Enums_ParticipantPermission.CONFIRMATION)
-)
+// participantIds.map((pId) =>
+//     participantPermissionMap.set(pId!, Enums_ParticipantPermission.CONFIRMATION)
+// )
 
-await sdk.topology?.prepareSignAndSubmitMultiHostExternalParty(
-    multiHostedParticipantEndpointConfig,
-    multiHostedParty.privateKey,
-    sdk.userLedger!.getSynchronizerId(),
-    participantPermissionMap,
-    'bob'
-)
+// await sdk.topology?.prepareSignAndSubmitMultiHostExternalParty(
+//     multiHostedParticipantEndpointConfig,
+//     multiHostedParty.privateKey,
+//     sdk.userLedger!.getSynchronizerId(),
+//     participantPermissionMap,
+//     'bob'
+// )
 
 logger.info('multi hosted party succeeded!')

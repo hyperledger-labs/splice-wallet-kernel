@@ -21,11 +21,10 @@ import {
     HOLDING_INTERFACE_ID,
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
-import { PartyId } from '@canton-network/core-types'
+import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject' | 'Withdraw'
-
 /**
  * TokenStandardController handles token standard management tasks.
  * This controller requires a userId and token.
@@ -38,6 +37,7 @@ export class TokenStandardController {
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
     private transferFactoryRegistryUrl: URL | undefined
+    private readonly accessTokenProvider: AccessTokenProvider
 
     /** Creates a new instance of the LedgerController.
      *
@@ -50,19 +50,25 @@ export class TokenStandardController {
         userId: string,
         baseUrl: URL,
         validatorBaseUrl: URL,
-        accessToken: string
+        accessTokenProvider: AccessTokenProvider
     ) {
-        this.client = new LedgerClient(baseUrl, accessToken, this.logger)
+        this.accessTokenProvider = accessTokenProvider
+        this.client = new LedgerClient(
+            baseUrl,
+            this.logger,
+            undefined,
+            this.accessTokenProvider
+        )
         const scanProxyClient = new ScanProxyClient(
             validatorBaseUrl,
             this.logger,
-            accessToken
+            this.accessTokenProvider
         )
         this.service = new TokenStandardService(
             this.client,
             scanProxyClient,
             this.logger,
-            accessToken
+            this.accessTokenProvider
         )
         this.userId = userId
     }
@@ -448,13 +454,13 @@ export class TokenStandardController {
  */
 export const localTokenStandardDefault = (
     userId: string,
-    token: string
+    accessTokenProvider: AccessTokenProvider
 ): TokenStandardController => {
     return new TokenStandardController(
         userId,
         new URL('http://127.0.0.1:5003'),
         new URL('http://wallet.localhost:2000/api/validator'),
-        token
+        accessTokenProvider
     )
 }
 
@@ -464,31 +470,31 @@ export const localTokenStandardDefault = (
  */
 export const localNetTokenStandardDefault = (
     userId: string,
-    token: string
+    accessTokenProvider: AccessTokenProvider
 ): TokenStandardController => {
-    return localNetTokenStandardAppUser(userId, token)
+    return localNetTokenStandardAppUser(userId, accessTokenProvider)
 }
 
 export const localNetTokenStandardAppUser = (
     userId: string,
-    token: string
+    accessTokenProvider: AccessTokenProvider
 ): TokenStandardController => {
     return new TokenStandardController(
         userId,
         new URL('http://127.0.0.1:2975'),
         new URL('http://wallet.localhost:2000/api/validator'),
-        token
+        accessTokenProvider
     )
 }
 
 export const localNetTokenStandardAppProvider = (
     userId: string,
-    token: string
+    accessTokenProvider: AccessTokenProvider
 ): TokenStandardController => {
     return new TokenStandardController(
         userId,
         new URL('http://127.0.0.1:3975'),
         new URL('http://wallet.localhost:3000/api/validator'),
-        token
+        accessTokenProvider
     )
 }

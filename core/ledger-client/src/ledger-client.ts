@@ -6,7 +6,7 @@ import * as v3_3 from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import * as v3_4 from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from 'pino'
-import { PartyId } from '@canton-network/core-types'
+import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
 
 export const supportedVersions = ['3.3', '3.4'] as const
 
@@ -62,24 +62,31 @@ export class LedgerClient {
     private clientVersion: SupportedVersions = '3.3' // default to 3.3 if not provided
     private currentClient: Client<paths>
     private initialized: boolean = false
+    private accessTokenProvider: AccessTokenProvider | undefined
     private readonly logger: Logger
 
     constructor(
         baseUrl: URL,
-        token: string,
         _logger: Logger,
+        accessToken?: string,
+        accessTokenProvider?: AccessTokenProvider,
         version?: SupportedVersions
     ) {
         this.logger = _logger.child({ component: 'LedgerClient' })
+        this.accessTokenProvider = accessTokenProvider
+
         this.clients = {
             '3.3': createClient<v3_3.paths>({
                 baseUrl: baseUrl.href,
                 fetch: async (url: RequestInfo, options: RequestInit = {}) => {
+                    const adminAccessToken = this.accessTokenProvider
+                        ? await this.accessTokenProvider.getAdminAccessToken()
+                        : accessToken
                     return fetch(url, {
                         ...options,
                         headers: {
                             ...(options.headers || {}),
-                            Authorization: `Bearer ${token}`,
+                            Authorization: `Bearer ${adminAccessToken}`,
                         },
                     })
                 },
@@ -87,11 +94,14 @@ export class LedgerClient {
             '3.4': createClient<v3_4.paths>({
                 baseUrl: baseUrl.href,
                 fetch: async (url: RequestInfo, options: RequestInit = {}) => {
+                    const adminAccessToken = this.accessTokenProvider
+                        ? await this.accessTokenProvider.getAdminAccessToken()
+                        : accessToken
                     return fetch(url, {
                         ...options,
                         headers: {
                             ...(options.headers || {}),
-                            Authorization: `Bearer ${token}`,
+                            Authorization: `Bearer ${adminAccessToken}`,
                         },
                     })
                 },

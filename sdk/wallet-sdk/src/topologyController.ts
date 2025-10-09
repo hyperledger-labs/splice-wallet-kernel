@@ -19,7 +19,7 @@ import {
     computeMultiHashForTopology,
     computeSha256CantonHash,
 } from '@canton-network/core-tx-visualizer'
-import { PartyId } from '@canton-network/core-types'
+import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
 import {
     Enums_ParticipantPermission,
     PreparedTransaction,
@@ -42,9 +42,8 @@ export type AllocatedParty = {
 export type MultiHostPartyParticipantConfig = {
     adminApiUrl: string
     baseUrl: URL
-    accessToken: string
+    accessTokenProvider: AccessTokenProvider
 }
-
 /**
  * TopologyController handles topology management tasks involving administrating external parties.
  * Since these parties require topology transactions to be signed by an admin user, this controller
@@ -54,22 +53,30 @@ export class TopologyController {
     private readonly topologyClient: TopologyWriteService
     private readonly client: LedgerClient
     private readonly userId: string
+    private readonly accessTokenProvider: AccessTokenProvider
     private logger = pino({ name: 'TopologyController', level: 'info' })
 
     constructor(
         adminApiUrl: string,
         baseUrl: URL,
         userId: string,
-        userAdminToken: string,
+        accessTokenProvider: AccessTokenProvider,
         synchronizerId: PartyId
     ) {
-        this.client = new LedgerClient(baseUrl, userAdminToken, this.logger)
+        this.accessTokenProvider = accessTokenProvider
+        this.client = new LedgerClient(
+            baseUrl,
+            this.logger,
+            undefined,
+            this.accessTokenProvider
+        )
         this.userId = userId
         this.topologyClient = new TopologyWriteService(
             synchronizerId,
             adminApiUrl,
-            userAdminToken,
-            this.client
+            this.client,
+            undefined,
+            this.accessTokenProvider
         )
         return this
     }
@@ -260,8 +267,9 @@ export class TopologyController {
     ): Promise<string> {
         const lc = new LedgerClient(
             participantEndpoints.baseUrl,
-            participantEndpoints.accessToken,
-            this.logger
+            this.logger,
+            undefined,
+            participantEndpoints.accessTokenProvider
         )
 
         return (await lc.get('/v2/parties/participant-id')).participantId
@@ -300,15 +308,17 @@ export class TopologyController {
         for (const endpoint of participantEndpoints.slice(1)) {
             const lc = new LedgerClient(
                 endpoint.baseUrl,
-                endpoint.accessToken,
-                this.logger
+                this.logger,
+                undefined,
+                endpoint.accessTokenProvider
             )
 
             const service = new TopologyWriteService(
                 synchronizerId,
                 endpoint.adminApiUrl,
-                endpoint.accessToken,
-                lc
+                lc,
+                undefined,
+                endpoint.accessTokenProvider
             )
 
             await service.authorizePartyToParticipant(preparedParty.partyId)
@@ -329,35 +339,35 @@ export class TopologyController {
  */
 export const localNetTopologyDefault = (
     userId: string,
-    userAdminToken: string,
+    accessTokenProvider: AccessTokenProvider,
     synchronizerId: PartyId
 ): TopologyController =>
-    localNetTopologyAppUser(userId, userAdminToken, synchronizerId)
+    localNetTopologyAppUser(userId, accessTokenProvider, synchronizerId)
 
 export const localNetTopologyAppUser = (
     userId: string,
-    userAdminToken: string,
+    accessTokenProvider: AccessTokenProvider,
     synchronizerId: PartyId
 ): TopologyController => {
     return new TopologyController(
         '127.0.0.1:2902',
         new URL('http://127.0.0.1:2975'),
         userId,
-        userAdminToken,
+        accessTokenProvider,
         synchronizerId
     )
 }
 
 export const localNetTopologyAppProvider = (
     userId: string,
-    userAdminToken: string,
+    accessTokenProvider: AccessTokenProvider,
     synchronizerId: PartyId
 ): TopologyController => {
     return new TopologyController(
         '127.0.0.1:3902',
         new URL('http://127.0.0.1:3975'),
         userId,
-        userAdminToken,
+        accessTokenProvider,
         synchronizerId
     )
 }
@@ -368,13 +378,13 @@ export const localNetTopologyAppProvider = (
  */
 export const localTopologyDefault = (
     userId: string,
-    userAdminToken: string
+    accessTokenProvider: AccessTokenProvider
 ): TopologyController => {
     return new TopologyController(
         '127.0.0.1:5012',
         new URL('http://127.0.0.1:5003'),
         userId,
-        userAdminToken,
+        accessTokenProvider,
         'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd'
     )
 }

@@ -5,7 +5,11 @@ import {
     TokenStandardClient,
     HoldingView,
 } from '@canton-network/core-token-standard'
-import { Logger, PartyId } from '@canton-network/core-types'
+import {
+    AccessTokenProvider,
+    Logger,
+    PartyId,
+} from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
 import {
     HoldingInterface,
@@ -59,14 +63,14 @@ export class TokenStandardService {
         private ledgerClient: LedgerClient,
         private scanProxyClient: ScanProxyClient,
         private readonly logger: Logger,
-        private accessToken: string
+        private accessTokenProvider: AccessTokenProvider
     ) {}
 
     private getTokenStandardClient(registryUrl: string): TokenStandardClient {
         return new TokenStandardClient(
             registryUrl,
             this.logger,
-            this.accessToken
+            this.accessTokenProvider
         )
     }
 

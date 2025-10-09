@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AuthController, localAuthDefault } from './authController.js'
+import { AuthTokenProvider } from './authTokenProvider.js'
 import { LedgerController, localLedgerDefault } from './ledgerController.js'
 import {
     localTokenStandardDefault,
@@ -19,6 +20,7 @@ import {
 } from './validatorController.js'
 export * from './ledgerController.js'
 export * from './authController.js'
+export * from './authTokenProvider.js'
 export * from './topologyController.js'
 export * from './tokenStandardController.js'
 export * from './validatorController.js'
@@ -35,17 +37,23 @@ export * from './config.js'
 import { PartyId } from '@canton-network/core-types'
 
 type AuthFactory = () => AuthController
-type LedgerFactory = (userId: string, token: string) => LedgerController
+type LedgerFactory = (
+    userId: string,
+    authTokenProvider: AuthTokenProvider
+) => LedgerController
 type TopologyFactory = (
     userId: string,
-    adminAccessToken: string,
+    authTokenProvider: AuthTokenProvider,
     synchronizerId: PartyId
 ) => TopologyController
 type TokenStandardFactory = (
     userId: string,
-    token: string
+    authTokenProvider: AuthTokenProvider
 ) => TokenStandardController
-type ValidatorFactory = (userId: string, token: string) => ValidatorController
+type ValidatorFactory = (
+    userId: string,
+    authTokenProvider: AuthTokenProvider
+) => ValidatorController
 
 export interface Config {
     authFactory: AuthFactory
@@ -77,6 +85,12 @@ export interface WalletSDK {
  */
 export class WalletSDKImpl implements WalletSDK {
     auth: AuthController
+    private authTokenProvider: AuthTokenProvider
+
+    constructor() {
+        this.auth = this.authFactory()
+        this.authTokenProvider = new AuthTokenProvider(this.auth)
+    }
 
     private authFactory: AuthFactory = localAuthDefault
     private ledgerFactory: LedgerFactory = localLedgerDefault
@@ -92,10 +106,6 @@ export class WalletSDKImpl implements WalletSDK {
     tokenStandard: TokenStandardController | undefined
     validator: ValidatorController | undefined
 
-    constructor() {
-        this.auth = this.authFactory()
-    }
-
     /**
      * Configures the SDK with the provided configuration.
      * @param config
@@ -103,7 +113,10 @@ export class WalletSDKImpl implements WalletSDK {
      */
     configure(config: Config): WalletSDK {
         if (config.logger) this.logger = config.logger
-        if (config.authFactory) this.auth = config.authFactory()
+        if (config.authFactory) {
+            this.auth = config.authFactory()
+            this.authTokenProvider = new AuthTokenProvider(this.auth)
+        }
         if (config.ledgerFactory) this.ledgerFactory = config.ledgerFactory
         if (config.topologyFactory)
             this.topologyFactory = config.topologyFactory
@@ -120,10 +133,13 @@ export class WalletSDKImpl implements WalletSDK {
      * @returns A promise that resolves to the WalletSDK instance.
      */
     async connect(): Promise<WalletSDK> {
-        const { userId, accessToken } = await this.auth.getUserToken()
-        this.userLedger = this.ledgerFactory(userId, accessToken)
-        this.tokenStandard = this.tokenStandardFactory(userId, accessToken)
-        this.validator = this.validatorFactory(userId, accessToken)
+        const { userId } = await this.auth.getUserToken()
+        this.userLedger = this.ledgerFactory(userId, this.authTokenProvider)
+        this.tokenStandard = this.tokenStandardFactory(
+            userId,
+            this.authTokenProvider
+        )
+        this.validator = this.validatorFactory(userId, this.authTokenProvider)
         return this
     }
 
@@ -131,8 +147,9 @@ export class WalletSDKImpl implements WalletSDK {
      * @returns A promise that resolves to the WalletSDK instance.
      */
     async connectAdmin(): Promise<WalletSDK> {
-        const { userId, accessToken } = await this.auth.getAdminToken()
-        this.adminLedger = this.ledgerFactory(userId, accessToken)
+        const { userId } = await this.auth.getAdminToken()
+        await this.authTokenProvider.getAdminAccessToken()
+        this.adminLedger = this.ledgerFactory(userId, this.authTokenProvider)
         return this
     }
 
@@ -148,7 +165,7 @@ export class WalletSDKImpl implements WalletSDK {
             throw new Error(
                 'Synchronizer is not defined in connectTopology. Provide a synchronizerId'
             )
-        const { userId, accessToken } = await this.auth.getAdminToken()
+        const { userId } = await this.auth.getAdminToken()
         let synchronizerId: PartyId
         if (typeof synchronizer === 'string') {
             synchronizerId = synchronizer
@@ -156,7 +173,7 @@ export class WalletSDKImpl implements WalletSDK {
             const scanProxyClient = new ScanProxyClient(
                 synchronizer,
                 this.logger!,
-                accessToken
+                this.authTokenProvider
             )
             const amuletSynchronizerId =
                 await scanProxyClient.getAmuletSynchronizerId()
@@ -173,7 +190,7 @@ export class WalletSDKImpl implements WalletSDK {
             )
         this.topology = this.topologyFactory(
             userId,
-            accessToken,
+            this.authTokenProvider,
             synchronizerId
         )
         return this

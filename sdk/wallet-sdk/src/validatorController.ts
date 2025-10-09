@@ -12,7 +12,7 @@ import {
     signTransactionHash,
     PrivateKey,
 } from '@canton-network/core-signing-lib'
-import { PartyId } from '@canton-network/core-types'
+import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
 
 /**
  * TokenStandardController handles token standard management tasks.
@@ -25,28 +25,30 @@ export class ValidatorController {
     private userId: string
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
+    private readonly accessTokenProvider: AccessTokenProvider
 
     /** Creates a new instance of the LedgerController.
      *
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
-     * @param accessToken the access token from the user, usually provided by an auth controller.
+     * @param authController Auth controller which operates access tokens.
      */
     constructor(
         userId: string,
         baseUrl: URL,
-        private accessToken: string
+        accessTokenProvider: AccessTokenProvider
     ) {
+        this.accessTokenProvider = accessTokenProvider
         this.validatorClient = new ValidatorInternalClient(
             baseUrl,
             this.logger,
-            this.accessToken
+            this.accessTokenProvider
         )
 
         this.scanProxyClient = new ScanProxyClient(
             baseUrl,
             this.logger,
-            this.accessToken
+            this.accessTokenProvider
         )
         this.userId = userId
         return this
@@ -247,11 +249,11 @@ export class ValidatorController {
  */
 export const localValidatorDefault = (
     userId: string,
-    token: string
+    accessTokenProvider: AccessTokenProvider
 ): ValidatorController => {
     return new ValidatorController(
         userId,
         new URL('http://wallet.localhost:2000/api/validator'),
-        token
+        accessTokenProvider
     )
 }

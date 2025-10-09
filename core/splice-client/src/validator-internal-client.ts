@@ -3,7 +3,7 @@
 
 import { paths } from './generated-clients/validator-internal'
 import createClient, { Client } from 'openapi-fetch'
-import { Logger } from '@canton-network/core-types'
+import { AccessTokenProvider, Logger } from '@canton-network/core-types'
 
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional
@@ -48,11 +48,18 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
 export class ValidatorInternalClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
+    private accessTokenProvider: AccessTokenProvider
 
-    constructor(baseUrl: URL, logger: Logger, token?: string) {
+    constructor(
+        baseUrl: URL,
+        logger: Logger,
+        accessTokenProvider: AccessTokenProvider
+    ) {
+        this.accessTokenProvider = accessTokenProvider
+        const adminAccessToken = this.accessTokenProvider.getAdminAccessToken()
         this.logger = logger
         this.logger.debug(
-            { baseUrl, token },
+            { baseUrl, adminAccessToken },
             'ValidatorInternalClient initialized'
         )
         this.client = createClient<paths>({
@@ -62,7 +69,9 @@ export class ValidatorInternalClient {
                     ...options,
                     headers: {
                         ...(options.headers || {}),
-                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        ...(adminAccessToken
+                            ? { Authorization: `Bearer ${adminAccessToken}` }
+                            : {}),
                         'Content-Type': 'application/json',
                     },
                 })

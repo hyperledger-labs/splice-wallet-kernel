@@ -21,7 +21,7 @@ import { v4 } from 'uuid'
 import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-proto'
 import { TopologyController } from './topologyController.js'
-import { PartyId } from '@canton-network/core-types'
+import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
 
 export type RawCommandMap = {
     ExerciseCommand: Types['ExerciseCommand']
@@ -42,6 +42,7 @@ export class LedgerController {
     private readonly userId: string
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
+    private readonly accessTokenProvider: AccessTokenProvider
     private logger = pino({ name: 'LedgerController', level: 'info' })
 
     /** Creates a new instance of the LedgerController.
@@ -50,8 +51,18 @@ export class LedgerController {
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
      * @param token the access token from the user, usually provided by an auth controller.
      */
-    constructor(userId: string, baseUrl: URL, token: string) {
-        this.client = new LedgerClient(baseUrl, token, this.logger)
+    constructor(
+        userId: string,
+        baseUrl: URL,
+        accessTokenProvider: AccessTokenProvider
+    ) {
+        this.accessTokenProvider = accessTokenProvider
+        this.client = new LedgerClient(
+            baseUrl,
+            this.logger,
+            undefined,
+            this.accessTokenProvider
+        )
         this.client.init()
         this.userId = userId
         return this
@@ -573,9 +584,13 @@ export class LedgerController {
  */
 export const localLedgerDefault = (
     userId: string,
-    token: string
+    accessTokenProvider: AccessTokenProvider
 ): LedgerController => {
-    return new LedgerController(userId, new URL('http://127.0.0.1:5003'), token)
+    return new LedgerController(
+        userId,
+        new URL('http://127.0.0.1:5003'),
+        accessTokenProvider
+    )
 }
 
 /**
@@ -584,21 +599,29 @@ export const localLedgerDefault = (
  */
 export const localNetLedgerDefault = (
     userId: string,
-    token: string
+    accessTokenProvider: AccessTokenProvider
 ): LedgerController => {
-    return localNetLedgerAppUser(userId, token)
+    return localNetLedgerAppUser(userId, accessTokenProvider)
 }
 
 export const localNetLedgerAppUser = (
     userId: string,
-    token: string
+    accessTokenProvider: AccessTokenProvider
 ): LedgerController => {
-    return new LedgerController(userId, new URL('http://127.0.0.1:2975'), token)
+    return new LedgerController(
+        userId,
+        new URL('http://127.0.0.1:2975'),
+        accessTokenProvider
+    )
 }
 
 export const localNetLedgerAppProvider = (
     userId: string,
-    token: string
+    accessTokenProvider: AccessTokenProvider
 ): LedgerController => {
-    return new LedgerController(userId, new URL('http://127.0.0.1:3975'), token)
+    return new LedgerController(
+        userId,
+        new URL('http://127.0.0.1:3975'),
+        accessTokenProvider
+    )
 }

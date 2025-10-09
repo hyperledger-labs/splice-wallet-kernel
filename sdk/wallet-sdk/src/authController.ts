@@ -79,6 +79,7 @@ export class ClientCredentialOAuthController implements AuthController {
     private _adminSecret: string | undefined
     private _scope: string | undefined
     private _audience: string | undefined
+    private _accessTokens: Partial<Record<SubjectIdentifier, string>> = {}
 
     constructor(
         configUrl: string,
@@ -107,15 +108,26 @@ export class ClientCredentialOAuthController implements AuthController {
         if (this._userSecret === undefined)
             throw new Error('UserSecret is not defined.')
 
+        const cachedAccessToken = this._accessTokens['user']
+        this._logger?.info(
+            'getUserToken - cachedAccessToken:',
+            cachedAccessToken
+        )
+        if (cachedAccessToken && this._isJwtValid(cachedAccessToken)) {
+            this._logger?.info('Using cached user token')
+            return { userId: this._userId!, accessToken: cachedAccessToken }
+        }
+        this._logger?.info('Creating new user token')
+
         const accessToken = await this.service.fetchToken({
             clientId: this._userId!,
             clientSecret: this._userSecret!,
             scope: this._scope,
             audience: this._audience,
         })
-
+        this._accessTokens['user'] = accessToken
         return {
-            userId: this._userId!,
+            userId: this._adminId!,
             accessToken,
         }
     }
@@ -125,17 +137,35 @@ export class ClientCredentialOAuthController implements AuthController {
             throw new Error('AdminId is not defined.')
         if (this._adminSecret === undefined)
             throw new Error('AdminSecret is not defined.')
+        const cachedAccessToken = this._accessTokens['admin']
+        if (cachedAccessToken && this._isJwtValid(cachedAccessToken)) {
+            console.log('Using cached admin token')
 
+            this._logger?.info('Using cached admin token')
+            return { userId: this._adminId!, accessToken: cachedAccessToken }
+        }
+        console.log('Creating new admin token')
+
+        this._logger?.info('Creating new admin token')
         const accessToken = await this.service.fetchToken({
             clientId: this._adminId!,
             clientSecret: this._adminSecret!,
             scope: this._scope,
             audience: this._audience,
         })
-
+        this._accessTokens['admin'] = accessToken
         return {
             userId: this._adminId!,
             accessToken,
+        }
+    }
+    private _isJwtValid(token: string): boolean {
+        try {
+            const payload = decodeJwt(token)
+            const now = Math.floor(Date.now() / 1000)
+            return typeof payload.exp === 'number' && payload.exp > now
+        } catch {
+            return false
         }
     }
 }
@@ -160,7 +190,6 @@ export class UnsafeAuthController implements AuthController {
     unsafeSecret: string | undefined
 
     private _logger: Logger | undefined
-
     private _accessTokens: Partial<Record<SubjectIdentifier, string>> = {}
 
     constructor(logger?: Logger) {
@@ -183,28 +212,34 @@ export class UnsafeAuthController implements AuthController {
 
         const cachedAccessToken = this._accessTokens[subIdentifier]
         if (cachedAccessToken && this._isJwtValid(cachedAccessToken)) {
+            this._logger?.info('Using cached token')
             return { userId: sub, accessToken: cachedAccessToken }
         }
-        this._logger?.info('Live token was not found. Requesting a new one...')
+        this._logger?.info('Creating new token')
         const secret = new TextEncoder().encode(this.unsafeSecret)
         const now = Math.floor(Date.now() / 1000)
         const jwt = await new SignJWT({
             sub,
             aud: this.audience || '',
             iat: now,
-            exp: now + 60 * 60, // 1 hour expiry
+            exp: now + 5, // 30 seconds expiry for testing
             iss: 'unsafe-auth',
         })
             .setProtectedHeader({ alg: 'HS256' })
             .sign(secret)
+
         this._accessTokens[subIdentifier] = jwt
         return { userId: sub, accessToken: jwt }
     }
 
     private _isJwtValid(token: string): boolean {
-        const payload = decodeJwt(token)
-        const now = Math.floor(Date.now() / 1000)
-        return typeof payload.exp === 'number' && payload.exp > now
+        try {
+            const payload = decodeJwt(token)
+            const now = Math.floor(Date.now() / 1000)
+            return typeof payload.exp === 'number' && payload.exp > now
+        } catch {
+            return false
+        }
     }
 }
 
