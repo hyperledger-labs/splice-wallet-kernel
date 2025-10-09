@@ -631,13 +631,13 @@ class TransferService {
                 receiver,
                 amount,
                 instrumentId: { admin: instrumentAdmin, id: instrumentId },
-                lock: null, // TODO probably should delete
-                requestedAt: new Date(Date.now() - 60 * 1000).toISOString(), // TODO probably should add 1 min skew
+                // lock: null, // TODO probably should delete
+                requestedAt: new Date(Date.now() - 60 * 1000).toISOString(),
                 executeBefore: (
                     expiryDate ?? new Date(Date.now() + 24 * 60 * 60 * 1000)
                 ).toISOString(),
                 inputHoldingCids,
-                meta: { values: { [MEMO_KEY]: memo || '', ...meta } },
+                meta: { values: { [MEMO_KEY]: memo || '', ...meta?.values } },
             },
             extraArgs: {
                 context: { values: {} },
@@ -648,14 +648,14 @@ class TransferService {
 
     async fetchTransferFactoryChoiceContext(
         registryUrl: string,
-        choiceArgs: transferInstructionRegistryTypes['schemas']['GetFactoryRequest']['choiceArguments']
+        choiceArgs: Record<string, unknown>
     ): Promise<
         transferInstructionRegistryTypes['schemas']['TransferFactoryWithChoiceContext']
     > {
         return await this.core
             .getTokenStandardClient(registryUrl)
             .post('/registry/transfer-instruction/v1/transfer-factory', {
-                choiceArguments: choiceArgs,
+                choiceArguments: choiceArgs as Record<string, never>,
             })
     }
 
@@ -688,7 +688,7 @@ class TransferService {
         inputUtxos?: string[],
         memo?: string,
         expiryDate?: Date,
-        meta?: Record<string, unknown>
+        meta?: Metadata
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
             const choiceArgs = await this.buildTransferChoiceArgs(
