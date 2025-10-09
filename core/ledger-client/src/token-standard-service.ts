@@ -599,7 +599,7 @@ class AllocationService {
         return [exercise, []]
     }
 }
-// TODO note here
+// TODO not here
 type CreateTransferChoiceArgs = {
     expectedAdmin: PartyId
     transfer: Transfer
@@ -608,7 +608,7 @@ type CreateTransferChoiceArgs = {
 class TransferService {
     constructor(private core: CoreService) {}
 
-    private async buildTransferChoiceArgs(
+    public async buildTransferChoiceArgs(
         sender: PartyId,
         receiver: PartyId,
         amount: string,

@@ -29,6 +29,8 @@ import {
     AllocationRequestView,
     AllocationInstructionView,
     AllocationView,
+    Metadata,
+    transferInstructionRegistryTypes,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
@@ -442,6 +444,7 @@ export class TokenStandardController {
      * @param memo The message for the receiver to identify the transaction.
      * @param expiryDate Optional Expiry Date, default is 24 hours.
      * @param meta Optional metadata to include with the transfer.
+     * TODO new param jsdoc and better name
      * @returns A promise that resolves to the ExerciseCommand which creates the transfer.
      */
     async createTransfer(
@@ -455,11 +458,41 @@ export class TokenStandardController {
         inputUtxos?: string[],
         memo?: string,
         expiryDate?: Date,
-        meta?: Record<string, unknown>
+        meta?: Metadata,
+        offline?: {
+            factoryId: string
+            choiceContext: transferInstructionRegistryTypes['schemas']['ChoiceContext']
+        }
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         try {
+            if (offline) {
+                const choiceArgs =
+                    await this.service.transfer.buildTransferChoiceArgs(
+                        sender,
+                        receiver,
+                        amount,
+                        instrument.instrumentAdmin,
+                        instrument.instrumentId,
+                        inputUtxos,
+                        memo,
+                        expiryDate,
+                        meta
+                    )
+                const [transferCommand, disclosedContracts] =
+                    await this.service.transfer.createTransferFromContext(
+                        offline.factoryId,
+                        choiceArgs,
+                        offline.choiceContext
+                    )
+
+                return [
+                    { ExerciseCommand: transferCommand },
+                    disclosedContracts,
+                ]
+            }
+
             const [transferCommand, disclosedContracts] =
                 await this.service.transfer.createTransfer(
                     sender,
@@ -475,6 +508,44 @@ export class TokenStandardController {
                 )
 
             return [{ ExerciseCommand: transferCommand }, disclosedContracts]
+        } catch (error) {
+            this.logger.error({ error }, 'Failed to create transfer')
+            throw error
+        }
+    }
+
+    async getCreateTransferContext(
+        sender: PartyId,
+        receiver: PartyId,
+        amount: string,
+        instrument: {
+            instrumentId: string
+            instrumentAdmin: PartyId
+        },
+        inputUtxos?: string[],
+        memo?: string,
+        expiryDate?: Date,
+        meta?: Metadata
+    ): Promise<
+        transferInstructionRegistryTypes['schemas']['TransferFactoryWithChoiceContext']
+    > {
+        try {
+            const choiceArgs =
+                await this.service.transfer.buildTransferChoiceArgs(
+                    sender,
+                    receiver,
+                    amount,
+                    instrument.instrumentAdmin,
+                    instrument.instrumentId,
+                    inputUtxos,
+                    memo,
+                    expiryDate,
+                    meta
+                )
+            return this.service.transfer.fetchTransferFactoryChoiceContext(
+                this.getTransferFactoryRegistryUrl().href,
+                choiceArgs
+            )
         } catch (error) {
             this.logger.error({ error }, 'Failed to create transfer')
             throw error
