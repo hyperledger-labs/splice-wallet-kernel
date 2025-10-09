@@ -467,32 +467,6 @@ export class TokenStandardController {
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         try {
-            if (offline) {
-                const choiceArgs =
-                    await this.service.transfer.buildTransferChoiceArgs(
-                        sender,
-                        receiver,
-                        amount,
-                        instrument.instrumentAdmin,
-                        instrument.instrumentId,
-                        inputUtxos,
-                        memo,
-                        expiryDate,
-                        meta
-                    )
-                const [transferCommand, disclosedContracts] =
-                    await this.service.transfer.createTransferFromContext(
-                        offline.factoryId,
-                        choiceArgs,
-                        offline.choiceContext
-                    )
-
-                return [
-                    { ExerciseCommand: transferCommand },
-                    disclosedContracts,
-                ]
-            }
-
             const [transferCommand, disclosedContracts] =
                 await this.service.transfer.createTransfer(
                     sender,
@@ -504,7 +478,8 @@ export class TokenStandardController {
                     inputUtxos,
                     memo,
                     expiryDate,
-                    meta
+                    meta,
+                    offline
                 )
 
             return [{ ExerciseCommand: transferCommand }, disclosedContracts]
@@ -592,7 +567,10 @@ export class TokenStandardController {
 
     async exerciseTransferInstructionChoice(
         transferInstructionCid: string,
-        instructionChoice: TransactionInstructionChoice
+        instructionChoice: TransactionInstructionChoice,
+        offline?: {
+            choiceContext: transferInstructionRegistryTypes['schemas']['ChoiceContext']
+        }
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -604,21 +582,24 @@ export class TokenStandardController {
                     ;[ExerciseCommand, disclosedContracts] =
                         await this.service.transfer.createAcceptTransferInstruction(
                             transferInstructionCid,
-                            this.getTransferFactoryRegistryUrl().href
+                            this.getTransferFactoryRegistryUrl().href,
+                            offline?.choiceContext
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
                 case 'Reject':
                     ;[ExerciseCommand, disclosedContracts] =
                         await this.service.transfer.createRejectTransferInstruction(
                             transferInstructionCid,
-                            this.getTransferFactoryRegistryUrl().href
+                            this.getTransferFactoryRegistryUrl().href,
+                            offline?.choiceContext
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
                 case 'Withdraw':
                     ;[ExerciseCommand, disclosedContracts] =
                         await this.service.transfer.createWithdrawTransferInstruction(
                             transferInstructionCid,
-                            this.getTransferFactoryRegistryUrl().href
+                            this.getTransferFactoryRegistryUrl().href,
+                            offline?.choiceContext
                         )
 
                     return [{ ExerciseCommand }, disclosedContracts]
