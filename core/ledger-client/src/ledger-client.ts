@@ -123,7 +123,6 @@ export class LedgerClient {
         if (!this.initialized) {
             const versionFromClient =
                 await this.currentClient.GET('/v2/version')
-
             this.clientVersion = this.parseSupportedVersions(
                 versionFromClient.data?.version
             )
@@ -155,11 +154,114 @@ export class LedgerClient {
      * @returns A promise to resolves to a boolean.
      */
     public async checkIfPartyExists(partyId: PartyId): Promise<boolean> {
-        const parties = await this.get('/v2/parties')
-        return (
-            parties.partyDetails?.some((party) => party.party === partyId) ||
-            false
+        try {
+            const party = await this.get('/v2/parties/{party}', {
+                path: { party: partyId },
+            })
+            return (
+                party.partyDetails !== undefined &&
+                party.partyDetails[0].party === partyId
+            )
+        } catch {
+            return false
+        }
+    }
+
+    /**
+     * grant "Master User" rights to a user.
+     *
+     * this require running with an admin token.
+     *
+     * @param userId The ID of the user to grant rights to.
+     * @param canReadAsAnyParty define if the user can read as any party.
+     * @param canExecuteAsAnyParty define if the user can execute as any party.
+     */
+    public async grantMasterUserRights(
+        userId: string,
+        canReadAsAnyParty: boolean,
+        canExecuteAsAnyParty: boolean
+    ) {
+        const rights = []
+        if (canReadAsAnyParty) {
+            rights.push({
+                kind: {
+                    CanReadAsAnyParty: { value: {} as Record<string, never> },
+                },
+            })
+        }
+        if (canExecuteAsAnyParty) {
+            rights.push({
+                kind: {
+                    CanExecuteAsAnyParty: {
+                        value: {} as Record<string, never>,
+                    },
+                },
+            })
+        }
+
+        const result = await this.post(
+            '/v2/users/{user-id}/rights',
+            {
+                identityProviderId: '',
+                userId,
+                rights,
+            },
+            {
+                path: {
+                    'user-id': userId,
+                },
+            }
         )
+
+        if (!result.newlyGrantedRights) {
+            throw new Error('Failed to grant user rights')
+        }
+    }
+
+    /**
+     * Create a new user.
+     *
+     * @param userId The ID of the user to create.
+     * @param primaryParty The primary party of the user.
+     */
+    public async createUser(
+        userId: string,
+        primaryParty: PartyId
+    ): Promise<v3_3.components['schemas']['User']> {
+        try {
+            const existing = await this.get('/v2/users/{user-id}', {
+                path: { 'user-id': userId },
+            })
+
+            if (existing && existing.user) {
+                return existing.user!
+            }
+        } catch {
+            //TODO: proper error handling based on daml code
+            // we continue if code is:
+            // code: 'USER_NOT_FOUND',
+            // cause: 'getting user failed for unknown user "master-user"',
+        }
+
+        return (
+            await this.post('/v2/users', {
+                user: {
+                    identityProviderId: '',
+                    id: userId,
+                    isDeactivated: false,
+                    primaryParty: primaryParty,
+                },
+                rights: [
+                    {
+                        kind: {
+                            ParticipantAdmin: {
+                                value: {} as Record<string, never>,
+                            },
+                        },
+                    },
+                ],
+            })
+        ).user!
     }
 
     /**
@@ -174,12 +276,12 @@ export class LedgerClient {
         // Wait for party to appear on participant
         let partyFound = false
         let tries = 0
-        const maxTries = 20
+        const maxTries = 30
 
         while (!partyFound && tries < maxTries) {
             partyFound = await this.checkIfPartyExists(partyId)
 
-            await new Promise((resolve) => setTimeout(resolve, 1000))
+            await new Promise((resolve) => setTimeout(resolve, 2000))
             tries++
         }
 

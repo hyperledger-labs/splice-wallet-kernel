@@ -4,13 +4,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     ensureInterfaceViewIsPresent,
-    filtersByParty,
     getInterfaceView,
     getKnownInterfaceView,
     getMetaKeyValue,
     hasInterface,
     mergeMetas,
     removeParsedMetaKeys,
+    EventFilterBySetup,
 } from '../ledger-api-utils.js'
 import {
     BurnedMetaKey,
@@ -53,15 +53,18 @@ export class TransactionParser {
     private readonly ledgerClient: LedgerClient
     private readonly partyId: PartyId
     private readonly transaction: JsTransaction
+    private readonly isMasterUser: boolean
 
     constructor(
         transaction: JsTransaction,
         ledgerClient: LedgerClient,
-        partyId: PartyId
+        partyId: PartyId,
+        isMasterUser: boolean
     ) {
         this.ledgerClient = ledgerClient
         this.partyId = partyId
         this.transaction = transaction
+        this.isMasterUser = isMasterUser
     }
 
     async parseTransaction(): Promise<Transaction> {
@@ -692,14 +695,14 @@ export class TransactionParser {
 
         const basePayload = {
             contractId: archivedEvent.contractId,
-            eventFormat: {
-                filtersByParty: filtersByParty(
-                    this.partyId,
-                    [HOLDING_INTERFACE_ID, TRANSFER_INSTRUCTION_INTERFACE_ID],
-                    true
-                ),
-                verbose: false,
-            },
+            eventFormat: EventFilterBySetup(
+                [HOLDING_INTERFACE_ID, TRANSFER_INSTRUCTION_INTERFACE_ID],
+                {
+                    isMasterUser: this.isMasterUser,
+                    partyId: this.partyId,
+                    verbose: true,
+                }
+            ),
         }
 
         const payload =
@@ -722,6 +725,7 @@ export class TransactionParser {
         if (!events) {
             return null
         }
+
         const created = events.created
         const archived = events.archived
         if (!created || !archived) {

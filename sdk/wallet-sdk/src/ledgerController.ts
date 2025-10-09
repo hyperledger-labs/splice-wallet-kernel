@@ -12,6 +12,7 @@ import {
     GenerateTransactionResponse,
     AllocateExternalPartyResponse,
     isJsCantonError,
+    components,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -248,13 +249,26 @@ export class LedgerController {
      * Internal parties uses the canton keys for signing and does not use the interactive submission flow.
      * @param partyHint partyHint to be used for the new party.
      */
-    async allocateInternalParty(
-        partyHint?: string
-    ): Promise<PostResponse<'/v2/parties'>> {
-        return await this.client.post('/v2/parties', {
-            partyIdHint: partyHint || v4(),
-            identityProviderId: '',
-        })
+    async allocateInternalParty(partyHint?: string): Promise<PartyId> {
+        if (partyHint && partyHint !== undefined) {
+            const internalParty = await this.client.get('/v2/parties', {
+                path: { partyHint: partyHint },
+                query: {},
+            })
+            if (
+                internalParty.partyDetails &&
+                internalParty.partyDetails.length > 0
+            ) {
+                return internalParty.partyDetails[0].party
+            }
+        }
+
+        return (
+            await this.client.post('/v2/parties', {
+                partyIdHint: partyHint || v4(),
+                identityProviderId: '',
+            })
+        ).partyDetails!.party
     }
 
     /**
@@ -548,21 +562,30 @@ export class LedgerController {
     /**
      * Lists all wallets (parties) the user has access to.
      * use a pageToken from a previous request to query the next page.
-     * @param options Optional query parameters: pageSize, pageToken, identityProviderId
      * @returns A paginated list of parties.
      */
-    async listWallets(options?: {
-        pageSize?: number
-        pageToken?: string
-        identityProviderId?: string
-    }): Promise<GetResponse<'/v2/parties'>> {
-        const params: Record<string, unknown> = {}
-        if (options?.pageSize !== undefined) params.pageSize = options.pageSize
-        if (options?.pageToken !== undefined)
-            params.pageToken = options.pageToken
-        if (options?.identityProviderId !== undefined)
-            params.identityProviderId = options.identityProviderId
-        return await this.client.get('/v2/parties', params)
+    async listWallets(): Promise<PartyId[]> {
+        const rights = await this.client.get('/v2/users/{user-id}/rights', {
+            path: { 'user-id': this.userId },
+        })
+
+        if (rights.rights!.some((r) => 'CanReadAsAnyParty' in r.kind)) {
+            return (await this.client.get('/v2/parties')).partyDetails!.map(
+                (p) => p.party
+            )
+        } else {
+            const canReadAsPartyRight = rights.rights?.find(
+                (r) => 'CanReadAsParty' in r.kind
+            ) as { CanReadAsParty?: { parties: PartyId[] } } | undefined
+            if (
+                canReadAsPartyRight &&
+                canReadAsPartyRight.CanReadAsParty &&
+                Array.isArray(canReadAsPartyRight.CanReadAsParty.parties)
+            ) {
+                return canReadAsPartyRight.CanReadAsParty.parties
+            }
+            return []
+        }
     }
 
     /**
@@ -783,6 +806,47 @@ export class LedgerController {
     async isPackageUploaded(packageId: string): Promise<boolean> {
         const { packageIds } = await this.client!.get('/v2/packages')
         return Array.isArray(packageIds) && packageIds.includes(packageId)
+    }
+
+    /**
+     * grant "Master User" rights to a user.
+     *
+     * this require running with an admin token.
+     *
+     * @param userId The ID of the user to grant rights to.
+     * @param canReadAsAnyParty define if the user can read as any party.
+     * @param canExecuteAsAnyParty define if the user can execute as any party.
+     */
+    public async grantMasterUserRights(
+        userId: string,
+        canReadAsAnyParty: boolean,
+        canExecuteAsAnyParty: boolean
+    ) {
+        if (!this.isAdmin) {
+            throw new Error('Use adminLedger to call grantMasterUserRights')
+        }
+
+        return await this.client.grantMasterUserRights(
+            userId,
+            canReadAsAnyParty,
+            canExecuteAsAnyParty
+        )
+    }
+
+    /**
+     * Create a new user.
+     *
+     * @param userId The ID of the user to create.
+     * @param primaryParty The primary party of the user.
+     */
+    public async createUser(
+        userId: string,
+        primaryParty: PartyId
+    ): Promise<components['schemas']['User']> {
+        if (!this.isAdmin) {
+            throw new Error('Use adminLedger to call createUser')
+        }
+        return await this.client.createUser(userId, primaryParty)
     }
 }
 

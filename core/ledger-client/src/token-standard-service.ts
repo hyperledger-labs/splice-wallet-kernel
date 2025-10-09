@@ -20,7 +20,8 @@ import { LedgerClient } from './ledger-client.js'
 import { TokenStandardTransactionInterfaces } from './constants.js'
 import {
     ensureInterfaceViewIsPresent,
-    filtersByParty,
+    TransactionFilterBySetup,
+    EventFilterBySetup,
 } from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
 import {
@@ -64,7 +65,8 @@ export class TokenStandardService {
         private ledgerClient: LedgerClient,
         private scanProxyClient: ScanProxyClient,
         private readonly logger: Logger,
-        private accessToken: string
+        private accessToken: string,
+        private readonly isMasterUser: boolean
     ) {}
 
     private getTokenStandardClient(registryUrl: string): TokenStandardClient {
@@ -506,7 +508,7 @@ export class TokenStandardService {
     // i.e. when querying by TransferInstruction interfaceId, <T> would be TransferInstructionView from daml codegen
     async listContractsByInterface<T = ViewValue>(
         interfaceId: string,
-        partyId: PartyId
+        partyId?: PartyId
     ): Promise<PrettyContract<T>[]> {
         try {
             const ledgerEnd = await this.ledgerClient.get(
@@ -514,13 +516,10 @@ export class TokenStandardService {
             )
             const acsResponses: JsGetActiveContractsResponse[] =
                 await this.ledgerClient.post('/v2/state/active-contracts', {
-                    filter: {
-                        filtersByParty: filtersByParty(
-                            partyId,
-                            [interfaceId],
-                            false
-                        ),
-                    },
+                    filter: TransactionFilterBySetup(interfaceId, {
+                        isMasterUser: this.isMasterUser,
+                        partyId: partyId,
+                    }),
                     verbose: false,
                     activeAtOffset: ledgerEnd.offset,
                 })
@@ -574,14 +573,14 @@ export class TokenStandardService {
                 await this.ledgerClient.post('/v2/updates/flats', {
                     updateFormat: {
                         includeTransactions: {
-                            eventFormat: {
-                                filtersByParty: filtersByParty(
-                                    partyId,
-                                    TokenStandardTransactionInterfaces,
-                                    true
-                                ),
-                                verbose: false,
-                            },
+                            eventFormat: EventFilterBySetup(
+                                TokenStandardTransactionInterfaces,
+                                {
+                                    includeWildcard: true,
+                                    isMasterUser: this.isMasterUser,
+                                    partyId: partyId,
+                                }
+                            ),
                             transactionShape:
                                 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
                         },
@@ -606,17 +605,15 @@ export class TokenStandardService {
         updateId: string,
         partyId: PartyId
     ): Promise<Transaction> {
-        const filter = filtersByParty(
-            partyId,
-            TokenStandardTransactionInterfaces,
-            true
-        )
-
         const transactionFormat: TransactionFormat = {
-            eventFormat: {
-                filtersByParty: filter,
-                verbose: false,
-            },
+            eventFormat: EventFilterBySetup(
+                TokenStandardTransactionInterfaces,
+                {
+                    includeWildcard: true,
+                    isMasterUser: this.isMasterUser,
+                    partyId: partyId,
+                }
+            ),
             transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
         }
 
@@ -847,6 +844,26 @@ export class TokenStandardService {
         ]
     }
 
+    private async toPrettyTransactionsPerParty(
+        updates: JsGetUpdatesResponse[],
+        parties: PartyId[],
+        ledgerClient: LedgerClient
+    ): Promise<Map<PartyId, PrettyTransactions>> {
+        const all = await Promise.all(
+            parties.map(
+                async (partyId): Promise<[PartyId, PrettyTransactions]> => [
+                    partyId,
+                    await this.toPrettyTransactions(
+                        updates,
+                        partyId,
+                        ledgerClient
+                    ),
+                ]
+            )
+        )
+        return new Map(all)
+    }
+
     private async toPrettyTransactions(
         updates: JsGetUpdatesResponse[],
         partyId: PartyId,
@@ -876,7 +893,8 @@ export class TokenStandardService {
                     const parser = new TransactionParser(
                         tx,
                         ledgerClient,
-                        partyId
+                        partyId,
+                        this.isMasterUser
                     )
 
                     return await parser.parseTransaction()
@@ -901,7 +919,12 @@ export class TokenStandardService {
         ledgerClient: LedgerClient
     ): Promise<Transaction> {
         const tx = getTransactionResponse.transaction
-        const parser = new TransactionParser(tx, ledgerClient, partyId)
+        const parser = new TransactionParser(
+            tx,
+            ledgerClient,
+            partyId,
+            this.isMasterUser
+        )
         const parsedTx = await parser.parseTransaction()
         return renderTransaction(parsedTx)
     }

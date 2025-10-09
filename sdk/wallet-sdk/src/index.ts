@@ -1,15 +1,15 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { AuthController, localAuthDefault } from './authController.js'
-import { LedgerController, localLedgerDefault } from './ledgerController.js'
+import { AuthController, localNetAuthDefault } from './authController.js'
+import { LedgerController, localNetLedgerDefault } from './ledgerController.js'
 import {
-    localTokenStandardDefault,
+    localNetTokenStandardDefault,
     TokenStandardController,
 } from './tokenStandardController.js'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import {
-    localTopologyDefault,
+    localNetTopologyDefault,
     TopologyController,
 } from './topologyController.js'
 import { Logger } from '@canton-network/core-types'
@@ -52,8 +52,8 @@ type TokenStandardFactory = (
 type ValidatorFactory = (userId: string, token: string) => ValidatorController
 
 export interface Config {
-    authFactory: AuthFactory
-    ledgerFactory: LedgerFactory
+    authFactory?: AuthFactory
+    ledgerFactory?: LedgerFactory
     topologyFactory?: TopologyFactory
     tokenStandardFactory?: TokenStandardFactory
     validatorFactory?: ValidatorFactory
@@ -82,11 +82,11 @@ export interface WalletSDK {
 export class WalletSDKImpl implements WalletSDK {
     auth: AuthController
 
-    private authFactory: AuthFactory = localAuthDefault
-    private ledgerFactory: LedgerFactory = localLedgerDefault
-    private topologyFactory: TopologyFactory = localTopologyDefault
+    private authFactory: AuthFactory = localNetAuthDefault
+    private ledgerFactory: LedgerFactory = localNetLedgerDefault
+    private topologyFactory: TopologyFactory = localNetTopologyDefault
     private tokenStandardFactory: TokenStandardFactory =
-        localTokenStandardDefault
+        localNetTokenStandardDefault
     private validatorFactory: ValidatorFactory = localValidatorDefault
 
     private logger: Logger | undefined
