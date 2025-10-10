@@ -255,7 +255,7 @@ try {
     const p = [delegateProxyDisclosedContracts, ...disclosedContracts2]
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         transferCommand,
-        senderPartyKeyPair.privateKey,
+        keyPairTreasury.privateKey,
         v4(),
         p
     )
