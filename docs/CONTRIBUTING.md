@@ -83,7 +83,7 @@ After running `yarn start:all`, you'll have services exposed on the following po
 
 | Service          | Url            |
 | ---------------- | -------------- |
-| example dApp UI  | localhost:5137 |
+| example dApp UI  | localhost:8080 |
 | HTTP WK dapp RPC | localhost:3008 |
 | HTTP WK user RPC | localhost:3001 |
 

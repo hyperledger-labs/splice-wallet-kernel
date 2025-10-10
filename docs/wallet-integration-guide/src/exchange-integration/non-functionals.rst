@@ -68,9 +68,16 @@ as we assume you have strategies in place for those.
   recall from :ref:`one-step-withdrawal-workflow` that the Withdrawal Automation
   first retrieves extra context from the Registry API Server of the token admin
   and then prepares, signs, and executes the transaction to submit the transfer for the withdrawal using
-  the ``/v2/interactive-submission/executeAndWait`` endpoint of the Ledger API.
+  the ``/v2/interactive-submission/execute`` endpoint of the Ledger API.
 
-  We recommend that you retry the steps from the start when encountering a :ref:`retryable error <retryable-errors>`.
+  The endpoint is asynchronous and observing its response only means that the transaction has been accepted for processing.
+  You can retrieve the status of the execution via the ``/v2/commands/completions`` endpoint of the Ledger API;
+  or alternatively, by observing the effect of the execution via the Tx History Ingestion component.
+  The latter option is more robust, as it ensures that you observe the effect of the execution
+  in a persistent manner.
+
+  We recommend that you retry the steps from the start when not observing the successful completion of the withdrawal
+  within the expected time or when encountering a :ref:`retryable error <retryable-errors>` on the execution itself.
   You thereby ensure that you prepare the withdrawal transaction
   using the latest state of the Validator Node and the latest extra context from the Registry API Server.
   Use a bounded number of retries with at least a few seconds between retries
@@ -95,9 +102,16 @@ as we assume you have strategies in place for those.
   discovers a pending deposit by reading from the Canton Integration DB,
   then retrieves extra context from the Registry API Server of the token admin
   and finally prepares, signs, and executes the transaction to accept the transfer offer using
-  the ``/v2/interactive-submission/executeAndWait`` endpoint of the Ledger API.
+  the ``/v2/interactive-submission/execute`` endpoint of the Ledger API.
 
-  We recommend that you retry the steps from the start when encountering a :ref:`retryable error <retryable-errors>`.
+  The endpoint is asynchronous and observing its response only means that the transaction has been accepted for processing.
+  You can retrieve the status of the execution via the ``/v2/commands/completions`` endpoint of the Ledger API;
+  or alternatively, by observing the effect of the execution via the Tx History Ingestion component.
+  The latter option is more robust, as it ensures that you observe the effect of the execution
+  in a persistent manner.
+
+  We recommend that you retry the steps from the start when not observing the successful completion of the transfer offer acceptance
+  within the expected time or when encountering a :ref:`retryable error <retryable-errors>` on the execution itself.
   You thereby ensure that you prepare the transaction to accept the transfer offer
   using the latest state of the Validator Node and the latest extra context from the Registry API Server.
   Use a bounded number of retries with at least a few seconds between retries

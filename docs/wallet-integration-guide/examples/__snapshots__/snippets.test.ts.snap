@@ -1,10 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`testing doc snippets allocate-party.ts 1`] = `
-{
-  "partyId": "my-wallet-1::122078180903ec6fe58fe30bec7380b351fde137d86eeaea837f6d379a86a8039885",
-}
-`;
+exports[`testing doc snippets allocate-party.ts 1`] = `"my-wallet-1::122078180903ec6fe58fe30bec7380b351fde137d86eeaea837f6d379a86a8039885"`;
 
 exports[`testing doc snippets change-party-and-synchronizer.ts 1`] = `undefined`;
 

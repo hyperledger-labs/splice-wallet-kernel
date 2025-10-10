@@ -100,11 +100,11 @@ const specs: OpenApiSpec[] = [
     // Splice Scan API
     {
         input: `api-specs/splice/${SPLICE_VERSION}/scan.yaml`,
-        output: 'core/splice-clients/src/generated-clients/scan.ts',
+        output: 'core/splice-client/src/generated-clients/scan.ts',
     },
     {
         input: `api-specs/splice/${SPLICE_VERSION}/validator-internal.yaml`,
-        output: 'core/splice-clients/src/generated-clients/validator-internal.ts',
+        output: 'core/splice-client/src/generated-clients/validator-internal.ts',
     },
     // Token standards
     {

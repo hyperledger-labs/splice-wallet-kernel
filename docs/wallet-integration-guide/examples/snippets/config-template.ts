@@ -12,7 +12,8 @@ export default async function () {
         return new LedgerController(
             userId,
             new URL('http://my-json-ledger-api'),
-            token
+            token,
+            false
         )
     }
 

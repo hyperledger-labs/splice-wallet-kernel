@@ -9,6 +9,10 @@ import {
     Types,
     awaitCompletion,
     promiseWithTimeout,
+    GenerateTransactionResponse,
+    AllocateExternalPartyResponse,
+    isJsCantonError,
+    components,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -40,6 +44,7 @@ export type WrappedCommand<
 export class LedgerController {
     private readonly client: LedgerClient
     private readonly userId: string
+    private readonly isAdmin: boolean
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
     private logger = pino({ name: 'LedgerController', level: 'info' })
@@ -49,11 +54,13 @@ export class LedgerController {
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
      * @param token the access token from the user, usually provided by an auth controller.
+     * @param isAdmin optional flag to set true when creating adminLedger.
      */
-    constructor(userId: string, baseUrl: URL, token: string) {
+    constructor(userId: string, baseUrl: URL, token: string, isAdmin: boolean) {
         this.client = new LedgerClient(baseUrl, token, this.logger)
         this.client.init()
         this.userId = userId
+        this.isAdmin = isAdmin
         return this
     }
 
@@ -104,12 +111,28 @@ export class LedgerController {
      * @param signature the signed signature of the preparedTransactionHash from the prepareSubmission method.
      * @returns true if verification succeeded or false if it failed
      */
-
+    verifyTxHash(
+        txHash: string,
+        publicKey: PublicKey,
+        signature: string
+    ): boolean
+    /** @deprecated protobuf version of public key is unsupported, use the `PublicKey` type instead */
+    verifyTxHash(
+        txHash: string,
+        publicKey: SigningPublicKey,
+        signature: string
+    ): boolean
+    /** @deprecated protobuf version of public key is unsupported, use the `PublicKey` type instead */
     verifyTxHash(
         txHash: string,
         publicKey: SigningPublicKey | PublicKey,
         signature: string
-    ) {
+    ): boolean
+    verifyTxHash(
+        txHash: string,
+        publicKey: SigningPublicKey | PublicKey,
+        signature: string
+    ): boolean {
         let key: string
         if (typeof publicKey === 'string') {
             key = publicKey
@@ -226,13 +249,150 @@ export class LedgerController {
      * Internal parties uses the canton keys for signing and does not use the interactive submission flow.
      * @param partyHint partyHint to be used for the new party.
      */
-    async allocateInternalParty(
-        partyHint?: string
-    ): Promise<PostResponse<'/v2/parties'>> {
-        return await this.client.post('/v2/parties', {
-            partyIdHint: partyHint || v4(),
-            identityProviderId: '',
-        })
+    async allocateInternalParty(partyHint?: string): Promise<PartyId> {
+        if (partyHint && partyHint !== undefined) {
+            const internalParty = await this.client.get('/v2/parties', {
+                path: { partyHint: partyHint },
+                query: {},
+            })
+            if (
+                internalParty.partyDetails &&
+                internalParty.partyDetails.length > 0
+            ) {
+                return internalParty.partyDetails[0].party
+            }
+        }
+
+        return (
+            await this.client.post('/v2/parties', {
+                partyIdHint: partyHint || v4(),
+                identityProviderId: '',
+            })
+        ).partyDetails!.party
+    }
+
+    /**
+     * Generate topology transactions for an external party that can be signed and submitted in order to create a new external party.
+     *
+     * @param publicKey
+     * @param partyHint (optional) hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold (optional) parameter for multi-hosted parties (default is 1).
+     * @param hostingParticipantUids (optional) list of participant UIDs that will host the party.
+     * @returns
+     */
+    async generateExternalParty(
+        publicKey: PublicKey,
+        partyHint?: string,
+        confirmingThreshold?: number,
+        hostingParticipantUids?: string[]
+    ): Promise<GenerateTransactionResponse> {
+        return this.client.generateTopology(
+            this.getSynchronizerId(),
+            publicKey,
+            partyHint || v4(),
+            false,
+            confirmingThreshold,
+            hostingParticipantUids
+        )
+    }
+
+    /** Submits a prepared and signed external party topology to the ledger.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param signedHash The signed combined hash of the prepared transactions.
+     * @param preparedParty The prepared party object from prepareExternalPartyTopology.
+     * @param grantUserRights Defines if the transaction should also grant user right to current user (default is true)
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
+    async allocateExternalParty(
+        signedHash: string,
+        preparedParty: GenerateTransactionResponse,
+        grantUserRights: boolean = true
+    ): Promise<AllocateExternalPartyResponse> {
+        if (await this.client.checkIfPartyExists(preparedParty.partyId))
+            return { partyId: preparedParty.partyId }
+
+        const { publicKeyFingerprint, partyId, topologyTransactions } =
+            preparedParty
+
+        await this.client.allocateExternalParty(
+            this.getSynchronizerId(),
+            topologyTransactions!.map((transaction) => ({ transaction })),
+            [
+                {
+                    format: 'SIGNATURE_FORMAT_CONCAT',
+                    signature: signedHash,
+                    signedBy: publicKeyFingerprint,
+                    signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
+                },
+            ]
+        )
+
+        if (grantUserRights) {
+            await this.client.grantUserRights(this.userId, partyId)
+        }
+
+        return { partyId }
+    }
+
+    /** Prepares, signs and submits a new external party topology in one step.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param privateKey The private key of the new external party, used to sign the topology transactions.
+     * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold optional parameter for multi-hosted parties (default is 1).
+     * @param hostingParticipantEndpoints optional list of connection details for other participants to multi-host this party.
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
+    async signAndAllocateExternalParty(
+        privateKey: PrivateKey,
+        partyHint?: string,
+        confirmingThreshold?: number,
+        hostingParticipantEndpoints?: { accessToken: string; url: URL }[]
+    ): Promise<GenerateTransactionResponse> {
+        const otherHostingParticipantUids = await Promise.all(
+            hostingParticipantEndpoints
+                ?.map(
+                    (endpoint) =>
+                        new LedgerClient(
+                            endpoint.url,
+                            endpoint.accessToken,
+                            this.logger
+                        )
+                )
+                .map((client) =>
+                    client
+                        .get('/v2/parties/participant-id')
+                        .then((res) => res.participantId)
+                ) || []
+        )
+
+        const preparedParty = await this.generateExternalParty(
+            getPublicKeyFromPrivate(privateKey),
+            partyHint,
+            confirmingThreshold,
+            otherHostingParticipantUids
+        )
+
+        if (!preparedParty) {
+            throw new Error('Error creating prepared party')
+        }
+
+        const signedHash = signTransactionHash(
+            preparedParty.multiHash,
+            privateKey
+        )
+
+        // grant user rights automatically if the party is hosted on 1 participant
+        // if hosted on multiple participants, then we need to authorize each PartyToParticipant mapping
+        // before granting the user rights
+        const grantUserRights = !hostingParticipantEndpoints
+
+        await this.allocateExternalParty(
+            signedHash,
+            preparedParty,
+            grantUserRights
+        )
+
+        return preparedParty
     }
 
     /**
@@ -274,6 +434,26 @@ export class LedgerController {
      * @param publicKey the public key correlating to the private key used to sign the signature.
      * @param submissionId the unique identifier used to track the transaction, must be the same as used in prepareSubmission.
      */
+    async executeSubmission(
+        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        signature: string,
+        publicKey: PublicKey,
+        submissionId: string
+    ): Promise<string>
+    /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
+    async executeSubmission(
+        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        signature: string,
+        publicKey: SigningPublicKey,
+        submissionId: string
+    ): Promise<string>
+    /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
+    async executeSubmission(
+        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        signature: string,
+        publicKey: SigningPublicKey | PublicKey,
+        submissionId: string
+    ): Promise<string>
     async executeSubmission(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
         signature: string,
@@ -382,21 +562,30 @@ export class LedgerController {
     /**
      * Lists all wallets (parties) the user has access to.
      * use a pageToken from a previous request to query the next page.
-     * @param options Optional query parameters: pageSize, pageToken, identityProviderId
      * @returns A paginated list of parties.
      */
-    async listWallets(options?: {
-        pageSize?: number
-        pageToken?: string
-        identityProviderId?: string
-    }): Promise<GetResponse<'/v2/parties'>> {
-        const params: Record<string, unknown> = {}
-        if (options?.pageSize !== undefined) params.pageSize = options.pageSize
-        if (options?.pageToken !== undefined)
-            params.pageToken = options.pageToken
-        if (options?.identityProviderId !== undefined)
-            params.identityProviderId = options.identityProviderId
-        return await this.client.get('/v2/parties', params)
+    async listWallets(): Promise<PartyId[]> {
+        const rights = await this.client.get('/v2/users/{user-id}/rights', {
+            path: { 'user-id': this.userId },
+        })
+
+        if (rights.rights!.some((r) => 'CanReadAsAnyParty' in r.kind)) {
+            return (await this.client.get('/v2/parties')).partyDetails!.map(
+                (p) => p.party
+            )
+        } else {
+            const canReadAsPartyRight = rights.rights?.find(
+                (r) => 'CanReadAsParty' in r.kind
+            ) as { CanReadAsParty?: { parties: PartyId[] } } | undefined
+            if (
+                canReadAsPartyRight &&
+                canReadAsPartyRight.CanReadAsParty &&
+                Array.isArray(canReadAsPartyRight.CanReadAsParty.parties)
+            ) {
+                return canReadAsPartyRight.CanReadAsParty.parties
+            }
+            return []
+        }
     }
 
     /**
@@ -565,6 +754,100 @@ export class LedgerController {
         //TODO: figure out if this should automatically be converted to a format that is more user friendly
         return await this.client.post('/v2/state/active-contracts', filter)
     }
+
+    async uploadDar(
+        darBytes: Uint8Array | Buffer
+    ): Promise<PostResponse<'/v2/packages'> | void> {
+        if (!this.isAdmin) {
+            throw new Error('Use adminLedger to call uploadDar')
+        }
+        try {
+            return await this.client.post(
+                '/v2/packages',
+                darBytes as never,
+                {},
+                {
+                    bodySerializer: (b: unknown) => b, // prevents jsonification of bytes
+                    headers: { 'Content-Type': 'application/octet-stream' },
+                }
+            )
+        } catch (e: unknown) {
+            // Check first for already uploaded error, which means dar upload status is ensured true
+            if (isJsCantonError(e)) {
+                const msg = [
+                    e.code,
+                    e.cause,
+                    ...(e.context ? Object.values(e.context) : []),
+                ]
+                    .filter(Boolean)
+                    .join(' ')
+
+                const GRPC_ALREADY_EXISTS = 6 as const
+                const alreadyExists =
+                    e.code?.toUpperCase() === 'ALREADY_EXISTS' ||
+                    e.grpcCodeValue === GRPC_ALREADY_EXISTS ||
+                    /already\s*exist/i.test(msg) ||
+                    (e as { status?: number }).status === 409
+
+                if (alreadyExists) {
+                    this.logger.info('DAR already present - continuing')
+                    return
+                }
+
+                // In case of other errors throw
+                this.logger.error({ errror: e }, 'DAR upload failed')
+                throw e
+            }
+            this.logger.error({ error: e }, 'DAR upload failed')
+            throw e
+        }
+    }
+
+    async isPackageUploaded(packageId: string): Promise<boolean> {
+        const { packageIds } = await this.client!.get('/v2/packages')
+        return Array.isArray(packageIds) && packageIds.includes(packageId)
+    }
+
+    /**
+     * grant "Master User" rights to a user.
+     *
+     * this require running with an admin token.
+     *
+     * @param userId The ID of the user to grant rights to.
+     * @param canReadAsAnyParty define if the user can read as any party.
+     * @param canExecuteAsAnyParty define if the user can execute as any party.
+     */
+    public async grantMasterUserRights(
+        userId: string,
+        canReadAsAnyParty: boolean,
+        canExecuteAsAnyParty: boolean
+    ) {
+        if (!this.isAdmin) {
+            throw new Error('Use adminLedger to call grantMasterUserRights')
+        }
+
+        return await this.client.grantMasterUserRights(
+            userId,
+            canReadAsAnyParty,
+            canExecuteAsAnyParty
+        )
+    }
+
+    /**
+     * Create a new user.
+     *
+     * @param userId The ID of the user to create.
+     * @param primaryParty The primary party of the user.
+     */
+    public async createUser(
+        userId: string,
+        primaryParty: PartyId
+    ): Promise<components['schemas']['User']> {
+        if (!this.isAdmin) {
+            throw new Error('Use adminLedger to call createUser')
+        }
+        return await this.client.createUser(userId, primaryParty)
+    }
 }
 
 /**
@@ -573,9 +856,15 @@ export class LedgerController {
  */
 export const localLedgerDefault = (
     userId: string,
-    token: string
+    token: string,
+    isAdmin: boolean
 ): LedgerController => {
-    return new LedgerController(userId, new URL('http://127.0.0.1:5003'), token)
+    return new LedgerController(
+        userId,
+        new URL('http://127.0.0.1:5003'),
+        token,
+        isAdmin
+    )
 }
 
 /**
@@ -584,21 +873,34 @@ export const localLedgerDefault = (
  */
 export const localNetLedgerDefault = (
     userId: string,
-    token: string
+    token: string,
+    isAdmin: boolean
 ): LedgerController => {
-    return localNetLedgerAppUser(userId, token)
+    return localNetLedgerAppUser(userId, token, isAdmin)
 }
 
 export const localNetLedgerAppUser = (
     userId: string,
-    token: string
+    token: string,
+    isAdmin: boolean
 ): LedgerController => {
-    return new LedgerController(userId, new URL('http://127.0.0.1:2975'), token)
+    return new LedgerController(
+        userId,
+        new URL('http://127.0.0.1:2975'),
+        token,
+        isAdmin
+    )
 }
 
 export const localNetLedgerAppProvider = (
     userId: string,
-    token: string
+    token: string,
+    isAdmin: boolean
 ): LedgerController => {
-    return new LedgerController(userId, new URL('http://127.0.0.1:3975'), token)
+    return new LedgerController(
+        userId,
+        new URL('http://127.0.0.1:3975'),
+        token,
+        isAdmin
+    )
 }
