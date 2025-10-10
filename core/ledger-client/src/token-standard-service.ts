@@ -651,7 +651,7 @@ class TransferService {
         return await this.core
             .getTokenStandardClient(registryUrl)
             .post('/registry/transfer-instruction/v1/transfer-factory', {
-                choiceArguments: choiceArgs as Record<string, never>,
+                choiceArguments: choiceArgs as unknown as Record<string, never>,
             })
     }
 
