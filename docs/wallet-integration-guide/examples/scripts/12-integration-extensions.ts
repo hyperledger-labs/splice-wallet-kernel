@@ -100,7 +100,7 @@ if (!isDarUploaded) {
 
 const exchangeParty = await sdk.validator?.getValidatorUser()
 
-await sdk.userLedger?.grantReadAsRights()
+await sdk.userLedger?.grantRights([exchangeParty!], [exchangeParty!])
 
 sdk.tokenStandard?.setSynchronizerId(synchonizerId)
 
@@ -196,12 +196,13 @@ await sdk.setPartyId(exchangeParty!)
 const featuredAppRights =
     await sdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
 
-const delegateProxyDisclosedContracts = {
-    templateId: featuredAppRights?.template_id!,
-    contractId: featuredAppRights?.contract_id!,
-    createdEventBlob: featuredAppRights?.created_event_blob!,
-    synchronizerId: synchonizerId,
-}
+//use for 2 step transfer
+// const delegateProxyDisclosedContracts = {
+//     templateId: featuredAppRights?.template_id!,
+//     contractId: featuredAppRights?.contract_id!,
+//     createdEventBlob: featuredAppRights?.created_event_blob!,
+//     synchronizerId: synchonizerId,
+// }
 
 const receiverParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
     receiverPartyKeyPair.privateKey,

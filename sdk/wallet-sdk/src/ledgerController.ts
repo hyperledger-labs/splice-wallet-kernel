@@ -643,11 +643,8 @@ export class LedgerController {
         }
     }
 
-    async grantReadAsRights() {
-        return await this.client.grantReadAsRights(
-            this.userId,
-            this.getPartyId()
-        )
+    async grantRights(readAs?: PartyId[], actAs?: PartyId[]) {
+        return await this.client.grantRights(this.userId, readAs, actAs)
     }
 
     /**
