@@ -374,41 +374,6 @@ export class LedgerClient {
         return
     }
 
-    public async grantReadAsRights(userId: string, partyId: PartyId) {
-        await this.init()
-
-        // Assign user rights to party
-        const result = await this.post(
-            '/v2/users/{user-id}/rights',
-            {
-                identityProviderId: '',
-                userId,
-                rights: [
-                    {
-                        kind: {
-                            CanReadAs: {
-                                value: {
-                                    party: partyId,
-                                },
-                            },
-                        },
-                    },
-                ],
-            },
-            {
-                path: {
-                    'user-id': userId,
-                },
-            }
-        )
-
-        if (!result.newlyGrantedRights) {
-            throw new Error('Failed to grant user rights')
-        }
-
-        return
-    }
-
     /** TODO: simplify once 3.4 snapshot contains this endpoint */
     public async allocateExternalParty(
         synchronizerId: string,
