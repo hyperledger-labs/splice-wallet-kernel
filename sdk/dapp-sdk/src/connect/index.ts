@@ -10,6 +10,7 @@ import { openKernelUserUI, Provider } from '../provider'
 export * from '@canton-network/core-splice-provider'
 import * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'
 import { ConnectError, ErrorCode } from '../index'
+import gateways from './gateways.json'
 
 const injectProvider = (discovery: DiscoverResult) => {
     return injectSpliceProvider(
@@ -36,8 +37,7 @@ export async function open(): Promise<void> {
 }
 
 export async function connect(): Promise<dappAPI.ConnectResult> {
-    const configFile = await fetch('./gateways.json')
-    const config: GatewaysConfig[] = await configFile.json()
+    const config: GatewaysConfig[] = gateways
     return discover(config)
         .then(async (result) => {
             // Store discovery result and remove previous session

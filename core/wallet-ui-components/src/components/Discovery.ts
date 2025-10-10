@@ -10,6 +10,8 @@ import { css } from 'lit'
 import { BaseElement } from '../internal/BaseElement'
 import { cssToString } from '../utils'
 
+type KernelType = GatewaysConfig & { walletType: string }
+
 const SUBSTITUTABLE_CSS = cssToString([
     BaseElement.styles,
     css`
@@ -39,8 +41,36 @@ const SUBSTITUTABLE_CSS = cssToString([
             gap: 8px;
         }
 
+        .kernel-content {
+            gap: 4px;
+        }
+
         .nav-link {
             cursor: pointer;
+        }
+
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            transform: translateX(-50%);
+            bottom: 0;
+            margin-bottom: 8px;
+            background: #495057;
+            color: var(--black);
+            padding: 8px 12px;
+            border-radius: 6px;
+            pointer-events: none;
+            opacity: 0;
+            transition: 0.5s;
+        }
+
+        [data-tooltip]:hover::after {
+            opacity: 1;
+            bottom: 100%;
         }
     `,
 ])
@@ -72,7 +102,7 @@ export class Discovery extends HTMLElement {
 
     private root: HTMLElement
     private selectedTabId: string = 'tab-1'
-    private verifiedKernelsa: GatewaysConfig[] = []
+    private verifiedKernels?: KernelType[]
 
     constructor() {
         super()
@@ -100,20 +130,17 @@ export class Discovery extends HTMLElement {
                     }
                 }
             )
-
-            window.addEventListener('message', (event) => {
-                if (event.data.type === 'SPLICE_WALLET_CONFIG_LOAD') {
-                    this.verifiedKernelsa = event.data.payload
-                }
-            })
         }
-    }
 
-    verifiedKernels(): DiscoverResult[] {
-        return [
-            { url: 'http://localhost:3008/rpc', walletType: 'remote' },
-            { url: 'http://localhost:3008/rpc', walletType: 'remote' },
-        ]
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'SPLICE_WALLET_CONFIG_LOAD') {
+                this.verifiedKernels = event.data.payload.map((kernel) => ({
+                    ...kernel,
+                    walletType: 'remote',
+                }))
+                this.render()
+            }
+        })
     }
 
     tabs() {
@@ -131,31 +158,44 @@ export class Discovery extends HTMLElement {
         ]
     }
 
-    private renderKernelOption(kernel: DiscoverResult) {
-        const div = document.createElement('div')
-        div.classList =
-            'kernel d-flex justify-content-space-between align-items-center flex-wrap mb-3'
+    private renderKernelOption(kernel: KernelType | DiscoverResult) {
+        const isRemoteUrl = kernel.walletType === 'remote'
+        const div = this.mkElement('div', '', {
+            class: 'kernel d-flex justify-content-space-between align-items-center flex-wrap mb-3',
+        })
 
-        const span = document.createElement('span')
-
-        switch (kernel.walletType) {
-            case 'extension':
-                span.innerText = 'Browser Extension'
-                break
-            case 'remote':
-                span.innerText = `${kernel.walletType} - ${kernel.url}`
-                break
-        }
-
-        const button = this.mkButton('Connect', {
+        const button = this.mkElement('button', 'Connect', {
             class: 'btn btn-primary',
         })
 
+        if (isRemoteUrl) {
+            button.setAttribute('data-tooltip', kernel.rpcUrl)
+
+            const nameWrapper = this.mkElement('div', '', {
+                class: 'kernel-content d-flex',
+            })
+            const span = this.mkElement('span', kernel.name, {
+                class: 'kernel-name',
+            })
+
+            // it should be img in the future
+            const logo = this.mkElement('span', '(logo)')
+            nameWrapper.append(span, logo)
+            div.appendChild(nameWrapper)
+        } else {
+            const span = this.mkElement('span', 'Browser Extension')
+            div.appendChild(span)
+        }
+
         button.addEventListener('click', () => {
-            this.selectKernel(kernel)
+            this.selectKernel(
+                isRemoteUrl
+                    ? { url: kernel.rpcUrl, walletType: kernel.walletType }
+                    : kernel
+            )
         })
 
-        div.append(span, button)
+        div.appendChild(button)
 
         return div
     }
@@ -168,44 +208,39 @@ export class Discovery extends HTMLElement {
         }
     }
 
-    private mkButton(value: string, attrs: Record<string, string> = {}) {
-        const button = document.createElement('button')
-        button.innerText = value
+    private mkElement<K extends keyof HTMLElementTagNameMap>(
+        elementName: K,
+        value?: string,
+        attrs?: Record<string, string> = {}
+    ) {
+        const element = document.createElement(elementName)
+
+        if (value) {
+            element.innerText = value
+        }
 
         Object.entries(attrs).forEach(([key, val]) => {
-            button.setAttribute(key, val)
+            element.setAttribute(key, val)
         })
 
-        return button
+        return element
     }
 
     render() {
-        const root = document.createElement('div')
-        root.classList = 'root'
+        const root = this.mkElement('div', '', { class: 'root' })
+        const wrapper = this.mkElement('div', '', { class: 'wrapper' })
+        const header = this.mkElement('h3', 'Connect to a Wallet Gateway')
 
-        const wrapper = document.createElement('div')
-        wrapper.classList = 'wrapper'
-
-        const header = document.createElement('h3')
-        header.innerText = 'Connect to a Wallet Gateway'
-
-        const card = document.createElement('div')
-        card.className = 'card'
-
-        const cardHeader = document.createElement('div')
-        cardHeader.classList = 'card-header'
-
-        const navTabs = document.createElement('ul')
-        navTabs.classList = 'nav nav-tabs card-header-tabs'
+        const card = this.mkElement('div', '', { class: 'card' })
+        const cardHeader = this.mkElement('div', '', { class: 'card-header' })
+        const navTabs = this.mkElement('ul', '', {
+            class: 'nav nav-tabs card-header-tabs',
+        })
 
         for (const tab of this.tabs()) {
-            const li = document.createElement('li')
-            li.className = 'nav-item'
+            const li = this.mkElement('li', '', { class: 'nav-item' })
 
-            const a = document.createElement('a')
-            a.classList = 'nav-link'
-            a.textContent = tab.label
-            a.dataset.tab = tab.id
+            const a = this.mkElement('a', tab.label, { class: 'nav-link' })
 
             if (tab.id === this.selectedTabId) {
                 a.classList.add('active')
@@ -223,8 +258,7 @@ export class Discovery extends HTMLElement {
 
         cardHeader.appendChild(navTabs)
 
-        const cardBody = document.createElement('div')
-        cardBody.classList = 'card-body'
+        const cardBody = this.mkElement('div', '', { class: 'card-body' })
 
         if (this.selectedTabId === 'tab-1') {
             if (this.walletExtensionLoaded) {
@@ -234,21 +268,25 @@ export class Discovery extends HTMLElement {
                 cardBody.appendChild(k)
             }
 
-            for (const kernel of this.verifiedKernels()) {
-                const k = this.renderKernelOption(kernel)
-                cardBody.appendChild(k)
+            if (this.verifiedKernels?.length) {
+                for (const kernel of this.verifiedKernels) {
+                    const k = this.renderKernelOption(kernel)
+                    cardBody.appendChild(k)
+                }
             }
         } else {
-            const div = document.createElement('div')
-            div.classList =
-                'kernel d-flex justify-content-space-between align-items-center flex-wrap mb-3'
-            const input = document.createElement('input')
-            input.id = 'wkurl'
-            input.type = 'text'
-            input.placeholder = 'RPC URL'
-            input.classList = 'form-control'
+            const div = this.mkElement('div', '', {
+                class: 'kernel d-flex justify-content-space-between align-items-center flex-wrap mb-3',
+            })
 
-            const button = this.mkButton('Connect', {
+            const input = this.mkElement('input', '', {
+                id: 'wkurl',
+                type: 'text',
+                placeholder: 'RPC URL',
+                class: 'form-control',
+            })
+
+            const button = this.mkElement('button', 'Connect', {
                 class: 'btn btn-primary',
                 id: 'connect',
             })
