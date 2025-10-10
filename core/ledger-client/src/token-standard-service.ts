@@ -680,11 +680,6 @@ export class TokenStandardService {
         expiryDate?: Date,
         meta?: Record<string, unknown>
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        // const inputHoldingCids: string[] = await this.getInputHoldingsCids(
-        //     sender,
-        //     inputUtxos
-        // )
-
         const [transferCommand, disclosedContracts] = await this.createTransfer(
             sender,
             receiver,
@@ -697,51 +692,6 @@ export class TokenStandardService {
             expiryDate,
             meta
         )
-
-        // const choiceArgs = {
-        //     cid: transferCommand.contractId,
-        //     proxyArg: {
-        //         featuredAppRightCid: featuredAppRightCid,
-        //         beneficiaries: [
-        //             {
-        //                 beneficiary: exchangeParty,
-        //                 weight: 1.0,
-        //             },
-        //         ],
-        //         choiceArg: {
-        //             expectedAdmin: instrumentAdmin,
-        //             transfer: {
-        //                 sender,
-        //                 receiver,
-        //                 amount,
-        //                 inputHoldingCids,
-        //                 instrumentId: {
-        //                     admin: instrumentAdmin,
-        //                     id: instrumentId,
-        //                 },
-        //                 requestedAt: new Date(
-        //                     Date.now() - 60 * 1000
-        //                 ).toISOString(),
-        //                 //given expiryDate or 24 hours
-        //                 executeBefore: (
-        //                     expiryDate ??
-        //                     new Date(Date.now() + 24 * 60 * 60 * 1000)
-        //                 ).toISOString(),
-        //                 meta: {
-        //                     values: {
-        //                         ['splice.lfdecentralizedtrust.org/reason']:
-        //                             memo || '',
-        //                         ...meta,
-        //                     },
-        //                 },
-        //             },
-        //             extraArgs: {
-        //                 context: { values: {} },
-        //                 meta: { values: {} },
-        //             },
-        //         },
-        //     },
-        // }
 
         const choiceArgs = {
             cid: transferCommand.contractId,
@@ -756,20 +706,6 @@ export class TokenStandardService {
                 choiceArg: transferCommand.choiceArgument,
             },
         }
-
-        // const transferFactory = await this.getTokenStandardClient(
-        //     registryUrl
-        // ).post('/registry/transfer-instruction/v1/transfer-factory', {
-        //     choiceArguments: choiceArgs as unknown as Record<string, never>,
-        // })
-
-        // this.logger.debug(transferFactory, 'Transfer factory created')
-
-        // choiceArgs.extraArgs.context = {
-        //     ...transferFactory.choiceContext.choiceContextData,
-        //     values:
-        //         transferFactory.choiceContext.choiceContextData?.values ?? {},
-        // }
 
         const exercise: ExerciseCommand = {
             templateId:
