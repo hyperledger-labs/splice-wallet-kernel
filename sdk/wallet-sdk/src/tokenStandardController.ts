@@ -25,12 +25,12 @@ import {
     ALLOCATION_INTERFACE_ID,
     ALLOCATION_REQUEST_INTERFACE_ID,
     AllocationSpecification,
-    AllocationContextValue,
     AllocationRequestView,
     AllocationInstructionView,
     AllocationView,
     Metadata,
     transferInstructionRegistryTypes,
+    allocationInstructionRegistryTypes,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
@@ -532,7 +532,10 @@ export class TokenStandardController {
         expectedAdmin: PartyId,
         inputUtxos?: string[],
         requestedAt?: string,
-        extraContext?: AllocationContextValue
+        offline?: {
+            factoryId: string
+            choiceContext: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
+        }
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -544,7 +547,7 @@ export class TokenStandardController {
                     this.getTransferFactoryRegistryUrl().href,
                     inputUtxos,
                     requestedAt,
-                    extraContext
+                    offline
                 )
 
             return [{ ExerciseCommand: exercise }, disclosed]
@@ -552,6 +555,31 @@ export class TokenStandardController {
             this.logger.error(
                 { error },
                 'Failed to create allocation instruction'
+            )
+            throw error
+        }
+    }
+
+    async getCreateAllocationInstructionContext(
+        allocationSpecification: AllocationSpecification,
+        expectedAdmin: PartyId,
+        inputUtxos?: string[],
+        requestedAt?: string
+    ): Promise<
+        allocationInstructionRegistryTypes['schemas']['FactoryWithChoiceContext']
+    > {
+        try {
+            const choiceArgs = await this.service.allocation[
+                'buildAllocationFactoryChoiceArgs'
+            ](allocationSpecification, expectedAdmin, inputUtxos, requestedAt)
+            return this.service.allocation.fetchAllocationFactoryChoiceContext(
+                this.getTransferFactoryRegistryUrl().href,
+                choiceArgs
+            )
+        } catch (error) {
+            this.logger.error(
+                { error },
+                'Failed to fetch allocation factory context'
             )
             throw error
         }
@@ -615,6 +643,42 @@ export class TokenStandardController {
         }
     }
 
+    async getAcceptTransferInstructionContext(
+        transferInstructionCid: string
+    ): Promise<{
+        choiceContextData: unknown
+        disclosedContracts: DisclosedContract[]
+    }> {
+        return this.service.transfer.fetchAcceptTransferInstructionChoiceContext(
+            transferInstructionCid,
+            this.getTransferFactoryRegistryUrl().href
+        )
+    }
+
+    async getRejectTransferInstructionContext(
+        transferInstructionCid: string
+    ): Promise<{
+        choiceContextData: unknown
+        disclosedContracts: DisclosedContract[]
+    }> {
+        return this.service.transfer.fetchRejectTransferInstructionChoiceContext(
+            transferInstructionCid,
+            this.getTransferFactoryRegistryUrl().href
+        )
+    }
+
+    async getWithdrawTransferInstructionContext(
+        transferInstructionCid: string
+    ): Promise<{
+        choiceContextData: unknown
+        disclosedContracts: DisclosedContract[]
+    }> {
+        return this.service.transfer.fetchWithdrawTransferInstructionChoiceContext(
+            transferInstructionCid,
+            this.getTransferFactoryRegistryUrl().href
+        )
+    }
+
     /**
      * Execute Allocation choice on the provided Allocation.
      * @param allocationCid The Allocation contract ID.
@@ -622,7 +686,8 @@ export class TokenStandardController {
      */
     async exerciseAllocationChoice(
         allocationCid: string,
-        allocationChoice: AllocationChoice
+        allocationChoice: AllocationChoice,
+        offline?: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -634,7 +699,8 @@ export class TokenStandardController {
                     ;[ExerciseCommand, disclosedContracts] =
                         await this.service.allocation.createExecuteTransferAllocation(
                             allocationCid,
-                            this.getTransferFactoryRegistryUrl().href
+                            this.getTransferFactoryRegistryUrl().href,
+                            offline
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
 
@@ -642,7 +708,8 @@ export class TokenStandardController {
                     ;[ExerciseCommand, disclosedContracts] =
                         await this.service.allocation.createWithdrawAllocation(
                             allocationCid,
-                            this.getTransferFactoryRegistryUrl().href
+                            this.getTransferFactoryRegistryUrl().href,
+                            offline
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
 
@@ -650,7 +717,8 @@ export class TokenStandardController {
                     ;[ExerciseCommand, disclosedContracts] =
                         await this.service.allocation.createCancelAllocation(
                             allocationCid,
-                            this.getTransferFactoryRegistryUrl().href
+                            this.getTransferFactoryRegistryUrl().href,
+                            offline
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
 
@@ -669,6 +737,20 @@ export class TokenStandardController {
      */
     async getAllocationExecuteTransferChoiceContext(allocationCid: string) {
         return this.service.allocation.fetchExecuteTransferChoiceContext(
+            allocationCid,
+            this.getTransferFactoryRegistryUrl().href
+        )
+    }
+
+    async getAllocationWithdrawChoiceContext(allocationCid: string) {
+        return this.service.allocation.fetchWithdrawAllocationChoiceContext(
+            allocationCid,
+            this.getTransferFactoryRegistryUrl().href
+        )
+    }
+
+    async getAllocationCancelChoiceContext(allocationCid: string) {
+        return this.service.allocation.fetchCancelAllocationChoiceContext(
             allocationCid,
             this.getTransferFactoryRegistryUrl().href
         )

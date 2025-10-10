@@ -13,7 +13,6 @@ import {
     HoldingView,
     AllocationFactory_Allocate,
     AllocationSpecification,
-    AllocationContextValue,
     Transfer,
     // allocationRegistryTypes,
     // metadataRegistryTypes,
@@ -253,8 +252,7 @@ class AllocationService {
         allocationSpecification: AllocationSpecification,
         expectedAdmin: PartyId,
         inputUtxos?: string[],
-        requestedAt?: string,
-        extraContext?: AllocationContextValue
+        requestedAt?: string
     ): Promise<AllocationFactory_Allocate> {
         const allocationSpecificationNormalized: AllocationSpecification = {
             ...allocationSpecification,
@@ -283,7 +281,7 @@ class AllocationService {
                 new Date(Date.now() - REQUESTED_AT_SKEW_MS).toISOString(),
             inputHoldingCids,
             extraArgs: {
-                context: { values: { ...(extraContext ?? {}) } },
+                context: { values: {} },
                 meta: { values: {} },
             },
         }
@@ -326,7 +324,6 @@ class AllocationService {
         registryUrl: string,
         inputUtxos?: string[],
         requestedAt?: string,
-        extraContext?: AllocationContextValue,
         offline?: {
             factoryId: string
             choiceContext: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
@@ -336,8 +333,7 @@ class AllocationService {
             allocationSpecification,
             expectedAdmin,
             inputUtxos,
-            requestedAt,
-            extraContext
+            requestedAt
         )
 
         if (offline) {
