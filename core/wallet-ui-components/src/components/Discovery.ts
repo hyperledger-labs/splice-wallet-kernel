@@ -10,7 +10,7 @@ import { css } from 'lit'
 import { BaseElement } from '../internal/BaseElement'
 import { cssToString } from '../utils'
 
-type KernelType = GatewaysConfig & { walletType: string }
+type KernelType = GatewaysConfig & { walletType: 'remote' }
 
 const SUBSTITUTABLE_CSS = cssToString([
     BaseElement.styles,
@@ -134,10 +134,12 @@ export class Discovery extends HTMLElement {
 
         window.addEventListener('message', (event) => {
             if (event.data.type === 'SPLICE_WALLET_CONFIG_LOAD') {
-                this.verifiedKernels = event.data.payload.map((kernel) => ({
-                    ...kernel,
-                    walletType: 'remote',
-                }))
+                this.verifiedKernels = event.data.payload.map(
+                    (kernel: GatewaysConfig) => ({
+                        ...kernel,
+                        walletType: 'remote',
+                    })
+                )
                 this.render()
             }
         })
@@ -148,51 +150,63 @@ export class Discovery extends HTMLElement {
             {
                 label: 'Verified',
                 id: 'tab-1',
-                active: true,
             },
             {
                 label: 'Custom url',
                 id: 'tab-2',
-                active: false,
             },
         ]
     }
 
-    private renderKernelOption(kernel: KernelType | DiscoverResult) {
-        const isRemoteUrl = kernel.walletType === 'remote'
+    private renderExtensionOption(kernel: DiscoverResult) {
         const div = this.mkElement('div', '', {
             class: 'kernel d-flex justify-content-space-between align-items-center flex-wrap mb-3',
         })
 
         const button = this.mkElement('button', 'Connect', {
             class: 'btn btn-primary',
+            type: 'button',
         })
 
-        if (isRemoteUrl) {
-            button.setAttribute('data-tooltip', kernel.rpcUrl)
-
-            const nameWrapper = this.mkElement('div', '', {
-                class: 'kernel-content d-flex',
-            })
-            const span = this.mkElement('span', kernel.name, {
-                class: 'kernel-name',
-            })
-
-            // it should be img in the future
-            const logo = this.mkElement('span', '(logo)')
-            nameWrapper.append(span, logo)
-            div.appendChild(nameWrapper)
-        } else {
-            const span = this.mkElement('span', 'Browser Extension')
-            div.appendChild(span)
-        }
+        const span = this.mkElement('span', 'Browser Extension')
 
         button.addEventListener('click', () => {
-            this.selectKernel(
-                isRemoteUrl
-                    ? { url: kernel.rpcUrl, walletType: kernel.walletType }
-                    : kernel
-            )
+            this.selectKernel(kernel)
+        })
+
+        div.append(span, button)
+
+        return div
+    }
+
+    private renderKernelOption(kernel: KernelType) {
+        const div = this.mkElement('div', '', {
+            class: 'kernel d-flex justify-content-space-between align-items-center flex-wrap mb-3',
+        })
+
+        const button = this.mkElement('button', 'Connect', {
+            class: 'btn btn-primary',
+            type: 'button',
+            ['data-tooltip']: kernel.rpcUrl,
+        })
+
+        const nameWrapper = this.mkElement('div', '', {
+            class: 'kernel-content d-flex',
+        })
+        const span = this.mkElement('span', kernel.name, {
+            class: 'kernel-name',
+        })
+
+        // it should be img in the future
+        const logo = this.mkElement('span', '(logo)')
+        nameWrapper.append(span, logo)
+        div.appendChild(nameWrapper)
+
+        button.addEventListener('click', () => {
+            this.selectKernel({
+                url: kernel.rpcUrl,
+                walletType: kernel.walletType,
+            })
         })
 
         div.appendChild(button)
@@ -211,7 +225,7 @@ export class Discovery extends HTMLElement {
     private mkElement<K extends keyof HTMLElementTagNameMap>(
         elementName: K,
         value?: string,
-        attrs?: Record<string, string> = {}
+        attrs: Record<string, string> = {}
     ) {
         const element = document.createElement(elementName)
 
@@ -262,7 +276,7 @@ export class Discovery extends HTMLElement {
 
         if (this.selectedTabId === 'tab-1') {
             if (this.walletExtensionLoaded) {
-                const k = this.renderKernelOption({
+                const k = this.renderExtensionOption({
                     walletType: 'extension',
                 })
                 cardBody.appendChild(k)
@@ -289,6 +303,7 @@ export class Discovery extends HTMLElement {
             const button = this.mkElement('button', 'Connect', {
                 class: 'btn btn-primary',
                 id: 'connect',
+                type: 'button',
             })
 
             button.addEventListener('click', () => {
