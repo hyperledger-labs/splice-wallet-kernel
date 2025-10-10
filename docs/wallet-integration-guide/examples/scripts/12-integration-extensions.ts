@@ -41,7 +41,7 @@ await sdk.connect()
 logger.info('Connected to ledger')
 
 const keyPairTreasury = createKeyPair()
-const senderPartyKeyPair = createKeyPair()
+const receiverPartyKeyPair = createKeyPair()
 
 await sdk.connectAdmin()
 await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
@@ -203,17 +203,15 @@ const delegateProxyDisclosedContracts = {
     synchronizerId: synchonizerId,
 }
 
-// const createdEventBlob = featuredAppRights?.created_event_blob
-
-const senderParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
-    senderPartyKeyPair.privateKey,
+const receiverParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
+    receiverPartyKeyPair.privateKey,
     'bob'
 )
 
-await sdk.setPartyId(senderParty?.partyId!)
+await sdk.setPartyId(receiverParty?.partyId!)
 
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
-    senderParty!.partyId,
+    receiverParty!.partyId,
     '20000000',
     {
         instrumentId: 'Amulet',
@@ -223,12 +221,25 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand,
-    senderPartyKeyPair.privateKey,
+    receiverPartyKeyPair.privateKey,
     v4(),
     disclosedContracts
 )
 
-// await sdk.setPartyId(exchangeParty!) set as exchange party or senderParty ?
+const transferPreApprovalProposalReceiver =
+    await sdk.userLedger?.createTransferPreapprovalCommand(
+        exchangeParty!,
+        receiverParty?.partyId!,
+        instrumentAdminPartyId
+    )
+
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    [transferPreApprovalProposalReceiver],
+    receiverPartyKeyPair.privateKey,
+    v4()
+)
+logger.info('created pre approval for bob')
+
 await new Promise((res) => setTimeout(res, 5000))
 
 try {
@@ -240,7 +251,7 @@ try {
             proxyCid!,
             featuredAppRights?.contract_id!,
             treasuryParty?.partyId!,
-            senderParty?.partyId!,
+            receiverParty?.partyId!,
             '100',
             'Amulet',
             instrumentAdminPartyId,

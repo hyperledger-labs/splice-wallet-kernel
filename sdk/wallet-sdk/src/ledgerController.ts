@@ -736,6 +736,15 @@ export class LedgerController {
         return await this.client.get('/v2/state/ledger-end')
     }
 
+    async getAppRewardCoupons() {
+        const end = await this.ledgerEnd()
+
+        await this.activeContracts({
+            offset: end.offset,
+            templateIds: ['#splice-amulet:Splice.Amulet:AppRewardCoupon'],
+        })
+    }
+
     /**
      * Retrieves active contracts with optional filtering by template IDs and parties.
      * @param options Optional parameters for filtering:
