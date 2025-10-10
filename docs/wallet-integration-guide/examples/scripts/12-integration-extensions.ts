@@ -210,22 +210,6 @@ const receiverParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
 
 await sdk.setPartyId(receiverParty?.partyId!)
 
-const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
-    receiverParty!.partyId,
-    '20000000',
-    {
-        instrumentId: 'Amulet',
-        instrumentAdmin: instrumentAdminPartyId,
-    }
-)
-
-await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-    tapCommand,
-    receiverPartyKeyPair.privateKey,
-    v4(),
-    disclosedContracts
-)
-
 const transferPreApprovalProposalReceiver =
     await sdk.userLedger?.createTransferPreapprovalCommand(
         exchangeParty!,
@@ -233,14 +217,30 @@ const transferPreApprovalProposalReceiver =
         instrumentAdminPartyId
     )
 
-await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+const bobPreapproval = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     [transferPreApprovalProposalReceiver],
     receiverPartyKeyPair.privateKey,
     v4()
 )
-logger.info('created pre approval for bob')
+logger.info(bobPreapproval, 'created pre approval for bob')
 
 await new Promise((res) => setTimeout(res, 5000))
+
+{
+    await sdk.setPartyId(treasuryParty!.partyId)
+    const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
+    logger.info(aliceHoldings, '[ALICE] holding transactions')
+
+    await sdk.setPartyId(receiverParty!.partyId)
+    const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
+    logger.info(bobHoldings, '[BOB] holding transactions')
+    const transferPreApprovalStatus =
+        await sdk.tokenStandard?.getTransferPreApprovalByParty(
+            receiverParty!.partyId,
+            'Amulet'
+        )
+    logger.info(transferPreApprovalStatus, '[BOB] transfer preapproval status')
+}
 
 try {
     await sdk.setPartyId(treasuryParty?.partyId!)
@@ -263,13 +263,34 @@ try {
 
     logger.info(transferCommand, `created delegate exercise command`)
 
-    const p = [delegateProxyDisclosedContracts, ...disclosedContracts2]
-    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    //need this for 2 step, but not 1 step?
+    // const p = [delegateProxyDisclosedContracts, ...disclosedContracts2]
+    const result = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         transferCommand,
         keyPairTreasury.privateKey,
         v4(),
-        p
+        disclosedContracts2
     )
+
+    logger.info(result, `submitted command`)
 } catch (e) {
     logger.error(e)
+}
+
+await new Promise((res) => setTimeout(res, 5000))
+
+{
+    await sdk.setPartyId(treasuryParty!.partyId)
+    const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
+    logger.info(aliceHoldings, '[ALICE] holding transactions')
+
+    await sdk.setPartyId(receiverParty!.partyId)
+    const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
+    logger.info(bobHoldings, '[BOB] holding transactions')
+    const transferPreApprovalStatus =
+        await sdk.tokenStandard?.getTransferPreApprovalByParty(
+            receiverParty!.partyId,
+            'Amulet'
+        )
+    logger.info(transferPreApprovalStatus, '[BOB] transfer preapproval status')
 }
