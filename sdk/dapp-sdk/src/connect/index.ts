@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { injectSpliceProvider } from '@canton-network/core-splice-provider'
-import { DiscoverResult } from '@canton-network/core-types'
+import { DiscoverResult, GatewaysConfig } from '@canton-network/core-types'
 import { discover } from '@canton-network/core-wallet-ui-components'
 import * as storage from '../storage'
 import { openKernelUserUI, Provider } from '../provider'
@@ -10,6 +10,7 @@ import { openKernelUserUI, Provider } from '../provider'
 export * from '@canton-network/core-splice-provider'
 import * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'
 import { ConnectError, ErrorCode } from '../index'
+import gateways from './gateways.json'
 
 const injectProvider = (discovery: DiscoverResult) => {
     return injectSpliceProvider(
@@ -36,7 +37,8 @@ export async function open(): Promise<void> {
 }
 
 export async function connect(): Promise<dappAPI.ConnectResult> {
-    return discover()
+    const config: GatewaysConfig[] = gateways
+    return discover(config)
         .then(async (result) => {
             // Store discovery result and remove previous session
             storage.setKernelDiscovery(result)
