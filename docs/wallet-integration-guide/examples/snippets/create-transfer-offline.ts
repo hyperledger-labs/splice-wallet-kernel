@@ -52,7 +52,7 @@ export default async function () {
             {
                 factoryId: factoryCtx.factoryId,
                 choiceContext: factoryCtx.choiceContext,
-            } // offline
+            } // prefetchedRegistryChoiceContext
         )
 
     const offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0

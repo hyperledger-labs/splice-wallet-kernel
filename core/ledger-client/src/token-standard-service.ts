@@ -248,7 +248,7 @@ class CoreService {
 class AllocationService {
     constructor(private core: CoreService) {}
 
-    private async buildAllocationFactoryChoiceArgs(
+    public async buildAllocationFactoryChoiceArgs(
         allocationSpecification: AllocationSpecification,
         expectedAdmin: PartyId,
         inputUtxos?: string[],
@@ -324,7 +324,7 @@ class AllocationService {
         registryUrl: string,
         inputUtxos?: string[],
         requestedAt?: string,
-        offline?: {
+        prefetchedRegistryChoiceContext?: {
             factoryId: string
             choiceContext: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
         }
@@ -336,11 +336,11 @@ class AllocationService {
             requestedAt
         )
 
-        if (offline) {
+        if (prefetchedRegistryChoiceContext) {
             return this.createAllocationInstructionFromContext(
-                offline.factoryId,
+                prefetchedRegistryChoiceContext.factoryId,
                 choiceArgs,
-                offline.choiceContext
+                prefetchedRegistryChoiceContext.choiceContext
             )
         }
 
@@ -363,7 +363,7 @@ class AllocationService {
             | 'Allocation_ExecuteTransfer'
             | 'Allocation_Withdraw'
             | 'Allocation_Cancel',
-        ctx: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
+        choiceContext: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
     ): [ExerciseCommand, DisclosedContract[]] {
         const exercise: ExerciseCommand = {
             templateId,
@@ -371,12 +371,12 @@ class AllocationService {
             choice,
             choiceArgument: {
                 extraArgs: {
-                    context: ctx.choiceContextData,
+                    context: choiceContext.choiceContextData,
                     meta: EMPTY_META,
                 },
             },
         }
-        return [exercise, ctx.disclosedContracts ?? []]
+        return [exercise, choiceContext.disclosedContracts ?? []]
     }
 
     async fetchExecuteTransferChoiceContext(
@@ -409,21 +409,21 @@ class AllocationService {
     async createExecuteTransferAllocation(
         allocationCid: string,
         registryUrl: string,
-        offline?: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
+        prefetchedRegistryChoiceContext?: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        if (offline) {
+        if (prefetchedRegistryChoiceContext) {
             return this.createExecuteTransferAllocationFromContext(
                 allocationCid,
-                offline
+                prefetchedRegistryChoiceContext
             )
         }
-        const ctx = await this.fetchExecuteTransferChoiceContext(
+        const choiceContext = await this.fetchExecuteTransferChoiceContext(
             allocationCid,
             registryUrl
         )
         return this.createExecuteTransferAllocationFromContext(
             allocationCid,
-            ctx
+            choiceContext
         )
     }
 
@@ -455,19 +455,22 @@ class AllocationService {
     async createWithdrawAllocation(
         allocationCid: string,
         registryUrl: string,
-        offline?: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
+        prefetchedRegistryChoiceContext?: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        if (offline) {
+        if (prefetchedRegistryChoiceContext) {
             return this.createWithdrawAllocationFromContext(
                 allocationCid,
-                offline
+                prefetchedRegistryChoiceContext
             )
         }
-        const ctx = await this.fetchWithdrawAllocationChoiceContext(
+        const choiceContext = await this.fetchWithdrawAllocationChoiceContext(
             allocationCid,
             registryUrl
         )
-        return this.createWithdrawAllocationFromContext(allocationCid, ctx)
+        return this.createWithdrawAllocationFromContext(
+            allocationCid,
+            choiceContext
+        )
     }
 
     async fetchCancelAllocationChoiceContext(
@@ -498,19 +501,22 @@ class AllocationService {
     async createCancelAllocation(
         allocationCid: string,
         registryUrl: string,
-        offline?: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
+        prefetchedRegistryChoiceContext?: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        if (offline) {
+        if (prefetchedRegistryChoiceContext) {
             return this.createCancelAllocationFromContext(
                 allocationCid,
-                offline
+                prefetchedRegistryChoiceContext
             )
         }
-        const ctx = await this.fetchCancelAllocationChoiceContext(
+        const choiceContext = await this.fetchCancelAllocationChoiceContext(
             allocationCid,
             registryUrl
         )
-        return this.createCancelAllocationFromContext(allocationCid, ctx)
+        return this.createCancelAllocationFromContext(
+            allocationCid,
+            choiceContext
+        )
     }
 
     async createWithdrawAllocationInstruction(
@@ -638,7 +644,7 @@ class TransferService {
 
     async fetchTransferFactoryChoiceContext(
         registryUrl: string,
-        choiceArgs: Record<string, unknown>
+        choiceArgs: CreateTransferChoiceArgs
     ): Promise<
         transferInstructionRegistryTypes['schemas']['TransferFactoryWithChoiceContext']
     > {
@@ -679,7 +685,7 @@ class TransferService {
         memo?: string,
         expiryDate?: Date,
         meta?: Metadata,
-        offline?: {
+        prefetchedRegistryChoiceContext?: {
             factoryId: string
             choiceContext: transferInstructionRegistryTypes['schemas']['ChoiceContext']
         }
@@ -697,11 +703,11 @@ class TransferService {
                 meta
             )
 
-            if (offline) {
+            if (prefetchedRegistryChoiceContext) {
                 return this.createTransferFromContext(
-                    offline.factoryId,
+                    prefetchedRegistryChoiceContext.factoryId,
                     choiceArgs,
-                    offline.choiceContext
+                    prefetchedRegistryChoiceContext.choiceContext
                 )
             }
 
@@ -777,24 +783,27 @@ class TransferService {
     async createAcceptTransferInstruction(
         transferInstructionCid: string,
         registryUrl: string,
-        offline?: transferInstructionRegistryTypes['schemas']['ChoiceContext']
+        prefetchedRegistryChoiceContext?: transferInstructionRegistryTypes['schemas']['ChoiceContext']
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        if (offline) {
+        if (prefetchedRegistryChoiceContext) {
             return this.createAcceptTransferInstructionFromContext(
                 transferInstructionCid,
                 {
-                    choiceContextData: offline.choiceContextData,
-                    disclosedContracts: offline.disclosedContracts,
+                    choiceContextData:
+                        prefetchedRegistryChoiceContext.choiceContextData,
+                    disclosedContracts:
+                        prefetchedRegistryChoiceContext.disclosedContracts,
                 }
             )
         }
-        const ctx = await this.fetchAcceptTransferInstructionChoiceContext(
-            transferInstructionCid,
-            registryUrl
-        )
+        const choiceContext =
+            await this.fetchAcceptTransferInstructionChoiceContext(
+                transferInstructionCid,
+                registryUrl
+            )
         return this.createAcceptTransferInstructionFromContext(
             transferInstructionCid,
-            ctx
+            choiceContext
         )
     }
 
@@ -853,24 +862,27 @@ class TransferService {
     async createRejectTransferInstruction(
         transferInstructionCid: string,
         registryUrl: string,
-        offline?: transferInstructionRegistryTypes['schemas']['ChoiceContext']
+        prefetchedRegistryChoiceContext?: transferInstructionRegistryTypes['schemas']['ChoiceContext']
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        if (offline) {
+        if (prefetchedRegistryChoiceContext) {
             return this.createRejectTransferInstructionFromContext(
                 transferInstructionCid,
                 {
-                    choiceContextData: offline.choiceContextData,
-                    disclosedContracts: offline.disclosedContracts,
+                    choiceContextData:
+                        prefetchedRegistryChoiceContext.choiceContextData,
+                    disclosedContracts:
+                        prefetchedRegistryChoiceContext.disclosedContracts,
                 }
             )
         }
-        const ctx = await this.fetchRejectTransferInstructionChoiceContext(
-            transferInstructionCid,
-            registryUrl
-        )
+        const choiceContext =
+            await this.fetchRejectTransferInstructionChoiceContext(
+                transferInstructionCid,
+                registryUrl
+            )
         return this.createRejectTransferInstructionFromContext(
             transferInstructionCid,
-            ctx
+            choiceContext
         )
     }
 
@@ -930,24 +942,27 @@ class TransferService {
     async createWithdrawTransferInstruction(
         transferInstructionCid: string,
         registryUrl: string,
-        offline?: transferInstructionRegistryTypes['schemas']['ChoiceContext']
+        prefetchedRegistryChoiceContext?: transferInstructionRegistryTypes['schemas']['ChoiceContext']
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        if (offline) {
+        if (prefetchedRegistryChoiceContext) {
             return this.createWithdrawTransferInstructionFromContext(
                 transferInstructionCid,
                 {
-                    choiceContextData: offline.choiceContextData,
-                    disclosedContracts: offline.disclosedContracts,
+                    choiceContextData:
+                        prefetchedRegistryChoiceContext.choiceContextData,
+                    disclosedContracts:
+                        prefetchedRegistryChoiceContext.disclosedContracts,
                 }
             )
         }
-        const ctx = await this.fetchWithdrawTransferInstructionChoiceContext(
-            transferInstructionCid,
-            registryUrl
-        )
+        const choiceContext =
+            await this.fetchWithdrawTransferInstructionChoiceContext(
+                transferInstructionCid,
+                registryUrl
+            )
         return this.createWithdrawTransferInstructionFromContext(
             transferInstructionCid,
-            ctx
+            choiceContext
         )
     }
 }
