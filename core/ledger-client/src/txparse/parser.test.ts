@@ -66,7 +66,12 @@ describe('TransactionParser', () => {
             events: [],
         } as unknown as JsTransaction
 
-        const parser = new TransactionParser(tx, mockLedgerClient, partyId)
+        const parser = new TransactionParser(
+            tx,
+            mockLedgerClient,
+            partyId,
+            false
+        )
         const parsed = await parser.parseTransaction()
 
         const expected: Transaction = {
@@ -89,7 +94,8 @@ describe('TransactionParser', () => {
                 const parser = new TransactionParser(
                     txMock,
                     mockLedgerClient,
-                    partyId
+                    partyId,
+                    false
                 )
                 return parser.parseTransaction()
             })
@@ -124,7 +130,12 @@ describe('TransactionParser', () => {
             ],
         } as unknown as JsTransaction
 
-        const parser = new TransactionParser(tx, mockLedgerClient, partyId)
+        const parser = new TransactionParser(
+            tx,
+            mockLedgerClient,
+            partyId,
+            false
+        )
         const parsed = await parser.parseTransaction()
 
         expect(parsed.events).toEqual([])
