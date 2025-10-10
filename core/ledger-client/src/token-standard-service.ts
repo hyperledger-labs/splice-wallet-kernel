@@ -680,10 +680,10 @@ export class TokenStandardService {
         expiryDate?: Date,
         meta?: Record<string, unknown>
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        const inputHoldingCids: string[] = await this.getInputHoldingsCids(
-            sender,
-            inputUtxos
-        )
+        // const inputHoldingCids: string[] = await this.getInputHoldingsCids(
+        //     sender,
+        //     inputUtxos
+        // )
 
         const [transferCommand, disclosedContracts] = await this.createTransfer(
             sender,
@@ -698,6 +698,51 @@ export class TokenStandardService {
             meta
         )
 
+        // const choiceArgs = {
+        //     cid: transferCommand.contractId,
+        //     proxyArg: {
+        //         featuredAppRightCid: featuredAppRightCid,
+        //         beneficiaries: [
+        //             {
+        //                 beneficiary: exchangeParty,
+        //                 weight: 1.0,
+        //             },
+        //         ],
+        //         choiceArg: {
+        //             expectedAdmin: instrumentAdmin,
+        //             transfer: {
+        //                 sender,
+        //                 receiver,
+        //                 amount,
+        //                 inputHoldingCids,
+        //                 instrumentId: {
+        //                     admin: instrumentAdmin,
+        //                     id: instrumentId,
+        //                 },
+        //                 requestedAt: new Date(
+        //                     Date.now() - 60 * 1000
+        //                 ).toISOString(),
+        //                 //given expiryDate or 24 hours
+        //                 executeBefore: (
+        //                     expiryDate ??
+        //                     new Date(Date.now() + 24 * 60 * 60 * 1000)
+        //                 ).toISOString(),
+        //                 meta: {
+        //                     values: {
+        //                         ['splice.lfdecentralizedtrust.org/reason']:
+        //                             memo || '',
+        //                         ...meta,
+        //                     },
+        //                 },
+        //             },
+        //             extraArgs: {
+        //                 context: { values: {} },
+        //                 meta: { values: {} },
+        //             },
+        //         },
+        //     },
+        // }
+
         const choiceArgs = {
             cid: transferCommand.contractId,
             proxyArg: {
@@ -708,40 +753,7 @@ export class TokenStandardService {
                         weight: 1.0,
                     },
                 ],
-                choiceArg: {
-                    expectedAdmin: instrumentAdmin,
-                    transfer: {
-                        sender,
-                        receiver,
-                        amount,
-                        inputHoldingCids,
-                        instrumentId: {
-                            admin: instrumentAdmin,
-                            id: instrumentId,
-                        },
-                        // lock: null,
-                        requestedAt: new Date(
-                            Date.now() - 60 * 1000
-                        ).toISOString(),
-                        //given expiryDate or 24 hours
-                        executeBefore: (
-                            expiryDate ??
-                            new Date(Date.now() + 24 * 60 * 60 * 1000)
-                        ).toISOString(),
-                        // inputUtxos,
-                        meta: {
-                            values: {
-                                ['splice.lfdecentralizedtrust.org/reason']:
-                                    memo || '',
-                                ...meta,
-                            },
-                        },
-                    },
-                    extraArgs: {
-                        context: { values: {} },
-                        meta: { values: {} },
-                    },
-                },
+                choiceArg: transferCommand.choiceArgument,
             },
         }
 
