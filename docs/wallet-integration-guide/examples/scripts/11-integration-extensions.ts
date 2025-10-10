@@ -128,6 +128,22 @@ await sdk.tokenStandard?.createAndSubmitTapInternal(
 
 await sdk.setPartyId(treasuryParty?.partyId!)
 
+const [tapCommand1, disclosedContracts3] = await sdk.tokenStandard!.createTap(
+    treasuryParty!.partyId,
+    '20000000',
+    {
+        instrumentId: 'Amulet',
+        instrumentAdmin: instrumentAdminPartyId,
+    }
+)
+
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    tapCommand1,
+    keyPairTreasury.privateKey,
+    v4(),
+    disclosedContracts3
+)
+
 const transferPreApprovalProposal =
     await sdk.userLedger?.createTransferPreapprovalCommand(
         exchangeParty!,
@@ -216,15 +232,15 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 await new Promise((res) => setTimeout(res, 5000))
 
 try {
-    await sdk.setPartyId(senderParty?.partyId!)
+    await sdk.setPartyId(treasuryParty?.partyId!)
 
     const [transferCommand, disclosedContracts2] =
         await sdk.tokenStandard!.createTransferUsingDelegateProxy(
             exchangeParty!,
             proxyCid!,
             featuredAppRights?.contract_id!,
-            senderParty?.partyId!,
             treasuryParty?.partyId!,
+            senderParty?.partyId!,
             '100',
             'Amulet',
             instrumentAdminPartyId,
@@ -236,12 +252,12 @@ try {
 
     logger.info(transferCommand, `created delegate exercise command`)
 
-    // const p = [delegateProxyDisclosedContracts, ...disclosedContracts2]
+    const p = [delegateProxyDisclosedContracts, ...disclosedContracts2]
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         transferCommand,
         senderPartyKeyPair.privateKey,
         v4(),
-        disclosedContracts2
+        p
     )
 } catch (e) {
     logger.error(e)

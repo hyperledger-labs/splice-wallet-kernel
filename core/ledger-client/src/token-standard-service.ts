@@ -690,7 +690,7 @@ export class TokenStandardService {
             receiver,
             amount,
             instrumentAdmin,
-            instrumentAdmin,
+            instrumentId,
             registryUrl,
             inputUtxos,
             memo,
