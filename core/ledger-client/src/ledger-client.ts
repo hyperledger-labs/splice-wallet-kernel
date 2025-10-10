@@ -356,7 +356,6 @@ export class LedgerClient {
         return
     }
 
-
     /** TODO: simplify once 3.4 snapshot contains this endpoint */
     public async allocateExternalParty(
         synchronizerId: string,
