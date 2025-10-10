@@ -559,6 +559,28 @@ export class LedgerController {
         ]
     }
 
+    async submitCommand(
+        commands: WrappedCommand | WrappedCommand[] | unknown,
+        commandId?: string,
+        disclosedContracts?: Types['DisclosedContract'][]
+    ) {
+        const commandArray = Array.isArray(commands) ? commands : [commands]
+
+        const request = {
+            commands: commandArray,
+            commandId: v4(),
+            userId: this.userId,
+            actAs: [this.getPartyId()],
+            readAs: [],
+            disclosedContracts: disclosedContracts || [],
+            synchronizerId: this.getSynchronizerId(),
+            verboseHashing: false,
+            packageIdSelectionPreference: [],
+        }
+
+        return await this.client.post('/v2/commands/submit-and-wait', request)
+    }
+
     /**
      * Lists all wallets (parties) the user has access to.
      * use a pageToken from a previous request to query the next page.
@@ -603,6 +625,26 @@ export class LedgerController {
             '/v2/state/connected-synchronizers',
             params
         )
+    }
+
+    async createDelegateProxyCommand(
+        exchangeParty: PartyId,
+        treasuryParty: PartyId
+    ) {
+        return {
+            CreateCommand: {
+                templateId:
+                    '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+                createArguments: {
+                    provider: exchangeParty,
+                    delegate: treasuryParty,
+                },
+            },
+        }
+    }
+
+    async grantRights(readAs?: PartyId[], actAs?: PartyId[]) {
+        return await this.client.grantRights(this.userId, readAs, actAs)
     }
 
     /**
@@ -689,6 +731,15 @@ export class LedgerController {
      */
     async ledgerEnd(): Promise<GetResponse<'/v2/state/ledger-end'>> {
         return await this.client.get('/v2/state/ledger-end')
+    }
+
+    async getAppRewardCoupons() {
+        const end = await this.ledgerEnd()
+
+        await this.activeContracts({
+            offset: end.offset,
+            templateIds: ['#splice-amulet:Splice.Amulet:AppRewardCoupon'],
+        })
     }
 
     /**

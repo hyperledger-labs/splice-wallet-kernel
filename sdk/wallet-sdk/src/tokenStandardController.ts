@@ -484,6 +484,41 @@ export class TokenStandardController {
         }
     }
 
+    async createTransferUsingDelegateProxy(
+        exchangeParty: PartyId,
+        proxyCid: string,
+        featuredAppRightCid: string,
+        sender: PartyId,
+        receiver: PartyId,
+        amount: string,
+        instrumentId: string,
+        instrumentAdmin: PartyId,
+        inputUtxos?: string[],
+        memo?: string,
+        expiryDate?: Date,
+        meta?: Record<string, unknown>
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const [exercise, disclosedContracts] =
+            await this.service.createDelegateProxyTranfser(
+                sender,
+                receiver,
+                exchangeParty,
+                amount,
+                instrumentAdmin,
+                instrumentId,
+                this.getTransferFactoryRegistryUrl().href,
+                featuredAppRightCid,
+                proxyCid,
+                inputUtxos,
+                memo,
+                expiryDate,
+                meta
+            )
+        return [{ ExerciseCommand: exercise }, disclosedContracts]
+    }
+
     async createAllocationInstruction(
         allocationSpecification: AllocationSpecification,
         expectedAdmin: PartyId,
