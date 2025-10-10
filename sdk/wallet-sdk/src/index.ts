@@ -156,7 +156,6 @@ export class WalletSDKImpl implements WalletSDK {
      */
     async connectAdmin(): Promise<WalletSDK> {
         const { userId } = await this.auth.getAdminToken()
-        await this._authTokenProvider.getAdminAccessToken()
         this.adminLedger = this.ledgerFactory(userId, this._authTokenProvider)
         return this
     }

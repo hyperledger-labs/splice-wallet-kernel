@@ -129,10 +129,6 @@ export class ClientCredentialOAuthController extends BaseAuthController {
             throw new Error('UserSecret is not defined.')
 
         const cachedAccessToken = this._accessTokens['user']
-        this._logger?.info(
-            'getUserToken - cachedAccessToken:',
-            cachedAccessToken
-        )
         if (cachedAccessToken && this._isJwtValid(cachedAccessToken)) {
             this._logger?.info('Using cached user token')
             return { userId: this._userId!, accessToken: cachedAccessToken }
@@ -174,7 +170,6 @@ export class ClientCredentialOAuthController extends BaseAuthController {
 
         const cachedAccessToken = this._accessTokens['admin']
         if (cachedAccessToken && this._isJwtValid(cachedAccessToken)) {
-            console.log('Using cached admin token')
             this._logger?.info('Using cached admin token')
             return { userId: this._adminId!, accessToken: cachedAccessToken }
         }
@@ -183,8 +178,6 @@ export class ClientCredentialOAuthController extends BaseAuthController {
             const accessToken = await this._pendingTokenRequests['admin']
             return { userId: this._adminId!, accessToken }
         }
-
-        console.log('Creating new admin token')
         this._logger?.info('Creating new admin token')
 
         const tokenPromise = this.service.fetchToken({
