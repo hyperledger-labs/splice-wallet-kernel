@@ -21,6 +21,22 @@ export interface AuthController {
     userId: string | undefined
 }
 
+abstract class BaseAuthController implements AuthController {
+    abstract userId: string | undefined
+    abstract getUserToken(): Promise<AuthContext>
+    abstract getAdminToken(): Promise<AuthContext>
+
+    protected _isJwtValid(token: string): boolean {
+        try {
+            const payload = decodeJwt(token)
+            const now = Math.floor(Date.now() / 1000)
+            return typeof payload.exp === 'number' && payload.exp > now
+        } catch {
+            return false
+        }
+    }
+}
+
 /**
  * ClientCredentialOAuthController handles authentication using the OAuth2 M2M.
  * To have a working version it is required to set the following properties:
@@ -33,7 +49,7 @@ export interface AuthController {
  * - adminId
  * - adminSecret
  */
-export class ClientCredentialOAuthController implements AuthController {
+export class ClientCredentialOAuthController extends BaseAuthController {
     set logger(value: Logger) {
         this._logger = value
         this.service = new ClientCredentialsService(
@@ -94,6 +110,7 @@ export class ClientCredentialOAuthController implements AuthController {
         scope?: string,
         audience?: string
     ) {
+        super()
         this.service = new ClientCredentialsService(configUrl, logger)
         this._configUrl = configUrl
         this._logger = logger
@@ -162,7 +179,6 @@ export class ClientCredentialOAuthController implements AuthController {
             return { userId: this._adminId!, accessToken: cachedAccessToken }
         }
 
-        // Check if there's already a pending request for admin token
         if (this._pendingTokenRequests['admin']) {
             const accessToken = await this._pendingTokenRequests['admin']
             return { userId: this._adminId!, accessToken }
@@ -171,7 +187,6 @@ export class ClientCredentialOAuthController implements AuthController {
         console.log('Creating new admin token')
         this._logger?.info('Creating new admin token')
 
-        // Create and store the pending request
         const tokenPromise = this.service.fetchToken({
             clientId: this._adminId!,
             clientSecret: this._adminSecret!,
@@ -192,15 +207,6 @@ export class ClientCredentialOAuthController implements AuthController {
             delete this._pendingTokenRequests['admin']
         }
     }
-    private _isJwtValid(token: string): boolean {
-        try {
-            const payload = decodeJwt(token)
-            const now = Math.floor(Date.now() / 1000)
-            return typeof payload.exp === 'number' && payload.exp > now
-        } catch {
-            return false
-        }
-    }
 }
 
 /**
@@ -216,7 +222,7 @@ export class ClientCredentialOAuthController implements AuthController {
  * the following properties are also required:
  * - adminId
  */
-export class UnsafeAuthController implements AuthController {
+export class UnsafeAuthController extends BaseAuthController {
     userId: string | undefined
     adminId: string | undefined
     audience: string | undefined
@@ -226,6 +232,7 @@ export class UnsafeAuthController implements AuthController {
     private _accessTokens: Partial<Record<SubjectIdentifier, string>> = {}
 
     constructor(logger?: Logger) {
+        super()
         this._logger = logger
     }
 
@@ -263,16 +270,6 @@ export class UnsafeAuthController implements AuthController {
 
         this._accessTokens[subIdentifier] = jwt
         return { userId: sub, accessToken: jwt }
-    }
-
-    private _isJwtValid(token: string): boolean {
-        try {
-            const payload = decodeJwt(token)
-            const now = Math.floor(Date.now() / 1000)
-            return typeof payload.exp === 'number' && payload.exp > now
-        } catch {
-            return false
-        }
     }
 }
 
