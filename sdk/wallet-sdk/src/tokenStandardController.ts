@@ -500,54 +500,6 @@ export class TokenStandardController {
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
-        // const choiceArgs = {
-        //     cid: proxyCid,
-        //     proxyArg: {
-        //         featuredAppRightCid: featuredAppRightCid,
-        //         choiceArg: {
-        //             expectedAdmin: instrument.instrumentAdmin,
-        //             transfer: {
-        //                 sender,
-        //                 receiver,
-        //                 amount,
-        //                 instrumentId: {
-        //                     admin: instrument.instrumentAdmin,
-        //                     id: instrument.instrumentId,
-        //                 },
-        //                 lock: null,
-        //                 requestedAt: new Date(
-        //                     Date.now() - 60 * 1000
-        //                 ).toISOString(),
-        //                 //given expiryDate or 24 hours
-        //                 executeBefore: (
-        //                     expiryDate ??
-        //                     new Date(Date.now() + 24 * 60 * 60 * 1000)
-        //                 ).toISOString(),
-        //                 inputUtxos,
-        //                 meta: {
-        //                     values: {
-        //                         ['splice.lfdecentralizedtrust.org/reason']:
-        //                             memo || '',
-        //                         ...meta,
-        //                     },
-        //                 },
-        //             },
-        //         },
-        //     },
-        //     extraArgs: {
-        //         context: { values: {} },
-        //         meta: { values: {} },
-        //     },
-        // }
-
-        // const exercise: ExerciseCommand = {
-        //     templateId:
-        //         '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
-        //     contractId: proxyCid,
-        //     choice: 'DelegateProxy_TransferFactory_Transfer',
-        //     choiceArgument: choiceArgs,
-        // }
-
         const [exercise, disclosedContracts] =
             await this.service.createDelegateProxyTranfser(
                 sender,
