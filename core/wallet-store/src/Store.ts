@@ -34,6 +34,7 @@ export interface Wallet {
     namespace: string
     chainId: string
     signingProviderId: string
+    // hosted: [network]
 }
 
 // Session management
@@ -59,6 +60,7 @@ export interface Store {
     getPrimaryWallet(): Promise<Wallet | undefined>
     setPrimaryWallet(partyId: PartyId): Promise<void>
     addWallet(wallet: Wallet): Promise<void>
+    // removeWallet(partyId: Wallet): Promise<void>
 
     // Session methods
     getSession(): Promise<Session | undefined>
