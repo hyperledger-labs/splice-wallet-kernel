@@ -8,39 +8,34 @@ permissions:
     contents: read
 
 jobs:
-    docker-amd64:
-        runs-on: ubuntu-24.04
+    docker:
+        runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v5
+
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
 
             - uses: ./.github/actions/setup_yarn
 
             - name: Build project
-              shell: bash
               run: yarn build:all
 
             - name: Build docker image
-              shell: bash
-              run: yarn docker:build
+              run: yarn docker:pack
               working-directory: clients/remote
 
-    docker-arm:
-        runs-on: ubuntu-24.04-arm
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-
-            - uses: ./.github/actions/setup_yarn
-
-            - name: Build project
-              shell: bash
-              run: yarn build:all
-
-            - name: Build docker image
-              shell: bash
-              run: yarn docker:build
-              working-directory: clients/remote
+            - name: Build Docker image
+              uses: docker/build-push-action@v5
+              with:
+                  context: clients/remote/docker
+                  push: false
+                  #   tags: my-image:latest
+                  platforms: linux/amd64,linux/arm64
 
     build:
         runs-on: ubuntu-latest
