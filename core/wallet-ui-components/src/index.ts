@@ -6,6 +6,7 @@ export * from './components/AppLayout.js'
 export * from './components/Discovery.js'
 export * from './components/NetworkTable.js'
 export * from './components/NetworkForm.js'
+export * from './components/NotFound.js'
 
 export * from './windows/discovery.js'
 export * from './windows/popup.js'
