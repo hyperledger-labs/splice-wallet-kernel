@@ -16,8 +16,8 @@ import fs from 'fs/promises'
 
 const logger = pino({ name: '11-integration-extensions', level: 'info' })
 
-// This example needs uploaded .dar for splice-token-test-trading-app
-// It's in files of localnet, but it's not uploaded to participant, so we need to do this in the script
+// This example script implements https://docs.digitalasset.com/integrate/devnet/exchange-integration/extensions.html#optimizing-app-rewards
+// It requires the /dars/splice-util-featured-app-proxies-1.1.0.dar which is in files of localnet, but it's not uploaded to participant, so we need to do this in the script
 // Adjust if to your .localnet location
 const PATH_TO_LOCALNET = '../../../../.localnet'
 const PATH_TO_DAR_IN_LOCALNET =
@@ -60,11 +60,6 @@ await sdk.setPartyId(treasuryParty!.partyId)
 const synchronizers = await sdk.userLedger?.listSynchronizers()
 
 const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
-
-//debug
-const token = await sdk.auth.getAdminToken()
-
-logger.info(token, 'admin token')
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 
@@ -227,56 +222,34 @@ logger.info(bobPreapproval, 'created pre approval for bob')
 
 await new Promise((res) => setTimeout(res, 5000))
 
-{
-    await sdk.setPartyId(treasuryParty!.partyId)
-    const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
-    logger.info(aliceHoldings, '[ALICE] holding transactions')
+await sdk.setPartyId(treasuryParty?.partyId!)
 
-    await sdk.setPartyId(receiverParty!.partyId)
-    const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
-    logger.info(bobHoldings, '[BOB] holding transactions')
-    const transferPreApprovalStatus =
-        await sdk.tokenStandard?.getTransferPreApprovalByParty(
-            receiverParty!.partyId,
-            'Amulet'
-        )
-    logger.info(transferPreApprovalStatus, '[BOB] transfer preapproval status')
-}
-
-try {
-    await sdk.setPartyId(treasuryParty?.partyId!)
-
-    const [transferCommand, disclosedContracts2] =
-        await sdk.tokenStandard!.createTransferUsingDelegateProxy(
-            exchangeParty!,
-            proxyCid!,
-            featuredAppRights?.contract_id!,
-            treasuryParty?.partyId!,
-            receiverParty?.partyId!,
-            '100',
-            'Amulet',
-            instrumentAdminPartyId,
-            [],
-            'memo-ref'
-        )
-
-    await new Promise((res) => setTimeout(res, 5000))
-
-    logger.info(transferCommand, `created delegate exercise command`)
-
-    //need this for 2 step, but not 1 step?
-    // const p = [delegateProxyDisclosedContracts, ...disclosedContracts2]
-    const result = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-        transferCommand,
-        keyPairTreasury.privateKey,
-        v4(),
-        disclosedContracts2
+const [transferCommand, disclosedContracts2] =
+    await sdk.tokenStandard!.createTransferUsingDelegateProxy(
+        exchangeParty!,
+        proxyCid!,
+        featuredAppRights?.contract_id!,
+        treasuryParty?.partyId!,
+        receiverParty?.partyId!,
+        '100',
+        'Amulet',
+        instrumentAdminPartyId,
+        [],
+        'memo-ref'
     )
 
-    logger.info(result, `submitted command`)
-} catch (e) {
-    logger.error(e)
-}
+await new Promise((res) => setTimeout(res, 5000))
+
+logger.debug(transferCommand, `created delegate exercise command`)
+
+const result = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    transferCommand,
+    keyPairTreasury.privateKey,
+    v4(),
+    disclosedContracts2
+)
+
+logger.debug(result, `submitted command`)
 
 await new Promise((res) => setTimeout(res, 5000))
 
