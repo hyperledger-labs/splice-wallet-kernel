@@ -259,4 +259,8 @@ await new Promise((res) => setTimeout(res, 5000))
             'Amulet'
         )
     logger.info(transferPreApprovalStatus, '[BOB] transfer preapproval status')
+
+    await sdk.setPartyId(exchangeParty!)
+    const appRewardCoupons = await sdk.userLedger?.getAppRewardCoupons()
+    logger.info(appRewardCoupons, `[EXCHANGE PARTY] app reward coupons`)
 }
