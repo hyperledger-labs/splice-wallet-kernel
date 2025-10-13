@@ -1,34 +1,17 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LitElement, html, css, unsafeCSS } from 'lit'
+import { html, unsafeCSS } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
-import bootstrapCss from 'bootstrap/dist/css/bootstrap.min.css?inline'
-import defaultTheme from '../themes/default.css?inline'
+import defaultTheme from '../../themes/default.css?inline'
+import { BaseElement } from '../internal/BaseElement.js'
 
 @customElement('app-layout')
-export class AppLayout extends LitElement {
+export class AppLayout extends BaseElement {
     @property({ type: String }) iconSrc: string = '/images/icon.png'
     @property({ type: String }) themeSrc?: string
 
-    static styles = css`
-        ${unsafeCSS(bootstrapCss.replaceAll(/:root/g, ':root,:host'))}
-
-        :host {
-            --bs-body-color: var(--splice-wk-text-color);
-
-            margin: 0;
-            font-family: var(--bs-body-font-family);
-            font-size: var(--bs-body-font-size);
-            font-weight: var(--bs-body-font-weight);
-            line-height: var(--bs-body-line-height);
-            color: var(--bs-body-color);
-            text-align: var(--bs-body-text-align);
-            background-color: var(--bs-body-bg);
-            -webkit-text-size-adjust: 100%;
-            -webkit-tap-highlight-color: transparent;
-        }
-    `
+    static styles = [BaseElement.styles]
 
     private customThemeCss: string | null = null
 

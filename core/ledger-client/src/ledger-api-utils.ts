@@ -15,6 +15,7 @@ import {
 } from '@canton-network/core-token-standard'
 
 type TransactionFilter = Types['TransactionFilter']
+type EventFormat = Types['EventFormat']
 type CreatedEvent = Types['CreatedEvent']
 type ExercisedEvent = Types['ExercisedEvent']
 type ArchivedEvent = Types['ArchivedEvent']
@@ -26,7 +27,76 @@ type Command = Types['Command']
 type DeduplicationPeriod2 = Types['DeduplicationPeriod2']
 type Completion = Types['Completion']['value']
 
-export function filtersByParty(
+export function TransactionFilterBySetup(
+    interfaceNames: string[] | string,
+    options: {
+        includeWildcard?: boolean
+        isMasterUser?: boolean
+        partyId?: PartyId | undefined
+    } = { includeWildcard: false, isMasterUser: false }
+): TransactionFilter {
+    const interfaceArrayed = Array.isArray(interfaceNames)
+        ? interfaceNames
+        : [interfaceNames]
+    if (options.isMasterUser)
+        return {
+            filtersByParty: {},
+            filtersForAnyParty:
+                filtersForAnyParty(
+                    interfaceArrayed,
+                    options.includeWildcard ?? false
+                ) ?? {},
+        }
+    else if (!options.partyId || options.partyId === undefined)
+        throw new Error('Party must be provided for non-master users')
+    else
+        return {
+            filtersByParty:
+                filtersByParty(
+                    options.partyId,
+                    interfaceArrayed,
+                    options.includeWildcard ?? false
+                ) ?? {},
+        }
+}
+
+export function EventFilterBySetup(
+    interfaceNames: string[] | string,
+    options: {
+        verbose?: boolean
+        includeWildcard?: boolean
+        isMasterUser?: boolean
+        partyId?: PartyId | undefined
+    } = { includeWildcard: false, isMasterUser: false }
+): EventFormat {
+    const interfaceArrayed = Array.isArray(interfaceNames)
+        ? interfaceNames
+        : [interfaceNames]
+    if (options.isMasterUser)
+        return {
+            filtersByParty: {},
+            filtersForAnyParty:
+                filtersForAnyParty(
+                    interfaceArrayed,
+                    options.includeWildcard ?? false
+                ) ?? {},
+            verbose: options.verbose ?? false,
+        }
+    else if (!options.partyId || options.partyId === undefined)
+        throw new Error('Party must be provided for non-master users')
+    else
+        return {
+            filtersByParty:
+                filtersByParty(
+                    options.partyId,
+                    interfaceArrayed,
+                    options.includeWildcard ?? false
+                ) ?? {},
+            verbose: options.verbose ?? false,
+        }
+}
+
+function filtersByParty(
     party: PartyId,
     interfaceNames: string[],
     includeWildcard: boolean
@@ -64,6 +134,44 @@ export function filtersByParty(
                 ...wildcardFilter,
             ],
         },
+    }
+}
+
+function filtersForAnyParty(
+    interfaceNames: string[],
+    includeWildcard: boolean
+): TransactionFilter['filtersForAnyParty'] {
+    const wildcardFilter = includeWildcard
+        ? [
+              {
+                  identifierFilter: {
+                      WildcardFilter: {
+                          value: {
+                              includeCreatedEventBlob: true,
+                          },
+                      },
+                  },
+              },
+          ]
+        : []
+
+    return {
+        cumulative: [
+            ...interfaceNames.map((interfaceName) => {
+                return {
+                    identifierFilter: {
+                        InterfaceFilter: {
+                            value: {
+                                interfaceId: interfaceName,
+                                includeInterfaceView: true,
+                                includeCreatedEventBlob: true,
+                            },
+                        },
+                    },
+                }
+            }),
+            ...wildcardFilter,
+        ],
     }
 }
 
@@ -144,7 +252,7 @@ export function ensureInterfaceViewIsPresent(
 
 type Meta = { values: { [key: string]: string } } | undefined
 
-export function mergeMetas(event: ExercisedEvent): Meta {
+export function mergeMetas(event: ExercisedEvent, extra?: Meta): Meta {
     // Add a type assertion to help TypeScript understand the shape of choiceArgument
     const choiceArgument = event.choiceArgument as
         | {
@@ -158,6 +266,7 @@ export function mergeMetas(event: ExercisedEvent): Meta {
         choiceArgument?.transfer?.meta,
         choiceArgument?.extraArgs?.meta,
         choiceArgument?.meta,
+        extra,
         (event.exerciseResult as { meta?: Meta } | undefined)?.meta,
     ]
     const result: { [key: string]: string } = {}

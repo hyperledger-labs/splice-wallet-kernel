@@ -15,6 +15,7 @@ export default async function () {
         ledgerFactory: localNetLedgerDefault, // or use your specific configuration
         topologyFactory: localNetTopologyDefault, // or use your specific configuration
     })
+    await sdk.connect()
     await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
     const key = createKeyPair()
@@ -22,10 +23,10 @@ export default async function () {
     // partyHint is optional but recommended to make it easier to identify the party
     const partyHint = 'my-wallet-1'
 
-    const party = await sdk.topology?.prepareSignAndSubmitExternalParty(
+    const party = await sdk.userLedger?.signAndAllocateExternalParty(
         key.privateKey,
         partyHint
     )
 
-    return party
+    return party?.partyId
 }

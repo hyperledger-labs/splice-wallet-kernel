@@ -26,7 +26,8 @@ import { LedgerClient } from './ledger-client.js'
 import { TokenStandardTransactionInterfaces } from './constants.js'
 import {
     ensureInterfaceViewIsPresent,
-    filtersByParty,
+    TransactionFilterBySetup,
+    EventFilterBySetup,
 } from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
 import {
@@ -73,7 +74,8 @@ class CoreService {
         private ledgerClient: LedgerClient,
         private scanProxyClient: ScanProxyClient,
         readonly logger: Logger,
-        private accessToken: string
+        private accessToken: string,
+        private readonly isMasterUser: boolean
     ) {}
 
     getTokenStandardClient(registryUrl: string): TokenStandardClient {
@@ -119,7 +121,7 @@ class CoreService {
 
     async listContractsByInterface<T = ViewValue>(
         interfaceId: string,
-        partyId: PartyId
+        partyId?: PartyId
     ): Promise<PrettyContract<T>[]> {
         try {
             const ledgerEnd = await this.ledgerClient.get(
@@ -127,13 +129,10 @@ class CoreService {
             )
             const acsResponses: JsGetActiveContractsResponse[] =
                 await this.ledgerClient.post('/v2/state/active-contracts', {
-                    filter: {
-                        filtersByParty: filtersByParty(
-                            partyId,
-                            [interfaceId],
-                            false
-                        ),
-                    },
+                    filter: TransactionFilterBySetup(interfaceId, {
+                        isMasterUser: this.isMasterUser,
+                        partyId: partyId,
+                    }),
                     verbose: false,
                     activeAtOffset: ledgerEnd.offset,
                 })
@@ -196,7 +195,8 @@ class CoreService {
                     const parser = new TransactionParser(
                         tx,
                         ledgerClient,
-                        partyId
+                        partyId,
+                        this.isMasterUser
                     )
 
                     return await parser.parseTransaction()
@@ -221,7 +221,12 @@ class CoreService {
         ledgerClient: LedgerClient
     ): Promise<Transaction> {
         const tx = getTransactionResponse.transaction
-        const parser = new TransactionParser(tx, ledgerClient, partyId)
+        const parser = new TransactionParser(
+            tx,
+            ledgerClient,
+            partyId,
+            this.isMasterUser
+        )
         const parsedTx = await parser.parseTransaction()
         return renderTransaction(parsedTx)
     }
@@ -975,14 +980,16 @@ export class TokenStandardService {
     constructor(
         private ledgerClient: LedgerClient,
         private scanProxyClient: ScanProxyClient,
-        private readonly logger: Logger,
-        private accessToken: string
+        private logger: Logger,
+        private accessToken: string,
+        private readonly isMasterUser: boolean
     ) {
         this.core = new CoreService(
             ledgerClient,
             scanProxyClient,
             logger,
-            accessToken
+            accessToken,
+            isMasterUser
         )
         this.allocation = new AllocationService(this.core)
         this.transfer = new TransferService(this.core)
@@ -1048,7 +1055,7 @@ export class TokenStandardService {
     // i.e. when querying by TransferInstruction interfaceId, <T> would be TransferInstructionView from daml codegen
     async listContractsByInterface<T = ViewValue>(
         interfaceId: string,
-        partyId: PartyId
+        partyId?: PartyId
     ): Promise<PrettyContract<T>[]> {
         return this.core.listContractsByInterface<T>(interfaceId, partyId)
     }
@@ -1073,14 +1080,14 @@ export class TokenStandardService {
                 await this.ledgerClient.post('/v2/updates/flats', {
                     updateFormat: {
                         includeTransactions: {
-                            eventFormat: {
-                                filtersByParty: filtersByParty(
-                                    partyId,
-                                    TokenStandardTransactionInterfaces,
-                                    true
-                                ),
-                                verbose: false,
-                            },
+                            eventFormat: EventFilterBySetup(
+                                TokenStandardTransactionInterfaces,
+                                {
+                                    includeWildcard: true,
+                                    isMasterUser: this.isMasterUser,
+                                    partyId: partyId,
+                                }
+                            ),
                             transactionShape:
                                 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
                         },
@@ -1105,17 +1112,15 @@ export class TokenStandardService {
         updateId: string,
         partyId: PartyId
     ): Promise<Transaction> {
-        const filter = filtersByParty(
-            partyId,
-            TokenStandardTransactionInterfaces,
-            true
-        )
-
         const transactionFormat: TransactionFormat = {
-            eventFormat: {
-                filtersByParty: filter,
-                verbose: false,
-            },
+            eventFormat: EventFilterBySetup(
+                TokenStandardTransactionInterfaces,
+                {
+                    includeWildcard: true,
+                    isMasterUser: this.isMasterUser,
+                    partyId: partyId,
+                }
+            ),
             transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
         }
 
@@ -1248,5 +1253,108 @@ export class TokenStandardService {
             },
             [disclosedContracts],
         ]
+    }
+
+    private async toPrettyTransactionsPerParty(
+        updates: JsGetUpdatesResponse[],
+        parties: PartyId[],
+        ledgerClient: LedgerClient
+    ): Promise<Map<PartyId, PrettyTransactions>> {
+        const all = await Promise.all(
+            parties.map(
+                async (partyId): Promise<[PartyId, PrettyTransactions]> => [
+                    partyId,
+                    await this.toPrettyTransactions(
+                        updates,
+                        partyId,
+                        ledgerClient
+                    ),
+                ]
+            )
+        )
+        return new Map(all)
+    }
+
+    private async toPrettyTransactions(
+        updates: JsGetUpdatesResponse[],
+        partyId: PartyId,
+        ledgerClient: LedgerClient
+    ): Promise<PrettyTransactions> {
+        // Runtime filters that also let TS know which of OneOfs types to check against
+        const isOffsetCheckpointUpdate = (
+            updateResponse: JsGetUpdatesResponse
+        ): updateResponse is OffsetCheckpointUpdate =>
+            !!updateResponse?.update?.OffsetCheckpoint
+        const isTransactionUpdate = (
+            updateResponse: JsGetUpdatesResponse
+        ): updateResponse is TransactionUpdate =>
+            !!updateResponse.update?.Transaction?.value
+
+        const offsetCheckpoints: number[] = updates
+            .filter(isOffsetCheckpointUpdate)
+            .map((update) => update.update.OffsetCheckpoint.value.offset)
+        const latestCheckpointOffset = Math.max(...offsetCheckpoints)
+
+        const transactions: Transaction[] = await Promise.all(
+            updates
+                // exclude OffsetCheckpoint, Reassignment, TopologyTransaction
+                .filter(isTransactionUpdate)
+                .map(async (update) => {
+                    const tx = update.update.Transaction.value
+                    const parser = new TransactionParser(
+                        tx,
+                        ledgerClient,
+                        partyId,
+                        this.isMasterUser
+                    )
+
+                    return await parser.parseTransaction()
+                })
+        )
+
+        return {
+            // OffsetCheckpoint can be anywhere... or not at all, maybe
+            nextOffset: Math.max(
+                latestCheckpointOffset,
+                ...transactions.map((tx) => tx.offset)
+            ),
+            transactions: transactions
+                .filter((tx) => tx.events.length > 0)
+                .map(renderTransaction),
+        }
+    }
+
+    private async toPrettyTransaction(
+        getTransactionResponse: JsGetTransactionResponse,
+        partyId: PartyId,
+        ledgerClient: LedgerClient
+    ): Promise<Transaction> {
+        const tx = getTransactionResponse.transaction
+        const parser = new TransactionParser(
+            tx,
+            ledgerClient,
+            partyId,
+            this.isMasterUser
+        )
+        const parsedTx = await parser.parseTransaction()
+        return renderTransaction(parsedTx)
+    }
+
+    // returns object with JsActiveContract content
+    // and contractId and interface view value extracted from it as separate fields for convenience
+    private toPrettyContract<T>(
+        interfaceId: string,
+        response: JsActiveContractEntryResponse
+    ): PrettyContract<T> {
+        const activeContract = response.contractEntry.JsActiveContract
+        const { createdEvent } = activeContract
+        return {
+            contractId: createdEvent.contractId,
+            activeContract,
+            interfaceViewValue: ensureInterfaceViewIsPresent(
+                createdEvent,
+                interfaceId
+            ).viewValue as T,
+        }
     }
 }

@@ -11,7 +11,7 @@ import {
     Session,
 } from '@canton-network/core-wallet-user-rpc-client'
 
-import '/style.css'
+import '/index.css'
 import { stateManager } from '../state-manager'
 import { createUserClient } from '../rpc-client'
 
@@ -24,7 +24,7 @@ export class UserUiNetworks extends LitElement {
             padding: 0rem;
             max-width: 900px;
             margin: 0 auto;
-            font-family: var(--swk-font, Arial, sans-serif);
+            font-family: var(--wg-theme-font-family, Arial, sans-serif);
         }
         .header {
             margin-bottom: 1rem;
@@ -236,7 +236,6 @@ export class UserUiNetworks extends LitElement {
 
     protected render() {
         return html`
-            <user-ui-nav></user-ui-nav>
             <div class="header"><h1>Sessions</h1></div>
             <div class="table-container">
                 <table>

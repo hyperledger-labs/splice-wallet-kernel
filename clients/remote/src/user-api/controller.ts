@@ -129,7 +129,6 @@ export const userController = (
                 network.synchronizerId,
                 adminToken,
                 network.ledgerApi.baseUrl,
-                network.ledgerApi.adminGrpcUrl,
                 logger
             )
             const driver = drivers[
@@ -201,7 +200,7 @@ export const userController = (
             const notifier = authContext?.userId
                 ? notificationService.getNotifier(authContext.userId)
                 : undefined
-            notifier?.emit('accountsChanged', store.getWallets())
+            notifier?.emit('accountsChanged', await store.getWallets())
             return null
         },
         removeWallet: async (params: { partyId: string }) =>

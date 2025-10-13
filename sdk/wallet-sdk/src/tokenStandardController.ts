@@ -59,12 +59,14 @@ export class TokenStandardController {
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
      * @param validatorBaseUrl the url for the validator api. Needed for Scan Proxy API access.
      * @param accessToken the access token from the user, usually provided by an auth controller.
+     * @param isMasterUser if true, the transaction parser will interperate as if it has ReadAsAnyParty.
      */
     constructor(
         userId: string,
         baseUrl: URL,
         validatorBaseUrl: URL,
-        accessToken: string
+        accessToken: string,
+        private isMasterUser: boolean = false
     ) {
         this.client = new LedgerClient(baseUrl, accessToken, this.logger)
         const scanProxyClient = new ScanProxyClient(
@@ -76,7 +78,8 @@ export class TokenStandardController {
             this.client,
             scanProxyClient,
             this.logger,
-            accessToken
+            accessToken,
+            isMasterUser
         )
         this.userId = userId
     }

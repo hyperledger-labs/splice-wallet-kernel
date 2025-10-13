@@ -35,7 +35,7 @@ export async function setupDemoCustomer(options?: {
 
     const customerKeyPair = createKeyPair()
     const customerParty = (
-        await customerSdk.topology?.prepareSignAndSubmitExternalParty(
+        await customerSdk.userLedger?.signAndAllocateExternalParty(
             customerKeyPair.privateKey,
             'customer'
         )

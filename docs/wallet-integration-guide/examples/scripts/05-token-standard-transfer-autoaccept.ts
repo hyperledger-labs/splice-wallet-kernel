@@ -34,22 +34,18 @@ const keyPairReceiver = createKeyPair()
 await sdk.connectAdmin()
 await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
-const sender = await sdk.topology?.prepareSignAndSubmitExternalParty(
+const sender = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairSender.privateKey,
     'alice'
 )
 logger.info(`Created party: ${sender!.partyId}`)
 await sdk.setPartyId(sender!.partyId)
 
-const receiver = await sdk.topology?.prepareSignAndSubmitExternalParty(
+const receiver = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairReceiver.privateKey,
     'bob'
 )
 logger.info(`Created party: ${receiver!.partyId}`)
-
-const synchronizers = await sdk.userLedger?.listSynchronizers()
-
-const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
 
 await sdk.userLedger
     ?.listWallets()
@@ -60,12 +56,9 @@ await sdk.userLedger
         logger.error({ error }, 'Error listing wallets')
     })
 
-sdk.tokenStandard?.setSynchronizerId(synchonizerId)
-
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(
     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
 )
-await new Promise((res) => setTimeout(res, 5000))
 
 await sdk.setPartyId(receiver?.partyId!)
 const validatorOperatorParty = await sdk.validator?.getValidatorUser()

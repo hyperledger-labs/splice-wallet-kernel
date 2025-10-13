@@ -45,7 +45,7 @@ const sdk = new WalletSDKImpl().configure({
     tokenStandardFactory: localTokenStandardDefault,
 })
 
-console.log('SDK initialized')
+logger.info('SDK initialized')
 
 await sdk.connect()
 ```

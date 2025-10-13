@@ -81,6 +81,9 @@ jobs:
             - name: check package.json names
               run: yarn script:cleancoding
 
+            - name: run typechecking
+              run: yarn nx run-many -t typecheck --parallel
+
             - name: check open-rpc specs titles
               run: yarn script:openrpc:titles
 
@@ -190,11 +193,17 @@ jobs:
             - name: Start Localnet
               run: yarn start:localnet
 
+            - uses: ./.github/actions/check_resources
+
             - name: Test example snippets
               run: yarn nx snippets docs-wallet-integration-guide-examples
 
+            - uses: ./.github/actions/check_resources
+
             - name: Test example scripts
               run: yarn script:test:examples
+
+            - uses: ./.github/actions/check_resources
 
             - name: Save container logs
               if: failure()

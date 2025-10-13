@@ -76,20 +76,20 @@ if (!isDarUploaded) {
     }
 }
 
-const alice = await sdk.topology?.prepareSignAndSubmitExternalParty(
+const alice = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairAlice.privateKey,
     'alice'
 )
 logger.info(`Created party: ${alice!.partyId}`)
 await sdk.setPartyId(alice!.partyId)
 
-const bob = await sdk.topology?.prepareSignAndSubmitExternalParty(
+const bob = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairBob.privateKey,
     'bob'
 )
 logger.info(`Created party: ${bob!.partyId}`)
 
-const venue = await sdk.topology?.prepareSignAndSubmitExternalParty(
+const venue = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairVenue.privateKey,
     'venue'
 )
