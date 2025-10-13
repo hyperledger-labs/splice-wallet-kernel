@@ -313,15 +313,19 @@ export class UserUiWallets extends LitElement {
         const signingProviderId = this._signingProviderSelect?.value || ''
         const chainId = this._networkSelect?.value || ''
 
-        const body: CreateWalletParams = {
-            primary,
-            partyHint,
-            chainId,
-            signingProviderId,
-        }
+        try {
+            const body: CreateWalletParams = {
+                primary,
+                partyHint,
+                chainId,
+                signingProviderId,
+            }
 
-        const userClient = createUserClient(stateManager.accessToken.get())
-        await userClient.request('createWallet', body)
+            const userClient = createUserClient(stateManager.accessToken.get())
+            await userClient.request('createWallet', body)
+        } catch (e) {
+            console.log(e)
+        }
 
         this.loading = false
         if (this._partyHintInput) {
