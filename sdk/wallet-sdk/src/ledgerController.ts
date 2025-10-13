@@ -561,6 +561,10 @@ export class LedgerController {
 
     /**
      * Submits a command for an internal party
+     * @param commands the commands to be executed.
+     * @param commandId an unique identifier used to track the transaction, if not provided a random UUID will be used.
+     * @param disclosedContracts additional contracts used to resolve contract & contract key lookups.
+    
      */
     async submitCommand(
         commands: WrappedCommand | WrappedCommand[] | unknown,
