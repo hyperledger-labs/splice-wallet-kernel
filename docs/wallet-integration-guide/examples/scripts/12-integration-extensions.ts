@@ -188,15 +188,13 @@ logger.info(proxyCid, `proxyCid`)
 
 await sdk.setPartyId(exchangeParty!)
 
-const featuredAppRights =
-    await sdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
+await sdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
 
 const receiverParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
     receiverPartyKeyPair.privateKey,
     'bob'
 )
 
-logger.info(featuredAppRights, `featured app rights`)
 await sdk.setPartyId(receiverParty?.partyId!)
 
 const transferPreApprovalProposalReceiver =
@@ -214,6 +212,11 @@ const bobPreapproval = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 logger.info(bobPreapproval, 'created pre approval for bob')
 
 await new Promise((res) => setTimeout(res, 5000))
+
+await sdk.setPartyId(exchangeParty!)
+
+const featuredAppRights = await sdk.tokenStandard!.lookupFeaturedApps()
+logger.info(featuredAppRights, 'featured app rights')
 
 await sdk.setPartyId(treasuryParty?.partyId!)
 

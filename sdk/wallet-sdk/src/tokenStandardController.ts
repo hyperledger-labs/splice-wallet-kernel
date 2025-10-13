@@ -397,10 +397,32 @@ export class TokenStandardController {
 
     /**
      * Looks up if a party has FeaturedAppRight.
+     * Has an in built retry and delay between attempts
      * @returns If defined, a contract of Daml template `Splice.Amulet.FeaturedAppRight`.
      */
-    async lookupFeaturedApps() {
-        return this.service.getFeaturedAppsByParty(this.getPartyId())
+    async lookupFeaturedApps(maxRetries = 10, delayMs = 5000) {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            const result = await this.service.getFeaturedAppsByParty(
+                this.getPartyId()
+            )
+
+            if (
+                result &&
+                typeof result === 'object' &&
+                Object.keys(result).length > 0
+            ) {
+                return result
+            }
+            this.logger.info(
+                `lookup featured apps attempt ${attempt} returned undefined. retrying again...`
+            )
+
+            if (attempt < maxRetries) {
+                await new Promise((res) => setTimeout(res, delayMs))
+            }
+        }
+
+        return undefined
     }
 
     /**
@@ -409,7 +431,7 @@ export class TokenStandardController {
      * @returns A contract of Daml template `Splice.Amulet.FeaturedAppRight`.
      */
     async grantFeatureAppRightsForInternalParty() {
-        const featuredAppRights = await this.lookupFeaturedApps()
+        const featuredAppRights = await this.lookupFeaturedApps(1, 1000)
 
         if (featuredAppRights) {
             return featuredAppRights
@@ -430,14 +452,9 @@ export class TokenStandardController {
             packageIdSelectionPreference: [],
         }
 
-        const submitRequest = await this.client.post(
-            '/v2/commands/submit-and-wait',
-            request
-        )
+        await this.client.post('/v2/commands/submit-and-wait', request)
 
-        this.logger.info(submitRequest)
-
-        return this.lookupFeaturedApps()
+        return this.lookupFeaturedApps(5, 1000)
     }
 
     /**
