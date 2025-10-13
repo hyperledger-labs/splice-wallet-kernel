@@ -749,7 +749,7 @@ export class LedgerController {
     async getAppRewardCoupons() {
         const end = await this.ledgerEnd()
 
-        await this.activeContracts({
+        return await this.activeContracts({
             offset: end.offset,
             parties: [this.getPartyId()],
             templateIds: ['#splice-amulet:Splice.Amulet:AppRewardCoupon'],
