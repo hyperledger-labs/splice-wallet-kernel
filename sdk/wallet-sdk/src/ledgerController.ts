@@ -559,6 +559,9 @@ export class LedgerController {
         ]
     }
 
+    /**
+     * Submits a command for an internal party
+     */
     async submitCommand(
         commands: WrappedCommand | WrappedCommand[] | unknown,
         commandId?: string,
@@ -568,7 +571,7 @@ export class LedgerController {
 
         const request = {
             commands: commandArray,
-            commandId: v4(),
+            commandId: commandId || v4(),
             userId: this.userId,
             actAs: [this.getPartyId()],
             readAs: [],
