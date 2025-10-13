@@ -742,6 +742,10 @@ export class LedgerController {
         return await this.client.get('/v2/state/ledger-end')
     }
 
+    /**
+     * A way to validate validate that the app marker works as expected by c
+     * checking that the expected AppRewardCoupon is created by the SVs once the delegate transfer occurs
+     */
     async getAppRewardCoupons() {
         const end = await this.ledgerEnd()
 
