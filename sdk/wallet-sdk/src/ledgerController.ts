@@ -627,6 +627,12 @@ export class LedgerController {
         )
     }
 
+    /**
+     * Creates a proxy for a delegate to create featured app markers jointly with using token standard workflows.
+     * @param exchangeParty The delegate interacting with the token standard workflow
+     * @param treasuryParty The app provider whose featured app right should be used.
+     * @returns A delegate proxy create command
+     */
     async createDelegateProxyCommand(
         exchangeParty: PartyId,
         treasuryParty: PartyId
@@ -643,6 +649,9 @@ export class LedgerController {
         }
     }
 
+    /**
+     * A function to grant either readAs or actAs rights
+     */
     async grantRights(readAs?: PartyId[], actAs?: PartyId[]) {
         return await this.client.grantRights(this.userId, readAs, actAs)
     }
