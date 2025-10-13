@@ -750,7 +750,7 @@ export class LedgerController {
     }
 
     /**
-     * A way to validate validate that the app marker works as expected by c
+     * A way to validate that the app marker works as expected by
      * checking that the expected AppRewardCoupon is created by the SVs once the delegate transfer occurs
      */
     async getAppRewardCoupons() {
