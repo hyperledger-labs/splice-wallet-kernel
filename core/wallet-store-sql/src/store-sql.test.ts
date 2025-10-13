@@ -40,7 +40,6 @@ const implementations: Array<[string, StoreCtor]> = [['StoreSql', StoreSql]]
 
 const ledgerApi: LedgerApi = {
     baseUrl: 'http://api',
-    adminGrpcUrl: 'http://grpc',
 }
 const auth: PasswordAuth = {
     identityProviderId: 'idp1',
