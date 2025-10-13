@@ -14,8 +14,6 @@ import {
     AllocationFactory_Allocate,
     AllocationSpecification,
     Transfer,
-    // allocationRegistryTypes,
-    // metadataRegistryTypes,
     transferInstructionRegistryTypes,
     allocationInstructionRegistryTypes,
     ExtraArgs,
@@ -67,6 +65,12 @@ type JsActiveContractEntryResponse = JsGetActiveContractsResponse & {
             createdEvent: Types['CreatedEvent']
         }
     }
+}
+
+type CreateTransferChoiceArgs = {
+    expectedAdmin: PartyId
+    transfer: Transfer
+    extraArgs: ExtraArgs
 }
 
 class CoreService {
@@ -598,12 +602,7 @@ class AllocationService {
         return [exercise, []]
     }
 }
-// TODO not here
-type CreateTransferChoiceArgs = {
-    expectedAdmin: PartyId
-    transfer: Transfer
-    extraArgs: ExtraArgs
-}
+
 class TransferService {
     constructor(private core: CoreService) {}
 
@@ -630,7 +629,6 @@ class TransferService {
                 receiver,
                 amount,
                 instrumentId: { admin: instrumentAdmin, id: instrumentId },
-                // lock: null, // TODO probably should delete
                 requestedAt: new Date(
                     Date.now() - REQUESTED_AT_SKEW_MS
                 ).toISOString(),
