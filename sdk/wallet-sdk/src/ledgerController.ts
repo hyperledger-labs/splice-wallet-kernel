@@ -560,6 +560,35 @@ export class LedgerController {
     }
 
     /**
+     * Submits a command for an internal party
+     * @param commands the commands to be executed.
+     * @param commandId an unique identifier used to track the transaction, if not provided a random UUID will be used.
+     * @param disclosedContracts additional contracts used to resolve contract & contract key lookups.
+    
+     */
+    async submitCommand(
+        commands: WrappedCommand | WrappedCommand[] | unknown,
+        commandId?: string,
+        disclosedContracts?: Types['DisclosedContract'][]
+    ) {
+        const commandArray = Array.isArray(commands) ? commands : [commands]
+
+        const request = {
+            commands: commandArray,
+            commandId: commandId || v4(),
+            userId: this.userId,
+            actAs: [this.getPartyId()],
+            readAs: [],
+            disclosedContracts: disclosedContracts || [],
+            synchronizerId: this.getSynchronizerId(),
+            verboseHashing: false,
+            packageIdSelectionPreference: [],
+        }
+
+        return await this.client.post('/v2/commands/submit-and-wait', request)
+    }
+
+    /**
      * Lists all wallets (parties) the user has access to.
      * use a pageToken from a previous request to query the next page.
      * @returns A paginated list of parties.
@@ -603,6 +632,35 @@ export class LedgerController {
             '/v2/state/connected-synchronizers',
             params
         )
+    }
+
+    /**
+     * Creates a proxy for a delegate to create featured app markers jointly with using token standard workflows.
+     * @param exchangeParty The delegate interacting with the token standard workflow
+     * @param treasuryParty The app provider whose featured app right should be used.
+     * @returns A delegate proxy create command
+     */
+    async createDelegateProxyCommand(
+        exchangeParty: PartyId,
+        treasuryParty: PartyId
+    ) {
+        return {
+            CreateCommand: {
+                templateId:
+                    '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+                createArguments: {
+                    provider: exchangeParty,
+                    delegate: treasuryParty,
+                },
+            },
+        }
+    }
+
+    /**
+     * A function to grant either readAs or actAs rights
+     */
+    async grantRights(readAs?: PartyId[], actAs?: PartyId[]) {
+        return await this.client.grantRights(this.userId, readAs, actAs)
     }
 
     /**
@@ -689,6 +747,21 @@ export class LedgerController {
      */
     async ledgerEnd(): Promise<GetResponse<'/v2/state/ledger-end'>> {
         return await this.client.get('/v2/state/ledger-end')
+    }
+
+    /**
+     * A way to validate that the app marker works as expected by
+     * checking that the expected AppRewardCoupon is created by the SVs once the delegate transfer occurs
+     */
+    async getAppRewardCoupons() {
+        const end = await this.ledgerEnd()
+
+        return await this.activeContracts({
+            offset: end.offset,
+            parties: [this.getPartyId()],
+            templateIds: ['#splice-amulet:Splice.Amulet:AppRewardCoupon'],
+            filterByParty: true,
+        })
     }
 
     /**
