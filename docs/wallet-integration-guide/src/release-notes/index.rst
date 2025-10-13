@@ -119,11 +119,11 @@ for backwards compatibility the previous endpoints are still there and available
     // grant alice CanReadAsAnyParty and CanExecuteAsAnyParty rights
     await sdk.adminLedger!.grantMasterUserRights(aliceUser.id, true, true)
 
-* ListWallets now return a list of partyIds instead of partyDetails
-* ListWallets now correctly returns the parties that the user have access to (including CanReadAsAnyParty)
+* ListWallets now returns a list of partyIds instead of partyDetails
+* ListWallets now correctly returns the parties that the user has access to (including CanReadAsAnyParty)
 * Extended the max timeout when onboarding a party from 20s to 1 minute
 * Party onboarding now queries the specific party instead of all parties (performance improvement)
-* Party onboarding now have idempotent behavior
+* Party onboarding now has idempotent behavior
 * Default values changed for Wallet SDK from `localLedgerDefault` to `localNetledgerDefault` on all controllers
 
 .. code-block:: javascript
