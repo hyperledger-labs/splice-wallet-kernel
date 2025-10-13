@@ -14,8 +14,16 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
-            - name: Docker build
-              uses: ./.github/actions/docker_build
+            - uses: ./.github/actions/setup_yarn
+
+            - name: Build project
+              shell: bash
+              run: yarn build:all
+
+            - name: Build docker image
+              shell: bash
+              run: yarn docker:build
+              working-directory: clients/remote
 
     docker-arm:
         runs-on: ubuntu-24.04-arm
@@ -23,8 +31,16 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
-            - name: Docker build
-              uses: ./.github/actions/docker_build
+            - uses: ./.github/actions/setup_yarn
+
+            - name: Build project
+              shell: bash
+              run: yarn build:all
+
+            - name: Build docker image
+              shell: bash
+              run: yarn docker:build
+              working-directory: clients/remote
 
     build:
         runs-on: ubuntu-latest
