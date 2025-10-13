@@ -751,7 +751,9 @@ export class LedgerController {
 
         await this.activeContracts({
             offset: end.offset,
+            parties: [this.getPartyId()],
             templateIds: ['#splice-amulet:Splice.Amulet:AppRewardCoupon'],
+            filterByParty: true,
         })
     }
 
