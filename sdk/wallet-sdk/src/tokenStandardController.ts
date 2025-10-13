@@ -430,7 +430,12 @@ export class TokenStandardController {
             packageIdSelectionPreference: [],
         }
 
-        await this.client.post('/v2/commands/submit-and-wait', request)
+        const submitRequest = await this.client.post(
+            '/v2/commands/submit-and-wait',
+            request
+        )
+
+        this.logger.info(submitRequest)
 
         return this.lookupFeaturedApps()
     }

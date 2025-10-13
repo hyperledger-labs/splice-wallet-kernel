@@ -14,7 +14,7 @@ import { v4 } from 'uuid'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
 
-const logger = pino({ name: '11-integration-extensions', level: 'info' })
+const logger = pino({ name: '12-integration-extensions', level: 'info' })
 
 // This example script implements https://docs.digitalasset.com/integrate/devnet/exchange-integration/extensions.html#optimizing-app-rewards
 // It requires the /dars/splice-util-featured-app-proxies-1.1.0.dar which is in files of localnet, but it's not uploaded to participant, so we need to do this in the script
