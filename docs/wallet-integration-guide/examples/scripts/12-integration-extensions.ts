@@ -191,14 +191,6 @@ await sdk.setPartyId(exchangeParty!)
 const featuredAppRights =
     await sdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
 
-//use for 2 step transfer
-// const delegateProxyDisclosedContracts = {
-//     templateId: featuredAppRights?.template_id!,
-//     contractId: featuredAppRights?.contract_id!,
-//     createdEventBlob: featuredAppRights?.created_event_blob!,
-//     synchronizerId: synchonizerId,
-// }
-
 const receiverParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
     receiverPartyKeyPair.privateKey,
     'bob'
