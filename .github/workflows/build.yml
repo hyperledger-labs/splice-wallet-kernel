@@ -8,13 +8,23 @@ permissions:
     contents: read
 
 jobs:
-    docker:
-        runs-on: ubuntu-latest
+    docker-amd64:
+        runs-on: ubuntu-24.04
         steps:
             - name: Checkout
               uses: actions/checkout@v4
 
-            - uses: ./.github/actions/docker_build
+            - name: Docker build
+              uses: ./.github/actions/docker_build
+
+    docker-arm:
+        runs-on: ubuntu-24.04-arm
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Docker build
+              uses: ./.github/actions/docker_build
 
     build:
         runs-on: ubuntu-latest
