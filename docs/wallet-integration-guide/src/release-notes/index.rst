@@ -3,6 +3,145 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+0.11.0
+------
+
+**Released on October 10th, 2025**
+
+* Added support to tap internal parties
+
+*previously you could only tap external parties using signing flow, now it can be done for internal parties. this is useful
+for tapping the validator operator party right after startup in case of missing funds.*
+
+.. code-block:: javascript
+
+    await sdk.tokenStandard?.createAndSubmitTapInternal(
+        validatorOperatorParty!,
+        '20000000',
+        {
+            instrumentId: 'Amulet',
+            instrumentAdmin: instrumentAdminPartyId,
+        }
+    )
+
+* Dar-file manage
+
+*the functionality have been added for the adminLedgerController to upload dars, this is useful for testing custom dar flows*
+
+.. code-block:: javascript
+
+    // check if a specific dar files exist
+    const isDarUploaded = await sdk.userLedger?.isPackageUploaded(
+        MY_DAR_PACKAGE
+    )
+
+    //upload a dar
+    await sdk.adminLedger?.uploadDar(MY_DAR_BYTES)
+
+* Full support for token standard allocations
+
+.. code-block:: javascript
+
+    // check pending allocation requests
+    const pendingAllocationRequests = await sdk.tokenStandard?.fetchPendingAllocationRequestView()
+
+    // create allocation command
+    const specAlice = {
+        settlement: allocationRequestViewAlice.settlement,
+        transferLegId: legIdAlice,
+        transferLeg: legAlice,
+    }
+
+    const [allocateCmdAlice, allocateDisclosedAlice] =
+        await sdk.tokenStandard!.createAllocationInstruction(
+            specAlice,
+            legAlice.instrumentId.admin
+        )
+
+    // venue can check the allocation
+    const allocationsVenue = await sdk.tokenStandard!.fetchPendingAllocationView()
+
+* Party onboarding can now be done on the ledgerController instead of the TopologyController
+
+*this removes the need for grpc admin access*
+
+you can replace as such:
+
+=================================================   ==============================================
+Previous Method                                     new Method
+=================================================   ==============================================
+`sdk.topology?.prepareExternalPartyTopology`        `sdk.userLedger?.generateExternalParty`
+`sdk.topology?.submitExternalPartyTopology`         `sdk.userLedger?.allocateExternalParty`
+`sdk.topology?.prepareSignAndSubmitExternalParty`   `sdk.userLedger?.signAndAllocateExternalParty`
+=================================================   ==============================================
+
+the multi-hosted configuration is the same, except that **the ledger you call** should not be included in the array
+
+.. code-block:: javascript
+
+    //previous example of multi hosting
+    const multiHostedParticipantEndpointConfig = [
+        {
+            adminApiUrl: '127.0.0.1:2902', //this is the ledger we actual call to allocate
+            baseUrl: new URL('http://127.0.0.1:2975'),
+            accessToken: adminToken.accessToken,
+        },
+        {
+            adminApiUrl: '127.0.0.1:3902',
+            baseUrl: new URL('http://127.0.0.1:3975'),
+            accessToken: adminToken.accessToken,
+        },
+    ]
+
+    //new example of multi hosting
+    const multiHostedParticipantEndpointConfig = [
+        {
+            //admin url is not needed anymore
+            url: new URL('http://127.0.0.1:3975'),
+            accessToken: adminToken.accessToken,
+        },
+    ]
+
+for backwards compatibility the previous endpoints are still there and available.
+
+* User creation and rights management
+
+*you can now create new users and manage rights through the Wallet SDK. This can be useful for setting up a master user*
+
+.. code-block:: javascript
+
+    //create new user for alice
+    const aliceUser = await sdk.adminLedger!.createUser(
+        'alice-user',
+        aliceInternal
+    )
+
+    // grant alice CanReadAsAnyParty and CanExecuteAsAnyParty rights
+    await sdk.adminLedger!.grantMasterUserRights(aliceUser.id, true, true)
+
+* ListWallets now returns a list of partyIds instead of partyDetails
+* ListWallets now correctly returns the parties that the user has access to (including CanReadAsAnyParty)
+* Extended the max timeout when onboarding a party from 20s to 1 minute
+* Party onboarding now queries the specific party instead of all parties (performance improvement)
+* Party onboarding now has idempotent behavior
+* Default values changed for Wallet SDK from `localLedgerDefault` to `localNetledgerDefault` on all controllers
+
+.. code-block:: javascript
+
+    //previous instantiation (still preferred)
+    const sdk = new WalletSDKImpl().configure({
+        logger: logger,
+        authFactory: localNetAuthDefault,
+        ledgerFactory: localNetLedgerDefault,
+        topologyFactory: localNetTopologyDefault,
+        tokenStandardFactory: localNetTokenStandardDefault,
+    })
+
+    //new version (does the same)
+    const sdk = new WalletSDKImpl().configure({
+        logger: logger
+    })
+
 0.10.0
 ------
 
