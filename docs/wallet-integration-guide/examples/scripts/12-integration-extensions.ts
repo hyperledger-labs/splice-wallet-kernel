@@ -196,6 +196,7 @@ const receiverParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
     'bob'
 )
 
+logger.info(featuredAppRights, `featured app rights`)
 await sdk.setPartyId(receiverParty?.partyId!)
 
 const transferPreApprovalProposalReceiver =
