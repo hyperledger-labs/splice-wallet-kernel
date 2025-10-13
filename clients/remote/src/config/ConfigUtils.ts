@@ -12,7 +12,7 @@ export class ConfigUtils {
         if (existsSync(resolvedFilePath)) {
             return JSON.parse(readFileSync(resolvedFilePath, 'utf-8'))
         } else {
-            console.error(
+            throw new Error(
                 "Supplied file path doesn't exist " + resolvedFilePath
             )
         }
