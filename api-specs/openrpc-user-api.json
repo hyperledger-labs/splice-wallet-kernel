@@ -211,12 +211,14 @@
                     "type": "object",
                     "properties": {
                         "added": {
+                            "title": "added",
                             "type": "array",
                             "items": {
                                 "$ref": "#/components/schemas/Wallet"
                             }
                         },
                         "removed": {
+                            "title": "removed",
                             "type": "array",
                             "items": {
                                 "$ref": "#/components/schemas/Wallet"

@@ -160,7 +160,8 @@ export interface Wallet {
     signingProviderId: SigningProviderId
     [k: string]: any
 }
-export type UnorderedSetOfWalletrYeC8NtW = Wallet[]
+export type Added = Wallet[]
+export type Removed = Wallet[]
 export type Networks = Network[]
 /**
  *
@@ -250,8 +251,8 @@ export type ListWalletsResult = Wallet[]
  *
  */
 export interface SyncWalletsResult {
-    added: UnorderedSetOfWalletrYeC8NtW
-    removed: UnorderedSetOfWalletrYeC8NtW
+    added: Added
+    removed: Removed
     [k: string]: any
 }
 export interface SignResult {
