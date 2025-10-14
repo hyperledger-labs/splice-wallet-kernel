@@ -516,7 +516,15 @@ export class TokenStandardController {
 
     /**
      * Builds and fetches the registry context for a transfer factory call.
-     * Use this to prefetch and cache context for offline signing.
+     * Use this to prefetch context for offline signing.
+     * @param sender The party of the sender.
+     * @param receiver The party of the receiver.
+     * @param amount The amount to be transferred.
+     * @param instrument The instrument to be used for the transfer.
+     * @param inputUtxos The utxos to use for this transfer, if not defined it will auto-select.
+     * @param memo The message for the receiver to identify the transaction.
+     * @param expiryDate Optional Expiry Date, default is 24 hours.
+     * @param meta Optional metadata to include with the transfer.
      * @returns Transfer factory id + choice context from the registry.
      */
     async getCreateTransferContext(
@@ -652,6 +660,10 @@ export class TokenStandardController {
     /**
      * Builds and fetches the registry context for an allocation factory call
      * Use this to prefetch context for offline signing
+     * @param allocationSpecification Allocation specification to request
+     * @param expectedAdmin Expected registry admin
+     * @param inputUtxos Optional specific UTXOs to consume; auto-selected if omitted
+     * @param requestedAt Optional request timestamp (ISO string)
      * @returns Allocation factory id + choice context from the registry
      */
     async getCreateAllocationInstructionContext(
@@ -744,6 +756,7 @@ export class TokenStandardController {
     /**
      * Fetches registry choice context for TransferInstruction_Accept
      * @param transferInstructionCid TransferInstruction contract id
+     * @returns TransferInstruction_Accept choice context from the registry
      */
     async getAcceptTransferInstructionContext(
         transferInstructionCid: string
@@ -760,6 +773,7 @@ export class TokenStandardController {
     /**
      * Fetches registry choice context for TransferInstruction_Reject
      * @param transferInstructionCid TransferInstruction contract id
+     * @returns TransferInstruction_Reject choice context from the registry
      */
     async getRejectTransferInstructionContext(
         transferInstructionCid: string
@@ -776,6 +790,7 @@ export class TokenStandardController {
     /**
      * Fetches registry choice context for TransferInstruction_Withdraw
      * @param transferInstructionCid TransferInstruction contract id
+     * @returns TransferInstruction_Withdraw choice context from the registry
      */
     async getWithdrawTransferInstructionContext(
         transferInstructionCid: string
@@ -846,6 +861,7 @@ export class TokenStandardController {
     /**
      * Fetch choice context from registry for Allocation ExecuteTransfer.
      * @param allocationCid Allocation contract id
+     * @returns Allocation_ExecuteTransfer choice context from the registry
      */
     async getAllocationExecuteTransferChoiceContext(allocationCid: string) {
         return this.service.allocation.fetchExecuteTransferChoiceContext(
@@ -857,6 +873,7 @@ export class TokenStandardController {
     /**
      * Fetches registry choice context for Allocation_Withdraw
      * @param allocationCid Allocation contract id
+     * @returns Allocation_Withdraw choice context from the registry
      */
     async getAllocationWithdrawChoiceContext(allocationCid: string) {
         return this.service.allocation.fetchWithdrawAllocationChoiceContext(
@@ -868,6 +885,7 @@ export class TokenStandardController {
     /**
      * Fetches registry choice context for Allocation_Cancel
      * @param allocationCid Allocation contract id
+     * @returns Allocation_Cancel choice context from the registry
      */
     async getAllocationCancelChoiceContext(allocationCid: string) {
         return this.service.allocation.fetchCancelAllocationChoiceContext(
