@@ -6,6 +6,10 @@ import { AuthContext } from '@canton-network/core-wallet-auth'
 import { Store, Wallet } from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'
 
+export type WalletSyncReport = {
+    added: Wallet[]
+    removed: Wallet[]
+}
 export class WalletSyncService {
     constructor(
         private store: Store,
@@ -15,24 +19,23 @@ export class WalletSyncService {
     ) {}
 
     async run(timeoutMs: number): Promise<void> {
+        this.logger.info(
+            `Starting wallet sync service with ${timeoutMs}ms interval`
+        )
         while (true) {
             await this.syncWallets()
             await new Promise((res) => setTimeout(res, timeoutMs))
         }
     }
 
-    async syncWallets(): Promise<void> {
+    async syncWallets(): Promise<WalletSyncReport> {
         this.logger.info('Starting wallet sync...')
         try {
             const network = await this.store.getCurrentNetwork()
+            this.logger.info(network, 'Current network')
 
             // Get existing parties from participant
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
-                this.authContext!.accessToken,
-                this.logger
-            )
-            const rights = await ledgerClient.get(
+            const rights = await this.ledgerClient.get(
                 '/v2/users/{user-id}/rights',
                 {
                     path: {
@@ -55,6 +58,7 @@ export class WalletSyncService {
 
             // Add new Wallets given the found parties
             const existingWallets = await this.store.getWallets()
+            this.logger.info(existingWallets, 'Existing wallets')
             const existingPartyIdToSigningProvider = new Map(
                 existingWallets.map((w) => [w.partyId, w.signingProviderId])
             )
@@ -78,7 +82,11 @@ export class WalletSyncService {
                         }
                     }) || []
 
-            newParticipantWallets.forEach(this.store.addWallet)
+            await Promise.all(
+                newParticipantWallets.map((wallet) =>
+                    this.store.addWallet(wallet)
+                )
+            )
             this.logger.info(newParticipantWallets, 'Created new wallets')
 
             // Set primary wallet if none exists
@@ -86,12 +94,17 @@ export class WalletSyncService {
             const hasPrimary = wallets.some((w) => w.primary)
             if (!hasPrimary && wallets.length > 0) {
                 this.store.setPrimaryWallet(wallets[0].partyId)
+                this.logger.info(`Set ${wallets[0].partyId} as primary wallet`)
             }
-            this.logger.info(`Set ${wallets[0].partyId} as primary wallet`)
 
             this.logger.debug(wallets, 'Wallet sync completed.')
-        } catch {
-            return
+            return {
+                added: newParticipantWallets,
+                removed: [],
+            } as WalletSyncReport
+        } catch (err) {
+            this.logger.error({ err }, 'Wallet sync failed.')
+            throw err
         }
     }
 }

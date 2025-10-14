@@ -166,6 +166,12 @@ export class UserUiNetworks extends LitElement {
         this.editingNetwork = null
     }
 
+    syncWallets = async () => {
+        const userClient = createUserClient(stateManager.accessToken.get())
+        const result = await userClient.request('syncWallets')
+        alert(`Wallet sync completed. Added ${result.added.length} wallets.`)
+    }
+
     closeModal = () => {
         this.isModalOpen = false
         this.listNetworks()
@@ -270,6 +276,11 @@ export class UserUiNetworks extends LitElement {
                     </tbody>
                 </table>
             </div>
+
+            <div class="header"><h1>Wallets</h1></div>
+            <button class="buttons" @click=${this.syncWallets}>
+                Sync Wallets
+            </button>
 
             <div class="header"><h1>Networks</h1></div>
             <button class="buttons" @click=${this.openAddModal}>

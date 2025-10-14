@@ -14,6 +14,8 @@ import {
     AddSessionResult,
     ListSessionsResult,
     SetPrimaryWalletParams,
+    ListWalletsResult,
+    SyncWalletsResult,
 } from './rpc-gen/typings.js'
 import { Store, Auth, Transaction } from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'
@@ -31,6 +33,7 @@ import {
     AllocatedParty,
     PartyAllocationService,
 } from '../ledger/party-allocation-service.js'
+import { WalletSyncService } from '../ledger/wallet-sync-service.js'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
@@ -45,6 +48,7 @@ export const userController = (
     _logger: Logger
 ) => {
     const logger = _logger.child({ component: 'user-controller' })
+
     return buildController({
         addNetwork: async (network: AddNetworkParams) => {
             const ledgerApi = {
@@ -124,6 +128,11 @@ export const userController = (
                 scope: network.auth.scope,
                 audience: network.auth.audience,
             })
+
+            logger.debug(
+                { adminToken },
+                'Fetched admin token for party allocation'
+            )
 
             const partyAllocator = new PartyAllocationService(
                 network.synchronizerId,
@@ -462,6 +471,26 @@ export const userController = (
                     },
                 ],
             }
+        },
+        syncWallets: async function (): Promise<SyncWalletsResult> {
+            const network = await store.getCurrentNetwork()
+            if (authContext === undefined) {
+                logger.error(
+                    'No auth context, cannot start wallet sync service'
+                )
+                throw new Error('Unauthenticated context')
+            }
+            const service = new WalletSyncService(
+                store,
+                new LedgerClient(
+                    new URL(network.ledgerApi.baseUrl),
+                    authContext.accessToken,
+                    logger
+                ),
+                authContext,
+                logger
+            )
+            return await service.syncWallets()
         },
     })
 }

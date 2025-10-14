@@ -117,6 +117,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     }
 
     async addWallet(wallet: Wallet): Promise<void> {
+        this.logger.info('Adding wallet')
         const userId = this.assertConnected()
 
         const wallets = await this.getWallets()

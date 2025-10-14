@@ -202,6 +202,34 @@
             "description": "Lists wallets."
         },
         {
+            "name": "syncWallets",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "SyncWalletsResult",
+                    "type": "object",
+                    "properties": {
+                        "added": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/Wallet"
+                            }
+                        },
+                        "removed": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/Wallet"
+                            }
+                        }
+                    },
+                    "required": ["added", "removed"],
+                    "description": "Added and removed wallets as a result of the sync."
+                }
+            },
+            "description": "Synchronizes wallets with the connected network."
+        },
+        {
             "name": "sign",
             "params": [
                 {
