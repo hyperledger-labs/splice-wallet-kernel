@@ -226,6 +226,24 @@ export class TokenStandardController {
     }
 
     /**
+     * List specific holding utxo
+     * @param contractId id of the holding UTXO
+     * @throws error if the holding with the specified contractId is not found
+     * @returns A promise that resolves to the holding UTXO.
+     */
+    async listHoldingUtxo(
+        contractId: string
+    ): Promise<PrettyContract<Holding>> {
+        const allHoldings = await this.listHoldingUtxos()
+
+        const contract = allHoldings.find((tx) => tx.contractId === contractId)
+
+        if (contract === undefined) {
+            throw new Error(`Holding with contractId ${contractId} not found`)
+        } else return contract
+    }
+
+    /**
      * Fetches all 2-step transfers pending accept, reject, or withdraw.
      * @returns a promise containing prettyContract for TransferInstructionView.
      */
