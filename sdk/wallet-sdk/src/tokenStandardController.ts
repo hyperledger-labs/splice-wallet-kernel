@@ -399,10 +399,32 @@ export class TokenStandardController {
 
     /**
      * Looks up if a party has FeaturedAppRight.
+     * Has an in built retry and delay between attempts
      * @returns If defined, a contract of Daml template `Splice.Amulet.FeaturedAppRight`.
      */
-    async lookupFeaturedApps() {
-        return this.service.getFeaturedAppsByParty(this.getPartyId())
+    async lookupFeaturedApps(maxRetries = 10, delayMs = 5000) {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            const result = await this.service.getFeaturedAppsByParty(
+                this.getPartyId()
+            )
+
+            if (
+                result &&
+                typeof result === 'object' &&
+                Object.keys(result).length > 0
+            ) {
+                return result
+            }
+            this.logger.info(
+                `lookup featured apps attempt ${attempt} returned undefined. retrying again...`
+            )
+
+            if (attempt < maxRetries) {
+                await new Promise((res) => setTimeout(res, delayMs))
+            }
+        }
+
+        return undefined
     }
 
     /**
@@ -411,7 +433,7 @@ export class TokenStandardController {
      * @returns A contract of Daml template `Splice.Amulet.FeaturedAppRight`.
      */
     async grantFeatureAppRightsForInternalParty() {
-        const featuredAppRights = await this.lookupFeaturedApps()
+        const featuredAppRights = await this.lookupFeaturedApps(1, 1000)
 
         if (featuredAppRights) {
             return featuredAppRights
@@ -434,7 +456,7 @@ export class TokenStandardController {
 
         await this.client.post('/v2/commands/submit-and-wait', request)
 
-        return this.lookupFeaturedApps()
+        return this.lookupFeaturedApps(5, 1000)
     }
 
     /**
@@ -533,6 +555,56 @@ export class TokenStandardController {
             this.logger.error({ error }, 'Failed to create transfer')
             throw error
         }
+    }
+
+    /**
+     * Creates a new transfer for the specified sender, receiver, amount, and instrument using a delegate proxy.
+     * @param exchangeParty delegate interacting with token standard workflow
+     * @param proxyCid contract id for the DelegateProxy contract created for the exchange party
+     * @param featuredAppRightCid The featured app right contract of the provider
+     * @param sender The party of the sender.
+     * @param receiver The party of the receiver.
+     * @param amount The amount to be transferred.
+     * @param instrument The instrument to be used for the transfer.
+     * @param inputUtxos The utxos to use for this transfer, if not defined it will auto-select.
+     * @param memo The message for the receiver to identify the transaction.
+     * @param expiryDate Optional Expiry Date, default is 24 hours.
+     * @param meta Optional metadata to include with the transfer.
+     * @returns A promise that resolves to the ExerciseCommand which creates the transfer.
+     */
+    async createTransferUsingDelegateProxy(
+        exchangeParty: PartyId,
+        proxyCid: string,
+        featuredAppRightCid: string,
+        sender: PartyId,
+        receiver: PartyId,
+        amount: string,
+        instrumentId: string,
+        instrumentAdmin: PartyId,
+        inputUtxos?: string[],
+        memo?: string,
+        expiryDate?: Date,
+        meta?: Record<string, unknown>
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const [exercise, disclosedContracts] =
+            await this.service.createDelegateProxyTranfser(
+                sender,
+                receiver,
+                exchangeParty,
+                amount,
+                instrumentAdmin,
+                instrumentId,
+                this.getTransferFactoryRegistryUrl().href,
+                featuredAppRightCid,
+                proxyCid,
+                inputUtxos,
+                memo,
+                expiryDate,
+                meta
+            )
+        return [{ ExerciseCommand: exercise }, disclosedContracts]
     }
 
     /**

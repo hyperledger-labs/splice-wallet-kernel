@@ -1141,6 +1141,59 @@ export class TokenStandardService {
         return this.core.getInputHoldingsCids(sender, inputUtxos)
     }
 
+    async createDelegateProxyTranfser(
+        sender: PartyId,
+        receiver: PartyId,
+        exchangeParty: PartyId,
+        amount: string,
+        instrumentAdmin: PartyId, // TODO (#907): replace with registry call
+        instrumentId: string,
+        registryUrl: string,
+        featuredAppRightCid: string,
+        proxyCid: string,
+        inputUtxos?: string[],
+        memo?: string,
+        expiryDate?: Date,
+        meta?: Record<string, unknown>
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const [transferCommand, disclosedContracts] = await this.createTransfer(
+            sender,
+            receiver,
+            amount,
+            instrumentAdmin,
+            instrumentId,
+            registryUrl,
+            inputUtxos,
+            memo,
+            expiryDate,
+            meta
+        )
+
+        const choiceArgs = {
+            cid: transferCommand.contractId,
+            proxyArg: {
+                featuredAppRightCid: featuredAppRightCid,
+                beneficiaries: [
+                    {
+                        beneficiary: exchangeParty,
+                        weight: 1.0,
+                    },
+                ],
+                choiceArg: transferCommand.choiceArgument,
+            },
+        }
+
+        const exercise: ExerciseCommand = {
+            templateId:
+                '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+            contractId: proxyCid,
+            choice: 'DelegateProxy_TransferFactory_Transfer',
+            choiceArgument: choiceArgs,
+        }
+
+        return [exercise, disclosedContracts]
+    }
+
     // TODO(#583) as it's not a part of token standard, should be moved somewhere else
     async createTap(
         receiver: string,
