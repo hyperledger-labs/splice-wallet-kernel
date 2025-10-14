@@ -278,6 +278,9 @@ export class UserUiNetworks extends LitElement {
             </div>
 
             <div class="header"><h1>Wallets</h1></div>
+            Keep your wallets in sync with the connected network.
+            <br />
+            <br />
             <button class="buttons" @click=${this.syncWallets}>
                 Sync Wallets
             </button>
