@@ -155,8 +155,10 @@ export class WalletSDKImpl implements WalletSDK {
         const { userId, accessToken } = await this.auth.getAdminToken()
         let synchronizerId: PartyId
         if (typeof synchronizer === 'string') {
+            this.logger?.info('synchronizer type is string')
             synchronizerId = synchronizer
         } else if (synchronizer instanceof URL) {
+            this.logger?.info('synchronizer type is url')
             const scanProxyClient = new ScanProxyClient(
                 synchronizer,
                 this.logger!,
@@ -188,6 +190,7 @@ export class WalletSDKImpl implements WalletSDK {
         }
 
         this.userLedger?.setSynchronizerId(synchronizerId)
+        this.adminLedger?.setSynchronizerId(synchronizerId)
         return this
     }
 
