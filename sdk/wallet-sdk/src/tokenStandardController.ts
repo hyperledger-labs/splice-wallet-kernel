@@ -25,10 +25,12 @@ import {
     ALLOCATION_INTERFACE_ID,
     ALLOCATION_REQUEST_INTERFACE_ID,
     AllocationSpecification,
-    AllocationContextValue,
     AllocationRequestView,
     AllocationInstructionView,
     AllocationView,
+    Metadata,
+    transferInstructionRegistryTypes,
+    allocationInstructionRegistryTypes,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
@@ -467,6 +469,7 @@ export class TokenStandardController {
      * @param memo The message for the receiver to identify the transaction.
      * @param expiryDate Optional Expiry Date, default is 24 hours.
      * @param meta Optional metadata to include with the transfer.
+     * @param prefetchedRegistryChoiceContext Optional factory id + choice context to avoid a registry call.
      * @returns A promise that resolves to the ExerciseCommand which creates the transfer.
      */
     async createTransfer(
@@ -480,13 +483,17 @@ export class TokenStandardController {
         inputUtxos?: string[],
         memo?: string,
         expiryDate?: Date,
-        meta?: Record<string, unknown>
+        meta?: Metadata,
+        prefetchedRegistryChoiceContext?: {
+            factoryId: string
+            choiceContext: transferInstructionRegistryTypes['schemas']['ChoiceContext']
+        }
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         try {
             const [transferCommand, disclosedContracts] =
-                await this.service.createTransfer(
+                await this.service.transfer.createTransfer(
                     sender,
                     receiver,
                     amount,
@@ -496,10 +503,62 @@ export class TokenStandardController {
                     inputUtxos,
                     memo,
                     expiryDate,
-                    meta
+                    meta,
+                    prefetchedRegistryChoiceContext
                 )
 
             return [{ ExerciseCommand: transferCommand }, disclosedContracts]
+        } catch (error) {
+            this.logger.error({ error }, 'Failed to create transfer')
+            throw error
+        }
+    }
+
+    /**
+     * Builds and fetches the registry context for a transfer factory call.
+     * Use this to prefetch context for offline signing.
+     * @param sender The party of the sender.
+     * @param receiver The party of the receiver.
+     * @param amount The amount to be transferred.
+     * @param instrument The instrument to be used for the transfer.
+     * @param inputUtxos The utxos to use for this transfer, if not defined it will auto-select.
+     * @param memo The message for the receiver to identify the transaction.
+     * @param expiryDate Optional Expiry Date, default is 24 hours.
+     * @param meta Optional metadata to include with the transfer.
+     * @returns Transfer factory id + choice context from the registry.
+     */
+    async getCreateTransferContext(
+        sender: PartyId,
+        receiver: PartyId,
+        amount: string,
+        instrument: {
+            instrumentId: string
+            instrumentAdmin: PartyId
+        },
+        inputUtxos?: string[],
+        memo?: string,
+        expiryDate?: Date,
+        meta?: Metadata
+    ): Promise<
+        transferInstructionRegistryTypes['schemas']['TransferFactoryWithChoiceContext']
+    > {
+        try {
+            const choiceArgs =
+                await this.service.transfer.buildTransferChoiceArgs(
+                    sender,
+                    receiver,
+                    amount,
+                    instrument.instrumentAdmin,
+                    instrument.instrumentId,
+                    inputUtxos,
+                    memo,
+                    expiryDate,
+                    meta
+                )
+            return this.service.transfer.fetchTransferFactoryChoiceContext(
+                this.getTransferFactoryRegistryUrl().href,
+                choiceArgs
+            )
         } catch (error) {
             this.logger.error({ error }, 'Failed to create transfer')
             throw error
@@ -533,7 +592,7 @@ export class TokenStandardController {
         inputUtxos?: string[],
         memo?: string,
         expiryDate?: Date,
-        meta?: Record<string, unknown>
+        meta?: Metadata
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -556,24 +615,36 @@ export class TokenStandardController {
         return [{ ExerciseCommand: exercise }, disclosedContracts]
     }
 
+    /**
+     * Creates an allocation instruction (optionally using pre-fetched registry choice context)
+     * @param allocationSpecification Allocation specification to request
+     * @param expectedAdmin Expected registry admin
+     * @param inputUtxos Optional specific UTXOs to consume; auto-selected if omitted
+     * @param requestedAt Optional request timestamp (ISO string)
+     * @param prefetchedRegistryChoiceContext Optional factory id + choice context to avoid a registry call
+     * @returns Wrapped ExerciseCommand and disclosed contracts for submission
+     */
     async createAllocationInstruction(
         allocationSpecification: AllocationSpecification,
         expectedAdmin: PartyId,
         inputUtxos?: string[],
         requestedAt?: string,
-        extraContext?: AllocationContextValue
+        prefetchedRegistryChoiceContext?: {
+            factoryId: string
+            choiceContext: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
+        }
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         try {
             const [exercise, disclosed] =
-                await this.service.createAllocationInstruction(
+                await this.service.allocation.createAllocationInstruction(
                     allocationSpecification,
                     expectedAdmin,
                     this.getTransferFactoryRegistryUrl().href,
                     inputUtxos,
                     requestedAt,
-                    extraContext
+                    prefetchedRegistryChoiceContext
                 )
 
             return [{ ExerciseCommand: exercise }, disclosed]
@@ -586,17 +657,58 @@ export class TokenStandardController {
         }
     }
 
+    /**
+     * Builds and fetches the registry context for an allocation factory call
+     * Use this to prefetch context for offline signing
+     * @param allocationSpecification Allocation specification to request
+     * @param expectedAdmin Expected registry admin
+     * @param inputUtxos Optional specific UTXOs to consume; auto-selected if omitted
+     * @param requestedAt Optional request timestamp (ISO string)
+     * @returns Allocation factory id + choice context from the registry
+     */
+    async getCreateAllocationInstructionContext(
+        allocationSpecification: AllocationSpecification,
+        expectedAdmin: PartyId,
+        inputUtxos?: string[],
+        requestedAt?: string
+    ): Promise<
+        allocationInstructionRegistryTypes['schemas']['FactoryWithChoiceContext']
+    > {
+        try {
+            const choiceArgs =
+                await this.service.allocation.buildAllocationFactoryChoiceArgs(
+                    allocationSpecification,
+                    expectedAdmin,
+                    inputUtxos,
+                    requestedAt
+                )
+            return this.service.allocation.fetchAllocationFactoryChoiceContext(
+                this.getTransferFactoryRegistryUrl().href,
+                choiceArgs
+            )
+        } catch (error) {
+            this.logger.error(
+                { error },
+                'Failed to fetch allocation factory context'
+            )
+            throw error
+        }
+    }
+
     /** Execute the choice TransferInstruction_Accept or TransferInstruction_Reject
      *  on the provided transfer instruction.
      * @param transferInstructionCid The contract ID of the transfer instruction to accept or reject
-     * @param instructionChoice is either Accept or Reject
-     * @returns A promise that resolves to an array of
-     *  active contracts interface view values and cids.
+     * @param instructionChoice 'Accept' | 'Reject' | 'Withdraw'
+     * @param prefetchedRegistryChoiceContext Optional choice context for offline signing.
+     * @returns Wrapped ExerciseCommand and disclosed contracts for submission.
      */
 
     async exerciseTransferInstructionChoice(
         transferInstructionCid: string,
-        instructionChoice: TransactionInstructionChoice
+        instructionChoice: TransactionInstructionChoice,
+        prefetchedRegistryChoiceContext?: {
+            choiceContext: transferInstructionRegistryTypes['schemas']['ChoiceContext']
+        }
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -606,23 +718,26 @@ export class TokenStandardController {
             switch (instructionChoice) {
                 case 'Accept':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createAcceptTransferInstruction(
+                        await this.service.transfer.createAcceptTransferInstruction(
                             transferInstructionCid,
-                            this.getTransferFactoryRegistryUrl().href
+                            this.getTransferFactoryRegistryUrl().href,
+                            prefetchedRegistryChoiceContext?.choiceContext
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
                 case 'Reject':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createRejectTransferInstruction(
+                        await this.service.transfer.createRejectTransferInstruction(
                             transferInstructionCid,
-                            this.getTransferFactoryRegistryUrl().href
+                            this.getTransferFactoryRegistryUrl().href,
+                            prefetchedRegistryChoiceContext?.choiceContext
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
                 case 'Withdraw':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createWithdrawTransferInstruction(
+                        await this.service.transfer.createWithdrawTransferInstruction(
                             transferInstructionCid,
-                            this.getTransferFactoryRegistryUrl().href
+                            this.getTransferFactoryRegistryUrl().href,
+                            prefetchedRegistryChoiceContext?.choiceContext
                         )
 
                     return [{ ExerciseCommand }, disclosedContracts]
@@ -639,13 +754,67 @@ export class TokenStandardController {
     }
 
     /**
-     * Execute Allocation choice on the provided Allocation.
-     * @param allocationCid The Allocation contract ID.
+     * Fetches registry choice context for TransferInstruction_Accept
+     * @param transferInstructionCid TransferInstruction contract id
+     * @returns TransferInstruction_Accept choice context from the registry
+     */
+    async getAcceptTransferInstructionContext(
+        transferInstructionCid: string
+    ): Promise<{
+        choiceContextData: unknown
+        disclosedContracts: DisclosedContract[]
+    }> {
+        return this.service.transfer.fetchAcceptTransferInstructionChoiceContext(
+            transferInstructionCid,
+            this.getTransferFactoryRegistryUrl().href
+        )
+    }
+
+    /**
+     * Fetches registry choice context for TransferInstruction_Reject
+     * @param transferInstructionCid TransferInstruction contract id
+     * @returns TransferInstruction_Reject choice context from the registry
+     */
+    async getRejectTransferInstructionContext(
+        transferInstructionCid: string
+    ): Promise<{
+        choiceContextData: unknown
+        disclosedContracts: DisclosedContract[]
+    }> {
+        return this.service.transfer.fetchRejectTransferInstructionChoiceContext(
+            transferInstructionCid,
+            this.getTransferFactoryRegistryUrl().href
+        )
+    }
+
+    /**
+     * Fetches registry choice context for TransferInstruction_Withdraw
+     * @param transferInstructionCid TransferInstruction contract id
+     * @returns TransferInstruction_Withdraw choice context from the registry
+     */
+    async getWithdrawTransferInstructionContext(
+        transferInstructionCid: string
+    ): Promise<{
+        choiceContextData: unknown
+        disclosedContracts: DisclosedContract[]
+    }> {
+        return this.service.transfer.fetchWithdrawTransferInstructionChoiceContext(
+            transferInstructionCid,
+            this.getTransferFactoryRegistryUrl().href
+        )
+    }
+
+    /**
+     * Executes Allocation choice on the provided Allocation
+     * @param allocationCid Allocation contract ID
      * @param allocationChoice 'ExecuteTransfer' | 'Withdraw' | 'Cancel'
+     * @param prefetchedRegistryChoiceContext Optional choice context for offline signing
+     * @returns Wrapped ExerciseCommand and disclosed contracts
      */
     async exerciseAllocationChoice(
         allocationCid: string,
-        allocationChoice: AllocationChoice
+        allocationChoice: AllocationChoice,
+        prefetchedRegistryChoiceContext?: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -655,25 +824,28 @@ export class TokenStandardController {
             switch (allocationChoice) {
                 case 'ExecuteTransfer':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createExecuteTransferAllocation(
+                        await this.service.allocation.createExecuteTransferAllocation(
                             allocationCid,
-                            this.getTransferFactoryRegistryUrl().href
+                            this.getTransferFactoryRegistryUrl().href,
+                            prefetchedRegistryChoiceContext
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
 
                 case 'Withdraw':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createWithdrawAllocation(
+                        await this.service.allocation.createWithdrawAllocation(
                             allocationCid,
-                            this.getTransferFactoryRegistryUrl().href
+                            this.getTransferFactoryRegistryUrl().href,
+                            prefetchedRegistryChoiceContext
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
 
                 case 'Cancel':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createCancelAllocation(
+                        await this.service.allocation.createCancelAllocation(
                             allocationCid,
-                            this.getTransferFactoryRegistryUrl().href
+                            this.getTransferFactoryRegistryUrl().href,
+                            prefetchedRegistryChoiceContext
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
 
@@ -688,19 +860,45 @@ export class TokenStandardController {
 
     /**
      * Fetch choice context from registry for Allocation ExecuteTransfer.
-     * @param allocationCid The Allocation contract ID.
+     * @param allocationCid Allocation contract id
+     * @returns Allocation_ExecuteTransfer choice context from the registry
      */
     async getAllocationExecuteTransferChoiceContext(allocationCid: string) {
-        return this.service.getAllocationExecuteTransferChoiceContext(
+        return this.service.allocation.fetchExecuteTransferChoiceContext(
             allocationCid,
             this.getTransferFactoryRegistryUrl().href
         )
     }
 
     /**
-     * Execute AllocationInstruction choice on the provided AllocationInstruction.
-     * @param allocationInstructionCid The AllocationInstruction contract ID.
-     * @param instructionChoice 'Withdraw'
+     * Fetches registry choice context for Allocation_Withdraw
+     * @param allocationCid Allocation contract id
+     * @returns Allocation_Withdraw choice context from the registry
+     */
+    async getAllocationWithdrawChoiceContext(allocationCid: string) {
+        return this.service.allocation.fetchWithdrawAllocationChoiceContext(
+            allocationCid,
+            this.getTransferFactoryRegistryUrl().href
+        )
+    }
+
+    /**
+     * Fetches registry choice context for Allocation_Cancel
+     * @param allocationCid Allocation contract id
+     * @returns Allocation_Cancel choice context from the registry
+     */
+    async getAllocationCancelChoiceContext(allocationCid: string) {
+        return this.service.allocation.fetchCancelAllocationChoiceContext(
+            allocationCid,
+            this.getTransferFactoryRegistryUrl().href
+        )
+    }
+
+    /**
+     * Executes AllocationInstruction choice on the provided AllocationInstruction
+     * @param allocationInstructionCid AllocationInstruction contract id
+     * @param instructionChoice Only 'Withdraw' is supported
+     * @returns Wrapped ExerciseCommand and disclosed contracts for submission
      */
     async exerciseAllocationInstructionChoice(
         allocationInstructionCid: string,
@@ -714,7 +912,7 @@ export class TokenStandardController {
             switch (instructionChoice) {
                 case 'Withdraw':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createWithdrawAllocationInstruction(
+                        await this.service.allocation.createWithdrawAllocationInstruction(
                             allocationInstructionCid
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
@@ -731,6 +929,13 @@ export class TokenStandardController {
         }
     }
 
+    /**
+     * Executes AllocationRequest choice on the provided AllocationRequest
+     * @param allocationRequestCid AllocationRequest contract id
+     * @param requestChoice 'Reject' | 'Withdraw'
+     * @param actor Actor party
+     * @returns Wrapped ExerciseCommand and disclosed contracts for submission
+     */
     async exerciseAllocationRequestChoice(
         allocationRequestCid: string,
         requestChoice: AllocationRequestChoice,
@@ -744,7 +949,7 @@ export class TokenStandardController {
             switch (requestChoice) {
                 case 'Reject':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createRejectAllocationRequest(
+                        await this.service.allocation.createRejectAllocationRequest(
                             allocationRequestCid,
                             actor
                         )
@@ -752,7 +957,7 @@ export class TokenStandardController {
 
                 case 'Withdraw':
                     ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.createWithdrawAllocationRequest(
+                        await this.service.allocation.createWithdrawAllocationRequest(
                             allocationRequestCid
                         )
                     return [{ ExerciseCommand }, disclosedContracts]
