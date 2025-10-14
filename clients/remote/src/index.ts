@@ -8,19 +8,47 @@ import { pino } from 'pino'
 import ViteExpress from 'vite-express'
 import { StoreSql, connection } from '@canton-network/core-wallet-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
-import { configSchema } from './config/Config.js'
 import { Notifier } from './notification/NotificationService.js'
 import EventEmitter from 'events'
 import { SigningProvider } from '@canton-network/core-signing-lib'
 import { ParticipantSigningDriver } from '@canton-network/core-signing-participant'
 import { InternalSigningDriver } from '@canton-network/core-signing-internal'
 import { jwtAuthService } from './auth/jwt-auth-service.js'
+import { Option, Command } from '@commander-js/extra-typings'
 
 const dAppPort = Number(process.env.DAPP_API_PORT) || 3008
 const userPort = Number(process.env.USER_API_PORT) || 3001
 const webPort = Number(process.env.WEB_PORT) || 3002
 
-const logger = pino({ name: 'main', level: 'debug' })
+const program = new Command()
+    .name('clients-remote')
+    .description('Run a remotely hosted Wallet Gateway')
+    .option('-c, --config <path>', 'set config path', '../test/config.json')
+    .addOption(
+        new Option('-f, --log-format <format>', 'set log format')
+            .choices(['json', 'pretty'])
+            .default('pretty')
+    )
+    .addOption(
+        new Option('-s, --store-type <type>', 'set store type')
+            .choices(['sqlite', 'postgres'])
+            .default('sqlite')
+    )
+
+program.parse()
+const options = program.opts()
+
+const logger = pino({
+    name: 'main',
+    level: 'debug',
+    ...(options.logFormat === 'pretty'
+        ? {
+              transport: {
+                  target: 'pino-pretty',
+              },
+          }
+        : {}),
+})
 
 export class NotificationService implements NotificationService {
     private notifiers: Map<string, Notifier> = new Map()
@@ -48,9 +76,10 @@ export class NotificationService implements NotificationService {
 
 const notificationService = new NotificationService()
 
-const configPath = process.env.NETWORK_CONFIG_PATH || '../test/config.json'
-const configFile = ConfigUtils.loadConfigFile(configPath)
-const config = configSchema.parse(configFile)
+const configPath =
+    process.env.NETWORK_CONFIG_PATH || options.config || '../test/config.json'
+
+const config = ConfigUtils.loadConfigFile(configPath)
 const store = new StoreSql(connection(config.store), logger)
 const authService = jwtAuthService(store, logger)
 

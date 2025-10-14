@@ -4,6 +4,7 @@
     "description": "",
     "private": true,
     "main": "dist/index.js",
+    "bin": "dist/index.js",
     "type": "module",
     "scripts": {
         "build": "tsc -b; tsc -b tsconfig.frontend.json && yarn db:migrate:reset && yarn db:bootstrap",
@@ -36,6 +37,8 @@
         "@canton-network/core-wallet-store-sql": "workspace:^",
         "@canton-network/core-wallet-ui-components": "workspace:^",
         "@canton-network/core-wallet-user-rpc-client": "workspace:^",
+        "@commander-js/extra-typings": "^14.0.0",
+        "commander": "^14.0.1",
         "cors": "^2.8.5",
         "express": "^5.1.0",
         "express-rate-limit": "^7.5.1",

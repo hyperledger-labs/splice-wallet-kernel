@@ -1466,6 +1466,7 @@ __metadata:
     "@canton-network/core-wallet-store-sql": "workspace:^"
     "@canton-network/core-wallet-ui-components": "workspace:^"
     "@canton-network/core-wallet-user-rpc-client": "workspace:^"
+    "@commander-js/extra-typings": "npm:^14.0.0"
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"
@@ -1474,6 +1475,7 @@ __metadata:
     "@types/jest": "npm:^29.5.14"
     "@types/node": "npm:^22.15.30"
     "@types/supertest": "npm:^6.0.3"
+    commander: "npm:^14.0.1"
     cors: "npm:^2.8.5"
     express: "npm:^5.1.0"
     express-rate-limit: "npm:^7.5.1"
@@ -1492,6 +1494,8 @@ __metadata:
     vite: "npm:^6.3.5"
     vite-express: "npm:^0.21.1"
     zod: "npm:^3.25.64"
+  bin:
+    clients-remote: dist/index.js
   languageName: unknown
   linkType: soft
 
