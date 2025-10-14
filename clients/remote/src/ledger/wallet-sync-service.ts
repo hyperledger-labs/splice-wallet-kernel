@@ -46,22 +46,24 @@ export class WalletSyncService {
             const partiesWithRights = new Map<string, string>()
 
             rights.rights?.forEach((right) => {
+                let party: string | undefined
+                let rightType: string | undefined
                 if ('CanActAs' in right.kind) {
-                    partiesWithRights.set(
-                        right.kind.CanActAs.value.party,
-                        'CanActAs'
-                    )
+                    party = right.kind.CanActAs.value.party
+                    rightType = 'CanActAs'
                 } else if ('CanExecuteAs' in right.kind) {
-                    partiesWithRights.set(
-                        right.kind.CanExecuteAs.value.party,
-                        'CanExecuteAs'
-                    )
+                    party = right.kind.CanExecuteAs.value.party
+                    rightType = 'CanExecuteAs'
                 } else if ('CanReadAs' in right.kind) {
-                    partiesWithRights.set(
-                        right.kind.CanReadAs.value.party,
-                        'CanReadAs'
-                    )
+                    party = right.kind.CanReadAs.value.party
+                    rightType = 'CanReadAs'
                 }
+                if (
+                    party !== undefined &&
+                    rightType !== undefined &&
+                    !partiesWithRights.has(party)
+                )
+                    partiesWithRights.set(party, rightType)
             })
             this.logger.info(
                 partiesWithRights,
