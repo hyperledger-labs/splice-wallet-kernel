@@ -401,28 +401,3 @@ export const localTopologyDefault = (
         'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd'
     )
 }
-
-/**
- * A default factory function used for running against a local validator node.
- * This uses mock-auth and is started with the 'yarn start:canton:tls'
- */
-export const localTopologyTlsEnabled = (
-    userId: string,
-    userAdminToken: string
-): TopologyController => {
-    return new TopologyController(
-        '127.0.0.1:5012',
-        new URL('http://127.0.0.1:5003'),
-        userId,
-        userAdminToken,
-        'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd',
-        {
-            useTls: true,
-            tls: {
-                rootCert:
-                    '/Users/rukminibasu/Desktop/IdeaProjects/splice-wallet-kernel/canton/tls/ca.crt',
-                mutual: false,
-            },
-        }
-    )
-}
