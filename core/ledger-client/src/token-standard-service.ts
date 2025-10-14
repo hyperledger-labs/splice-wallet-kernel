@@ -77,7 +77,7 @@ class CoreService {
     constructor(
         private ledgerClient: LedgerClient,
         private scanProxyClient: ScanProxyClient,
-        readonly logger: Logger,
+        private readonly logger: Logger,
         private accessToken: string,
         private readonly isMasterUser: boolean
     ) {}
@@ -235,6 +235,26 @@ class CoreService {
         return renderTransaction(parsedTx)
     }
 
+    async toPrettyTransactionsPerParty(
+        updates: JsGetUpdatesResponse[],
+        parties: PartyId[],
+        ledgerClient: LedgerClient
+    ): Promise<Map<PartyId, PrettyTransactions>> {
+        const all = await Promise.all(
+            parties.map(
+                async (partyId): Promise<[PartyId, PrettyTransactions]> => [
+                    partyId,
+                    await this.toPrettyTransactions(
+                        updates,
+                        partyId,
+                        ledgerClient
+                    ),
+                ]
+            )
+        )
+        return new Map(all)
+    }
+
     // returns object with JsActiveContract content
     // and contractId and interface view value extracted from it as separate fields for convenience
     private toPrettyContract<T>(
@@ -255,7 +275,10 @@ class CoreService {
 }
 
 class AllocationService {
-    constructor(private core: CoreService) {}
+    constructor(
+        private core: CoreService,
+        private readonly logger: Logger
+    ) {}
 
     public async buildAllocationFactoryChoiceArgs(
         allocationSpecification: AllocationSpecification,
@@ -604,7 +627,10 @@ class AllocationService {
 }
 
 class TransferService {
-    constructor(private core: CoreService) {}
+    constructor(
+        private core: CoreService,
+        private readonly logger: Logger
+    ) {}
 
     public async buildTransferChoiceArgs(
         sender: PartyId,
@@ -663,7 +689,7 @@ class TransferService {
         choiceArgs: CreateTransferChoiceArgs,
         choiceContext: transferInstructionRegistryTypes['schemas']['ChoiceContext']
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        this.core.logger.debug('Creating transfer from pre-fetched context...')
+        this.logger.debug('Creating transfer from pre-fetched context...')
         choiceArgs.extraArgs.context = {
             ...choiceContext.choiceContextData,
             values: choiceContext.choiceContextData?.values ?? {},
@@ -726,7 +752,7 @@ class TransferService {
                 choiceContext
             )
         } catch (e) {
-            this.core.logger.error('Failed to execute transfer:', e)
+            this.logger.error('Failed to execute transfer:', e)
             throw e
         }
     }
@@ -775,7 +801,7 @@ class TransferService {
             }
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
-            this.core.logger.error(
+            this.logger.error(
                 'Failed to create accept transfer instruction:',
                 e
             )
@@ -854,7 +880,7 @@ class TransferService {
             }
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
-            this.core.logger.error(
+            this.logger.error(
                 'Failed to create reject transfer instruction:',
                 e
             )
@@ -934,7 +960,7 @@ class TransferService {
             }
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
-            this.core.logger.error(
+            this.logger.error(
                 'Failed to create withdraw transfer instruction:',
                 e
             )
@@ -989,8 +1015,8 @@ export class TokenStandardService {
             accessToken,
             isMasterUser
         )
-        this.allocation = new AllocationService(this.core)
-        this.transfer = new TransferService(this.core)
+        this.allocation = new AllocationService(this.core, this.logger)
+        this.transfer = new TransferService(this.core, this.logger)
     }
 
     async getTransferPreApprovalByParty(partyId: PartyId) {
@@ -1305,108 +1331,5 @@ export class TokenStandardService {
             },
             [disclosedContracts],
         ]
-    }
-
-    private async toPrettyTransactionsPerParty(
-        updates: JsGetUpdatesResponse[],
-        parties: PartyId[],
-        ledgerClient: LedgerClient
-    ): Promise<Map<PartyId, PrettyTransactions>> {
-        const all = await Promise.all(
-            parties.map(
-                async (partyId): Promise<[PartyId, PrettyTransactions]> => [
-                    partyId,
-                    await this.toPrettyTransactions(
-                        updates,
-                        partyId,
-                        ledgerClient
-                    ),
-                ]
-            )
-        )
-        return new Map(all)
-    }
-
-    private async toPrettyTransactions(
-        updates: JsGetUpdatesResponse[],
-        partyId: PartyId,
-        ledgerClient: LedgerClient
-    ): Promise<PrettyTransactions> {
-        // Runtime filters that also let TS know which of OneOfs types to check against
-        const isOffsetCheckpointUpdate = (
-            updateResponse: JsGetUpdatesResponse
-        ): updateResponse is OffsetCheckpointUpdate =>
-            !!updateResponse?.update?.OffsetCheckpoint
-        const isTransactionUpdate = (
-            updateResponse: JsGetUpdatesResponse
-        ): updateResponse is TransactionUpdate =>
-            !!updateResponse.update?.Transaction?.value
-
-        const offsetCheckpoints: number[] = updates
-            .filter(isOffsetCheckpointUpdate)
-            .map((update) => update.update.OffsetCheckpoint.value.offset)
-        const latestCheckpointOffset = Math.max(...offsetCheckpoints)
-
-        const transactions: Transaction[] = await Promise.all(
-            updates
-                // exclude OffsetCheckpoint, Reassignment, TopologyTransaction
-                .filter(isTransactionUpdate)
-                .map(async (update) => {
-                    const tx = update.update.Transaction.value
-                    const parser = new TransactionParser(
-                        tx,
-                        ledgerClient,
-                        partyId,
-                        this.isMasterUser
-                    )
-
-                    return await parser.parseTransaction()
-                })
-        )
-
-        return {
-            // OffsetCheckpoint can be anywhere... or not at all, maybe
-            nextOffset: Math.max(
-                latestCheckpointOffset,
-                ...transactions.map((tx) => tx.offset)
-            ),
-            transactions: transactions
-                .filter((tx) => tx.events.length > 0)
-                .map(renderTransaction),
-        }
-    }
-
-    private async toPrettyTransaction(
-        getTransactionResponse: JsGetTransactionResponse,
-        partyId: PartyId,
-        ledgerClient: LedgerClient
-    ): Promise<Transaction> {
-        const tx = getTransactionResponse.transaction
-        const parser = new TransactionParser(
-            tx,
-            ledgerClient,
-            partyId,
-            this.isMasterUser
-        )
-        const parsedTx = await parser.parseTransaction()
-        return renderTransaction(parsedTx)
-    }
-
-    // returns object with JsActiveContract content
-    // and contractId and interface view value extracted from it as separate fields for convenience
-    private toPrettyContract<T>(
-        interfaceId: string,
-        response: JsActiveContractEntryResponse
-    ): PrettyContract<T> {
-        const activeContract = response.contractEntry.JsActiveContract
-        const { createdEvent } = activeContract
-        return {
-            contractId: createdEvent.contractId,
-            activeContract,
-            interfaceViewValue: ensureInterfaceViewIsPresent(
-                createdEvent,
-                interfaceId
-            ).viewValue as T,
-        }
     }
 }

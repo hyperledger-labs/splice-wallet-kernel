@@ -650,8 +650,8 @@ export class TokenStandardController {
     }
 
     /**
-     * Builds and fetches the registry context for an allocation instruction factory call
-     * Use this to prefetch and cache context for offline signing
+     * Builds and fetches the registry context for an allocation factory call
+     * Use this to prefetch context for offline signing
      * @returns Allocation factory id + choice context from the registry
      */
     async getCreateAllocationInstructionContext(
