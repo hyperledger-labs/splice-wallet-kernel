@@ -343,7 +343,7 @@ below you can have a look at different event types and how to potentially visual
            :dedent:
 
 
-        The label gives us the quick information.
+       The label gives us the quick information.
 
        .. code-block:: JSON
 
