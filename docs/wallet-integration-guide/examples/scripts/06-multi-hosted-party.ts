@@ -4,6 +4,7 @@ import {
     localNetLedgerDefault,
     localNetTopologyDefault,
     localNetTokenStandardDefault,
+    localNetLedgerAppProvider,
     createKeyPair,
     localValidatorDefault,
     localNetStaticConfig,
@@ -42,9 +43,10 @@ const alice = await sdk.userLedger?.signAndAllocateExternalParty(
 logger.info(alice?.partyId!, 'created single hosted party to get synchronzerId')
 await sdk.setPartyId(alice?.partyId!)
 
+// multi host the party on appProvider
 const multiHostedParticipantEndpointConfig = [
     {
-        url: new URL('http://127.0.0.1:3975'),
+        url: localNetLedgerAppProvider.url,
         accessToken: adminToken.accessToken,
     },
 ]

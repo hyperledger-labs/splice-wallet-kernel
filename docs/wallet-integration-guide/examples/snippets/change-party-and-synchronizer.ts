@@ -12,6 +12,5 @@ export default async function () {
     })
     await sdk.connect()
 
-    sdk.userLedger?.setPartyId('my-wallet-1')
-    sdk.userLedger?.setSynchronizerId('synchronizer-1')
+    await sdk.setPartyId('my-wallet-1')
 }
