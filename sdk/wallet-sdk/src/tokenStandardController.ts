@@ -584,7 +584,7 @@ export class TokenStandardController {
         inputUtxos?: string[],
         memo?: string,
         expiryDate?: Date,
-        meta?: Record<string, unknown>
+        meta?: Metadata
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {

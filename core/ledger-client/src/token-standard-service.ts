@@ -1154,20 +1154,21 @@ export class TokenStandardService {
         inputUtxos?: string[],
         memo?: string,
         expiryDate?: Date,
-        meta?: Record<string, unknown>
+        meta?: Metadata
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        const [transferCommand, disclosedContracts] = await this.createTransfer(
-            sender,
-            receiver,
-            amount,
-            instrumentAdmin,
-            instrumentId,
-            registryUrl,
-            inputUtxos,
-            memo,
-            expiryDate,
-            meta
-        )
+        const [transferCommand, disclosedContracts] =
+            await this.transfer.createTransfer(
+                sender,
+                receiver,
+                amount,
+                instrumentAdmin,
+                instrumentId,
+                registryUrl,
+                inputUtxos,
+                memo,
+                expiryDate,
+                meta
+            )
 
         const choiceArgs = {
             cid: transferCommand.contractId,
