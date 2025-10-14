@@ -32,16 +32,16 @@ the payout rate is higher for featured applications.
 
 .. todo add code example once we have this in the wallet SDK
 
-Redeming Reward Coupons with External Party
--------------------------------------------
+Redeeming Reward Coupons with External Party
+--------------------------------------------
 To accept rewards with an external party you need to call ``AmuletRules_Transfer`` with the activity records as inputs.
 
 .. todo add code example once we have this in the wallet SDK
 
 Sharing Featured Application Reward between multiple parties
 ------------------------------------------------------------
-Featured Application rewards can be shared between multiple parties, this can be done by defining a list of benficiaries
+Featured Application rewards can be shared between multiple parties, this can be done by defining a list of beneficiaries
 and give them a weighted amount of the total reward. The sum of all beneficiaries weight must be equal to 1.0. This results
-in seperate coupons being generated for each beneficiary.
+in separate coupons being generated for each beneficiary.
 
 .. todo add code example once we have this in the wallet SDK
