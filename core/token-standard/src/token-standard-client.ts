@@ -1,14 +1,23 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { paths as allocation } from './generated-clients/splice-api-token-allocation-v1/allocation-v1.js'
-import { paths as metadata } from './generated-clients/splice-api-token-metadata-v1/token-metadata-v1.js'
-import { paths as transferInstruction } from './generated-clients/splice-api-token-transfer-instruction-v1/transfer-instruction-v1.js'
-import { paths as allocationInstruction } from './generated-clients/splice-api-token-allocation-instruction-v1/allocation-instruction-v1.js'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from '@canton-network/core-types'
 
-type paths = allocation & metadata & transferInstruction & allocationInstruction
+import { paths as allocationPaths } from './generated-clients/splice-api-token-allocation-v1/allocation-v1.js'
+import { paths as allocationInstructionPaths } from './generated-clients/splice-api-token-allocation-instruction-v1/allocation-instruction-v1.js'
+import { paths as metadataPaths } from './generated-clients/splice-api-token-metadata-v1/token-metadata-v1.js'
+import { paths as transferInstructionPaths } from './generated-clients/splice-api-token-transfer-instruction-v1/transfer-instruction-v1.js'
+
+export { components as allocationRegistryTypes } from './generated-clients/splice-api-token-allocation-v1/allocation-v1.js'
+export { components as metadataRegistryTypes } from './generated-clients/splice-api-token-metadata-v1/token-metadata-v1.js'
+export { components as transferInstructionRegistryTypes } from './generated-clients/splice-api-token-transfer-instruction-v1/transfer-instruction-v1.js'
+export { components as allocationInstructionRegistryTypes } from './generated-clients/splice-api-token-allocation-instruction-v1/allocation-instruction-v1.js'
+
+type paths = allocationPaths &
+    metadataPaths &
+    transferInstructionPaths &
+    allocationInstructionPaths
 
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional

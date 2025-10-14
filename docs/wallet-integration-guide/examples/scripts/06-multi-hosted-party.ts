@@ -4,6 +4,7 @@ import {
     localNetLedgerDefault,
     localNetTopologyDefault,
     localNetTokenStandardDefault,
+    localNetLedgerAppProvider,
     createKeyPair,
     localValidatorDefault,
     localNetStaticConfig,
