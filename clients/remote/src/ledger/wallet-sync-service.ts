@@ -43,16 +43,28 @@ export class WalletSyncService {
                     },
                 }
             )
-            const parties = rights.rights
-                ?.filter((right) => 'CanActAs' in right.kind)
-                .map((right) => {
-                    if ('CanActAs' in right.kind) {
-                        return right.kind.CanActAs.value.party
-                    }
-                    throw new Error('Unexpected right kind')
-                })
+            const partiesWithRights = new Map<string, string>()
+
+            rights.rights?.forEach((right) => {
+                if ('CanActAs' in right.kind) {
+                    partiesWithRights.set(
+                        right.kind.CanActAs.value.party,
+                        'CanActAs'
+                    )
+                } else if ('CanExecuteAs' in right.kind) {
+                    partiesWithRights.set(
+                        right.kind.CanExecuteAs.value.party,
+                        'CanExecuteAs'
+                    )
+                } else if ('CanReadAs' in right.kind) {
+                    partiesWithRights.set(
+                        right.kind.CanReadAs.value.party,
+                        'CanReadAs'
+                    )
+                }
+            })
             this.logger.info(
-                parties,
+                partiesWithRights,
                 'Found new parties to sync with Wallet Gateway'
             )
 
@@ -64,7 +76,7 @@ export class WalletSyncService {
             )
 
             const newParticipantWallets: Array<Wallet> =
-                parties
+                Array.from(partiesWithRights.keys())
                     ?.filter(
                         (party) => !existingPartyIdToSigningProvider.has(party)
                         // todo: filter on idp id
