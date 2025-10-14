@@ -5,157 +5,105 @@ import {
     localTopologyDefault,
     WalletSDKImpl,
     createKeyPair,
+    signTransactionHash,
     localTokenStandardDefault,
-    TopologyController,
 } from '@canton-network/wallet-sdk'
-import { pino } from 'pino'
-import path from 'path'
-import { fileURLToPath } from 'url'
-
-const logger = pino({ name: '01-auth', level: 'info' })
-
-const here = path.dirname(fileURLToPath(import.meta.url))
-const PATH_TO_TLS_DIR = '../../../../canton/tls'
-
-const tlsTopologyController = (
-    userId: string,
-    userAdminToken: string
-): TopologyController => {
-    return new TopologyController(
-        '127.0.0.1:5012',
-        new URL('http://127.0.0.1:5003'),
-        userId,
-        userAdminToken,
-        'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd',
-        {
-            useTls: true,
-            tls: {
-                rootCert: path.join(here, PATH_TO_TLS_DIR, 'ca.crt'),
-                mutual: false,
-            },
-        }
-    )
-}
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
     logger: console,
     authFactory: localAuthDefault,
     ledgerFactory: localLedgerDefault,
-    topologyFactory: tlsTopologyController,
+    topologyFactory: localTopologyDefault,
     tokenStandardFactory: localTokenStandardDefault,
 })
 const fixedLocalNetSynchronizer =
     'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd'
 
-logger.info('SDK initialized')
+console.log('SDK initialized')
 
 await sdk.connect()
-logger.info('Connected to ledger')
+console.log('Connected to ledger')
 
 await sdk.userLedger
     ?.listWallets()
     .then((wallets) => {
-        logger.info('Wallets:', wallets)
+        console.log('Wallets:', wallets)
     })
     .catch((error) => {
         console.error('Error listing wallets:', error)
     })
 
 await sdk.connectAdmin()
-logger.info('Connected to admin ledger')
+console.log('Connected to admin ledger')
 
 await sdk.adminLedger
     ?.listWallets()
     .then((wallets) => {
-        logger.info('Wallets:', wallets)
+        console.log('Wallets:', wallets)
     })
     .catch((error) => {
         console.error('Error listing wallets:', error)
     })
 
 await sdk.connectTopology(fixedLocalNetSynchronizer)
-logger.info('Connected to topology')
+console.log('Connected to topology')
 
 const keyPair = createKeyPair()
 
-const alice = await sdk.topology?.prepareSignAndSubmitExternalParty(
-    keyPair.privateKey,
-    'alice'
+console.log('generated keypair')
+const generatedParty = await sdk.userLedger?.generateExternalParty(
+    keyPair.publicKey
 )
 
-logger.info(`Created party: ${alice!.partyId}`)
+if (!generatedParty) {
+    throw new Error('Error generating external party topology')
+}
 
-// await sdk.setPartyId(alice!.partyId)
+console.log('Prepared external topology')
+console.log('Signing the hash')
 
-// logger.info('SDK initialized')
+const { partyId, multiHash } = generatedParty
 
-// await sdk.connect()
-// logger.info('Connected to ledger')
+const signedHash = signTransactionHash(multiHash, keyPair.privateKey)
 
-// const keyPairTreasury = createKeyPair()
-// const receiverPartyKeyPair = createKeyPair()
+await sdk.userLedger
+    ?.allocateExternalParty(signedHash, generatedParty)
+    .then((allocatedParty) => {
+        console.log('Alocated party ', allocatedParty.partyId)
+    })
 
-// await sdk.connectAdmin()
-// await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
-// sdk.tokenStandard?.setTransferFactoryRegistryUrl(
-//     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
-// )
+console.log('Create ping command')
+const createPingCommand = await sdk.userLedger?.createPingCommand(partyId)
 
-// logger.info('generated keypair')
-// const generatedParty = await sdk.adminLedger?.generateExternalParty(
-//     keyPair.publicKey
-// )
+sdk.setPartyId(partyId)
 
-// if (!generatedParty) {
-//     throw new Error('Error generating external party topology')
-// }
+console.log('Prepare command submission for ping create command')
+const prepareResponse =
+    await sdk.adminLedger?.prepareSubmission(createPingCommand)
 
-// logger.info('Prepared external topology')
-// logger.info('Signing the hash')
+console.log('Sign transaction hash')
 
-// const { partyId, multiHash } = generatedParty
+const signedCommandHash = signTransactionHash(
+    prepareResponse!.preparedTransactionHash!,
+    keyPair.privateKey
+)
 
-// const signedHash = signTransactionHash(multiHash, keyPair.privateKey)
+console.log('Submit command')
 
-// await sdk.adminLedger
-//     ?.allocateExternalParty(signedHash, generatedParty)
-//     .then((allocatedParty) => {
-//         logger.info('Alocated party ', allocatedParty.partyId)
-//     })
-//     .catch((e) => logger.info(e))
-
-// logger.info('Create ping command')
-// const createPingCommand = await sdk.userLedger?.createPingCommand(partyId)
-
-// sdk.setPartyId(partyId)
-
-// logger.info('Prepare command submission for ping create command')
-// const prepareResponse =
-//     await sdk.adminLedger?.prepareSubmission(createPingCommand)
-
-// logger.info('Sign transaction hash')
-
-// const signedCommandHash = signTransactionHash(
-//     prepareResponse!.preparedTransactionHash!,
-//     keyPair.privateKey
-// )
-
-// logger.info('Submit command')
-
-// sdk.adminLedger
-//     ?.executeSubmission(
-//         prepareResponse!,
-//         signedCommandHash,
-//         keyPair.publicKey,
-//         v4()
-//     )
-//     .then((executeSubmissionResponse) => {
-//         logger.info(
-//             'Executed command submission succeeded',
-//             executeSubmissionResponse
-//         )
-//     })
-//     .catch((error) =>
-//         console.error('Failed to submit command with error %d', error)
-//     )
+sdk.adminLedger
+    ?.executeSubmission(
+        prepareResponse!,
+        signedCommandHash,
+        keyPair.publicKey,
+        v4()
+    )
+    .then((executeSubmissionResponse) => {
+        console.log(
+            'Executed command submission succeeded',
+            executeSubmissionResponse
+        )
+    })
+    .catch((error) =>
+        console.error('Failed to submit command with error %d', error)
+    )
