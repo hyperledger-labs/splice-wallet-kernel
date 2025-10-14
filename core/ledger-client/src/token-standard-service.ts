@@ -1340,6 +1340,7 @@ export class TokenStandardService {
 
     // returns object with JsActiveContract content
     // and contractId and interface view value extracted from it as separate fields for convenience
+    // TODO it should go to core
     private toPrettyContract<T>(
         interfaceId: string,
         response: JsActiveContractEntryResponse
@@ -1354,5 +1355,89 @@ export class TokenStandardService {
                 interfaceId
             ).viewValue as T,
         }
+    }
+
+    private async getTransferPreapprovalCidOrThrow(
+        provider: PartyId,
+        receiver: PartyId
+    ): Promise<{ contractId: string; templateId: string }> {
+        const tp = await this.getTransferPreApprovalByParty(receiver)
+        if (!tp)
+            throw new Error(
+                `No TransferPreapproval found for receiver ${receiver}`
+            )
+
+        const contractId = tp.contract?.contract_id
+        const templateId = tp.contract?.template_id
+        if (!contractId || !templateId) {
+            throw new Error(
+                'TransferPreapproval contract id/template id missing from scan-proxy payload'
+            )
+        }
+
+        return { contractId, templateId }
+    }
+
+    async cancelTransferPreapproval(
+        provider: PartyId,
+        receiver: PartyId
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const { contractId, templateId } =
+            await this.getTransferPreapprovalCidOrThrow(provider, receiver)
+
+        return [
+            {
+                templateId,
+                contractId,
+                choice: 'TransferPreapproval_Cancel',
+                choiceArgument: {},
+            },
+            [],
+        ]
+    }
+
+    async renewTransferPreapproval(
+        provider: PartyId,
+        receiver: PartyId
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const { contractId, templateId } =
+            await this.getTransferPreapprovalCidOrThrow(provider, receiver)
+
+        const openRoundCid = await this.getActiveOpenMiningRoundCidOrThrow()
+
+        return [
+            {
+                templateId,
+                contractId,
+                choice: 'TransferPreapproval_Renew',
+                choiceArgument: {
+                    openRound: openRoundCid,
+                    extraArgs: {
+                        context: { values: {} },
+                        meta: { values: {} },
+                    },
+                },
+            },
+            [],
+        ]
+    }
+
+    // (Optional) small private helper to reuse the “active round” selection logic
+    private async getActiveOpenMiningRoundCidOrThrow(): Promise<string> {
+        const rounds = await this.scanProxyClient.getOpenMiningRounds()
+        if (!(Array.isArray(rounds) && rounds.length)) {
+            throw new Error('OpenMiningRound contract not found')
+        }
+        const nowMs = Date.now()
+        const active = rounds.findLast((r) => {
+            const { opensAt, targetClosesAt } = r.payload
+            const open = Number(new Date(opensAt))
+            const close = Number(new Date(targetClosesAt))
+            return open <= nowMs && close > nowMs
+        })
+        if (!active) {
+            throw new Error('No active OpenMiningRound found for renewal')
+        }
+        return active.contract_id
     }
 }

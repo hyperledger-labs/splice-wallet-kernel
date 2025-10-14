@@ -314,6 +314,33 @@ export class TokenStandardController {
         }
     }
 
+    async cancelTransferPreapproval(
+        provider: PartyId,
+        receiver: PartyId
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const [cmd, disclosed] = await this.service.cancelTransferPreapproval(
+            provider,
+            receiver
+        )
+        return [{ ExerciseCommand: cmd }, disclosed]
+    }
+
+    // TODO maybe something like tapInteral?
+    async renewTransferPreapproval(
+        provider: PartyId,
+        receiver: PartyId
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const [cmd, disclosed] = await this.service.renewTransferPreapproval(
+            provider,
+            receiver
+        )
+        return [{ ExerciseCommand: cmd }, disclosed]
+    }
+
     /**
      * Creates a new tap for the specified receiver and amount.
      * @param receiver The party of the receiver.
@@ -772,7 +799,7 @@ export class TokenStandardController {
     }
 
     /**
-     * Fetch choice context from registry for Allocation ExecuteTransfer.
+     * Fetch choice context from registry for Allocation ExecuteTransfer
      * @param allocationCid Allocation contract id
      */
     async getAllocationExecuteTransferChoiceContext(allocationCid: string) {
