@@ -33,7 +33,7 @@ the payout rate is higher for featured applications.
 .. todo add code example once we have this in the wallet SDK
 
 Redeeming Reward Coupons with External Party
--------------------------------------------
+--------------------------------------------
 To accept rewards with an external party you need to call ``AmuletRules_Transfer`` with the activity records as inputs.
 
 .. todo add code example once we have this in the wallet SDK
