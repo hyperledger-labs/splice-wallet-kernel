@@ -272,7 +272,7 @@ const delegateProxyDisclosedContracts = {
 }
 
 try {
-    await sdk.userLedger?.prepareSignAndExecuteTransaction(
+    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         acceptCommand,
         treasuryKeyPair.privateKey,
         v4(),

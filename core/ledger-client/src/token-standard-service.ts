@@ -876,6 +876,84 @@ class TransferService {
         ]
     }
 
+    async exerciseDelegateProxyTransferInstructionReject(
+        exchangeParty: PartyId,
+        proxyCid: string,
+        transferInstructionCid: string,
+        registryUrl: string,
+        featuredAppRightCid: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const [rejectTransferInstructionContext, disclosedContracts] =
+            await this.createRejectTransferInstruction(
+                transferInstructionCid,
+                registryUrl
+            )
+
+        const choiceArgs = {
+            cid: rejectTransferInstructionContext.contractId,
+            proxyArg: {
+                featuredAppRightCid: featuredAppRightCid,
+                beneficiaries: [
+                    {
+                        beneficiary: exchangeParty,
+                        weight: 1.0,
+                    },
+                ],
+                choiceArg: rejectTransferInstructionContext.choiceArgument,
+            },
+        }
+
+        return [
+            {
+                templateId:
+                    '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+                contractId: proxyCid,
+                choice: 'DelegateProxy_TransferInstruction_Reject',
+                choiceArgument: choiceArgs,
+            },
+            disclosedContracts,
+        ]
+    }
+
+    async exerciseDelegateProxyTransferInstructioWithdraw(
+        exchangeParty: PartyId,
+        proxyCid: string,
+        transferInstructionCid: string,
+        registryUrl: string,
+        featuredAppRightCid: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const [withdrawTransferInstructionContext, disclosedContracts] =
+            await this.createWithdrawTransferInstruction(
+                transferInstructionCid,
+                registryUrl
+            )
+
+        const choiceArgs = {
+            cid: withdrawTransferInstructionContext.contractId,
+            proxyArg: {
+                featuredAppRightCid: featuredAppRightCid,
+                beneficiaries: [
+                    {
+                        beneficiary: exchangeParty,
+                        weight: 1.0,
+                    },
+                ],
+                choiceArg: withdrawTransferInstructionContext.choiceArgument,
+            },
+        }
+
+        return [
+            {
+                templateId:
+                    '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+                contractId: proxyCid,
+                choice: 'DelegateProxy_TransferInstruction_Withdraw',
+                choiceArgument: choiceArgs,
+            },
+            disclosedContracts,
+        ]
+    }
+
     async createAcceptTransferInstruction(
         transferInstructionCid: string,
         registryUrl: string,

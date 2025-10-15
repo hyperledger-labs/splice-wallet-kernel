@@ -722,7 +722,55 @@ export class TokenStandardController {
                 )
             return [{ ExerciseCommand: transferCommand }, disclosedContracts]
         } catch (error) {
-            this.logger.error({ error }, 'Failed to create transfer')
+            this.logger.error({ error }, 'Failed to accept transfer')
+            throw error
+        }
+    }
+
+    async rejectDelegateProxyTransfer(
+        exchangeParty: PartyId,
+        proxyCid: string,
+        transferInstructionCid: string,
+        featuredAppRightCid: string
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        try {
+            const [transferCommand, disclosedContracts] =
+                await this.service.transfer.exerciseDelegateProxyTransferInstructionReject(
+                    exchangeParty,
+                    proxyCid,
+                    transferInstructionCid,
+                    this.getTransferFactoryRegistryUrl().href,
+                    featuredAppRightCid
+                )
+            return [{ ExerciseCommand: transferCommand }, disclosedContracts]
+        } catch (error) {
+            this.logger.error({ error }, 'Failed to reject transfer')
+            throw error
+        }
+    }
+
+    async withdrawDelegateProxyTransfer(
+        exchangeParty: PartyId,
+        proxyCid: string,
+        transferInstructionCid: string,
+        featuredAppRightCid: string
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        try {
+            const [transferCommand, disclosedContracts] =
+                await this.service.transfer.exerciseDelegateProxyTransferInstructioWithdraw(
+                    exchangeParty,
+                    proxyCid,
+                    transferInstructionCid,
+                    this.getTransferFactoryRegistryUrl().href,
+                    featuredAppRightCid
+                )
+            return [{ ExerciseCommand: transferCommand }, disclosedContracts]
+        } catch (error) {
+            this.logger.error({ error }, 'Failed to withdraw transfer')
             throw error
         }
     }
