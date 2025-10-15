@@ -703,6 +703,30 @@ export class TokenStandardController {
         }
     }
 
+    async acceptDelegateProxyTransfer(
+        exchangeParty: PartyId,
+        proxyCid: string,
+        transferInstructionCid: string,
+        featuredAppRightCid: string
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        try {
+            const [transferCommand, disclosedContracts] =
+                await this.service.exerciseDelegateProxyTransferInstructionAccept(
+                    exchangeParty,
+                    proxyCid,
+                    transferInstructionCid,
+                    this.getTransferFactoryRegistryUrl().href,
+                    featuredAppRightCid
+                )
+            return [{ ExerciseCommand: transferCommand }, disclosedContracts]
+        } catch (error) {
+            this.logger.error({ error }, 'Failed to create transfer')
+            throw error
+        }
+    }
+
     /**
      * Builds and fetches the registry context for a transfer factory call.
      * Use this to prefetch context for offline signing.
