@@ -257,11 +257,17 @@ const pendingInstructions =
 const transferCid = pendingInstructions?.[0].contractId!
 
 const [acceptCommand, disclosedContracts4] =
-    await sdk.tokenStandard?.acceptDelegateProxyTransfer(
-        exchangeParty!,
-        proxyCid!,
+    await sdk.tokenStandard?.exerciseTransferInstructionChoiceWithDelegate(
         transferCid,
-        featuredAppRights?.contract_id!
+        'Accept',
+        proxyCid!,
+        featuredAppRights?.contract_id!,
+        [
+            {
+                beneficiary: exchangeParty!,
+                weight: 1.0,
+            },
+        ]
     )!
 
 const delegateProxyDisclosedContracts = {

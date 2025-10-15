@@ -31,6 +31,7 @@ import {
     Metadata,
     transferInstructionRegistryTypes,
     allocationInstructionRegistryTypes,
+    Beneficiaries,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
@@ -703,74 +704,58 @@ export class TokenStandardController {
         }
     }
 
-    async acceptDelegateProxyTransfer(
-        exchangeParty: PartyId,
-        proxyCid: string,
+    async exerciseTransferInstructionChoiceWithDelegate(
         transferInstructionCid: string,
-        featuredAppRightCid: string
+        instructionChoice: TransactionInstructionChoice,
+        proxyCid: string,
+        featuredAppRightCid: string,
+        beneficiaries: Beneficiaries[]
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
+        let ExerciseCommand: ExerciseCommand
+        let disclosedContracts: DisclosedContract[]
         try {
-            const [transferCommand, disclosedContracts] =
-                await this.service.transfer.exerciseDelegateProxyTransferInstructionAccept(
-                    exchangeParty,
-                    proxyCid,
-                    transferInstructionCid,
-                    this.getTransferFactoryRegistryUrl().href,
-                    featuredAppRightCid
-                )
-            return [{ ExerciseCommand: transferCommand }, disclosedContracts]
-        } catch (error) {
-            this.logger.error({ error }, 'Failed to accept transfer')
-            throw error
-        }
-    }
+            switch (instructionChoice) {
+                case 'Accept':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.transfer.exerciseDelegateProxyTransferInstructionAccept(
+                            proxyCid,
+                            transferInstructionCid,
+                            this.getTransferFactoryRegistryUrl().href,
+                            featuredAppRightCid,
+                            beneficiaries
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+                case 'Reject':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.transfer.exerciseDelegateProxyTransferInstructionReject(
+                            proxyCid,
+                            transferInstructionCid,
+                            this.getTransferFactoryRegistryUrl().href,
+                            featuredAppRightCid,
+                            beneficiaries
+                        )
+                    return [{ ExerciseCommand }, disclosedContracts]
+                case 'Withdraw':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.transfer.exerciseDelegateProxyTransferInstructioWithdraw(
+                            proxyCid,
+                            transferInstructionCid,
+                            this.getTransferFactoryRegistryUrl().href,
+                            featuredAppRightCid,
+                            beneficiaries
+                        )
 
-    async rejectDelegateProxyTransfer(
-        exchangeParty: PartyId,
-        proxyCid: string,
-        transferInstructionCid: string,
-        featuredAppRightCid: string
-    ): Promise<
-        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
-    > {
-        try {
-            const [transferCommand, disclosedContracts] =
-                await this.service.transfer.exerciseDelegateProxyTransferInstructionReject(
-                    exchangeParty,
-                    proxyCid,
-                    transferInstructionCid,
-                    this.getTransferFactoryRegistryUrl().href,
-                    featuredAppRightCid
-                )
-            return [{ ExerciseCommand: transferCommand }, disclosedContracts]
+                    return [{ ExerciseCommand }, disclosedContracts]
+                default:
+                    throw new Error('Unexpected transfer instruction choice')
+            }
         } catch (error) {
-            this.logger.error({ error }, 'Failed to reject transfer')
-            throw error
-        }
-    }
-
-    async withdrawDelegateProxyTransfer(
-        exchangeParty: PartyId,
-        proxyCid: string,
-        transferInstructionCid: string,
-        featuredAppRightCid: string
-    ): Promise<
-        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
-    > {
-        try {
-            const [transferCommand, disclosedContracts] =
-                await this.service.transfer.exerciseDelegateProxyTransferInstructioWithdraw(
-                    exchangeParty,
-                    proxyCid,
-                    transferInstructionCid,
-                    this.getTransferFactoryRegistryUrl().href,
-                    featuredAppRightCid
-                )
-            return [{ ExerciseCommand: transferCommand }, disclosedContracts]
-        } catch (error) {
-            this.logger.error({ error }, 'Failed to withdraw transfer')
+            this.logger.error(
+                { error },
+                'Failed to exercise transfer instruction choice'
+            )
             throw error
         }
     }
@@ -842,7 +827,6 @@ export class TokenStandardController {
      * @returns A promise that resolves to the ExerciseCommand which creates the transfer.
      */
     async createTransferUsingDelegateProxy(
-        exchangeParty: PartyId,
         proxyCid: string,
         featuredAppRightCid: string,
         sender: PartyId,
@@ -850,6 +834,7 @@ export class TokenStandardController {
         amount: string,
         instrumentId: string,
         instrumentAdmin: PartyId,
+        beneficiaries: Beneficiaries[],
         inputUtxos?: string[],
         memo?: string,
         expiryDate?: Date,
@@ -861,13 +846,13 @@ export class TokenStandardController {
             await this.service.createDelegateProxyTranfser(
                 sender,
                 receiver,
-                exchangeParty,
                 amount,
                 instrumentAdmin,
                 instrumentId,
                 this.getTransferFactoryRegistryUrl().href,
                 featuredAppRightCid,
                 proxyCid,
+                beneficiaries,
                 inputUtxos,
                 memo,
                 expiryDate,

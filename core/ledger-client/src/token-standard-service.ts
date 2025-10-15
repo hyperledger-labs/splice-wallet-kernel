@@ -19,6 +19,7 @@ import {
     ExtraArgs,
     Metadata,
     FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
+    Beneficiaries,
 } from '@canton-network/core-token-standard'
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
@@ -839,11 +840,11 @@ class TransferService {
     }
 
     async exerciseDelegateProxyTransferInstructionAccept(
-        exchangeParty: PartyId,
         proxyCid: string,
         transferInstructionCid: string,
         registryUrl: string,
-        featuredAppRightCid: string
+        featuredAppRightCid: string,
+        beneficiaries: Beneficiaries[]
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         const [acceptTransferInstructionContext, disclosedContracts] =
             await this.createAcceptTransferInstruction(
@@ -855,12 +856,7 @@ class TransferService {
             cid: acceptTransferInstructionContext.contractId,
             proxyArg: {
                 featuredAppRightCid: featuredAppRightCid,
-                beneficiaries: [
-                    {
-                        beneficiary: exchangeParty,
-                        weight: 1.0,
-                    },
-                ],
+                beneficiaries: beneficiaries,
                 choiceArg: acceptTransferInstructionContext.choiceArgument,
             },
         }
@@ -877,11 +873,11 @@ class TransferService {
     }
 
     async exerciseDelegateProxyTransferInstructionReject(
-        exchangeParty: PartyId,
         proxyCid: string,
         transferInstructionCid: string,
         registryUrl: string,
-        featuredAppRightCid: string
+        featuredAppRightCid: string,
+        beneficiaries: Beneficiaries[]
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         const [rejectTransferInstructionContext, disclosedContracts] =
             await this.createRejectTransferInstruction(
@@ -893,12 +889,7 @@ class TransferService {
             cid: rejectTransferInstructionContext.contractId,
             proxyArg: {
                 featuredAppRightCid: featuredAppRightCid,
-                beneficiaries: [
-                    {
-                        beneficiary: exchangeParty,
-                        weight: 1.0,
-                    },
-                ],
+                beneficiaries,
                 choiceArg: rejectTransferInstructionContext.choiceArgument,
             },
         }
@@ -915,11 +906,11 @@ class TransferService {
     }
 
     async exerciseDelegateProxyTransferInstructioWithdraw(
-        exchangeParty: PartyId,
         proxyCid: string,
         transferInstructionCid: string,
         registryUrl: string,
-        featuredAppRightCid: string
+        featuredAppRightCid: string,
+        beneficiaries: Beneficiaries[]
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         const [withdrawTransferInstructionContext, disclosedContracts] =
             await this.createWithdrawTransferInstruction(
@@ -931,12 +922,7 @@ class TransferService {
             cid: withdrawTransferInstructionContext.contractId,
             proxyArg: {
                 featuredAppRightCid: featuredAppRightCid,
-                beneficiaries: [
-                    {
-                        beneficiary: exchangeParty,
-                        weight: 1.0,
-                    },
-                ],
+                beneficiaries,
                 choiceArg: withdrawTransferInstructionContext.choiceArgument,
             },
         }
@@ -1313,13 +1299,13 @@ export class TokenStandardService {
     async createDelegateProxyTranfser(
         sender: PartyId,
         receiver: PartyId,
-        exchangeParty: PartyId,
         amount: string,
         instrumentAdmin: PartyId, // TODO (#907): replace with registry call
         instrumentId: string,
         registryUrl: string,
         featuredAppRightCid: string,
         proxyCid: string,
+        beneficiaries: Beneficiaries[],
         inputUtxos?: string[],
         memo?: string,
         expiryDate?: Date,
@@ -1343,12 +1329,7 @@ export class TokenStandardService {
             cid: transferCommand.contractId,
             proxyArg: {
                 featuredAppRightCid: featuredAppRightCid,
-                beneficiaries: [
-                    {
-                        beneficiary: exchangeParty,
-                        weight: 1.0,
-                    },
-                ],
+                beneficiaries,
                 choiceArg: transferCommand.choiceArgument,
             },
         }
