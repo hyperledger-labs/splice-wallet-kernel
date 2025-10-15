@@ -18,6 +18,7 @@ import {
     allocationInstructionRegistryTypes,
     ExtraArgs,
     Metadata,
+    FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
@@ -866,8 +867,7 @@ class TransferService {
 
         return [
             {
-                templateId:
-                    '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+                templateId: FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
                 contractId: proxyCid,
                 choice: 'DelegateProxy_TransferInstruction_Accept',
                 choiceArgument: choiceArgs,
@@ -905,8 +905,7 @@ class TransferService {
 
         return [
             {
-                templateId:
-                    '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+                templateId: FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
                 contractId: proxyCid,
                 choice: 'DelegateProxy_TransferInstruction_Reject',
                 choiceArgument: choiceArgs,
@@ -944,8 +943,7 @@ class TransferService {
 
         return [
             {
-                templateId:
-                    '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+                templateId: FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
                 contractId: proxyCid,
                 choice: 'DelegateProxy_TransferInstruction_Withdraw',
                 choiceArgument: choiceArgs,
@@ -1356,8 +1354,7 @@ export class TokenStandardService {
         }
 
         const exercise: ExerciseCommand = {
-            templateId:
-                '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+            templateId: FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
             contractId: proxyCid,
             choice: 'DelegateProxy_TransferFactory_Transfer',
             choiceArgument: choiceArgs,
