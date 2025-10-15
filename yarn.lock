@@ -1461,6 +1461,7 @@ __metadata:
   dependencies:
     "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-rpc-errors": "workspace:^"
+    "@canton-network/core-signing-fireblocks": "workspace:^"
     "@canton-network/core-signing-internal": "workspace:^"
     "@canton-network/core-signing-lib": "workspace:^"
     "@canton-network/core-signing-participant": "workspace:^"
@@ -1570,7 +1571,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-signing-fireblocks@workspace:core/signing-fireblocks":
+"@canton-network/core-signing-fireblocks@workspace:^, @canton-network/core-signing-fireblocks@workspace:core/signing-fireblocks":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-signing-fireblocks@workspace:core/signing-fireblocks"
   dependencies:
@@ -1633,6 +1634,7 @@ __metadata:
     tweetnacl: "npm:^1.0.3"
     tweetnacl-util: "npm:^0.15.1"
     typescript: "npm:^5.8.3"
+    zod: "npm:^3.25.64"
   languageName: unknown
   linkType: soft
 
@@ -1813,6 +1815,7 @@ __metadata:
   dependencies:
     "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-rpc-errors": "workspace:^"
+    "@canton-network/core-signing-lib": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
     "@canton-network/core-wallet-store": "workspace:^"
     "@jest/globals": "npm:^29.0.0"

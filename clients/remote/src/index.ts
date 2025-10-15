@@ -11,9 +11,14 @@ import { ConfigUtils } from './config/ConfigUtils.js'
 import { configSchema } from './config/Config.js'
 import { Notifier } from './notification/NotificationService.js'
 import EventEmitter from 'events'
-import { SigningProvider } from '@canton-network/core-signing-lib'
-import { ParticipantSigningDriver } from '@canton-network/core-signing-participant'
-import { InternalSigningDriver } from '@canton-network/core-signing-internal'
+import {
+    SigningProvider,
+    createSigningDrivers,
+    signingDriverFactoryRegistry,
+} from '@canton-network/core-signing-lib'
+import { ParticipantSigningDriverFactory } from '@canton-network/core-signing-participant'
+import { InternalSigningDriverFactory } from '@canton-network/core-signing-internal'
+import { FireblocksSigningDriverFactory } from '@canton-network/core-signing-fireblocks'
 import { jwtAuthService } from './auth/jwt-auth-service.js'
 
 const dAppPort = Number(process.env.DAPP_API_PORT) || 3008
@@ -54,10 +59,18 @@ const config = configSchema.parse(configFile)
 const store = new StoreSql(connection(config.store), logger)
 const authService = jwtAuthService(store, logger)
 
-const drivers = {
-    [SigningProvider.PARTICIPANT]: new ParticipantSigningDriver(),
-    [SigningProvider.WALLET_KERNEL]: new InternalSigningDriver(),
-}
+// Register all available signing driver factories
+signingDriverFactoryRegistry.register(new ParticipantSigningDriverFactory())
+signingDriverFactoryRegistry.register(new InternalSigningDriverFactory())
+signingDriverFactoryRegistry.register(new FireblocksSigningDriverFactory())
+
+// Create signing drivers using the factory registry
+const driverConfigs = config.signing?.drivers || [
+    { provider: SigningProvider.PARTICIPANT },
+    { provider: SigningProvider.WALLET_KERNEL },
+]
+
+const drivers = createSigningDrivers(driverConfigs, store)
 
 export const dAppServer = dapp(
     config.kernel,
