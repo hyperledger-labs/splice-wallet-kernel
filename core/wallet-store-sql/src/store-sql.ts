@@ -6,6 +6,7 @@ import {
     AuthContext,
     UserId,
     AuthAware,
+    assertConnected,
 } from '@canton-network/core-wallet-auth'
 import { SigningDriverStore } from '@canton-network/core-signing-lib'
 import {
@@ -37,7 +38,6 @@ import {
     toSigningDriverConfig,
     SigningKeyTable,
 } from './schema.js'
-import { providerErrors } from '@canton-network/core-rpc-errors'
 
 export class StoreSql
     implements BaseStore, SigningDriverStore, AuthAware<StoreSql>
@@ -60,12 +60,7 @@ export class StoreSql
     }
 
     private assertConnected(): UserId {
-        if (!this.authContext) {
-            throw providerErrors.unauthorized({
-                message: 'User is not connected',
-            })
-        }
-        return this.authContext.userId
+        return assertConnected(this.authContext)
     }
 
     // Wallet methods
@@ -127,6 +122,7 @@ export class StoreSql
     }
 
     async addWallet(wallet: Wallet): Promise<void> {
+        this.logger.info('Adding wallet')
         const userId = this.assertConnected()
 
         const wallets = await this.getWallets()

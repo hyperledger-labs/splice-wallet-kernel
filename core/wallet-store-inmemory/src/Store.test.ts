@@ -147,7 +147,6 @@ implementations.forEach(([name, StoreImpl]) => {
         test('should add, list, get, update, and remove networks', async () => {
             const ledgerApi: LedgerApi = {
                 baseUrl: 'http://api',
-                adminGrpcUrl: 'http://grpc',
             }
             const auth: PasswordAuth = {
                 identityProviderId: 'idp1',

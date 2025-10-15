@@ -38,6 +38,7 @@ import {
 } from '@canton-network/core-ledger-proto'
 import { GrpcTransport } from '@protobuf-ts/grpc-transport'
 import { ChannelCredentials } from '@grpc/grpc-js'
+import fs from 'fs'
 
 function prefixedInt(value: number, bytes: Buffer | Uint8Array): Buffer {
     const buffer = Buffer.alloc(4 + bytes.length)
@@ -68,6 +69,44 @@ function computeSha256CantonHash(purpose: number, bytes: Uint8Array): string {
     return Buffer.concat([multiprefix, hash]).toString('hex')
 }
 
+export interface TlsOptions {
+    rootCert?: string | Buffer
+    clientCert?: string | Buffer
+    clientKey?: string | Buffer
+    mutual?: boolean
+}
+
+export interface GrpcClientOptions {
+    useTls?: boolean
+    tls: TlsOptions
+}
+
+function createGrpcTransport(options: GrpcClientOptions) {
+    const { useTls = false, tls } = options
+
+    if (useTls) {
+        const readMaybeFile = (value?: string | Buffer) =>
+            typeof value === 'string' ? fs.readFileSync(value) : value
+
+        const rootCert = readMaybeFile(tls?.rootCert)
+        const clientCert = readMaybeFile(tls?.clientCert)
+        const clientKey = readMaybeFile(tls?.clientKey)
+
+        if (tls?.mutual) {
+            if (!clientCert || !clientKey) {
+                throw new Error(
+                    'mTLS enabled but clientCert or clientKey are missing'
+                )
+            }
+            return ChannelCredentials.createSsl(rootCert, clientKey, clientCert)
+        } else {
+            return ChannelCredentials.createSsl(rootCert)
+        }
+    } else {
+        return ChannelCredentials.createInsecure()
+    }
+}
+
 export class TopologyWriteService {
     private topologyClient: TopologyManagerWriteServiceClient
     private topologyReadService: TopologyManagerReadServiceClient
@@ -87,12 +126,21 @@ export class TopologyWriteService {
         private synchronizerId: string,
         userAdminUrl: string,
         private userAdminToken: string,
-        ledgerClient: LedgerClient
+        ledgerClient: LedgerClient,
+        grpcClientOptions?: GrpcClientOptions
     ) {
-        const transport = new GrpcTransport({
-            host: userAdminUrl,
-            channelCredentials: ChannelCredentials.createInsecure(),
-        })
+        let transport: GrpcTransport
+        if (grpcClientOptions) {
+            transport = new GrpcTransport({
+                host: userAdminUrl,
+                channelCredentials: createGrpcTransport(grpcClientOptions),
+            })
+        } else {
+            transport = new GrpcTransport({
+                host: userAdminUrl,
+                channelCredentials: ChannelCredentials.createInsecure(),
+            })
+        }
 
         this.topologyClient = new TopologyManagerWriteServiceClient(transport)
         this.topologyReadService = new TopologyManagerReadServiceClient(

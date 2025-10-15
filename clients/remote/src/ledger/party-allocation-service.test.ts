@@ -53,7 +53,6 @@ describe('PartyAllocationService', () => {
         description: 'desc',
         ledgerApi: {
             baseUrl: 'http://ledger',
-            adminGrpcUrl: 'http://ledger/admin',
         },
         auth: {
             identityProviderId: 'idp',
