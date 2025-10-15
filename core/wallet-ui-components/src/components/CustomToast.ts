@@ -15,6 +15,7 @@ export class Toast extends BaseElement {
                 bottom: 20px;
                 right: 20px;
                 max-width: 500px;
+                z-index: 1000;
             }
 
             .toast-wrapper {
@@ -102,23 +103,23 @@ export class Toast extends BaseElement {
         `,
     ]
 
-    @property({ type: String }) title = 'Notification'
-    @property({ type: String }) message =
-        'This is a simple toast message with a clean layout.erogjeorp peorgnieowf eriwfherog'
+    @property({ type: String }) title = ''
+    @property({ type: String }) message = ''
     @property({ type: String }) buttonText = 'Okay'
     @property({ type: String }) type: 'info' | 'success' | 'error' = 'error'
     @property({ type: Boolean }) closing = false
 
-    private _closeToast() {
+    private closeToast() {
         this.closing = true
         setTimeout(() => {
             this.closing = false
+            this.remove()
         }, 600)
     }
 
     connectedCallback() {
         super.connectedCallback()
-        setTimeout(() => this._closeToast(), 5000)
+        setTimeout(() => this.closeToast(), 5000)
     }
 
     render() {
@@ -146,7 +147,7 @@ export class Toast extends BaseElement {
                 <button
                     type="button"
                     class="btn ${btnType}"
-                    @click=${this._closeToast}
+                    @click=${this.closeToast}
                 >
                     ${this.buttonText}
                 </button>

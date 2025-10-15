@@ -10,7 +10,6 @@ import { Wallet } from '@canton-network/core-wallet-store'
 import { createUserClient } from '../rpc-client'
 import { CreateWalletParams } from '@canton-network/core-wallet-user-rpc-client'
 import { SigningProvider } from '@canton-network/core-signing-lib'
-import { ErrorResponse } from '@canton-network/core-types'
 
 import '../index'
 import { stateManager } from '../state-manager'
@@ -333,20 +332,7 @@ export class UserUiWallets extends LitElement {
             const userClient = createUserClient(stateManager.accessToken.get())
             await userClient.request('createWallet', body)
         } catch (e) {
-            if (ErrorResponse.safeParse(e).success) {
-                const parsed = ErrorResponse.parse(e)
-                handleErrorToast(parsed)
-            } else {
-                const fallbackToast = document.createElement(
-                    'custom-toast'
-                ) as ToastElement
-                fallbackToast.title = 'Unexpected Error'
-                fallbackToast.message =
-                    'Something went wrong. Please try again.'
-                fallbackToast.type = 'error'
-                fallbackToast.buttonText = 'Dismiss'
-                document.body.appendChild(fallbackToast)
-            }
+            handleErrorToast(e)
         }
 
         this.loading = false

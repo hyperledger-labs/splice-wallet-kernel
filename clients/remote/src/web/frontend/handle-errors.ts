@@ -3,19 +3,29 @@
 
 import { ErrorResponse } from '@canton-network/core-types'
 
-export interface ToastElement extends HTMLElement {
+type ToastElement = HTMLElement & {
     title: string
     message: string
     type: string
     buttonText: string
 }
 
-export function handleErrorToast(error: ErrorResponse) {
-    const toast = document.createElement('custom-toast') as ToastElement
+type FallbackType = {
+    message?: string
+    buttonText?: string
+    title?: string
+}
 
-    const code = error.error.code
-    const message = error.error.message
-    const details = error.error.data ? String(error.error.data) : null
+export function handleErrorToast(e: unknown, fallback?: FallbackType) {
+    const toast = document.createElement('custom-toast') as ToastElement
+    let code: number = -1
+    let message = ''
+
+    if (ErrorResponse.safeParse(e).success) {
+        const parsed: ErrorResponse = ErrorResponse.parse(e)
+        code = parsed.error.code
+        message = parsed.error.message
+    }
 
     switch (code) {
         case -32600:
@@ -31,12 +41,15 @@ export function handleErrorToast(error: ErrorResponse) {
             toast.title = 'Internal Error'
             break
         default:
-            toast.title = `RPC Error (${code})`
+            toast.title = fallback?.title || 'Unexpected Error'
             break
     }
 
-    toast.message = details ? `${message}\nDetails: ${details}` : message
+    toast.message =
+        message ||
+        fallback?.message ||
+        'Something went wrong. Please try again.'
     toast.type = 'error'
-    toast.buttonText = 'Dismiss'
+    toast.buttonText = fallback?.buttonText || 'Dismiss'
     document.body.appendChild(toast)
 }

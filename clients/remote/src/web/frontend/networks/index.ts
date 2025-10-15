@@ -14,6 +14,7 @@ import {
 import '/index.css'
 import { stateManager } from '../state-manager'
 import { createUserClient } from '../rpc-client'
+import { handleErrorToast } from '../handle-errors'
 
 @customElement('user-ui-networks')
 export class UserUiNetworks extends LitElement {
@@ -178,9 +179,15 @@ export class UserUiNetworks extends LitElement {
     }
 
     syncWallets = async () => {
-        const userClient = createUserClient(stateManager.accessToken.get())
-        const result = await userClient.request('syncWallets')
-        alert(`Wallet sync completed. Added ${result.added.length} wallets.`)
+        try {
+            const userClient = createUserClient(stateManager.accessToken.get())
+            const result = await userClient.request('syncWallets')
+            alert(
+                `Wallet sync completed. Added ${result.added.length} wallets.`
+            )
+        } catch (e) {
+            handleErrorToast(e)
+        }
     }
 
     closeModal = () => {
@@ -191,10 +198,14 @@ export class UserUiNetworks extends LitElement {
     private async handleDelete(net: Network) {
         if (!confirm(`Delete network "${net.name}"?`)) return
 
-        const params: RemoveNetworkParams = { networkName: net.name }
-        const userClient = createUserClient(stateManager.accessToken.get())
-        await userClient.request('removeNetwork', params)
-        await this.listNetworks()
+        try {
+            const params: RemoveNetworkParams = { networkName: net.name }
+            const userClient = createUserClient(stateManager.accessToken.get())
+            await userClient.request('removeNetwork', params)
+            await this.listNetworks()
+        } catch (e) {
+            handleErrorToast(e)
+        }
     }
 
     handleSubmit = async (e: CustomEvent<FormData>) => {
@@ -202,48 +213,53 @@ export class UserUiNetworks extends LitElement {
         const formData = e.detail
         const authType = formData.get('authType') as string
 
-        let auth: Auth
-        if (authType === 'implicit') {
-            auth = {
-                type: 'implicit',
-                identityProviderId: formData.get(
-                    'identityProviderId'
-                ) as string,
-                issuer: formData.get('issuer') as string,
-                configUrl: formData.get('configUrl') as string,
-                audience: formData.get('audience') as string,
-                scope: formData.get('scope') as string,
-                clientId: formData.get('clientId') as string,
+        try {
+            let auth: Auth
+            if (authType === 'implicit') {
+                auth = {
+                    type: 'implicit',
+                    identityProviderId: formData.get(
+                        'identityProviderId'
+                    ) as string,
+                    issuer: formData.get('issuer') as string,
+                    configUrl: formData.get('configUrl') as string,
+                    audience: formData.get('audience') as string,
+                    scope: formData.get('scope') as string,
+                    clientId: formData.get('clientId') as string,
+                }
+            } else {
+                auth = {
+                    type: 'password',
+                    identityProviderId: formData.get(
+                        'identityProviderId'
+                    ) as string,
+                    issuer: formData.get('issuer') as string,
+                    configUrl: formData.get('configUrl') as string,
+                    tokenUrl: formData.get('tokenUrl') as string,
+                    grantType: formData.get('grantType') as string,
+                    scope: formData.get('scope') as string,
+                    clientId: formData.get('clientId') as string,
+                    audience: formData.get('audience') as string,
+                }
             }
-        } else {
-            auth = {
-                type: 'password',
-                identityProviderId: formData.get(
-                    'identityProviderId'
-                ) as string,
-                issuer: formData.get('issuer') as string,
-                configUrl: formData.get('configUrl') as string,
-                tokenUrl: formData.get('tokenUrl') as string,
-                grantType: formData.get('grantType') as string,
-                scope: formData.get('scope') as string,
-                clientId: formData.get('clientId') as string,
-                audience: formData.get('audience') as string,
+
+            const networkParam: Network = {
+                chainId: formData.get('chainId') as string,
+                synchronizerId: formData.get('synchronizerId') as string,
+                name: formData.get('name') as string,
+                description: formData.get('description') as string,
+                auth: auth,
+                ledgerApi: formData.get('ledgerApi.baseurl') as string,
             }
-        }
 
-        const networkParam: Network = {
-            chainId: formData.get('chainId') as string,
-            synchronizerId: formData.get('synchronizerId') as string,
-            name: formData.get('name') as string,
-            description: formData.get('description') as string,
-            auth: auth,
-            ledgerApi: formData.get('ledgerApi.baseurl') as string,
+            const userClient = createUserClient(stateManager.accessToken.get())
+            await userClient.request('addNetwork', { network: networkParam })
+            await this.listNetworks()
+        } catch (e) {
+            handleErrorToast(e)
+        } finally {
+            this.closeModal()
         }
-
-        const userClient = createUserClient(stateManager.accessToken.get())
-        await userClient.request('addNetwork', { network: networkParam })
-        await this.listNetworks()
-        this.closeModal()
     }
 
     onAuthTypeChange(e: Event) {
