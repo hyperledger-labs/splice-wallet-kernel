@@ -837,43 +837,44 @@ class TransferService {
         }
     }
 
-    // async exerciseDelegateProxyTransferInstructionAccept(
-    //     exchangeParty: PartyId,
-    //     proxyCid: string,
-    //     transferInstructionCid: string,
-    //     registryUrl: string,
-    //     featuredAppRightCid: string
-    // ) {
-    //     const [acceptTransferInstructionContext, disclosedContracts] =
-    //         await this.createAcceptTransferInstruction(
-    //             transferInstructionCid,
-    //             registryUrl
-    //         )
+    async exerciseDelegateProxyTransferInstructionAccept(
+        exchangeParty: PartyId,
+        proxyCid: string,
+        transferInstructionCid: string,
+        registryUrl: string,
+        featuredAppRightCid: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const [acceptTransferInstructionContext, disclosedContracts] =
+            await this.createAcceptTransferInstruction(
+                transferInstructionCid,
+                registryUrl
+            )
 
-    //     const choiceArgs = {
-    //         cid: acceptTransferInstructionContext.contractId,
-    //         proxyArg: {
-    //             featuredAppRightCid: featuredAppRightCid,
-    //             beneficiaries: [
-    //                 {
-    //                     beneficiary: exchangeParty,
-    //                     weight: 1.0,
-    //                 },
-    //             ],
-    //             choiceArg: acceptTransferInstructionContext.choiceArgument,
-    //         },
-    //     }
+        const choiceArgs = {
+            cid: acceptTransferInstructionContext.contractId,
+            proxyArg: {
+                featuredAppRightCid: featuredAppRightCid,
+                beneficiaries: [
+                    {
+                        beneficiary: exchangeParty,
+                        weight: 1.0,
+                    },
+                ],
+                choiceArg: acceptTransferInstructionContext.choiceArgument,
+            },
+        }
 
-    //     const exercise: ExerciseCommand = {
-    //         templateId:
-    //             '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
-    //         contractId: proxyCid,
-    //         choice: 'DelegateProxy_TransferInstruction_Accept',
-    //         choiceArgument: choiceArgs,
-    //     }
-
-    //     return [exercise, disclosedContracts]
-    // }
+        return [
+            {
+                templateId:
+                    '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+                contractId: proxyCid,
+                choice: 'DelegateProxy_TransferInstruction_Accept',
+                choiceArgument: choiceArgs,
+            },
+            disclosedContracts,
+        ]
+    }
 
     async createAcceptTransferInstruction(
         transferInstructionCid: string,

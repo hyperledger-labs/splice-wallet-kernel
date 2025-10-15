@@ -17,7 +17,7 @@ import fs from 'fs/promises'
 
 const logger = pino({ name: '14-integration-extensions', level: 'info' })
 
-// This example script implements https://docs.digitalasset.com/integrate/devnet/exchange-integration/extensions.html#optimizing-app-rewards
+// This example script implements https://docs.digitalasset.com/integrate/devnet/exchange-integration/extensions.html#earning-app-rewards-for-deposits
 // It requires the /dars/splice-util-featured-app-proxies-1.1.0.dar which is in files of localnet, but it's not uploaded to participant, so we need to do this in the script
 // Adjust if to your .localnet location
 const PATH_TO_LOCALNET = '../../../../.localnet'
@@ -255,8 +255,6 @@ const pendingInstructions =
     await sdk.tokenStandard?.fetchPendingTransferInstructionView()
 
 const transferCid = pendingInstructions?.[0].contractId!
-logger.info(pendingInstructions)
-logger.info(transferCid)
 
 const [acceptCommand, disclosedContracts4] =
     await sdk.tokenStandard?.acceptDelegateProxyTransfer(
@@ -265,8 +263,6 @@ const [acceptCommand, disclosedContracts4] =
         transferCid,
         featuredAppRights?.contract_id!
     )!
-
-logger.info(acceptCommand, `accept command`)
 
 const delegateProxyDisclosedContracts = {
     templateId: featuredAppRights?.template_id!,
@@ -284,4 +280,16 @@ try {
     )
 } catch (error) {
     logger.error({ error }, 'Failed to accept transfer')
+}
+
+await new Promise((res) => setTimeout(res, 5000))
+
+{
+    await sdk.setPartyId(treasuryParty!.partyId)
+    const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
+    logger.info(aliceHoldings, '[TREASURY PARTY] holding transactions')
+
+    await sdk.setPartyId(alice!.partyId)
+    const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
+    logger.info(bobHoldings, '[ALICE] holding transactions')
 }

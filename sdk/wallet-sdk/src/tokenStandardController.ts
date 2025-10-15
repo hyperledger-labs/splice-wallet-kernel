@@ -713,7 +713,7 @@ export class TokenStandardController {
     > {
         try {
             const [transferCommand, disclosedContracts] =
-                await this.service.exerciseDelegateProxyTransferInstructionAccept(
+                await this.service.transfer.exerciseDelegateProxyTransferInstructionAccept(
                     exchangeParty,
                     proxyCid,
                     transferInstructionCid,
