@@ -3,7 +3,7 @@
 
 import * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'
 import { discover } from '@canton-network/core-wallet-ui-components'
-import { ConnectError, ErrorCode } from '../index'
+import { assertProvider, ConnectError, ErrorCode } from '../error.js'
 import * as storage from '../storage'
 import { injectProvider } from './index'
 
@@ -39,20 +39,20 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
         })
 }
 
-const provider = window.canton!
-
 export async function status(): Promise<dappAPI.StatusResult> {
-    return await provider.request<dappAPI.StatusResult>({ method: 'status' })
+    return await assertProvider().request<dappAPI.StatusResult>({
+        method: 'status',
+    })
 }
 
 export async function darsAvailable(): Promise<dappAPI.DarsAvailableResult> {
-    return await provider.request<dappAPI.DarsAvailableResult>({
+    return await assertProvider().request<dappAPI.DarsAvailableResult>({
         method: 'darsAvailable',
     })
 }
 
 export async function requestAccounts(): Promise<dappAPI.RequestAccountsResult> {
-    return await provider.request<dappAPI.RequestAccountsResult>({
+    return await assertProvider().request<dappAPI.RequestAccountsResult>({
         method: 'requestAccounts',
     })
 }
@@ -60,7 +60,7 @@ export async function requestAccounts(): Promise<dappAPI.RequestAccountsResult> 
 export async function prepareExecute(
     params: dappAPI.PrepareExecuteParams
 ): Promise<dappAPI.PrepareExecuteResult> {
-    return await provider.request<dappAPI.PrepareExecuteResult>({
+    return await assertProvider().request<dappAPI.PrepareExecuteResult>({
         method: 'prepareExecute',
         params,
     })
@@ -69,7 +69,7 @@ export async function prepareExecute(
 export async function ledgerApi(
     params: dappAPI.LedgerApiParams
 ): Promise<dappAPI.LedgerApiResult> {
-    return await provider.request<dappAPI.LedgerApiResult>({
+    return await assertProvider().request<dappAPI.LedgerApiResult>({
         method: 'ledgerApi',
         params,
     })

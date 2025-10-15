@@ -24,7 +24,7 @@ import {
     LedgerApiParams,
     PrepareExecuteParams,
 } from '@canton-network/core-wallet-dapp-rpc-client'
-import { ErrorCode } from './index'
+import { ErrorCode } from './error.js'
 
 /**
  * The Provider class abstracts over the different types of SpliceProviders (Window and HTTP).
