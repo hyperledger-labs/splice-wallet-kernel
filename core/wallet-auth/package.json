@@ -26,6 +26,7 @@
         "typescript": "^5.8.3"
     },
     "dependencies": {
+        "@canton-network/core-rpc-errors": "workspace:^",
         "@canton-network/core-types": "workspace:^"
     },
     "files": [

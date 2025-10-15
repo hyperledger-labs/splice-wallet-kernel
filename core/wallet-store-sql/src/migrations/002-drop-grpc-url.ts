@@ -17,6 +17,8 @@ export async function up(db: Kysely<DB>): Promise<void> {
 export async function down(db: Kysely<DB>): Promise<void> {
     await db.schema
         .alterTable('networks')
-        .addColumn('ledger_api_admin_grpc_url', 'text', (col) => col.notNull())
+        .addColumn('ledger_api_admin_grpc_url', 'text', (col) =>
+            col.notNull().defaultTo('')
+        )
         .execute()
 }
