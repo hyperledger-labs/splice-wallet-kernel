@@ -160,6 +160,8 @@ export interface Wallet {
     signingProviderId: SigningProviderId
     [k: string]: any
 }
+export type Added = Wallet[]
+export type Removed = Wallet[]
 export type Networks = Network[]
 /**
  *
@@ -243,6 +245,16 @@ export interface RemovePartyResult {
  *
  */
 export type ListWalletsResult = Wallet[]
+/**
+ *
+ * Added and removed wallets as a result of the sync.
+ *
+ */
+export interface SyncWalletsResult {
+    added: Added
+    removed: Removed
+    [k: string]: any
+}
 export interface SignResult {
     signature: Signature
     partyId: PartyId
@@ -288,6 +300,7 @@ export type RemoveWallet = (
 export type ListWallets = (
     params: ListWalletsParams
 ) => Promise<ListWalletsResult>
+export type SyncWallets = () => Promise<SyncWalletsResult>
 export type Sign = (params: SignParams) => Promise<SignResult>
 export type Execute = (params: ExecuteParams) => Promise<ExecuteResult>
 export type ListNetworks = () => Promise<ListNetworksResult>
@@ -354,6 +367,15 @@ export class SpliceWalletJSONRPCUserAPI {
         method: 'listWallets',
         ...params: Parameters<ListWallets>
     ): ReturnType<ListWallets>
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public async request(
+        method: 'syncWallets',
+        ...params: Parameters<SyncWallets>
+    ): ReturnType<SyncWallets>
 
     /**
      *

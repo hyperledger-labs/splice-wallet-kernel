@@ -1734,6 +1734,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-auth@workspace:core/wallet-auth"
   dependencies:
+    "@canton-network/core-rpc-errors": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.11.31"
