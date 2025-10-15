@@ -255,3 +255,18 @@ export const localValidatorDefault = (
         token
     )
 }
+
+/**
+ * A default factory function used for running against a local validator node.
+ * This uses mock-auth and is started with the 'yarn start:canton'
+ */
+export const localValidatorDefaultAppProvider = (
+    userId: string,
+    token: string
+): ValidatorController => {
+    return new ValidatorController(
+        userId,
+        new URL('http://wallet.localhost:3000/api/validator'),
+        token
+    )
+}
