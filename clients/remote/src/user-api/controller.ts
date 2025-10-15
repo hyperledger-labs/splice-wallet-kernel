@@ -121,7 +121,7 @@ export const userController = (
             ).fetchToken({
                 clientId: network.auth.admin.clientId,
                 clientSecret: network.auth.admin.clientSecret,
-                scope: network.auth.scope,
+                scope: 'daml_ledger_api',
                 audience: network.auth.audience,
             })
 

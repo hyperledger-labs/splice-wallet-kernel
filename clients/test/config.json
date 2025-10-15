@@ -87,8 +87,7 @@
                 "synchronizerId": "global-domain::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a",
                 "description": "devnet configuration pointing to CNU's lab-operator",
                 "ledgerApi": {
-                    "baseUrl": "https://lab-operator.utility.cnu.devnet.da-int.net/api/json-api",
-                    "adminGrpcUrl": "localhost:5012"
+                    "baseUrl": "https://lab-operator.utility.cnu.devnet.da-int.net/api/json-api"
                 },
                 "auth": {
                     "identityProviderId": "idp4",
@@ -96,12 +95,12 @@
                     "issuer": "https://canton-registry-app-dev-1.eu.auth0.com/",
                     "configUrl": "https://canton-registry-app-dev-1.eu.auth0.com/.well-known/openid-configuration",
                     "tokenUrl": "https://canton-registry-app-dev-1.eu.auth0.com/oauth/token",
-                    "audience": "https://canton.registry.app",
+                    "audience": "https://canton.network.global",
                     "scope": "openid daml_ledger_api offline_access",
                     "clientId": "EQrKrlT5Z2B3F6TXDepQMGC4YdfnlLLR",
                     "admin": {
-                        "clientId": "admin-client-id",
-                        "clientSecret": "admin-client-secret"
+                        "clientId": "uHh5IA2hQWc78HHEPDJTmZm6GYhJbfev",
+                        "clientSecret": "GET_FROM_AUTH0"
                     }
                 }
             }
