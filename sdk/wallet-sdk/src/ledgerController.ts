@@ -301,12 +301,14 @@ export class LedgerController {
      * @param signedHash The signed combined hash of the prepared transactions.
      * @param preparedParty The prepared party object from prepareExternalPartyTopology.
      * @param grantUserRights Defines if the transaction should also grant user right to current user (default is true)
+     * @param expectHeavyLoad If true, the method will handle potential timeouts from the ledger api (default is true).
      * @returns An AllocatedParty object containing the partyId of the new party.
      */
     async allocateExternalParty(
         signedHash: string,
         preparedParty: GenerateTransactionResponse,
-        grantUserRights: boolean = true
+        grantUserRights: boolean = true,
+        expectHeavyLoad: boolean = true
     ): Promise<AllocateExternalPartyResponse> {
         if (await this.client.checkIfPartyExists(preparedParty.partyId))
             return { partyId: preparedParty.partyId }
@@ -314,18 +316,43 @@ export class LedgerController {
         const { publicKeyFingerprint, partyId, topologyTransactions } =
             preparedParty
 
-        await this.client.allocateExternalParty(
-            this.getSynchronizerId(),
-            topologyTransactions!.map((transaction) => ({ transaction })),
-            [
-                {
-                    format: 'SIGNATURE_FORMAT_CONCAT',
-                    signature: signedHash,
-                    signedBy: publicKeyFingerprint,
-                    signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
-                },
-            ]
-        )
+        try {
+            await this.client.allocateExternalParty(
+                this.getSynchronizerId(),
+                topologyTransactions!.map((transaction) => ({ transaction })),
+                [
+                    {
+                        format: 'SIGNATURE_FORMAT_CONCAT',
+                        signature: signedHash,
+                        signedBy: publicKeyFingerprint,
+                        signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
+                    },
+                ]
+            )
+        } catch (e) {
+            const errorMsg =
+                typeof e === 'string' ? e : e instanceof Error ? e.message : ''
+            if (
+                expectHeavyLoad &&
+                errorMsg.includes(
+                    'The server was not able to produce a timely response to your request'
+                )
+            ) {
+                this.logger.warn(
+                    'Received timeout from ledger api when allocating party, however expecting heavy load is set to true'
+                )
+                // this is a timeout and we just have to wait until the party exists
+                while (
+                    !(await this.client.checkIfPartyExists(
+                        preparedParty.partyId
+                    ))
+                ) {
+                    await new Promise((resolve) => setTimeout(resolve, 1000))
+                }
+            } else {
+                throw e
+            }
+        }
 
         if (grantUserRights) {
             await this.client.grantUserRights(this.userId, partyId)

@@ -27,7 +27,8 @@
         "run-exch-01": "tsx ./scripts/exchange-integration/01-one-step-deposit.ts | pino-pretty",
         "run-exch-02": "tsx ./scripts/exchange-integration/02-one-step-withdrawal.ts | pino-pretty",
         "run-exch-03": "tsx ./scripts/exchange-integration/03-multi-step-deposit.ts | pino-pretty",
-        "run-exch-04": "tsx ./scripts/exchange-integration/04-multi-step-withdrawal.ts | pino-pretty"
+        "run-exch-04": "tsx ./scripts/exchange-integration/04-multi-step-withdrawal.ts | pino-pretty",
+        "run-stress-01": "tsx ./scripts/stress/01-party-stress-test.ts | pino-pretty"
     },
     "devDependencies": {
         "@canton-network/core-signing-lib": "workspace:^",
