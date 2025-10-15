@@ -6,8 +6,7 @@ Create an External Party (Wallet)
 Overview
 --------
 
-This document describes the steps required to create a new party (wallet/address) on a validator.
-Parties represent acting entites in the network and all transaction happens between one or more parties.
+Parties represent acting entities in the network and all transaction happens between one or more parties.
 To understand more about parties see the :ref:`Parties <parties>` in the Overview.
 
 A detailed tutorial of the steps below can be seen in the External Signing Tutorial `here <https://docs.digitalasset.com/build/3.3/tutorials/app-dev/external_signing_onboarding.html>`_ using python example scripts.
@@ -19,6 +18,12 @@ How do I quickly allocate a party?
 Using the wallet SDK you can quickly allocate a party using the following code snippet:
 
 .. tabs::
+
+    .. tab:: Comprehensive using Splice LocalNet
+
+        .. literalinclude:: ../../examples/scripts/02-auth-localnet.ts
+            :language: typescript
+            :dedent:
 
     .. tab:: Quick using Splice LocalNet
 
@@ -32,14 +37,9 @@ Using the wallet SDK you can quickly allocate a party using the following code s
             :language: typescript
             :dedent:
 
-    .. tab:: Comprehensive using Splice LocalNet
 
-        .. literalinclude:: ../../examples/scripts/02-auth-localnet.ts
-            :language: typescript
-            :dedent:
-
-Create the key Pair
--------------------
+Create a key pair
+-----------------
 The process for creating a key using standard encryption practices is similar that in other blockchains. The full details of supported cryptographic algorithms can be found `Here <https://docs.daml.com/canton/usermanual/security.html#common-node-keys>`__.
 By default an **Ed25519** encryption is used. There exists many libraries that can be used to generate such a key pair, you can do it simply with the WalletSDK using:
 
@@ -49,18 +49,20 @@ By default an **Ed25519** encryption is used. There exists many libraries that c
 
 Choosing a party hint
 ---------------------
-A party ID is defined as **${partyHint}::${fingerprint}**. The partyHint is a user friendly name for the party and can be anything that is unique for the fingerprint, e.g. "alice", "bob" or "my-wallet-1".
+The unique party id is defined as **${partyHint}::${fingerprint}**. The partyHint is a user friendly name and can be anything that is unique for the fingerprint, e.g. "alice", "bob" or "my-wallet-1".
 
 If you want to be to derive your party IDs from the public key, you can use a static party hint for all parties with different fingerprints, or also derive party hint from the public key, too.
 
 Generate the fingerprint
 ------------------------
 
-To generate the fingerprint the wallet SDK has a built in function:
+The wallet SDK has a built in function to generate the fingerprint:
 
 .. literalinclude:: ../../examples/snippets/generate-fingerprint.ts
    :language: typescript
    :dedent:
+
+this can be used to determine the unique party id beforehand or recompute the fingerprint based on the public key.
 
 Generating the topology transactions
 ------------------------------------
@@ -80,7 +82,7 @@ The wallet SDK has helper functions to generate these transactions:
    :dedent:
 
 Sign multi-hash
------------------
+---------------
 Since the topology transactions need to be submitted together the combined hash needs to be signed.
 The wallet SDK has a helper function to sign the combined hash:
 
@@ -114,7 +116,5 @@ The below script allows you (by using the SDK) to host a single party on both `a
    :language: typescript
    :dedent:
 
-Now since both validators use the same unsafe auth we can replicate the `adminToken.accessToken` for both. In a non-localnet setup you want to source
-these from your identity provider.
-
-
+Using the `userLedgerControllers` party allocation we only need to specify other validators the party is hosted on. The default is `app-user`,
+however if you do the onboarding using the `topologyController` legacy variant, then you would also need to supply configurations for the `app-user`.

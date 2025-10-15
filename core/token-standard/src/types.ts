@@ -56,15 +56,6 @@ export interface AllocationSpecification {
     transferLeg: TransferLeg
 }
 
-export type AllocationContextValue =
-    | { tag: 'AV_Text'; value: string }
-    | { tag: 'AV_Bool'; value: boolean }
-    | { tag: 'AV_string'; value: string }
-    | { tag: 'AV_Party'; value: string }
-    | { tag: 'AV_Time'; value: string }
-    | { tag: 'AV_Int64'; value: string }
-    | { tag: 'AV_Decimal'; value: string }
-
 export interface ExtraArgs {
     context: { values: Record<string, unknown> }
     meta: Metadata
@@ -90,5 +81,16 @@ export type AllocationInstructionView = {
 export type AllocationView = {
     allocation: AllocationSpecification
     holdingCids: string[]
+    meta: Metadata
+}
+
+export type Transfer = {
+    sender: string
+    receiver: string
+    amount: string
+    instrumentId: InstrumentId
+    requestedAt: string
+    executeBefore: string
+    inputHoldingCids: string[]
     meta: Metadata
 }

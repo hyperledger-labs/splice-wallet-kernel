@@ -4,6 +4,7 @@
     "scripts": {
         "start:all": "yarn pm2 start ecosystem.config.js --env development",
         "start:canton": "tsx ./scripts/src/start-canton.ts",
+        "start:canton:tls": "tsx ./scripts/src/start-canton.ts mainnet canton/canton-tls-enabled.conf",
         "start:localnet": "tsx ./scripts/src/start-localnet.ts start",
         "start:canton:console": ".canton/bin/canton --config canton/canton.conf --bootstrap canton/bootstrap.canton",
         "stop:all": "yarn pm2 stop all",
@@ -13,7 +14,7 @@
         "generate:user": "yarn workspace @canton-network/core-rpc-generator build && yarn open-rpc-generator generate -c ./rpc-generator-config-user.json",
         "generate:signing": "yarn workspace @canton-network/core-rpc-generator build && yarn open-rpc-generator generate -c ./rpc-generator-config-signing.json",
         "generate:grpc": "tsx ./scripts/src/generate-protobufs.ts",
-        "generate:all": "yarn generate:dapp && yarn generate:user && yarn generate:signing",
+        "generate:all": "yarn generate:dapp && yarn generate:dapp-remote && yarn generate:user && yarn generate:signing",
         "build:all": "nx run-many -t build --parallel",
         "clean:all": "nx run-many -t clean --parallel",
         "test:all": "nx run-many -t test --parallel",
@@ -87,7 +88,7 @@
         "*": "prettier --write --ignore-unknown",
         "*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --fix"
     },
-    "packageManager": "yarn@4.10.1",
+    "packageManager": "yarn@4.10.3",
     "dependencies": {
         "@nx/js": "21.5.1",
         "nx": "^21.3.11"

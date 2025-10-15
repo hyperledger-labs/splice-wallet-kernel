@@ -20,7 +20,6 @@ const networks: Network[] = [
         description: 'Unimplemented Password Auth',
         ledgerApi: {
             baseUrl: 'https://test',
-            adminGrpcUrl: 'localhost:5012',
         },
         auth: {
             identityProviderId: 'idp1',

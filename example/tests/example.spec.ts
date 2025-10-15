@@ -26,54 +26,78 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
 
     await discoverPopup.getByRole('button', { name: 'Connect' }).nth(1).click()
 
-    const wkPagePromise = dappPage.waitForEvent('popup')
-    const wkPage = await wkPagePromise
+    const wkPage = await dappPage.waitForEvent('popup')
 
-    await wkPage.locator('#network').selectOption('1')
-    await wkPage.getByRole('button', { name: 'Connect' }).click()
+    try {
+        await wkPage.locator('#network').selectOption('1')
+        await wkPage.getByRole('button', { name: 'Connect' }).click()
 
-    await wkPage.getByRole('link', { name: 'Wallets' }).click()
+        await expect(dappPage.getByText('Loading...')).toHaveCount(0)
 
-    dappPage.reload() // Reloading to get the socket to reconnect in playwright
-    await expect(dappPage.getByText(/status: connected/)).toBeVisible()
+        await expect(dappPage.getByText(/.*status: connected.*/)).toBeVisible()
 
-    const party1 = `test-${Date.now()}`
-    const party2 = `test-${Date.now() + 1}`
+        const party1 = `test-${Date.now()}`
+        const party2 = `test-${Date.now() + 1}`
 
-    // Create a participant party named `test1`
-    await wkPage.getByRole('textbox', { name: 'Party ID hint:' }).click()
-    await wkPage.getByRole('textbox', { name: 'Party ID hint:' }).fill(party1)
-    await wkPage.getByLabel('Signing Provider:').selectOption('participant')
-    await wkPage.getByLabel('Network:').selectOption('canton:local-oauth')
+        // Create a participant party named `test1`
+        await wkPage.getByRole('button', { name: 'Create New' }).click()
 
-    await wkPage.getByRole('button', { name: 'Create' }).click()
+        await wkPage.getByRole('textbox', { name: 'Party ID hint:' }).click()
+        await wkPage
+            .getByRole('textbox', { name: 'Party ID hint:' })
+            .fill(party1)
+        await wkPage.getByLabel('Signing Provider:').selectOption('participant')
+        await wkPage.getByLabel('Network:').selectOption('canton:local-oauth')
 
-    // Create a kernel party named `test2`
-    await wkPage.getByRole('textbox', { name: 'Party ID hint:' }).click()
-    await wkPage.getByRole('textbox', { name: 'Party ID hint:' }).fill(party2)
-    await wkPage.getByLabel('Signing Provider:').selectOption('wallet-kernel')
-    await wkPage
-        .getByRole('checkbox', { name: 'Set as primary wallet:' })
-        .check()
-    await wkPage.getByRole('button', { name: 'Create' }).click()
+        await wkPage.getByRole('button', { name: 'Create' }).click()
 
-    // Wait for parties to be allocated
-    const list = wkPage.getByRole('list')
-    await expect(list).toContainText(party1)
-    await expect(list).toContainText(party2)
+        // Create a kernel party named `test2`
+        await wkPage.getByRole('textbox', { name: 'Party ID hint:' }).click()
+        await wkPage
+            .getByRole('textbox', { name: 'Party ID hint:' })
+            .fill(party2)
+        await wkPage
+            .getByLabel('Signing Provider:')
+            .selectOption('wallet-kernel')
 
-    // Create a Ping contract through the dapp with the new party
-    await dappPage.getByRole('button', { name: 'create Ping contract' }).click()
-    await expect(
-        wkPage.getByRole('heading', { name: 'Pending Transaction Request' })
-    ).toBeVisible()
+        await wkPage.getByRole('checkbox', { name: 'primary' }).check()
+        await wkPage.getByRole('button', { name: 'Create' }).click()
 
-    const id = new URL(wkPage.url()).searchParams.get('commandId')
+        // Wait for parties to be allocated
+        await expect(wkPage.getByText(party1)).toHaveCount(2)
+        await expect(wkPage.getByText(party2)).toHaveCount(2)
 
-    await wkPage.getByRole('button', { name: 'Approve' }).click()
+        //TODO: figure out why we need to reload the page
+        await dappPage.reload()
 
-    // Wait for command to have fully executed
-    await expect(
-        dappPage.getByText(`{"commandId":"${id}","status":"executed","`).first()
-    ).toBeVisible()
+        await expect(
+            dappPage.getByText(new RegExp(`primary party: ${party2}::.*`))
+        ).toBeVisible()
+        await expect(
+            dappPage.getByRole('button', { name: 'create Ping contract' })
+        ).toBeEnabled()
+
+        // Create a Ping contract through the dapp with the new party
+        await dappPage
+            .getByRole('button', { name: 'create Ping contract' })
+            .click()
+        await expect(
+            wkPage.getByRole('heading', { name: 'Pending Transaction Request' })
+        ).toBeVisible()
+
+        const id = new URL(wkPage.url()).searchParams.get('commandId')
+
+        await wkPage.getByRole('button', { name: 'Approve' }).click()
+
+        // Wait for command to have fully executed
+        await expect(
+            dappPage
+                .getByText(`{"commandId":"${id}","status":"executed","`)
+                .first()
+        ).toBeVisible()
+    } catch (e) {
+        await dappPage.screenshot({ path: 'error-dapp.png' })
+        await wkPage.screenshot({ path: 'error-wk.png' })
+        throw e
+    }
 })
