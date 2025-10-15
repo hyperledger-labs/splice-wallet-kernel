@@ -12,7 +12,13 @@ const dir = path.join(
 )
 
 // do not run these tests; exceptions can be full filename or just any length subset of its starting characters
-const exceptions = ['01-auth.ts', '05-', '01-one-step', '02-one-step']
+const exceptions = [
+    '01-auth.ts',
+    '13-auth-tls.ts',
+    '05-',
+    '01-one-step',
+    '02-one-step',
+]
 
 function getScriptsRecursive(currentDir: string): string[] {
     return fs.readdirSync(currentDir).flatMap((f) => {

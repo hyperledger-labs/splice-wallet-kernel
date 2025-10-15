@@ -194,6 +194,7 @@ export class AppHeader extends BaseElement {
                     class="hamburger"
                     @click=${this.toggleMenu}
                     aria-label="Toggle menu"
+                    name="toggle menu"
                 >
                     ☰
                 </button>

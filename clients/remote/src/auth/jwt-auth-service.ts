@@ -50,6 +50,10 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 return undefined
             }
 
+            logger.debug(
+                { userId: payload.sub, accessToken: jwt },
+                'JWT verified'
+            )
             return { userId: payload.sub, accessToken: jwt }
         } catch (error) {
             if (error instanceof Error) {

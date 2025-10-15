@@ -3,7 +3,7 @@
     "info": {
         "title": "Splice Wallet JSON-RPC Remote dApp API",
         "version": "0.1.0",
-        "description": "An OpenRPC specification for the dapp to interact with a Wallet Gateway."
+        "description": "An OpenRPC specification for remotely hosted Wallet Gateways. Due to the remote nature, an implementing provider must bridge certain functionality on the client-side to satisfy the general dApp API spec."
     },
     "methods": [
         {
@@ -16,7 +16,6 @@
                     "type": "object",
                     "properties": {
                         "kernel": {
-                            //TODO: Rename variable
                             "$ref": "#/components/schemas/KernelInfo"
                         },
                         "isConnected": {
@@ -254,7 +253,6 @@
                 "description": "Represents a null value, used in responses where no data is returned."
             },
             "KernelInfo": {
-                //TODO: Rename variable
                 "title": "KernelInfo",
                 "type": "object",
                 "description": "Represents a Wallet Gateway.",
