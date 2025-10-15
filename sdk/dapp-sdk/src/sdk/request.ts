@@ -1,39 +1,11 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { injectSpliceProvider } from '@canton-network/core-splice-provider'
-import { DiscoverResult } from '@canton-network/core-types'
-import { discover } from '@canton-network/core-wallet-ui-components'
-import * as storage from '../storage'
-import { openKernelUserUI, Provider } from '../provider'
-
-export * from '@canton-network/core-splice-provider'
 import * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'
+import { discover } from '@canton-network/core-wallet-ui-components'
 import { ConnectError, ErrorCode } from '../index'
-
-const injectProvider = (discovery: DiscoverResult) => {
-    return injectSpliceProvider(
-        new Provider(discovery, storage.getKernelSession()?.sessionToken)
-    )
-}
-
-// On page load, restore and re-register the listener if needed
-const discovery = storage.getKernelDiscovery()
-if (discovery) injectProvider(discovery)
-
-export async function open(): Promise<void> {
-    const discovery = storage.getKernelDiscovery()
-    if (!discovery) {
-        throw new Error('No previous discovery found')
-    }
-
-    const session = storage.getKernelSession()
-    if (!session) {
-        throw new Error('No previous session found')
-    }
-
-    openKernelUserUI(discovery.walletType, session.kernel.userUrl ?? '')
-}
+import * as storage from '../storage'
+import { injectProvider } from './index'
 
 export async function connect(): Promise<dappAPI.ConnectResult> {
     return discover()
@@ -65,4 +37,40 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
                 details: err instanceof Error ? err.message : String(err),
             } as ConnectError
         })
+}
+
+const provider = window.canton!
+
+export async function status(): Promise<dappAPI.StatusResult> {
+    return await provider.request<dappAPI.StatusResult>({ method: 'status' })
+}
+
+export async function darsAvailable(): Promise<dappAPI.DarsAvailableResult> {
+    return await provider.request<dappAPI.DarsAvailableResult>({
+        method: 'darsAvailable',
+    })
+}
+
+export async function requestAccounts(): Promise<dappAPI.RequestAccountsResult> {
+    return await provider.request<dappAPI.RequestAccountsResult>({
+        method: 'requestAccounts',
+    })
+}
+
+export async function prepareExecute(
+    params: dappAPI.PrepareExecuteParams
+): Promise<dappAPI.PrepareExecuteResult> {
+    return await provider.request<dappAPI.PrepareExecuteResult>({
+        method: 'prepareExecute',
+        params,
+    })
+}
+
+export async function ledgerApi(
+    params: dappAPI.LedgerApiParams
+): Promise<dappAPI.LedgerApiResult> {
+    return await provider.request<dappAPI.LedgerApiResult>({
+        method: 'ledgerApi',
+        params,
+    })
 }
