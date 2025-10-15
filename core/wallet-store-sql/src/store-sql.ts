@@ -9,6 +9,7 @@ import {
     assertConnected,
     Idp,
 } from '@canton-network/core-wallet-auth'
+import { SigningDriverStore } from '@canton-network/core-signing-lib'
 import {
     Store as BaseStore,
     Wallet,
@@ -32,9 +33,18 @@ import {
     toNetwork,
     toTransaction,
     toWallet,
+    fromSigningKey,
+    toSigningKey,
+    fromSigningTransaction,
+    toSigningTransaction,
+    fromSigningDriverConfig,
+    toSigningDriverConfig,
+    SigningKeyTable,
 } from './schema.js'
 
-export class StoreSql implements BaseStore, AuthAware<StoreSql> {
+export class StoreSql
+    implements BaseStore, SigningDriverStore, AuthAware<StoreSql>
+{
     authContext: AuthContext | undefined
 
     constructor(
@@ -428,6 +438,245 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             )
             .executeTakeFirst()
         return transaction ? toTransaction(transaction) : undefined
+    }
+
+    // SigningDriverStore methods
+    async getSigningKey(
+        userId: string,
+        keyId: string
+    ): Promise<
+        import('@canton-network/core-signing-lib').SigningKey | undefined
+    > {
+        const result = await this.db
+            .selectFrom('signingKeys')
+            .selectAll()
+            .where('userId', '=', userId)
+            .where('id', '=', keyId)
+            .executeTakeFirst()
+
+        return result ? toSigningKey(result) : undefined
+    }
+
+    async setSigningKey(
+        userId: string,
+        key: import('@canton-network/core-signing-lib').SigningKey
+    ): Promise<void> {
+        const serialized = fromSigningKey(key, userId)
+
+        console.log(
+            'setSigningKey - serialized data:',
+            JSON.stringify(serialized, null, 2)
+        )
+        console.log('setSigningKey - serialized types:', {
+            id: typeof serialized.id,
+            userId: typeof serialized.userId,
+            name: typeof serialized.name,
+            publicKey: typeof serialized.publicKey,
+            privateKey: typeof serialized.privateKey,
+            metadata: typeof serialized.metadata,
+            createdAt: typeof serialized.createdAt,
+            updatedAt: typeof serialized.updatedAt,
+        })
+
+        await this.db
+            .insertInto('signingKeys')
+            .values(serialized)
+            .onConflict((oc) =>
+                oc.columns(['userId', 'id']).doUpdateSet({
+                    name: serialized.name,
+                    publicKey: serialized.publicKey,
+                    privateKey: serialized.privateKey,
+                    metadata: serialized.metadata,
+                    updatedAt: new Date().toISOString(),
+                })
+            )
+            .execute()
+    }
+
+    async deleteSigningKey(userId: string, keyId: string): Promise<void> {
+        await this.db
+            .deleteFrom('signingKeys')
+            .where('userId', '=', userId)
+            .where('id', '=', keyId)
+            .execute()
+    }
+
+    async listSigningKeys(
+        userId: string
+    ): Promise<import('@canton-network/core-signing-lib').SigningKey[]> {
+        const results = await this.db
+            .selectFrom('signingKeys')
+            .selectAll()
+            .where('userId', '=', userId)
+            .orderBy('createdAt', 'desc')
+            .execute()
+
+        return results.map((result: SigningKeyTable) => toSigningKey(result))
+    }
+
+    async getSigningTransaction(
+        userId: string,
+        txId: string
+    ): Promise<
+        | import('@canton-network/core-signing-lib').SigningTransaction
+        | undefined
+    > {
+        const result = await this.db
+            .selectFrom('signingTransactions')
+            .selectAll()
+            .where('userId', '=', userId)
+            .where('id', '=', txId)
+            .executeTakeFirst()
+
+        return result ? toSigningTransaction(result) : undefined
+    }
+
+    async setSigningTransaction(
+        userId: string,
+        transaction: import('@canton-network/core-signing-lib').SigningTransaction
+    ): Promise<void> {
+        const serialized = fromSigningTransaction(transaction, userId)
+
+        await this.db
+            .insertInto('signingTransactions')
+            .values(serialized)
+            .onConflict((oc) =>
+                oc.columns(['userId', 'id']).doUpdateSet({
+                    hash: serialized.hash,
+                    signature: serialized.signature,
+                    publicKey: serialized.publicKey,
+                    status: serialized.status,
+                    metadata: serialized.metadata,
+                    updatedAt: new Date().toISOString(),
+                })
+            )
+            .execute()
+    }
+
+    async updateSigningTransactionStatus(
+        userId: string,
+        txId: string,
+        status: import('@canton-network/core-signing-lib').SigningDriverStatus
+    ): Promise<void> {
+        await this.db
+            .updateTable('signingTransactions')
+            .set({ status, updatedAt: new Date().toISOString() })
+            .where('userId', '=', userId)
+            .where('id', '=', txId)
+            .execute()
+    }
+
+    async listSigningTransactions(
+        userId: string,
+        limit: number = 100,
+        before?: string
+    ): Promise<
+        import('@canton-network/core-signing-lib').SigningTransaction[]
+    > {
+        let query = this.db
+            .selectFrom('signingTransactions')
+            .selectAll()
+            .where('userId', '=', userId)
+            .orderBy('createdAt', 'desc')
+            .limit(limit)
+
+        if (before) {
+            const beforeTx = await this.getSigningTransaction(userId, before)
+            if (beforeTx) {
+                query = query.where(
+                    'createdAt',
+                    '<',
+                    beforeTx.createdAt.toISOString()
+                )
+            }
+        }
+
+        const results = await query.execute()
+        return results.map(toSigningTransaction)
+    }
+
+    async getSigningDriverConfiguration(
+        userId: string,
+        driverId: string
+    ): Promise<
+        | import('@canton-network/core-signing-lib').SigningDriverConfig
+        | undefined
+    > {
+        const result = await this.db
+            .selectFrom('signingDriverConfigs')
+            .selectAll()
+            .where('userId', '=', userId)
+            .where('driverId', '=', driverId)
+            .executeTakeFirst()
+
+        return result ? toSigningDriverConfig(result) : undefined
+    }
+
+    async setSigningDriverConfiguration(
+        userId: string,
+        driverId: string,
+        config: import('@canton-network/core-signing-lib').SigningDriverConfig
+    ): Promise<void> {
+        const serialized = fromSigningDriverConfig(config, userId)
+
+        await this.db
+            .insertInto('signingDriverConfigs')
+            .values(serialized)
+            .onConflict((oc) =>
+                oc.columns(['userId', 'driverId']).doUpdateSet({
+                    config: serialized.config,
+                })
+            )
+            .execute()
+    }
+
+    async setSigningKeys(
+        userId: string,
+        keys: import('@canton-network/core-signing-lib').SigningKey[]
+    ): Promise<void> {
+        if (keys.length === 0) return
+
+        const serialized = keys.map((key) => fromSigningKey(key, userId))
+
+        await this.db
+            .insertInto('signingKeys')
+            .values(serialized)
+            .onConflict((oc) =>
+                oc.columns(['userId', 'id']).doUpdateSet({
+                    name: serialized[0].name,
+                    publicKey: serialized[0].publicKey,
+                    privateKey: serialized[0].privateKey,
+                    metadata: serialized[0].metadata,
+                    updatedAt: new Date().toISOString(),
+                })
+            )
+            .execute()
+    }
+
+    async setSigningTransactions(
+        userId: string,
+        transactions: import('@canton-network/core-signing-lib').SigningTransaction[]
+    ): Promise<void> {
+        if (transactions.length === 0) return
+
+        const serialized = transactions.map((tx) =>
+            fromSigningTransaction(tx, userId)
+        )
+
+        await this.db
+            .insertInto('signingTransactions')
+            .values(serialized)
+            .onConflict((oc) =>
+                oc.columns(['userId', 'id']).doUpdateSet({
+                    hash: serialized[0].hash,
+                    signature: serialized[0].signature,
+                    publicKey: serialized[0].publicKey,
+                    status: serialized[0].status,
+                    metadata: serialized[0].metadata,
+                    updatedAt: new Date().toISOString(),
+                })
+            )
+            .execute()
     }
 }
 

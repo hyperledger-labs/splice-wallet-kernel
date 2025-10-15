@@ -127,5 +127,22 @@
                 }
             }
         ]
+    },
+    "signing": {
+        "drivers": [
+            {
+                "provider": "participant"
+            },
+            {
+                "provider": "wallet-kernel"
+            },
+            {
+                "provider": "fireblocks",
+                "properties": {
+                    "apiPath": "https://api.fireblocks.io/v1",
+                    "userApiKeys": {}
+                }
+            }
+        ]
     }
 }

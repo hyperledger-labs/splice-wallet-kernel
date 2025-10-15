@@ -246,3 +246,5 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
                 Promise.resolve({} as SubscribeTransactionsResult),
         })
 }
+
+export { FireblocksSigningDriverFactory } from './FireblocksSigningDriverFactory.js'

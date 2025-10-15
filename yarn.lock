@@ -1566,6 +1566,7 @@ __metadata:
     tweetnacl: "npm:^1.0.3"
     tweetnacl-util: "npm:^0.15.1"
     typescript: "npm:^5.8.3"
+    zod: "npm:^3.25.64"
   languageName: unknown
   linkType: soft
 
@@ -1760,6 +1761,7 @@ __metadata:
   dependencies:
     "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-rpc-errors": "workspace:^"
+    "@canton-network/core-signing-lib": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
     "@canton-network/core-wallet-store": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
