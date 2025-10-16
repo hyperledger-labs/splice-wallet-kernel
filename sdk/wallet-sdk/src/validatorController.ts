@@ -243,7 +243,7 @@ export class ValidatorController {
 
 /**
  * A default factory function used for running against a local validator node.
- * This uses mock-auth and is started with the 'yarn start:canton'
+ * This uses the user validator and is started with 'yarn start:localnet`
  */
 export const localValidatorDefault = (
     userId: string,
@@ -252,6 +252,21 @@ export const localValidatorDefault = (
     return new ValidatorController(
         userId,
         new URL('http://wallet.localhost:2000/api/validator'),
+        token
+    )
+}
+
+/**
+ * A default factory function used for running against a local validator node.
+ * This uses the app provider validator and is started with 'yarn start:localnet`
+ */
+export const localValidatorDefaultAppProvider = (
+    userId: string,
+    token: string
+): ValidatorController => {
+    return new ValidatorController(
+        userId,
+        new URL('http://wallet.localhost:3000/api/validator'),
         token
     )
 }
