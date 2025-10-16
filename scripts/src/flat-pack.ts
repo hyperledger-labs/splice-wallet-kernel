@@ -7,8 +7,9 @@ import { Command } from '@commander-js/extra-typings'
 const command = new Command()
     .description('Flat pack a package and its dependencies')
     .argument('<pkgDir>')
-    .action((pkgDir) => {
-        const flatPack = new FlatPack(pkgDir)
+    .argument('[outDir]')
+    .action((pkgDir, outDir) => {
+        const flatPack = new FlatPack(pkgDir, 'npm', outDir)
         const out = flatPack.pack()
         console.log('completed flat pack to: ' + out)
     })
