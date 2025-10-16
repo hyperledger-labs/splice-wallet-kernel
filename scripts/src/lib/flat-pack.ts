@@ -24,7 +24,7 @@ interface DependencyPackage {
 interface DependencyPackageVendored {
     name: string
     dir: string
-    path: string
+    filename: string
 }
 
 /** Given a package directory within this repository: build, pack, and copy it as well as all its dependencies to an output directory */
@@ -67,7 +67,7 @@ export class FlatPack {
         this.writePackageJson((pkgJson) => ({
             ...pkgJson,
             dependencies: {
-                [mainPkgName]: `file:${mainPkg.path}`,
+                [mainPkgName]: `file:./.vendored/${mainPkg.filename}`,
             },
         }))
 
@@ -91,15 +91,6 @@ export class FlatPack {
                 const [name, dir] = line.split(' ')
                 return { name, dir }
             })
-    }
-
-    private readPackageJson(parentDir: string): any {
-        const pkgJsonPath = path.join(parentDir, 'package.json')
-        if (!fs.existsSync(pkgJsonPath)) {
-            throw new Error(`package.json not found in ${parentDir}`)
-        }
-        const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
-        return pkgJson
     }
 
     private init() {
@@ -130,15 +121,25 @@ export class FlatPack {
     private buildDependency(dep: DependencyPackage): DependencyPackageVendored {
         console.log('building package in: ' + dep.dir)
 
-        const filename = path.join(
+        const filename = this.pkgNameToFileName(dep.name)
+        const outpath = path.join(
             this.vendoredDir,
             this.pkgNameToFileName(dep.name)
         )
 
         run('yarn build', { cwd: dep.dir })
-        run(`yarn pack --filename "${filename}"`, { cwd: dep.dir })
+        run(`yarn pack --filename "${outpath}"`, { cwd: dep.dir })
 
-        return { ...dep, path: filename }
+        return { ...dep, filename }
+    }
+
+    private readPackageJson(parentDir: string): any {
+        const pkgJsonPath = path.join(parentDir, 'package.json')
+        if (!fs.existsSync(pkgJsonPath)) {
+            throw new Error(`package.json not found in ${parentDir}`)
+        }
+        const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
+        return pkgJson
     }
 
     private writePackageJson(callback: (json: any) => any) {
@@ -159,7 +160,7 @@ export class FlatPack {
             ...pkgJson,
             [overrides]: {
                 ...pkgJson[overrides],
-                [dep.name]: `file:${dep.path}`,
+                [dep.name]: `file:./.vendored/${dep.filename}`,
             },
         }))
     }
