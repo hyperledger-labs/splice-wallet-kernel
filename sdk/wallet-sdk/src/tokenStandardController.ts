@@ -396,6 +396,60 @@ export class TokenStandardController {
         return [{ ExerciseCommand: renewCommand }, disclosed]
     }
 
+    async waitForPreapprovalFromScanProxy(
+        receiverId: string,
+        instrumentId: string,
+        {
+            oldCid,
+            intervalMs = 15_000,
+            timeoutMs = 5 * 60_000,
+        }: { oldCid?: string; intervalMs?: number; timeoutMs?: number } = {}
+    ) {
+        const deadline = Date.now() + timeoutMs
+
+        for (let attempt = 1; Date.now() < deadline; attempt++) {
+            try {
+                const pa = await this.getTransferPreApprovalByParty(
+                    receiverId,
+                    instrumentId
+                )
+
+                if (pa) {
+                    if (!oldCid) return pa
+                    if (pa.contractId && pa.contractId !== oldCid) return pa
+
+                    this.logger.info(
+                        {
+                            attempt,
+                            seenCid: pa.contractId ?? null,
+                            oldCid: oldCid ?? null,
+                        },
+                        'Preapproval visible but CID unchanged — polling again'
+                    )
+                } else {
+                    this.logger.info(
+                        { attempt },
+                        'Preapproval not yet visible — polling again'
+                    )
+                }
+            } catch (err) {
+                this.logger.warn(
+                    { attempt, err },
+                    'Error fetching preapproval — retrying'
+                )
+            }
+
+            await new Promise((r) => setTimeout(r, intervalMs))
+        }
+
+        throw new Error(
+            `Timed out after ${timeoutMs / 1000}s waiting for TransferPreapproval ` +
+                (oldCid
+                    ? `CID to change from ${oldCid}`
+                    : 'to appear in Scan Proxy')
+        )
+    }
+
     /**
      * Creates a new tap for the specified receiver and amount.
      * @param receiver The party of the receiver.

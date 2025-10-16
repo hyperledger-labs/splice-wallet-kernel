@@ -85,10 +85,11 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 )
 logger.info('Transfer preapproval proposal created')
 
-const preapproval = await sdk.tokenStandard?.getTransferPreApprovalByParty(
+const preapproval = await sdk.tokenStandard!.waitForPreapprovalFromScanProxy(
     receiver!.partyId,
     'Amulet'
 )
+
 if (!preapproval) {
     throw new Error('Unexpected lack of transfer preapproval')
 }
@@ -111,27 +112,26 @@ logger.info('Transfer preapproval renewed')
 // so calling TransferPreapproval_Cancel on it would cause error
 // That function waits until getTransferPreApprovalByParty returns new CID
 logger.info('Assuring scanProxy API refresh transfer preapproval after renew')
-await waitForPreapprovalCidChange(
-    receiver!.partyId,
-    'Amulet',
-    preapproval.contractId
-)
 
 const preapprovalAfterRenewal =
-    await sdk.tokenStandard!.getTransferPreApprovalByParty(
+    await sdk.tokenStandard!.waitForPreapprovalFromScanProxy(
         receiver!.partyId,
-        'Amulet'!
+        'Amulet',
+        {
+            oldCid: preapproval.contractId,
+        }
     )
 if (!preapprovalAfterRenewal) {
     throw new Error('Unexpected lack of transfer preapproval after renewal')
 }
 
 logger.info('Cancelling transfer preapproval')
+sdk.setPartyId(receiver!.partyId!)
 const [cancelCmd, disclosedContractsCancel] =
     await sdk.tokenStandard!.createCancelTransferPreapproval(
         preapprovalAfterRenewal.contractId,
         preapprovalAfterRenewal.templateId,
-        validatorOperatorParty!
+        receiver!.partyId
     )
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     [cancelCmd!],
