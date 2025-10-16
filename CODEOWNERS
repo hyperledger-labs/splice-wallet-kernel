@@ -8,4 +8,3 @@
 .vscode/*              @hyperledger-labs/splice-wallet-kernel-admins
 CODEOWNERS             @hyperledger-labs/splice-wallet-kernel-admins
 LICENSE                @hyperledger-labs/splice-wallet-kernel-admins
-scripts/*              @hyperledger-labs/splice-wallet-kernel-admins

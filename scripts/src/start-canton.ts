@@ -12,7 +12,7 @@ import {
     error,
     info,
     trimNewline,
-} from './utils.js'
+} from './lib/utils.js'
 import { existsSync } from 'fs'
 import pm2 from 'pm2'
 import path from 'path'
