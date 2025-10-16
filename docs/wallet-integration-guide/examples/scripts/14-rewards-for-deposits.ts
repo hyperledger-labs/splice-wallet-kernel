@@ -156,8 +156,6 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 )
 await sdk.userLedger?.grantRights([exchangeParty!], [exchangeParty!])
 
-await new Promise((res) => setTimeout(res, 5000))
-
 logger.info(`Allocated external treasury for the exchange with some funds`)
 
 await sdk.setPartyId(exchangeParty!)
