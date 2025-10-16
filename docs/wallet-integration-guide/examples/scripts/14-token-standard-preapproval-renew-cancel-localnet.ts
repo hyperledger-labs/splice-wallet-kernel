@@ -12,7 +12,7 @@ import { pino } from 'pino'
 import { v4 } from 'uuid'
 
 const logger = pino({
-    name: '13-token-standard-preapproval-renew-cancel-localnet',
+    name: '14-token-standard-preapproval-renew-cancel-localnet',
     level: 'info',
 })
 
