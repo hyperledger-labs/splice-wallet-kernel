@@ -3,6 +3,8 @@
     "compilerOptions": {
         "rootDir": "./src",
         "outDir": "./dist",
+        "declaration": true,
+        "emitDeclarationOnly": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "useDefineForClassFields": false,

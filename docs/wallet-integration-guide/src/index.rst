@@ -4,7 +4,7 @@ Wallet Integration Guide
 This guide provides tailored information and examples to wallet providers and exchanges to help them integrate with the Canton Network.
 The guide tackles topics from a high-level such as the overview of the Canton Network, and explains certain
 workflows which you'll need to implement, such as creating external parties and preparing and signing transactions, in detail with examples.
-It's suggested that the Wallet SDK is used to simplify the mojority of workflows but additional intstructions and guides are also provided.
+It's suggested that the Wallet SDK is used to simplify the majority of workflows but additional instructions and guides are also provided.
 
 .. important::
 
@@ -24,6 +24,7 @@ It's suggested that the Wallet SDK is used to simplify the mojority of workflows
    wallet-sdk-configuration/index
    traffic/index
    tokenomics-and-rewards/index
+   user-management/index
    canton-coin-rewards/index
    deposits-into-exchanges/index
    exchange-integration/index

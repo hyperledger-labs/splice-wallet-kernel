@@ -5,7 +5,6 @@ import { z } from 'zod'
 
 export const ledgerApiSchema = z.object({
     baseUrl: z.string().url(),
-    adminGrpcUrl: z.string().url(), // TODO(#180): remove after grpc is gone
 })
 
 const clientCredentials = z.object({

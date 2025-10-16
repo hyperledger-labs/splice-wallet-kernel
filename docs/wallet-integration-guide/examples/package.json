@@ -22,12 +22,14 @@
         "run-09": "tsx ./scripts/09-token-standard-allocation-localnet.ts | pino-pretty",
         "run-10": "tsx ./scripts/10-idempotent-and-error-localnet.ts | pino-pretty",
         "run-11": "tsx ./scripts/11-multi-user-setup.ts | pino-pretty",
-        "run-12": "tsx ./scripts/12-integration-extensions | pino-pretty",
-        "run-13": "tsx ./scripts/13-token-standard-preapproval-renew-cancel-localnet | pino-pretty",
+        "run-12": "tsx ./scripts/12-integration-extensions.ts | pino-pretty",
+        "run-13": "tsx ./scripts/13-auth-tls.ts | pino-pretty",
+        "run-14": "tsx ./scripts/14-token-standard-preapproval-renew-cancel-localnet | pino-pretty",
         "run-exch-01": "tsx ./scripts/exchange-integration/01-one-step-deposit.ts | pino-pretty",
         "run-exch-02": "tsx ./scripts/exchange-integration/02-one-step-withdrawal.ts | pino-pretty",
         "run-exch-03": "tsx ./scripts/exchange-integration/03-multi-step-deposit.ts | pino-pretty",
-        "run-exch-04": "tsx ./scripts/exchange-integration/04-multi-step-withdrawal.ts | pino-pretty"
+        "run-exch-04": "tsx ./scripts/exchange-integration/04-multi-step-withdrawal.ts | pino-pretty",
+        "run-stress-01": "tsx ./scripts/stress/01-party-stress-test.ts | pino-pretty"
     },
     "devDependencies": {
         "@canton-network/core-signing-lib": "workspace:^",
@@ -47,7 +49,7 @@
         "@canton-network/core-signing-lib": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@canton-network/wallet-sdk": "workspace:^",
-        "pino": "9.7.0",
+        "pino": "10.0.0",
         "uuid": "^11.1.0"
     },
     "nx": {

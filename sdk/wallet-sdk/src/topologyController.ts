@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+    GrpcClientOptions,
     LedgerClient,
     TopologyWriteService,
 } from '@canton-network/core-ledger-client'
@@ -61,7 +62,8 @@ export class TopologyController {
         baseUrl: URL,
         userId: string,
         userAdminToken: string,
-        synchronizerId: PartyId
+        synchronizerId: PartyId,
+        grpcClientOptions?: GrpcClientOptions
     ) {
         this.client = new LedgerClient(baseUrl, userAdminToken, this.logger)
         this.userId = userId
@@ -69,7 +71,8 @@ export class TopologyController {
             synchronizerId,
             adminApiUrl,
             userAdminToken,
-            this.client
+            this.client,
+            grpcClientOptions
         )
         return this
     }

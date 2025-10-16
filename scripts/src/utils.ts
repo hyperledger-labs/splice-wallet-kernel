@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import zlib from 'zlib'
-import tar from 'tar-fs'
 import { pipeline } from 'stream/promises'
 import crypto from 'crypto'
 import * as fs from 'fs'
@@ -10,6 +9,7 @@ import * as path from 'path'
 import * as process from 'process'
 import { white, green, italic, red, yellow, bold } from 'yoctocolors'
 import * as jsonc from 'jsonc-parser'
+import * as tar from 'tar-fs'
 
 export const info = (message: string): string => italic(white(message))
 export const warn = (message: string): string => bold(yellow(message))
@@ -35,14 +35,14 @@ export type CantonVersionAndHash = {
 export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20250417.0'
 
 export const LOCALNET_ARCHIVE_HASH =
-    '9b9cc0e22c3c413c48f626d746d1825d20627d74778d9b0348dc5419779e099b'
+    '2611f44444b28d04133549f267ad3bc35e2334fc0763e2496a6a208afa80d2f8'
 export const SPLICE_ARCHIVE_HASH =
-    '5c7e07869be6b3c1823996789e33b10dd0cca073419ab6537b22e8626813d999'
+    '54980aae5211621598ead63c696140ebb03820e2263816471cd77d9607874b16'
 export const SPLICE_SPEC_ARCHIVE_HASH =
-    'fff78e5599d7943aca26f288988869d821a42a9c6383ff66db8500de5af76d95'
+    'ecb14bf4b95175fb2b083153ba017d6d7ca44ad901bef6a26619214e583496f7'
 export const CANTON_ARCHIVE_HASH =
     '43c89d9833886fc68cac4951ba1959b7f6cc5269abfff1ba5129859203aa8cd3'
-export const SPLICE_VERSION = '0.4.19'
+export const SPLICE_VERSION = '0.4.20'
 
 export const SUPPORTED_VERSIONS = {
     devnet: {

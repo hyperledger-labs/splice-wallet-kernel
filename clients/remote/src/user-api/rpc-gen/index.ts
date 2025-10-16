@@ -7,6 +7,7 @@ import { CreateWallet } from './typings.js'
 import { SetPrimaryWallet } from './typings.js'
 import { RemoveWallet } from './typings.js'
 import { ListWallets } from './typings.js'
+import { SyncWallets } from './typings.js'
 import { Sign } from './typings.js'
 import { Execute } from './typings.js'
 import { ListNetworks } from './typings.js'
@@ -20,6 +21,7 @@ export type Methods = {
     setPrimaryWallet: SetPrimaryWallet
     removeWallet: RemoveWallet
     listWallets: ListWallets
+    syncWallets: SyncWallets
     sign: Sign
     execute: Execute
     listNetworks: ListNetworks
@@ -35,6 +37,7 @@ function buildController(methods: Methods) {
         setPrimaryWallet: methods.setPrimaryWallet,
         removeWallet: methods.removeWallet,
         listWallets: methods.listWallets,
+        syncWallets: methods.syncWallets,
         sign: methods.sign,
         execute: methods.execute,
         listNetworks: methods.listNetworks,

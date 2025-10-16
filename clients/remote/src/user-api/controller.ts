@@ -14,11 +14,14 @@ import {
     AddSessionResult,
     ListSessionsResult,
     SetPrimaryWalletParams,
+    ListWalletsResult,
+    SyncWalletsResult,
 } from './rpc-gen/typings.js'
 import { Store, Auth, Transaction } from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'
 import { NotificationService } from '../notification/NotificationService.js'
 import {
+    assertConnected,
     AuthContext,
     clientCredentialsService,
 } from '@canton-network/core-wallet-auth'
@@ -31,6 +34,7 @@ import {
     AllocatedParty,
     PartyAllocationService,
 } from '../ledger/party-allocation-service.js'
+import { WalletSyncService } from '../ledger/wallet-sync-service.js'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
@@ -45,6 +49,7 @@ export const userController = (
     _logger: Logger
 ) => {
     const logger = _logger.child({ component: 'user-controller' })
+
     return buildController({
         addNetwork: async (network: AddNetworkParams) => {
             const ledgerApi = {
@@ -102,17 +107,12 @@ export const userController = (
                 `Allocating party with params: ${JSON.stringify(params)}`
             )
 
-            const userId = authContext?.userId
-
-            if (!userId) {
-                throw new Error('User not found')
-            }
-
+            const userId = assertConnected(authContext)
             const notifier = notificationService.getNotifier(userId)
             const network = await store.getCurrentNetwork()
 
-            if (authContext === undefined || network === undefined) {
-                throw new Error('Unauthenticated context')
+            if (network === undefined) {
+                throw new Error('No network session found')
             }
 
             const adminToken = await clientCredentialsService(
@@ -125,15 +125,21 @@ export const userController = (
                 audience: network.auth.audience,
             })
 
+            logger.debug(
+                { adminToken },
+                'Fetched admin token for party allocation'
+            )
+
             const partyAllocator = new PartyAllocationService(
                 network.synchronizerId,
                 adminToken,
                 network.ledgerApi.baseUrl,
                 logger
             )
-            const driver = drivers[
-                params.signingProviderId as SigningProvider
-            ]?.controller(authContext.userId)
+            const driver =
+                drivers[
+                    params.signingProviderId as SigningProvider
+                ]?.controller(userId)
 
             if (!driver) {
                 throw new Error(
@@ -226,17 +232,15 @@ export const userController = (
                 throw new Error('No primary wallet found')
             }
 
-            if (authContext === undefined || network === undefined) {
-                throw new Error('Unauthenticated context')
+            const userId = assertConnected(authContext)
+
+            if (network === undefined) {
+                throw new Error('No network session found')
             }
 
-            const userId = authContext.userId
             const notifier = notificationService.getNotifier(userId)
-
             const signingProvider = wallet.signingProviderId as SigningProvider
-            const driver = drivers[signingProvider]?.controller(
-                authContext.userId
-            )
+            const driver = drivers[signingProvider]?.controller(userId)
 
             if (!driver) {
                 throw new Error('No driver found for WALLET_KERNEL')
@@ -304,16 +308,17 @@ export const userController = (
                 throw new Error('No transaction found')
             }
 
-            if (authContext === undefined || network === undefined) {
-                throw new Error('Unauthenticated context')
+            const userId = assertConnected(authContext)
+
+            if (network === undefined) {
+                throw new Error('No network session found')
             }
 
-            const userId = authContext.userId
             const notifier = notificationService.getNotifier(userId)
 
             const ledgerClient = new LedgerClient(
                 new URL(network.ledgerApi.baseUrl),
-                authContext.accessToken,
+                authContext!.accessToken,
                 logger
             )
 
@@ -462,6 +467,21 @@ export const userController = (
                     },
                 ],
             }
+        },
+        syncWallets: async function (): Promise<SyncWalletsResult> {
+            const network = await store.getCurrentNetwork()
+            assertConnected(authContext)
+            const service = new WalletSyncService(
+                store,
+                new LedgerClient(
+                    new URL(network.ledgerApi.baseUrl),
+                    authContext!.accessToken,
+                    logger
+                ),
+                authContext!,
+                logger
+            )
+            return await service.syncWallets()
         },
     })
 }
