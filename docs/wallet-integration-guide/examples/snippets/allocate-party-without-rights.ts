@@ -19,9 +19,13 @@ export default async function () {
     await sdk.connect()
     await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
-    const signedHash = 'smy signed hash'
-    const preparedParty = {}
-
+    const signedHash = 'my-signed-hash'
+    const preparedParty = {
+        partyId: 'party-id',
+        publicKeyFingerprint: 'finger-print',
+        topologyTransactions: [],
+        multiHash: 'multi-hash',
+    }
     const party = await sdk.userLedger?.allocateExternalParty(
         signedHash,
         preparedParty,
