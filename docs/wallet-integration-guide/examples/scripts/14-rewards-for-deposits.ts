@@ -66,11 +66,6 @@ const synchronizers = await sdk.userLedger?.listSynchronizers()
 
 const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
 
-logger.info(`synchronizer id is ${synchonizerId}`)
-sdk.userLedger?.setSynchronizerId(synchonizerId)
-sdk.tokenStandard?.setSynchronizerId(synchonizerId)
-sdk.adminLedger?.setSynchronizerId(synchonizerId)
-
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
