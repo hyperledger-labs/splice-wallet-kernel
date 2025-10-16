@@ -21,7 +21,7 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .root {
-            background-color: var(--wg-theme-background-color, none);
+            background-color: var(--wg-theme-background-color, transparent);
             width: 100%;
             height: 100%;
         }
