@@ -1,10 +1,16 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { DiscoverResult, SpliceMessageEvent } from '@canton-network/core-types'
+import {
+    DiscoverResult,
+    SpliceMessageEvent,
+    GatewaysConfig,
+} from '@canton-network/core-types'
 import { css } from 'lit'
 import { BaseElement } from '../internal/BaseElement'
 import { cssToString } from '../utils'
+
+type KernelType = GatewaysConfig & { walletType: 'remote' }
 
 const SUBSTITUTABLE_CSS = cssToString([
     BaseElement.styles,
@@ -14,27 +20,57 @@ const SUBSTITUTABLE_CSS = cssToString([
             font-family: var(--wg-theme-font-family);
         }
 
-        h1 {
-            margin: 0px;
-        }
-
-        div {
-            background-color: var(--wg-theme-background-color, none);
+        .root {
+            background-color: var(--wg-theme-background-color, transparent);
             width: 100%;
             height: 100%;
         }
 
+        .wrapper {
+            margin: 0 auto;
+            max-width: 90%;
+            padding: 20px 12px;
+        }
+
+        h3 {
+            text-align: center;
+            margin: 20px;
+        }
+
         .kernel {
-            height: auto;
+            gap: 8px;
+        }
+
+        .kernel-content {
+            gap: 4px;
+        }
+
+        .nav-link {
+            cursor: pointer;
+        }
+
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            transform: translateX(-50%);
+            bottom: 0;
             margin-bottom: 8px;
+            background: #495057;
+            color: var(--black);
+            padding: 8px 12px;
+            border-radius: 6px;
+            pointer-events: none;
+            opacity: 0;
+            transition: 0.5s;
         }
 
-        .kernel button {
-            margin-left: 8px;
-        }
-
-        input {
-            margin-left: 8px;
+        [data-tooltip]:hover::after {
+            opacity: 1;
+            bottom: 100%;
         }
     `,
 ])
@@ -65,6 +101,8 @@ export class Discovery extends HTMLElement {
     }
 
     private root: HTMLElement
+    private selectedTabId: string = 'tab-1'
+    private verifiedKernels?: KernelType[]
 
     constructor() {
         super()
@@ -93,36 +131,84 @@ export class Discovery extends HTMLElement {
                 }
             )
         }
-    }
 
-    verifiedKernels(): DiscoverResult[] {
-        return [{ url: 'http://localhost:3008/rpc', walletType: 'remote' }]
-    }
-
-    private renderKernelOption(kernel: DiscoverResult) {
-        const div = document.createElement('div')
-        div.setAttribute('class', 'kernel')
-
-        const span = document.createElement('span')
-
-        switch (kernel.walletType) {
-            case 'extension':
-                span.innerText = 'Browser Extension'
-                break
-            case 'remote':
-                span.innerText = `${kernel.walletType} - ${kernel.url}`
-                break
-        }
-
-        const button = this.mkButton('Connect', {
-            class: 'btn btn-primary',
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'SPLICE_WALLET_CONFIG_LOAD') {
+                this.verifiedKernels = event.data.payload.map(
+                    (kernel: GatewaysConfig) => ({
+                        ...kernel,
+                        walletType: 'remote',
+                    })
+                )
+                this.render()
+            }
         })
+    }
+
+    tabs() {
+        return [
+            {
+                label: 'Verified',
+                id: 'tab-1',
+            },
+            {
+                label: 'Custom url',
+                id: 'tab-2',
+            },
+        ]
+    }
+
+    private renderExtensionOption(kernel: DiscoverResult) {
+        const div = this.mkElement('div', '', {
+            class: 'kernel d-flex justify-content-space-between align-items-center flex-wrap mb-3',
+        })
+
+        const button = this.mkElement('button', 'Connect', {
+            class: 'btn btn-primary',
+            type: 'button',
+        })
+
+        const span = this.mkElement('span', 'Browser Extension')
 
         button.addEventListener('click', () => {
             this.selectKernel(kernel)
         })
 
-        div.appendChild(span)
+        div.append(span, button)
+
+        return div
+    }
+
+    private renderKernelOption(kernel: KernelType) {
+        const div = this.mkElement('div', '', {
+            class: 'kernel d-flex justify-content-space-between align-items-center flex-wrap mb-3',
+        })
+
+        const button = this.mkElement('button', 'Connect', {
+            class: 'btn btn-primary',
+            type: 'button',
+            ['data-tooltip']: kernel.rpcUrl,
+        })
+
+        const nameWrapper = this.mkElement('div', '', {
+            class: 'kernel-content d-flex',
+        })
+        const span = this.mkElement('span', kernel.name, {
+            class: 'kernel-name',
+        })
+
+        // it should be img in the future
+        const logo = this.mkElement('span', '(logo)')
+        nameWrapper.append(span, logo)
+        div.appendChild(nameWrapper)
+
+        button.addEventListener('click', () => {
+            this.selectKernel({
+                url: kernel.rpcUrl,
+                walletType: kernel.walletType,
+            })
+        })
+
         div.appendChild(button)
 
         return div
@@ -136,56 +222,103 @@ export class Discovery extends HTMLElement {
         }
     }
 
-    private mkButton(value: string, attrs: Record<string, string> = {}) {
-        const button = document.createElement('button')
-        button.innerText = value
+    private mkElement<K extends keyof HTMLElementTagNameMap>(
+        elementName: K,
+        value?: string,
+        attrs: Record<string, string> = {}
+    ) {
+        const element = document.createElement(elementName)
+
+        if (value) {
+            element.innerText = value
+        }
 
         Object.entries(attrs).forEach(([key, val]) => {
-            button.setAttribute(key, val)
+            element.setAttribute(key, val)
         })
 
-        return button
+        return element
     }
 
     render() {
-        const root = document.createElement('div')
+        const root = this.mkElement('div', '', { class: 'root' })
+        const wrapper = this.mkElement('div', '', { class: 'wrapper' })
+        const header = this.mkElement('h3', 'Connect to a Wallet Gateway')
 
-        const header = document.createElement('h3')
-        header.innerText = 'Add a Wallet Gateway'
-
-        const input = document.createElement('input')
-        input.setAttribute('autofocus', '')
-        input.setAttribute('id', 'wkurl')
-        input.setAttribute('type', 'text')
-        input.setAttribute('placeholder', 'RPC URL')
-
-        const button = this.mkButton('Connect', {
-            class: 'btn btn-primary',
-            id: 'connect',
+        const card = this.mkElement('div', '', { class: 'card' })
+        const cardHeader = this.mkElement('div', '', { class: 'card-header' })
+        const navTabs = this.mkElement('ul', '', {
+            class: 'nav nav-tabs card-header-tabs',
         })
 
-        button.addEventListener('click', () => {
-            const url = input.value
-            console.log('Connecting to Wallet Gateway...' + url)
-            this.selectKernel({ url, walletType: 'remote' })
-        })
+        for (const tab of this.tabs()) {
+            const li = this.mkElement('li', '', { class: 'nav-item' })
 
-        root.appendChild(header)
+            const a = this.mkElement('a', tab.label, { class: 'nav-link' })
 
-        if (this.walletExtensionLoaded) {
-            const k = this.renderKernelOption({
-                walletType: 'extension',
+            if (tab.id === this.selectedTabId) {
+                a.classList.add('active')
+            }
+
+            a.addEventListener('click', (e) => {
+                e.preventDefault()
+                this.selectedTabId = tab.id
+                this.render()
             })
-            root.appendChild(k)
+
+            li.appendChild(a)
+            navTabs.appendChild(li)
         }
 
-        for (const kernel of this.verifiedKernels()) {
-            const k = this.renderKernelOption(kernel)
-            root.appendChild(k)
+        cardHeader.appendChild(navTabs)
+
+        const cardBody = this.mkElement('div', '', { class: 'card-body' })
+
+        if (this.selectedTabId === 'tab-1') {
+            if (this.walletExtensionLoaded) {
+                const k = this.renderExtensionOption({
+                    walletType: 'extension',
+                })
+                cardBody.appendChild(k)
+            }
+
+            if (this.verifiedKernels?.length) {
+                for (const kernel of this.verifiedKernels) {
+                    const k = this.renderKernelOption(kernel)
+                    cardBody.appendChild(k)
+                }
+            }
+        } else {
+            const div = this.mkElement('div', '', {
+                class: 'kernel d-flex justify-content-space-between align-items-center flex-wrap mb-3',
+            })
+
+            const input = this.mkElement('input', '', {
+                id: 'wkurl',
+                type: 'text',
+                placeholder: 'RPC URL',
+                class: 'form-control',
+            })
+
+            const button = this.mkElement('button', 'Connect', {
+                class: 'btn btn-primary',
+                id: 'connect',
+                type: 'button',
+            })
+
+            button.addEventListener('click', () => {
+                const url = input.value
+                console.log('Connecting to Wallet Gateway...' + url)
+                this.selectKernel({ url, walletType: 'remote' })
+            })
+            div.append(input, button)
+            cardBody.appendChild(div)
         }
 
-        root.appendChild(input)
-        root.appendChild(button)
+        card.append(cardHeader, cardBody)
+
+        wrapper.append(header, card)
+        root.appendChild(wrapper)
 
         // Replace the whole root (except styles), don't append
         if (this.shadowRoot) {

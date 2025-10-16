@@ -6,9 +6,12 @@ import { discover } from '@canton-network/core-wallet-ui-components'
 import { assertProvider, ConnectError, ErrorCode } from '../error.js'
 import * as storage from '../storage'
 import { injectProvider } from './index'
+import { GatewaysConfig } from '@canton-network/core-types'
+import gateways from './gateways.json'
 
 export async function connect(): Promise<dappAPI.ConnectResult> {
-    return discover()
+    const config: GatewaysConfig[] = gateways
+    return discover(config)
         .then(async (result) => {
             // Store discovery result and remove previous session
             storage.setKernelDiscovery(result)

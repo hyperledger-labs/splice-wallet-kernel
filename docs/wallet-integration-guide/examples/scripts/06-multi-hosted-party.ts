@@ -40,7 +40,10 @@ const alice = await sdk.userLedger?.signAndAllocateExternalParty(
     singleHostedPartyKeyPair.privateKey,
     'alice'
 )
-logger.info(alice?.partyId!, 'created single hosted party to get synchronzerId')
+logger.info(
+    { partyId: alice?.partyId! },
+    'created single hosted party to get synchronzerId'
+)
 await sdk.setPartyId(alice?.partyId!)
 
 const multiHostedParticipantEndpointConfig = [

@@ -7,6 +7,7 @@ import {
     localNetTopologyAppProvider,
     localValidatorDefault,
     localNetStaticConfig,
+    localValidatorDefaultAppProvider,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
@@ -24,7 +25,7 @@ export async function setupExchange(options?: {
         ledgerFactory: localNetLedgerAppProvider,
         topologyFactory: localNetTopologyAppProvider,
         tokenStandardFactory: localNetTokenStandardAppProvider,
-        validatorFactory: localValidatorDefault,
+        validatorFactory: localValidatorDefaultAppProvider,
     })
 
     logger.info('Setup exchange SDK')
@@ -57,9 +58,21 @@ export async function setupExchange(options?: {
     const exchangeParty = await exchangeSdk.validator!.getValidatorUser()!
 
     if (options?.transferPreapproval) {
-        //TODO(#537): Tap exchange party to ensure they have funds to setup the pre-approval
         const instrumentAdminPartyId =
             (await exchangeSdk.tokenStandard?.getInstrumentAdmin()) || ''
+
+        await exchangeSdk.setPartyId(exchangeParty)
+
+        await exchangeSdk.tokenStandard?.createAndSubmitTapInternal(
+            exchangeParty,
+            '20000000',
+            {
+                instrumentId: 'Amulet',
+                instrumentAdmin: instrumentAdminPartyId,
+            }
+        )
+
+        await exchangeSdk.setPartyId(treasuryParty)
 
         // Setup preapproval
         const cmd =
