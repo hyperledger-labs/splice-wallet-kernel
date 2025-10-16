@@ -94,23 +94,23 @@ if (!preapproval) {
 }
 
 logger.info('Renewing transfer preapproval (manual)')
-{
-    sdk.setPartyId(validatorOperatorParty!)
-    const [renewCmd, disclosed] =
-        await sdk.tokenStandard!.createRenewTransferPreapproval(
-            preapproval.contractId,
-            preapproval.templateId,
-            validatorOperatorParty!
-        )
-    await sdk.userLedger!.submitCommand(renewCmd!, v4(), disclosed)
-    logger.info('Transfer preapproval renewed')
-}
+
+sdk.setPartyId(validatorOperatorParty!)
+const [renewCmd, disclosedContractsRenew] =
+    await sdk.tokenStandard!.createRenewTransferPreapproval(
+        preapproval.contractId,
+        preapproval.templateId,
+        validatorOperatorParty!
+    )
+await sdk.userLedger!.submitCommand(renewCmd!, v4(), disclosedContractsRenew)
+logger.info('Transfer preapproval renewed')
 
 // After TransferPreapproval_Renew a new contract is created on the ledger
 // Source we fetch TransferPreapprovals from (scan proxy api) is lagging behind a bit
 // and may return previous contract ID which is already archived
 // so calling TransferPreapproval_Cancel on it would cause error
 // That function waits until getTransferPreApprovalByParty returns new CID
+logger.info('Assuring scanProxy API refresh transfer preapproval after renew')
 await waitForPreapprovalCidChange(
     receiver!.partyId,
     'Amulet',
@@ -127,22 +127,20 @@ if (!preapprovalAfterRenewal) {
 }
 
 logger.info('Cancelling transfer preapproval')
-{
-    sdk.setPartyId(receiver!.partyId!)
-    const [cancelCmd, disclosedContracts] =
-        await sdk.tokenStandard!.createCancelTransferPreapproval(
-            preapprovalAfterRenewal.contractId,
-            preapprovalAfterRenewal.templateId,
-            receiver!.partyId
-        )
-    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-        [cancelCmd!],
-        keyPairReceiver.privateKey,
-        v4(),
-        disclosedContracts
+sdk.setPartyId(receiver!.partyId!)
+const [cancelCmd, disclosedContractsCancel] =
+    await sdk.tokenStandard!.createCancelTransferPreapproval(
+        preapprovalAfterRenewal.contractId,
+        preapprovalAfterRenewal.templateId,
+        receiver!.partyId
     )
-    logger.info('Transfer preapproval auto-renew cancelled')
-}
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    [cancelCmd!],
+    keyPairReceiver.privateKey,
+    v4(),
+    disclosedContractsCancel
+)
+logger.info('Transfer preapproval cancelled')
 
 async function waitForPreapprovalCidChange(
     receiverId: string,

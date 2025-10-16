@@ -1385,7 +1385,7 @@ export class TokenStandardService {
             {
                 templateId: activeRound.template_id!,
                 contractId: activeRound.contract_id,
-                createdEventBlob: activeRound.created_event_blob!,
+                createdEventBlob: activeRound.created_event_blob,
                 synchronizerId,
             },
         ]
