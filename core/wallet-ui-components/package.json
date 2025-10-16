@@ -13,7 +13,7 @@
         "./themes": "./themes"
     },
     "scripts": {
-        "build": "vite build && tsc --emitDeclarationOnly",
+        "build": "yarn clean && vite build && tsc --emitDeclarationOnly",
         "build:watch": "vite build --watch & tsc --emitDeclarationOnly --watch",
         "typecheck": "tsc --noEmit",
         "clean": "tsc -b --clean; rm -rf dist",
