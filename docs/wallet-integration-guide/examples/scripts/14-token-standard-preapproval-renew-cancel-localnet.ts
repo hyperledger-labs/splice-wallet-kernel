@@ -111,8 +111,6 @@ logger.info('Transfer preapproval renewed')
 // and may return previous contract ID which is already archived
 // so calling TransferPreapproval_Cancel on it would cause error
 // That function waits until getTransferPreApprovalByParty returns new CID
-logger.info('Assuring scanProxy API refresh transfer preapproval after renew')
-
 const preapprovalAfterRenewal =
     await sdk.tokenStandard!.waitForPreapprovalFromScanProxy(
         receiver!.partyId,
@@ -140,43 +138,3 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     disclosedContractsCancel
 )
 logger.info('Transfer preapproval cancelled')
-
-async function waitForPreapprovalCidChange(
-    receiverId: string,
-    instrumentId: string,
-    oldCid: string,
-    intervalMs: number = 15_000,
-    timeoutMs: number = 5 * 60_000
-): Promise<void> {
-    const deadline = Date.now() + timeoutMs
-
-    for (let attempt = 1; Date.now() < deadline; attempt++) {
-        try {
-            const latest =
-                await sdk.tokenStandard!.getTransferPreApprovalByParty(
-                    receiverId,
-                    instrumentId
-                )
-
-            if (latest?.contractId && latest.contractId !== oldCid) {
-                return
-            }
-
-            logger.info(
-                { attempt, seenCid: latest?.contractId ?? null, oldCid },
-                'Preapproval CID unchanged - polling again'
-            )
-        } catch (err) {
-            logger.warn(
-                { attempt, err },
-                'Error fetching preapproval - retrying'
-            )
-        }
-
-        await new Promise((r) => setTimeout(r, intervalMs))
-    }
-
-    throw new Error(
-        `Timed out after ${timeoutMs / 1000}s waiting for TransferPreapproval CID to change from ${oldCid}`
-    )
-}

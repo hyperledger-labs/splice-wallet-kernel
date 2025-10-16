@@ -396,6 +396,26 @@ export class TokenStandardController {
         return [{ ExerciseCommand: renewCommand }, disclosed]
     }
 
+    /**
+     * Waits for Scan Proxy to expose a receiver’s TransferPreapproval (or a new CID after renewal).
+     *
+     * Why: right after `TransferPreapproval_Renew`, the ledger has the new contract,
+     * but Scan Proxy can lag and still return the old (now archived) CID. Calling
+     * `TransferPreapproval_Cancel` against that stale CID would fail. This helper
+     * polls Scan Proxy until the preapproval becomes visible (fresh create) or its
+     * CID changes (post-renew).
+     * Use it:
+     *  - After creating a preapproval: call without `oldCid` to wait until it appears.
+     *  - After renewing a preapproval: pass `oldCid` to wait until the CID changes.
+     * @param receiverId  Receiver party id.
+     * @param instrumentId  Instrument id (e.g. "Amulet") for which the preapproval is tracked.
+     * @param {Object} [options]        Optional settings.
+     * @param {string} [options.oldCid] Resolve only when CID != oldCid (post-renew).
+     * @param {number} [options.intervalMs=15000] Poll interval in ms.
+     * @param {number} [options.timeoutMs=300000] Max wait time in ms.
+     * @returns Resolves with the preapproval object from `getTransferPreApprovalByParty`.
+     * @throws If the timeout elapses before the preapproval appears / CID changes.
+     */
     async waitForPreapprovalFromScanProxy(
         receiverId: string,
         instrumentId: string,
@@ -409,19 +429,23 @@ export class TokenStandardController {
 
         for (let attempt = 1; Date.now() < deadline; attempt++) {
             try {
-                const pa = await this.getTransferPreApprovalByParty(
+                const preapproval = await this.getTransferPreApprovalByParty(
                     receiverId,
                     instrumentId
                 )
 
-                if (pa) {
-                    if (!oldCid) return pa
-                    if (pa.contractId && pa.contractId !== oldCid) return pa
+                if (preapproval) {
+                    if (!oldCid) return preapproval
+                    if (
+                        preapproval.contractId &&
+                        preapproval.contractId !== oldCid
+                    )
+                        return preapproval
 
                     this.logger.info(
                         {
                             attempt,
-                            seenCid: pa.contractId ?? null,
+                            seenCid: preapproval.contractId ?? null,
                             oldCid: oldCid ?? null,
                         },
                         'Preapproval visible but CID unchanged — polling again'
@@ -439,7 +463,7 @@ export class TokenStandardController {
                 )
             }
 
-            await new Promise((r) => setTimeout(r, intervalMs))
+            await new Promise((resolve) => setTimeout(resolve, intervalMs))
         }
 
         throw new Error(
