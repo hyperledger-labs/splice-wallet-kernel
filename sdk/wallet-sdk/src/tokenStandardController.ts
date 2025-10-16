@@ -282,16 +282,24 @@ export class TokenStandardController {
         )
     }
 
+    // TODO(#583) TransferPreapproval methods could be moved to SpliceController
     /**  Lookup a TransferPreapproval by the receiver party
      * @param receiverId receiver party id
      * @param instrumentId the instrument partyId that has transfer preapproval
-     * @returns the receiverId, dso, and expiresAt
+     * @returns object with receiverId, dso, expiresAt, contractId, templateId, or `undefined` on error
      */
     async getTransferPreApprovalByParty(
         receiverId: PartyId,
         instrumentId: string
     ): Promise<
-        { receiverId: PartyId; expiresAt: Date; dso: PartyId } | undefined
+        | {
+              receiverId: PartyId
+              expiresAt: Date
+              dso: PartyId
+              contractId: string
+              templateId: string
+          }
+        | undefined
     > {
         try {
             await this.service.getInstrumentById(
@@ -303,15 +311,71 @@ export class TokenStandardController {
                 await this.service.getTransferPreApprovalByParty(receiverId)
 
             const { dso, expiresAt } = transfer_preapproval.contract.payload
+            const contractId = transfer_preapproval?.contract?.contract_id
+            const templateId = transfer_preapproval?.contract?.template_id
+
             return {
                 receiverId: receiverId as PartyId,
                 expiresAt: new Date(expiresAt),
                 dso: dso as PartyId,
+                contractId,
+                templateId,
             }
         } catch (e) {
             this.logger.error(e)
             return undefined
         }
+    }
+
+    /**
+     * Build an Exercise command to cancel a TransferPreapproval.
+     *
+     * @param contractId contract ID of the TransferPreapproval to cancel.
+     * @param templateId template ID of the TransferPreapproval (may vary by package version).
+     * @param actor Party executing the cancel choice (must be provider or receiver).
+     * @returns A promise that resolves to the ExerciseCommand which cancels TransferPreapproval and any disclosed contracts
+     */
+    async createCancelTransferPreapproval(
+        contractId: string,
+        templateId: string,
+        actor: PartyId
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const [cancelCommand, disclosed] =
+            await this.service.cancelTransferPreapproval(
+                contractId,
+                templateId,
+                actor
+            )
+        return [{ ExerciseCommand: cancelCommand }, disclosed]
+    }
+
+    /**
+     * Build an Exercise command to renew a TransferPreapproval.
+     * @param contractId Contract ID of the TransferPreapproval to renew.
+     * @param templateId Template ID of the TransferPreapproval (may vary by package version).
+     * @param provider Provider party whose inputs will fund the renewal.
+     * @param inputUtxos Optional list of specific holding CIDs to use as inputs.
+     * @returns A promise that resolves to the ExerciseCommand which renews TransferPreapproval and any disclosed contracts
+     */
+    async createRenewTransferPreapproval(
+        contractId: string,
+        templateId: string,
+        provider: PartyId,
+        inputUtxos?: string[]
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const [renewCommand, disclosed] =
+            await this.service.renewTransferPreapproval(
+                contractId,
+                templateId,
+                provider,
+                this.getSynchronizerId(),
+                inputUtxos
+            )
+        return [{ ExerciseCommand: renewCommand }, disclosed]
     }
 
     /**
@@ -859,7 +923,7 @@ export class TokenStandardController {
     }
 
     /**
-     * Fetch choice context from registry for Allocation ExecuteTransfer.
+     * Fetch choice context from registry for Allocation ExecuteTransfer
      * @param allocationCid Allocation contract id
      * @returns Allocation_ExecuteTransfer choice context from the registry
      */
