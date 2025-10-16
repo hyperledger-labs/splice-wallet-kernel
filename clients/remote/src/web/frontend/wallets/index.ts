@@ -13,6 +13,14 @@ import { SigningProvider } from '@canton-network/core-signing-lib'
 
 import '../index'
 import { stateManager } from '../state-manager'
+import { handleErrorToast } from '../handle-errors'
+
+export interface ToastElement extends HTMLElement {
+    title: string
+    message: string
+    type: string
+    buttonText: string
+}
 
 @customElement('user-ui-wallets')
 export class UserUiWallets extends LitElement {
@@ -313,15 +321,19 @@ export class UserUiWallets extends LitElement {
         const signingProviderId = this._signingProviderSelect?.value || ''
         const chainId = this._networkSelect?.value || ''
 
-        const body: CreateWalletParams = {
-            primary,
-            partyHint,
-            chainId,
-            signingProviderId,
-        }
+        try {
+            const body: CreateWalletParams = {
+                primary,
+                partyHint,
+                chainId,
+                signingProviderId,
+            }
 
-        const userClient = createUserClient(stateManager.accessToken.get())
-        await userClient.request('createWallet', body)
+            const userClient = createUserClient(stateManager.accessToken.get())
+            await userClient.request('createWallet', body)
+        } catch (e) {
+            handleErrorToast(e)
+        }
 
         this.loading = false
         if (this._partyHintInput) {
