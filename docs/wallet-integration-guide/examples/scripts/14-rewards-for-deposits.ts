@@ -121,7 +121,7 @@ if (!isDarUploaded) {
 }
 
 //featured exchange party is just the validator operator party
-sdk.setPartyId(exchangeParty!)
+await sdk.setPartyId(exchangeParty!)
 await sdk.tokenStandard?.createAndSubmitTapInternal(
     exchangeParty!,
     '20000000',
@@ -165,9 +165,7 @@ await new Promise((res) => setTimeout(res, 5000))
 
 logger.info(`Allocated external treasury for the exchange with some funds`)
 
-sdk.setPartyId(exchangeParty!)
-
-await new Promise((res) => setTimeout(res, 5000))
+await sdk.setPartyId(exchangeParty!)
 
 const delegateCommand = await sdk.userLedger?.createDelegateProxyCommand(
     exchangeParty!,
@@ -184,9 +182,7 @@ logger.info('Set up wallet provider token standard proxy')
 //analogous to the TestSetup script here: https://github.com/hyperledger-labs/splice/blob/5870d2d8b0c6b9dfcf8afe11ab0685e2ee58342f/daml/splice-util-featured-app-proxies-test/daml/Splice/Scripts/TestFeaturedDepositsAndWithdrawals.daml#L147-L161
 
 logger.info('funding alice')
-sdk.setPartyId(alice?.partyId!)
-
-await new Promise((res) => setTimeout(res, 5000))
+await sdk.setPartyId(alice?.partyId!)
 
 const [tapCommand2, disclosedContracts2] = await sdk.tokenStandard!.createTap(
     alice!.partyId,
@@ -288,11 +284,9 @@ try {
     logger.error({ error }, 'Failed to accept transfer')
 }
 
-await new Promise((res) => setTimeout(res, 5000))
-
 {
     await sdk.setPartyId(treasuryParty!.partyId)
-    const tresuryHodlings = await sdk.tokenStandard?.listHoldingTransactions()
+    const treasuryHoldings = await sdk.tokenStandard?.listHoldingTransactions()
     logger.info(treasuryHoldings, '[TREASURY PARTY] holding transactions')
 
     await sdk.setPartyId(alice!.partyId)
