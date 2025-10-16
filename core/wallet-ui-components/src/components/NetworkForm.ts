@@ -67,7 +67,6 @@ export class NetworkForm extends BaseElement {
     handleSubmit(e: Event) {
         e.preventDefault()
 
-        console.log('this network', this.network)
         const parsedData = networkSchema.safeParse(this.network)
 
         if (!parsedData.success) {

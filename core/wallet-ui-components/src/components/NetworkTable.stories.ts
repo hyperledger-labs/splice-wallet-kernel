@@ -5,6 +5,8 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite'
 import { html } from 'lit'
 import { Network } from '@canton-network/core-wallet-store'
 
+import { NetworkEditSaveEvent } from './NetworkForm'
+
 const meta: Meta = {
     title: 'NetworkTable',
 }
@@ -41,7 +43,12 @@ const networks: Network[] = [
 ]
 
 export const Default: StoryObj = {
-    render: () => html`<network-table .networks=${networks}></network-table>`,
+    render: () =>
+        html`<network-table
+            .networks=${networks}
+            @network-edit-save=${(e: NetworkEditSaveEvent) =>
+                console.log('saved!', e.network)}
+        ></network-table>`,
 }
 
 export const Multiple: StoryObj = {
