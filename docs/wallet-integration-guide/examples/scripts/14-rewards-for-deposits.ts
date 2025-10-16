@@ -254,7 +254,8 @@ const [acceptCommand, disclosedContracts4] =
                 beneficiary: exchangeParty!,
                 weight: 1.0,
             },
-        ]
+        ],
+        featuredAppRights!
     )!
 
 const delegateProxyDisclosedContracts = {

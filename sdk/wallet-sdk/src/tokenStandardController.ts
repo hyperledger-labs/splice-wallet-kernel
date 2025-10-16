@@ -41,6 +41,14 @@ export type AllocationInstructionChoice = 'Withdraw'
 export type AllocationChoice = 'ExecuteTransfer' | 'Withdraw' | 'Cancel'
 export type AllocationRequestChoice = 'Reject' | 'Withdraw'
 
+export type FeaturedAppRight = {
+    template_id: string
+    contract_id: string
+    payload: Record<string, never>
+    created_event_blob: string
+    created_at: string
+}
+
 /**
  * TokenStandardController handles token standard management tasks.
  * This controller requires a userId and token.
@@ -592,7 +600,10 @@ export class TokenStandardController {
      * Has an in built retry and delay between attempts
      * @returns If defined, a contract of Daml template `Splice.Amulet.FeaturedAppRight`.
      */
-    async lookupFeaturedApps(maxRetries = 10, delayMs = 5000) {
+    async lookupFeaturedApps(
+        maxRetries = 10,
+        delayMs = 5000
+    ): Promise<FeaturedAppRight | undefined> {
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             const result = await this.service.getFeaturedAppsByParty(
                 this.getPartyId()
@@ -709,12 +720,21 @@ export class TokenStandardController {
         instructionChoice: TransactionInstructionChoice,
         proxyCid: string,
         featuredAppRightCid: string,
-        beneficiaries: Beneficiaries[]
+        beneficiaries: Beneficiaries[],
+        featuredAppRight2: FeaturedAppRight
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         let ExerciseCommand: ExerciseCommand
         let disclosedContracts: DisclosedContract[]
+
+        const featuredAppDisclosedContract = {
+            templateId: featuredAppRight2.template_id,
+            contractId: featuredAppRight2.contract_id,
+            createdEventBlob: featuredAppRight2.created_event_blob!,
+            synchronizerId: this.getSynchronizerId(),
+        }
+
         try {
             switch (instructionChoice) {
                 case 'Accept':
@@ -726,7 +746,10 @@ export class TokenStandardController {
                             featuredAppRightCid,
                             beneficiaries
                         )
-                    return [{ ExerciseCommand }, disclosedContracts]
+                    return [
+                        { ExerciseCommand },
+                        [featuredAppDisclosedContract, ...disclosedContracts],
+                    ]
                 case 'Reject':
                     ;[ExerciseCommand, disclosedContracts] =
                         await this.service.transfer.exerciseDelegateProxyTransferInstructionReject(
@@ -736,7 +759,10 @@ export class TokenStandardController {
                             featuredAppRightCid,
                             beneficiaries
                         )
-                    return [{ ExerciseCommand }, disclosedContracts]
+                    return [
+                        { ExerciseCommand },
+                        [featuredAppDisclosedContract, ...disclosedContracts],
+                    ]
                 case 'Withdraw':
                     ;[ExerciseCommand, disclosedContracts] =
                         await this.service.transfer.exerciseDelegateProxyTransferInstructioWithdraw(
@@ -747,7 +773,10 @@ export class TokenStandardController {
                             beneficiaries
                         )
 
-                    return [{ ExerciseCommand }, disclosedContracts]
+                    return [
+                        { ExerciseCommand },
+                        [featuredAppDisclosedContract, ...disclosedContracts],
+                    ]
                 default:
                     throw new Error('Unexpected transfer instruction choice')
             }
