@@ -175,7 +175,7 @@ Finality usually takes 3-10s.
 Observing the Transaction
 -------------------------
 
-There is two ways to observe the transaction you have submitted. You can either
+There are two ways to observe the transaction you have submitted. You can either:
 
 1. continuously monitor holdings changes using :ref:`token standard history parser <list-holding-transactions>`.
 2. use WaitFor to get the updateId and retrieve the transaction:
