@@ -5,6 +5,7 @@
     "description": "Wrapper for JSON-RPC error objects",
     "author": "Alex Matson <alex.matson@digitalasset.com>",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
+    "packageManager": "yarn@4.9.4",
     "license": "Apache-2.0",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -15,7 +16,8 @@
         "access": "public"
     },
     "scripts": {
-        "build": "tsc --build"
+        "build": "tsc --build",
+        "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
         "@metamask/rpc-errors": "^7.0.3"
