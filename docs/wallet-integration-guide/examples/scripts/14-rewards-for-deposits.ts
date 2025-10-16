@@ -60,7 +60,7 @@ const exchangeParty = await sdk.validator?.getValidatorUser()
 
 logger.info(`Created party: ${alice?.partyId}`)
 
-await sdk.setPartyId(alice?.partyId!)
+await sdk.setPartyId(alice!.partyId)
 
 const synchronizers = await sdk.userLedger?.listSynchronizers()
 
