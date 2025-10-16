@@ -1,12 +1,12 @@
 User Management
 ===============
 
-The Wallet SDK have functionality for creating and managing user rights, by default when you are connection it uses whichever
+The Wallet SDK has functionality for creating and managing user rights, by default when you are connecting it uses whichever
 user is defined in your auth-controller. If the user is an admin user on the ledger api they can be used to create other
 users and grant them rights.
 
 
-How do i quickly setup canReadAsAnyParty and canExecuteAsAnyParty?
+How do I quickly setup canReadAsAnyParty and canExecuteAsAnyParty?
 ------------------------------------------------------------------
 
 This script sets up three users `alice`, `bob` and `master`. `master` is given canReadAsAnyParty and canExecuteAsAnyParty
@@ -31,7 +31,7 @@ ReadAs and ActAs limitations
 ----------------------------
 
 Currently when allocating a new party we also grant ReadAs and ActAs rights for that party for the submitting user. This allows
-the user to do the normal flows involved like preparing transactions and executing those. There are performance issues if two many
+the user to do the normal flows involved like preparing transactions and executing those. There are performance issues if too many
 of these rights are assigned to the same user, in the case of a `master` user that is interacting on behalf of a client, then it might
 be more convenient to use `CanReadAsAnyParty` and `CanExecuteAsAnyParty` as described below.
 
@@ -44,7 +44,7 @@ Here is how the method changes if you need to allocate a party without granting 
 CanReadAsAnyParty
 -----------------
 
-CanReadAsAnyParty gives an user full information about any party on the ledger, if a user is set up with this they will see:
+CanReadAsAnyParty gives a user full information about any party on the ledger, if a user is set up with this they will see:
 1. All parties hosted on the ledger (multi-hosted and single hosted)
 2. All transaction happening involving a party on the ledger
 3. Prepare transactions on behalf of any party
@@ -55,7 +55,7 @@ This will not grant information about parties hosted on other ledgers or their t
     :language: typescript
     :dedent:
 
-The SDK automatically leverage this elevated permission for certain endpoints like `listWallets`.
+The SDK automatically leverages this elevated permission for certain endpoints like `listWallets`.
 
 CanExecuteAsAnyParty
 --------------------
