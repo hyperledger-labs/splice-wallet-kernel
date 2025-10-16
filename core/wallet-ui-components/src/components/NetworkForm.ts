@@ -3,7 +3,6 @@
 
 import {
     ClientCredentials,
-    ImplicitAuth,
     Network,
     networkSchema,
     PasswordAuth,
@@ -11,18 +10,7 @@ import {
 import { html } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/BaseElement.js'
-
-/**
- * Emitted when the value of an individual form input changes
- */
-class NetworkInputChangedEvent extends Event {
-    value: string
-
-    constructor(value: string) {
-        super('network-input-change', { bubbles: true, composed: true })
-        this.value = value
-    }
-}
+import { NetworkInputChangedEvent } from './NetworkFormInput.js'
 
 /**
  * Emitted when the user clicks the Cancel button on the form
@@ -45,49 +33,12 @@ export class NetworkEditSaveEvent extends Event {
     }
 }
 
-@customElement('network-form-input')
-export class NetworkFormInput extends BaseElement {
-    @property({ type: String }) label = ''
-    @property({ type: String }) value = ''
-    @property({ type: String }) text = ''
-    @property({ type: Boolean }) required = false
-
-    static styles = [BaseElement.styles]
-
-    render() {
-        return html`
-            <div class="mb-3">
-                <label for=${this.label}>${this.label}</label>
-                <input
-                    .value=${this.value}
-                    ?required=${this.required}
-                    @change=${(e: Event) => {
-                        const input = e.target as HTMLInputElement
-                        this.value = input.value
-
-                        this.dispatchEvent(
-                            new NetworkInputChangedEvent(this.value)
-                        )
-                    }}
-                    type="text"
-                    class="form-control"
-                    name=${this.label}
-                />
-                ${this.text
-                    ? html`<div class="form-text">${this.text}</div>`
-                    : null}
-            </div>
-        `
-    }
-}
-
 type NetworkKeys = Exclude<keyof Network, 'auth' | 'ledgerApi'>
 type LedgerApiKeys = keyof Network['ledgerApi']
 
 type CommonAuth = Exclude<keyof Network['auth'], 'type' | 'admin'>
 type AdminAuth = keyof ClientCredentials
 type PasswordAuthKeys = Exclude<keyof PasswordAuth, 'type' | 'admin'>
-type ImplicitAuthKeys = Exclude<keyof ImplicitAuth, 'type' | 'admin'>
 
 @customElement('network-form')
 export class NetworkForm extends BaseElement {
@@ -183,35 +134,33 @@ export class NetworkForm extends BaseElement {
         }
     }
 
-    setImplicitAuth(field: ImplicitAuthKeys) {
-        return (ev: NetworkInputChangedEvent) => {
-            if (this.network.auth.type !== 'implicit') {
-                return
-            }
-
-            if (!this.network.auth) {
-                this.network.auth = {
-                    type: 'implicit',
-                    clientId: '',
-                    identityProviderId: '',
-                    issuer: '',
-                    configUrl: '',
-                    audience: '',
-                    scope: '',
-                }
-            }
-            this.network.auth[field] = ev.value
-        }
-    }
-
     renderAuthForm() {
         console.log('calling render auth')
         const commonFields = html`
             <network-form-input
                 required
-                label="Scope"
-                .value=${this.network.auth.scope}
-                @network-input-change=${this.setAuth('scope')}
+                label="Identity Provider ID"
+                .value=${this.network.auth.identityProviderId}
+                @network-input-change=${this.setAuth('identityProviderId')}
+            ></network-form-input>
+            <network-form-input
+                required
+                label="Config URL"
+                text="URL to the OpenID Connect configuration (e.g. https://<your-domain>/.well-known/openid-configuration)"
+                .value=${this.network.auth.configUrl}
+                @network-input-change=${this.setAuth('configUrl')}
+            ></network-form-input>
+            <network-form-input
+                required
+                label="Client Id"
+                .value=${this.network.auth.clientId}
+                @network-input-change=${this.setAuth('clientId')}
+            ></network-form-input>
+            <network-form-input
+                required
+                label="Issuer"
+                .value=${this.network.auth.issuer}
+                @network-input-change=${this.setAuth('issuer')}
             ></network-form-input>
             <network-form-input
                 required
@@ -220,16 +169,27 @@ export class NetworkForm extends BaseElement {
                 @network-input-change=${this.setAuth('audience')}
             >
             </network-form-input>
+            <network-form-input
+                required
+                label="Scope"
+                .value=${this.network.auth.scope}
+                @network-input-change=${this.setAuth('scope')}
+            ></network-form-input>
+        `
 
+        const adminFields = html`
             <div class="form-control">
-                <div class="form-text">admin auth fields (optional)</div>
+                <div class="form-text mb-4 fw-bold">
+                    Admin auth fields (optional)
+                </div>
                 <network-form-input
-                    label="Admin ClientId"
+                    label="Admin Client Id"
                     .value=${this.network.auth.admin?.clientId ?? ''}
                     @network-input-change=${this.setAdminAuth('clientId')}
                 ></network-form-input>
                 <network-form-input
-                    label="Admin ClientSecret"
+                    hideable
+                    label="Admin Client Secret"
                     .value=${this.network.auth.admin?.clientSecret ?? ''}
                     @network-input-change=${this.setAdminAuth('clientSecret')}
                 ></network-form-input>
@@ -241,38 +201,30 @@ export class NetworkForm extends BaseElement {
             if (auth.type !== 'implicit') {
                 auth = {
                     type: 'implicit',
-                    clientId: '',
                     identityProviderId: '',
-                    issuer: '',
                     configUrl: '',
-                    scope: '',
+                    clientId: '',
+                    issuer: '',
                     audience: '',
+                    scope: '',
                 }
                 this.network.auth = auth
             }
 
-            return html`
-                <network-form-input
-                    required
-                    label="ClientId"
-                    .value=${this.network.auth.clientId}
-                    @network-input-change=${this.setAuth('clientId')}
-                ></network-form-input>
-                ${commonFields}
-            `
+            return html`${commonFields}${adminFields}`
         } else if (this.authType === 'password') {
             let auth = this.network.auth
             if (auth.type !== 'password') {
                 auth = {
                     type: 'password',
-                    clientId: '',
                     identityProviderId: '',
-                    issuer: '',
                     configUrl: '',
+                    clientId: '',
+                    issuer: '',
                     audience: '',
+                    scope: '',
                     tokenUrl: '',
                     grantType: '',
-                    scope: '',
                 }
                 this.network.auth = auth
             }
@@ -280,6 +232,7 @@ export class NetworkForm extends BaseElement {
             const netauth = this.network.auth as PasswordAuth
 
             return html`
+                ${commonFields}
                 <network-form-input
                     required
                     label="Token Url"
@@ -292,7 +245,7 @@ export class NetworkForm extends BaseElement {
                     .value=${netauth.grantType}
                     @network-input-change=${this.setPasswordAuth('grantType')}
                 ></network-form-input>
-                ${commonFields}
+                ${adminFields}
             `
         } else {
             throw new Error(`Unsupported auth type: ${this.authType}`)
@@ -353,7 +306,9 @@ export class NetworkForm extends BaseElement {
                 </div>
 
                 <div class="form-control mb-3">
-                    <h6 class="form-text">${this.authType} auth config</h6>
+                    <h6 class="form-text mb-4 fw-bold">
+                        Configuring ${this.authType} auth
+                    </h6>
                     ${this.renderAuthForm()}
                 </div>
 
