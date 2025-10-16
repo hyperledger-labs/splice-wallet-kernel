@@ -14,7 +14,8 @@ import { SigningProvider } from '@canton-network/core-signing-lib'
 import { ParticipantSigningDriver } from '@canton-network/core-signing-participant'
 import { InternalSigningDriver } from '@canton-network/core-signing-internal'
 import { jwtAuthService } from './auth/jwt-auth-service.js'
-import path from 'path'
+import path, { dirname } from 'path'
+import { fileURLToPath } from 'url'
 
 const dAppPort = Number(process.env.DAPP_API_PORT) || 3008
 const userPort = Number(process.env.USER_API_PORT) || 3001
@@ -65,7 +66,13 @@ export async function initialize(opts: {
 
     const notificationService = new NotificationService(logger)
 
-    const defaultConfig = path.join(__dirname, '..', 'test', 'config.json')
+    const defaultConfig = path.join(
+        dirname(fileURLToPath(import.meta.url)),
+        '..',
+        'test',
+        'config.json'
+    )
+
     const configPath =
         process.env.NETWORK_CONFIG_PATH || opts.config || defaultConfig
 
