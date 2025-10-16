@@ -24,7 +24,7 @@
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
         "jose": "^5.2.4",
-        "pino": "^9.7.0",
+        "pino": "^10.0.0",
         "uuid": "^11.1.0"
     },
     "devDependencies": {
