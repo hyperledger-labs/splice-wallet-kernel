@@ -195,8 +195,6 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     disclosedContracts2
 )
 
-//TODO: add check that a two-step deposit can be executed
-
 logger.info('Creating transfer transaction')
 
 const [transferCommand, disclosedContracts3] =
