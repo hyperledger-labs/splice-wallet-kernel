@@ -11,7 +11,7 @@ import {
     SPLICE_SPEC_PATH,
     SPLICE_VERSION,
     success,
-} from './utils.js'
+} from './lib/utils.js'
 import * as fs from 'fs'
 import generateSchema from 'openapi-typescript'
 import * as path from 'path'

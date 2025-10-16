@@ -3,7 +3,7 @@
 
 import { execFileSync } from 'child_process'
 import path from 'path'
-import { getRepoRoot, SPLICE_VERSION } from './utils.js'
+import { getRepoRoot, SPLICE_VERSION } from './lib/utils.js'
 
 const args = process.argv.slice(2)
 const command = args[0]
