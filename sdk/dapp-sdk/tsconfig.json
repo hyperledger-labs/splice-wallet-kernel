@@ -16,7 +16,7 @@
             ]
         }
     },
-    "include": ["src", "src/connect/gateways.json"],
+    "include": ["src", "src/provider/gateways.json"],
     "references": [
         { "path": "../../core/wallet-dapp-rpc-client" },
         { "path": "../../core/splice-provider" }
