@@ -3,6 +3,113 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+0.12.0
+------
+
+**Released on October 15th, 2025**
+
+* Feature app marker delegation proxy
+
+*The Wallet SDK is heavy focused on external party submission flows, however there are certain administrative tasks
+that requires using the validator operator party (which is internally hosted). This is especially useful for setting up
+delegation proxy contract needed for featured app markers.*
+
+.. code-block:: javascript
+
+    const delegateCommand = await sdk.userLedger?.createDelegateProxyCommand(
+        exchangeParty,
+        treasuryParty
+    )
+
+    const delegationContractResult =  await sdk.userLedger?.submitCommand(delegateCommand)
+
+* Possibility to create commands offline
+
+*certain commands like transfer required to be performed in an online context, this was needed to fetch relevant data
+like transferInstruction choice context. This method (and allocation) have now been extended with optional parameters in
+case that it is preferred to be pre-fetched.*
+
+.. code-block:: javascript
+
+    const choiceContext = await sdk.tokenStandard?.getCreateTransferContext(
+        senderParty,
+        receiverParty,
+        amount,
+        { instrumentId, instrumentAdmin},
+        //normal optional parameters for a transfer here like memo and utxos
+        )
+
+     //OFFLINE
+
+     const transferCommand = await sdk.tokenStandard?.createTransfer(
+        senderParty,
+        receiverParty,
+        amount,
+        { instrumentId, instrumentAdmin},
+        prefetchedRegistryChoiceContext: choiceContext
+     )
+
+
+
+* Fetch contract by id
+
+.. code-block:: javascript
+
+    const holding = await sdk.tokenStandard?.listHoldingsUtxo(contractId)
+
+* TLS enablement for grpc admin (topologyController)
+
+*TLS configuration can now be provided for the topologyController allowing a safe and secure connection.*
+
+.. code-block:: javascript
+
+    const tlsTopologyController = (
+        userId: string,
+        userAdminToken: string
+    ): TopologyController => {
+        return new TopologyController(
+            '127.0.0.1:5012',
+            new URL('http://127.0.0.1:5003'),
+            userId,
+            userAdminToken,
+            'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd',
+            {
+                useTls: true,
+                tls: {
+                    rootCert: path.join(here, PATH_TO_TLS_DIR, 'ca.crt'),
+                    mutual: false,
+                },
+            }
+        )
+    }
+
+* Stress tested party creation
+
+*Party creation is under heavy load on mainnet and would consistently run into: `The server was not able to produce a timely response to your request`.
+Safe guard has been added against this, when the error occurs we continuously look for the party to be available. If a timeout is
+required then it will have to be handled outside of the method. It is worth nothing that the party creation has no timeout on ledger.*
+
+you can disable this by setting `expectHeavyLoad` to false
+
+.. code-block:: javascript
+
+     /** Submits a prepared and signed external party topology to the ledger.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param signedHash The signed combined hash of the prepared transactions.
+     * @param preparedParty The prepared party object from prepareExternalPartyTopology.
+     * @param grantUserRights Defines if the transaction should also grant user right to current user (default is true)
+     * @param expectHeavyLoad If true, the method will handle potential timeouts from the ledger api (default is true).
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
+
+    async allocateExternalParty(
+        signedHash: string,
+        preparedParty: GenerateTransactionResponse,
+        grantUserRights: boolean = true,
+        expectHeavyLoad: boolean = true
+    )
+
+
 0.11.0
 ------
 
