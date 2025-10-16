@@ -258,19 +258,12 @@ const [acceptCommand, disclosedContracts4] =
         featuredAppRights!
     )!
 
-const delegateProxyDisclosedContracts = {
-    templateId: featuredAppRights?.template_id!,
-    contractId: featuredAppRights?.contract_id!,
-    createdEventBlob: featuredAppRights?.created_event_blob!,
-    synchronizerId: synchonizerId,
-}
-
 try {
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         acceptCommand,
         treasuryKeyPair.privateKey,
         v4(),
-        [delegateProxyDisclosedContracts, ...disclosedContracts4]
+        disclosedContracts4
     )
 } catch (error) {
     logger.error({ error }, 'Failed to accept transfer')
