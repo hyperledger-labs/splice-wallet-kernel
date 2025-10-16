@@ -44,6 +44,13 @@ class StateManager {
         set: (chainId: string) => this.setWithStorage('chainId', chainId),
         clear: () => this.clearWithStorage('chainId'),
     }
+
+    expirationDate = {
+        get: () => this.getWithStorage('expirationDate'),
+        set: (expirationDate: string) =>
+            this.setWithStorage('expirationDate', expirationDate),
+        clear: () => this.clearWithStorage('expirationDate'),
+    }
 }
 
 export const stateManager = new StateManager()

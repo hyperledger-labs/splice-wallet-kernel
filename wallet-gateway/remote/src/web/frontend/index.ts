@@ -11,14 +11,31 @@ import { stateManager } from './state-manager'
 
 const DEFAULT_PAGE_REDIRECT = '/wallets'
 const NOT_FOUND_PAGE_REDIRECT = '/404'
-
+const LOGIN_PAGE_REDIRECT = '/login'
 const ALLOWED_ROUTES = ['/wallets', '/networks', 'approve', '/']
 
 @customElement('user-ui')
 export class UserUI extends LitElement {
     connectedCallback(): void {
         super.connectedCallback()
-        if (!ALLOWED_ROUTES.includes(window.location.pathname)) {
+
+        if (stateManager.expirationDate.get()) {
+            setTimeout(
+                () => {
+                    stateManager.accessToken.clear()
+                    window.location = LOGIN_PAGE_REDIRECT
+                },
+                new Date(stateManager.expirationDate.get()) - new Date()
+            )
+        }
+
+        const currentPathname = window.location.pathname
+        if (
+            stateManager.accessToken.get() &&
+            currentPathname === LOGIN_PAGE_REDIRECT
+        ) {
+            window.location.href = LOGIN_PAGE_REDIRECT
+        } else if (!ALLOWED_ROUTES.includes(window.location.pathname)) {
             window.location.href = NOT_FOUND_PAGE_REDIRECT
         } else {
             window.location.href = DEFAULT_PAGE_REDIRECT
