@@ -849,7 +849,7 @@ class TransferService {
         const [acceptTransferInstructionContext, disclosedContracts] =
             await this.createAcceptTransferInstruction(
                 transferInstructionCid,
-                registryUrl
+                registryUrl.href
             )
 
         const choiceArgs = {
@@ -882,7 +882,7 @@ class TransferService {
         const [rejectTransferInstructionContext, disclosedContracts] =
             await this.createRejectTransferInstruction(
                 transferInstructionCid,
-                registryUrl
+                registryUrl.href
             )
 
         const choiceArgs = {
@@ -915,7 +915,7 @@ class TransferService {
         const [withdrawTransferInstructionContext, disclosedContracts] =
             await this.createWithdrawTransferInstruction(
                 transferInstructionCid,
-                registryUrl
+                registryUrl.href
             )
 
         const choiceArgs = {

@@ -722,7 +722,7 @@ export class TokenStandardController {
                         await this.service.transfer.exerciseDelegateProxyTransferInstructionAccept(
                             proxyCid,
                             transferInstructionCid,
-                            this.getTransferFactoryRegistryUrl().href,
+                            this.getTransferFactoryRegistryUrl(),
                             featuredAppRightCid,
                             beneficiaries
                         )
@@ -732,7 +732,7 @@ export class TokenStandardController {
                         await this.service.transfer.exerciseDelegateProxyTransferInstructionReject(
                             proxyCid,
                             transferInstructionCid,
-                            this.getTransferFactoryRegistryUrl().href,
+                            this.getTransferFactoryRegistryUrl(),
                             featuredAppRightCid,
                             beneficiaries
                         )
@@ -742,7 +742,7 @@ export class TokenStandardController {
                         await this.service.transfer.exerciseDelegateProxyTransferInstructioWithdraw(
                             proxyCid,
                             transferInstructionCid,
-                            this.getTransferFactoryRegistryUrl().href,
+                            this.getTransferFactoryRegistryUrl(),
                             featuredAppRightCid,
                             beneficiaries
                         )
