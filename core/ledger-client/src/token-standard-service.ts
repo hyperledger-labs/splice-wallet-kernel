@@ -842,7 +842,7 @@ class TransferService {
     async exerciseDelegateProxyTransferInstructionAccept(
         proxyCid: string,
         transferInstructionCid: string,
-        registryUrl: string,
+        registryUrl: URL,
         featuredAppRightCid: string,
         beneficiaries: Beneficiaries[]
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
@@ -875,7 +875,7 @@ class TransferService {
     async exerciseDelegateProxyTransferInstructionReject(
         proxyCid: string,
         transferInstructionCid: string,
-        registryUrl: string,
+        registryUrl: URL,
         featuredAppRightCid: string,
         beneficiaries: Beneficiaries[]
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
@@ -908,7 +908,7 @@ class TransferService {
     async exerciseDelegateProxyTransferInstructioWithdraw(
         proxyCid: string,
         transferInstructionCid: string,
-        registryUrl: string,
+        registryUrl: URL,
         featuredAppRightCid: string,
         beneficiaries: Beneficiaries[]
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {

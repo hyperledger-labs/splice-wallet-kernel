@@ -15,7 +15,7 @@ import { v4 } from 'uuid'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
 
-const logger = pino({ name: '14-integration-extensions', level: 'info' })
+const logger = pino({ name: '14-rewards-for-deposits', level: 'info' })
 
 // This example script implements https://docs.digitalasset.com/integrate/devnet/exchange-integration/extensions.html#earning-app-rewards-for-deposits
 // It requires the /dars/splice-util-featured-app-proxies-1.1.0.dar which is in files of localnet, but it's not uploaded to participant, so we need to do this in the script
@@ -292,10 +292,10 @@ await new Promise((res) => setTimeout(res, 5000))
 
 {
     await sdk.setPartyId(treasuryParty!.partyId)
-    const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
-    logger.info(aliceHoldings, '[TREASURY PARTY] holding transactions')
+    const tresuryHodlings = await sdk.tokenStandard?.listHoldingTransactions()
+    logger.info(treasuryHoldings, '[TREASURY PARTY] holding transactions')
 
     await sdk.setPartyId(alice!.partyId)
-    const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
-    logger.info(bobHoldings, '[ALICE] holding transactions')
+    const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
+    logger.info(aliceHoldings, '[ALICE] holding transactions')
 }
