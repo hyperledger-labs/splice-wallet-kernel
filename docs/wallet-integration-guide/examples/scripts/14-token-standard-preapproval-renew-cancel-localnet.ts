@@ -127,12 +127,11 @@ if (!preapprovalAfterRenewal) {
 }
 
 logger.info('Cancelling transfer preapproval')
-sdk.setPartyId(receiver!.partyId!)
 const [cancelCmd, disclosedContractsCancel] =
     await sdk.tokenStandard!.createCancelTransferPreapproval(
         preapprovalAfterRenewal.contractId,
         preapprovalAfterRenewal.templateId,
-        receiver!.partyId
+        validatorOperatorParty!
     )
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     [cancelCmd!],
