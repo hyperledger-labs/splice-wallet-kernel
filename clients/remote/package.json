@@ -8,8 +8,7 @@
     "type": "module",
     "scripts": {
         "build": "tsc -b; tsc -b tsconfig.frontend.json && yarn db:migrate:reset && yarn db:bootstrap",
-        "docker:build": "yarn pack -o ./docker/target/package.tgz && cd docker && docker build --progress plain .",
-        "clean": "tsc -b --clean && rm -rf ./dist ./docker/target && rm ./store.sqlite || true",
+        "clean": "tsc -b --clean && rm -rf ./dist && rm ./store.sqlite || true",
         "dev": "tsx watch src --include *.config.ts --include *.json src/index.ts | pino-pretty",
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)",
         "start": "yarn node dist/index.js",
