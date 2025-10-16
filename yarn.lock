@@ -1937,6 +1937,7 @@ __metadata:
   dependencies:
     "@open-rpc/meta-schema": "npm:^1.14.9"
     "@types/node": "npm:^24.0.4"
+    "@types/tar-fs": "npm:^2.0.4"
     axios: "npm:^1.12.0"
     colors: "npm:^1.4.0"
     diff: "npm:^8.0.2"
@@ -6520,6 +6521,25 @@ __metadata:
     "@types/methods": "npm:^1.1.4"
     "@types/superagent": "npm:^8.1.0"
   checksum: 10c0/a2080f870154b09db123864a484fb633bc9e2a0f7294a194388df4c7effe5af9de36d5a5ebf819f72b404fa47b5e813c47d5a3a51354251fd2fa8589bfb64f2c
+  languageName: node
+  linkType: hard
+
+"@types/tar-fs@npm:^2.0.4":
+  version: 2.0.4
+  resolution: "@types/tar-fs@npm:2.0.4"
+  dependencies:
+    "@types/node": "npm:*"
+    "@types/tar-stream": "npm:*"
+  checksum: 10c0/d1dd6944d0905debaabe5787af7f3aeb98f13a928d688d00fb7de0411040f8556c297d388abdd046f6b0646a374b53c198ade0484060b63ef36ad5ac585df138
+  languageName: node
+  linkType: hard
+
+"@types/tar-stream@npm:*":
+  version: 3.1.4
+  resolution: "@types/tar-stream@npm:3.1.4"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/1ee17888b0532f9907788e3e9d60ef25fd5e376c4a09b40aa6ece407fa67ad3d11d25780914ed6360e50451d3039a4e248696c780dcba410779c2d37842afd19
   languageName: node
   linkType: hard
 
