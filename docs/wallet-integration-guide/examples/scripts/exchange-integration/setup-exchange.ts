@@ -72,8 +72,6 @@ export async function setupExchange(options?: {
             }
         )
 
-        await new Promise((res) => setTimeout(res, 5000))
-
         await exchangeSdk.setPartyId(treasuryParty)
 
         // Setup preapproval
