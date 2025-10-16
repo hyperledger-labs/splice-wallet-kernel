@@ -67,6 +67,7 @@ export async function initialize(opts: {
 
     const notificationService = new NotificationService(logger)
 
+    // TODO: make the default config path point to ${PWD}/config.json
     const defaultConfig = path.join(
         dirname(fileURLToPath(import.meta.url)),
         '..',
@@ -74,8 +75,7 @@ export async function initialize(opts: {
         'config.json'
     )
 
-    const configPath =
-        process.env.NETWORK_CONFIG_PATH || opts.config || defaultConfig
+    const configPath = opts.config || defaultConfig
 
     const config = ConfigUtils.loadConfigFile(configPath)
     const store = new StoreSql(connection(config.store), logger)
