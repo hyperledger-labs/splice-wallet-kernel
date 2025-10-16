@@ -116,7 +116,7 @@ if (!isDarUploaded) {
 }
 
 //featured exchange party is just the validator operator party
-await sdk.setPartyId(exchangeParty!)
+await sdk.setPartyId(exchangeParty!, synchonizerId)
 await sdk.tokenStandard?.createAndSubmitTapInternal(
     exchangeParty!,
     '20000000',
@@ -130,7 +130,7 @@ const featuredAppRights = await sdk.tokenStandard!.lookupFeaturedApps()
 logger.info(featuredAppRights, `Featured app rights`)
 
 //set up treasury party for exchange
-const treasuryParty = await sdk.adminLedger?.signAndAllocateExternalParty(
+const treasuryParty = await sdk.userLedger?.signAndAllocateExternalParty(
     treasuryKeyPair.privateKey,
     'TreasuryParty'
 )
