@@ -10,15 +10,12 @@ permissions:
 jobs:
     docker-amd64:
         runs-on: ubuntu-24.04
+        needs: build
         steps:
             - name: Checkout
               uses: actions/checkout@v4
 
             - uses: ./.github/actions/setup_yarn
-
-            - name: Build project
-              shell: bash
-              run: yarn build:all
 
             - name: Build docker image
               shell: bash
@@ -27,15 +24,12 @@ jobs:
 
     docker-arm:
         runs-on: ubuntu-24.04-arm
+        needs: build
         steps:
             - name: Checkout
               uses: actions/checkout@v4
 
             - uses: ./.github/actions/setup_yarn
-
-            - name: Build project
-              shell: bash
-              run: yarn build:all
 
             - name: Build docker image
               shell: bash
