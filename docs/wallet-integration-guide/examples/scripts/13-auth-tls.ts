@@ -54,7 +54,7 @@ logger.info('Connected to ledger')
 await sdk.userLedger
     ?.listWallets()
     .then((wallets) => {
-        logger.info('Wallets:', wallets)
+        logger.info({ wallets: wallets })
     })
     .catch((error) => {
         console.error('Error listing wallets:', error)
@@ -66,7 +66,7 @@ logger.info('Connected to admin ledger')
 await sdk.adminLedger
     ?.listWallets()
     .then((wallets) => {
-        logger.info('Wallets:', wallets)
+        logger.info({ wallets: wallets })
     })
     .catch((error) => {
         console.error('Error listing wallets:', error)

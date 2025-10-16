@@ -75,10 +75,10 @@ const allocatedParty = await sdk.userLedger?.allocateExternalParty(
     generatedParty
 )
 
-logger.info(allocatedParty!.partyId, 'Allocated party')
+logger.info({ partyId: allocatedParty!.partyId }, 'Allocated party')
 await sdk.setPartyId(allocatedParty!.partyId!)
 
-logger.info('Create ping command for party:', partyId)
+logger.info({ partyId: partyId }, 'Create ping command for party')
 
 const createPingCommand = sdk.userLedger?.createPingCommand(partyId)
 
