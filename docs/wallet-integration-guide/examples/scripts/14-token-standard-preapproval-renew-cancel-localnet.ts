@@ -96,7 +96,7 @@ if (!preapproval) {
 
 logger.info('Renewing transfer preapproval (manual)')
 
-sdk.setPartyId(validatorOperatorParty!)
+await sdk.setPartyId(validatorOperatorParty!)
 const [renewCmd, disclosedContractsRenew] =
     await sdk.tokenStandard!.createRenewTransferPreapproval(
         preapproval.contractId,
@@ -126,7 +126,7 @@ if (!preapprovalAfterRenewal) {
 }
 
 logger.info('Cancelling transfer preapproval')
-sdk.setPartyId(receiver!.partyId!)
+await sdk.setPartyId(receiver!.partyId!)
 const [cancelCmd, disclosedContractsCancel] =
     await sdk.tokenStandard!.createCancelTransferPreapproval(
         preapprovalAfterRenewal.contractId,
