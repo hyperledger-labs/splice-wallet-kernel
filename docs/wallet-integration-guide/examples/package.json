@@ -48,7 +48,7 @@
         "@canton-network/core-signing-lib": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@canton-network/wallet-sdk": "workspace:^",
-        "pino": "9.7.0",
+        "pino": "10.0.0",
         "uuid": "^11.1.0"
     },
     "nx": {
