@@ -9,9 +9,7 @@ import * as path from 'path'
 import * as process from 'process'
 import { white, green, italic, red, yellow, bold } from 'yoctocolors'
 import * as jsonc from 'jsonc-parser'
-// @ts-expect-error  @types/tar-fs is not being maintained and is 2 years old with vulnerabilities
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-import tar = require('tar-fs')
+import * as tar from 'tar-fs'
 
 export const info = (message: string): string => italic(white(message))
 export const warn = (message: string): string => bold(yellow(message))
