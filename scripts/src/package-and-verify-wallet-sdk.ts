@@ -48,25 +48,25 @@ async function main() {
 
     // Prepare a yarn-based project in the tmp dir
     try {
-        // write Yarn config for isolated, node_modules-based test project
-        fs.writeFileSync(
-            path.join(tmpDir, '.yarnrc.yml'),
-            ['nodeLinker: node-modules', 'enableGlobalCache: false'].join(
-                '\n'
-            ) + '\n'
-        )
+        flatpacker.postInit(() => {
+            // write Yarn config for isolated, node_modules-based test project
+            fs.writeFileSync(
+                path.join(tmpDir, '.yarnrc.yml'),
+                ['nodeLinker: node-modules', 'enableGlobalCache: false'].join(
+                    '\n'
+                ) + '\n'
+            )
 
-        // Write test import file
-        const testFile = path.join(tmpDir, 'test-import.ts')
-        fs.writeFileSync(
-            testFile,
-            `import { WalletSDKImpl } from '@canton-network/wallet-sdk';\n  console.log('Import successful.' + WalletSDKImpl);`
-        )
+            // Write test import file
+            const testFile = path.join(tmpDir, 'test-import.ts')
+            fs.writeFileSync(
+                testFile,
+                `import { WalletSDKImpl } from '@canton-network/wallet-sdk';\n  console.log('Import successful.' + WalletSDKImpl);`
+            )
 
-        run('yarn add typescript tsx', { cwd: tmpDir })
-
+            run('yarn add typescript tsx', { cwd: tmpDir })
+        })
         flatpacker.pack()
-
         run('yarn install --no-immutable', { cwd: tmpDir })
     } catch (e) {
         fs.rmSync(tmpDir, { recursive: true, force: true })

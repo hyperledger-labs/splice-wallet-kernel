@@ -23,6 +23,7 @@ function run(
 export class FlatPack {
     private outDir: string
     private vendoredDir: string
+    private postInitHook: (() => void) | undefined = undefined
 
     constructor(
         private pkgDir: string,
@@ -31,6 +32,10 @@ export class FlatPack {
     ) {
         this.outDir = outDir ?? path.join(os.tmpdir(), 'flat-pack')
         this.vendoredDir = path.join(this.outDir, '.vendored')
+    }
+
+    public postInit(callback: () => void): void {
+        this.postInitHook = callback
     }
 
     /**
@@ -95,12 +100,19 @@ export class FlatPack {
                     private: true,
                     version: '0.0.0',
                     description: 'Temporary package for flat packing',
+                    ...(this.projectType === 'yarn'
+                        ? { packageManager: 'yarn@4.9.4' }
+                        : {}),
                     dependencies: {},
                 },
                 null,
                 2
             )
         )
+
+        if (this.postInitHook) {
+            this.postInitHook()
+        }
     }
 
     private readPackageJson(parentDir: string): any {
