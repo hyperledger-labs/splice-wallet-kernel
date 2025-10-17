@@ -1,0 +1,33 @@
+{
+    "name": "@canton-network/docker",
+    "private": true,
+    "version": "0.0.1",
+    "nx": {
+        "targets": {
+            "clean": {
+                "command": "rm -rf docker/target"
+            },
+            "flat-pack": {
+                "cache": true,
+                "command": "tsx ./scripts/src/flat-pack.ts clients/remote ${PWD}/docker/target",
+                "outputs": [
+                    "{projectRoot}/target"
+                ]
+            },
+            "build": {
+                "command": "cd {projectRoot} && docker build --progress plain .",
+                "inputs": [
+                    {
+                        "fileset": "{projectRoot}/Dockerfile"
+                    },
+                    {
+                        "fileset": "{projectRoot}/target"
+                    }
+                ],
+                "dependsOn": [
+                    "flat-pack"
+                ]
+            }
+        }
+    }
+}
