@@ -15,7 +15,7 @@ import { v4 } from 'uuid'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
 
-const logger = pino({ name: '14-rewards-for-deposits', level: 'info' })
+const logger = pino({ name: '15-rewards-for-deposits', level: 'info' })
 
 // This example script implements https://docs.digitalasset.com/integrate/devnet/exchange-integration/extensions.html#earning-app-rewards-for-deposits
 // It requires the /dars/splice-util-featured-app-proxies-1.1.0.dar which is in files of localnet, but it's not uploaded to participant, so we need to do this in the script
@@ -115,6 +115,7 @@ if (!isDarUploaded) {
     }
 }
 
+logger.info(synchronizers, `synchronizer id`)
 //featured exchange party is just the validator operator party
 await sdk.setPartyId(exchangeParty!, synchonizerId)
 await sdk.tokenStandard?.createAndSubmitTapInternal(
