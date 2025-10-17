@@ -45,8 +45,9 @@ test('call connect rpc', async () => {
     const json = await response.body.result
 
     expect(response.statusCode).toBe(200)
-    expect(json.networks.length).toBe(3)
+    expect(json.networks.length).toBe(4)
     expect(json.networks[0].name).toBe('Local (password IDP)')
     expect(json.networks[1].name).toBe('Local (OAuth IDP)')
     expect(json.networks[2].name).toBe('Local (OAuth IDP - Client Credentials)')
+    expect(json.networks[3].name).toBe('Devnet (Auth0)')
 })
