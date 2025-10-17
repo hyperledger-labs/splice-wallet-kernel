@@ -9,10 +9,10 @@
     "scripts": {
         "build": "vite build && tsc -b && tsc -b tsconfig.frontend.json && yarn db:migrate:reset && yarn db:bootstrap",
         "clean": "tsc -b --clean && rm -rf ./dist && rm ./store.sqlite || true",
-        "dev": "NODE_ENV=development tsx watch src --include *.config.ts --include *.json src/index.ts | pino-pretty",
+        "dev": "NODE_ENV=development tsx watch src/index.ts -f pretty -c ../test/config.json",
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)",
-        "start": "yarn node dist/index.js",
-        "debug": "yarn node --inspect-brk dist/index.js",
+        "start": "yarn node dist/index.js -c ../test/config.json",
+        "debug": "yarn node --inspect-brk dist/index.js -c ../test/config.json",
         "db:bootstrap": "tsx ./src/index -c ../test/config.json db bootstrap",
         "db:migrate:up": "tsx ./src/index -c ../test/config.json db up",
         "db:migrate:down": "tsx ./src/index -c ../test/config.json db down",
