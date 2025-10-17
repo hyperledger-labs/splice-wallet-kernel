@@ -19,7 +19,7 @@ export const apps = [
     },
     {
         name: 'extension',
-        script: 'yarn workspace @canton-network/clients-extension dev',
+        script: 'yarn workspace @canton-network/wallet-gateway-extension dev',
         env_development: sharedEnvDevelopment,
     },
     {
