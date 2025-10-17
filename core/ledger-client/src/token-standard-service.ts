@@ -1361,6 +1361,7 @@ export class TokenStandardService {
         templateId: string,
         provider: PartyId,
         synchronizerId: PartyId,
+        newExpiresAt?: Date,
         inputUtxos?: string[]
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         const amuletRules = await this.scanProxyClient.getAmuletRules()
@@ -1395,10 +1396,6 @@ export class TokenStandardService {
             inputUtxos
         )
 
-        const newExpiresAt = new Date(
-            Date.now() + 365 * 24 * 3600 * 1000
-        ).toISOString()
-
         const context = {
             context: {
                 openMiningRound: activeRound.contract_id,
@@ -1408,6 +1405,10 @@ export class TokenStandardService {
             },
             amuletRules: amuletRules.contract_id,
         }
+
+        // Defaults to 90 days
+        const effectiveNewExpiresAt: Date =
+            newExpiresAt ?? new Date(Date.now() + 90 * 24 * 3600 * 1000)
 
         const exercise: ExerciseCommand = {
             templateId,
@@ -1419,7 +1420,7 @@ export class TokenStandardService {
                     tag: 'InputAmulet',
                     value: cid,
                 })),
-                newExpiresAt,
+                newExpiresAt: effectiveNewExpiresAt.toISOString(),
             },
         }
 

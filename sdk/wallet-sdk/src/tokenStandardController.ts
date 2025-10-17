@@ -374,6 +374,7 @@ export class TokenStandardController {
      * @param contractId Contract ID of the TransferPreapproval to renew.
      * @param templateId Template ID of the TransferPreapproval (may vary by package version).
      * @param provider Provider party whose inputs will fund the renewal.
+     * @param newExpiresAt Optional Date of expires at after renewal. If omitted, will default to 30 days.
      * @param inputUtxos Optional list of specific holding CIDs to use as inputs.
      * @returns A promise that resolves to the ExerciseCommand which renews TransferPreapproval and any disclosed contracts
      */
@@ -381,6 +382,7 @@ export class TokenStandardController {
         contractId: string,
         templateId: string,
         provider: PartyId,
+        newExpiresAt?: Date,
         inputUtxos?: string[]
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
@@ -391,39 +393,48 @@ export class TokenStandardController {
                 templateId,
                 provider,
                 this.getSynchronizerId(),
+                newExpiresAt,
                 inputUtxos
             )
         return [{ ExerciseCommand: renewCommand }, disclosed]
     }
 
     /**
-     * Waits for Scan Proxy to expose a receiver’s TransferPreapproval (or a new CID after renewal).
+     * Wait for Scan Proxy to show a receiver's TransferPreapproval, or for its CID to change after renewal,
+     * or for it to disappear after cancel.
      *
-     * Why: right after `TransferPreapproval_Renew`, the ledger has the new contract,
-     * but Scan Proxy can lag and still return the old (now archived) CID. Calling
-     * `TransferPreapproval_Cancel` against that stale CID would fail. This helper
-     * polls Scan Proxy until the preapproval becomes visible (fresh create) or its
-     * CID changes (post-renew).
-     * Use it:
-     *  - After creating a preapproval: call without `oldCid` to wait until it appears.
-     *  - After renewing a preapproval: pass `oldCid` to wait until the CID changes.
-     * @param receiverId  Receiver party id.
-     * @param instrumentId  Instrument id (e.g. "Amulet") for which the preapproval is tracked.
-     * @param {Object} [options]        Optional settings.
-     * @param {string} [options.oldCid] Resolve only when CID != oldCid (post-renew).
-     * @param {number} [options.intervalMs=15000] Poll interval in ms.
-     * @param {number} [options.timeoutMs=300000] Max wait time in ms.
-     * @returns Resolves with the preapproval object from `getTransferPreApprovalByParty`.
-     * @throws If the timeout elapses before the preapproval appears / CID changes.
+     * Why: right after renew or cancel, the ledger is up to date, but Scan Proxy can lag. Poll until the
+     * preapproval appears (create), its CID changes (renew), or it disappears (cancel).
+     *
+     * Usage:
+     *  - After create: call without oldCid.
+     *  - After renew: pass oldCid.
+     *  - After cancel: set expectGone = true.
+     *
+     * @param receiverId Receiver party id.
+     * @param instrumentId Instrument id (for example, "Amulet").
+     * @param options Optional settings.
+     * @param options.oldCid Resolve only when CID differs from this value (post-renew).
+     * @param options.expectGone Set true to resolve when no preapproval is returned (post-cancel).
+     * @param options.intervalMs Poll interval in milliseconds. Default is 15000.
+     * @param options.timeoutMs Maximum wait time in milliseconds. Default is 300000.
+     * @returns Resolves with the preapproval (for create/renew) or void (for expectGone).
+     * @throws If the timeout elapses before the condition is met.
      */
     async waitForPreapprovalFromScanProxy(
         receiverId: string,
         instrumentId: string,
         {
             oldCid,
+            expectGone = false,
             intervalMs = 15_000,
             timeoutMs = 5 * 60_000,
-        }: { oldCid?: string; intervalMs?: number; timeoutMs?: number } = {}
+        }: {
+            oldCid?: string
+            expectGone?: boolean
+            intervalMs?: number
+            timeoutMs?: number
+        } = {}
     ) {
         const deadline = Date.now() + timeoutMs
 
@@ -434,43 +445,61 @@ export class TokenStandardController {
                     instrumentId
                 )
 
-                if (preapproval) {
-                    if (!oldCid) return preapproval
+                if (expectGone) {
+                    if (!preapproval) {
+                        this.logger.info(
+                            { attempt },
+                            'Preapproval is no longer visible'
+                        )
+                        return
+                    }
+                    this.logger.info(
+                        { attempt, seenCid: preapproval.contractId },
+                        'Preapproval still visible - polling again'
+                    )
+                } else if (preapproval) {
+                    if (!oldCid) {
+                        this.logger.info(
+                            { attempt, seenCid: preapproval.contractId },
+                            'Preapproval is visible'
+                        )
+                        return preapproval
+                    }
                     if (
                         preapproval.contractId &&
                         preapproval.contractId !== oldCid
-                    )
+                    ) {
+                        this.logger.info(
+                            { attempt, oldCid, newCid: preapproval.contractId },
+                            'Preapproval CID changed'
+                        )
                         return preapproval
-
+                    }
                     this.logger.info(
-                        {
-                            attempt,
-                            seenCid: preapproval.contractId ?? null,
-                            oldCid: oldCid ?? null,
-                        },
-                        'Preapproval visible but CID unchanged — polling again'
+                        { attempt, seenCid: preapproval.contractId, oldCid },
+                        'Preapproval visible but CID unchanged - polling again'
                     )
                 } else {
                     this.logger.info(
                         { attempt },
-                        'Preapproval not yet visible — polling again'
+                        'Preapproval not visible yet - polling again'
                     )
                 }
             } catch (err) {
-                this.logger.warn(
-                    { attempt, err },
-                    'Error fetching preapproval — retrying'
-                )
+                this.logger.debug({ attempt, err }, 'Fetch failed - retrying')
             }
 
             await new Promise((resolve) => setTimeout(resolve, intervalMs))
         }
 
+        const waitingForSubject = expectGone
+            ? 'for preapproval to disappear'
+            : oldCid
+              ? `for preapproval CID to change from ${oldCid}`
+              : 'for preapproval to appear'
+
         throw new Error(
-            `Timed out after ${timeoutMs / 1000}s waiting for TransferPreapproval ` +
-                (oldCid
-                    ? `CID to change from ${oldCid}`
-                    : 'to appear in Scan Proxy')
+            `Timed out after ${Math.floor(timeoutMs / 1000)}s waiting ${waitingForSubject}`
         )
     }
 

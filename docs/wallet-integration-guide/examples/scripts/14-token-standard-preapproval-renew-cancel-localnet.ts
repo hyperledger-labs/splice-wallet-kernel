@@ -123,6 +123,29 @@ if (!preapprovalAfterRenewal) {
     throw new Error('Unexpected lack of transfer preapproval after renewal')
 }
 
+// verify that expiresAt changed after renewal
+{
+    const before = preapproval.expiresAt
+    const after = preapprovalAfterRenewal.expiresAt
+
+    if (!(after.getTime() > before.getTime())) {
+        throw new Error(
+            `Expected expiresAt to increase after renewal. before=${before.toISOString()} after=${after.toISOString()}`
+        )
+    }
+
+    logger.info(
+        {
+            before: before.toISOString(),
+            after: after.toISOString(),
+            extendedSeconds: Math.round(
+                (after.getTime() - before.getTime()) / 1000
+            ),
+        },
+        'TransferPreapproval expiry extended'
+    )
+}
+
 logger.info('Cancelling transfer preapproval')
 await sdk.setPartyId(receiver!.partyId!)
 const [cancelCmd, disclosedContractsCancel] =
@@ -138,3 +161,11 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     disclosedContractsCancel
 )
 logger.info('Transfer preapproval cancelled')
+
+logger.info('Verifying preapproval is gone from Scan Proxy')
+await sdk.tokenStandard!.waitForPreapprovalFromScanProxy(
+    receiver!.partyId,
+    'Amulet',
+    { expectGone: true }
+)
+logger.info('No active TransferPreapproval remains after cancel')
