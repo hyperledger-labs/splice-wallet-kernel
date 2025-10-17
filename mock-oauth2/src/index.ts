@@ -32,9 +32,9 @@ async function main() {
         token.payload.aud = aud
         token.payload.scope = 'daml_ledger_api'
 
-        // Set token expiration to 5 seconds from now
+        // Set token expiration to 1 hour from now
         const now = Math.floor(Date.now() / 1000)
-        token.payload.exp = now + 5 // 5 seconds
+        token.payload.exp = now + 3600 // 1 hour
         token.payload.iat = now // issued at
     })
 }

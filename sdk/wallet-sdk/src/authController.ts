@@ -255,7 +255,7 @@ export class UnsafeAuthController extends BaseAuthController {
             sub,
             aud: this.audience || '',
             iat: now,
-            exp: now + 5, // 30 seconds expiry for testing
+            exp: now + 3600, // 1 hour expiry
             iss: 'unsafe-auth',
         })
             .setProtectedHeader({ alg: 'HS256' })

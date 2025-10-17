@@ -50,10 +50,6 @@ await sdk.adminLedger
 await sdk.connectTopology(fixedLocalNetSynchronizer)
 console.log('Connected to topology')
 
-console.log('10 secs timeout...')
-await new Promise((resolve) => setTimeout(resolve, 10_000))
-console.log('lets start')
-
 const keyPair = createKeyPair()
 
 console.log('generated keypair')
