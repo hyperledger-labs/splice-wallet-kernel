@@ -20,7 +20,7 @@ const authService: AuthService = {
     },
 }
 
-const configPath = process.env.NETWORK_CONFIG_PATH || '../test/config.json'
+const configPath = '../test/config.json'
 const config = ConfigUtils.loadConfigFile(configPath)
 
 const store = new StoreInternal(config.store, pino(sink()))

@@ -121,7 +121,7 @@ export const userController = (
             ).fetchToken({
                 clientId: network.auth.admin.clientId,
                 clientSecret: network.auth.admin.clientSecret,
-                scope: network.auth.admin.scope,
+                scope: network.auth.scope,
                 audience: network.auth.audience,
             })
 
