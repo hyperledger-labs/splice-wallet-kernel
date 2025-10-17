@@ -11,6 +11,7 @@
     "scripts": {
         "build": "tsc -b",
         "dev": "tsc -b --watch",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)",
         "clean": "tsc -b --clean; rm -rf dist"
     },

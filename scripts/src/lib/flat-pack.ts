@@ -11,26 +11,19 @@ import { getRepoRoot } from './utils.js'
 
 const repoRoot = getRepoRoot()
 
-function run(cmd: string, opts: { cwd?: string } = {}) {
+function run(
+    cmd: string,
+    opts: { cwd?: string; env?: Record<string, string> } = {}
+) {
     console.log(`$ ${cmd}`)
     execSync(cmd, { stdio: 'inherit', ...opts })
-}
-
-interface DependencyPackage {
-    name: string
-    dir: string
-}
-
-interface DependencyPackageVendored {
-    name: string
-    dir: string
-    filename: string
 }
 
 /** Given a package directory within this repository: build, pack, and copy it as well as all its dependencies to an output directory */
 export class FlatPack {
     private outDir: string
     private vendoredDir: string
+    private postInitHook: (() => void) | undefined = undefined
 
     constructor(
         private pkgDir: string,
@@ -41,6 +34,10 @@ export class FlatPack {
         this.vendoredDir = path.join(this.outDir, '.vendored')
     }
 
+    public postInit(callback: () => void): void {
+        this.postInitHook = callback
+    }
+
     /**
      * Build, pack, and copy the package and its dependencies to the output directory
      * @returns The path to the output directory
@@ -48,49 +45,49 @@ export class FlatPack {
     public pack(): string {
         const mainPkgDir = this.pkgDir
         const mainPkgName = this.readPackageJson(mainPkgDir).name
+        const mainPkgFileName = `${mainPkgName.replaceAll('/', '-')}.tgz`
 
-        console.log('packing for: ' + mainPkgName)
+        console.log('Packing for: ' + mainPkgName)
+
         this.init()
 
-        const dependencies = this.getRecursiveDependencies()
+        run(`yarn nx --tui=false run ${mainPkgName}:flatpack`, {
+            cwd: repoRoot,
+            env: {
+                ...process.env,
+                FLATPACK_OUTDIR: `${this.vendoredDir}/%s.tgz`,
+            },
+        })
 
-        for (const dep of dependencies) {
-            const vendored = this.buildDependency(dep)
-            this.overridePackageJson(vendored)
+        const overrides =
+            this.projectType === 'npm' ? 'overrides' : 'resolutions'
+
+        const resolvedDependencies = {} as Record<string, string>
+
+        const dependencies = fs
+            .readdirSync(this.vendoredDir)
+            .filter((f) => f.endsWith('.tgz'))
+            .filter((f) => f !== mainPkgFileName)
+
+        for (const file of dependencies) {
+            if (file.endsWith('.tgz')) {
+                const pkgName = file
+                    .split('.tgz')[0]
+                    .replaceAll('@canton-network-', '@canton-network/')
+                resolvedDependencies[pkgName] = `file:./.vendored/${file}`
+            }
         }
 
-        const mainPkg = this.buildDependency({
-            name: this.readPackageJson(this.pkgDir).name,
-            dir: this.pkgDir,
-        })
-        this.overridePackageJson(mainPkg)
         this.writePackageJson((pkgJson) => ({
             ...pkgJson,
             dependencies: {
-                [mainPkgName]: `file:./.vendored/${mainPkg.filename}`,
+                ...pkgJson.dependencies,
+                [mainPkgName]: `file:./.vendored/${mainPkgFileName}`,
             },
+            [overrides]: resolvedDependencies,
         }))
 
         return this.outDir
-    }
-
-    public getRecursiveDependencies(): DependencyPackage[] {
-        const cmd =
-            'yarn workspaces foreach --no-private --topological -R exec \'echo "$npm_package_name $(pwd)"\''
-
-        const workspaces = execSync(cmd, {
-            encoding: 'utf8',
-            cwd: path.join(repoRoot, this.pkgDir),
-        })
-
-        return workspaces
-            .trim()
-            .split('\n')
-            .filter((l) => !l.startsWith('Done'))
-            .map((line) => {
-                const [name, dir] = line.split(' ')
-                return { name, dir }
-            })
     }
 
     private init() {
@@ -103,34 +100,19 @@ export class FlatPack {
                     private: true,
                     version: '0.0.0',
                     description: 'Temporary package for flat packing',
+                    ...(this.projectType === 'yarn'
+                        ? { packageManager: 'yarn@4.9.4' }
+                        : {}),
                     dependencies: {},
                 },
                 null,
                 2
             )
         )
-    }
 
-    private pkgNameToFileName(name: string): string {
-        return (
-            name.replaceAll('/', '_').replaceAll('-', '_').replaceAll('@', '') +
-            '.tgz'
-        )
-    }
-
-    private buildDependency(dep: DependencyPackage): DependencyPackageVendored {
-        console.log('building package in: ' + dep.dir)
-
-        const filename = this.pkgNameToFileName(dep.name)
-        const outpath = path.join(
-            this.vendoredDir,
-            this.pkgNameToFileName(dep.name)
-        )
-
-        run('yarn build', { cwd: dep.dir })
-        run(`yarn pack --filename "${outpath}"`, { cwd: dep.dir })
-
-        return { ...dep, filename }
+        if (this.postInitHook) {
+            this.postInitHook()
+        }
     }
 
     private readPackageJson(parentDir: string): any {
@@ -150,18 +132,5 @@ export class FlatPack {
             outPkgJsonPath,
             JSON.stringify(callback(pkgJson), null, 2)
         )
-    }
-
-    private overridePackageJson(dep: DependencyPackageVendored) {
-        const overrides =
-            this.projectType === 'npm' ? 'overrides' : 'resolutions'
-
-        this.writePackageJson((pkgJson) => ({
-            ...pkgJson,
-            [overrides]: {
-                ...pkgJson[overrides],
-                [dep.name]: `file:./.vendored/${dep.filename}`,
-            },
-        }))
     }
 }
