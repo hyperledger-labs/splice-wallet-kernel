@@ -918,6 +918,15 @@ class TransferService {
                 registryUrl.href
             )
 
+        const sumOfWeights: number = beneficiaries.reduce(
+            (totalWeight, beneficiary) => totalWeight + beneficiary.weight,
+            0
+        )
+
+        if (sumOfWeights > 1.0) {
+            throw new Error('Sum of beneficiary weights is larger than 1.')
+        }
+
         const choiceArgs = {
             cid: withdrawTransferInstructionContext.contractId,
             proxyArg: {
@@ -1324,6 +1333,15 @@ export class TokenStandardService {
                 expiryDate,
                 meta
             )
+
+        const sumOfWeights: number = beneficiaries.reduce(
+            (totalWeight, beneficiary) => totalWeight + beneficiary.weight,
+            0
+        )
+
+        if (sumOfWeights > 1.0) {
+            throw new Error('Sum of beneficiary weights is larger than 1.')
+        }
 
         const choiceArgs = {
             cid: transferCommand.contractId,
