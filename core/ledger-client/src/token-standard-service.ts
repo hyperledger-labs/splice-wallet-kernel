@@ -18,6 +18,8 @@ import {
     allocationInstructionRegistryTypes,
     ExtraArgs,
     Metadata,
+    FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
+    Beneficiaries,
 } from '@canton-network/core-token-standard'
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
@@ -837,6 +839,114 @@ class TransferService {
         }
     }
 
+    async exerciseDelegateProxyTransferInstructionAccept(
+        proxyCid: string,
+        transferInstructionCid: string,
+        registryUrl: URL,
+        featuredAppRightCid: string,
+        beneficiaries: Beneficiaries[]
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const [acceptTransferInstructionContext, disclosedContracts] =
+            await this.createAcceptTransferInstruction(
+                transferInstructionCid,
+                registryUrl.href
+            )
+
+        const choiceArgs = {
+            cid: acceptTransferInstructionContext.contractId,
+            proxyArg: {
+                featuredAppRightCid: featuredAppRightCid,
+                beneficiaries: beneficiaries,
+                choiceArg: acceptTransferInstructionContext.choiceArgument,
+            },
+        }
+
+        return [
+            {
+                templateId: FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
+                contractId: proxyCid,
+                choice: 'DelegateProxy_TransferInstruction_Accept',
+                choiceArgument: choiceArgs,
+            },
+            disclosedContracts,
+        ]
+    }
+
+    async exerciseDelegateProxyTransferInstructionReject(
+        proxyCid: string,
+        transferInstructionCid: string,
+        registryUrl: URL,
+        featuredAppRightCid: string,
+        beneficiaries: Beneficiaries[]
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const [rejectTransferInstructionContext, disclosedContracts] =
+            await this.createRejectTransferInstruction(
+                transferInstructionCid,
+                registryUrl.href
+            )
+
+        const choiceArgs = {
+            cid: rejectTransferInstructionContext.contractId,
+            proxyArg: {
+                featuredAppRightCid: featuredAppRightCid,
+                beneficiaries,
+                choiceArg: rejectTransferInstructionContext.choiceArgument,
+            },
+        }
+
+        return [
+            {
+                templateId: FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
+                contractId: proxyCid,
+                choice: 'DelegateProxy_TransferInstruction_Reject',
+                choiceArgument: choiceArgs,
+            },
+            disclosedContracts,
+        ]
+    }
+
+    async exerciseDelegateProxyTransferInstructioWithdraw(
+        proxyCid: string,
+        transferInstructionCid: string,
+        registryUrl: URL,
+        featuredAppRightCid: string,
+        beneficiaries: Beneficiaries[]
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const [withdrawTransferInstructionContext, disclosedContracts] =
+            await this.createWithdrawTransferInstruction(
+                transferInstructionCid,
+                registryUrl.href
+            )
+
+        const sumOfWeights: number = beneficiaries.reduce(
+            (totalWeight, beneficiary) => totalWeight + beneficiary.weight,
+            0
+        )
+
+        if (sumOfWeights > 1.0) {
+            throw new Error('Sum of beneficiary weights is larger than 1.')
+        }
+
+        const choiceArgs = {
+            cid: withdrawTransferInstructionContext.contractId,
+            proxyArg: {
+                featuredAppRightCid: featuredAppRightCid,
+                beneficiaries,
+                choiceArg: withdrawTransferInstructionContext.choiceArgument,
+            },
+        }
+
+        return [
+            {
+                templateId: FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
+                contractId: proxyCid,
+                choice: 'DelegateProxy_TransferInstruction_Withdraw',
+                choiceArgument: choiceArgs,
+            },
+            disclosedContracts,
+        ]
+    }
+
     async createAcceptTransferInstruction(
         transferInstructionCid: string,
         registryUrl: string,
@@ -1198,13 +1308,13 @@ export class TokenStandardService {
     async createDelegateProxyTranfser(
         sender: PartyId,
         receiver: PartyId,
-        exchangeParty: PartyId,
         amount: string,
         instrumentAdmin: PartyId, // TODO (#907): replace with registry call
         instrumentId: string,
         registryUrl: string,
         featuredAppRightCid: string,
         proxyCid: string,
+        beneficiaries: Beneficiaries[],
         inputUtxos?: string[],
         memo?: string,
         expiryDate?: Date,
@@ -1224,23 +1334,26 @@ export class TokenStandardService {
                 meta
             )
 
+        const sumOfWeights: number = beneficiaries.reduce(
+            (totalWeight, beneficiary) => totalWeight + beneficiary.weight,
+            0
+        )
+
+        if (sumOfWeights > 1.0) {
+            throw new Error('Sum of beneficiary weights is larger than 1.')
+        }
+
         const choiceArgs = {
             cid: transferCommand.contractId,
             proxyArg: {
                 featuredAppRightCid: featuredAppRightCid,
-                beneficiaries: [
-                    {
-                        beneficiary: exchangeParty,
-                        weight: 1.0,
-                    },
-                ],
+                beneficiaries,
                 choiceArg: transferCommand.choiceArgument,
             },
         }
 
         const exercise: ExerciseCommand = {
-            templateId:
-                '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+            templateId: FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
             contractId: proxyCid,
             choice: 'DelegateProxy_TransferFactory_Transfer',
             choiceArgument: choiceArgs,
@@ -1425,5 +1538,44 @@ export class TokenStandardService {
         }
 
         return [exercise, disclosed]
+    }
+
+    async exerciseDelegateProxyTransferInstructionAccept(
+        exchangeParty: PartyId,
+        proxyCid: string,
+        transferInstructionCid: string,
+        registryUrl: string,
+        featuredAppRightCid: string
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const [acceptTransferInstructionContext, disclosedContracts] =
+            await this.transfer.createAcceptTransferInstruction(
+                transferInstructionCid,
+                registryUrl
+            )
+
+        const choiceArgs = {
+            cid: acceptTransferInstructionContext.contractId,
+            proxyArg: {
+                featuredAppRightCid: featuredAppRightCid,
+                beneficiaries: [
+                    {
+                        beneficiary: exchangeParty,
+                        weight: 1.0,
+                    },
+                ],
+                choiceArg: acceptTransferInstructionContext.choiceArgument,
+            },
+        }
+
+        return [
+            {
+                templateId:
+                    '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+                contractId: proxyCid,
+                choice: 'DelegateProxy_TransferInstruction_Accept',
+                choiceArgument: choiceArgs,
+            },
+            disclosedContracts,
+        ]
     }
 }

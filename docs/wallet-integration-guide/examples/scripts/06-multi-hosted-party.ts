@@ -10,6 +10,7 @@ import {
     localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
+import { v4 } from 'uuid'
 
 const logger = pino({ name: '06-external-party-setup', level: 'info' })
 
@@ -28,7 +29,7 @@ logger.info('SDK initialized')
 await sdk.connect()
 logger.info('Connected to ledger')
 
-const multiHostedParty = createKeyPair()
+const multiHostedPartyKeyPair = createKeyPair()
 const singleHostedPartyKeyPair = createKeyPair()
 
 await sdk.connectAdmin()
@@ -55,11 +56,27 @@ const multiHostedParticipantEndpointConfig = [
 
 logger.info('multi host party starting...')
 
-await sdk.userLedger?.signAndAllocateExternalParty(
-    multiHostedParty.privateKey,
+const multiHostedParty = await sdk.userLedger?.signAndAllocateExternalParty(
+    multiHostedPartyKeyPair.privateKey,
     'bob',
     1,
     multiHostedParticipantEndpointConfig
 )
 
-logger.info('multi hosted party succeeded!')
+logger.info(multiHostedParty, 'multi hosted party succeeded!')
+
+await sdk.setPartyId(multiHostedParty?.partyId!)
+
+logger.info('Create ping command')
+const createPingCommand = sdk.userLedger?.createPingCommand(
+    multiHostedParty!.partyId!
+)
+
+logger.info('Prepare command submission for ping create command')
+
+const pingCommandResponse = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    createPingCommand,
+    multiHostedPartyKeyPair.privateKey,
+    v4()
+)
+logger.info(pingCommandResponse, 'ping command response')
