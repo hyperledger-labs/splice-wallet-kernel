@@ -304,6 +304,7 @@ export function removeParsedMetaKeys(meta: Meta): Meta {
     }
 }
 
+//TODO: Investigate, this method is not used anywhere ?
 export async function submitExerciseCommand(
     ledgerClient: LedgerClient,
     exerciseCommand: ExerciseCommand,
@@ -323,9 +324,8 @@ export async function submitExerciseCommand(
     const synchronizerId =
         getSynchronizerIdFromDisclosedContracts(disclosedContracts)
 
-    const prepared = await ledgerClient.post(
-        '/v2/interactive-submission/prepare',
-        {
+    const prepared = await retryable(() =>
+        ledgerClient.post('/v2/interactive-submission/prepare', {
             actAs: [partyId],
             readAs: [partyId],
             userId: userId,
@@ -335,7 +335,7 @@ export async function submitExerciseCommand(
             disclosedContracts,
             verboseHashing: true,
             packageIdSelectionPreference: [],
-        }
+        })
     )
 
     const signed = signTransaction(
@@ -365,14 +365,16 @@ export async function submitExerciseCommand(
 
     const ledgerEnd = await ledgerClient.get('/v2/state/ledger-end')
 
-    await ledgerClient.post('/v2/interactive-submission/execute', {
-        userId,
-        submissionId,
-        preparedTransaction: prepared.preparedTransaction!,
-        hashingSchemeVersion: prepared.hashingSchemeVersion,
-        partySignatures,
-        deduplicationPeriod,
-    })
+    await retryable(() =>
+        ledgerClient.post('/v2/interactive-submission/execute', {
+            userId,
+            submissionId,
+            preparedTransaction: prepared.preparedTransaction!,
+            hashingSchemeVersion: prepared.hashingSchemeVersion,
+            partySignatures,
+            deduplicationPeriod,
+        })
+    )
 
     const completionPromise = awaitCompletion(
         ledgerClient,
@@ -483,19 +485,21 @@ export async function awaitCompletion(
         throw new Error('Either commandId or submissionId must be provided')
     }
 
-    const responses = await ledgerClient.post(
-        '/v2/commands/completions',
-        {
-            userId,
-            parties: [partyId],
-            beginExclusive: ledgerEnd,
-        },
-        {
-            query: {
-                limit: COMPLETIONS_LIMIT,
-                stream_idle_timeout_ms: COMPLETIONS_STREAM_IDLE_TIMEOUT_MS,
+    const responses = await retryable(() =>
+        ledgerClient.post(
+            '/v2/commands/completions',
+            {
+                userId,
+                parties: [partyId],
+                beginExclusive: ledgerEnd,
             },
-        }
+            {
+                query: {
+                    limit: COMPLETIONS_LIMIT,
+                    stream_idle_timeout_ms: COMPLETIONS_STREAM_IDLE_TIMEOUT_MS,
+                },
+            }
+        )
     )
 
     const completions = responses.filter(
@@ -552,6 +556,37 @@ export async function promiseWithTimeout<T>(
     } finally {
         if (timeoutPid) {
             clearTimeout(timeoutPid)
+        }
+    }
+}
+
+export async function retryable<T>(
+    fn: () => Promise<T>,
+    retries: number = 5,
+    delayMs: number = 1000,
+    cantonErrorKeys: string[] = [
+        'SEQUENCER_REQUEST_FAILED',
+        'SEQUENCER_BACKPRESSURE',
+    ]
+): Promise<T> {
+    let attempts = 0
+    while (true) {
+        try {
+            return await fn()
+        } catch (err: unknown) {
+            const message: string =
+                typeof err?.message === 'string' ? err.message : ''
+            const shouldRetry =
+                cantonErrorKeys.length === 0 ||
+                cantonErrorKeys.some((key) => message.includes(key))
+            if (++attempts < retries && shouldRetry) {
+                await new Promise((res) => setTimeout(res, delayMs))
+
+                continue
+            }
+            throw new Error(
+                `Operation failed after ${attempts} attempts: ${JSON.stringify(err)}`
+            )
         }
     }
 }

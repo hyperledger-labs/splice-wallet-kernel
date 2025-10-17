@@ -128,7 +128,6 @@ async function tapAndTransfer(fromParty: partyDefiniton, count: number) {
             )
         }
     }
-    logger.info(`[${fromParty.partyId}] completed ${count} transfers`)
 }
 
 logger.info('starting stress run')
@@ -145,15 +144,24 @@ await sdk.tokenStandard?.createAndSubmitTapInternal(
     }
 )
 
+//light config: 1, 5000, 5
+// approximate TPS = (1 parties * 5 transfers) / 5 seconds = 1 TPS
+//medium config: 3, 5000, 5
+// approximate TPS = (3 parties * 5 transfers) / 5 seconds = 3 TPS
+//heavy config: 5, 5000, 8
+// approximate TPS = (5 parties * 8 transfers) / 5 seconds = 8 TPS
+//extreme config: 4, 2000, 10
+// approximate TPS = (4 parties * 10 transfers) / 2 seconds = 20 TPS
+
 const partiesPerInterval = process.env.PARTIES_PER_INTERVAL
     ? parseInt(process.env.PARTIES_PER_INTERVAL, 0)
-    : 5
+    : 1
 const intervalLengthMs = process.env.INTERVAL_LENGTH_MS
     ? parseInt(process.env.INTERVAL_LENGTH_MS, 0)
-    : 20000
+    : 5000
 const transfersPerParty = process.env.TRANSFERS_PER_PARTY
     ? parseInt(process.env.TRANSFERS_PER_PARTY, 0)
-    : 10
+    : 5
 
 let currentInterval = 0
 
@@ -166,7 +174,16 @@ setInterval(async () => {
         for (let i = 1; i <= partiesPerInterval; i++) {
             allocateParty()
                 .then(async (party) => {
-                    await tapAndTransfer(party, transfersPerParty)
+                    // Start a new interval for this party, limited to transfersPerParty times
+                    let runCount = 0
+                    const partyInterval = setInterval(async () => {
+                        if (runCount >= transfersPerParty) {
+                            clearInterval(partyInterval)
+                            return
+                        }
+                        runCount++
+                        await tapAndTransfer(party, 1)
+                    }, intervalLengthMs)
                 })
                 .catch((error) => {
                     logger.error(`Error allocating party: ${error}`)

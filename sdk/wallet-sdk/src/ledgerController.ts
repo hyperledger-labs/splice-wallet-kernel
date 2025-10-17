@@ -26,6 +26,7 @@ import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-proto'
 import { TopologyController } from './topologyController.js'
 import { PartyId } from '@canton-network/core-types'
+import { retryable } from '@canton-network/core-ledger-client/dist/ledger-api-utils.js'
 
 export type RawCommandMap = {
     ExerciseCommand: Types['ExerciseCommand']
@@ -448,9 +449,11 @@ export class LedgerController {
             packageIdSelectionPreference: [],
         }
 
-        return await this.client.post(
-            '/v2/interactive-submission/prepare',
-            prepareParams
+        return await retryable(() =>
+            this.client.post(
+                '/v2/interactive-submission/prepare',
+                prepareParams
+            )
         )
     }
 
@@ -531,7 +534,9 @@ export class LedgerController {
             },
         }
 
-        await this.client.post('/v2/interactive-submission/execute', request)
+        await retryable(() =>
+            this.client.post('/v2/interactive-submission/execute', request)
+        )
         return submissionId
     }
 
@@ -713,9 +718,11 @@ export class LedgerController {
             },
         }
 
-        const spliceWalletPackageVersionResponse = await this.client.get(
-            '/v2/interactive-submission/preferred-package-version',
-            params
+        const spliceWalletPackageVersionResponse = await retryable(() =>
+            this.client.get(
+                '/v2/interactive-submission/preferred-package-version',
+                params
+            )
         )
 
         const version =
