@@ -14,10 +14,14 @@ import {
     AddSessionResult,
     ListSessionsResult,
     SetPrimaryWalletParams,
-    ListWalletsResult,
     SyncWalletsResult,
 } from './rpc-gen/typings.js'
-import { Store, Auth, Transaction } from '@canton-network/core-wallet-store'
+import {
+    Store,
+    Auth,
+    Transaction,
+    Network,
+} from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'
 import { NotificationService } from '../notification/NotificationService.js'
 import {
@@ -51,9 +55,11 @@ export const userController = (
     const logger = _logger.child({ component: 'user-controller' })
 
     return buildController({
-        addNetwork: async (network: AddNetworkParams) => {
+        addNetwork: async (params: AddNetworkParams) => {
+            const { network } = params
+
             const ledgerApi = {
-                baseUrl: network.ledgerApiUrl ?? '',
+                baseUrl: network.ledgerApi ?? '',
             }
 
             let auth: Auth
@@ -81,16 +87,25 @@ export const userController = (
                 }
             }
 
-            const newNetwork = {
-                name: network.network.name,
-                chainId: network.network.chainId,
-                description: network.network.description,
-                synchronizerId: network.network.synchronizerId,
+            const newNetwork: Network = {
+                name: network.name,
+                chainId: network.chainId,
+                description: network.description,
+                synchronizerId: network.synchronizerId,
                 auth,
                 ledgerApi,
             }
 
-            await store.addNetwork(newNetwork)
+            // TODO: Add an explicit updateNetwork method to the User API spec and controller
+            const existingNetworks = await store.listNetworks()
+            if (
+                existingNetworks.find((n) => n.chainId === newNetwork.chainId)
+            ) {
+                await store.updateNetwork(newNetwork)
+            } else {
+                await store.addNetwork(newNetwork)
+            }
+
             return null
         },
         removeNetwork: async (params: RemoveNetworkParams) => {
