@@ -297,7 +297,7 @@ export class LedgerController {
      * This will also authorize the new party to the participant and grant the user rights to the party.
      * @param signedHash The signed combined hash of the prepared transactions.
      * @param preparedParty The prepared party object from prepareExternalPartyTopology.
-     * @param grantUserRights Defines if the transaction should also grant user right to current user (default is true)
+     * @param hostingParticipantEndpoints List of endpoints to the respective hosting participant ledger API (default is empty array).
      * @param expectHeavyLoad If true, the method will handle potential timeouts from the ledger api (default is true).
      * @returns An AllocatedParty object containing the partyId of the new party.
      */
