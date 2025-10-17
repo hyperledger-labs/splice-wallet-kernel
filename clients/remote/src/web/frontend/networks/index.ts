@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import '@canton-network/core-wallet-ui-components'
-import { Auth } from '@canton-network/core-wallet-store'
 import { LitElement, html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import {
@@ -15,6 +14,10 @@ import '/index.css'
 import { stateManager } from '../state-manager'
 import { createUserClient } from '../rpc-client'
 import { handleErrorToast } from '../handle-errors'
+import {
+    NetworkCardDeleteEvent,
+    NetworkEditSaveEvent,
+} from '@canton-network/core-wallet-ui-components'
 
 @customElement('user-ui-networks')
 export class UserUiNetworks extends LitElement {
@@ -86,6 +89,8 @@ export class UserUiNetworks extends LitElement {
             border-radius: 8px;
             min-width: 300px;
             max-width: 95vw;
+            max-height: 75vh;
+            overflow-y: scroll;
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
         }
         @media (max-width: 600px) {
@@ -195,11 +200,17 @@ export class UserUiNetworks extends LitElement {
         this.listNetworks()
     }
 
-    private async handleDelete(net: Network) {
-        if (!confirm(`Delete network "${net.name}"?`)) return
+    private async handleDelete(e: NetworkCardDeleteEvent) {
+        const network: Network = {
+            ...e.network,
+            ledgerApi: e.network.ledgerApi.baseUrl,
+        }
+
+        if (!confirm(`Delete network "${network.name}"?`)) return
 
         try {
-            const params: RemoveNetworkParams = { networkName: net.name }
+            // TODO: rename parameter to chainId in User API
+            const params: RemoveNetworkParams = { networkName: network.chainId }
             const userClient = createUserClient(stateManager.accessToken.get())
             await userClient.request('removeNetwork', params)
             await this.listNetworks()
@@ -208,52 +219,17 @@ export class UserUiNetworks extends LitElement {
         }
     }
 
-    handleSubmit = async (e: CustomEvent<FormData>) => {
+    private handleSubmit = async (e: NetworkEditSaveEvent) => {
         e.preventDefault()
-        const formData = e.detail
-        const authType = formData.get('authType') as string
+
+        const network: Network = {
+            ...e.network,
+            ledgerApi: e.network.ledgerApi.baseUrl,
+        }
 
         try {
-            let auth: Auth
-            if (authType === 'implicit') {
-                auth = {
-                    type: 'implicit',
-                    identityProviderId: formData.get(
-                        'identityProviderId'
-                    ) as string,
-                    issuer: formData.get('issuer') as string,
-                    configUrl: formData.get('configUrl') as string,
-                    audience: formData.get('audience') as string,
-                    scope: formData.get('scope') as string,
-                    clientId: formData.get('clientId') as string,
-                }
-            } else {
-                auth = {
-                    type: 'password',
-                    identityProviderId: formData.get(
-                        'identityProviderId'
-                    ) as string,
-                    issuer: formData.get('issuer') as string,
-                    configUrl: formData.get('configUrl') as string,
-                    tokenUrl: formData.get('tokenUrl') as string,
-                    grantType: formData.get('grantType') as string,
-                    scope: formData.get('scope') as string,
-                    clientId: formData.get('clientId') as string,
-                    audience: formData.get('audience') as string,
-                }
-            }
-
-            const networkParam: Network = {
-                chainId: formData.get('chainId') as string,
-                synchronizerId: formData.get('synchronizerId') as string,
-                name: formData.get('name') as string,
-                description: formData.get('description') as string,
-                auth: auth,
-                ledgerApi: formData.get('ledgerApi.baseurl') as string,
-            }
-
             const userClient = createUserClient(stateManager.accessToken.get())
-            await userClient.request('addNetwork', { network: networkParam })
+            await userClient.request('addNetwork', { network })
             await this.listNetworks()
         } catch (e) {
             handleErrorToast(e)
@@ -341,7 +317,8 @@ export class UserUiNetworks extends LitElement {
 
             <network-table
                 .networks=${this.networks}
-                @delete=${(e: CustomEvent) => this.handleDelete(e.detail)}
+                @network-edit-save=${this.handleSubmit}
+                @delete=${this.handleDelete}
             ></network-table>
 
             ${this.isModalOpen
@@ -359,8 +336,8 @@ export class UserUiNetworks extends LitElement {
                               <network-form
                                   .editingNetwork=${this.editingNetwork}
                                   .authType=${this.authType}
-                                  @form-submit=${this.handleSubmit}
-                                  @cancel=${this.closeModal}
+                                  @network-edit-save=${this.handleSubmit}
+                                  @network-edit-cancel=${this.closeModal}
                               ></network-form>
                           </div>
                       </div>

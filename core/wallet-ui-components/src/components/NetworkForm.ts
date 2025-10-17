@@ -290,7 +290,7 @@ export class NetworkForm extends BaseElement {
                 ></network-form-input>
 
                 <div class="row mb-3">
-                    <div class="col-md-2">
+                    <div>
                         <label for="authType">Auth Type</label>
                         <select
                             class="form-select mb-3"
