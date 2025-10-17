@@ -500,10 +500,10 @@ export async function awaitCompletion(
         const completion = response.completionResponse.Completion
         if (!completion) return false
         if (completion.value.userId !== userId) return false
-        if (completion.value.commandId !== commandIdOrSubmissionId) return false
-        if (completion.value.submissionId !== commandIdOrSubmissionId)
-            return false
-        return true
+        if (completion.value.commandId === commandIdOrSubmissionId) return true
+        if (completion.value.submissionId === commandIdOrSubmissionId)
+            return true
+        return false
     })
 
     if (wantedCompletion) {
