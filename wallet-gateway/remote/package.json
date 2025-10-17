@@ -22,6 +22,12 @@
     "keywords": [],
     "author": "",
     "license": "ISC",
+    "files": [
+        "dist/**"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
         "@canton-network/core-rpc-errors": "workspace:^",
