@@ -34,7 +34,7 @@ export class UserUIAuthRedirect extends LitElement {
 
         const isLoginPage =
             window.location.pathname.startsWith(LOGIN_PAGE_REDIRECT)
-        const expirationDate = new Date(stateManager.expirationDate.get())
+        const expirationDate = new Date(stateManager.expirationDate.get() || '')
         const now = new Date()
 
         if (expirationDate > now) {
