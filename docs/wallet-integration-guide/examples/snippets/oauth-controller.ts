@@ -1,11 +1,11 @@
 import {
     WalletSDKImpl,
-    localNetAuthDefault,
     localNetLedgerDefault,
     localNetTokenStandardDefault,
     AuthController,
     ClientCredentialOAuthController,
 } from '@canton-network/wallet-sdk'
+import { Logger } from 'pino'
 
 export default async function () {
     const participantId = 'my-participant-id'
