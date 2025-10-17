@@ -12,7 +12,7 @@ import {
     SPLICE_PATH,
     SPLICE_ARCHIVE_HASH,
     downloadAndUnpackTarball,
-} from './utils.js'
+} from './lib/utils.js'
 import path from 'path'
 
 async function main() {

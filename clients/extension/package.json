@@ -20,7 +20,7 @@
         "esbuild": "^0.25.5",
         "tsx": "^4.20.3",
         "typescript": "^5.8.3",
-        "web-ext": "^8.8.0"
+        "web-ext": "^9.0.0"
     },
     "dependencies": {
         "@canton-network/core-rpc-errors": "workspace:^",

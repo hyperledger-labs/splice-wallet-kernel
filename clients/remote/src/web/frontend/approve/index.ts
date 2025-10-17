@@ -11,6 +11,7 @@ import {
 } from '@canton-network/core-wallet-user-rpc-client'
 import { decodePreparedTransaction } from '@canton-network/core-tx-visualizer'
 import { stateManager } from '../state-manager'
+import { handleErrorToast } from '../handle-errors'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends LitElement {
@@ -207,8 +208,9 @@ export class ApproveUi extends LitElement {
             }
         } catch (err) {
             console.error(err)
-            this.message = 'Error executing transaction ❌'
-            this.messageType = 'error'
+            this.message = null
+            this.messageType = null
+            handleErrorToast(err, { message: 'Error executing transaction' })
         } finally {
             this.loading = false
         }

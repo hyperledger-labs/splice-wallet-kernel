@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import zlib from 'zlib'
-import tar from 'tar-fs'
 import { pipeline } from 'stream/promises'
 import crypto from 'crypto'
 import * as fs from 'fs'
@@ -10,6 +9,7 @@ import * as path from 'path'
 import * as process from 'process'
 import { white, green, italic, red, yellow, bold } from 'yoctocolors'
 import * as jsonc from 'jsonc-parser'
+import * as tar from 'tar-fs'
 
 export const info = (message: string): string => italic(white(message))
 export const warn = (message: string): string => bold(yellow(message))

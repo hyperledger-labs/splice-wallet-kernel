@@ -4,7 +4,7 @@
 import { exec as ex } from 'child_process'
 import { promisify } from 'util'
 import readline from 'readline'
-import { elideMiddle, mapObject, success } from './utils.js'
+import { elideMiddle, mapObject, success } from './lib/utils.js'
 import { bold, cyan } from 'yoctocolors'
 
 const exec = promisify(ex)

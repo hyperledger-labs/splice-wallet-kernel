@@ -9,7 +9,7 @@ import {
     getRepoRoot,
     traverseDirectory,
     getAllFilesWithExtension,
-} from './utils.js'
+} from './lib/utils.js'
 
 const repoRoot = getRepoRoot()
 

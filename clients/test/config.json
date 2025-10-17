@@ -96,7 +96,7 @@
                     "configUrl": "https://canton-registry-app-dev-1.eu.auth0.com/.well-known/openid-configuration",
                     "tokenUrl": "https://canton-registry-app-dev-1.eu.auth0.com/oauth/token",
                     "audience": "https://canton.network.global",
-                    "scope": "openid daml_ledger_api offline_access",
+                    "scope": "daml_ledger_api",
                     "clientId": "EQrKrlT5Z2B3F6TXDepQMGC4YdfnlLLR",
                     "admin": {
                         "clientId": "uHh5IA2hQWc78HHEPDJTmZm6GYhJbfev",

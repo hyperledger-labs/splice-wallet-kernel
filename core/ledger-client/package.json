@@ -37,7 +37,7 @@
         "bignumber.js": "^9.2.1",
         "dayjs": "^1.11.13",
         "openapi-fetch": "^0.14.0",
-        "pino": "^9.7.0"
+        "pino": "^10.0.0"
     },
     "files": [
         "dist/**"

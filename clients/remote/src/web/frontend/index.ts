@@ -10,13 +10,19 @@ import '/index.css'
 import { stateManager } from './state-manager'
 
 const DEFAULT_PAGE_REDIRECT = '/wallets'
+const NOT_FOUND_PAGE_REDIRECT = '/404'
+
+const ALLOWED_ROUTES = ['/wallets', '/networks', 'approve', '/']
 
 @customElement('user-ui')
 export class UserUI extends LitElement {
     connectedCallback(): void {
         super.connectedCallback()
-
-        window.location.href = DEFAULT_PAGE_REDIRECT
+        if (!ALLOWED_ROUTES.includes(window.location.pathname)) {
+            window.location.href = NOT_FOUND_PAGE_REDIRECT
+        } else {
+            window.location.href = DEFAULT_PAGE_REDIRECT
+        }
     }
 }
 
