@@ -16,6 +16,7 @@ import { InternalSigningDriver } from '@canton-network/core-signing-internal'
 import { jwtAuthService } from './auth/jwt-auth-service.js'
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
+import express from 'express'
 
 const dAppPort = Number(process.env.DAPP_API_PORT) || 3008
 const userPort = Number(process.env.USER_API_PORT) || 3001
@@ -66,6 +67,7 @@ export async function initialize(opts: {
 
     const notificationService = new NotificationService(logger)
 
+    // TODO: make the default config path point to ${PWD}/config.json
     const defaultConfig = path.join(
         dirname(fileURLToPath(import.meta.url)),
         '..',
@@ -73,8 +75,7 @@ export async function initialize(opts: {
         'config.json'
     )
 
-    const configPath =
-        process.env.NETWORK_CONFIG_PATH || opts.config || defaultConfig
+    const configPath = opts.config || defaultConfig
 
     const config = ConfigUtils.loadConfigFile(configPath)
     const store = new StoreSql(connection(config.store), logger)
@@ -104,9 +105,27 @@ export async function initialize(opts: {
         logger.info(`User Server running at http://localhost:${userPort}`)
     })
 
-    const webServer = ViteExpress.listen(web, webPort, () =>
-        logger.info(`Web server running at http://localhost:${webPort}`)
-    )
+    const webServer =
+        process.env.NODE_ENV === 'development'
+            ? ViteExpress.listen(web, webPort, () =>
+                  logger.info(
+                      `Web server running at http://localhost:${webPort}`
+                  )
+              )
+            : web
+                  .use(
+                      express.static(
+                          path.resolve(
+                              dirname(fileURLToPath(import.meta.url)),
+                              '../dist/web/frontend'
+                          )
+                      )
+                  )
+                  .listen(webPort, () =>
+                      logger.info(
+                          `Web server running at http://localhost:${webPort}`
+                      )
+                  )
 
     return { dAppServer, userServer, webServer }
 }
