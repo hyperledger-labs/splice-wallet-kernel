@@ -429,11 +429,6 @@ export class LedgerController {
             privateKey
         )
 
-        // grant user rights automatically if the party is hosted on 1 participant
-        // if hosted on multiple participants, then we need to authorize each PartyToParticipant mapping
-        // before granting the user rights
-        // const grantUserRights = !hostingParticipantEndpoints
-
         await this.allocateExternalParty(
             signedHash,
             preparedParty,
