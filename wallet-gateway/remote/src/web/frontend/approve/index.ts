@@ -12,6 +12,7 @@ import {
 import { decodePreparedTransaction } from '@canton-network/core-tx-visualizer'
 import { stateManager } from '../state-manager'
 import { handleErrorToast } from '../handle-errors'
+import '../index'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends LitElement {

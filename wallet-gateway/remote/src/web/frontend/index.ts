@@ -12,30 +12,14 @@ import { stateManager } from './state-manager'
 const DEFAULT_PAGE_REDIRECT = '/wallets'
 const NOT_FOUND_PAGE_REDIRECT = '/404'
 const LOGIN_PAGE_REDIRECT = '/login'
-const ALLOWED_ROUTES = ['/wallets', '/networks', 'approve', '/']
+const ALLOWED_ROUTES = ['/wallets', '/networks', '/approve', '/']
 
 @customElement('user-ui')
 export class UserUI extends LitElement {
     connectedCallback(): void {
         super.connectedCallback()
 
-        if (stateManager.expirationDate.get()) {
-            setTimeout(
-                () => {
-                    stateManager.accessToken.clear()
-                    window.location = LOGIN_PAGE_REDIRECT
-                },
-                new Date(stateManager.expirationDate.get()) - new Date()
-            )
-        }
-
-        const currentPathname = window.location.pathname
-        if (
-            stateManager.accessToken.get() &&
-            currentPathname === LOGIN_PAGE_REDIRECT
-        ) {
-            window.location.href = LOGIN_PAGE_REDIRECT
-        } else if (!ALLOWED_ROUTES.includes(window.location.pathname)) {
+        if (!ALLOWED_ROUTES.includes(window.location.pathname)) {
             window.location.href = NOT_FOUND_PAGE_REDIRECT
         } else {
             window.location.href = DEFAULT_PAGE_REDIRECT
@@ -48,8 +32,27 @@ export class UserUIAuthRedirect extends LitElement {
     connectedCallback(): void {
         super.connectedCallback()
 
-        if (!stateManager.accessToken.get()) {
-            window.location.href = '/login/'
+        const isLoginPage =
+            window.location.pathname.startsWith(LOGIN_PAGE_REDIRECT)
+        const expirationDate = new Date(stateManager.expirationDate.get())
+        const now = new Date()
+
+        if (expirationDate > now) {
+            setTimeout(() => {
+                localStorage.clear()
+                window.location.href = LOGIN_PAGE_REDIRECT
+            }, expirationDate.getTime() - now.getTime())
+        } else if (stateManager.accessToken.get()) {
+            localStorage.clear()
+            window.location.href = LOGIN_PAGE_REDIRECT
+        }
+
+        if (!stateManager.accessToken.get() && !isLoginPage) {
+            window.location.href = LOGIN_PAGE_REDIRECT
+        }
+
+        if (stateManager.accessToken.get() && isLoginPage) {
+            window.location.href = DEFAULT_PAGE_REDIRECT
         }
     }
 }
