@@ -17,11 +17,8 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
-            - name: Flat pack the repo
-              run: yarn docker:flat-pack
-
             - name: Build docker image
-              run: yarn docker:build
+              run: yarn nx build docker
 
     docker-arm:
         runs-on: ubuntu-24.04-arm
@@ -32,11 +29,8 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
-            - name: Flat pack the repo
-              run: yarn docker:flat-pack
-
             - name: Build docker image
-              run: yarn docker:build
+              run: yarn nx build docker
 
     build:
         runs-on: ubuntu-latest
