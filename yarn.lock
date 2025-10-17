@@ -1897,6 +1897,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/docker@workspace:docker":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/docker@workspace:docker"
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/example@workspace:example":
   version: 0.0.0-use.local
   resolution: "@canton-network/example@workspace:example"
