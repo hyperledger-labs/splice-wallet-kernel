@@ -215,16 +215,14 @@ export class LedgerController {
      * Waits for a command to be completed by polling the completions endpoint.
      * @param ledgerEnd The offset to start polling from.
      * @param timeoutMs The maximum time to wait in milliseconds.
-     * @param commandId Optional command id to wait for.
-     * @param submissionId Optional submission id to wait for.
+     * @param commandIdOrSubmissionId The command id or submission id to wait for.
      * @returns The completion value of the command.
      * @throws An error if the timeout is reached before the command is completed.
      */
     async waitForCompletion(
         ledgerEnd: number | Types['GetLedgerEndResponse'],
         timeoutMs: number,
-        commandId?: string,
-        submissionId?: string
+        commandIdOrSubmissionId: string
     ): Promise<Types['Completion']['value']> {
         const ledgerEndNumber: number =
             typeof ledgerEnd === 'number' ? ledgerEnd : ledgerEnd.offset
@@ -233,13 +231,12 @@ export class LedgerController {
             ledgerEndNumber,
             this.getPartyId(),
             this.userId,
-            commandId,
-            submissionId
+            commandIdOrSubmissionId
         )
         return promiseWithTimeout(
             completionPromise,
             timeoutMs,
-            `Timed out getting completion for submission with userId=${this.userId}, commandId=${commandId}, submissionId=${submissionId}.
+            `Timed out getting completion for submission with userId=${this.userId}, Id=${commandIdOrSubmissionId}.
     The submission might have succeeded or failed, but it couldn't be determined in time.`
         )
     }
@@ -559,12 +556,7 @@ export class LedgerController {
             submissionId
         )
 
-        return this.waitForCompletion(
-            ledgerEnd,
-            timeoutMs,
-            undefined,
-            submissionId
-        )
+        return this.waitForCompletion(ledgerEnd, timeoutMs, submissionId)
     }
 
     /**

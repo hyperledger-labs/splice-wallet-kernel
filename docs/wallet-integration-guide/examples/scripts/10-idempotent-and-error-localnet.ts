@@ -133,12 +133,12 @@ try {
     await sdk.userLedger?.waitForCompletion(
         offsetLatest,
         5000,
-        await firstSpendCommandId
+        (await firstSpendCommandId)!
     )
     await sdk.userLedger?.waitForCompletion(
         offsetLatest,
         5000,
-        await secondSpendCommandId
+        (await secondSpendCommandId)!
     )
 } catch (e) {
     logger.info(
