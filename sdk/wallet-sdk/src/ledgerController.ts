@@ -392,6 +392,7 @@ export class LedgerController {
      * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
      * @param confirmingThreshold optional parameter for multi-hosted parties (default is 1).
      * @param hostingParticipantEndpoints optional list of connection details for other participants to multi-host this party.
+     * @param grantUserRights Defines if the transaction should also grant user right to current user, defaults to true if undefined
      * @returns An AllocatedParty object containing the partyId of the new party.
      */
     async signAndAllocateExternalParty(
