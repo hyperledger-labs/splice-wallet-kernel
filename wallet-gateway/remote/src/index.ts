@@ -10,7 +10,7 @@ import { createCLI } from '@canton-network/core-wallet-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
 
 const program = new Command()
-    .name('clients-remote')
+    .name('wallet-gateway-remote')
     .description('Run a remotely hosted Wallet Gateway')
     .option('-c, --config <path>', 'set config path', '../test/config.json')
     .addOption(

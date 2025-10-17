@@ -1,8 +1,7 @@
 {
-    "name": "@canton-network/clients-remote",
+    "name": "@canton-network/wallet-gateway-remote",
     "version": "0.0.1",
-    "description": "",
-    "private": true,
+    "description": "A server-side Wallet Gateway implementation over HTTP",
     "main": "dist/index.js",
     "bin": "dist/index.js",
     "type": "module",

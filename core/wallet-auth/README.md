@@ -38,7 +38,7 @@ The `verifyToken` method takes an access token and returns an `AuthContext` if t
 
 ## JWT Implementation
 
-For JWT-based authentication, see the [`JwtAuthService`](../clients/remote/src/auth/JwtAuthService.ts) implementation.
+For JWT-based authentication, see the [`JwtAuthService`](../wallet-gateway/remote/src/auth/JwtAuthService.ts) implementation.
 This service verifies JWT tokens using remote JWK sets and integrates with the Wallet Gateway's network configuration to dynamically resolve the appropriate identity provider for each request.
 
 It is important to note that, since the Wallet Gateway supports multiple identity providers (IDPs), the token issuer (iss) is used as the unique identifier for each IDP.
