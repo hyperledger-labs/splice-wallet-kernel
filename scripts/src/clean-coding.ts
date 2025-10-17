@@ -4,7 +4,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as process from 'process'
-import { getRepoRoot, markFile, traverseDirectory } from './utils.js'
+import { getRepoRoot, markFile, traverseDirectory } from './lib/utils.js'
 
 function checkPackageJson(packageJsonPath: string): number {
     const rootPath = getRepoRoot()

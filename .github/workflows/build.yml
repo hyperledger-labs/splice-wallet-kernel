@@ -17,10 +17,11 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
+            - name: Flat pack the repo
+              run: yarn docker:flat-pack
+
             - name: Build docker image
-              shell: bash
               run: yarn docker:build
-              working-directory: clients/remote
 
     docker-arm:
         runs-on: ubuntu-24.04-arm
@@ -31,10 +32,11 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
+            - name: Flat pack the repo
+              run: yarn docker:flat-pack
+
             - name: Build docker image
-              shell: bash
               run: yarn docker:build
-              working-directory: clients/remote
 
     build:
         runs-on: ubuntu-latest

@@ -14,7 +14,7 @@ import {
     downloadAndUnpackTarball,
     CantonVersionAndHash,
     error,
-} from './utils.js'
+} from './lib/utils.js'
 import * as fs from 'fs'
 
 async function fetchCanton(cantonVersions: CantonVersionAndHash) {

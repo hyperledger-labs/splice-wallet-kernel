@@ -7,7 +7,7 @@ import { diffChars } from 'diff'
 import * as fs from 'fs'
 import os from 'os'
 import * as path from 'path'
-import { error, getRepoRoot, success } from './utils.js'
+import { error, getRepoRoot, success } from './lib/utils.js'
 
 function run(cmd: string, opts: { cwd?: string } = {}) {
     console.log(`$ ${cmd}`)
