@@ -171,7 +171,7 @@ jobs:
                   '
 
             - name: Start remote WK
-              run: DAPP_API_PORT=3008 yarn nx run @canton-network/clients-remote:start &
+              run: DAPP_API_PORT=3008 yarn nx run @canton-network/wallet-gateway-remote:start &
 
             - run: yarn nx run @canton-network/example:dev &
 
