@@ -7,7 +7,7 @@ import { assertProvider, ConnectError, ErrorCode } from '../error.js'
 import * as storage from '../storage'
 import { injectProvider } from './index'
 import { GatewaysConfig } from '@canton-network/core-types'
-import gateways from './gateways.json'
+import gateways from '../gateways.json'
 
 export async function connect(): Promise<dappAPI.ConnectResult> {
     const config: GatewaysConfig[] = gateways

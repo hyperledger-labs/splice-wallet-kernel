@@ -130,7 +130,9 @@ export interface TxChangedExecutedEvent {
     commandId: CommandId
     payload: TxChangedExecutedPayload
 }
-export type Response = string
+export interface Response {
+    [key: string]: any
+}
 /**
  *
  * Set as primary wallet for dApp usage.

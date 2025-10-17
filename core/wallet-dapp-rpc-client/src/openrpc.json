@@ -65,7 +65,7 @@
                     "required": ["kernel", "isConnected", "sessionToken"]
                 }
             },
-            "description": "Ensures ledger connectivity. Returns the connected network information along with the user access token."
+            "description": "Ensures ledger connectivity and returns the connected network information along with the user access token. ChainId should follow CAIP-2 and represent the synchronizerId."
         },
         {
             "name": "darsAvailable",
@@ -88,7 +88,7 @@
                     "required": ["dars"]
                 }
             },
-            "description": "Lists DARs currently available on the connected Validator node."
+            "description": "Lists DARs currently available to the connected Validator node, such that dApp can verify whether the app is installed."
         },
         {
             "name": "prepareReturn",
@@ -260,7 +260,7 @@
                 "properties": {
                     "response": {
                         "title": "response",
-                        "type": "string"
+                        "type": "object"
                     }
                 },
                 "required": ["response"]

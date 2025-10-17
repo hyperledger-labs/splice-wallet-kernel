@@ -3,7 +3,7 @@
 // Disabled unused vars rule to allow for future implementations
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { AuthContext } from '@canton-network/core-wallet-auth'
+import { assertConnected, AuthContext } from '@canton-network/core-wallet-auth'
 import buildController from './rpc-gen/index.js'
 import {
     LedgerApiParams,
@@ -59,9 +59,18 @@ export const dappController = (
             userUrl: 'http://localhost:3002/login/',
         }),
         darsAvailable: async () => ({ dars: ['default-dar'] }),
-        ledgerApi: async (params: LedgerApiParams) => ({
-            response: 'default-response',
-        }),
+        ledgerApi: async (params: LedgerApiParams) => {
+            const network = await store.getCurrentNetwork()
+            const ledgerClient = new LedgerClient(
+                new URL(network.ledgerApi.baseUrl),
+                assertConnected(context).accessToken,
+                logger
+            )
+
+            return {
+                response: 'default-response',
+            }
+        },
         prepareExecute: async (params: PrepareExecuteParams) => {
             const wallet = await store.getPrimaryWallet()
             const network = await store.getCurrentNetwork()

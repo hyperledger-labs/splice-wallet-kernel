@@ -27,7 +27,7 @@
     },
     "files": [
         "dist/**",
-        "src/provider/gateways.json"
+        "gateways.json"
     ],
     "publishConfig": {
         "access": "public"
