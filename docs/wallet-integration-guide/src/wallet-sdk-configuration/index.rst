@@ -102,3 +102,46 @@ the list might differed based on you canton configuration, the most important pa
 .. code-block:: JSON
 
     {"version":"0.4.15","commit_ts":"2025-09-05T11:38:13Z"}
+
+Configuring Auth Controller
+---------------------------
+
+By default the `localNetAuthDefault` uses these defined values:
+
+.. code-block:: text
+
+     userId = 'ledger-api-user'
+     adminId = 'ledger-api-user'
+     audience = 'https://canton.network.global'
+     unsafeSecret = 'unsafe'
+
+this produces a self-signed HMAC auth token using "unsafe" for signing.
+
+.. important::
+
+   The value for some of the audiences in localnet would have to be adjusted to match "https://canton.network.global".
+   This is specifically the `LEDGER_API_AUTH_AUDIENCE` & `VALIDATOR_AUTH_AUDIENCE`.
+
+When upgrading your setup from a localnet setup to a production or client facing environment then it might make more sense
+to add proper authentication to the ledger api and other services. The community contributions include okta and keycloak
+`OIDC <https://docs.dev.sync.global/community/oidc-config-okta-keycloak.html>`__. These can easily be configured for the
+SDK using a custom `clientCredentialOAuthController`
+
+.. literalinclude:: ../../examples/snippets/oauth-controller.ts
+            :language: typescript
+            :dedent:
+
+However since it follows a simple interface, you can build your own implementation of it if you have unique requirements:
+
+.. code-block:: javascript
+
+    export interface AuthController {
+        /** gets an auth context correlating to the non-admin user provided.
+         */
+        getUserToken(): Promise<AuthContext>
+
+        /** gets an auth context correlating to the admin user provided.
+         */
+        getAdminToken(): Promise<AuthContext>
+        userId: string | undefined
+    }

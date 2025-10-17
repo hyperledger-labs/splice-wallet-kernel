@@ -2,14 +2,39 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { defineConfig } from 'vite'
+import { dirname, resolve } from 'path'
+import { fileURLToPath } from 'url'
 
-import { resolve } from 'path'
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
     root: 'src/web/frontend',
     build: {
-        outDir: resolve(__dirname, '../../dist/frontend'),
+        outDir: resolve(__dirname, './dist/web/frontend'),
         emptyOutDir: true,
+        rollupOptions: {
+            input: {
+                main: resolve(__dirname, 'src/web/frontend/index.html'),
+                404: resolve(__dirname, 'src/web/frontend/404/index.html'),
+                approve: resolve(
+                    __dirname,
+                    'src/web/frontend/approve/index.html'
+                ),
+                callback: resolve(
+                    __dirname,
+                    'src/web/frontend/callback/index.html'
+                ),
+                login: resolve(__dirname, 'src/web/frontend/login/index.html'),
+                networks: resolve(
+                    __dirname,
+                    'src/web/frontend/networks/index.html'
+                ),
+                wallets: resolve(
+                    __dirname,
+                    'src/web/frontend/wallets/index.html'
+                ),
+            },
+        },
     },
     resolve: {
         alias: {

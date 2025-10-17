@@ -8,6 +8,49 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
 
 **Released on October 15th, 2025**
 
+* **Important!: The custom meta-data on create transfer have changed format**
+
+.. code-block:: javascript
+
+    //previous format
+    await sdk.tokenStandard!.createTransfer(
+            sender!.partyId,
+            receiver!.partyId,
+            '100',
+            {
+                instrumentId: 'Amulet',
+                instrumentAdmin: instrumentAdminPartyId,
+            },
+            [],
+            'memo-ref',
+            new Date(Date.now() + 24 * 60 * 60 * 1000),
+            {
+                key1: "value1",
+                key2: "value2"
+            }
+        )
+
+
+    //new format
+    await sdk.tokenStandard!.createTransfer(
+            sender!.partyId,
+            receiver!.partyId,
+            '100',
+            {
+                instrumentId: 'Amulet',
+                instrumentAdmin: instrumentAdminPartyId,
+            },
+            [],
+            'memo-ref',
+            new Date(Date.now() + 24 * 60 * 60 * 1000),
+                {
+                values: {
+                    key1: "value1",
+                    key2: "value2"
+                }
+            }
+        )
+
 * Feature app marker delegation proxy
 
 *The Wallet SDK is heavy focused on external party submission flows, however there are certain administrative tasks

@@ -36,7 +36,10 @@ import {
 
 import type { PrettyTransactions, Transaction } from './txparse/types.js'
 import { Types } from './ledger-client.js'
-import { ScanProxyClient } from '@canton-network/core-splice-client'
+import {
+    ScanProxyClient,
+    ScanProxyTypes,
+} from '@canton-network/core-splice-client'
 
 const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
 const REQUESTED_AT_SKEW_MS = 60_000
@@ -271,6 +274,31 @@ class CoreService {
                 interfaceId
             ).viewValue as T,
         }
+    }
+
+    async getActiveOpenMiningRound(): Promise<
+        ScanProxyTypes['Contract'] | null
+    > {
+        const openMiningRounds =
+            await this.scanProxyClient.getOpenMiningRounds()
+        if (!(Array.isArray(openMiningRounds) && openMiningRounds.length)) {
+            throw new Error('OpenMiningRound contract not found')
+        }
+
+        const nowForOpenMiningRounds = Date.now()
+        const latestOpenMiningRound = openMiningRounds.findLast(
+            (openMiningRound) => {
+                const { opensAt, targetClosesAt } = openMiningRound.payload
+                const opensAtMs = Number(new Date(opensAt))
+                const targetClosesAtMs = Number(new Date(targetClosesAt))
+
+                return (
+                    opensAtMs <= nowForOpenMiningRounds &&
+                    targetClosesAtMs > nowForOpenMiningRounds
+                )
+            }
+        )
+        return latestOpenMiningRound ?? null
     }
 }
 
@@ -1263,30 +1291,11 @@ export class TokenStandardService {
             transferFactory.choiceContext.disclosedContracts
 
         const amuletRules = await this.scanProxyClient.getAmuletRules()
-        const openMiningRounds =
-            await this.scanProxyClient.getOpenMiningRounds()
         if (!amuletRules) {
             throw new Error('AmuletRules contract not found')
         }
 
-        if (!(Array.isArray(openMiningRounds) && openMiningRounds.length)) {
-            throw new Error('OpenMiningRound contract not found')
-        }
-
-        const nowForOpenMiningRounds = Date.now()
-        const latestOpenMiningRound = openMiningRounds.findLast(
-            (openMiningRound) => {
-                const { opensAt, targetClosesAt } = openMiningRound.payload
-                const opensAtMs = Number(new Date(opensAt))
-                const targetClosesAtMs = Number(new Date(targetClosesAt))
-
-                return (
-                    opensAtMs <= nowForOpenMiningRounds &&
-                    targetClosesAtMs > nowForOpenMiningRounds
-                )
-            }
-        )
-
+        const latestOpenMiningRound = await this.core.getActiveOpenMiningRound()
         if (!latestOpenMiningRound) {
             throw new Error(
                 'OpenMiningRound active at current moment not found'
@@ -1331,5 +1340,90 @@ export class TokenStandardService {
             },
             [disclosedContracts],
         ]
+    }
+
+    async cancelTransferPreapproval(
+        contractId: string,
+        templateId: string,
+        actor: PartyId
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const exercise: ExerciseCommand = {
+            templateId,
+            contractId,
+            choice: 'TransferPreapproval_Cancel',
+            choiceArgument: { p: actor },
+        }
+        return [exercise, []]
+    }
+
+    async renewTransferPreapproval(
+        contractId: string,
+        templateId: string,
+        provider: PartyId,
+        synchronizerId: PartyId,
+        newExpiresAt?: Date,
+        inputUtxos?: string[]
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const amuletRules = await this.scanProxyClient.getAmuletRules()
+        const activeRound = await this.core.getActiveOpenMiningRound()
+
+        if (!amuletRules) {
+            throw new Error('AmuletRules contract not found')
+        }
+        if (!activeRound) {
+            throw new Error(
+                'OpenMiningRound active at current moment not found'
+            )
+        }
+
+        const disclosed: DisclosedContract[] = [
+            {
+                templateId: amuletRules.template_id,
+                contractId: amuletRules.contract_id,
+                createdEventBlob: amuletRules.created_event_blob,
+                synchronizerId,
+            },
+            {
+                templateId: activeRound.template_id!,
+                contractId: activeRound.contract_id,
+                createdEventBlob: activeRound.created_event_blob,
+                synchronizerId,
+            },
+        ]
+
+        const inputHoldings = await this.core.getInputHoldingsCids(
+            provider,
+            inputUtxos
+        )
+
+        const context = {
+            context: {
+                openMiningRound: activeRound.contract_id,
+                issuingMiningRounds: [],
+                validatorRights: [],
+                featuredAppRight: null,
+            },
+            amuletRules: amuletRules.contract_id,
+        }
+
+        // Defaults to 90 days
+        const effectiveNewExpiresAt: Date =
+            newExpiresAt ?? new Date(Date.now() + 90 * 24 * 3600 * 1000)
+
+        const exercise: ExerciseCommand = {
+            templateId,
+            contractId,
+            choice: 'TransferPreapproval_Renew',
+            choiceArgument: {
+                context,
+                inputs: inputHoldings.map((cid) => ({
+                    tag: 'InputAmulet',
+                    value: cid,
+                })),
+                newExpiresAt: effectiveNewExpiresAt.toISOString(),
+            },
+        }
+
+        return [exercise, disclosed]
     }
 }

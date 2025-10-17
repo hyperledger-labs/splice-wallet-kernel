@@ -205,7 +205,6 @@ export class LoginUI extends LitElement {
 
             const params = new URLSearchParams({
                 response_type: 'code',
-                response_mode: 'fragment',
                 client_id: this.selectedNetwork.auth.clientId || '',
                 redirect_uri: redirectUri || '',
                 nonce: crypto.randomUUID(),
