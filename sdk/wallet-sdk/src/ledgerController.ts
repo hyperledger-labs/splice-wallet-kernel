@@ -304,7 +304,7 @@ export class LedgerController {
     async allocateExternalParty(
         signedHash: string,
         preparedParty: GenerateTransactionResponse,
-        grantUserRights: boolean = true,
+        hostingParticipantEndpoints: { accessToken: string; url: URL }[] = [],
         expectHeavyLoad: boolean = true
     ): Promise<AllocateExternalPartyResponse> {
         if (await this.client.checkIfPartyExists(preparedParty.partyId))
@@ -351,9 +351,33 @@ export class LedgerController {
             }
         }
 
-        if (grantUserRights) {
-            await this.client.grantUserRights(this.userId, partyId)
+        if (hostingParticipantEndpoints) {
+            for (const endpoint of hostingParticipantEndpoints) {
+                const lc = new LedgerClient(
+                    endpoint.url,
+                    endpoint.accessToken,
+                    this.logger
+                )
+
+                await lc.allocateExternalParty(
+                    this.getSynchronizerId(),
+                    topologyTransactions!.map((transaction) => ({
+                        transaction,
+                    })),
+                    [
+                        {
+                            format: 'SIGNATURE_FORMAT_CONCAT',
+                            signature: signedHash,
+                            signedBy: publicKeyFingerprint,
+                            signingAlgorithmSpec:
+                                'SIGNING_ALGORITHM_SPEC_ED25519',
+                        },
+                    ]
+                )
+            }
         }
+
+        await this.client.grantUserRights(this.userId, partyId)
 
         return { partyId }
     }
@@ -408,12 +432,12 @@ export class LedgerController {
         // grant user rights automatically if the party is hosted on 1 participant
         // if hosted on multiple participants, then we need to authorize each PartyToParticipant mapping
         // before granting the user rights
-        const grantUserRights = !hostingParticipantEndpoints
+        // const grantUserRights = !hostingParticipantEndpoints
 
         await this.allocateExternalParty(
             signedHash,
             preparedParty,
-            grantUserRights
+            hostingParticipantEndpoints
         )
 
         return preparedParty
