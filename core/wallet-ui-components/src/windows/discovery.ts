@@ -1,15 +1,24 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { DiscoverResult } from '@canton-network/core-types'
+import { DiscoverResult, GatewaysConfig } from '@canton-network/core-types'
 import { Discovery } from '../components/Discovery.js'
 import { popup } from './popup.js'
 
-export async function discover(): Promise<DiscoverResult> {
+export async function discover(
+    config: GatewaysConfig[]
+): Promise<DiscoverResult> {
     const win = await popup(Discovery, {
         title: 'Wallet Discovery',
         target: 'wallet-discovery',
     })
+
+    win.onload = () => {
+        win.postMessage(
+            { type: 'SPLICE_WALLET_CONFIG_LOAD', payload: config },
+            '*'
+        )
+    }
 
     return new Promise((resolve, reject) => {
         let response: DiscoverResult | undefined = undefined

@@ -12,6 +12,7 @@
     "scripts": {
         "build": "tsc -b",
         "dev": "tsc -b --watch",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
     },
@@ -26,6 +27,7 @@
         "typescript": "^5.8.3"
     },
     "dependencies": {
+        "@canton-network/core-rpc-errors": "workspace:^",
         "@canton-network/core-types": "workspace:^"
     },
     "files": [

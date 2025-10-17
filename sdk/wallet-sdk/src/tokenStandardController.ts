@@ -31,6 +31,7 @@ import {
     Metadata,
     transferInstructionRegistryTypes,
     allocationInstructionRegistryTypes,
+    Beneficiaries,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
@@ -39,6 +40,14 @@ export type TransactionInstructionChoice = 'Accept' | 'Reject' | 'Withdraw'
 export type AllocationInstructionChoice = 'Withdraw'
 export type AllocationChoice = 'ExecuteTransfer' | 'Withdraw' | 'Cancel'
 export type AllocationRequestChoice = 'Reject' | 'Withdraw'
+
+export type FeaturedAppRight = {
+    template_id: string
+    contract_id: string
+    payload: Record<string, never>
+    created_event_blob: string
+    created_at: string
+}
 
 /**
  * TokenStandardController handles token standard management tasks.
@@ -300,16 +309,24 @@ export class TokenStandardController {
         )
     }
 
+    // TODO(#583) TransferPreapproval methods could be moved to SpliceController
     /**  Lookup a TransferPreapproval by the receiver party
      * @param receiverId receiver party id
      * @param instrumentId the instrument partyId that has transfer preapproval
-     * @returns the receiverId, dso, and expiresAt
+     * @returns object with receiverId, dso, expiresAt, contractId, templateId, or `undefined` on error
      */
     async getTransferPreApprovalByParty(
         receiverId: PartyId,
         instrumentId: string
     ): Promise<
-        { receiverId: PartyId; expiresAt: Date; dso: PartyId } | undefined
+        | {
+              receiverId: PartyId
+              expiresAt: Date
+              dso: PartyId
+              contractId: string
+              templateId: string
+          }
+        | undefined
     > {
         try {
             await this.service.getInstrumentById(
@@ -321,15 +338,178 @@ export class TokenStandardController {
                 await this.service.getTransferPreApprovalByParty(receiverId)
 
             const { dso, expiresAt } = transfer_preapproval.contract.payload
+            const contractId = transfer_preapproval?.contract?.contract_id
+            const templateId = transfer_preapproval?.contract?.template_id
+
             return {
                 receiverId: receiverId as PartyId,
                 expiresAt: new Date(expiresAt),
                 dso: dso as PartyId,
+                contractId,
+                templateId,
             }
         } catch (e) {
             this.logger.error(e)
             return undefined
         }
+    }
+
+    /**
+     * Build an Exercise command to cancel a TransferPreapproval.
+     *
+     * @param contractId contract ID of the TransferPreapproval to cancel.
+     * @param templateId template ID of the TransferPreapproval (may vary by package version).
+     * @param actor Party executing the cancel choice (must be provider or receiver).
+     * @returns A promise that resolves to the ExerciseCommand which cancels TransferPreapproval and any disclosed contracts
+     */
+    async createCancelTransferPreapproval(
+        contractId: string,
+        templateId: string,
+        actor: PartyId
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const [cancelCommand, disclosed] =
+            await this.service.cancelTransferPreapproval(
+                contractId,
+                templateId,
+                actor
+            )
+        return [{ ExerciseCommand: cancelCommand }, disclosed]
+    }
+
+    /**
+     * Build an Exercise command to renew a TransferPreapproval.
+     * @param contractId Contract ID of the TransferPreapproval to renew.
+     * @param templateId Template ID of the TransferPreapproval (may vary by package version).
+     * @param provider Provider party whose inputs will fund the renewal.
+     * @param newExpiresAt Optional Date of expires at after renewal. If omitted, will default to 30 days.
+     * @param inputUtxos Optional list of specific holding CIDs to use as inputs.
+     * @returns A promise that resolves to the ExerciseCommand which renews TransferPreapproval and any disclosed contracts
+     */
+    async createRenewTransferPreapproval(
+        contractId: string,
+        templateId: string,
+        provider: PartyId,
+        newExpiresAt?: Date,
+        inputUtxos?: string[]
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const [renewCommand, disclosed] =
+            await this.service.renewTransferPreapproval(
+                contractId,
+                templateId,
+                provider,
+                this.getSynchronizerId(),
+                newExpiresAt,
+                inputUtxos
+            )
+        return [{ ExerciseCommand: renewCommand }, disclosed]
+    }
+
+    /**
+     * Wait for Scan Proxy to show a receiver's TransferPreapproval, or for its CID to change after renewal,
+     * or for it to disappear after cancel.
+     *
+     * Why: right after renew or cancel, the ledger is up to date, but Scan Proxy can lag. Poll until the
+     * preapproval appears (create), its CID changes (renew), or it disappears (cancel).
+     *
+     * Usage:
+     *  - After create: call without oldCid.
+     *  - After renew: pass oldCid.
+     *  - After cancel: set expectGone = true.
+     *
+     * @param receiverId Receiver party id.
+     * @param instrumentId Instrument id (for example, "Amulet").
+     * @param options Optional settings.
+     * @param options.oldCid Resolve only when CID differs from this value (post-renew).
+     * @param options.expectGone Set true to resolve when no preapproval is returned (post-cancel).
+     * @param options.intervalMs Poll interval in milliseconds. Default is 15000.
+     * @param options.timeoutMs Maximum wait time in milliseconds. Default is 300000.
+     * @returns Resolves with the preapproval (for create/renew) or void (for expectGone).
+     * @throws If the timeout elapses before the condition is met.
+     */
+    async waitForPreapprovalFromScanProxy(
+        receiverId: string,
+        instrumentId: string,
+        {
+            oldCid,
+            expectGone = false,
+            intervalMs = 15_000,
+            timeoutMs = 5 * 60_000,
+        }: {
+            oldCid?: string
+            expectGone?: boolean
+            intervalMs?: number
+            timeoutMs?: number
+        } = {}
+    ) {
+        const deadline = Date.now() + timeoutMs
+
+        for (let attempt = 1; Date.now() < deadline; attempt++) {
+            try {
+                const preapproval = await this.getTransferPreApprovalByParty(
+                    receiverId,
+                    instrumentId
+                )
+
+                if (expectGone) {
+                    if (!preapproval) {
+                        this.logger.info(
+                            { attempt },
+                            'Preapproval is no longer visible'
+                        )
+                        return
+                    }
+                    this.logger.info(
+                        { attempt, seenCid: preapproval.contractId },
+                        'Preapproval still visible - polling again'
+                    )
+                } else if (preapproval) {
+                    if (!oldCid) {
+                        this.logger.info(
+                            { attempt, seenCid: preapproval.contractId },
+                            'Preapproval is visible'
+                        )
+                        return preapproval
+                    }
+                    if (
+                        preapproval.contractId &&
+                        preapproval.contractId !== oldCid
+                    ) {
+                        this.logger.info(
+                            { attempt, oldCid, newCid: preapproval.contractId },
+                            'Preapproval CID changed'
+                        )
+                        return preapproval
+                    }
+                    this.logger.info(
+                        { attempt, seenCid: preapproval.contractId, oldCid },
+                        'Preapproval visible but CID unchanged - polling again'
+                    )
+                } else {
+                    this.logger.info(
+                        { attempt },
+                        'Preapproval not visible yet - polling again'
+                    )
+                }
+            } catch (err) {
+                this.logger.debug({ attempt, err }, 'Fetch failed - retrying')
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, intervalMs))
+        }
+
+        const waitingForSubject = expectGone
+            ? 'for preapproval to disappear'
+            : oldCid
+              ? `for preapproval CID to change from ${oldCid}`
+              : 'for preapproval to appear'
+
+        throw new Error(
+            `Timed out after ${Math.floor(timeoutMs / 1000)}s waiting ${waitingForSubject}`
+        )
     }
 
     /**
@@ -420,7 +600,10 @@ export class TokenStandardController {
      * Has an in built retry and delay between attempts
      * @returns If defined, a contract of Daml template `Splice.Amulet.FeaturedAppRight`.
      */
-    async lookupFeaturedApps(maxRetries = 10, delayMs = 5000) {
+    async lookupFeaturedApps(
+        maxRetries = 10,
+        delayMs = 5000
+    ): Promise<FeaturedAppRight | undefined> {
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             const result = await this.service.getFeaturedAppsByParty(
                 this.getPartyId()
@@ -532,6 +715,80 @@ export class TokenStandardController {
         }
     }
 
+    async exerciseTransferInstructionChoiceWithDelegate(
+        transferInstructionCid: string,
+        instructionChoice: TransactionInstructionChoice,
+        proxyCid: string,
+        featuredAppRightCid: string,
+        beneficiaries: Beneficiaries[],
+        featuredAppRight2: FeaturedAppRight
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        let ExerciseCommand: ExerciseCommand
+        let disclosedContracts: DisclosedContract[]
+
+        const featuredAppDisclosedContract = {
+            templateId: featuredAppRight2.template_id,
+            contractId: featuredAppRight2.contract_id,
+            createdEventBlob: featuredAppRight2.created_event_blob!,
+            synchronizerId: this.getSynchronizerId(),
+        }
+
+        try {
+            switch (instructionChoice) {
+                case 'Accept':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.transfer.exerciseDelegateProxyTransferInstructionAccept(
+                            proxyCid,
+                            transferInstructionCid,
+                            this.getTransferFactoryRegistryUrl(),
+                            featuredAppRightCid,
+                            beneficiaries
+                        )
+                    return [
+                        { ExerciseCommand },
+                        [featuredAppDisclosedContract, ...disclosedContracts],
+                    ]
+                case 'Reject':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.transfer.exerciseDelegateProxyTransferInstructionReject(
+                            proxyCid,
+                            transferInstructionCid,
+                            this.getTransferFactoryRegistryUrl(),
+                            featuredAppRightCid,
+                            beneficiaries
+                        )
+                    return [
+                        { ExerciseCommand },
+                        [featuredAppDisclosedContract, ...disclosedContracts],
+                    ]
+                case 'Withdraw':
+                    ;[ExerciseCommand, disclosedContracts] =
+                        await this.service.transfer.exerciseDelegateProxyTransferInstructioWithdraw(
+                            proxyCid,
+                            transferInstructionCid,
+                            this.getTransferFactoryRegistryUrl(),
+                            featuredAppRightCid,
+                            beneficiaries
+                        )
+
+                    return [
+                        { ExerciseCommand },
+                        [featuredAppDisclosedContract, ...disclosedContracts],
+                    ]
+                default:
+                    throw new Error('Unexpected transfer instruction choice')
+            }
+        } catch (error) {
+            this.logger.error(
+                { error },
+                'Failed to exercise transfer instruction choice'
+            )
+            throw error
+        }
+    }
+
     /**
      * Builds and fetches the registry context for a transfer factory call.
      * Use this to prefetch context for offline signing.
@@ -599,7 +856,6 @@ export class TokenStandardController {
      * @returns A promise that resolves to the ExerciseCommand which creates the transfer.
      */
     async createTransferUsingDelegateProxy(
-        exchangeParty: PartyId,
         proxyCid: string,
         featuredAppRightCid: string,
         sender: PartyId,
@@ -607,6 +863,7 @@ export class TokenStandardController {
         amount: string,
         instrumentId: string,
         instrumentAdmin: PartyId,
+        beneficiaries: Beneficiaries[],
         inputUtxos?: string[],
         memo?: string,
         expiryDate?: Date,
@@ -618,13 +875,13 @@ export class TokenStandardController {
             await this.service.createDelegateProxyTranfser(
                 sender,
                 receiver,
-                exchangeParty,
                 amount,
                 instrumentAdmin,
                 instrumentId,
                 this.getTransferFactoryRegistryUrl().href,
                 featuredAppRightCid,
                 proxyCid,
+                beneficiaries,
                 inputUtxos,
                 memo,
                 expiryDate,
@@ -877,7 +1134,7 @@ export class TokenStandardController {
     }
 
     /**
-     * Fetch choice context from registry for Allocation ExecuteTransfer.
+     * Fetch choice context from registry for Allocation ExecuteTransfer
      * @param allocationCid Allocation contract id
      * @returns Allocation_ExecuteTransfer choice context from the registry
      */

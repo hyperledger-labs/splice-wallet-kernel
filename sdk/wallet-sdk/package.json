@@ -11,6 +11,7 @@
     "scripts": {
         "build": "tsc -b",
         "dev": "tsc -b --watch",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "echo \"Warning: no test specified\""
     },
@@ -24,7 +25,7 @@
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
         "jose": "^5.2.4",
-        "pino": "^9.7.0",
+        "pino": "^10.0.0",
         "uuid": "^11.1.0"
     },
     "devDependencies": {

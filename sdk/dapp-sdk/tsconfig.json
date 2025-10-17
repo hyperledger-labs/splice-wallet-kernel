@@ -3,6 +3,8 @@
     "compilerOptions": {
         "rootDir": "./src",
         "outDir": "./dist",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
         "moduleResolution": "node",
         "baseUrl": "./",
         "paths": {
@@ -14,7 +16,7 @@
             ]
         }
     },
-    "include": ["src"],
+    "include": ["src", "src/provider/gateways.json"],
     "references": [
         { "path": "../../core/wallet-dapp-rpc-client" },
         { "path": "../../core/splice-provider" }

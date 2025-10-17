@@ -424,8 +424,10 @@ export interface components {
                 | 'participantAdmin'
                 | 'canActAs'
                 | 'canReadAs'
+                | 'canExecuteAs'
                 | 'identityProviderAdmin'
                 | 'canReadAsAnyParty'
+                | 'canExecuteAsAnyParty'
             party?: string
         }
         ParticipantUserAnnotation: {

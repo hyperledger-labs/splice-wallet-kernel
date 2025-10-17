@@ -10,6 +10,7 @@ const logger = pino({ name: '01-one-step-deposit', level: 'info' })
 
 const { treasuryParty, exchangeSdk } = await setupExchange({
     transferPreapproval: true,
+    grantFeatureAppRights: true,
 })
 
 const { customerParty, customerKeyPair, customerSdk } =

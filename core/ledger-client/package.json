@@ -13,6 +13,7 @@
         "build": "tsc -b",
         "dev": "tsc -b --watch",
         "clean": "tsc -b --clean; rm -rf dist",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
     },
     "devDependencies": {
@@ -37,7 +38,7 @@
         "bignumber.js": "^9.2.1",
         "dayjs": "^1.11.13",
         "openapi-fetch": "^0.14.0",
-        "pino": "^9.7.0"
+        "pino": "^10.0.0"
     },
     "files": [
         "dist/**"
