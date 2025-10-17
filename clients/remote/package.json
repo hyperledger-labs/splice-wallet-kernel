@@ -13,6 +13,7 @@
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)",
         "start": "yarn node dist/index.js",
         "debug": "yarn node --inspect-brk dist/index.js",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "db:bootstrap": "tsx ./src/scripts/db.ts bootstrap",
         "db:migrate:up": "tsx ./src/scripts/db.ts up",
         "db:migrate:down": "tsx ./src/scripts/db.ts down",

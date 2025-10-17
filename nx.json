@@ -26,6 +26,9 @@
         }
     },
     "targetDefaults": {
+        "flatpack": {
+            "dependsOn": ["build", "^flatpack"]
+        },
         "build": {
             "dependsOn": ["^build"],
             "cache": true

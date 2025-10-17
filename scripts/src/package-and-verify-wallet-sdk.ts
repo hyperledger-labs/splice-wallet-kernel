@@ -7,7 +7,8 @@ import { diffChars } from 'diff'
 import * as fs from 'fs'
 import os from 'os'
 import * as path from 'path'
-import { error, getRepoRoot, success } from './lib/utils.js'
+import { error, success } from './lib/utils.js'
+import { FlatPack } from './lib/flat-pack.js'
 
 function run(cmd: string, opts: { cwd?: string } = {}) {
     console.log(`$ ${cmd}`)
@@ -38,61 +39,12 @@ function runAssert(cmd: string, assertOutput: string, opts: { cwd?: string }) {
     return output
 }
 
-const repoRoot = getRepoRoot()
-
-async function buildPackage(
-    name: string,
-    pkgDir: string,
-    tmpDir: string
-): Promise<string> {
-    const filename = path.join(tmpDir, `${name}.tgz`)
-
-    run('yarn build', { cwd: pkgDir })
-    run(`yarn pack --filename "${filename}"`, { cwd: pkgDir })
-    run(`yarn add "${filename}"`, { cwd: tmpDir })
-
-    return filename
-}
-
-function updateJsonResolutions(
-    tmpDir: string,
-    resolutions: Record<string, string>
-) {
-    const pkgJsonPath = path.join(tmpDir, 'package.json')
-    const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
-    pkgJson.resolutions = {
-        ...pkgJson.resolutions,
-        ...resolutions,
-    }
-    fs.writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, 2))
-}
-
-function getAllWalletSdkDependencies(
-    dir: string
-): { name: string; dir: string }[] {
-    const cmd =
-        'yarn workspaces foreach --no-private --topological -R exec \'echo "$npm_package_name $(pwd)"\''
-
-    const workspaces = execSync(cmd, {
-        encoding: 'utf8',
-        cwd: path.join(repoRoot, dir),
-    })
-
-    return workspaces
-        .trim()
-        .split('\n')
-        .filter((l) => !l.startsWith('Done'))
-        .map((line) => {
-            const [name, dir] = line.split(' ')
-            return { name, dir }
-        })
-}
-
 async function main() {
     const sdkDir = 'sdk/wallet-sdk'
 
     // Create a temp dir for both the test and the tgz
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wallet-sdk-test-'))
+    const flatpacker = new FlatPack(sdkDir, 'yarn', tmpDir)
 
     // Prepare a yarn-based project in the tmp dir
     try {
@@ -104,43 +56,25 @@ async function main() {
             ) + '\n'
         )
 
-        // Test import in temp dir
-        run('yarn init -y', { cwd: tmpDir })
-        run('yarn install --no-immutable', { cwd: tmpDir })
-
         // Write test import file
         const testFile = path.join(tmpDir, 'test-import.ts')
         fs.writeFileSync(
             testFile,
             `import { WalletSDKImpl } from '@canton-network/wallet-sdk';\n  console.log('Import successful.' + WalletSDKImpl);`
         )
+
         run('yarn add typescript tsx', { cwd: tmpDir })
+
+        flatpacker.pack()
+
+        run('yarn install --no-immutable', { cwd: tmpDir })
     } catch (e) {
         fs.rmSync(tmpDir, { recursive: true, force: true })
         throw e
     }
 
-    run('yarn install', { cwd: repoRoot })
-
-    const packages = getAllWalletSdkDependencies(sdkDir).filter(
-        (p) => p.name !== '@canton-network/wallet-sdk'
-    )
-
-    const paths = {} as Record<string, string>
-    for (const pkg of packages) {
-        const pkgPath = await buildPackage(pkg.name, pkg.dir, tmpDir)
-
-        paths[pkg.name] = `file:${pkgPath}`
-        updateJsonResolutions(tmpDir, paths)
-    }
-
-    await buildPackage('wallet-sdk', sdkDir, tmpDir)
-
     let ran = false
     try {
-        // Resolve token-standard to the packed tgz
-        updateJsonResolutions(tmpDir, paths)
-
         runAssert(
             'tsx test-import.ts',
             // Assert that the imported `WalletSDKImpl` object is not undefined or anything unexpected
