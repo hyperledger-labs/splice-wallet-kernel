@@ -58,7 +58,9 @@ export class LedgerController {
      */
     constructor(userId: string, baseUrl: URL, token: string, isAdmin: boolean) {
         this.client = new LedgerClient(baseUrl, token, this.logger)
-        this.client.init()
+        this.client.init().catch((error) => {
+            this.logger.error('LedgerClient initialization error:', error)
+        })
         this.userId = userId
         this.isAdmin = isAdmin
         return this
