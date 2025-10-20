@@ -285,25 +285,20 @@ export const localNetAuthDefault = (logger?: Logger): AuthController => {
  * A default factory function used for running against a local net initialized via docker.
  * This uses unsafe-auth and is started with the 'yarn start:localnet' or docker compose from localNet setup.
  */
-let _localAuthDefaultInstance: AuthController | undefined
-
 export const localAuthDefault = (logger?: Logger): AuthController => {
-    if (!_localAuthDefaultInstance) {
-        const controller = new ClientCredentialOAuthController(
-            'http://127.0.0.1:8889/.well-known/openid-configuration',
-            logger
-        )
-        // keep these values aligned with client/test/config.json
-        //TODO: Dynamically load these values
-        controller.userId = 'operator'
-        controller.userSecret = 'your-client-secret'
-        controller.adminId = 'participant_admin'
-        controller.adminSecret = 'admin-client-secret'
-        controller.audience =
-            'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424'
-        controller.scope = 'openid daml_ledger_api offline_access'
+    const controller = new ClientCredentialOAuthController(
+        'http://127.0.0.1:8889/.well-known/openid-configuration',
+        logger
+    )
+    // keep these values aligned with client/test/config.json
+    //TODO: Dynamically load these values
+    controller.userId = 'operator'
+    controller.userSecret = 'your-client-secret'
+    controller.adminId = 'participant_admin'
+    controller.adminSecret = 'admin-client-secret'
+    controller.audience =
+        'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424'
+    controller.scope = 'openid daml_ledger_api offline_access'
 
-        _localAuthDefaultInstance = controller
-    }
-    return _localAuthDefaultInstance
+    return controller
 }
