@@ -5,30 +5,45 @@
     "description": "daml codegen js for core token standard",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
     "packageManager": "yarn@4.9.4",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "default": "./dist/index.js"
+        }
+    },
     "scripts": {
-        "build": "rollup -c",
-        "dev": "tsc -b --watch",
+        "build": "yarn clean && tsup && yarn build:types && yarn bundle:types",
+        "build:types": "tsc -p tsconfig.types.json",
+        "bundle:types": "rollup -c rollup.dts.config.mjs",
+        "dev": "tsup --watch",
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
         "@canton-network/core-types": "workspace:^",
-        "@daml/ledger": "3.4.0-snapshot.20250616.13911.0.v482d9ec0",
-        "@daml/types": "3.4.0-snapshot.20250616.13911.0.v482d9ec0",
+        "@daml/ledger": "3.3.0-snapshot.20250528.13806.0.v3cd439fb",
+        "@daml/types": "3.3.0-snapshot.20250528.13806.0.v3cd439fb",
         "lodash": "^4.17.21",
         "openapi-fetch": "^0.14.0",
         "uuid": "^11.1.0",
         "zod": "^3.25.67"
     },
     "devDependencies": {
+        "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "workspace:^",
+        "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "workspace:^",
         "@daml.js/token-standard-models-1.0.0": "workspace:^",
         "@rollup/plugin-commonjs": "^28.0.6",
         "@rollup/plugin-node-resolve": "^16.0.1",
         "@rollup/plugin-typescript": "^12.1.4",
-        "rollup": "^4.50.1",
+        "rollup": "^4.52.5",
+        "rollup-plugin-dts": "^6.2.3",
         "tslib": "^2.8.1",
+        "tsup": "^8.5.0",
         "typescript": "^5.8.3"
     },
     "files": [
