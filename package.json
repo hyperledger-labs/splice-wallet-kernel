@@ -32,9 +32,7 @@
         "script:test:examples": "tsx ./scripts/src/test-example-scripts.ts",
         "script:retag": "tsx ./scripts/src/retag.ts",
         "script:flat-pack": "tsx ./scripts/src/flat-pack.ts",
-        "full:rebuild": "yarn clean:all && yarn generate:all && yarn install && yarn build:all",
-        "docker:flat-pack": "rm -rf docker/target && tsx ./scripts/src/flat-pack.ts wallet-gateway/remote ${PWD}/docker/target",
-        "docker:build": "cd docker && docker build --progress plain ."
+        "full:rebuild": "yarn clean:all && yarn generate:all && yarn install && yarn build:all"
     },
     "workspaces": [
         "api-specs",

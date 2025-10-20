@@ -15,7 +15,7 @@
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
-        "@canton-network/core-types": "workspace:^",
+        "@canton-network/core-types": "workspace:",
         "openapi-fetch": "^0.14.0",
         "uuid": "^11.1.0",
         "zod": "^3.25.67"
