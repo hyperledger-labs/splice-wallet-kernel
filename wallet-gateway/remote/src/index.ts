@@ -21,11 +21,11 @@ const program = new Command()
     .name('wallet-gateway')
     .version(pkg.version)
     .description('Run a remotely hosted Wallet Gateway')
-    .option('-c, --config <path>', 'set config path', '../test/config.json')
+    .option('-c, --config <path>', 'set config path', './config.json')
     .addOption(
         new Option('-f, --log-format <format>', 'set log format')
             .choices(['json', 'pretty'])
-            .default('json')
+            .default('pretty')
     )
     .addOption(
         new Option('-s, --store-type <type>', 'set store type')
