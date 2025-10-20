@@ -15,8 +15,8 @@
         "test": "jest"
     },
     "dependencies": {
-        "@canton-network/core-signing-lib": "workspace:^",
-        "@canton-network/core-wallet-auth": "workspace:^",
+        "@canton-network/core-signing-lib": "workspace:",
+        "@canton-network/core-wallet-auth": "workspace:",
         "fs-extra": "^11.3.0",
         "lodash": "^4.17.21"
     },
