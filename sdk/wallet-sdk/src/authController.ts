@@ -26,6 +26,8 @@ abstract class BaseAuthController implements AuthController {
     abstract getUserToken(): Promise<AuthContext>
     abstract getAdminToken(): Promise<AuthContext>
 
+    protected _accessTokens: Partial<Record<SubjectIdentifier, string>> = {}
+
     protected _isJwtValid(token: string): boolean {
         try {
             const payload = decodeJwt(token)
@@ -95,7 +97,6 @@ export class ClientCredentialOAuthController extends BaseAuthController {
     private _adminSecret: string | undefined
     private _scope: string | undefined
     private _audience: string | undefined
-    private _accessTokens: Partial<Record<SubjectIdentifier, string>> = {}
     private _pendingTokenRequests: Partial<
         Record<SubjectIdentifier, Promise<string>>
     > = {}
@@ -222,7 +223,6 @@ export class UnsafeAuthController extends BaseAuthController {
     unsafeSecret: string | undefined
 
     private _logger: Logger | undefined
-    private _accessTokens: Partial<Record<SubjectIdentifier, string>> = {}
 
     constructor(logger?: Logger) {
         super()
