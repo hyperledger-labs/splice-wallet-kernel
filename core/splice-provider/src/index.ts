@@ -5,9 +5,7 @@ import { SpliceProvider } from './SpliceProvider'
 
 declare global {
     interface Window {
-        splice?: SpliceProvider
         canton?: SpliceProvider
-        ethereum?: SpliceProvider
     }
 }
 
@@ -18,17 +16,13 @@ export enum ProviderType {
 
 export function injectSpliceProvider(provider: SpliceProvider): SpliceProvider {
     // Check if the provider is already injected
-    const existing = window.splice || window.canton || window.ethereum
-    if (existing) return existing
+    if (window.canton !== undefined) return window.canton
 
     // Inject the SpliceProvider instance
-    window.splice = provider
-    window.canton = window.splice // For compatibility with Canton dApps
-    window.ethereum = window.splice // For EIP-1193 compatibility
+    window.canton = provider
 
     console.log('Splice provider injected successfully.')
-
-    return window.splice
+    return window.canton
 }
 
 export * from './SpliceProvider'
