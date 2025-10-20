@@ -11,7 +11,7 @@
     "types": "dist/types/index.d.ts",
     "exports": {
         ".": {
-            "types": "./dist/types/src/index.d.ts",
+            "types": "./dist/types/index.d.ts",
             "import": "./dist/index.js",
             "require": "./dist/index.cjs",
             "default": "./dist/index.js"
@@ -21,6 +21,7 @@
         "build": "yarn build:js && yarn build:types",
         "build:js": "tsup",
         "build:types": "tsc -p tsconfig.types.json",
+        "test123": "yarn tsc -p tsconfig.types.json --showConfig",
         "dev": "tsup --watch",
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "echo \"Warning: no test specified\""
