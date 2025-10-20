@@ -15,9 +15,9 @@
         "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
     },
     "dependencies": {
-        "@canton-network/core-ledger-client": "workspace:^",
-        "@canton-network/core-signing-lib": "workspace:^",
-        "@canton-network/core-wallet-auth": "workspace:^"
+        "@canton-network/core-ledger-client": "workspace:",
+        "@canton-network/core-signing-lib": "workspace:",
+        "@canton-network/core-wallet-auth": "workspace:"
     },
     "devDependencies": {
         "@jest/globals": "^29.0.0",

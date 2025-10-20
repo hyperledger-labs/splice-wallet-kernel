@@ -16,14 +16,14 @@
         "test": "echo \"Warning: no test specified\""
     },
     "dependencies": {
-        "@canton-network/core-ledger-client": "workspace:^",
-        "@canton-network/core-ledger-proto": "workspace:^",
-        "@canton-network/core-signing-lib": "workspace:^",
-        "@canton-network/core-splice-client": "workspace:^",
-        "@canton-network/core-token-standard": "workspace:^",
-        "@canton-network/core-tx-visualizer": "workspace:^",
-        "@canton-network/core-types": "workspace:^",
-        "@canton-network/core-wallet-auth": "workspace:^",
+        "@canton-network/core-ledger-client": "workspace:",
+        "@canton-network/core-ledger-proto": "workspace:",
+        "@canton-network/core-signing-lib": "workspace:",
+        "@canton-network/core-splice-client": "workspace:",
+        "@canton-network/core-token-standard": "workspace:",
+        "@canton-network/core-tx-visualizer": "workspace:",
+        "@canton-network/core-types": "workspace:",
+        "@canton-network/core-wallet-auth": "workspace:",
         "jose": "^5.2.4",
         "pino": "^10.0.0",
         "uuid": "^11.1.0"
