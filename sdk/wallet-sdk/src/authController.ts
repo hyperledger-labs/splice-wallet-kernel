@@ -130,7 +130,7 @@ export class ClientCredentialOAuthController extends BaseAuthController {
 
         const cachedAccessToken = this._accessTokens['user']
         if (cachedAccessToken && this._isJwtValid(cachedAccessToken)) {
-            this._logger?.info('Using cached user token')
+            this._logger?.debug('Using cached user token')
             return { userId: this._userId!, accessToken: cachedAccessToken }
         }
 
@@ -139,7 +139,7 @@ export class ClientCredentialOAuthController extends BaseAuthController {
             return { userId: this._userId!, accessToken }
         }
 
-        this._logger?.info('Creating new user token')
+        this._logger?.debug('Creating new user token')
 
         const tokenPromise = this.service.fetchToken({
             clientId: this._userId!,
@@ -154,7 +154,7 @@ export class ClientCredentialOAuthController extends BaseAuthController {
             const accessToken = await tokenPromise
             this._accessTokens['user'] = accessToken
             return {
-                userId: this._adminId!,
+                userId: this._userId!,
                 accessToken,
             }
         } finally {
@@ -170,7 +170,7 @@ export class ClientCredentialOAuthController extends BaseAuthController {
 
         const cachedAccessToken = this._accessTokens['admin']
         if (cachedAccessToken && this._isJwtValid(cachedAccessToken)) {
-            this._logger?.info('Using cached admin token')
+            this._logger?.debug('Using cached admin token')
             return { userId: this._adminId!, accessToken: cachedAccessToken }
         }
 
@@ -178,7 +178,7 @@ export class ClientCredentialOAuthController extends BaseAuthController {
             const accessToken = await this._pendingTokenRequests['admin']
             return { userId: this._adminId!, accessToken }
         }
-        this._logger?.info('Creating new admin token')
+        this._logger?.debug('Creating new admin token')
 
         const tokenPromise = this.service.fetchToken({
             clientId: this._adminId!,
@@ -245,10 +245,10 @@ export class UnsafeAuthController extends BaseAuthController {
 
         const cachedAccessToken = this._accessTokens[subIdentifier]
         if (cachedAccessToken && this._isJwtValid(cachedAccessToken)) {
-            this._logger?.info('Using cached token')
+            this._logger?.debug('Using cached token')
             return { userId: sub, accessToken: cachedAccessToken }
         }
-        this._logger?.info('Creating new token')
+        this._logger?.debug('Creating new token')
         const secret = new TextEncoder().encode(this.unsafeSecret)
         const now = Math.floor(Date.now() / 1000)
         const jwt = await new SignJWT({
