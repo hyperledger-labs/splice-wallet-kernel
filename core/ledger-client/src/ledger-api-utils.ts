@@ -13,6 +13,7 @@ import {
     HOLDING_INTERFACE_ID,
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
+import { Logger } from '@canton-network/core-types'
 
 type TransactionFilter = Types['TransactionFilter']
 type EventFormat = Types['EventFormat']
@@ -324,8 +325,9 @@ export async function submitExerciseCommand(
     const synchronizerId =
         getSynchronizerIdFromDisclosedContracts(disclosedContracts)
 
-    const prepared = await retryable(() =>
-        ledgerClient.post('/v2/interactive-submission/prepare', {
+    const prepared = await ledgerClient.postWithRetry(
+        '/v2/interactive-submission/prepare',
+        {
             actAs: [partyId],
             readAs: [partyId],
             userId: userId,
@@ -335,7 +337,7 @@ export async function submitExerciseCommand(
             disclosedContracts,
             verboseHashing: true,
             packageIdSelectionPreference: [],
-        })
+        }
     )
 
     const signed = signTransaction(
@@ -363,18 +365,16 @@ export async function submitExerciseCommand(
         Empty: {},
     }
 
-    const ledgerEnd = await ledgerClient.get('/v2/state/ledger-end')
+    const ledgerEnd = await ledgerClient.getWithRetry('/v2/state/ledger-end')
 
-    await retryable(() =>
-        ledgerClient.post('/v2/interactive-submission/execute', {
-            userId,
-            submissionId,
-            preparedTransaction: prepared.preparedTransaction!,
-            hashingSchemeVersion: prepared.hashingSchemeVersion,
-            partySignatures,
-            deduplicationPeriod,
-        })
-    )
+    await ledgerClient.postWithRetry('/v2/interactive-submission/execute', {
+        userId,
+        submissionId,
+        preparedTransaction: prepared.preparedTransaction!,
+        hashingSchemeVersion: prepared.hashingSchemeVersion,
+        partySignatures,
+        deduplicationPeriod,
+    })
 
     const completionPromise = awaitCompletion(
         ledgerClient,
@@ -485,21 +485,20 @@ export async function awaitCompletion(
         throw new Error('Either commandId or submissionId must be provided')
     }
 
-    const responses = await retryable(() =>
-        ledgerClient.post(
-            '/v2/commands/completions',
-            {
-                userId,
-                parties: [partyId],
-                beginExclusive: ledgerEnd,
+    const responses = await ledgerClient.postWithRetry(
+        '/v2/commands/completions',
+        {
+            userId,
+            parties: [partyId],
+            beginExclusive: ledgerEnd,
+        },
+        defaultRetryableOptions,
+        {
+            query: {
+                limit: COMPLETIONS_LIMIT,
+                stream_idle_timeout_ms: COMPLETIONS_STREAM_IDLE_TIMEOUT_MS,
             },
-            {
-                query: {
-                    limit: COMPLETIONS_LIMIT,
-                    stream_idle_timeout_ms: COMPLETIONS_STREAM_IDLE_TIMEOUT_MS,
-                },
-            }
-        )
+        }
     )
 
     const completions = responses.filter(
@@ -560,14 +559,28 @@ export async function promiseWithTimeout<T>(
     }
 }
 
-export async function retryable<T>(
-    fn: () => Promise<T>,
-    retries: number = 5,
-    delayMs: number = 1000,
-    cantonErrorKeys: string[] = [
+export type retryableOptions = {
+    retries: number
+    delayMs: number
+    cantonErrorKeys: string[]
+}
+export const defaultRetryableOptions: retryableOptions = {
+    retries: 5,
+    delayMs: 3000,
+    cantonErrorKeys: [
         'SEQUENCER_REQUEST_FAILED',
         'SEQUENCER_BACKPRESSURE',
-    ]
+        'SUBMISSION_ALREADY_IN_FLIGHT',
+        'LOCAL_VERDICT_TIMEOUT',
+        'NOT_SEQUENCED_TIMEOUT',
+        'NO_VIEW_WITH_VALID_RECIPIENTS',
+    ],
+}
+
+export async function retryable<T>(
+    fn: () => Promise<T>,
+    retryableOptions: retryableOptions,
+    logger?: Logger
 ): Promise<T> {
     let attempts = 0
     while (true) {
@@ -575,18 +588,25 @@ export async function retryable<T>(
             return await fn()
         } catch (err: unknown) {
             const message: string =
-                typeof err?.message === 'string' ? err.message : ''
+                typeof (err as Error)?.message === 'string'
+                    ? (err as Error).message
+                    : ''
             const shouldRetry =
-                cantonErrorKeys.length === 0 ||
-                cantonErrorKeys.some((key) => message.includes(key))
-            if (++attempts < retries && shouldRetry) {
-                await new Promise((res) => setTimeout(res, delayMs))
+                retryableOptions.cantonErrorKeys.length === 0 ||
+                retryableOptions.cantonErrorKeys.some((key) =>
+                    message.includes(key)
+                )
+            if (++attempts < retryableOptions.retries && shouldRetry) {
+                logger?.warn(
+                    `Caught retryiable error: ${message}. Retrying attempt ${attempts} of ${retryableOptions.retries}...`
+                )
+                await new Promise((res) =>
+                    setTimeout(res, retryableOptions.delayMs)
+                )
 
                 continue
             }
-            throw new Error(
-                `Operation failed after ${attempts} attempts: ${JSON.stringify(err)}`
-            )
+            throw err
         }
     }
 }

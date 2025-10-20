@@ -18,6 +18,7 @@ import {
     Network,
 } from '@canton-network/core-wallet-store'
 import { LedgerClient } from '@canton-network/core-ledger-client'
+import { defaultRetryableOptions } from '@canton-network/core-ledger-client/dist/ledger-api-utils'
 
 interface UserStorage {
     wallets: Array<Wallet>
@@ -99,8 +100,9 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                 this.authContext!.accessToken,
                 this.logger
             )
-            const rights = await ledgerClient.get(
+            const rights = await ledgerClient.getWithRetry(
                 '/v2/users/{user-id}/rights',
+                defaultRetryableOptions,
                 {
                     path: {
                         'user-id': this.authContext!.userId,

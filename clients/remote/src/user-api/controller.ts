@@ -337,7 +337,7 @@ export const userController = (
                         packageIdSelectionPreference: [],
                     }
                     try {
-                        const res = await ledgerClient.post(
+                        const res = await ledgerClient.postWithRetry(
                             '/v2/commands/submit-and-wait',
                             request
                         )
@@ -356,7 +356,7 @@ export const userController = (
                     }
                 }
                 case SigningProvider.WALLET_KERNEL: {
-                    const result = await ledgerClient.post(
+                    const result = await ledgerClient.postWithRetry(
                         '/v2/interactive-submission/execute',
                         {
                             userId,

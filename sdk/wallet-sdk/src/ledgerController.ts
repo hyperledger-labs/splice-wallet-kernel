@@ -26,7 +26,7 @@ import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-proto'
 import { TopologyController } from './topologyController.js'
 import { PartyId } from '@canton-network/core-types'
-import { retryable } from '@canton-network/core-ledger-client/dist/ledger-api-utils.js'
+import { defaultRetryableOptions } from '@canton-network/core-ledger-client/dist/ledger-api-utils.js'
 
 export type RawCommandMap = {
     ExerciseCommand: Types['ExerciseCommand']
@@ -252,10 +252,14 @@ export class LedgerController {
      */
     async allocateInternalParty(partyHint?: string): Promise<PartyId> {
         if (partyHint && partyHint !== undefined) {
-            const internalParty = await this.client.get('/v2/parties', {
-                path: { partyHint: partyHint },
-                query: {},
-            })
+            const internalParty = await this.client.getWithRetry(
+                '/v2/parties',
+                defaultRetryableOptions,
+                {
+                    path: { partyHint: partyHint },
+                    query: {},
+                }
+            )
             if (
                 internalParty.partyDetails &&
                 internalParty.partyDetails.length > 0
@@ -265,7 +269,7 @@ export class LedgerController {
         }
 
         return (
-            await this.client.post('/v2/parties', {
+            await this.client.postWithRetry('/v2/parties', {
                 partyIdHint: partyHint || v4(),
                 identityProviderId: '',
             })
@@ -388,7 +392,7 @@ export class LedgerController {
                 )
                 .map((client) =>
                     client
-                        .get('/v2/parties/participant-id')
+                        .getWithRetry('/v2/parties/participant-id')
                         .then((res) => res.participantId)
                 ) || []
         )
@@ -449,11 +453,9 @@ export class LedgerController {
             packageIdSelectionPreference: [],
         }
 
-        return await retryable(() =>
-            this.client.post(
-                '/v2/interactive-submission/prepare',
-                prepareParams
-            )
+        return await this.client.postWithRetry(
+            '/v2/interactive-submission/prepare',
+            prepareParams
         )
     }
 
@@ -534,9 +536,11 @@ export class LedgerController {
             },
         }
 
-        await retryable(() =>
-            this.client.post('/v2/interactive-submission/execute', request)
+        await this.client.postWithRetry(
+            '/v2/interactive-submission/execute',
+            request
         )
+
         return submissionId
     }
 
@@ -596,7 +600,7 @@ export class LedgerController {
      * @param commands the commands to be executed.
      * @param commandId an unique identifier used to track the transaction, if not provided a random UUID will be used.
      * @param disclosedContracts additional contracts used to resolve contract & contract key lookups.
-    
+
      */
     async submitCommand(
         commands: WrappedCommand | WrappedCommand[] | unknown,
@@ -617,7 +621,10 @@ export class LedgerController {
             packageIdSelectionPreference: [],
         }
 
-        return await this.client.post('/v2/commands/submit-and-wait', request)
+        return await this.client.postWithRetry(
+            '/v2/commands/submit-and-wait',
+            request
+        )
     }
 
     /**
@@ -626,14 +633,18 @@ export class LedgerController {
      * @returns A paginated list of parties.
      */
     async listWallets(): Promise<PartyId[]> {
-        const rights = await this.client.get('/v2/users/{user-id}/rights', {
-            path: { 'user-id': this.userId },
-        })
+        const rights = await this.client.getWithRetry(
+            '/v2/users/{user-id}/rights',
+            defaultRetryableOptions,
+            {
+                path: { 'user-id': this.userId },
+            }
+        )
 
         if (rights.rights!.some((r) => 'CanReadAsAnyParty' in r.kind)) {
-            return (await this.client.get('/v2/parties')).partyDetails!.map(
-                (p) => p.party
-            )
+            return (
+                await this.client.getWithRetry('/v2/parties')
+            ).partyDetails!.map((p) => p.party)
         } else {
             const canReadAsPartyRight = rights.rights?.find(
                 (r) => 'CanReadAsParty' in r.kind
@@ -660,8 +671,9 @@ export class LedgerController {
         const params: Record<string, unknown> = {
             query: { party: partyId ?? this.getPartyId() },
         }
-        return await this.client.get(
+        return await this.client.getWithRetry(
             '/v2/state/connected-synchronizers',
+            defaultRetryableOptions,
             params
         )
     }
@@ -718,12 +730,12 @@ export class LedgerController {
             },
         }
 
-        const spliceWalletPackageVersionResponse = await retryable(() =>
-            this.client.get(
+        const spliceWalletPackageVersionResponse =
+            await this.client.getWithRetry(
                 '/v2/interactive-submission/preferred-package-version',
+                defaultRetryableOptions,
                 params
             )
-        )
 
         const version =
             spliceWalletPackageVersionResponse.packagePreference
@@ -780,7 +792,7 @@ export class LedgerController {
      * @returns The current ledger end.
      */
     async ledgerEnd(): Promise<GetResponse<'/v2/state/ledger-end'>> {
-        return await this.client.get('/v2/state/ledger-end')
+        return await this.client.getWithRetry('/v2/state/ledger-end')
     }
 
     /**
@@ -859,7 +871,10 @@ export class LedgerController {
         }
 
         //TODO: figure out if this should automatically be converted to a format that is more user friendly
-        return await this.client.post('/v2/state/active-contracts', filter)
+        return await this.client.postWithRetry(
+            '/v2/state/active-contracts',
+            filter
+        )
     }
 
     async uploadDar(
@@ -869,9 +884,10 @@ export class LedgerController {
             throw new Error('Use adminLedger to call uploadDar')
         }
         try {
-            return await this.client.post(
+            return await this.client.postWithRetry(
                 '/v2/packages',
                 darBytes as never,
+                defaultRetryableOptions,
                 {},
                 {
                     bodySerializer: (b: unknown) => b, // prevents jsonification of bytes
@@ -911,7 +927,7 @@ export class LedgerController {
     }
 
     async isPackageUploaded(packageId: string): Promise<boolean> {
-        const { packageIds } = await this.client!.get('/v2/packages')
+        const { packageIds } = await this.client!.getWithRetry('/v2/packages')
         return Array.isArray(packageIds) && packageIds.includes(packageId)
     }
 

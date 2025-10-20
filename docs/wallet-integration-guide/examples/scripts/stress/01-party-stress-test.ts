@@ -137,7 +137,7 @@ await sdk.setPartyId(validatorOperatorParty)
 
 await sdk.tokenStandard?.createAndSubmitTapInternal(
     validatorOperatorParty,
-    '2000000000',
+    '20000000000000',
     {
         instrumentId: 'Amulet',
         instrumentAdmin: instrument.instrumentAdmin,
@@ -155,7 +155,7 @@ await sdk.tokenStandard?.createAndSubmitTapInternal(
 
 const partiesPerInterval = process.env.PARTIES_PER_INTERVAL
     ? parseInt(process.env.PARTIES_PER_INTERVAL, 0)
-    : 1
+    : 3
 const intervalLengthMs = process.env.INTERVAL_LENGTH_MS
     ? parseInt(process.env.INTERVAL_LENGTH_MS, 0)
     : 5000
