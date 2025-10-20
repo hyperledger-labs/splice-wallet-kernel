@@ -17,6 +17,7 @@
     },
     "scripts": {
         "build": "tsc --build",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {

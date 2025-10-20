@@ -9,11 +9,11 @@ import {
 } from '@canton-network/core-wallet-auth'
 
 export interface AuthController {
-    /** gets an auth context correlating to the admin user provided.
+    /** gets an auth context correlating to the ledger user provided.
      */
     getUserToken(): Promise<AuthContext>
 
-    /** gets an auth context correlating to the non-admin user provided.
+    /** gets an auth context correlating to the admin user provided.
      */
     getAdminToken(): Promise<AuthContext>
     userId: string | undefined

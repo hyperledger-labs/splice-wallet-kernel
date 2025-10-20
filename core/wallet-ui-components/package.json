@@ -16,7 +16,8 @@
         "build": "vite build && yarn workspace @canton-network/core-wallet-ui-components tsc --emitDeclarationOnly",
         "build:watch": "vite build --watch & tsc --emitDeclarationOnly --watch",
         "typecheck": "tsc --noEmit",
-        "clean": "tsc -b --clean; rm -rf dist",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
+        "clean": "rm -rf dist",
         "dev": "storybook dev -p 6006"
     },
     "devDependencies": {

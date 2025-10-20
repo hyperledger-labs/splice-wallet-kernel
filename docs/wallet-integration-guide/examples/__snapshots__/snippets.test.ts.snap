@@ -10,3 +10,5 @@ exports[`testing doc snippets create-key-pair.ts 1`] = `
 `;
 
 exports[`testing doc snippets generate-fingerprint.ts 1`] = `"1220dd3caa6464d2ba93b1fb195ede9344d54a0e17405d9331e91ceea27f07d414f7"`;
+
+exports[`testing doc snippets oauth-controller.ts 1`] = `undefined`;

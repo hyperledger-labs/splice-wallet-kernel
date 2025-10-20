@@ -1,8 +1,7 @@
 {
-    "name": "@canton-network/clients-remote",
-    "version": "0.0.1",
-    "description": "",
-    "private": true,
+    "name": "@canton-network/wallet-gateway-remote",
+    "version": "0.1.0",
+    "description": "A server-side Wallet Gateway implementation over HTTP",
     "main": "dist/index.js",
     "bin": "dist/index.js",
     "type": "module",
@@ -13,6 +12,7 @@
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)",
         "start": "yarn node dist/index.js -c ../test/config.json",
         "debug": "yarn node --inspect-brk dist/index.js -c ../test/config.json",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "db:bootstrap": "tsx ./src/index -c ../test/config.json db bootstrap",
         "db:migrate:up": "tsx ./src/index -c ../test/config.json db up",
         "db:migrate:down": "tsx ./src/index -c ../test/config.json db down",
@@ -22,6 +22,12 @@
     "keywords": [],
     "author": "",
     "license": "ISC",
+    "files": [
+        "dist/**"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
         "@canton-network/core-rpc-errors": "workspace:^",

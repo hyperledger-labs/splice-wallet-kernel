@@ -11,7 +11,12 @@
         "sharedGlobals": []
     },
     "release": {
-        "projects": ["core/*", "sdk/*", "!core/rpc-generator"],
+        "projects": [
+            "core/*",
+            "sdk/*",
+            "wallet-gateway/remote",
+            "!core/rpc-generator"
+        ],
         "projectsRelationship": "independent",
         "version": {
             "conventionalCommits": true,
@@ -26,6 +31,9 @@
         }
     },
     "targetDefaults": {
+        "flatpack": {
+            "dependsOn": ["build", "^flatpack"]
+        },
         "build": {
             "dependsOn": ["^build"],
             "cache": true
