@@ -206,7 +206,8 @@
                 "schema": {
                     "$ref": "#/components/schemas/RequestAccountsResult"
                 }
-            }
+            },
+            "description": "Lists the addresses (wallets) with their properties; including which network they are associated to and with signing provider is used."
         },
         {
             "name": "onTxChanged",
@@ -260,7 +261,7 @@
                 "properties": {
                     "response": {
                         "title": "response",
-                        "type": "object"
+                        "type": "string"
                     }
                 },
                 "required": ["response"]

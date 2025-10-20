@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Disabled unused vars rule to allow for future implementations
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { assertConnected, AuthContext } from '@canton-network/core-wallet-auth'
 import buildController from './rpc-gen/index.js'
 import {
@@ -11,7 +10,12 @@ import {
     PrepareReturnParams,
 } from './rpc-gen/typings.js'
 import { Store } from '@canton-network/core-wallet-store'
-import { LedgerClient, PostResponse } from '@canton-network/core-ledger-client'
+import {
+    LedgerClient,
+    GetEndpoint,
+    PostResponse,
+    PostEndpoint,
+} from '@canton-network/core-ledger-client'
 import { v4 } from 'uuid'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo as KernelInfoConfig } from '../config/Config.js'
@@ -66,9 +70,28 @@ export const dappController = (
                 assertConnected(context).accessToken,
                 logger
             )
-
+            let result: unknown
+            switch (params.requestMethod) {
+                case 'GET':
+                    result = await ledgerClient.get(
+                        params.resource as GetEndpoint
+                    )
+                    break
+                case 'POST':
+                    result = await ledgerClient.post(
+                        params.resource as PostEndpoint,
+                        params.body
+                            ? (JSON.parse(params.body) as never)
+                            : (undefined as never)
+                    )
+                    break
+                default:
+                    throw new Error(
+                        `Unsupported request method: ${params.requestMethod}`
+                    )
+            }
             return {
-                response: 'default-response',
+                response: JSON.stringify(result),
             }
         },
         prepareExecute: async (params: PrepareExecuteParams) => {

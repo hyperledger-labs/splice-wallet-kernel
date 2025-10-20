@@ -261,7 +261,7 @@
                 "properties": {
                     "response": {
                         "title": "response",
-                        "type": "object"
+                        "type": "string"
                     }
                 },
                 "required": ["response"]
