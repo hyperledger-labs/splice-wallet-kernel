@@ -67,17 +67,7 @@ export async function initialize(opts: {
 
     const notificationService = new NotificationService(logger)
 
-    // TODO: make the default config path point to ${PWD}/config.json
-    const defaultConfig = path.join(
-        dirname(fileURLToPath(import.meta.url)),
-        '..',
-        'test',
-        'config.json'
-    )
-
-    const configPath = opts.config || defaultConfig
-
-    const config = ConfigUtils.loadConfigFile(configPath)
+    const config = ConfigUtils.loadConfigFile(opts.config)
     const store = new StoreSql(connection(config.store), logger)
     const authService = jwtAuthService(store, logger)
 

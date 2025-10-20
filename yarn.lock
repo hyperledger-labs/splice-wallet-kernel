@@ -1953,6 +1953,7 @@ __metadata:
     vite-express: "npm:^0.21.1"
     zod: "npm:^3.25.64"
   bin:
+    wallet-gateway: dist/index.js
     wallet-gateway-remote: dist/index.js
   languageName: unknown
   linkType: soft

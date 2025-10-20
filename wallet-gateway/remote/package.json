@@ -3,7 +3,10 @@
     "version": "0.1.0",
     "description": "A server-side Wallet Gateway implementation over HTTP",
     "main": "dist/index.js",
-    "bin": "dist/index.js",
+    "bin": {
+        "wallet-gateway": "dist/index.js",
+        "wallet-gateway-remote": "dist/index.js"
+    },
     "type": "module",
     "scripts": {
         "build": "vite build && tsc -b && tsc -b tsconfig.frontend.json && yarn db:migrate:reset && yarn db:bootstrap",
