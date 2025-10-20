@@ -379,8 +379,7 @@ export async function submitExerciseCommand(
         ledgerEnd.offset,
         partyId,
         userId,
-        commandId,
-        submissionId
+        commandId
     )
     return promiseWithTimeout(
         completionPromise,
@@ -476,13 +475,8 @@ export async function awaitCompletion(
     ledgerEnd: number,
     partyId: PartyId,
     userId: string,
-    commandId?: string,
-    submissionId?: string
+    commandIdOrSubmissionId: string
 ): Promise<Completion> {
-    if (!commandId && !submissionId) {
-        throw new Error('Either commandId or submissionId must be provided')
-    }
-
     const responses = await ledgerClient.post(
         '/v2/commands/completions',
         {
@@ -506,10 +500,10 @@ export async function awaitCompletion(
         const completion = response.completionResponse.Completion
         if (!completion) return false
         if (completion.value.userId !== userId) return false
-        if (commandId && completion.value.commandId !== commandId) return false
-        if (submissionId && completion.value.submissionId !== submissionId)
-            return false
-        return true
+        if (completion.value.commandId === commandIdOrSubmissionId) return true
+        if (completion.value.submissionId === commandIdOrSubmissionId)
+            return true
+        return false
     })
 
     if (wantedCompletion) {
@@ -531,8 +525,7 @@ export async function awaitCompletion(
             newLedgerEnd || ledgerEnd, // !newLedgerEnd implies response was empty
             partyId,
             userId,
-            commandId,
-            submissionId
+            commandIdOrSubmissionId
         )
     }
 }

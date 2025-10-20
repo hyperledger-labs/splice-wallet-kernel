@@ -3,7 +3,7 @@
 
 import fs from 'fs'
 import path from 'path'
-import { error, getRepoRoot, success } from './utils.js'
+import { error, getRepoRoot, success } from './lib/utils.js'
 import child_process from 'child_process'
 
 const dir = path.join(

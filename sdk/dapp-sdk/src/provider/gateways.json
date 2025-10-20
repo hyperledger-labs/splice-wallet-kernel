@@ -1,0 +1,10 @@
+[
+    {
+        "name": "Example",
+        "rpcUrl": "http://localhost:3008/rpc"
+    },
+    {
+        "name": "Example2",
+        "rpcUrl": "http://localhost:3008/rpc"
+    }
+]

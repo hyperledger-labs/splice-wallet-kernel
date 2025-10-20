@@ -220,9 +220,15 @@ logger.info(featuredAppRights, 'featured app rights')
 
 await sdk.setPartyId(treasuryParty?.partyId!)
 
+const beneficiaries = [
+    {
+        beneficiary: exchangeParty!,
+        weight: 1.0,
+    },
+]
+
 const [transferCommand, disclosedContracts2] =
     await sdk.tokenStandard!.createTransferUsingDelegateProxy(
-        exchangeParty!,
         proxyCid!,
         featuredAppRights?.contract_id!,
         treasuryParty?.partyId!,
@@ -230,6 +236,7 @@ const [transferCommand, disclosedContracts2] =
         '100',
         'Amulet',
         instrumentAdminPartyId,
+        beneficiaries,
         [],
         'memo-ref'
     )

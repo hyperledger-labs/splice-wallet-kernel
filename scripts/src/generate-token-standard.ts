@@ -11,7 +11,7 @@ import {
     getAllFilesWithExtension,
     ensureDir,
     copyFileRecursive,
-} from './utils.js'
+} from './lib/utils.js'
 import { installDamlSDK } from './install-daml-sdk.js'
 
 const repoRoot = getRepoRoot()

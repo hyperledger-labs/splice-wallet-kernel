@@ -31,19 +31,22 @@
         "script:validate:package": "tsx ./scripts/src/package-and-verify-wallet-sdk.ts",
         "script:test:examples": "tsx ./scripts/src/test-example-scripts.ts",
         "script:retag": "tsx ./scripts/src/retag.ts",
-        "full:rebuild": "yarn clean:all && yarn generate:all && yarn build:all"
+        "script:flat-pack": "tsx ./scripts/src/flat-pack.ts",
+        "full:rebuild": "yarn clean:all && yarn generate:all && yarn install && yarn build:all",
+        "docker:flat-pack": "rm -rf docker/target && tsx ./scripts/src/flat-pack.ts wallet-gateway/remote ${PWD}/docker/target",
+        "docker:build": "cd docker && docker build --progress plain ."
     },
     "workspaces": [
         "api-specs",
-        "clients/**",
         "core/**",
+        "docs/wallet-integration-guide/examples",
         "damljs/**",
         "example",
         "example-scripts",
         "sdk/**",
         "scripts",
         "mock-oauth2",
-        "docs/wallet-integration-guide/examples"
+        "wallet-gateway/**"
     ],
     "devDependencies": {
         "@commitlint/config-conventional": "^19.8.1",
@@ -62,6 +65,7 @@
         "@swc/core": "^1.13.4",
         "@swc/helpers": "~0.5.11",
         "@types/node": "20.19.9",
+        "@typescript-eslint/parser": "^8.33.1",
         "commitlint": "^19.8.1",
         "eslint": "^9.28.0",
         "eslint-plugin-headers": "^1.3.3",

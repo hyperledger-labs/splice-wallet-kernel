@@ -7,7 +7,7 @@ import {
     SPLICE_VERSION,
     downloadAndUnpackTarball,
     LOCALNET_ARCHIVE_HASH,
-} from './utils.js'
+} from './lib/utils.js'
 import path from 'path'
 
 const LOCALNET_PATH = path.join(process.cwd(), '.localnet')

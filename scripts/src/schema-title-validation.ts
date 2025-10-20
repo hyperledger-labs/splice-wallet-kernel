@@ -3,7 +3,7 @@
 
 import * as fs from 'fs'
 import * as path from 'path'
-import { API_SPECS_PATH, markFile } from './utils.js'
+import { API_SPECS_PATH, markFile } from './lib/utils.js'
 import * as jsonc from 'jsonc-parser'
 
 function validateSchemaTitles(fileContent: string, filePath: string): void {
