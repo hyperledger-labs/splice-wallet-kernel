@@ -14,6 +14,7 @@ import {
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 import { Logger } from '@canton-network/core-types'
+import { ErrorInfo, RetryInfo } from '@canton-network/core-ledger-proto'
 
 type TransactionFilter = Types['TransactionFilter']
 type EventFormat = Types['EventFormat']
@@ -587,10 +588,8 @@ export async function retryable<T>(
         try {
             return await fn()
         } catch (err: unknown) {
-            const message: string =
-                typeof (err as Error)?.message === 'string'
-                    ? (err as Error).message
-                    : ''
+            const grpcError = asGrpcError(err)
+            const message: string = grpcError.message
             const shouldRetry =
                 retryableOptions.cantonErrorKeys.length === 0 ||
                 retryableOptions.cantonErrorKeys.some((key) =>
@@ -606,7 +605,7 @@ export async function retryable<T>(
 
                 continue
             }
-            throw err
+            throw grpcError
         }
     }
 }
@@ -614,3 +613,74 @@ export async function retryable<T>(
 // Helper for differentiating ledger errors from others and satisfying TS when checking error properties
 export const isJsCantonError = (e: unknown): e is Types['JsCantonError'] =>
     typeof e === 'object' && e !== null && 'status' in e && 'errorCategory' in e
+
+export const asGrpcError = (
+    e: unknown
+): {
+    code: number
+    message: string
+    errorInfo: ErrorInfo | undefined
+    retryInfo: RetryInfo | undefined
+} => {
+    let errorInfo: ErrorInfo | undefined = undefined
+    const retryInfo: RetryInfo | undefined = undefined
+    let code = 500
+    let message = (e as Error)?.message || ''
+    if (typeof e === 'object' && e !== null && 'cause' in e) {
+        message = e.cause as string
+    } else if (typeof e === 'object' && e !== null && 'message' in e) {
+        message = e.message as string
+    }
+    if (
+        typeof e === 'object' &&
+        e !== null &&
+        'status' in e &&
+        'code' in e &&
+        typeof e.status === 'object' &&
+        e.status !== null &&
+        'message' in e.status &&
+        'details' in e.status &&
+        Array.isArray(e.status.details)
+    ) {
+        code = e.code as number
+        const status = e.status
+        message = status.message as string
+        if (
+            status &&
+            typeof status === 'object' &&
+            Array.isArray(status.details)
+        ) {
+            for (const detail of status.details) {
+                if (
+                    detail.typeUrl ===
+                        'type.googleapis.com/google.rpc.ErrorInfo' &&
+                    typeof detail.value === 'string'
+                ) {
+                    try {
+                        errorInfo = ErrorInfo.fromJsonString(detail.value)
+                    } catch {
+                        //if parsing fails, we skip adding ErrorInfo
+                    }
+                }
+            }
+        }
+    } else {
+        console.log('parsing failed type guard')
+        console.log(e)
+        // if (typeof e === 'object' && e !== null && !('cause' in e)) {
+        // console.log('typeof e === "object"', typeof e === 'object');
+        // console.log('e !== null', e !== null);
+        // console.log('"status" in e', 'status' in (e as any));
+        // console.log('"code" in e', 'code' in (e as any));
+        // console.log('typeof e.status === "object"', typeof (e as any).status === 'object');
+        // console.log('e.status !== null', (e as any).status !== null);
+        // console.log('"message" in e.status', 'message' in (e as any).status);
+        // console.log('"details" in e.status', 'details' in (e as any).status);
+        // console.log('Array.isArray(e.status.details)', Array.isArray((e as any).status.details));
+        // }
+        // console.log('re-throwing')
+        throw e
+    }
+    // Fallback: just return the error message
+    return { code: code, message: message || String(e), errorInfo, retryInfo }
+}
