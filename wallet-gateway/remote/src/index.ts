@@ -9,8 +9,17 @@ import { initialize } from './init.js'
 import { createCLI } from '@canton-network/core-wallet-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
 
+import { readFileSync } from 'fs'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const pkg = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8'))
+
 const program = new Command()
-    .name('wallet-gateway-remote')
+    .name('wallet-gateway')
+    .version(pkg.version)
     .description('Run a remotely hosted Wallet Gateway')
     .option('-c, --config <path>', 'set config path', '../test/config.json')
     .addOption(
