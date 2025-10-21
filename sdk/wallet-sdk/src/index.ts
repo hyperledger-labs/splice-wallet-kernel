@@ -37,7 +37,14 @@ export * from './config.js'
 import { PartyId } from '@canton-network/core-types'
 
 type AuthFactory = () => AuthController
-type LedgerFactory = (
+type LedgerFactory = {
+    /**
+     * @deprecated This method will be removed with version 1.0.0, please use AuthTokenProvider version instead)
+     */
+    (userId: string, token: string): LedgerController
+    (userId: string, authTokenProvider: AuthTokenProvider): LedgerController
+}
+type LedgerFactoryWithCache = (
     userId: string,
     authTokenProvider: AuthTokenProvider
 ) => LedgerController
@@ -98,7 +105,8 @@ export class WalletSDKImpl implements WalletSDK {
     }
 
     private authFactory: AuthFactory = localAuthDefault
-    private ledgerFactory: LedgerFactory = localLedgerDefault
+    private ledgerFactory: LedgerFactory | LedgerFactoryWithCache =
+        localLedgerDefault
     private topologyFactory: TopologyFactory = localTopologyDefault
     private tokenStandardFactory: TokenStandardFactory =
         localTokenStandardDefault

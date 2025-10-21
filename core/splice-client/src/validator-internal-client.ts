@@ -56,15 +56,13 @@ export class ValidatorInternalClient {
         accessTokenProvider: AccessTokenProvider
     ) {
         this.accessTokenProvider = accessTokenProvider
-        const adminAccessToken = this.accessTokenProvider.getAdminAccessToken()
         this.logger = logger
-        this.logger.debug(
-            { baseUrl, adminAccessToken },
-            'ValidatorInternalClient initialized'
-        )
+        this.logger.debug({ baseUrl }, 'ValidatorInternalClient initialized')
         this.client = createClient<paths>({
             baseUrl: baseUrl.href,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
+                const adminAccessToken =
+                    this.accessTokenProvider.getAdminAccessToken()
                 return fetch(url, {
                     ...options,
                     headers: {

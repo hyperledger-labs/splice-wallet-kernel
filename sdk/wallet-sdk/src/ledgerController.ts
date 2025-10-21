@@ -42,26 +42,26 @@ export class LedgerController {
     private readonly userId: string
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
-    private readonly accessTokenProvider: AccessTokenProvider
     private logger = pino({ name: 'LedgerController', level: 'info' })
 
     /** Creates a new instance of the LedgerController.
      *
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
-     * @param token the access token from the user, usually provided by an auth controller.
+     * @param accessTokenProvider provider for caching access tokens used to authenticate requests.
+     * @param token the access token from the user, usually provided by an auth controller. This parameter will be removed with version 1.0.0, please use accessTokenProvider instead)
      */
     constructor(
         userId: string,
         baseUrl: URL,
-        accessTokenProvider: AccessTokenProvider
+        accessTokenProvider?: AccessTokenProvider,
+        token?: string
     ) {
-        this.accessTokenProvider = accessTokenProvider
         this.client = new LedgerClient(
             baseUrl,
             this.logger,
-            undefined,
-            this.accessTokenProvider
+            token,
+            accessTokenProvider
         )
         this.client.init()
         this.userId = userId

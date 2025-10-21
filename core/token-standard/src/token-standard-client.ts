@@ -61,15 +61,13 @@ export class TokenStandardClient {
         accessTokenProvider: AccessTokenProvider
     ) {
         this.accessTokenProvider = accessTokenProvider
-        const adminAccessToken = accessTokenProvider.getAdminAccessToken()
         this.logger = logger
-        this.logger.debug(
-            { baseUrl, adminAccessToken },
-            'TokenStandardClient initialized'
-        )
+        this.logger.debug({ baseUrl }, 'TokenStandardClient initialized')
         this.client = createClient<paths>({
             baseUrl,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
+                const adminAccessToken =
+                    accessTokenProvider.getAdminAccessToken()
                 return fetch(url, {
                     ...options,
                     headers: {
