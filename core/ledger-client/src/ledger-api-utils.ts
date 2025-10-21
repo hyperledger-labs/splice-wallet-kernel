@@ -515,7 +515,7 @@ export async function awaitCompletion(
         const status = completion.value.status
         if (status && status.code !== 0) {
             // status.code is 0 for success
-            throw status
+            throw asGrpcError(status)
         }
         return completion.value
     } else {
@@ -614,7 +614,7 @@ export const asGrpcError = (
     retryInfo: RetryInfo | undefined
 } => {
     let errorInfo: ErrorInfo | undefined = undefined
-    const retryInfo: RetryInfo | undefined = undefined
+    let retryInfo: RetryInfo | undefined = undefined
     let code = 500
     let message = (e as Error)?.message || ''
     if (typeof e === 'object' && e !== null && 'cause' in e) {
@@ -625,33 +625,35 @@ export const asGrpcError = (
     if (
         typeof e === 'object' &&
         e !== null &&
-        'status' in e &&
         'code' in e &&
-        typeof e.status === 'object' &&
-        e.status !== null &&
-        'message' in e.status &&
-        'details' in e.status &&
-        Array.isArray(e.status.details)
+        'message' in e &&
+        'details' in e &&
+        Array.isArray(e.details)
     ) {
         code = e.code as number
-        const status = e.status
-        message = status.message as string
-        if (
-            status &&
-            typeof status === 'object' &&
-            Array.isArray(status.details)
-        ) {
-            for (const detail of status.details) {
-                if (
-                    detail.typeUrl ===
-                        'type.googleapis.com/google.rpc.ErrorInfo' &&
-                    typeof detail.value === 'string'
-                ) {
-                    try {
-                        errorInfo = ErrorInfo.fromJsonString(detail.value)
-                    } catch {
-                        //if parsing fails, we skip adding ErrorInfo
-                    }
+        message = e.message as string
+        for (const detail of e.details) {
+            if (
+                detail.typeUrl === 'type.googleapis.com/google.rpc.ErrorInfo' &&
+                typeof detail.value === 'string'
+            ) {
+                try {
+                    errorInfo = ErrorInfo.fromBinary(
+                        Buffer.from(detail.value, 'base64')
+                    )
+                } catch {
+                    //if parsing fails, we skip adding ErrorInfo
+                }
+            } else if (
+                detail.typeUrl === 'type.googleapis.com/google.rpc.RetryInfo' &&
+                typeof detail.value === 'string'
+            ) {
+                try {
+                    retryInfo = RetryInfo.fromBinary(
+                        Buffer.from(detail.value, 'base64')
+                    )
+                } catch {
+                    //if parsing fails, we skip adding RetryInfo
                 }
             }
         }
@@ -660,5 +662,5 @@ export const asGrpcError = (
         throw e
     }
     // Fallback: just return the error message
-    return { code: code, message: message || String(e), errorInfo, retryInfo }
+    return { code: code, message: message, errorInfo, retryInfo }
 }
