@@ -23,7 +23,7 @@ type paths = v3_3.paths | v3_4.paths
 
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional
-type PostEndpoint = {
+export type PostEndpoint = {
     [Pathname in keyof paths]: paths[Pathname] extends {
         post: unknown
     }
@@ -46,7 +46,7 @@ export type PostResponse<Path extends PostEndpoint> = paths[Path] extends {
     : never
 
 // Similar as above, for GETs
-type GetEndpoint = {
+export type GetEndpoint = {
     [Pathname in keyof paths]: paths[Pathname] extends {
         get: unknown
     }
