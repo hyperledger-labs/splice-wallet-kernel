@@ -19,6 +19,7 @@ export type PartyId = z.infer<typeof PartyId>
  * Interface for providing access tokens used to authenticate requests
  */
 export interface AccessTokenProvider {
+    getUserAccessToken(): Promise<string>
     getAdminAccessToken(): Promise<string>
 }
 /**
