@@ -347,6 +347,7 @@ export const userController = (
             const ledgerClient = new LedgerClient(
                 new URL(network.ledgerApi.baseUrl),
                 logger,
+                false,
                 undefined,
                 userAccessTokenProvider
             )
@@ -512,6 +513,7 @@ export const userController = (
                 new LedgerClient(
                     new URL(network.ledgerApi.baseUrl),
                     logger,
+                    false,
                     undefined,
                     userAccessTokenProvider
                 ),

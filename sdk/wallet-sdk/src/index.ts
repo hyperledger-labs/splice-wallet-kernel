@@ -60,7 +60,8 @@ type TopologyFactory = (
 ) => TopologyController
 type TokenStandardFactory = (
     userId: string,
-    authTokenProvider: AuthTokenProvider
+    authTokenProvider: AuthTokenProvider,
+    isAdmin: boolean
 ) => TokenStandardController
 type ValidatorFactory = (
     userId: string,
@@ -162,7 +163,8 @@ export class WalletSDKImpl implements WalletSDK {
         )
         this.tokenStandard = this.tokenStandardFactory(
             userId,
-            this._authTokenProvider
+            this._authTokenProvider,
+            false
         )
         this.validator = this.validatorFactory(userId, this._authTokenProvider)
         return this

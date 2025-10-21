@@ -31,6 +31,7 @@ export class PartyAllocationService {
         this.ledgerClient = new LedgerClient(
             new URL(httpLedgerUrl),
             this.logger,
+            true,
             undefined,
             accessTokenProvider
         )

@@ -67,6 +67,7 @@ export class TopologyController {
         this.client = new LedgerClient(
             baseUrl,
             this.logger,
+            true,
             undefined,
             accessTokenProvider
         )
@@ -288,6 +289,7 @@ export class TopologyController {
         const lc = new LedgerClient(
             participantEndpoints.baseUrl,
             this.logger,
+            true,
             undefined,
             participantEndpoints.accessTokenProvider
         )
@@ -332,6 +334,7 @@ export class TopologyController {
             const lc = new LedgerClient(
                 endpoint.baseUrl,
                 this.logger,
+                true,
                 undefined,
                 endpoint.accessTokenProvider
             )

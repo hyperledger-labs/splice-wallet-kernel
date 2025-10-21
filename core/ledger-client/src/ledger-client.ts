@@ -85,6 +85,7 @@ export class LedgerClient {
     constructor(
         baseUrl: URL,
         _logger: Logger,
+        isAdmin: boolean,
         accessToken?: string,
         accessTokenProvider?: AccessTokenProvider,
         version?: SupportedVersions
@@ -96,14 +97,16 @@ export class LedgerClient {
             '3.3': createClient<v3_3.paths>({
                 baseUrl: baseUrl.href,
                 fetch: async (url: RequestInfo, options: RequestInit = {}) => {
-                    const adminAccessToken = this.accessTokenProvider
-                        ? await this.accessTokenProvider.getAdminAccessToken()
-                        : accessToken
+                    if (this.accessTokenProvider) {
+                        accessToken = isAdmin
+                            ? await this.accessTokenProvider.getAdminAccessToken()
+                            : await this.accessTokenProvider.getUserAccessToken()
+                    }
                     return fetch(url, {
                         ...options,
                         headers: {
                             ...(options.headers || {}),
-                            Authorization: `Bearer ${adminAccessToken}`,
+                            Authorization: `Bearer ${accessToken}`,
                         },
                     })
                 },
@@ -111,14 +114,16 @@ export class LedgerClient {
             '3.4': createClient<v3_4.paths>({
                 baseUrl: baseUrl.href,
                 fetch: async (url: RequestInfo, options: RequestInit = {}) => {
-                    const adminAccessToken = this.accessTokenProvider
-                        ? await this.accessTokenProvider.getAdminAccessToken()
-                        : accessToken
+                    if (this.accessTokenProvider) {
+                        accessToken = isAdmin
+                            ? await this.accessTokenProvider.getAdminAccessToken()
+                            : await this.accessTokenProvider.getUserAccessToken()
+                    }
                     return fetch(url, {
                         ...options,
                         headers: {
                             ...(options.headers || {}),
-                            Authorization: `Bearer ${adminAccessToken}`,
+                            Authorization: `Bearer ${accessToken}`,
                         },
                     })
                 },

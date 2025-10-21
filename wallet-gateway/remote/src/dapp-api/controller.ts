@@ -77,6 +77,7 @@ export const dappController = (
             const ledgerClient = new LedgerClient(
                 new URL(network.ledgerApi.baseUrl),
                 logger,
+                false,
                 context.accessToken
             )
 
@@ -123,6 +124,7 @@ export const dappController = (
             const ledgerClient = new LedgerClient(
                 new URL(network.ledgerApi.baseUrl),
                 logger,
+                false,
                 context.accessToken
             )
 

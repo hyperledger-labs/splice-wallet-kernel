@@ -67,6 +67,7 @@ export class LedgerController {
         this.client = new LedgerClient(
             baseUrl,
             this.logger,
+            isAdmin,
             token,
             accessTokenProvider
         )
@@ -373,6 +374,7 @@ export class LedgerController {
                 const lc = new LedgerClient(
                     endpoint.url,
                     this.logger,
+                    this.isAdmin,
                     undefined,
                     endpoint.accessTokenProvider
                 )
@@ -428,6 +430,7 @@ export class LedgerController {
                         new LedgerClient(
                             endpoint.url,
                             this.logger,
+                            this.isAdmin,
                             undefined,
                             endpoint.accessTokenProvider
                         )
