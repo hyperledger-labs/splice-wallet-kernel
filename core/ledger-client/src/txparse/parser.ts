@@ -711,7 +711,7 @@ export class TransactionParser {
                 : basePayload
 
         const events = await this.ledgerClient
-            .post('/v2/events/events-by-contract-id', payload)
+            .postWithRetry('/v2/events/events-by-contract-id', payload)
             .catch((err) => {
                 // This will happen for holdings with consuming choices
                 // where the party the script is running on is an actor on the choice

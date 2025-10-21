@@ -38,7 +38,7 @@ async function prepareSubmission(
         packageIdSelectionPreference: [],
     }
 
-    return await ledgerClient.post(
+    return await ledgerClient.postWithRetry(
         '/v2/interactive-submission/prepare',
         prepareParams
     )
