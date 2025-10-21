@@ -40,10 +40,9 @@ export const dapp = (
         })(req, res, next)
     )
 
-    // const server = createServer(app)
     const io = new SocketIoServer(server, {
         cors: {
-            origin: '*',
+            origin: '*', // TODO: read allowedOrigins from config
             methods: ['GET', 'POST'],
         },
     })

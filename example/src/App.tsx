@@ -52,11 +52,7 @@ function App() {
             })
             .catch((err) => {
                 console.error('Error requesting wallets:', err)
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : String(JSON.stringify(err))
-                )
+                setError(err instanceof Error ? err.message : String(err))
             })
 
         const messageListener = (event: sdk.dappAPI.TxChangedEvent) => {
@@ -107,11 +103,7 @@ function App() {
                 .catch((err) => {
                     console.error('Error creating ping contract:', err)
                     setLoading(false)
-                    setError(
-                        err instanceof Error
-                            ? err.message
-                            : String(JSON.stringify(err))
-                    )
+                    setError(err instanceof Error ? err.message : String(err))
                 })
         }
     }

@@ -13,17 +13,14 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
     const config: GatewaysConfig[] = gateways
     return discover(config)
         .then(async (result) => {
-            console.log('debug: discovery result', result)
             // Store discovery result and remove previous session
             storage.setKernelDiscovery(result)
             storage.removeKernelSession()
             const provider = injectProvider(result)
 
-            console.log('debug: before connect')
             const response = await provider.request<dappAPI.ConnectResult>({
                 method: 'connect',
             })
-            console.log('debug: after connect')
 
             if (!response.isConnected) {
                 // TODO: error dialog

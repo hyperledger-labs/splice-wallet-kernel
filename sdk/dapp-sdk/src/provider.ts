@@ -40,13 +40,11 @@ export class Provider implements SpliceProvider {
             this.providerType = ProviderType.WINDOW
             this.windowProvider = new SpliceProviderWindow()
         } else if (walletType == 'remote') {
-            console.log('debug: Creating HTTP provider', url, sessionToken)
             this.providerType = ProviderType.HTTP
             this.httpProvider = new SpliceProviderHttp(
                 new URL(url),
                 sessionToken
             )
-            console.log('debug: Created HTTP provider')
         } else {
             throw new Error(`Unsupported wallet type ${walletType}`)
         }
@@ -59,8 +57,6 @@ export class Provider implements SpliceProvider {
     }
 
     request<T>(args: RequestPayload): Promise<T> {
-        console.log('debug: SDK provider request')
-
         if (this.providerType === ProviderType.WINDOW)
             return this.getProvider().request(args)
 
@@ -144,12 +140,10 @@ const withTimeout = (reject: (reason?: unknown) => void) =>
 export const dappController = (provider: SpliceProvider) =>
     buildController({
         connect: async () => {
-            console.log('debug: SDK provider before connect')
             const response =
                 await provider.request<dappRemoteAPI.ConnectResult>({
                     method: 'connect',
                 })
-            console.log('debug: SDK provider after connect')
 
             if (!response.isConnected)
                 openKernelUserUI('remote', response.userUrl)
