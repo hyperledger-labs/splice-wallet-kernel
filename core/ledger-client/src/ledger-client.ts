@@ -502,7 +502,7 @@ export class LedgerClient {
     }
 
     /**
-     * @deprecated use postWithRetry instead, should be made private
+     * @deprecated use getWithRetry instead, should be made private
      */
     private async get<Path extends GetEndpoint>(
         path: Path,
