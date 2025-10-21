@@ -499,7 +499,7 @@ export class LedgerClient {
             )
         }
 
-        return this.post('/v2/state/active-contracts', {
+        return this.postWithRetry('/v2/state/active-contracts', {
             filter: {
                 filtersByParty: {},
             },
@@ -507,7 +507,6 @@ export class LedgerClient {
             activeAtOffset: options.offset,
         })
     }
-
 
     public async postWithRetry<Path extends PostEndpoint>(
         path: Path,
