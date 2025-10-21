@@ -260,6 +260,7 @@ const otcTrades = await sdk.userLedger!.activeContracts({
     parties: [venue!.partyId],
     filterByParty: true,
 })
+
 const otcTradeCid =
     otcTrades?.[0]?.contractEntry?.JsActiveContract?.createdEvent.contractId
 if (!otcTradeCid) throw new Error('OTCTrade not found for venue')

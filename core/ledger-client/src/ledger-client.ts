@@ -13,6 +13,7 @@ import {
     retryableOptions,
 } from './ledger-api-utils.js'
 
+import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
 export const supportedVersions = ['3.3', '3.4'] as const
 
 export type SupportedVersions = (typeof supportedVersions)[number]
@@ -85,6 +86,7 @@ export class LedgerClient {
     private currentClient: Client<paths>
     private initialized: boolean = false
     private accessTokenProvider: AccessTokenProvider | undefined
+    private acsHelper: ACSHelper
     private readonly logger: Logger
 
     constructor(
@@ -93,7 +95,8 @@ export class LedgerClient {
         isAdmin: boolean = false,
         accessToken?: string,
         accessTokenProvider?: AccessTokenProvider,
-        version?: SupportedVersions
+        version?: SupportedVersions,
+        acsHelperOptions?: AcsHelperOptions
     ) {
         this.logger = _logger.child({ component: 'LedgerClient' })
         this.accessTokenProvider = accessTokenProvider
@@ -137,6 +140,7 @@ export class LedgerClient {
 
         this.clientVersion = version ?? this.clientVersion
         this.currentClient = this.clients[this.clientVersion]
+        this.acsHelper = new ACSHelper(this, _logger, acsHelperOptions)
     }
 
     public async init() {
@@ -464,6 +468,47 @@ export class LedgerClient {
         return this.valueOrError(resp)
     }
 
+    async activeContracts(options: {
+        offset: number
+        templateIds?: string[]
+        parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
+        filterByParty?: boolean
+    }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
+        const partyFilter =
+            options.filterByParty && options.parties
+                ? options.parties[0]
+                : undefined
+
+        if (options.templateIds?.length === 1) {
+            return this.acsHelper.activeContractsForTemplate(
+                options.offset,
+                partyFilter ?? '',
+                options.templateIds[0]
+            )
+        }
+
+        if (
+            options.templateIds &&
+            options.filterByParty &&
+            options.parties?.length === 1
+        ) {
+            return this.acsHelper.activeContractsForInterface(
+                options.offset,
+                options.parties[0],
+                ''
+            )
+        }
+
+        return this.post('/v2/state/active-contracts', {
+            filter: {
+                filtersByParty: {},
+            },
+            verbose: false,
+            activeAtOffset: options.offset,
+        })
+    }
+
+
     public async postWithRetry<Path extends PostEndpoint>(
         path: Path,
         body: PostRequest<Path>,
@@ -504,7 +549,7 @@ export class LedgerClient {
         body: PostRequest<Path>,
         params?: {
             path?: Record<string, string>
-            query?: Record<string, string>
+            query?: Record<string, string | number | boolean>
         },
         // needed when posting to /packages, so content type and jsonification of bytes can be overriden
         additionalOptions?: ExtraPostOpts

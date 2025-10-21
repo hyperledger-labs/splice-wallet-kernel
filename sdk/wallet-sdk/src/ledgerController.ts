@@ -852,6 +852,15 @@ export class LedgerController {
         })
     }
 
+    async activeContracts(options: {
+        offset: number
+        templateIds?: string[]
+        parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
+        filterByParty?: boolean
+    }) {
+        return await this.client.activeContracts(options)
+    }
+
     /**
      * Retrieves active contracts with optional filtering by template IDs and parties.
      * @param options Optional parameters for filtering:
@@ -861,7 +870,7 @@ export class LedgerController {
      *  - filterByParty: If true, filters contracts for each party individually; if false, filters for any known party.
      * @returns A list of active contracts matching the specified filters.
      */
-    async activeContracts(options: {
+    async activeContracts2(options: {
         offset: number
         templateIds?: string[]
         parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
