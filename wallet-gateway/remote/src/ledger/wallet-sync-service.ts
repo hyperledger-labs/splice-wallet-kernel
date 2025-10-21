@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { LedgerClient } from '@canton-network/core-ledger-client'
+import { defaultRetryableOptions } from '@canton-network/core-ledger-client/dist/ledger-api-utils.js'
 import { AuthContext } from '@canton-network/core-wallet-auth'
 import { Store, Wallet } from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'
@@ -35,8 +36,9 @@ export class WalletSyncService {
             this.logger.info(network, 'Current network')
 
             // Get existing parties from participant
-            const rights = await this.ledgerClient.get(
+            const rights = await this.ledgerClient.getWithRetry(
                 '/v2/users/{user-id}/rights',
+                defaultRetryableOptions,
                 {
                     path: {
                         'user-id': this.authContext!.userId,

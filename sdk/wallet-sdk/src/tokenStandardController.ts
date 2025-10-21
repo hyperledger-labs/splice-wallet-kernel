@@ -576,7 +576,10 @@ export class TokenStandardController {
             packageIdSelectionPreference: [],
         }
 
-        return await this.client.post('/v2/commands/submit-and-wait', request)
+        return await this.client.postWithRetry(
+            '/v2/commands/submit-and-wait',
+            request
+        )
     }
 
     /**
@@ -655,7 +658,7 @@ export class TokenStandardController {
             packageIdSelectionPreference: [],
         }
 
-        await this.client.post('/v2/commands/submit-and-wait', request)
+        await this.client.postWithRetry('/v2/commands/submit-and-wait', request)
 
         return this.lookupFeaturedApps(5, 1000)
     }

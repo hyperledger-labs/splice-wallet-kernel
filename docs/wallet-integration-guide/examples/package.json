@@ -33,7 +33,7 @@
         "run-stress-01": "tsx ./scripts/stress/01-party-stress-test.ts | pino-pretty"
     },
     "devDependencies": {
-        "@canton-network/core-signing-lib": "workspace:^",
+        "@canton-network/core-signing-lib": "workspace:",
         "@jest/globals": "^29.0.0",
         "@swc/core": "^1.11.31",
         "@swc/jest": "^0.2.38",
@@ -46,10 +46,10 @@
         "typescript": "^5.8.3"
     },
     "dependencies": {
-        "@canton-network/core-ledger-client": "workspace:^",
-        "@canton-network/core-signing-lib": "workspace:^",
-        "@canton-network/core-types": "workspace:^",
-        "@canton-network/wallet-sdk": "workspace:^",
+        "@canton-network/core-ledger-client": "workspace:",
+        "@canton-network/core-signing-lib": "workspace:",
+        "@canton-network/core-types": "workspace:",
+        "@canton-network/wallet-sdk": "workspace:",
         "pino": "10.0.0",
         "uuid": "^11.1.0"
     },

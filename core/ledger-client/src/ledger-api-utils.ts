@@ -13,6 +13,8 @@ import {
     HOLDING_INTERFACE_ID,
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
+import { Logger } from '@canton-network/core-types'
+import { ErrorInfo, RetryInfo } from '@canton-network/core-ledger-proto'
 
 type TransactionFilter = Types['TransactionFilter']
 type EventFormat = Types['EventFormat']
@@ -304,6 +306,7 @@ export function removeParsedMetaKeys(meta: Meta): Meta {
     }
 }
 
+//TODO: Investigate, this method is not used anywhere ?
 export async function submitExerciseCommand(
     ledgerClient: LedgerClient,
     exerciseCommand: ExerciseCommand,
@@ -323,7 +326,7 @@ export async function submitExerciseCommand(
     const synchronizerId =
         getSynchronizerIdFromDisclosedContracts(disclosedContracts)
 
-    const prepared = await ledgerClient.post(
+    const prepared = await ledgerClient.postWithRetry(
         '/v2/interactive-submission/prepare',
         {
             actAs: [partyId],
@@ -363,9 +366,9 @@ export async function submitExerciseCommand(
         Empty: {},
     }
 
-    const ledgerEnd = await ledgerClient.get('/v2/state/ledger-end')
+    const ledgerEnd = await ledgerClient.getWithRetry('/v2/state/ledger-end')
 
-    await ledgerClient.post('/v2/interactive-submission/execute', {
+    await ledgerClient.postWithRetry('/v2/interactive-submission/execute', {
         userId,
         submissionId,
         preparedTransaction: prepared.preparedTransaction!,
@@ -477,13 +480,14 @@ export async function awaitCompletion(
     userId: string,
     commandIdOrSubmissionId: string
 ): Promise<Completion> {
-    const responses = await ledgerClient.post(
+    const responses = await ledgerClient.postWithRetry(
         '/v2/commands/completions',
         {
             userId,
             parties: [partyId],
             beginExclusive: ledgerEnd,
         },
+        defaultRetryableOptions,
         {
             query: {
                 limit: COMPLETIONS_LIMIT,
@@ -511,9 +515,7 @@ export async function awaitCompletion(
         const status = completion.value.status
         if (status && status.code !== 0) {
             // status.code is 0 for success
-            throw new Error(
-                `Command failed with status: ${JSON.stringify(status)}`
-            )
+            throw asGrpcError(status)
         }
         return completion.value
     } else {
@@ -549,6 +551,116 @@ export async function promiseWithTimeout<T>(
     }
 }
 
+export type retryableOptions = {
+    retries: number
+    delayMs: number
+    cantonErrorKeys: string[]
+}
+export const defaultRetryableOptions: retryableOptions = {
+    retries: 5,
+    delayMs: 3000,
+    cantonErrorKeys: [
+        'SEQUENCER_REQUEST_FAILED',
+        'SEQUENCER_BACKPRESSURE',
+        'SUBMISSION_ALREADY_IN_FLIGHT',
+        'LOCAL_VERDICT_TIMEOUT',
+        'NOT_SEQUENCED_TIMEOUT',
+        'NO_VIEW_WITH_VALID_RECIPIENTS',
+    ],
+}
+
+export async function retryable<T>(
+    fn: () => Promise<T>,
+    retryableOptions: retryableOptions,
+    logger?: Logger
+): Promise<T> {
+    for (let attempts = 1; attempts <= retryableOptions.retries; attempts++) {
+        try {
+            return await fn()
+        } catch (err: unknown) {
+            const grpcError = asGrpcError(err)
+            const message: string = grpcError.message
+            const shouldRetry =
+                retryableOptions.cantonErrorKeys.length === 0 ||
+                retryableOptions.cantonErrorKeys.some((key) =>
+                    message.includes(key)
+                )
+            if (attempts < retryableOptions.retries && shouldRetry) {
+                logger?.warn(
+                    `Caught retryiable error: ${message}. Retrying attempt ${attempts} of ${retryableOptions.retries}...`
+                )
+                await new Promise((res) =>
+                    setTimeout(res, retryableOptions.delayMs)
+                )
+                // continue to next attempt
+            } else {
+                throw grpcError
+            }
+        }
+    }
+    throw new Error('retryable: Exceeded maximum retries without throwing.')
+}
+
 // Helper for differentiating ledger errors from others and satisfying TS when checking error properties
 export const isJsCantonError = (e: unknown): e is Types['JsCantonError'] =>
     typeof e === 'object' && e !== null && 'status' in e && 'errorCategory' in e
+
+export const asGrpcError = (
+    e: unknown
+): {
+    code: number
+    message: string
+    errorInfo: ErrorInfo | undefined
+    retryInfo: RetryInfo | undefined
+} => {
+    let errorInfo: ErrorInfo | undefined = undefined
+    let retryInfo: RetryInfo | undefined = undefined
+    let code = 500
+    let message = (e as Error)?.message || ''
+    if (typeof e === 'object' && e !== null && 'cause' in e) {
+        message = e.cause as string
+    } else if (typeof e === 'object' && e !== null && 'message' in e) {
+        message = e.message as string
+    }
+    if (
+        typeof e === 'object' &&
+        e !== null &&
+        'code' in e &&
+        'message' in e &&
+        'details' in e &&
+        Array.isArray(e.details)
+    ) {
+        code = e.code as number
+        message = e.message as string
+        for (const detail of e.details) {
+            if (
+                detail.typeUrl === 'type.googleapis.com/google.rpc.ErrorInfo' &&
+                typeof detail.value === 'string'
+            ) {
+                try {
+                    errorInfo = ErrorInfo.fromBinary(
+                        Buffer.from(detail.value, 'base64')
+                    )
+                } catch {
+                    //if parsing fails, we skip adding ErrorInfo
+                }
+            } else if (
+                detail.typeUrl === 'type.googleapis.com/google.rpc.RetryInfo' &&
+                typeof detail.value === 'string'
+            ) {
+                try {
+                    retryInfo = RetryInfo.fromBinary(
+                        Buffer.from(detail.value, 'base64')
+                    )
+                } catch {
+                    //if parsing fails, we skip adding RetryInfo
+                }
+            }
+        }
+    } else {
+        // Not a gRPC error, rethrow
+        throw e
+    }
+    // Fallback: just return the error message
+    return { code: code, message: message, errorInfo, retryInfo }
+}

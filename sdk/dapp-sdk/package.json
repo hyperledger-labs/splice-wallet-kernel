@@ -1,7 +1,7 @@
 {
     "name": "@canton-network/dapp-sdk",
     "type": "module",
-    "version": "0.7.0",
+    "version": "0.8.0",
     "description": "Browser SDK for dApp development on the Canton Network",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
@@ -16,11 +16,11 @@
         "test": "echo \"Warning: no test specified\""
     },
     "dependencies": {
-        "@canton-network/core-splice-provider": "workspace:^",
-        "@canton-network/core-types": "workspace:^",
-        "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^",
-        "@canton-network/core-wallet-dapp-rpc-client": "workspace:^",
-        "@canton-network/core-wallet-ui-components": "workspace:^"
+        "@canton-network/core-splice-provider": "workspace:",
+        "@canton-network/core-types": "workspace:",
+        "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:",
+        "@canton-network/core-wallet-dapp-rpc-client": "workspace:",
+        "@canton-network/core-wallet-ui-components": "workspace:"
     },
     "devDependencies": {
         "typescript": "^5.8.3"

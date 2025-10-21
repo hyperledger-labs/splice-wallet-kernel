@@ -4,7 +4,17 @@ The RPC-based (server-side) Wallet Gateway.
 
 # Usage
 
-Start the service directly through npx (tested with NodeJS v24):
+Install the Wallet Gateway
+
+```shell
+$ npm install -g @canton-network/wallet-gateway-remote
+
+...
+
+$ wallet-gateway -c ./config.json
+```
+
+Alternatively, you can run it directly through npx (tested with NodeJS v24):
 
 `npx @canton-network/wallet-gateway-remote -c ./config.json`
 
@@ -16,7 +26,19 @@ This exposes:
 
 ## Configuration
 
-A configuration file is required to start up the gateway. See [config.json](https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/wallet-gateway/test/config.json) for an example.
+A configuration file is required to start up the Gateway. See [config.json](https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/wallet-gateway/test/config.json) for an example.
+
+## First time startup
+
+When running the Gateway for the first time, the database must be properly initialized.
+
+```shell
+$ wallet-gateway -c ./config.json db reset
+$ wallet-gateway -c ./config.json db bootstrap
+
+# Finally, start the service
+$ wallet-gateway -c ./config.json
+```
 
 # Developing
 

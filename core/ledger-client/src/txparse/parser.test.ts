@@ -30,21 +30,23 @@ const makeLedgerClientFromEventsResponses = (
     )
 
     const getCurrentClientVersion = jest.fn(() => '3.3')
-    const post = jest.fn(async (url: string, body: { contractId: string }) => {
-        if (url !== EVENTS_BY_CID_PATH) {
-            throw new Error(`Unexpected URL in mock LedgerClient: ${url}`)
-        }
-        const entry = responseByCid.get(body.contractId)
-        if (!entry) {
-            throw Object.assign(new Error('Not Found'), {
-                code: 'CONTRACT_EVENTS_NOT_FOUND',
-            })
-        }
+    const postWithRetry = jest.fn(
+        async (url: string, body: { contractId: string }) => {
+            if (url !== EVENTS_BY_CID_PATH) {
+                throw new Error(`Unexpected URL in mock LedgerClient: ${url}`)
+            }
+            const entry = responseByCid.get(body.contractId)
+            if (!entry) {
+                throw Object.assign(new Error('Not Found'), {
+                    code: 'CONTRACT_EVENTS_NOT_FOUND',
+                })
+            }
 
-        return entry
-    })
+            return entry
+        }
+    )
 
-    return { post, getCurrentClientVersion } as unknown as LedgerClient
+    return { postWithRetry, getCurrentClientVersion } as unknown as LedgerClient
 }
 
 const mockLedgerClient: LedgerClient = makeLedgerClientFromEventsResponses(
@@ -83,7 +85,7 @@ describe('TransactionParser', () => {
         }
 
         expect(parsed).toEqual(expected)
-        expect(mockLedgerClient.post).not.toHaveBeenCalled()
+        expect(mockLedgerClient.postWithRetry).not.toHaveBeenCalled()
     })
 
     it('parses the full mock input and matches the expected output from JSON fixtures', async () => {
@@ -102,7 +104,7 @@ describe('TransactionParser', () => {
         )
 
         expect(actual).toEqual(txsExpected)
-        expect(mockLedgerClient.post).toHaveBeenCalled()
+        expect(mockLedgerClient.postWithRetry).toHaveBeenCalled()
     })
 
     it('skips an ArchivedEvent when ledger returns CONTRACT_EVENTS_NOT_FOUND', async () => {
@@ -141,12 +143,14 @@ describe('TransactionParser', () => {
         expect(parsed.events).toEqual([])
 
         // ensure we actually tried to fetch and got the 404 path
-        expect((mockLedgerClient.post as jest.Mock).mock.calls).toContainEqual([
+        expect(
+            (mockLedgerClient.postWithRetry as jest.Mock).mock.calls
+        ).toContainEqual([
             EVENTS_BY_CID_PATH,
             expect.objectContaining({ contractId: missingCid }),
         ])
         await expect(
-            (mockLedgerClient.post as jest.Mock).mock.results[0].value
+            (mockLedgerClient.postWithRetry as jest.Mock).mock.results[0].value
         ).rejects.toMatchObject({ code: 'CONTRACT_EVENTS_NOT_FOUND' })
     })
 })

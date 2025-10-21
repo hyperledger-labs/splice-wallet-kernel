@@ -14,7 +14,7 @@ function App() {
     )
 
     useEffect(() => {
-        const provider = window.splice // either postMsg provider or httpProvider
+        const provider = window.canton // either postMsg provider or httpProvider
 
         if (!provider) {
             setStatus('Splice provider not found')
@@ -89,7 +89,7 @@ function App() {
     function createPingContract() {
         setError('')
         setLoading(true)
-        const provider = window.splice
+        const provider = window.canton
 
         if (provider !== undefined) {
             provider
