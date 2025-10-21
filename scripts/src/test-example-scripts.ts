@@ -18,6 +18,7 @@ const exceptions = [
     '05-',
     '01-one-step',
     '02-one-step',
+    '01-party-stress-',
 ]
 
 function getScriptsRecursive(currentDir: string): string[] {

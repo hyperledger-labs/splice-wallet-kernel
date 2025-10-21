@@ -122,7 +122,7 @@ export const userController = (
                 `Allocating party with params: ${JSON.stringify(params)}`
             )
 
-            const userId = assertConnected(authContext)
+            const userId = assertConnected(authContext).userId
             const notifier = notificationService.getNotifier(userId)
             const network = await store.getCurrentNetwork()
 
@@ -247,7 +247,7 @@ export const userController = (
                 throw new Error('No primary wallet found')
             }
 
-            const userId = assertConnected(authContext)
+            const userId = assertConnected(authContext).userId
 
             if (network === undefined) {
                 throw new Error('No network session found')
@@ -323,7 +323,7 @@ export const userController = (
                 throw new Error('No transaction found')
             }
 
-            const userId = assertConnected(authContext)
+            const userId = assertConnected(authContext).userId
 
             if (network === undefined) {
                 throw new Error('No network session found')
@@ -352,7 +352,7 @@ export const userController = (
                         packageIdSelectionPreference: [],
                     }
                     try {
-                        const res = await ledgerClient.post(
+                        const res = await ledgerClient.postWithRetry(
                             '/v2/commands/submit-and-wait',
                             request
                         )
@@ -371,7 +371,7 @@ export const userController = (
                     }
                 }
                 case SigningProvider.WALLET_KERNEL: {
-                    const result = await ledgerClient.post(
+                    const result = await ledgerClient.postWithRetry(
                         '/v2/interactive-submission/execute',
                         {
                             userId,

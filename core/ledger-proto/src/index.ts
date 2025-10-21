@@ -37,3 +37,4 @@ export {
     ListPartyToParticipantRequest,
 } from './_proto/com/digitalasset/canton/topology/admin/v30/topology_manager_read_service.js'
 export { Empty } from './_proto/google/protobuf/empty.js'
+export { ErrorInfo, RetryInfo } from './_proto/google/rpc/error_details.js'
