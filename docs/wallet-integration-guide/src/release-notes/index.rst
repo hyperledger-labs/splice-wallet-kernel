@@ -325,7 +325,6 @@ Fixed a minor edge case where a future mining round would be chosen if there was
 
     //the connects are still needed and should be run before sdk.setPartyId
     await sdk.connect()
-    await sdk.getAdminAccessToken()()
     await sdk.connectTopology(LOCALNET_SCAN_API_URL)
 
     //Previously all these was required to get everything working
