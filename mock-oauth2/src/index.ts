@@ -34,8 +34,8 @@ async function main() {
 
         // Set token expiration to 1 hour from now
         const now = Math.floor(Date.now() / 1000)
-        token.payload.exp = now + 3600 // 1 hour
-        token.payload.iat = now // issued at
+        token.payload.exp = now + 3600
+        token.payload.iat = now
     })
 }
 
