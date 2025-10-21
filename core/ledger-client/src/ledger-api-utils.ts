@@ -656,20 +656,7 @@ export const asGrpcError = (
             }
         }
     } else {
-        console.log('parsing failed type guard')
-        console.log(e)
-        // if (typeof e === 'object' && e !== null && !('cause' in e)) {
-        // console.log('typeof e === "object"', typeof e === 'object');
-        // console.log('e !== null', e !== null);
-        // console.log('"status" in e', 'status' in (e as any));
-        // console.log('"code" in e', 'code' in (e as any));
-        // console.log('typeof e.status === "object"', typeof (e as any).status === 'object');
-        // console.log('e.status !== null', (e as any).status !== null);
-        // console.log('"message" in e.status', 'message' in (e as any).status);
-        // console.log('"details" in e.status', 'details' in (e as any).status);
-        // console.log('Array.isArray(e.status.details)', Array.isArray((e as any).status.details));
-        // }
-        // console.log('re-throwing')
+        // Not a gRPC error, rethrow
         throw e
     }
     // Fallback: just return the error message

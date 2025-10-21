@@ -28,8 +28,8 @@ jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
     SignedTopologyTransaction: jest.fn(),
     LedgerClient: jest.fn().mockImplementation(() => {
         return {
-            get: mockLedgerGet,
-            post: mockLedgerPost,
+            getWithRetry: mockLedgerGet,
+            postWithRetry: mockLedgerPost,
             grantUserRights: mockLedgerGrantUserRights,
             generateTopology: jest.fn<AsyncFn>().mockResolvedValue({
                 partyId: 'party2::mypublickey',

@@ -30,21 +30,23 @@ const makeLedgerClientFromEventsResponses = (
     )
 
     const getCurrentClientVersion = jest.fn(() => '3.3')
-    const post = jest.fn(async (url: string, body: { contractId: string }) => {
-        if (url !== EVENTS_BY_CID_PATH) {
-            throw new Error(`Unexpected URL in mock LedgerClient: ${url}`)
-        }
-        const entry = responseByCid.get(body.contractId)
-        if (!entry) {
-            throw Object.assign(new Error('Not Found'), {
-                code: 'CONTRACT_EVENTS_NOT_FOUND',
-            })
-        }
+    const postWithRetry = jest.fn(
+        async (url: string, body: { contractId: string }) => {
+            if (url !== EVENTS_BY_CID_PATH) {
+                throw new Error(`Unexpected URL in mock LedgerClient: ${url}`)
+            }
+            const entry = responseByCid.get(body.contractId)
+            if (!entry) {
+                throw Object.assign(new Error('Not Found'), {
+                    code: 'CONTRACT_EVENTS_NOT_FOUND',
+                })
+            }
 
-        return entry
-    })
+            return entry
+        }
+    )
 
-    return { post, getCurrentClientVersion } as unknown as LedgerClient
+    return { postWithRetry, getCurrentClientVersion } as unknown as LedgerClient
 }
 
 const mockLedgerClient: LedgerClient = makeLedgerClientFromEventsResponses(
