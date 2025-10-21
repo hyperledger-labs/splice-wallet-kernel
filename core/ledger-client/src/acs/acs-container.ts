@@ -4,6 +4,7 @@
 import { PartyId } from '@canton-network/core-types'
 import { LedgerClient } from '../ledger-client'
 import { WSSupport } from './ws-support.js'
+import { defaultRetryableOptions } from '../ledger-api-utils.js'
 import {
     CreatedEvent,
     JsGetActiveContractsResponse,
@@ -240,7 +241,7 @@ export class ACSContainer {
         eventFormat: EventFormat,
         api: LedgerClient
     ): Promise<Array<JsGetUpdatesResponse>> {
-        const updates: GetUpdatesRequest = {
+        const request: GetUpdatesRequest = {
             beginExclusive: startOffset,
             endInclusive: endOffset,
             updateFormat: {
@@ -253,12 +254,19 @@ export class ACSContainer {
         }
 
         //TODO: fix this
-        return api.post('/v2/updates/flats', updates, {
+
+        const params: Record<string, unknown> = {
             query: {
                 limit: ACS_UPDATE_CONFIG.maxUpdatesToFetch,
                 stream_idle_timeout_ms: 1000,
             },
-        })
+        }
+        return api.postWithRetry(
+            '/v2/updates/flats',
+            request,
+            defaultRetryableOptions,
+            params
+        )
     }
 
     private static async compact(acs: ACSSet): Promise<ACSSet> {
@@ -303,7 +311,7 @@ export class ACSContainer {
         api: LedgerClient
     ): Promise<ACSSet> {
         const format = ACSContainer.createEventFormat(key)
-        const acs = await api.post('/v2/state/active-contracts', {
+        const acs = await api.postWithRetry('/v2/state/active-contracts', {
             activeAtOffset: offset,
             verbose: false,
             eventFormat: format,
