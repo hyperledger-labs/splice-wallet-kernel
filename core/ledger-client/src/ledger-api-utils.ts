@@ -515,9 +515,7 @@ export async function awaitCompletion(
         const status = completion.value.status
         if (status && status.code !== 0) {
             // status.code is 0 for success
-            throw new Error(
-                `Command failed with status: ${JSON.stringify(status)}`
-            )
+            throw status
         }
         return completion.value
     } else {

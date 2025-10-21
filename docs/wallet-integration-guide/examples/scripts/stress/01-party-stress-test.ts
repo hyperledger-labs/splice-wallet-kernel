@@ -137,7 +137,7 @@ await sdk.setPartyId(validatorOperatorParty)
 
 await sdk.tokenStandard?.createAndSubmitTapInternal(
     validatorOperatorParty,
-    '20000000000000',
+    '990000000000000000000000000', //upper limit
     {
         instrumentId: 'Amulet',
         instrumentAdmin: instrument.instrumentAdmin,
