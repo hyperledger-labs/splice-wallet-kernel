@@ -2,22 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { LedgerClient, Types } from '../ledger-client'
+import { LedgerClient } from '../ledger-client'
 import { WSSupport } from './ws-support.js'
-
-// type JsContractEntryOneOf =
-//     | Types['JsActiveContract']
-//     | Types['JsEmpty']
-//     | Types['JsIncompleteAssigned']
-//     | Types['JsIncompleteUnassigned']
-type CreatedEvent = Types['CreatedEvent']
-type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
-type EventFormat = Types['EventFormat']
-type Filters = Types['Filters']
-type GetActiveContractsRequest = Types['GetActiveContractsRequest']
-type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
-type GetUpdatesRequest = Types['GetUpdatesRequest']
-type Event = Types['Event']
+import {
+    CreatedEvent,
+    JsGetActiveContractsResponse,
+    EventFormat,
+    Filters,
+    GetActiveContractsRequest,
+    JsGetUpdatesResponse,
+    GetUpdatesRequest,
+    Event,
+} from './types'
 
 interface ACSUpdateConfig {
     maxEventsBeforePrune: number

@@ -4,7 +4,6 @@
 import {
     LedgerClient,
     PostResponse,
-    PostRequest,
     GetResponse,
     Types,
     awaitCompletion,
@@ -852,15 +851,6 @@ export class LedgerController {
         })
     }
 
-    async activeContracts(options: {
-        offset: number
-        templateIds?: string[]
-        parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
-        filterByParty?: boolean
-    }) {
-        return await this.client.activeContracts(options)
-    }
-
     /**
      * Retrieves active contracts with optional filtering by template IDs and parties.
      * @param options Optional parameters for filtering:
@@ -870,62 +860,14 @@ export class LedgerController {
      *  - filterByParty: If true, filters contracts for each party individually; if false, filters for any known party.
      * @returns A list of active contracts matching the specified filters.
      */
-    async activeContracts2(options: {
+
+    async activeContracts(options: {
         offset: number
         templateIds?: string[]
         parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
         filterByParty?: boolean
-    }): Promise<PostResponse<'/v2/state/active-contracts'>> {
-        const filter: PostRequest<'/v2/state/active-contracts'> = {
-            filter: {
-                filtersByParty: {},
-            },
-            verbose: false,
-            activeAtOffset: options?.offset,
-        }
-
-        // Helper to build TemplateFilter array
-        const buildTemplateFilter = (templateIds?: string[]) => {
-            if (!templateIds) return []
-            return [
-                {
-                    identifierFilter: {
-                        TemplateFilter: {
-                            value: {
-                                templateId: templateIds[0],
-                                includeCreatedEventBlob: true, //TODO: figure out if this should be configurable
-                            },
-                        },
-                    },
-                },
-            ]
-        }
-
-        if (
-            options?.filterByParty &&
-            options.parties &&
-            options.parties.length > 0
-        ) {
-            // Filter by party: set filtersByParty for each party
-            for (const party of options.parties) {
-                filter.filter!.filtersByParty[party] = {
-                    cumulative: options.templateIds
-                        ? buildTemplateFilter(options.templateIds)
-                        : [],
-                }
-            }
-        } else if (options?.templateIds) {
-            // Only template filter, no party
-            filter.filter!.filtersForAnyParty = {
-                cumulative: buildTemplateFilter(options.templateIds),
-            }
-        }
-
-        //TODO: figure out if this should automatically be converted to a format that is more user friendly
-        return await this.client.postWithRetry(
-            '/v2/state/active-contracts',
-            filter
-        )
+    }) {
+        return await this.client.activeContracts(options)
     }
 
     async uploadDar(

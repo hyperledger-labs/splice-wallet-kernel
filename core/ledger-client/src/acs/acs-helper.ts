@@ -1,15 +1,15 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerClient, Types } from '../ledger-client'
+import { LedgerClient } from '../ledger-client'
 
 import { LRUCache } from 'typescript-lru-cache'
 import { ACSContainer, ACSKey } from './acs-container.js'
 import { WSSupport } from './ws-support.js'
 import { PartyId } from '@canton-network/core-types'
 import { Logger } from 'pino'
+import { JsGetActiveContractsResponse } from './types'
 
-type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
 export type AcsHelperOptions = {
     useLocalStorage?: boolean
     wsSupport?: WSSupport
