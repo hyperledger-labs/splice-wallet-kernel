@@ -574,8 +574,7 @@ export async function retryable<T>(
     retryableOptions: retryableOptions,
     logger?: Logger
 ): Promise<T> {
-    let attempts = 0
-    while (true) {
+    for (let attempts = 1; attempts <= retryableOptions.retries; attempts++) {
         try {
             return await fn()
         } catch (err: unknown) {
@@ -586,19 +585,20 @@ export async function retryable<T>(
                 retryableOptions.cantonErrorKeys.some((key) =>
                     message.includes(key)
                 )
-            if (++attempts < retryableOptions.retries && shouldRetry) {
+            if (attempts < retryableOptions.retries && shouldRetry) {
                 logger?.warn(
                     `Caught retryiable error: ${message}. Retrying attempt ${attempts} of ${retryableOptions.retries}...`
                 )
                 await new Promise((res) =>
                     setTimeout(res, retryableOptions.delayMs)
                 )
-
-                continue
+                // continue to next attempt
+            } else {
+                throw grpcError
             }
-            throw grpcError
         }
     }
+    throw new Error('retryable: Exceeded maximum retries without throwing.')
 }
 
 // Helper for differentiating ledger errors from others and satisfying TS when checking error properties
