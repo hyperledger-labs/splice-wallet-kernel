@@ -18,11 +18,11 @@ Alternatively, you can run it directly through npx (tested with NodeJS v24):
 
 `npx @canton-network/wallet-gateway-remote -c ./config.json`
 
-This exposes:
+By default, the service runs on port `3030`, but this can be overridden via the `-p, --port` CLI argument.
 
-- A dApp JSON-RPC API running on (by default) `localhost:3008`
-- A User JSON-RPC API running on (by default) `localhost:3001`
-- A User web interface running on (by default) `localhost:3002`
+- The User web interface runs on `localhost:3030`
+- The dApp JSON-RPC API is exposed on `localhost:3030/api/v0/dapp`
+- The User JSON-RPC API is exposed on `localhost:3030/api/v0/user`
 
 ## Configuration
 

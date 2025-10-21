@@ -13,14 +13,17 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
     const config: GatewaysConfig[] = gateways
     return discover(config)
         .then(async (result) => {
+            console.log('debug: discovery result', result)
             // Store discovery result and remove previous session
             storage.setKernelDiscovery(result)
             storage.removeKernelSession()
             const provider = injectProvider(result)
 
+            console.log('debug: before connect')
             const response = await provider.request<dappAPI.ConnectResult>({
                 method: 'connect',
             })
+            console.log('debug: after connect')
 
             if (!response.isConnected) {
                 // TODO: error dialog
@@ -34,10 +37,20 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
             return response
         })
         .catch((err) => {
+            let details = JSON.stringify(err)
+
+            if (err instanceof Error) {
+                details = err.message
+            }
+
+            if ('message' in err) {
+                details = err.message
+            }
+
             throw {
                 status: 'error',
                 error: ErrorCode.Other,
-                details: err instanceof Error ? err.message : String(err),
+                details,
             } as ConnectError
         })
 }

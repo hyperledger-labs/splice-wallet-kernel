@@ -25,6 +25,8 @@ export class SpliceProviderHttp extends SpliceProviderBase {
             this.socket.disconnect()
         }
 
+        console.log('Opening socket to ', this.sessionToken)
+
         const socket = io(socketUrl.href, {
             forceNew: true,
             auth: {
@@ -83,7 +85,9 @@ export class SpliceProviderHttp extends SpliceProviderBase {
     }
 
     public async request<T>({ method, params }: RequestPayload): Promise<T> {
+        console.log('debug: PRESUBMIT')
         const response = await this.transport.submit({ method, params })
+        console.log('debug: POSTSUBMIT')
         if ('error' in response) throw new Error(response.error.message)
         const result = response.result as T
         if (method === 'prepareExecute') {

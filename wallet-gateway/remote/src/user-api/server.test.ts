@@ -3,22 +3,14 @@
 
 import { expect, jest, test } from '@jest/globals'
 
+import express from 'express'
 import request from 'supertest'
 import { user } from './server.js'
 import { StoreInternal } from '@canton-network/core-wallet-store-inmemory'
-import { AuthService } from '@canton-network/core-wallet-auth'
 import { ConfigUtils } from '../config/ConfigUtils.js'
 import { Notifier } from '../notification/NotificationService.js'
 import { pino } from 'pino'
 import { sink } from 'pino-test'
-
-const authService: AuthService = {
-    verifyToken: async () => {
-        return new Promise((resolve) =>
-            resolve({ userId: 'user123', accessToken: 'token123' })
-        )
-    },
-}
 
 const configPath = '../test/config.json'
 const config = ConfigUtils.loadConfigFile(configPath)
@@ -35,10 +27,18 @@ const notificationService = {
 
 test('call connect rpc', async () => {
     const drivers = {}
+    const app = express()
     const response = await request(
-        user(config.kernel, notificationService, authService, drivers, store)
+        user(
+            '/api/v0/user',
+            app,
+            config.kernel,
+            notificationService,
+            drivers,
+            store
+        )
     )
-        .post('/rpc')
+        .post('/api/v0/user')
         .send({ jsonrpc: '2.0', id: 0, method: 'listNetworks', params: [] })
         .set('Accept', 'application/json')
 

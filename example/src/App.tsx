@@ -52,7 +52,11 @@ function App() {
             })
             .catch((err) => {
                 console.error('Error requesting wallets:', err)
-                setError(err instanceof Error ? err.message : String(err))
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : String(JSON.stringify(err))
+                )
             })
 
         const messageListener = (event: sdk.dappAPI.TxChangedEvent) => {
@@ -103,7 +107,11 @@ function App() {
                 .catch((err) => {
                     console.error('Error creating ping contract:', err)
                     setLoading(false)
-                    setError(err instanceof Error ? err.message : String(err))
+                    setError(
+                        err instanceof Error
+                            ? err.message
+                            : String(JSON.stringify(err))
+                    )
                 })
         }
     }
@@ -161,7 +169,9 @@ function App() {
                 {loading && <p>Loading...</p>}
                 <p>{status}</p>
                 <p>primary party: {primaryParty}</p>
-                {error && <p className="error">Error: {error}</p>}
+                {error && (
+                    <p className="error">Error: {JSON.stringify(error)}</p>
+                )}
             </div>
 
             <div className="card">

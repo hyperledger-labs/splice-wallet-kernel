@@ -4,6 +4,7 @@
 import { expect, test, jest } from '@jest/globals'
 
 import request from 'supertest'
+import express from 'express'
 import { dapp } from './server.js'
 import { StoreInternal } from '@canton-network/core-wallet-store-inmemory'
 import { AuthService } from '@canton-network/core-wallet-auth'
@@ -34,10 +35,20 @@ const notificationService = {
 }
 
 test('call connect rpc', async () => {
+    const app = express()
+    const server = app.listen()
     const response = await request(
-        dapp(config.kernel, notificationService, authService, store)
+        dapp(
+            '/api/v0/dapp',
+            app,
+            server,
+            config.kernel,
+            notificationService,
+            authService,
+            store
+        )
     )
-        .post('/rpc')
+        .post('/api/v0/dapp')
         .send({ jsonrpc: '2.0', id: 0, method: 'connect', params: [] })
         .set('Accept', 'application/json')
 

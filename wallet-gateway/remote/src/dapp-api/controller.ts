@@ -56,7 +56,7 @@ export const dappController = (
         connect: async () => ({
             kernel: kernelInfo,
             isConnected: false,
-            userUrl: 'http://localhost:3002/login/',
+            userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
         }),
         darsAvailable: async () => ({ dars: ['default-dar'] }),
         ledgerApi: async (params: LedgerApiParams) => ({
@@ -105,7 +105,8 @@ export const dappController = (
             })
 
             return {
-                userUrl: `http://localhost:3002/approve/index.html?commandId=${commandId}&partyId=${wallet.partyId}&txHash=${encodeURIComponent(preparedTransactionHash)}&tx=${encodeURIComponent(preparedTransaction)}`,
+                // TODO: pull user base URL / port from config
+                userUrl: `http://localhost:3030/approve/index.html?commandId=${commandId}&partyId=${wallet.partyId}&txHash=${encodeURIComponent(preparedTransactionHash)}&tx=${encodeURIComponent(preparedTransaction)}`,
             }
         },
         prepareReturn: async (params: PrepareReturnParams) => {

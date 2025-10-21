@@ -7,12 +7,9 @@ import { pino } from 'pino'
 import { jsonRpcHandler } from '../middleware/jsonRpcHandler.js'
 import { Methods } from './rpc-gen/index.js'
 import { Store } from '@canton-network/core-wallet-store'
-import { jwtAuth } from '../middleware/jwtAuth.js'
 import { AuthService, AuthAware } from '@canton-network/core-wallet-auth'
-import { rpcRateLimit } from '../middleware/rateLimit.js'
-import cors from 'cors'
-import { createServer } from 'http'
-import { Server } from 'socket.io'
+import { Server } from 'http'
+import { Server as SocketIoServer } from 'socket.io'
 import {
     NotificationService,
     Notifier,
@@ -22,33 +19,29 @@ import { KernelInfo } from '../config/Config.js'
 const logger = pino({ name: 'main', level: 'debug' })
 
 export const dapp = (
+    route: string,
+    app: express.Express,
+    server: Server,
     kernelInfo: KernelInfo,
     notificationService: NotificationService,
     authService: AuthService,
     store: Store & AuthAware<Store>
 ) => {
-    const app = express()
-    app.use(cors())
-    app.use(express.json())
-    app.use(
-        '/rpc',
-        rpcRateLimit,
-        jwtAuth(authService, logger),
-        (req, res, next) =>
-            jsonRpcHandler<Methods>({
-                controller: dappController(
-                    kernelInfo,
-                    store.withAuthContext(req.authContext),
-                    notificationService,
-                    logger,
-                    req.authContext
-                ),
+    app.use(route, (req, res, next) =>
+        jsonRpcHandler<Methods>({
+            controller: dappController(
+                kernelInfo,
+                store.withAuthContext(req.authContext),
+                notificationService,
                 logger,
-            })(req, res, next)
+                req.authContext
+            ),
+            logger,
+        })(req, res, next)
     )
 
-    const server = createServer(app)
-    const io = new Server(server, {
+    // const server = createServer(app)
+    const io = new SocketIoServer(server, {
         cors: {
             origin: '*',
             methods: ['GET', 'POST'],
