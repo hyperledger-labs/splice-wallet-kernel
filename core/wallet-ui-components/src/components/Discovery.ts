@@ -1,14 +1,92 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { DiscoverResult, SpliceMessageEvent } from '@canton-network/core-types'
+import {
+    DiscoverResult,
+    SpliceMessageEvent,
+    GatewaysConfig,
+} from '@canton-network/core-types'
+import { css } from 'lit'
+import { BaseElement } from '../internal/BaseElement'
+import { cssToString } from '../utils'
+
+type KernelType = GatewaysConfig & { walletType: 'remote' }
+
+const SUBSTITUTABLE_CSS = cssToString([
+    BaseElement.styles,
+    css`
+        * {
+            color: var(--wg-theme-text-color, black);
+            font-family: var(--wg-theme-font-family);
+        }
+
+        .root {
+            background-color: var(--wg-theme-background-color, transparent);
+            width: 100%;
+            height: 100%;
+        }
+
+        .wrapper {
+            margin: 0 auto;
+            max-width: 90%;
+            padding: 20px 12px;
+        }
+
+        h3 {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .kernel {
+            gap: 8px;
+        }
+
+        .kernel-content {
+            gap: 4px;
+        }
+
+        .nav-link {
+            cursor: pointer;
+        }
+
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            transform: translateX(-50%);
+            bottom: 0;
+            margin-bottom: 8px;
+            background: #495057;
+            color: var(--black);
+            padding: 8px 12px;
+            border-radius: 6px;
+            pointer-events: none;
+            opacity: 0;
+            transition: 0.5s;
+        }
+
+        [data-tooltip]:hover::after {
+            opacity: 1;
+            bottom: 100%;
+        }
+    `,
+])
 
 /**
  * Discovery implements the view of the Wallet Gateway selection window.
- * It is implemented directly as a Web Component without using LitElement, so to avoid having external dependencies.
+ *
+ * This component is a special case. It does not use Lit or BaseElement, because it is intended to be injected directly into client-side popup windows.
+ * This has some implications about how styles are handled. We want to rely on the same base styles as BaseElement, but do not want to depend on the Lit runtime.
+ *
+ * Therefore, we define the styles as a string constant (SUBSTITUTABLE_CSS), and inject them into the shadow DOM manually.
  */
 export class Discovery extends HTMLElement {
     static observedAttributes = ['wallet-extension-loaded']
+
+    static styles = SUBSTITUTABLE_CSS
 
     get walletExtensionLoaded() {
         return this.hasAttribute('wallet-extension-loaded')
@@ -23,41 +101,15 @@ export class Discovery extends HTMLElement {
     }
 
     private root: HTMLElement
+    private selectedTabId: string = 'tab-1'
+    private verifiedKernels?: KernelType[]
 
     constructor() {
         super()
         this.attachShadow({ mode: 'open' })
 
         const styles = document.createElement('style')
-        styles.textContent = `
-        * {
-            color: var(--splice-wk-text-color, black);
-            font-family: var(--splice-wk-font-family);
-        }
-
-        h1 {
-            margin: 0px;
-        }
-
-        div {
-            background-color: var(--splice-wk-background-color, none);
-            width: 100%;
-            height: 100%;
-        }
-
-        .kernel {
-            height: auto;
-            margin-bottom: 8px;
-        }
-
-        .kernel button {
-            margin-left: 8px;
-        }
-
-        input {
-            margin-left: 8px;
-        }
-        `
+        styles.textContent = Discovery.styles
 
         this.root = document.createElement('div')
         this.root.id = 'discovery-root'
@@ -79,34 +131,84 @@ export class Discovery extends HTMLElement {
                 }
             )
         }
+
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'SPLICE_WALLET_CONFIG_LOAD') {
+                this.verifiedKernels = event.data.payload.map(
+                    (kernel: GatewaysConfig) => ({
+                        ...kernel,
+                        walletType: 'remote',
+                    })
+                )
+                this.render()
+            }
+        })
     }
 
-    verifiedKernels(): DiscoverResult[] {
-        return [{ url: 'http://localhost:3008/rpc', walletType: 'remote' }]
+    tabs() {
+        return [
+            {
+                label: 'Verified',
+                id: 'tab-1',
+            },
+            {
+                label: 'Custom url',
+                id: 'tab-2',
+            },
+        ]
     }
 
-    private renderKernelOption(kernel: DiscoverResult) {
-        const div = document.createElement('div')
-        div.setAttribute('class', 'kernel')
+    private renderExtensionOption(kernel: DiscoverResult) {
+        const div = this.mkElement('div', '', {
+            class: 'kernel d-flex justify-content-space-between align-items-center flex-wrap mb-3',
+        })
 
-        const span = document.createElement('span')
+        const button = this.mkElement('button', 'Connect', {
+            class: 'btn btn-primary',
+            type: 'button',
+        })
 
-        switch (kernel.walletType) {
-            case 'extension':
-                span.innerText = 'Browser Extension'
-                break
-            case 'remote':
-                span.innerText = `${kernel.walletType} - ${kernel.url}`
-                break
-        }
+        const span = this.mkElement('span', 'Browser Extension')
 
-        const button = document.createElement('button')
-        button.innerText = `Connect`
         button.addEventListener('click', () => {
             this.selectKernel(kernel)
         })
 
-        div.appendChild(span)
+        div.append(span, button)
+
+        return div
+    }
+
+    private renderKernelOption(kernel: KernelType) {
+        const div = this.mkElement('div', '', {
+            class: 'kernel d-flex justify-content-space-between align-items-center flex-wrap mb-3',
+        })
+
+        const button = this.mkElement('button', 'Connect', {
+            class: 'btn btn-primary',
+            type: 'button',
+            ['data-tooltip']: kernel.rpcUrl,
+        })
+
+        const nameWrapper = this.mkElement('div', '', {
+            class: 'kernel-content d-flex',
+        })
+        const span = this.mkElement('span', kernel.name, {
+            class: 'kernel-name',
+        })
+
+        // it should be img in the future
+        const logo = this.mkElement('span', '(logo)')
+        nameWrapper.append(span, logo)
+        div.appendChild(nameWrapper)
+
+        button.addEventListener('click', () => {
+            this.selectKernel({
+                url: kernel.rpcUrl,
+                walletType: kernel.walletType,
+            })
+        })
+
         div.appendChild(button)
 
         return div
@@ -120,43 +222,103 @@ export class Discovery extends HTMLElement {
         }
     }
 
-    render() {
-        const root = document.createElement('div')
+    private mkElement<K extends keyof HTMLElementTagNameMap>(
+        elementName: K,
+        value?: string,
+        attrs: Record<string, string> = {}
+    ) {
+        const element = document.createElement(elementName)
 
-        const header = document.createElement('h1')
-        header.innerText = 'Add Remote Wallet Gateway'
+        if (value) {
+            element.innerText = value
+        }
 
-        const input = document.createElement('input')
-        input.setAttribute('autofocus', '')
-        input.setAttribute('id', 'wkurl')
-        input.setAttribute('type', 'text')
-        input.setAttribute('placeholder', 'RPC URL')
-
-        const button = document.createElement('button')
-        button.setAttribute('id', 'connect')
-        button.innerText = 'Connect'
-        button.addEventListener('click', () => {
-            const url = input.value
-            console.log('Connecting to Wallet Gateway...' + url)
-            this.selectKernel({ url, walletType: 'remote' })
+        Object.entries(attrs).forEach(([key, val]) => {
+            element.setAttribute(key, val)
         })
 
-        root.appendChild(header)
+        return element
+    }
 
-        if (this.walletExtensionLoaded) {
-            const k = this.renderKernelOption({
-                walletType: 'extension',
+    render() {
+        const root = this.mkElement('div', '', { class: 'root' })
+        const wrapper = this.mkElement('div', '', { class: 'wrapper' })
+        const header = this.mkElement('h3', 'Connect to a Wallet Gateway')
+
+        const card = this.mkElement('div', '', { class: 'card' })
+        const cardHeader = this.mkElement('div', '', { class: 'card-header' })
+        const navTabs = this.mkElement('ul', '', {
+            class: 'nav nav-tabs card-header-tabs',
+        })
+
+        for (const tab of this.tabs()) {
+            const li = this.mkElement('li', '', { class: 'nav-item' })
+
+            const a = this.mkElement('a', tab.label, { class: 'nav-link' })
+
+            if (tab.id === this.selectedTabId) {
+                a.classList.add('active')
+            }
+
+            a.addEventListener('click', (e) => {
+                e.preventDefault()
+                this.selectedTabId = tab.id
+                this.render()
             })
-            root.appendChild(k)
+
+            li.appendChild(a)
+            navTabs.appendChild(li)
         }
 
-        for (const kernel of this.verifiedKernels()) {
-            const k = this.renderKernelOption(kernel)
-            root.appendChild(k)
+        cardHeader.appendChild(navTabs)
+
+        const cardBody = this.mkElement('div', '', { class: 'card-body' })
+
+        if (this.selectedTabId === 'tab-1') {
+            if (this.walletExtensionLoaded) {
+                const k = this.renderExtensionOption({
+                    walletType: 'extension',
+                })
+                cardBody.appendChild(k)
+            }
+
+            if (this.verifiedKernels?.length) {
+                for (const kernel of this.verifiedKernels) {
+                    const k = this.renderKernelOption(kernel)
+                    cardBody.appendChild(k)
+                }
+            }
+        } else {
+            const div = this.mkElement('div', '', {
+                class: 'kernel d-flex justify-content-space-between align-items-center flex-wrap mb-3',
+            })
+
+            const input = this.mkElement('input', '', {
+                id: 'wkurl',
+                type: 'text',
+                placeholder: 'RPC URL',
+                class: 'form-control',
+            })
+
+            const button = this.mkElement('button', 'Connect', {
+                class: 'btn btn-primary',
+                id: 'connect',
+                type: 'button',
+            })
+
+            button.addEventListener('click', () => {
+                const url = input.value
+                console.log('Connecting to Wallet Gateway...' + url)
+                this.selectKernel({ url, walletType: 'remote' })
+            })
+            div.append(input, button)
+            cardBody.appendChild(div)
         }
 
-        root.appendChild(input)
-        root.appendChild(button)
+        card.append(cardHeader, cardBody)
+
+        wrapper.append(header, card)
+        root.appendChild(wrapper)
 
         // Replace the whole root (except styles), don't append
         if (this.shadowRoot) {

@@ -172,6 +172,33 @@ Finality usually takes 3-10s.
             :dedent:
 
 
+Observing the Transaction
+-------------------------
+
+There are two ways to observe the transaction you have submitted. You can either:
+
+1. continuously monitor holdings changes using :ref:`token standard history parser <list-holding-transactions>`.
+2. use WaitFor to get the updateId and retrieve the transaction:
+
+.. literalinclude:: ../../examples/snippets/await-completion-and-fetch.ts
+    :language: typescript
+    :dedent:
+
+
+How to use the SDK to Offline sign a Transaction
+------------------------------------------------
+
+The SDK exposes functionality that can be used in an offline environment to sign and validate transactions the below script shows an entire
+interaction between `Alice` and `Bob` with signing happening in an offline environment and online environment that performs the prepare and
+submit.
+
+
+.. literalinclude:: ../../examples/scripts/08-offline-signing-localnet.ts
+    :language: typescript
+    :dedent:
+
+
+
 .. Link to this afterwards - https://docs.digitalasset.com/operate/3.3/howtos/troubleshoot/troubleshooting_guide.html#key-knowledge
 
 .. TODO showcase exercise of the pong choice

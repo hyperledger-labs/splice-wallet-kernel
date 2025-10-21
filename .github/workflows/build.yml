@@ -8,6 +8,36 @@ permissions:
     contents: read
 
 jobs:
+    docker-amd64:
+        runs-on: ubuntu-24.04
+        needs: build
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - uses: ./.github/actions/setup_yarn
+
+            - name: Flat pack the repo
+              run: yarn docker:flat-pack
+
+            - name: Build docker image
+              run: yarn docker:build
+
+    docker-arm:
+        runs-on: ubuntu-24.04-arm
+        needs: build
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - uses: ./.github/actions/setup_yarn
+
+            - name: Flat pack the repo
+              run: yarn docker:flat-pack
+
+            - name: Build docker image
+              run: yarn docker:build
+
     build:
         runs-on: ubuntu-latest
         steps:
@@ -81,6 +111,9 @@ jobs:
             - name: check package.json names
               run: yarn script:cleancoding
 
+            - name: run typechecking
+              run: yarn nx run-many -t typecheck --parallel
+
             - name: check open-rpc specs titles
               run: yarn script:openrpc:titles
 
@@ -114,10 +147,31 @@ jobs:
               run: yarn script:fetch:canton
 
             - name: Start Canton
-              run: yarn start:canton &
+              run: |
+                  set -e
+                  timeout 5m bash -c '
+                    LOGFILE=canton_start.log
+                    yarn start:canton > "$LOGFILE" 2>&1 &
+                    pid=$!
+                    for i in {1..60}; do
+                      if grep -q "Bootstrap script successfully executed." "$LOGFILE"; then
+                        echo "Canton started successfully."
+                        exit 0
+                      fi
+                      if ! kill -0 $pid 2>/dev/null; then
+                        echo "Canton process exited unexpectedly."
+                        cat "$LOGFILE"
+                        exit 1
+                      fi
+                      sleep 5
+                    done
+                    echo "Timeout: 'Bootstrap script successfully executed.' not found in 5 minutes."
+                    cat "$LOGFILE"
+                    exit 1
+                  '
 
             - name: Start remote WK
-              run: DAPP_API_PORT=3008 yarn nx run @canton-network/clients-remote:start &
+              run: DAPP_API_PORT=3008 yarn nx run @canton-network/wallet-gateway-remote:start &
 
             - run: yarn nx run @canton-network/example:dev &
 
@@ -190,11 +244,17 @@ jobs:
             - name: Start Localnet
               run: yarn start:localnet
 
+            - uses: ./.github/actions/check_resources
+
             - name: Test example snippets
               run: yarn nx snippets docs-wallet-integration-guide-examples
 
+            - uses: ./.github/actions/check_resources
+
             - name: Test example scripts
               run: yarn script:test:examples
+
+            - uses: ./.github/actions/check_resources
 
             - name: Save container logs
               if: failure()

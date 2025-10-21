@@ -5,7 +5,6 @@ import { z } from 'zod'
 
 export const ledgerApiSchema = z.object({
     baseUrl: z.string().url(),
-    adminGrpcUrl: z.string().url(), // TODO(#180): remove after grpc is gone
 })
 
 const clientCredentials = z.object({
@@ -90,5 +89,6 @@ export type Auth = z.infer<typeof authSchema>
 export type Network = z.infer<typeof networkSchema>
 export type ImplicitAuth = z.infer<typeof implicitAuthSchema>
 export type PasswordAuth = z.infer<typeof passwordAuthSchema>
-export type clientCredentialAuth = z.infer<typeof clientCredentialAuthSchema>
+export type ClientCredentials = z.infer<typeof clientCredentials>
+export type ClientCredentialAuth = z.infer<typeof clientCredentialAuthSchema>
 export type LedgerApi = z.infer<typeof ledgerApiSchema>

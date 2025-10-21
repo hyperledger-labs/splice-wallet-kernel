@@ -9,6 +9,10 @@ import {
     Types,
     awaitCompletion,
     promiseWithTimeout,
+    GenerateTransactionResponse,
+    AllocateExternalPartyResponse,
+    isJsCantonError,
+    components,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -40,6 +44,7 @@ export type WrappedCommand<
 export class LedgerController {
     private readonly client: LedgerClient
     private readonly userId: string
+    private readonly isAdmin: boolean
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
     private logger = pino({ name: 'LedgerController', level: 'info' })
@@ -48,12 +53,14 @@ export class LedgerController {
      *
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
+     * @param isAdmin optional flag to set true when creating adminLedger.
      * @param accessTokenProvider provider for caching access tokens used to authenticate requests.
      * @param token the access token from the user, usually provided by an auth controller. This parameter will be removed with version 1.0.0, please use accessTokenProvider instead)
      */
     constructor(
         userId: string,
         baseUrl: URL,
+        isAdmin: boolean,
         accessTokenProvider?: AccessTokenProvider,
         token?: string
     ) {
@@ -65,6 +72,7 @@ export class LedgerController {
         )
         this.client.init()
         this.userId = userId
+        this.isAdmin = isAdmin
         return this
     }
 
@@ -115,12 +123,28 @@ export class LedgerController {
      * @param signature the signed signature of the preparedTransactionHash from the prepareSubmission method.
      * @returns true if verification succeeded or false if it failed
      */
-
+    verifyTxHash(
+        txHash: string,
+        publicKey: PublicKey,
+        signature: string
+    ): boolean
+    /** @deprecated protobuf version of public key is unsupported, use the `PublicKey` type instead */
+    verifyTxHash(
+        txHash: string,
+        publicKey: SigningPublicKey,
+        signature: string
+    ): boolean
+    /** @deprecated protobuf version of public key is unsupported, use the `PublicKey` type instead */
     verifyTxHash(
         txHash: string,
         publicKey: SigningPublicKey | PublicKey,
         signature: string
-    ) {
+    ): boolean
+    verifyTxHash(
+        txHash: string,
+        publicKey: SigningPublicKey | PublicKey,
+        signature: string
+    ): boolean {
         let key: string
         if (typeof publicKey === 'string') {
             key = publicKey
@@ -149,9 +173,8 @@ export class LedgerController {
         commandId: string,
         disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<string> {
-        const commandArray = Array.isArray(commands) ? commands : [commands]
         const prepared = await this.prepareSubmission(
-            commandArray,
+            commands,
             commandId,
             disclosedContracts
         )
@@ -204,16 +227,14 @@ export class LedgerController {
      * Waits for a command to be completed by polling the completions endpoint.
      * @param ledgerEnd The offset to start polling from.
      * @param timeoutMs The maximum time to wait in milliseconds.
-     * @param commandId Optional command id to wait for.
-     * @param submissionId Optional submission id to wait for.
+     * @param commandIdOrSubmissionId The command id or submission id to wait for.
      * @returns The completion value of the command.
      * @throws An error if the timeout is reached before the command is completed.
      */
     async waitForCompletion(
         ledgerEnd: number | Types['GetLedgerEndResponse'],
         timeoutMs: number,
-        commandId?: string,
-        submissionId?: string
+        commandIdOrSubmissionId: string
     ): Promise<Types['Completion']['value']> {
         const ledgerEndNumber: number =
             typeof ledgerEnd === 'number' ? ledgerEnd : ledgerEnd.offset
@@ -222,13 +243,12 @@ export class LedgerController {
             ledgerEndNumber,
             this.getPartyId(),
             this.userId,
-            commandId,
-            submissionId
+            commandIdOrSubmissionId
         )
         return promiseWithTimeout(
             completionPromise,
             timeoutMs,
-            `Timed out getting completion for submission with userId=${this.userId}, commandId=${commandId}, submissionId=${submissionId}.
+            `Timed out getting completion for submission with userId=${this.userId}, Id=${commandIdOrSubmissionId}.
     The submission might have succeeded or failed, but it couldn't be determined in time.`
         )
     }
@@ -238,13 +258,211 @@ export class LedgerController {
      * Internal parties uses the canton keys for signing and does not use the interactive submission flow.
      * @param partyHint partyHint to be used for the new party.
      */
-    async allocateInternalParty(
-        partyHint?: string
-    ): Promise<PostResponse<'/v2/parties'>> {
-        return await this.client.post('/v2/parties', {
-            partyIdHint: partyHint || v4(),
-            identityProviderId: '',
-        })
+    async allocateInternalParty(partyHint?: string): Promise<PartyId> {
+        if (partyHint && partyHint !== undefined) {
+            const internalParty = await this.client.get('/v2/parties', {
+                path: { partyHint: partyHint },
+                query: {},
+            })
+            if (
+                internalParty.partyDetails &&
+                internalParty.partyDetails.length > 0
+            ) {
+                return internalParty.partyDetails[0].party
+            }
+        }
+
+        return (
+            await this.client.post('/v2/parties', {
+                partyIdHint: partyHint || v4(),
+                identityProviderId: '',
+            })
+        ).partyDetails!.party
+    }
+
+    /**
+     * Generate topology transactions for an external party that can be signed and submitted in order to create a new external party.
+     *
+     * @param publicKey
+     * @param partyHint (optional) hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold (optional) parameter for multi-hosted parties (default is 1).
+     * @param hostingParticipantUids (optional) list of participant UIDs that will host the party.
+     * @returns
+     */
+    async generateExternalParty(
+        publicKey: PublicKey,
+        partyHint?: string,
+        confirmingThreshold?: number,
+        hostingParticipantUids?: string[]
+    ): Promise<GenerateTransactionResponse> {
+        return this.client.generateTopology(
+            this.getSynchronizerId(),
+            publicKey,
+            partyHint || v4(),
+            false,
+            confirmingThreshold,
+            hostingParticipantUids
+        )
+    }
+
+    /** Submits a prepared and signed external party topology to the ledger.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param signedHash The signed combined hash of the prepared transactions.
+     * @param preparedParty The prepared party object from prepareExternalPartyTopology.
+     * @param grantUserRights Defines if the transaction should also grant user right to current user (default is true)
+     * @param hostingParticipantEndpoints List of endpoints to the respective hosting participant ledger API (default is empty array).
+     * @param expectHeavyLoad If true, the method will handle potential timeouts from the ledger api (default is true).
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
+    async allocateExternalParty(
+        signedHash: string,
+        preparedParty: GenerateTransactionResponse,
+        grantUserRights: boolean = true,
+        hostingParticipantEndpoints: {
+            accessTokenProvider: AccessTokenProvider
+            url: URL
+        }[] = [],
+        expectHeavyLoad: boolean = true
+    ): Promise<AllocateExternalPartyResponse> {
+        if (await this.client.checkIfPartyExists(preparedParty.partyId))
+            return { partyId: preparedParty.partyId }
+
+        const { publicKeyFingerprint, partyId, topologyTransactions } =
+            preparedParty
+
+        try {
+            await this.client.allocateExternalParty(
+                this.getSynchronizerId(),
+                topologyTransactions!.map((transaction) => ({ transaction })),
+                [
+                    {
+                        format: 'SIGNATURE_FORMAT_CONCAT',
+                        signature: signedHash,
+                        signedBy: publicKeyFingerprint,
+                        signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
+                    },
+                ]
+            )
+        } catch (e) {
+            const errorMsg =
+                typeof e === 'string' ? e : e instanceof Error ? e.message : ''
+            if (
+                expectHeavyLoad &&
+                errorMsg.includes(
+                    'The server was not able to produce a timely response to your request'
+                )
+            ) {
+                this.logger.warn(
+                    'Received timeout from ledger api when allocating party, however expecting heavy load is set to true'
+                )
+                // this is a timeout and we just have to wait until the party exists
+                while (
+                    !(await this.client.checkIfPartyExists(
+                        preparedParty.partyId
+                    ))
+                ) {
+                    await new Promise((resolve) => setTimeout(resolve, 1000))
+                }
+            } else {
+                throw e
+            }
+        }
+
+        if (hostingParticipantEndpoints) {
+            for (const endpoint of hostingParticipantEndpoints) {
+                const lc = new LedgerClient(
+                    endpoint.url,
+                    this.logger,
+                    undefined,
+                    endpoint.accessTokenProvider
+                )
+
+                await lc.allocateExternalParty(
+                    this.getSynchronizerId(),
+                    topologyTransactions!.map((transaction) => ({
+                        transaction,
+                    })),
+                    [
+                        {
+                            format: 'SIGNATURE_FORMAT_CONCAT',
+                            signature: signedHash,
+                            signedBy: publicKeyFingerprint,
+                            signingAlgorithmSpec:
+                                'SIGNING_ALGORITHM_SPEC_ED25519',
+                        },
+                    ]
+                )
+            }
+        }
+
+        if (grantUserRights) {
+            await this.client.grantUserRights(this.userId, partyId)
+        }
+
+        return { partyId }
+    }
+
+    /** Prepares, signs and submits a new external party topology in one step.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param privateKey The private key of the new external party, used to sign the topology transactions.
+     * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold optional parameter for multi-hosted parties (default is 1).
+     * @param hostingParticipantEndpoints optional list of connection details for other participants to multi-host this party.
+     * @param grantUserRights Defines if the transaction should also grant user right to current user, defaults to true if undefined
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
+    async signAndAllocateExternalParty(
+        privateKey: PrivateKey,
+        partyHint?: string,
+        confirmingThreshold?: number,
+        hostingParticipantEndpoints?: {
+            accessTokenProvider: AccessTokenProvider
+            url: URL
+        }[],
+        grantUserRights?: boolean
+    ): Promise<GenerateTransactionResponse> {
+        const otherHostingParticipantUids = await Promise.all(
+            hostingParticipantEndpoints
+                ?.map(
+                    (endpoint) =>
+                        new LedgerClient(
+                            endpoint.url,
+                            this.logger,
+                            undefined,
+                            endpoint.accessTokenProvider
+                        )
+                )
+                .map((client) =>
+                    client
+                        .get('/v2/parties/participant-id')
+                        .then((res) => res.participantId)
+                ) || []
+        )
+
+        const preparedParty = await this.generateExternalParty(
+            getPublicKeyFromPrivate(privateKey),
+            partyHint,
+            confirmingThreshold,
+            otherHostingParticipantUids
+        )
+
+        if (!preparedParty) {
+            throw new Error('Error creating prepared party')
+        }
+
+        const signedHash = signTransactionHash(
+            preparedParty.multiHash,
+            privateKey
+        )
+
+        await this.allocateExternalParty(
+            signedHash,
+            preparedParty,
+            grantUserRights,
+            hostingParticipantEndpoints
+        )
+
+        return preparedParty
     }
 
     /**
@@ -255,13 +473,14 @@ export class LedgerController {
      * @param disclosedContracts additional contracts used to resolve contract & contract key lookups.
      */
     async prepareSubmission(
-        commands: unknown,
+        commands: WrappedCommand | WrappedCommand[] | unknown,
         commandId?: string,
         disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
+        const commandArray = Array.isArray(commands) ? commands : [commands]
         const prepareParams: Types['JsPrepareSubmissionRequest'] = {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-            commands: commands as any,
+            commands: commandArray as any,
             commandId: commandId || v4(),
             userId: this.userId,
             actAs: [this.getPartyId()],
@@ -285,6 +504,26 @@ export class LedgerController {
      * @param publicKey the public key correlating to the private key used to sign the signature.
      * @param submissionId the unique identifier used to track the transaction, must be the same as used in prepareSubmission.
      */
+    async executeSubmission(
+        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        signature: string,
+        publicKey: PublicKey,
+        submissionId: string
+    ): Promise<string>
+    /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
+    async executeSubmission(
+        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        signature: string,
+        publicKey: SigningPublicKey,
+        submissionId: string
+    ): Promise<string>
+    /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
+    async executeSubmission(
+        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        signature: string,
+        publicKey: SigningPublicKey | PublicKey,
+        submissionId: string
+    ): Promise<string>
     async executeSubmission(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
         signature: string,
@@ -363,12 +602,7 @@ export class LedgerController {
             submissionId
         )
 
-        return this.waitForCompletion(
-            ledgerEnd,
-            timeoutMs,
-            undefined,
-            submissionId
-        )
+        return this.waitForCompletion(ledgerEnd, timeoutMs, submissionId)
     }
 
     /**
@@ -391,23 +625,61 @@ export class LedgerController {
     }
 
     /**
+     * Submits a command for an internal party
+     * @param commands the commands to be executed.
+     * @param commandId an unique identifier used to track the transaction, if not provided a random UUID will be used.
+     * @param disclosedContracts additional contracts used to resolve contract & contract key lookups.
+    
+     */
+    async submitCommand(
+        commands: WrappedCommand | WrappedCommand[] | unknown,
+        commandId?: string,
+        disclosedContracts?: Types['DisclosedContract'][]
+    ) {
+        const commandArray = Array.isArray(commands) ? commands : [commands]
+
+        const request = {
+            commands: commandArray,
+            commandId: commandId || v4(),
+            userId: this.userId,
+            actAs: [this.getPartyId()],
+            readAs: [],
+            disclosedContracts: disclosedContracts || [],
+            synchronizerId: this.getSynchronizerId(),
+            verboseHashing: false,
+            packageIdSelectionPreference: [],
+        }
+
+        return await this.client.post('/v2/commands/submit-and-wait', request)
+    }
+
+    /**
      * Lists all wallets (parties) the user has access to.
      * use a pageToken from a previous request to query the next page.
-     * @param options Optional query parameters: pageSize, pageToken, identityProviderId
      * @returns A paginated list of parties.
      */
-    async listWallets(options?: {
-        pageSize?: number
-        pageToken?: string
-        identityProviderId?: string
-    }): Promise<GetResponse<'/v2/parties'>> {
-        const params: Record<string, unknown> = {}
-        if (options?.pageSize !== undefined) params.pageSize = options.pageSize
-        if (options?.pageToken !== undefined)
-            params.pageToken = options.pageToken
-        if (options?.identityProviderId !== undefined)
-            params.identityProviderId = options.identityProviderId
-        return await this.client.get('/v2/parties', params)
+    async listWallets(): Promise<PartyId[]> {
+        const rights = await this.client.get('/v2/users/{user-id}/rights', {
+            path: { 'user-id': this.userId },
+        })
+
+        if (rights.rights!.some((r) => 'CanReadAsAnyParty' in r.kind)) {
+            return (await this.client.get('/v2/parties')).partyDetails!.map(
+                (p) => p.party
+            )
+        } else {
+            const canReadAsPartyRight = rights.rights?.find(
+                (r) => 'CanReadAsParty' in r.kind
+            ) as { CanReadAsParty?: { parties: PartyId[] } } | undefined
+            if (
+                canReadAsPartyRight &&
+                canReadAsPartyRight.CanReadAsParty &&
+                Array.isArray(canReadAsPartyRight.CanReadAsParty.parties)
+            ) {
+                return canReadAsPartyRight.CanReadAsParty.parties
+            }
+            return []
+        }
     }
 
     /**
@@ -425,6 +697,35 @@ export class LedgerController {
             '/v2/state/connected-synchronizers',
             params
         )
+    }
+
+    /**
+     * Creates a proxy for a delegate to create featured app markers jointly with using token standard workflows.
+     * @param exchangeParty The delegate interacting with the token standard workflow
+     * @param treasuryParty The app provider whose featured app right should be used.
+     * @returns A delegate proxy create command
+     */
+    async createDelegateProxyCommand(
+        exchangeParty: PartyId,
+        treasuryParty: PartyId
+    ) {
+        return {
+            CreateCommand: {
+                templateId:
+                    '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+                createArguments: {
+                    provider: exchangeParty,
+                    delegate: treasuryParty,
+                },
+            },
+        }
+    }
+
+    /**
+     * A function to grant either readAs or actAs rights
+     */
+    async grantRights(readAs?: PartyId[], actAs?: PartyId[]) {
+        return await this.client.grantRights(this.userId, readAs, actAs)
     }
 
     /**
@@ -514,6 +815,21 @@ export class LedgerController {
     }
 
     /**
+     * A way to validate that the app marker works as expected by
+     * checking that the expected AppRewardCoupon is created by the SVs once the delegate transfer occurs
+     */
+    async getAppRewardCoupons() {
+        const end = await this.ledgerEnd()
+
+        return await this.activeContracts({
+            offset: end.offset,
+            parties: [this.getPartyId()],
+            templateIds: ['#splice-amulet:Splice.Amulet:AppRewardCoupon'],
+            filterByParty: true,
+        })
+    }
+
+    /**
      * Retrieves active contracts with optional filtering by template IDs and parties.
      * @param options Optional parameters for filtering:
      *  - offset: The ledger offset to query active contracts at.
@@ -576,6 +892,100 @@ export class LedgerController {
         //TODO: figure out if this should automatically be converted to a format that is more user friendly
         return await this.client.post('/v2/state/active-contracts', filter)
     }
+
+    async uploadDar(
+        darBytes: Uint8Array | Buffer
+    ): Promise<PostResponse<'/v2/packages'> | void> {
+        if (!this.isAdmin) {
+            throw new Error('Use adminLedger to call uploadDar')
+        }
+        try {
+            return await this.client.post(
+                '/v2/packages',
+                darBytes as never,
+                {},
+                {
+                    bodySerializer: (b: unknown) => b, // prevents jsonification of bytes
+                    headers: { 'Content-Type': 'application/octet-stream' },
+                }
+            )
+        } catch (e: unknown) {
+            // Check first for already uploaded error, which means dar upload status is ensured true
+            if (isJsCantonError(e)) {
+                const msg = [
+                    e.code,
+                    e.cause,
+                    ...(e.context ? Object.values(e.context) : []),
+                ]
+                    .filter(Boolean)
+                    .join(' ')
+
+                const GRPC_ALREADY_EXISTS = 6 as const
+                const alreadyExists =
+                    e.code?.toUpperCase() === 'ALREADY_EXISTS' ||
+                    e.grpcCodeValue === GRPC_ALREADY_EXISTS ||
+                    /already\s*exist/i.test(msg) ||
+                    (e as { status?: number }).status === 409
+
+                if (alreadyExists) {
+                    this.logger.info('DAR already present - continuing')
+                    return
+                }
+
+                // In case of other errors throw
+                this.logger.error({ errror: e }, 'DAR upload failed')
+                throw e
+            }
+            this.logger.error({ error: e }, 'DAR upload failed')
+            throw e
+        }
+    }
+
+    async isPackageUploaded(packageId: string): Promise<boolean> {
+        const { packageIds } = await this.client!.get('/v2/packages')
+        return Array.isArray(packageIds) && packageIds.includes(packageId)
+    }
+
+    /**
+     * grant "Master User" rights to a user.
+     *
+     * this require running with an admin token.
+     *
+     * @param userId The ID of the user to grant rights to.
+     * @param canReadAsAnyParty define if the user can read as any party.
+     * @param canExecuteAsAnyParty define if the user can execute as any party.
+     */
+    public async grantMasterUserRights(
+        userId: string,
+        canReadAsAnyParty: boolean,
+        canExecuteAsAnyParty: boolean
+    ) {
+        if (!this.isAdmin) {
+            throw new Error('Use adminLedger to call grantMasterUserRights')
+        }
+
+        return await this.client.grantMasterUserRights(
+            userId,
+            canReadAsAnyParty,
+            canExecuteAsAnyParty
+        )
+    }
+
+    /**
+     * Create a new user.
+     *
+     * @param userId The ID of the user to create.
+     * @param primaryParty The primary party of the user.
+     */
+    public async createUser(
+        userId: string,
+        primaryParty: PartyId
+    ): Promise<components['schemas']['User']> {
+        if (!this.isAdmin) {
+            throw new Error('Use adminLedger to call createUser')
+        }
+        return await this.client.createUser(userId, primaryParty)
+    }
 }
 
 /**
@@ -584,11 +994,13 @@ export class LedgerController {
  */
 export const localLedgerDefault = (
     userId: string,
-    accessTokenProvider: AccessTokenProvider
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean
 ): LedgerController => {
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:5003'),
+        isAdmin,
         accessTokenProvider
     )
 }
@@ -599,29 +1011,34 @@ export const localLedgerDefault = (
  */
 export const localNetLedgerDefault = (
     userId: string,
-    accessTokenProvider: AccessTokenProvider
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean
 ): LedgerController => {
-    return localNetLedgerAppUser(userId, accessTokenProvider)
+    return localNetLedgerAppUser(userId, accessTokenProvider, isAdmin)
 }
 
 export const localNetLedgerAppUser = (
     userId: string,
-    accessTokenProvider: AccessTokenProvider
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean
 ): LedgerController => {
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:2975'),
+        isAdmin,
         accessTokenProvider
     )
 }
 
 export const localNetLedgerAppProvider = (
     userId: string,
-    accessTokenProvider: AccessTokenProvider
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean
 ): LedgerController => {
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:3975'),
+        isAdmin,
         accessTokenProvider
     )
 }

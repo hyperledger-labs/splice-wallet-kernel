@@ -4,18 +4,18 @@
 import crypto from 'crypto'
 import { randomUUID } from 'node:crypto'
 import { readFileSync } from 'node:fs'
-import {
-    AllKnownMetaKeys,
-    HoldingInterface,
-    matchInterfaceIds,
-    TransferInstructionInterface,
-} from './constants.js'
+import { AllKnownMetaKeys, matchInterfaceIds } from './constants.js'
 import { LedgerClient } from './ledger-client.js'
 import { Holding, TransferInstructionView } from './txparse/types.js'
 import { Types } from './ledger-client.js'
 import { PartyId } from '@canton-network/core-types'
+import {
+    HOLDING_INTERFACE_ID,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+} from '@canton-network/core-token-standard'
 
 type TransactionFilter = Types['TransactionFilter']
+type EventFormat = Types['EventFormat']
 type CreatedEvent = Types['CreatedEvent']
 type ExercisedEvent = Types['ExercisedEvent']
 type ArchivedEvent = Types['ArchivedEvent']
@@ -27,7 +27,76 @@ type Command = Types['Command']
 type DeduplicationPeriod2 = Types['DeduplicationPeriod2']
 type Completion = Types['Completion']['value']
 
-export function filtersByParty(
+export function TransactionFilterBySetup(
+    interfaceNames: string[] | string,
+    options: {
+        includeWildcard?: boolean
+        isMasterUser?: boolean
+        partyId?: PartyId | undefined
+    } = { includeWildcard: false, isMasterUser: false }
+): TransactionFilter {
+    const interfaceArrayed = Array.isArray(interfaceNames)
+        ? interfaceNames
+        : [interfaceNames]
+    if (options.isMasterUser)
+        return {
+            filtersByParty: {},
+            filtersForAnyParty:
+                filtersForAnyParty(
+                    interfaceArrayed,
+                    options.includeWildcard ?? false
+                ) ?? {},
+        }
+    else if (!options.partyId || options.partyId === undefined)
+        throw new Error('Party must be provided for non-master users')
+    else
+        return {
+            filtersByParty:
+                filtersByParty(
+                    options.partyId,
+                    interfaceArrayed,
+                    options.includeWildcard ?? false
+                ) ?? {},
+        }
+}
+
+export function EventFilterBySetup(
+    interfaceNames: string[] | string,
+    options: {
+        verbose?: boolean
+        includeWildcard?: boolean
+        isMasterUser?: boolean
+        partyId?: PartyId | undefined
+    } = { includeWildcard: false, isMasterUser: false }
+): EventFormat {
+    const interfaceArrayed = Array.isArray(interfaceNames)
+        ? interfaceNames
+        : [interfaceNames]
+    if (options.isMasterUser)
+        return {
+            filtersByParty: {},
+            filtersForAnyParty:
+                filtersForAnyParty(
+                    interfaceArrayed,
+                    options.includeWildcard ?? false
+                ) ?? {},
+            verbose: options.verbose ?? false,
+        }
+    else if (!options.partyId || options.partyId === undefined)
+        throw new Error('Party must be provided for non-master users')
+    else
+        return {
+            filtersByParty:
+                filtersByParty(
+                    options.partyId,
+                    interfaceArrayed,
+                    options.includeWildcard ?? false
+                ) ?? {},
+            verbose: options.verbose ?? false,
+        }
+}
+
+function filtersByParty(
     party: PartyId,
     interfaceNames: string[],
     includeWildcard: boolean
@@ -68,6 +137,44 @@ export function filtersByParty(
     }
 }
 
+function filtersForAnyParty(
+    interfaceNames: string[],
+    includeWildcard: boolean
+): TransactionFilter['filtersForAnyParty'] {
+    const wildcardFilter = includeWildcard
+        ? [
+              {
+                  identifierFilter: {
+                      WildcardFilter: {
+                          value: {
+                              includeCreatedEventBlob: true,
+                          },
+                      },
+                  },
+              },
+          ]
+        : []
+
+    return {
+        cumulative: [
+            ...interfaceNames.map((interfaceName) => {
+                return {
+                    identifierFilter: {
+                        InterfaceFilter: {
+                            value: {
+                                interfaceId: interfaceName,
+                                includeInterfaceView: true,
+                                includeCreatedEventBlob: true,
+                            },
+                        },
+                    },
+                }
+            }),
+            ...wildcardFilter,
+        ],
+    }
+}
+
 export function hasInterface(
     interfaceId: string,
     event: ExercisedEvent | ArchivedEvent
@@ -94,14 +201,16 @@ export function getKnownInterfaceView(
     const interfaceView = getInterfaceView(createdEvent)
     if (!interfaceView) {
         return null
-    } else if (matchInterfaceIds(HoldingInterface, interfaceView.interfaceId)) {
+    } else if (
+        matchInterfaceIds(HOLDING_INTERFACE_ID, interfaceView.interfaceId)
+    ) {
         return {
             type: 'Holding',
             viewValue: interfaceView.viewValue as Holding,
         }
     } else if (
         matchInterfaceIds(
-            TransferInstructionInterface,
+            TRANSFER_INSTRUCTION_INTERFACE_ID,
             interfaceView.interfaceId
         )
     ) {
@@ -143,7 +252,7 @@ export function ensureInterfaceViewIsPresent(
 
 type Meta = { values: { [key: string]: string } } | undefined
 
-export function mergeMetas(event: ExercisedEvent): Meta {
+export function mergeMetas(event: ExercisedEvent, extra?: Meta): Meta {
     // Add a type assertion to help TypeScript understand the shape of choiceArgument
     const choiceArgument = event.choiceArgument as
         | {
@@ -157,6 +266,7 @@ export function mergeMetas(event: ExercisedEvent): Meta {
         choiceArgument?.transfer?.meta,
         choiceArgument?.extraArgs?.meta,
         choiceArgument?.meta,
+        extra,
         (event.exerciseResult as { meta?: Meta } | undefined)?.meta,
     ]
     const result: { [key: string]: string } = {}
@@ -269,8 +379,7 @@ export async function submitExerciseCommand(
         ledgerEnd.offset,
         partyId,
         userId,
-        commandId,
-        submissionId
+        commandId
     )
     return promiseWithTimeout(
         completionPromise,
@@ -366,13 +475,8 @@ export async function awaitCompletion(
     ledgerEnd: number,
     partyId: PartyId,
     userId: string,
-    commandId?: string,
-    submissionId?: string
+    commandIdOrSubmissionId: string
 ): Promise<Completion> {
-    if (!commandId && !submissionId) {
-        throw new Error('Either commandId or submissionId must be provided')
-    }
-
     const responses = await ledgerClient.post(
         '/v2/commands/completions',
         {
@@ -396,10 +500,10 @@ export async function awaitCompletion(
         const completion = response.completionResponse.Completion
         if (!completion) return false
         if (completion.value.userId !== userId) return false
-        if (commandId && completion.value.commandId !== commandId) return false
-        if (submissionId && completion.value.submissionId !== submissionId)
-            return false
-        return true
+        if (completion.value.commandId === commandIdOrSubmissionId) return true
+        if (completion.value.submissionId === commandIdOrSubmissionId)
+            return true
+        return false
     })
 
     if (wantedCompletion) {
@@ -421,8 +525,7 @@ export async function awaitCompletion(
             newLedgerEnd || ledgerEnd, // !newLedgerEnd implies response was empty
             partyId,
             userId,
-            commandId,
-            submissionId
+            commandIdOrSubmissionId
         )
     }
 }
@@ -445,3 +548,7 @@ export async function promiseWithTimeout<T>(
         }
     }
 }
+
+// Helper for differentiating ledger errors from others and satisfying TS when checking error properties
+export const isJsCantonError = (e: unknown): e is Types['JsCantonError'] =>
+    typeof e === 'object' && e !== null && 'status' in e && 'errorCategory' in e

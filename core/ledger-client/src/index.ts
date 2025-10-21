@@ -30,4 +30,8 @@ export type {
     RawCreate,
 } from './txparse/types.js'
 
-export { awaitCompletion, promiseWithTimeout } from './ledger-api-utils.js'
+export {
+    awaitCompletion,
+    promiseWithTimeout,
+    isJsCantonError,
+} from './ledger-api-utils.js'

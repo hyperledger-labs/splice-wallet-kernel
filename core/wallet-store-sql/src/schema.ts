@@ -36,7 +36,6 @@ interface NetworkTable {
     synchronizerId: string
     description: string
     ledgerApiBaseUrl: string
-    ledgerApiAdminGrpcUrl: string
     userId: UserId | undefined // global if undefined
     identityProviderId: string
 }
@@ -192,7 +191,6 @@ export const toNetwork = (
         description: table.description,
         ledgerApi: {
             baseUrl: table.ledgerApiBaseUrl,
-            adminGrpcUrl: table.ledgerApiAdminGrpcUrl,
         },
         auth: toAuth(authTable),
     }
@@ -208,7 +206,6 @@ export const fromNetwork = (
         synchronizerId: network.synchronizerId,
         description: network.description,
         ledgerApiBaseUrl: network.ledgerApi.baseUrl,
-        ledgerApiAdminGrpcUrl: network.ledgerApi.adminGrpcUrl,
         userId: userId,
         identityProviderId: network.auth.identityProviderId,
     }

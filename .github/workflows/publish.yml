@@ -41,4 +41,4 @@ jobs:
             - name: Publish
               run: |
                   yarn config set npmAuthToken ${{ secrets.NPM_TOKEN_DA }}
-                  yarn workspaces foreach --no-private -t -A --include 'core/*' --include 'sdk/*' npm publish --tolerate-republish
+                  yarn workspaces foreach --no-private -t -A --include 'core/*' --include 'sdk/*' --include 'wallet-gateway/*' npm publish --tolerate-republish

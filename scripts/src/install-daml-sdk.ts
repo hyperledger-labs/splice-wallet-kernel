@@ -13,7 +13,7 @@ import {
     success,
     error,
     ensureDir,
-} from './utils.js'
+} from './lib/utils.js'
 import { pipeline } from 'stream/promises'
 import { Readable } from 'stream'
 import { ReadableStream } from 'stream/web'

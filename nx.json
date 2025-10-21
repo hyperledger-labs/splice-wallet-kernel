@@ -2,11 +2,21 @@
     "$schema": "./node_modules/nx/schemas/nx-schema.json",
     "namedInputs": {
         "default": ["{projectRoot}/**/*", "sharedGlobals"],
-        "production": ["default"],
+        "production": [
+            "default",
+            "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
+            "!{projectRoot}/.storybook/**/*",
+            "!{projectRoot}/tsconfig.storybook.json"
+        ],
         "sharedGlobals": []
     },
     "release": {
-        "projects": ["core/*", "sdk/*", "!core/rpc-generator"],
+        "projects": [
+            "core/*",
+            "sdk/*",
+            "wallet-gateway/remote",
+            "!core/rpc-generator"
+        ],
         "projectsRelationship": "independent",
         "version": {
             "conventionalCommits": true,
@@ -21,6 +31,9 @@
         }
     },
     "targetDefaults": {
+        "flatpack": {
+            "dependsOn": ["build", "^flatpack"]
+        },
         "build": {
             "dependsOn": ["^build"],
             "cache": true
@@ -28,6 +41,9 @@
         "test": {
             "dependsOn": ["^build"],
             "cache": true
+        },
+        "typecheck": {
+            "dependsOn": ["^build"]
         },
         "lint": {
             "cache": true,
@@ -54,6 +70,15 @@
             "exclude": ["core/*-rpc-client/**/*", "damljs/**/*"],
             "options": {
                 "targetName": "lint"
+            }
+        },
+        {
+            "plugin": "@nx/storybook/plugin",
+            "options": {
+                "serveStorybookTargetName": "storybook",
+                "buildStorybookTargetName": "build-storybook",
+                "testStorybookTargetName": "test-storybook",
+                "staticStorybookTargetName": "static-storybook"
             }
         }
     ]

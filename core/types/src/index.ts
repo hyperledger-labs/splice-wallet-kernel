@@ -141,6 +141,13 @@ export const DiscoverResult = z.discriminatedUnion('walletType', [
 
 export type DiscoverResult = z.infer<typeof DiscoverResult>
 
+export const GatewaysConfig = z.object({
+    name: z.string(),
+    rpcUrl: z.string(),
+})
+
+export type GatewaysConfig = z.infer<typeof GatewaysConfig>
+
 // TODO(#131) - move this to rpc-transport package
 
 export const jsonRpcRequest = (

@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-ui-components",
-    "version": "0.4.0",
+    "version": "0.7.0",
     "type": "module",
     "description": "Reusable UI components for the Splice wallet",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -13,16 +13,19 @@
         "./themes": "./themes"
     },
     "scripts": {
-        "copy-css": "tsx src/scripts/copy-css.ts",
-        "build": "tsc -b && yarn copy-css",
-        "build:watch": "tsc -b --watch",
-        "clean": "tsc -b --clean; tsc -b tsconfig.dev.json --clean; rm -rf dist; [ -d public/js ] && rm -rf public/js/* || true",
-        "dev": "vite --port 8000"
+        "build": "vite build && yarn workspace @canton-network/core-wallet-ui-components tsc --emitDeclarationOnly",
+        "build:watch": "vite build --watch & tsc --emitDeclarationOnly --watch",
+        "typecheck": "tsc --noEmit",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
+        "clean": "rm -rf dist",
+        "dev": "storybook dev -p 6006"
     },
     "devDependencies": {
+        "@storybook/web-components-vite": "^9.1.10",
         "@types/bootstrap": "^5",
         "@types/fs-extra": "^11",
         "fs-extra": "^11.3.2",
+        "storybook": "^9.1.10",
         "tsx": "^4.20.4",
         "typescript": "^5.8.3",
         "vite": "^6.3.5"
@@ -36,7 +39,8 @@
         "lit": "^3.3.0"
     },
     "files": [
-        "dist/**"
+        "dist/**",
+        "themes/**"
     ],
     "publishConfig": {
         "access": "public"

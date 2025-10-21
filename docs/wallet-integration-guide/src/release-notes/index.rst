@@ -3,6 +3,412 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+0.12.0
+------
+
+**Released on October 15th, 2025**
+
+* **Important!: The custom meta-data on create transfer have changed format**
+
+.. code-block:: javascript
+
+    //previous format
+    await sdk.tokenStandard!.createTransfer(
+            sender!.partyId,
+            receiver!.partyId,
+            '100',
+            {
+                instrumentId: 'Amulet',
+                instrumentAdmin: instrumentAdminPartyId,
+            },
+            [],
+            'memo-ref',
+            new Date(Date.now() + 24 * 60 * 60 * 1000),
+            {
+                key1: "value1",
+                key2: "value2"
+            }
+        )
+
+
+    //new format
+    await sdk.tokenStandard!.createTransfer(
+            sender!.partyId,
+            receiver!.partyId,
+            '100',
+            {
+                instrumentId: 'Amulet',
+                instrumentAdmin: instrumentAdminPartyId,
+            },
+            [],
+            'memo-ref',
+            new Date(Date.now() + 24 * 60 * 60 * 1000),
+                {
+                values: {
+                    key1: "value1",
+                    key2: "value2"
+                }
+            }
+        )
+
+* Feature app marker delegation proxy
+
+*The Wallet SDK is heavy focused on external party submission flows, however there are certain administrative tasks
+that requires using the validator operator party (which is internally hosted). This is especially useful for setting up
+delegation proxy contract needed for featured app markers.*
+
+.. code-block:: javascript
+
+    const delegateCommand = await sdk.userLedger?.createDelegateProxyCommand(
+        exchangeParty,
+        treasuryParty
+    )
+
+    const delegationContractResult =  await sdk.userLedger?.submitCommand(delegateCommand)
+
+* Possibility to create commands offline
+
+*certain commands like transfer required to be performed in an online context, this was needed to fetch relevant data
+like transferInstruction choice context. This method (and allocation) have now been extended with optional parameters in
+case that it is preferred to be pre-fetched.*
+
+.. code-block:: javascript
+
+    const choiceContext = await sdk.tokenStandard?.getCreateTransferContext(
+        senderParty,
+        receiverParty,
+        amount,
+        { instrumentId, instrumentAdmin},
+        //normal optional parameters for a transfer here like memo and utxos
+        )
+
+     //OFFLINE
+
+     const transferCommand = await sdk.tokenStandard?.createTransfer(
+        senderParty,
+        receiverParty,
+        amount,
+        { instrumentId, instrumentAdmin},
+        prefetchedRegistryChoiceContext: choiceContext
+     )
+
+
+
+* Fetch contract by id
+
+.. code-block:: javascript
+
+    const holding = await sdk.tokenStandard?.listHoldingsUtxo(contractId)
+
+* TLS enablement for grpc admin (topologyController)
+
+*TLS configuration can now be provided for the topologyController allowing a safe and secure connection.*
+
+.. code-block:: javascript
+
+    const tlsTopologyController = (
+        userId: string,
+        userAdminToken: string
+    ): TopologyController => {
+        return new TopologyController(
+            '127.0.0.1:5012',
+            new URL('http://127.0.0.1:5003'),
+            userId,
+            userAdminToken,
+            'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd',
+            {
+                useTls: true,
+                tls: {
+                    rootCert: path.join(here, PATH_TO_TLS_DIR, 'ca.crt'),
+                    mutual: false,
+                },
+            }
+        )
+    }
+
+* Stress tested party creation
+
+*Party creation is under heavy load on mainnet and would consistently run into: `The server was not able to produce a timely response to your request`.
+Safe guard has been added against this, when the error occurs we continuously look for the party to be available. If a timeout is
+required then it will have to be handled outside of the method. It is worth nothing that the party creation has no timeout on ledger.*
+
+you can disable this by setting `expectHeavyLoad` to false
+
+.. code-block:: javascript
+
+     /** Submits a prepared and signed external party topology to the ledger.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param signedHash The signed combined hash of the prepared transactions.
+     * @param preparedParty The prepared party object from prepareExternalPartyTopology.
+     * @param grantUserRights Defines if the transaction should also grant user right to current user (default is true)
+     * @param expectHeavyLoad If true, the method will handle potential timeouts from the ledger api (default is true).
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
+
+    async allocateExternalParty(
+        signedHash: string,
+        preparedParty: GenerateTransactionResponse,
+        grantUserRights: boolean = true,
+        expectHeavyLoad: boolean = true
+    )
+
+
+0.11.0
+------
+
+**Released on October 10th, 2025**
+
+* Added support to tap internal parties
+
+*previously you could only tap external parties using signing flow, now it can be done for internal parties. this is useful
+for tapping the validator operator party right after startup in case of missing funds.*
+
+.. code-block:: javascript
+
+    await sdk.tokenStandard?.createAndSubmitTapInternal(
+        validatorOperatorParty!,
+        '20000000',
+        {
+            instrumentId: 'Amulet',
+            instrumentAdmin: instrumentAdminPartyId,
+        }
+    )
+
+* Dar-file manage
+
+*the functionality have been added for the adminLedgerController to upload dars, this is useful for testing custom dar flows*
+
+.. code-block:: javascript
+
+    // check if a specific dar files exist
+    const isDarUploaded = await sdk.userLedger?.isPackageUploaded(
+        MY_DAR_PACKAGE
+    )
+
+    //upload a dar
+    await sdk.adminLedger?.uploadDar(MY_DAR_BYTES)
+
+* Full support for token standard allocations
+
+.. code-block:: javascript
+
+    // check pending allocation requests
+    const pendingAllocationRequests = await sdk.tokenStandard?.fetchPendingAllocationRequestView()
+
+    // create allocation command
+    const specAlice = {
+        settlement: allocationRequestViewAlice.settlement,
+        transferLegId: legIdAlice,
+        transferLeg: legAlice,
+    }
+
+    const [allocateCmdAlice, allocateDisclosedAlice] =
+        await sdk.tokenStandard!.createAllocationInstruction(
+            specAlice,
+            legAlice.instrumentId.admin
+        )
+
+    // venue can check the allocation
+    const allocationsVenue = await sdk.tokenStandard!.fetchPendingAllocationView()
+
+* Party onboarding can now be done on the ledgerController instead of the TopologyController
+
+*this removes the need for grpc admin access*
+
+you can replace as such:
+
+=================================================   ==============================================
+Previous Method                                     new Method
+=================================================   ==============================================
+`sdk.topology?.prepareExternalPartyTopology`        `sdk.userLedger?.generateExternalParty`
+`sdk.topology?.submitExternalPartyTopology`         `sdk.userLedger?.allocateExternalParty`
+`sdk.topology?.prepareSignAndSubmitExternalParty`   `sdk.userLedger?.signAndAllocateExternalParty`
+=================================================   ==============================================
+
+the multi-hosted configuration is the same, except that **the ledger you call** should not be included in the array
+
+.. code-block:: javascript
+
+    //previous example of multi hosting
+    const multiHostedParticipantEndpointConfig = [
+        {
+            adminApiUrl: '127.0.0.1:2902', //this is the ledger we actual call to allocate
+            baseUrl: new URL('http://127.0.0.1:2975'),
+            accessToken: adminToken.accessToken,
+        },
+        {
+            adminApiUrl: '127.0.0.1:3902',
+            baseUrl: new URL('http://127.0.0.1:3975'),
+            accessToken: adminToken.accessToken,
+        },
+    ]
+
+    //new example of multi hosting
+    const multiHostedParticipantEndpointConfig = [
+        {
+            //admin url is not needed anymore
+            url: new URL('http://127.0.0.1:3975'),
+            accessToken: adminToken.accessToken,
+        },
+    ]
+
+for backwards compatibility the previous endpoints are still there and available.
+
+* User creation and rights management
+
+*you can now create new users and manage rights through the Wallet SDK. This can be useful for setting up a master user*
+
+.. code-block:: javascript
+
+    //create new user for alice
+    const aliceUser = await sdk.adminLedger!.createUser(
+        'alice-user',
+        aliceInternal
+    )
+
+    // grant alice CanReadAsAnyParty and CanExecuteAsAnyParty rights
+    await sdk.adminLedger!.grantMasterUserRights(aliceUser.id, true, true)
+
+* ListWallets now returns a list of partyIds instead of partyDetails
+* ListWallets now correctly returns the parties that the user has access to (including CanReadAsAnyParty)
+* Extended the max timeout when onboarding a party from 20s to 1 minute
+* Party onboarding now queries the specific party instead of all parties (performance improvement)
+* Party onboarding now has idempotent behavior
+* Default values changed for Wallet SDK from `localLedgerDefault` to `localNetledgerDefault` on all controllers
+
+.. code-block:: javascript
+
+    //previous instantiation (still preferred)
+    const sdk = new WalletSDKImpl().configure({
+        logger: logger,
+        authFactory: localNetAuthDefault,
+        ledgerFactory: localNetLedgerDefault,
+        topologyFactory: localNetTopologyDefault,
+        tokenStandardFactory: localNetTokenStandardDefault,
+    })
+
+    //new version (does the same)
+    const sdk = new WalletSDKImpl().configure({
+        logger: logger
+    })
+
+0.10.0
+------
+
+**Released on October 2nd, 2025**
+
+* Self-issue feature app rights
+
+*you can now grant yourself feature app rights (similar to the wallet UI) for both internal and external parties*
+
+.. code-block:: javascript
+
+    // For external parties
+    const [command,disclosedContracts] = sdk.tokenStandard!.selfGrantFeatureAppRights()
+
+    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+        command,
+        keyPair.privateKey,
+        v4(),
+        disclosedContracts
+    )
+
+    // For internal parties
+    await sdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
+
+* localNet variation for AppProvider & AppUser
+
+*you can now use both the appProvider and AppUser easily for show operations between two validators*
+
+.. code-block:: javascript
+
+        const providerSDK = new WalletSDKImpl().configure({
+            logger,
+            authFactory: localNetAuthDefault,
+            ledgerFactory: localNetLedgerAppProvider, //new variations here
+            topologyFactory: localNetTopologyAppProvider, //new variations here
+            tokenStandardFactory: localNetTokenStandardAppProvider, //new variations here
+            validatorFactory: localValidatorDefault,
+        })
+
+        const userSDK = new WalletSDKImpl().configure({
+            logger,
+            authFactory: localNetAuthDefault,
+            ledgerFactory: localNetLedgerAppUser, //new variations here
+            topologyFactory: localNetTopologyAppUser, //new variations here
+            tokenStandardFactory: localNetTokenStandardAppUser, //new variations here
+            validatorFactory: localValidatorDefault,
+        })
+
+*LocalNet..Default still exists, they as previously defaults to the appUser validator*
+
+* topology transaction recalculate hash
+
+*you can now offline validate a topology transaction by recomputing the hash*
+
+.. code-block:: javascript
+
+    const recomputeHash = await TopologyController.computeTopologyTxHash(
+        prepared!.partyTransactions
+    )
+
+    if (recomputeHash !== prepared!.combinedHash) {
+        throw new Error(
+            'Recomputed hash does not match prepared combined hash'
+        )
+    }
+
+* new awaiting variation with `prepareSignExecuteAndWaitFor` & `executeSubmissionAndWaitFor`
+
+*release 0.7.0 introduced the `waitForCompletion`, we have now backed that into the executions*
+
+.. code-block:: javascript
+
+    // PREVIOUS CODE EXAMPLE
+    //it is recommended to fetch ledger offset before preparing your command
+    const offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
+
+    const transferCommandId =
+        // prepareSignAndExecuteTransaction & prepareSign now returns the commandId
+        await sdk.userLedger?.prepareSignAndExecuteTransaction(
+            [{ ExerciseCommand: transferCommand }],
+            keyPairSender.privateKey,
+            v4(),
+            disclosedContracts2
+        )
+
+    //new command that scans the ledger to ensure the command have completed
+    const completion = await sdk.userLedger?.waitForCompletion(
+        offsetLatest, //where to start from
+        5000, //optional timeout in ms
+        transferCommandId! //the command to look for
+    )
+
+    // NEW VARIATION
+    const completion =
+            await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+                transferCommand,
+                keyPairSender.privateKey,
+                v4(),
+                disclosedContracts,
+                10000 // 10 second timeout, if no value is provided here a default of 15 seconds is used
+            )
+
+    // VARIATION FOR `ExecuteSubmission`
+    const completion =
+            await onlineSDK.userLedger?.executeSubmissionAndWaitFor(
+                transferCommand,
+                signedHash,
+                keyPairSender.publicKey,
+                v4()
+            )
+
+
+
+* `executeSubmission` now returns the submissionId similarly to `prepareSignAndExecuteTransaction`
+* fixed thrown exception for missing seed when using `TopologyController.createTransactionHash`
+* `prepareSubmission` now has same command input signature as `prepareSignAndExecuteTransaction`
+
 0.9.0
 -----
 

@@ -1,16 +1,15 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { AuthController, localAuthDefault } from './authController.js'
-import { AuthTokenProvider } from './authTokenProvider.js'
-import { LedgerController, localLedgerDefault } from './ledgerController.js'
+import { AuthController, localNetAuthDefault } from './authController.js'
+import { LedgerController, localNetLedgerDefault } from './ledgerController.js'
 import {
-    localTokenStandardDefault,
+    localNetTokenStandardDefault,
     TokenStandardController,
 } from './tokenStandardController.js'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import {
-    localTopologyDefault,
+    localNetTopologyDefault,
     TopologyController,
 } from './topologyController.js'
 import { Logger } from '@canton-network/core-types'
@@ -35,18 +34,24 @@ export {
 } from '@canton-network/core-ledger-proto'
 export * from './config.js'
 import { PartyId } from '@canton-network/core-types'
+import { AuthTokenProvider } from './authTokenProvider.js'
 
 type AuthFactory = () => AuthController
 type LedgerFactory = {
     /**
      * @deprecated This method will be removed with version 1.0.0, please use AuthTokenProvider version instead)
      */
-    (userId: string, token: string): LedgerController
-    (userId: string, authTokenProvider: AuthTokenProvider): LedgerController
+    (userId: string, token: string, isAdmin: boolean): LedgerController
+    (
+        userId: string,
+        authTokenProvider: AuthTokenProvider,
+        isAdmin: boolean
+    ): LedgerController
 }
 type LedgerFactoryWithCache = (
     userId: string,
-    authTokenProvider: AuthTokenProvider
+    authTokenProvider: AuthTokenProvider,
+    isAdmin: boolean
 ) => LedgerController
 type TopologyFactory = (
     userId: string,
@@ -63,8 +68,8 @@ type ValidatorFactory = (
 ) => ValidatorController
 
 export interface Config {
-    authFactory: AuthFactory
-    ledgerFactory: LedgerFactory
+    authFactory?: AuthFactory
+    ledgerFactory?: LedgerFactory | LedgerFactoryWithCache
     topologyFactory?: TopologyFactory
     tokenStandardFactory?: TokenStandardFactory
     validatorFactory?: ValidatorFactory
@@ -104,12 +109,12 @@ export class WalletSDKImpl implements WalletSDK {
         this._authTokenProvider = new AuthTokenProvider(this.auth)
     }
 
-    private authFactory: AuthFactory = localAuthDefault
+    private authFactory: AuthFactory = localNetAuthDefault
     private ledgerFactory: LedgerFactory | LedgerFactoryWithCache =
-        localLedgerDefault
-    private topologyFactory: TopologyFactory = localTopologyDefault
+        localNetLedgerDefault
+    private topologyFactory: TopologyFactory = localNetTopologyDefault
     private tokenStandardFactory: TokenStandardFactory =
-        localTokenStandardDefault
+        localNetTokenStandardDefault
     private validatorFactory: ValidatorFactory = localValidatorDefault
 
     private logger: Logger | undefined
@@ -150,7 +155,11 @@ export class WalletSDKImpl implements WalletSDK {
      */
     async connect(): Promise<WalletSDK> {
         const { userId } = await this.auth.getUserToken()
-        this.userLedger = this.ledgerFactory(userId, this._authTokenProvider)
+        this.userLedger = this.ledgerFactory(
+            userId,
+            this._authTokenProvider,
+            false
+        )
         this.tokenStandard = this.tokenStandardFactory(
             userId,
             this._authTokenProvider
@@ -164,7 +173,11 @@ export class WalletSDKImpl implements WalletSDK {
      */
     async connectAdmin(): Promise<WalletSDK> {
         const { userId } = await this.auth.getAdminToken()
-        this.adminLedger = this.ledgerFactory(userId, this._authTokenProvider)
+        this.adminLedger = this.ledgerFactory(
+            userId,
+            this._authTokenProvider,
+            true
+        )
         return this
     }
 
@@ -208,6 +221,14 @@ export class WalletSDKImpl implements WalletSDK {
             this._authTokenProvider,
             synchronizerId
         )
+
+        if (!this.userLedger) {
+            this.logger?.warn(
+                'userLedger is not defined, synchronizerId will not be set automatically. Consider calling sdk.connect() first'
+            )
+        }
+
+        this.userLedger?.setSynchronizerId(synchronizerId)
         return this
     }
 

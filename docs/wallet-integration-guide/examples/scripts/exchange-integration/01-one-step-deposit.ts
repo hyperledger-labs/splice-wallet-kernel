@@ -8,13 +8,13 @@ import { validateTransferIn } from './validate-transfers.js'
 
 const logger = pino({ name: '01-one-step-deposit', level: 'info' })
 
-const { exchangeParty, treasuryParty, exchangeSdk } = await setupExchange({
+const { treasuryParty, exchangeSdk } = await setupExchange({
     transferPreapproval: true,
+    grantFeatureAppRights: true,
 })
 
-const { customerParty, customerKeyPair, customerSdk } = await setupDemoCustomer(
-    {}
-)
+const { customerParty, customerKeyPair, customerSdk } =
+    await setupDemoCustomer()
 
 await tapDevNetFaucet(customerSdk, customerParty, customerKeyPair, 100)
 
@@ -28,8 +28,7 @@ const amuletIdentifier = {
 }
 
 // transfer to exchange
-const exchangeLedgerEnd = await exchangeSdk.userLedger!.ledgerEnd()
-const memoUUID = v4()
+const depositUUID = v4()
 const [customerTransferCommand, customerTransferDisclosedContracts] =
     await customerSdk.tokenStandard!.createTransfer(
         customerParty,
@@ -37,13 +36,13 @@ const [customerTransferCommand, customerTransferDisclosedContracts] =
         transferAmount.toString(),
         amuletIdentifier,
         [],
-        `${memoUUID}`
+        `${depositUUID}`
     )
 
 await customerSdk.userLedger?.prepareSignExecuteAndWaitFor(
     customerTransferCommand,
     customerKeyPair.privateKey,
-    memoUUID,
+    depositUUID,
     customerTransferDisclosedContracts
 )
 
@@ -52,7 +51,7 @@ logger.info(
 )
 
 // exchange observes the deposit via tx log
-let exchangeHoldings =
+const exchangeHoldings =
     await exchangeSdk.tokenStandard?.listHoldingTransactions()
 
 if (
@@ -60,12 +59,15 @@ if (
         exchangeHoldings!.transactions,
         customerParty,
         transferAmount,
-        memoUUID,
+        depositUUID,
         amuletIdentifier.instrumentId,
         amuletIdentifier.instrumentAdmin
     )
 ) {
-    logger.info(`Found a matching transaction with reason "${memoUUID}"`)
+    logger.info(`Found a matching transaction with reason "${depositUUID}"`)
 } else {
-    throw new Error(`No matching transaction with reason "${memoUUID}" found`)
+    logger.error(exchangeHoldings, 'exchange holdings')
+    throw new Error(
+        `No matching transaction with reason "${depositUUID}" found`
+    )
 }

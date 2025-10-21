@@ -32,3 +32,7 @@ generated/
 
 # aspell
 *.bak
+
+storybook-static
+
+**/target/

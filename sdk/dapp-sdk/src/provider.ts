@@ -13,8 +13,10 @@ import {
     WalletEvent,
 } from '@canton-network/core-types'
 import { popupHref } from '@canton-network/core-wallet-ui-components'
-import { SpliceProviderWindow } from '@canton-network/core-splice-provider/src/SpliceProviderWindow'
-import { SpliceProviderHttp } from '@canton-network/core-splice-provider/src/SpliceProviderHttp'
+import {
+    SpliceProviderHttp,
+    SpliceProviderWindow,
+} from '@canton-network/core-splice-provider'
 import buildController from './dapp-api/rpc-gen'
 import * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'
 import * as dappRemoteAPI from '@canton-network/core-wallet-dapp-remote-rpc-client'
@@ -22,7 +24,7 @@ import {
     LedgerApiParams,
     PrepareExecuteParams,
 } from '@canton-network/core-wallet-dapp-rpc-client'
-import { ErrorCode } from './index'
+import { ErrorCode } from './error.js'
 
 /**
  * The Provider class abstracts over the different types of SpliceProviders (Window and HTTP).

@@ -1,0 +1,14 @@
+name: Check resource usage
+description: 'List current resource usage of the CI runner VM'
+runs:
+    using: composite
+    steps:
+        - name: Check memory usage
+          if: always()
+          shell: bash
+          run: free -h
+
+        - name: Check CPU usage
+          if: always()
+          shell: bash
+          run: ps -eo pid,comm,%cpu,%mem,exe,time --sort=-%cpu | head -n 20

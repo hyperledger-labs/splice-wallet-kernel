@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-lib",
-    "version": "0.6.0",
+    "version": "0.9.0",
     "type": "module",
     "description": "Core library for signing driver implementations",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -10,6 +10,7 @@
     "types": "dist/index.d.ts",
     "scripts": {
         "build": "tsc -b",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean && rm -rf ./dist"
     },
     "dependencies": {

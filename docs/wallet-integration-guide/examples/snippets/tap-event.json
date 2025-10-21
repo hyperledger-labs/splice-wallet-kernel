@@ -1,0 +1,46 @@
+{
+    "updateId": "1220a8d78d06461abd045813491f9997a1bcf2f29d4c2a9afadeb89616998201b40a",
+    "offset": 1313,
+    "recordTime": "2025-10-14T02:11:45.485840Z",
+    "synchronizerId": "global-domain::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+    "events": [
+        {
+            "label": {
+                "burnAmount": "0",
+                "mintAmount": "2000000",
+                "type": "Mint",
+                "tokenStandardChoice": null,
+                "reason": "tapped faucet",
+                "meta": {
+                    "values": {}
+                }
+            },
+            "unlockedHoldingsChange": {
+                "creates": [
+                    {
+                        "amount": "2000000.0000000000",
+                        "instrumentId": {
+                            "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+                            "id": "Amulet"
+                        },
+                        "contractId": "00cee8d2659d5966962fbda321aae358092eafbb162d46f2639a8da0688ef3ee8aca11122096aeb27e0fa9c03a3209fda9db88e4e67a2ba1509f094bdd82a38d844ca65305",
+                        "owner": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
+                        "meta": {
+                            "values": {
+                                "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
+                                "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+                            }
+                        },
+                        "lock": null
+                    }
+                ]
+            },
+            "unlockedHoldingsChangeSummary": {
+                "numOutputs": 1,
+                "outputAmount": "2000000",
+                "amountChange": "2000000"
+            },
+            "transferInstruction": null
+        }
+    ]
+}

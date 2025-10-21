@@ -14,7 +14,7 @@
             "name": "@canton-network/wallet-dapp-rpc-remote-server",
             "language": "typescript",
             "openRPCPath": null,
-            "outPath": "./clients/remote/src/dapp-api/rpc-gen",
+            "outPath": "./wallet-gateway/remote/src/dapp-api/rpc-gen",
             "customComponent": "./core/rpc-generator/dist/components/controller.js",
             "customType": "controller"
         }

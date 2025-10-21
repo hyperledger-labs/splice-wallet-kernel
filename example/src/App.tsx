@@ -55,14 +55,14 @@ function App() {
                 setError(err instanceof Error ? err.message : String(err))
             })
 
-        const messageListener = (event: unknown) => {
+        const messageListener = (event: sdk.dappAPI.TxChangedEvent) => {
             setMessages((prev) => [...prev, JSON.stringify(event)])
         }
 
         const onAccountsChanged = (
             wallets: sdk.dappAPI.AccountsChangedEvent
         ) => {
-            messageListener(wallets)
+            // messageListener(wallets)
             if (wallets.length > 0) {
                 const primaryWallet = wallets.find((w) => w.primary)
                 setPrimaryParty(primaryWallet?.partyId)

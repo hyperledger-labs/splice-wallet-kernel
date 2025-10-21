@@ -7,14 +7,15 @@ import {
     localNetTopologyAppProvider,
     localValidatorDefault,
     localNetStaticConfig,
+    localValidatorDefaultAppProvider,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 
 //this follows the steps of https://docs.digitalasset.com/integrate/devnet/exchange-integration/node-operations.html#setup-exchange-parties
-export async function setupExchange({
-    transferPreapproval = false,
-    grantFeatureAppRights = false,
+export async function setupExchange(options?: {
+    transferPreapproval?: boolean
+    grantFeatureAppRights?: boolean
 }) {
     const logger = pino({ name: 'setup-exchange', level: 'info' })
 
@@ -24,7 +25,7 @@ export async function setupExchange({
         ledgerFactory: localNetLedgerAppProvider,
         topologyFactory: localNetTopologyAppProvider,
         tokenStandardFactory: localNetTokenStandardAppProvider,
-        validatorFactory: localValidatorDefault,
+        validatorFactory: localValidatorDefaultAppProvider,
     })
 
     logger.info('Setup exchange SDK')
@@ -43,7 +44,7 @@ export async function setupExchange({
     // Setup the treasury party
     const treasuryKeyPair = createKeyPair()
     const treasuryParty = (
-        await exchangeSdk.topology?.prepareSignAndSubmitExternalParty(
+        await exchangeSdk.userLedger?.signAndAllocateExternalParty(
             treasuryKeyPair.privateKey,
             'treasury'
         )
@@ -56,9 +57,22 @@ export async function setupExchange({
     // using the validator operator party as exchange party
     const exchangeParty = await exchangeSdk.validator!.getValidatorUser()!
 
-    if (transferPreapproval) {
+    if (options?.transferPreapproval) {
         const instrumentAdminPartyId =
             (await exchangeSdk.tokenStandard?.getInstrumentAdmin()) || ''
+
+        await exchangeSdk.setPartyId(exchangeParty)
+
+        await exchangeSdk.tokenStandard?.createAndSubmitTapInternal(
+            exchangeParty,
+            '20000000',
+            {
+                instrumentId: 'Amulet',
+                instrumentAdmin: instrumentAdminPartyId,
+            }
+        )
+
+        await exchangeSdk.setPartyId(treasuryParty)
 
         // Setup preapproval
         const cmd =
@@ -78,7 +92,7 @@ export async function setupExchange({
         logger.info(`Created transfer preapproval for: ${treasuryParty}`)
     }
 
-    if (grantFeatureAppRights) {
+    if (options?.grantFeatureAppRights) {
         await exchangeSdk.setPartyId(exchangeParty)
 
         const exchangePartyFeaturedAppRights =

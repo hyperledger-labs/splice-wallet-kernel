@@ -10,7 +10,9 @@ import {
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 
-export async function setupDemoCustomer({ transferPreapproval = false }) {
+export async function setupDemoCustomer(options?: {
+    transferPreapproval?: boolean
+}) {
     const logger = pino({ name: 'setup-customer', level: 'info' })
     const customerSdk = new WalletSDKImpl().configure({
         logger,
@@ -33,7 +35,7 @@ export async function setupDemoCustomer({ transferPreapproval = false }) {
 
     const customerKeyPair = createKeyPair()
     const customerParty = (
-        await customerSdk.topology?.prepareSignAndSubmitExternalParty(
+        await customerSdk.userLedger?.signAndAllocateExternalParty(
             customerKeyPair.privateKey,
             'customer'
         )
@@ -42,7 +44,8 @@ export async function setupDemoCustomer({ transferPreapproval = false }) {
     logger.info(`Created customer party: ${customerParty}`)
     await customerSdk.setPartyId(customerParty)
 
-    if (transferPreapproval) {
+    if (options?.transferPreapproval) {
+        //TODO(#537): Tap validator operator party to ensure they have funds to setup the pre-approval
         const instrumentAdminPartyId =
             (await customerSdk.tokenStandard?.getInstrumentAdmin()) || ''
 

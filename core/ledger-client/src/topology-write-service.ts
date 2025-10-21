@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { LedgerClient } from './ledger-client.js'
+import { createHash } from 'node:crypto'
+import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
 import {
     CryptoKeyFormat,
     SigningKeyScheme,
@@ -36,8 +38,7 @@ import {
 } from '@canton-network/core-ledger-proto'
 import { GrpcTransport } from '@protobuf-ts/grpc-transport'
 import { ChannelCredentials } from '@grpc/grpc-js'
-import { createHash } from 'node:crypto'
-import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
+import fs from 'fs'
 
 function prefixedInt(value: number, bytes: Buffer | Uint8Array): Buffer {
     const buffer = Buffer.alloc(4 + bytes.length)
@@ -46,6 +47,9 @@ function prefixedInt(value: number, bytes: Buffer | Uint8Array): Buffer {
     return buffer
 }
 
+/**
+ * @deprecated used only to convert public key into grpc protobuf representation
+ */
 function signingPublicKeyFromEd25519(publicKey: string): SigningPublicKey {
     return {
         format: CryptoKeyFormat.RAW,
@@ -65,44 +69,87 @@ function computeSha256CantonHash(purpose: number, bytes: Uint8Array): string {
     return Buffer.concat([multiprefix, hash]).toString('hex')
 }
 
-// TODO(#180): remove or rewrite after grpc is gone
+export interface TlsOptions {
+    rootCert?: string | Buffer
+    clientCert?: string | Buffer
+    clientKey?: string | Buffer
+    mutual?: boolean
+}
+
+export interface GrpcClientOptions {
+    useTls?: boolean
+    tls: TlsOptions
+}
+
+function createGrpcTransport(options: GrpcClientOptions) {
+    const { useTls = false, tls } = options
+
+    if (useTls) {
+        const readMaybeFile = (value?: string | Buffer) =>
+            typeof value === 'string' ? fs.readFileSync(value) : value
+
+        const rootCert = readMaybeFile(tls?.rootCert)
+        const clientCert = readMaybeFile(tls?.clientCert)
+        const clientKey = readMaybeFile(tls?.clientKey)
+
+        if (tls?.mutual) {
+            if (!clientCert || !clientKey) {
+                throw new Error(
+                    'mTLS enabled but clientCert or clientKey are missing'
+                )
+            }
+            return ChannelCredentials.createSsl(rootCert, clientKey, clientCert)
+        } else {
+            return ChannelCredentials.createSsl(rootCert)
+        }
+    } else {
+        return ChannelCredentials.createInsecure()
+    }
+}
+
 export class TopologyWriteService {
     private topologyClient: TopologyManagerWriteServiceClient
     private topologyReadService: TopologyManagerReadServiceClient
     private ledgerClient: LedgerClient
-    private accessTokenProvider: AccessTokenProvider | undefined
+    private accessTokenProvider: AccessTokenProvider
     private accessToken: string | undefined
 
-    private store: StoreId
+    private storeId = () =>
+        StoreId.create({
+            store: {
+                oneofKind: 'synchronizer',
+                synchronizer: StoreId_Synchronizer.create({
+                    id: this.synchronizerId,
+                }),
+            },
+        })
 
     constructor(
-        synchronizerId: string,
+        private synchronizerId: string,
         userAdminUrl: string,
+        accessTokenProvider: AccessTokenProvider,
         ledgerClient: LedgerClient,
-        accessToken?: string,
-        accessTokenProvider?: AccessTokenProvider
+        grpcClientOptions?: GrpcClientOptions
     ) {
-        const transport = new GrpcTransport({
-            host: userAdminUrl,
-            channelCredentials: ChannelCredentials.createInsecure(),
-        })
+        let transport: GrpcTransport
+        if (grpcClientOptions) {
+            transport = new GrpcTransport({
+                host: userAdminUrl,
+                channelCredentials: createGrpcTransport(grpcClientOptions),
+            })
+        } else {
+            transport = new GrpcTransport({
+                host: userAdminUrl,
+                channelCredentials: ChannelCredentials.createInsecure(),
+            })
+        }
 
         this.topologyClient = new TopologyManagerWriteServiceClient(transport)
         this.topologyReadService = new TopologyManagerReadServiceClient(
             transport
         )
-
         this.ledgerClient = ledgerClient
-        this.store = StoreId.create({
-            store: {
-                oneofKind: 'synchronizer',
-                synchronizer: StoreId_Synchronizer.create({
-                    id: synchronizerId,
-                }),
-            },
-        })
         this.accessTokenProvider = accessTokenProvider
-        this.accessToken = accessToken
     }
 
     static combineHashes(hashes: Buffer[]): string {
@@ -137,9 +184,16 @@ export class TopologyWriteService {
         return Buffer.from(predefineHashPurpose, 'hex').toString('base64')
     }
 
-    static createFingerprintFromKey = (
+    static createFingerprintFromKey(publicKey: string): string
+    /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
+    static createFingerprintFromKey(publicKey: SigningPublicKey): string
+    /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
+    static createFingerprintFromKey(
         publicKey: SigningPublicKey | string
-    ): string => {
+    ): string
+    static createFingerprintFromKey(
+        publicKey: SigningPublicKey | string
+    ): string {
         let key: SigningPublicKey
 
         if (typeof publicKey === 'string') {
@@ -156,6 +210,7 @@ export class TopologyWriteService {
         return computeSha256CantonHash(hashPurpose, key.publicKey)
     }
 
+    /** @deprecated only for grpc/protobuf implementation */
     static toSignedTopologyTransaction(
         txHashes: Buffer<ArrayBuffer>[],
         serializedTransaction: Uint8Array<ArrayBufferLike>,
@@ -182,6 +237,7 @@ export class TopologyWriteService {
         })
     }
 
+    /** @deprecated */
     private generateTransactionsRequest(
         namespace: string,
         partyId: PartyId,
@@ -243,13 +299,14 @@ export class TopologyWriteService {
                 GenerateTransactionsRequest_Proposal.create({
                     mapping,
                     serial: 1,
-                    store: this.store,
+                    store: this.storeId(),
                     operation: Enums_TopologyChangeOp.ADD_REPLACE,
                 })
             ),
         })
     }
 
+    /** @deprecated use allocateExternalParty() instead */
     async submitExternalPartyTopology(
         signedTopologyTxs: SignedTopologyTransaction[],
         partyId: PartyId
@@ -258,6 +315,7 @@ export class TopologyWriteService {
         await this.authorizePartyToParticipant(partyId)
     }
 
+    /** @deprecated use generateTopology() */
     async generateTransactions(
         publicKey: string,
         partyId: PartyId,
@@ -289,9 +347,8 @@ export class TopologyWriteService {
             confirmingThreshold,
             participantRights
         )
-        const adminAccessToken = this.accessTokenProvider
-            ? await this.accessTokenProvider.getAdminAccessToken()
-            : this.accessToken
+        const adminAccessToken =
+            await this.accessTokenProvider.getAdminAccessToken()
 
         return this.topologyClient.generateTransactions(req, {
             meta: {
@@ -300,17 +357,17 @@ export class TopologyWriteService {
         }).response
     }
 
+    /** @deprecated */
     private async addTransactions(
         signedTopologyTxs: SignedTopologyTransaction[]
     ): Promise<AddTransactionsResponse> {
         const request = AddTransactionsRequest.create({
             transactions: signedTopologyTxs,
             forceChanges: [],
-            store: this.store,
+            store: this.storeId(),
         })
-        const adminAccessToken = this.accessTokenProvider
-            ? await this.accessTokenProvider.getAdminAccessToken()
-            : this.accessToken
+        const adminAccessToken =
+            await this.accessTokenProvider.getAdminAccessToken()
         return this.topologyClient.addTransactions(request, {
             meta: {
                 Authorization: `Bearer ${adminAccessToken}`,
@@ -318,18 +375,18 @@ export class TopologyWriteService {
         }).response
     }
 
+    /** @deprecated */
     async waitForPartyToParticipantProposal(
         partyId: PartyId
     ): Promise<Uint8Array | undefined> {
+        let counter = 0
         return new Promise((resolve, reject) => {
             const interval = setInterval(async () => {
-                let counter = 0
-
                 const result =
                     await this.topologyReadService.listPartyToParticipant(
                         ListPartyToParticipantRequest.create({
                             baseQuery: BaseQuery.create({
-                                store: this.store,
+                                store: this.storeId(),
                                 proposals: true,
                                 timeQuery: {
                                     oneofKind: 'headState',
@@ -354,11 +411,11 @@ export class TopologyWriteService {
         })
     }
 
+    /** @deprecated */
     async authorizePartyToParticipant(
         partyId: PartyId
     ): Promise<AuthorizeResponse> {
         const hash = await this.waitForPartyToParticipantProposal(partyId)
-
         if (!hash) {
             throw new Error('No topology transaction found for authorization')
         }
@@ -369,11 +426,10 @@ export class TopologyWriteService {
                 transactionHash: Buffer.from(hash).toString('hex'),
             },
             mustFullyAuthorize: false,
-            store: this.store,
+            store: this.storeId(),
         })
-        const adminAccessToken = this.accessTokenProvider
-            ? await this.accessTokenProvider.getAdminAccessToken()
-            : this.accessToken
+        const adminAccessToken =
+            await this.accessTokenProvider.getAdminAccessToken()
         return this.topologyClient.authorize(request, {
             meta: {
                 Authorization: `Bearer ${adminAccessToken}`,

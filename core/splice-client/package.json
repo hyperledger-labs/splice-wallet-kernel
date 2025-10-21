@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-splice-client",
-    "version": "0.6.0",
+    "version": "0.9.0",
     "type": "module",
     "description": "Typescript Client for the multiple Canton Network APIs",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -11,6 +11,7 @@
     "scripts": {
         "build": "tsc -b",
         "dev": "tsc -b --watch",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {

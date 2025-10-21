@@ -10,6 +10,7 @@
     "scripts": {
         "build": "tsc && typedoc src/index.ts --out docs --excludeExternals --excludePrivate --hideGenerator --readme none",
         "dev": "tsc -b --watch",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "files": ["dist/**"],
@@ -28,7 +29,7 @@
         "@types/ws": "^6.0.1",
         "globals": "^16.0.0",
         "prettier": "^3.5.2",
-        "typedoc": "^0.27.9",
+        "typedoc": "^0.28.14",
         "typescript": "^5.0.0"
     }
 }

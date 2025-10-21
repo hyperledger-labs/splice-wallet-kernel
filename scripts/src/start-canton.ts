@@ -12,7 +12,7 @@ import {
     error,
     info,
     trimNewline,
-} from './utils.js'
+} from './lib/utils.js'
 import { existsSync } from 'fs'
 import pm2 from 'pm2'
 import path from 'path'
@@ -22,6 +22,8 @@ const processName = 'canton'
 async function main() {
     const inputEnv =
         (process.argv[2] as keyof typeof SUPPORTED_VERSIONS) ?? 'mainnet'
+
+    const inputCantonConf = process.argv[3] ?? CANTON_CONF
 
     const envConfig = SUPPORTED_VERSIONS[inputEnv]?.canton
     if (!envConfig) {
@@ -52,7 +54,7 @@ async function main() {
                     name: processName,
                     interpreter: '/bin/bash',
                     script: CANTON_BIN,
-                    args: `daemon --no-tty --config ${CANTON_CONF} --bootstrap ${CANTON_BOOTSTRAP} --log-level-stdout=INFO --log-level-canton=INFO`,
+                    args: `daemon --no-tty --config ${inputCantonConf} --bootstrap ${CANTON_BOOTSTRAP} --log-level-stdout=INFO --log-level-canton=INFO`,
                 },
                 function (err) {
                     pm2.launchBus((err, bus) => {

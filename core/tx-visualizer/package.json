@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-tx-visualizer",
-    "version": "0.4.0",
+    "version": "0.7.0",
     "type": "module",
     "description": "Decode and visualize prepared transactions from Canton",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -11,6 +11,7 @@
     "scripts": {
         "build": "tsc -b",
         "dev": "tsc -b --watch",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)",
         "clean": "tsc -b --clean; rm -rf dist"
     },

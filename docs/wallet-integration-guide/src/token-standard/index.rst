@@ -89,6 +89,9 @@ to quickly convert the stream into deposit and withdrawal you can use this funct
         });
     }
 
+
+.. _performing_tap:
+
 Performing a Tap on DevNet or LocalNet
 --------------------------------------
 When writing scripts and setup it is important to have funds present, this can be very tedious on blockchains. Therefor

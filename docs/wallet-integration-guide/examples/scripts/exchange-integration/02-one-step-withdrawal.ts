@@ -11,12 +11,11 @@ import {
 
 const logger = pino({ name: '02-one-step-withdrawal', level: 'info' })
 
-const { exchangeParty, treasuryParty, treasuryKeyPair, exchangeSdk } =
-    await setupExchange({})
+const { treasuryParty, treasuryKeyPair, exchangeSdk } = await setupExchange()
 
-const { customerParty, customerKeyPair, customerSdk } = await setupDemoCustomer(
-    { transferPreapproval: true }
-)
+const { customerParty, customerSdk } = await setupDemoCustomer({
+    transferPreapproval: true,
+})
 
 const instrumentAdminPartyId =
     (await exchangeSdk.tokenStandard?.getInstrumentAdmin()) || ''
@@ -48,7 +47,7 @@ if (verifyPreApproval!.expiresAt < new Date(Date.now() + 60 * 1000)) {
 }
 
 // Execute transfer withdrawal by customer
-const memoUUID = v4()
+const withdrawalUUID = v4()
 const [withdrawalTransferCommand, withdrawalTransferDisclosedContracts] =
     await exchangeSdk.tokenStandard!.createTransfer(
         treasuryParty,
@@ -56,7 +55,7 @@ const [withdrawalTransferCommand, withdrawalTransferDisclosedContracts] =
         transferAmount.toString(),
         amuletIdentifier,
         [],
-        `${memoUUID}`
+        `${withdrawalUUID}`
     )
 
 await exchangeSdk.userLedger?.prepareSignExecuteAndWaitFor(
@@ -79,15 +78,16 @@ if (
         customerHoldings!.transactions,
         treasuryParty,
         transferAmount,
-        memoUUID,
+        withdrawalUUID,
         amuletIdentifier.instrumentId,
         amuletIdentifier.instrumentAdmin
     )
 ) {
-    logger.info(`customer found transaction: "${memoUUID}"`)
+    logger.info(`customer found transaction: "${withdrawalUUID}"`)
 } else {
+    logger.error(customerHoldings, 'customer holdings')
     throw new Error(
-        `No matching transaction with reason "${memoUUID}" found for customer ${customerParty}`
+        `No matching transaction with reason "${withdrawalUUID}" found for customer ${customerParty}`
     )
 }
 
@@ -100,14 +100,15 @@ if (
         exchangeHoldings!.transactions,
         customerParty,
         transferAmount,
-        memoUUID,
+        withdrawalUUID,
         amuletIdentifier.instrumentId,
         amuletIdentifier.instrumentAdmin
     )
 ) {
-    logger.info(`exchange found transaction: "${memoUUID}"`)
+    logger.info(`exchange found transaction: "${withdrawalUUID}"`)
 } else {
+    logger.error(exchangeHoldings, 'exchange holdings')
     throw new Error(
-        `No matching transaction with reason "${memoUUID}" found for exchange ${treasuryParty}`
+        `No matching transaction with reason "${withdrawalUUID}" found for exchange ${treasuryParty}`
     )
 }

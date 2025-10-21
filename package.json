@@ -4,6 +4,7 @@
     "scripts": {
         "start:all": "yarn pm2 start ecosystem.config.js --env development",
         "start:canton": "tsx ./scripts/src/start-canton.ts",
+        "start:canton:tls": "tsx ./scripts/src/start-canton.ts mainnet canton/canton-tls-enabled.conf",
         "start:localnet": "tsx ./scripts/src/start-localnet.ts start",
         "start:canton:console": ".canton/bin/canton --config canton/canton.conf --bootstrap canton/bootstrap.canton",
         "stop:all": "yarn pm2 stop all",
@@ -13,7 +14,7 @@
         "generate:user": "yarn workspace @canton-network/core-rpc-generator build && yarn open-rpc-generator generate -c ./rpc-generator-config-user.json",
         "generate:signing": "yarn workspace @canton-network/core-rpc-generator build && yarn open-rpc-generator generate -c ./rpc-generator-config-signing.json",
         "generate:grpc": "tsx ./scripts/src/generate-protobufs.ts",
-        "generate:all": "yarn generate:dapp && yarn generate:user && yarn generate:signing",
+        "generate:all": "yarn generate:dapp && yarn generate:dapp-remote && yarn generate:user && yarn generate:signing && yarn run prettier . --write > /dev/null 2>&1",
         "build:all": "nx run-many -t build --parallel",
         "clean:all": "nx run-many -t clean --parallel",
         "test:all": "nx run-many -t test --parallel",
@@ -30,19 +31,22 @@
         "script:validate:package": "tsx ./scripts/src/package-and-verify-wallet-sdk.ts",
         "script:test:examples": "tsx ./scripts/src/test-example-scripts.ts",
         "script:retag": "tsx ./scripts/src/retag.ts",
-        "full:rebuild": "yarn clean:all && yarn generate:all && yarn build:all"
+        "script:flat-pack": "tsx ./scripts/src/flat-pack.ts",
+        "full:rebuild": "yarn clean:all && yarn generate:all && yarn install && yarn build:all",
+        "docker:flat-pack": "rm -rf docker/target && tsx ./scripts/src/flat-pack.ts wallet-gateway/remote ${PWD}/docker/target",
+        "docker:build": "cd docker && docker build --progress plain ."
     },
     "workspaces": [
         "api-specs",
-        "clients/**",
         "core/**",
+        "docs/wallet-integration-guide/examples",
         "damljs/**",
         "example",
         "example-scripts",
         "sdk/**",
         "scripts",
         "mock-oauth2",
-        "docs/wallet-integration-guide/examples"
+        "wallet-gateway/**"
     ],
     "devDependencies": {
         "@commitlint/config-conventional": "^19.8.1",
@@ -51,13 +55,17 @@
         "@nx/eslint": "21.5.1",
         "@nx/eslint-plugin": "^21.5.2",
         "@nx/playwright": "21.5.1",
+        "@nx/storybook": "21.5.1",
+        "@nx/web": "21.5.1",
         "@open-rpc/generator": "^2.0.0",
         "@playwright/test": "^1.55.0",
         "@protobuf-ts/plugin": "^2.11.1",
+        "@storybook/web-components-vite": "9.1.10",
         "@swc-node/register": "^1.11.1",
         "@swc/core": "^1.13.4",
         "@swc/helpers": "~0.5.11",
         "@types/node": "20.19.9",
+        "@typescript-eslint/parser": "^8.33.1",
         "commitlint": "^19.8.1",
         "eslint": "^9.28.0",
         "eslint-plugin-headers": "^1.3.3",
@@ -66,21 +74,25 @@
         "husky": "^9.1.7",
         "jsonc-eslint-parser": "^2.1.0",
         "lint-staged": "^16.1.0",
+        "lit": "^2.6.1",
         "oauth2-mock-server": "^8.1.0",
         "pino-pretty": "^13.1.1",
         "pm2": "^6.0.8",
         "prettier": "^3.5.3",
+        "storybook": "9.1.10",
+        "ts-node": "10.9.1",
         "ts-proto": "^2.7.7",
         "tslib": "^2.3.0",
         "tsx": "^4.20.3",
         "typescript": "^5.8.3",
-        "typescript-eslint": "^8.33.1"
+        "typescript-eslint": "^8.33.1",
+        "vite": "^6.0.0"
     },
     "lint-staged": {
         "*": "prettier --write --ignore-unknown",
         "*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --fix"
     },
-    "packageManager": "yarn@4.10.1",
+    "packageManager": "yarn@4.10.3",
     "dependencies": {
         "@nx/js": "21.5.1",
         "nx": "^21.3.11"

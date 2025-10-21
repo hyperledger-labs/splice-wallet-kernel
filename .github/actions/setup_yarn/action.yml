@@ -10,7 +10,7 @@ runs:
         - name: Setup Node.js
           uses: actions/setup-node@v4
           with:
-              node-version: 'v22.16.0'
+              node-version: 'v24.9.0'
               cache: 'yarn'
 
         - name: Install dependencies

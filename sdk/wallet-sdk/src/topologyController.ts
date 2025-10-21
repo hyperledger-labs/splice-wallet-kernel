@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+    GrpcClientOptions,
     LedgerClient,
     TopologyWriteService,
 } from '@canton-network/core-ledger-client'
@@ -53,7 +54,6 @@ export class TopologyController {
     private readonly topologyClient: TopologyWriteService
     private readonly client: LedgerClient
     private readonly userId: string
-    private readonly accessTokenProvider: AccessTokenProvider
     private logger = pino({ name: 'TopologyController', level: 'info' })
 
     constructor(
@@ -61,22 +61,22 @@ export class TopologyController {
         baseUrl: URL,
         userId: string,
         accessTokenProvider: AccessTokenProvider,
-        synchronizerId: PartyId
+        synchronizerId: PartyId,
+        grpcClientOptions?: GrpcClientOptions
     ) {
-        this.accessTokenProvider = accessTokenProvider
         this.client = new LedgerClient(
             baseUrl,
             this.logger,
             undefined,
-            this.accessTokenProvider
+            accessTokenProvider
         )
         this.userId = userId
         this.topologyClient = new TopologyWriteService(
             synchronizerId,
             adminApiUrl,
+            accessTokenProvider,
             this.client,
-            undefined,
-            this.accessTokenProvider
+            grpcClientOptions
         )
         return this
     }
@@ -109,6 +109,8 @@ export class TopologyController {
 
     /** Creates a prepared topology transaction that can be signed and submitted in order th create a new external party.
      *
+     * @deprecated Use LedgerController.generateExternalParty instead
+     *
      * @param publicKey
      * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
      * @param confirmingThreshold optional parameter for multi-hosted parties (default is 1).
@@ -123,7 +125,6 @@ export class TopologyController {
     ): Promise<PreparedParty> {
         const namespace =
             TopologyController.createFingerprintFromPublicKey(publicKey)
-
         const partyId: PartyId = partyHint
             ? `${partyHint}::${namespace}`
             : `${namespace.slice(0, 5)}::${namespace}`
@@ -171,10 +172,19 @@ export class TopologyController {
      * @param preparedTransactions The 3 topology transactions from the generateTransactions endpoint
      */
     static async computeTopologyTxHash(
-        preparedTransactions: Uint8Array<ArrayBufferLike>[]
+        preparedTransactions: Uint8Array<ArrayBufferLike>[] | string[]
     ) {
+        let normalized: Uint8Array<ArrayBufferLike>[] = []
+        if (typeof preparedTransactions[0] === 'string') {
+            normalized = (preparedTransactions as string[]).map((tx) =>
+                Buffer.from(tx, 'base64')
+            )
+        } else {
+            normalized = preparedTransactions as Uint8Array<ArrayBufferLike>[]
+        }
+
         const rawHashes = await Promise.all(
-            preparedTransactions.map((tx) => computeSha256CantonHash(11, tx))
+            normalized.map((tx) => computeSha256CantonHash(11, tx))
         )
         const combinedHashes = await computeMultiHashForTopology(rawHashes)
 
@@ -182,8 +192,12 @@ export class TopologyController {
 
         return Buffer.from(computedHash).toString('base64')
     }
+
     /** Submits a prepared and signed external party topology to the ledger.
      * This will also authorize the new party to the participant and grant the user rights to the party.
+     *
+     * @deprecated Use LedgerController.allocateExternalParty instead
+     *
      * @param signedHash The signed combined hash of the prepared transactions.
      * @param preparedParty The prepared party object from prepareExternalPartyTopology.
      * @param grantUserRights Defines if the transaction should also grant user right to current user (default is true)
@@ -194,6 +208,9 @@ export class TopologyController {
         preparedParty: PreparedParty,
         grantUserRights: boolean = true
     ): Promise<AllocatedParty> {
+        if (await this.client.checkIfPartyExists(preparedParty.partyId))
+            return { partyId: preparedParty.partyId }
+
         const signedTopologyTxs = preparedParty.partyTransactions.map(
             (transaction) =>
                 TopologyWriteService.toSignedTopologyTransaction(
@@ -221,6 +238,9 @@ export class TopologyController {
 
     /** Prepares, signs and submits a new external party topology in one step.
      * This will also authorize the new party to the participant and grant the user rights to the party.
+     *
+     * @deprecated Use LedgerController.signAndAllocateExternalParty instead
+     *
      * @param privateKey The private key of the new external party, used to sign the topology transactions.
      * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
      * @param confirmingThreshold optional parameter for multi-hosted parties (default is 1).
@@ -277,6 +297,9 @@ export class TopologyController {
 
     /** Prepares, signs and submits a new external party topology in one step.
      * This will also authorize the new party to the participant and grant the user rights to the party.
+     *
+     * @deprecated Use LedgerController.signAndAllocateExternalParty instead
+     *
      * @param participantEndpoints List of endpoints to the respective hosting participant Admin APIs and ledger API.
      * @param privateKey The private key of the new external party, used to sign the topology transactions.
      * @param synchronizerId  ID of the synchronizer on which the party will be registered.
@@ -292,19 +315,19 @@ export class TopologyController {
         hostingParticipantPermissions: Map<string, Enums_ParticipantPermission>,
         partyHint?: string,
         confirmingThreshold?: number
-    ) {
+    ): Promise<AllocatedParty> {
         const preparedParty = await this.prepareSignAndSubmitExternalParty(
-            privateKey,
+            getPublicKeyFromPrivate(privateKey),
             partyHint,
             confirmingThreshold,
             hostingParticipantPermissions
         )
 
         this.logger.info(preparedParty, 'created external party')
-        //start after first because we've already onboarded an external party and authorized the mapping
+
+        // start after first because we've already onboarded an external party and authorized the mapping
         // on the participant specified in the wallet.sdk.configure
         // now we need to authorize the party to participant transaction on the others
-
         for (const endpoint of participantEndpoints.slice(1)) {
             const lc = new LedgerClient(
                 endpoint.baseUrl,
@@ -316,16 +339,13 @@ export class TopologyController {
             const service = new TopologyWriteService(
                 synchronizerId,
                 endpoint.adminApiUrl,
+                endpoint.accessTokenProvider,
                 lc,
-                undefined,
-                endpoint.accessTokenProvider
+                undefined
             )
 
             await service.authorizePartyToParticipant(preparedParty.partyId)
         }
-
-        // the PartyToParticipant mapping needs to be authorized on each HostingParticipant
-        // before we can grantUserRights to the party
 
         await this.client.grantUserRights(this.userId, preparedParty.partyId)
 
