@@ -3,6 +3,7 @@
 
 import { expect, test, jest } from '@jest/globals'
 
+import cors from 'cors'
 import request from 'supertest'
 import express from 'express'
 import { dapp } from './server.js'
@@ -12,6 +13,7 @@ import { ConfigUtils } from '../config/ConfigUtils.js'
 import { Notifier } from '../notification/NotificationService.js'
 import { pino } from 'pino'
 import { sink } from 'pino-test'
+import { createServer } from 'http'
 
 const authService: AuthService = {
     verifyToken: async () => {
@@ -36,7 +38,9 @@ const notificationService = {
 
 test('call connect rpc', async () => {
     const app = express()
-    const server = app.listen()
+    app.use(cors())
+    app.use(express.json())
+    const server = createServer(app)
     const response = await request(
         dapp(
             '/api/v0/dapp',
@@ -60,11 +64,11 @@ test('call connect rpc', async () => {
             kernel: {
                 id: 'remote-da',
                 clientType: 'remote',
-                url: 'http://localhost:3008/rpc',
-                userUrl: 'http://localhost:3002',
+                url: 'http://localhost:3030/api/v0/dapp',
+                userUrl: 'http://localhost:3030',
             },
             isConnected: false,
-            userUrl: 'http://localhost:3002/login/',
+            userUrl: 'http://localhost:3030/login/',
         },
     })
 })

@@ -6,7 +6,6 @@ import { user } from './user-api/server.js'
 import { web } from './web/server.js'
 import cors from 'cors'
 import { Logger, pino } from 'pino'
-import ViteExpress from 'vite-express'
 import { StoreSql, connection } from '@canton-network/core-wallet-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
 import { Notifier } from './notification/NotificationService.js'
@@ -105,9 +104,5 @@ export async function initialize(opts: CliOptions) {
     )
 
     // register web handler
-    web(app)
-
-    if (process.env.NODE_ENV === 'development') {
-        ViteExpress.bind(app, server)
-    }
+    web(app, server)
 }

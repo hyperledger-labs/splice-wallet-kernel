@@ -3,6 +3,7 @@
 
 import { expect, jest, test } from '@jest/globals'
 
+import cors from 'cors'
 import express from 'express'
 import request from 'supertest'
 import { user } from './server.js'
@@ -25,9 +26,12 @@ const notificationService = {
     }),
 }
 
-test('call connect rpc', async () => {
+test('call listNetworks rpc', async () => {
     const drivers = {}
     const app = express()
+    app.use(cors())
+    app.use(express.json())
+
     const response = await request(
         user(
             '/api/v0/user',

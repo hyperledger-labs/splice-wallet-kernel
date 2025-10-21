@@ -2,17 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import express from 'express'
+import { Server } from 'http'
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
+import ViteExpress from 'vite-express'
 
-export const web = (app: express.Express) => {
-    // Serve static files in production
-    if (process.env.NODE_ENV !== 'development') {
+export const web = (app: express.Express, server: Server) => {
+    if (process.env.NODE_ENV === 'development') {
+        // Enable live reloading and Vite dev server for frontend in development
+        ViteExpress.bind(app, server)
+    } else {
+        // Serve static files from the package build in production
         app.use(
             express.static(
                 path.resolve(
                     dirname(fileURLToPath(import.meta.url)),
-                    '../dist/web/frontend'
+                    '../../dist/web/frontend'
                 )
             )
         )
