@@ -1535,6 +1535,7 @@ __metadata:
     "@protobuf-ts/runtime-rpc": "npm:^2.11.1"
     "@swc/core": "npm:^1.11.31"
     "@types/node": "npm:^22.15.30"
+    tsup: "npm:^8.5.0"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -1544,6 +1545,7 @@ __metadata:
   resolution: "@canton-network/core-rpc-errors@workspace:core/rpc-errors"
   dependencies:
     "@metamask/rpc-errors": "npm:^7.0.3"
+    tsup: "npm:^8.5.0"
     typescript: "npm:^5.9.2"
   languageName: unknown
   linkType: soft
@@ -1585,6 +1587,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     pino: "npm:^10.0.0"
     ts-jest-resolver: "npm:^2.0.1"
+    tsup: "npm:^8.5.0"
     tweetnacl: "npm:^1.0.3"
     tweetnacl-util: "npm:^0.15.1"
     typescript: "npm:^5.8.3"
@@ -1609,6 +1612,7 @@ __metadata:
     jest: "npm:^29.7.0"
     lodash: "npm:^4.17.21"
     ts-jest-resolver: "npm:^2.0.1"
+    tsup: "npm:^8.5.0"
     tweetnacl: "npm:^1.0.3"
     tweetnacl-util: "npm:^0.15.1"
     typescript: "npm:^5.8.3"
@@ -1625,6 +1629,7 @@ __metadata:
     "@types/node": "npm:^22.15.29"
     fs-extra: "npm:^11.3.0"
     lodash: "npm:^4.17.21"
+    tsup: "npm:^8.5.0"
     tweetnacl: "npm:^1.0.3"
     tweetnacl-util: "npm:^0.15.1"
     typescript: "npm:^5.8.3"
@@ -1647,6 +1652,7 @@ __metadata:
     "@types/node": "npm:^22.15.29"
     jest: "npm:^29.7.0"
     ts-jest-resolver: "npm:^2.0.1"
+    tsup: "npm:^8.5.0"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -1657,6 +1663,7 @@ __metadata:
   dependencies:
     "@canton-network/core-types": "workspace:^"
     openapi-fetch: "npm:^0.14.0"
+    tsup: "npm:^8.5.0"
     typescript: "npm:^5.8.3"
     uuid: "npm:^11.1.0"
     zod: "npm:^3.25.67"
@@ -1719,6 +1726,7 @@ __metadata:
     ts-jest: "npm:^29.4.0"
     ts-jest-resolver: "npm:^2.0.1"
     ts-proto: "npm:^2.7.5"
+    tsup: "npm:^8.5.0"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft

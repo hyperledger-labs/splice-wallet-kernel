@@ -37,8 +37,7 @@ export interface GetEventsByContractIdRequest {
      * https://docs.daml.com/concepts/ledger-model/ledger-privacy.html#contract-observers-and-stakeholders
      * Optional, if some parties specified, event_format needs to be unset.
      *
-     * @deprecated
-     * @generated from protobuf field: repeated string requesting_parties = 2 [deprecated = true]
+     * @generated from protobuf field: repeated string requesting_parties = 2
      */
     requestingParties: string[]
     /**
@@ -166,7 +165,7 @@ class GetEventsByContractIdRequest$Type extends MessageType<GetEventsByContractI
                 case /* string contract_id */ 1:
                     message.contractId = reader.string()
                     break
-                case /* repeated string requesting_parties = 2 [deprecated = true] */ 2:
+                case /* repeated string requesting_parties */ 2:
                     message.requestingParties.push(reader.string())
                     break
                 case /* com.daml.ledger.api.v2.EventFormat event_format */ 3:
@@ -204,7 +203,7 @@ class GetEventsByContractIdRequest$Type extends MessageType<GetEventsByContractI
         /* string contract_id = 1; */
         if (message.contractId !== '')
             writer.tag(1, WireType.LengthDelimited).string(message.contractId)
-        /* repeated string requesting_parties = 2 [deprecated = true]; */
+        /* repeated string requesting_parties = 2; */
         for (let i = 0; i < message.requestingParties.length; i++)
             writer
                 .tag(2, WireType.LengthDelimited)

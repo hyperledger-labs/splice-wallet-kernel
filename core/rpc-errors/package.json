@@ -7,8 +7,17 @@
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "packageManager": "yarn@4.9.4",
     "license": "Apache-2.0",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
+    "types": "dist/types/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/types/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "default": "./dist/index.js"
+        }
+    },
     "files": [
         "dist/**"
     ],
@@ -16,13 +25,15 @@
         "access": "public"
     },
     "scripts": {
-        "build": "tsc --build",
+        "build": "tsup && tsc -b tsconfig.types.json",
+        "dev": "tsup --watch --onSuccess \"tsc -b tsconfig.types.json\"",
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
         "@metamask/rpc-errors": "^7.0.3"
     },
     "devDependencies": {
+        "tsup": "^8.5.0",
         "typescript": "^5.9.2"
     }
 }

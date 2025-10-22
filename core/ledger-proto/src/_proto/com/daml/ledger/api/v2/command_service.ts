@@ -95,7 +95,6 @@ export interface SubmitAndWaitForTransactionResponse {
 /**
  * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
  *
- * @deprecated
  * @generated from protobuf message com.daml.ledger.api.v2.SubmitAndWaitForTransactionTreeResponse
  */
 export interface SubmitAndWaitForTransactionTreeResponse {
@@ -593,7 +592,6 @@ class SubmitAndWaitForTransactionTreeResponse$Type extends MessageType<SubmitAnd
     }
 }
 /**
- * @deprecated
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.SubmitAndWaitForTransactionTreeResponse
  */
 export const SubmitAndWaitForTransactionTreeResponse =
