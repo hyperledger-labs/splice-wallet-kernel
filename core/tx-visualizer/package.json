@@ -27,7 +27,7 @@
         "typescript": "^5.8.3"
     },
     "dependencies": {
-        "@canton-network/core-ledger-proto": "workspace:",
+        "@canton-network/core-ledger-proto": "workspace:^",
         "@types/node": "^22.15.30",
         "camelcase-keys": "^9.1.3"
     },
