@@ -53,17 +53,51 @@ type LedgerFactoryWithCache = (
     authTokenProvider: AuthTokenProvider,
     isAdmin: boolean
 ) => LedgerController
-type TopologyFactory = (
+
+type TopologyFactory = {
+    /**
+     * @deprecated This method will be removed with version 1.0.0, please use AuthTokenProvider version instead)
+     */
+    (
+        userId: string,
+        adminAccessToken: string,
+        synchronizerId: PartyId
+    ): TopologyController
+    (
+        userId: string,
+        authTokenProvider: AuthTokenProvider,
+        synchronizerId: PartyId
+    ): TopologyController
+}
+type TopologyFactoryWithCache = (
     userId: string,
     authTokenProvider: AuthTokenProvider,
     synchronizerId: PartyId
 ) => TopologyController
-type TokenStandardFactory = (
+
+type TokenStandardFactory = {
+    /**
+     * @deprecated This method will be removed with version 1.0.0, please use AuthTokenProvider version instead)
+     */
+    (userId: string, token: string, isAdmin: boolean): TokenStandardController
+    (
+        userId: string,
+        authTokenProvider: AuthTokenProvider,
+        isAdmin: boolean
+    ): TokenStandardController
+}
+type TokenStandardFactoryWithCache = (
     userId: string,
     authTokenProvider: AuthTokenProvider,
     isAdmin: boolean
 ) => TokenStandardController
-type ValidatorFactory = (
+
+type ValidatorFactory = {
+    (userId: string, token: string): ValidatorController
+    (userId: string, authTokenProvider: AuthTokenProvider): ValidatorController
+}
+
+type ValidatorFactoryWithCache = (
     userId: string,
     authTokenProvider: AuthTokenProvider
 ) => ValidatorController
@@ -109,14 +143,16 @@ export class WalletSDKImpl implements WalletSDK {
         this.auth = this.authFactory()
         this._authTokenProvider = new AuthTokenProvider(this.auth)
     }
-
     private authFactory: AuthFactory = localNetAuthDefault
     private ledgerFactory: LedgerFactory | LedgerFactoryWithCache =
         localNetLedgerDefault
-    private topologyFactory: TopologyFactory = localNetTopologyDefault
-    private tokenStandardFactory: TokenStandardFactory =
-        localNetTokenStandardDefault
-    private validatorFactory: ValidatorFactory = localValidatorDefault
+    private topologyFactory: TopologyFactory | TopologyFactoryWithCache =
+        localNetTopologyDefault
+    private tokenStandardFactory:
+        | TokenStandardFactory
+        | TokenStandardFactoryWithCache = localNetTokenStandardDefault
+    private validatorFactory: ValidatorFactory | ValidatorFactoryWithCache =
+        localValidatorDefault
 
     private logger: Logger | undefined
     userLedger: LedgerController | undefined
