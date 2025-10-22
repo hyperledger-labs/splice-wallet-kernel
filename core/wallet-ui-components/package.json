@@ -6,17 +6,25 @@
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
-    "main": "./dist/index.js",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {
-        ".": "./dist/index.js",
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "default": "./dist/index.js"
+        },
+        "./index.css": "./dist/index.css",
         "./themes": "./themes"
     },
     "scripts": {
-        "build": "vite build && yarn workspace @canton-network/core-wallet-ui-components tsc --emitDeclarationOnly",
+        "build": "vite build && tsc -p tsconfig.types.json",
+        "build:old": "vite build && yarn workspace @canton-network/core-wallet-ui-components tsc --emitDeclarationOnly",
         "build:watch": "vite build --watch & tsc --emitDeclarationOnly --watch",
         "typecheck": "tsc --noEmit",
-        "clean": "rm -rf dist",
+        "clean": "tsc -b --clean; rm -rf dist",
         "dev": "storybook dev -p 6006"
     },
     "devDependencies": {

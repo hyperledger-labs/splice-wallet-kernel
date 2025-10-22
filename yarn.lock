@@ -1670,6 +1670,7 @@ __metadata:
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-ui-components": "workspace:^"
     socket.io-client: "npm:^4.8.1"
+    tsup: "npm:^8.5.0"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -1726,6 +1727,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-types@workspace:core/types"
   dependencies:
+    tsup: "npm:^8.5.0"
     typescript: "npm:^5.8.3"
     uuid: "npm:^11.1.0"
     zod: "npm:^3.25.67"
@@ -1745,6 +1747,7 @@ __metadata:
     jest: "npm:^30.0.0"
     ts-jest: "npm:^29.4.0"
     ts-jest-resolver: "npm:^2.0.1"
+    tsup: "npm:^8.5.0"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -1762,6 +1765,7 @@ __metadata:
     globals: "npm:^16.0.0"
     lodash: "npm:^4.17.15"
     prettier: "npm:^3.5.2"
+    tsup: "npm:^8.5.0"
     typedoc: "npm:^0.28.14"
     typescript: "npm:^5.0.0"
   languageName: unknown

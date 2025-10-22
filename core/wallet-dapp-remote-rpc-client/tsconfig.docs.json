@@ -1,0 +1,14 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "./src"
+    },
+    "include": ["src/index.ts"], // only your public entry
+    "exclude": [
+        "**/*.test.*",
+        "**/*.spec.*",
+        "**/__tests__/**",
+        "**/*.config.*", // exclude configs
+        "tsup.config.ts"
+    ]
+}
