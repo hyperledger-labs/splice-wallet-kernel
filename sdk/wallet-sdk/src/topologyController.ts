@@ -43,7 +43,8 @@ export type AllocatedParty = {
 export type MultiHostPartyParticipantConfig = {
     adminApiUrl: string
     baseUrl: URL
-    accessTokenProvider: AccessTokenProvider
+    accessToken?: string
+    accessTokenProvider?: AccessTokenProvider
 }
 /**
  * TopologyController handles topology management tasks involving administrating external parties.
@@ -60,23 +61,25 @@ export class TopologyController {
         adminApiUrl: string,
         baseUrl: URL,
         userId: string,
-        accessTokenProvider: AccessTokenProvider,
         synchronizerId: PartyId,
+        accessToken: string = '',
+        accessTokenProvider?: AccessTokenProvider,
         grpcClientOptions?: GrpcClientOptions
     ) {
         this.client = new LedgerClient(
             baseUrl,
             this.logger,
             true,
-            undefined,
+            accessToken,
             accessTokenProvider
         )
         this.userId = userId
         this.topologyClient = new TopologyWriteService(
             synchronizerId,
             adminApiUrl,
-            accessTokenProvider,
             this.client,
+            accessToken,
+            accessTokenProvider,
             grpcClientOptions
         )
         return this
@@ -290,7 +293,7 @@ export class TopologyController {
             participantEndpoints.baseUrl,
             this.logger,
             true,
-            undefined,
+            participantEndpoints.accessToken,
             participantEndpoints.accessTokenProvider
         )
 
@@ -335,15 +338,16 @@ export class TopologyController {
                 endpoint.baseUrl,
                 this.logger,
                 true,
-                undefined,
+                endpoint.accessToken,
                 endpoint.accessTokenProvider
             )
 
             const service = new TopologyWriteService(
                 synchronizerId,
                 endpoint.adminApiUrl,
-                endpoint.accessTokenProvider,
                 lc,
+                endpoint.accessToken,
+                endpoint.accessTokenProvider,
                 undefined
             )
 
@@ -363,35 +367,45 @@ export class TopologyController {
 export const localNetTopologyDefault = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    synchronizerId: PartyId
+    synchronizerId: PartyId,
+    accessToken: string = ''
 ): TopologyController =>
-    localNetTopologyAppUser(userId, accessTokenProvider, synchronizerId)
+    localNetTopologyAppUser(
+        userId,
+        accessTokenProvider,
+        synchronizerId,
+        accessToken
+    )
 
 export const localNetTopologyAppUser = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    synchronizerId: PartyId
+    synchronizerId: PartyId,
+    accessToken: string = ''
 ): TopologyController => {
     return new TopologyController(
         '127.0.0.1:2902',
         new URL('http://127.0.0.1:2975'),
         userId,
-        accessTokenProvider,
-        synchronizerId
+        synchronizerId,
+        accessToken,
+        accessTokenProvider
     )
 }
 
 export const localNetTopologyAppProvider = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    synchronizerId: PartyId
+    synchronizerId: PartyId,
+    accessToken: string = ''
 ): TopologyController => {
     return new TopologyController(
         '127.0.0.1:3902',
         new URL('http://127.0.0.1:3975'),
         userId,
-        accessTokenProvider,
-        synchronizerId
+        synchronizerId,
+        accessToken,
+        accessTokenProvider
     )
 }
 
@@ -401,13 +415,15 @@ export const localNetTopologyAppProvider = (
  */
 export const localTopologyDefault = (
     userId: string,
-    accessTokenProvider: AccessTokenProvider
+    accessTokenProvider: AccessTokenProvider,
+    accessToken: string = ''
 ): TopologyController => {
     return new TopologyController(
         '127.0.0.1:5012',
         new URL('http://127.0.0.1:5003'),
         userId,
-        accessTokenProvider,
-        'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd'
+        'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd',
+        accessToken,
+        accessTokenProvider
     )
 }

@@ -18,14 +18,17 @@ const PATH_TO_TLS_DIR = '../../../../canton/tls'
 
 const tlsTopologyController = (
     userId: string,
-    accessTokenProvider: AccessTokenProvider
+    accessTokenProvider: AccessTokenProvider,
+    userAdminToken: string = ''
 ): TopologyController => {
     return new TopologyController(
         '127.0.0.1:5012',
         new URL('http://127.0.0.1:5003'),
         userId,
-        accessTokenProvider,
         'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd',
+        userAdminToken,
+        accessTokenProvider,
+
         {
             useTls: true,
             tls: {

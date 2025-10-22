@@ -376,7 +376,7 @@ export class LedgerController {
                     endpoint.url,
                     this.logger,
                     this.isAdmin,
-                    undefined,
+                    endpoint.accessToken,
                     endpoint.accessTokenProvider
                 )
 
@@ -433,7 +433,7 @@ export class LedgerController {
                             endpoint.url,
                             this.logger,
                             this.isAdmin,
-                            undefined,
+                            endpoint.accessToken,
                             endpoint.accessTokenProvider
                         )
                 )
@@ -1000,12 +1000,13 @@ export class LedgerController {
 export const localLedgerDefault = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean
+    isAdmin: boolean,
+    accessToken: string = ''
 ): LedgerController => {
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:5003'),
-        undefined,
+        accessToken,
         isAdmin,
         accessTokenProvider
     )
@@ -1018,20 +1019,27 @@ export const localLedgerDefault = (
 export const localNetLedgerDefault = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean
+    isAdmin: boolean,
+    accessToken: string = ''
 ): LedgerController => {
-    return localNetLedgerAppUser(userId, accessTokenProvider, isAdmin)
+    return localNetLedgerAppUser(
+        userId,
+        accessTokenProvider,
+        isAdmin,
+        accessToken
+    )
 }
 
 export const localNetLedgerAppUser = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean
+    isAdmin: boolean,
+    accessToken: string = ''
 ): LedgerController => {
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:2975'),
-        undefined,
+        accessToken,
         isAdmin,
         accessTokenProvider
     )
@@ -1040,12 +1048,13 @@ export const localNetLedgerAppUser = (
 export const localNetLedgerAppProvider = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean
+    isAdmin: boolean,
+    accessToken: string = ''
 ): LedgerController => {
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:3975'),
-        undefined,
+        accessToken,
         isAdmin,
         accessTokenProvider
     )

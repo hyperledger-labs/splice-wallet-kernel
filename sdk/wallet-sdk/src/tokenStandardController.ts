@@ -93,6 +93,8 @@ export class TokenStandardController {
         const scanProxyClient = new ScanProxyClient(
             validatorBaseUrl,
             this.logger,
+            isAdmin,
+            accessToken,
             this.accessTokenProvider
         )
         this.service = new TokenStandardService(
@@ -1269,13 +1271,14 @@ export class TokenStandardController {
 export const localTokenStandardDefault = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean
+    isAdmin: boolean,
+    accessToken: string = ''
 ): TokenStandardController => {
     return new TokenStandardController(
         userId,
         new URL('http://127.0.0.1:5003'),
         new URL('http://wallet.localhost:2000/api/validator'),
-        undefined,
+        accessToken,
         accessTokenProvider,
         isAdmin
     )
@@ -1288,21 +1291,28 @@ export const localTokenStandardDefault = (
 export const localNetTokenStandardDefault = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean
+    isAdmin: boolean,
+    accessToken: string = ''
 ): TokenStandardController => {
-    return localNetTokenStandardAppUser(userId, accessTokenProvider, isAdmin)
+    return localNetTokenStandardAppUser(
+        userId,
+        accessTokenProvider,
+        isAdmin,
+        accessToken
+    )
 }
 
 export const localNetTokenStandardAppUser = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean
+    isAdmin: boolean,
+    accessToken: string = ''
 ): TokenStandardController => {
     return new TokenStandardController(
         userId,
         new URL('http://127.0.0.1:2975'),
         new URL('http://wallet.localhost:2000/api/validator'),
-        undefined,
+        accessToken,
         accessTokenProvider,
         isAdmin
     )
@@ -1311,13 +1321,14 @@ export const localNetTokenStandardAppUser = (
 export const localNetTokenStandardAppProvider = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean
+    isAdmin: boolean,
+    accessToken: string = ''
 ): TokenStandardController => {
     return new TokenStandardController(
         userId,
         new URL('http://127.0.0.1:3975'),
         new URL('http://wallet.localhost:3000/api/validator'),
-        undefined,
+        accessToken,
         accessTokenProvider,
         isAdmin
     )

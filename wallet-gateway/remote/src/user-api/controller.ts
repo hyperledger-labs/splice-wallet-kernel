@@ -146,7 +146,6 @@ export const userController = (
                 'Fetched admin token for party allocation'
             )
 
-            // Create AccessTokenProvider for admin token
             const adminAccessTokenProvider: AccessTokenProvider = {
                 getUserAccessToken: async () => adminToken,
                 getAdminAccessToken: async () => adminToken,
@@ -502,7 +501,6 @@ export const userController = (
             const network = await store.getCurrentNetwork()
             assertConnected(authContext)
 
-            // Create AccessTokenProvider for user token
             const userAccessTokenProvider: AccessTokenProvider = {
                 getUserAccessToken: async () => authContext!.accessToken,
                 getAdminAccessToken: async () => authContext!.accessToken,

@@ -31,23 +31,31 @@ export class ValidatorController {
      *
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
-     * @param authController Auth controller which operates access tokens.
+     * @param accessTokenProvider provider for caching access tokens used to authenticate requests.
+     * @param isAdmin optional flag to set true when creating adminLedger.
+     * @param accessToken the access token from the user, usually provided by an auth controller. This parameter will be removed with version 1.0.0, please use accessTokenProvider instead)
      */
     constructor(
         userId: string,
         baseUrl: URL,
-        accessTokenProvider: AccessTokenProvider
+        accessTokenProvider: AccessTokenProvider,
+        isAdmin: boolean = false,
+        accessToken: string = ''
     ) {
         this.accessTokenProvider = accessTokenProvider
         this.validatorClient = new ValidatorInternalClient(
             baseUrl,
             this.logger,
+            isAdmin,
+            accessToken,
             this.accessTokenProvider
         )
 
         this.scanProxyClient = new ScanProxyClient(
             baseUrl,
             this.logger,
+            isAdmin,
+            accessToken,
             this.accessTokenProvider
         )
         this.userId = userId
@@ -249,12 +257,16 @@ export class ValidatorController {
  */
 export const localValidatorDefault = (
     userId: string,
-    accessTokenProvider: AccessTokenProvider
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean = false,
+    accessToken: string = ''
 ): ValidatorController => {
     return new ValidatorController(
         userId,
         new URL('http://wallet.localhost:2000/api/validator'),
-        accessTokenProvider
+        accessTokenProvider,
+        isAdmin,
+        accessToken
     )
 }
 
@@ -264,11 +276,15 @@ export const localValidatorDefault = (
  */
 export const localValidatorDefaultAppProvider = (
     userId: string,
-    accessTokenProvider: AccessTokenProvider
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean = false,
+    accessToken: string = ''
 ): ValidatorController => {
     return new ValidatorController(
         userId,
         new URL('http://wallet.localhost:3000/api/validator'),
-        accessTokenProvider
+        accessTokenProvider,
+        isAdmin,
+        accessToken
     )
 }

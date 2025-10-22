@@ -85,7 +85,7 @@ export class LedgerClient {
     constructor(
         baseUrl: URL,
         _logger: Logger,
-        isAdmin: boolean,
+        isAdmin: boolean = false,
         accessToken?: string,
         accessTokenProvider?: AccessTokenProvider,
         version?: SupportedVersions

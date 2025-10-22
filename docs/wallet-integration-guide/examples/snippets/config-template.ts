@@ -16,6 +16,7 @@ export default async function () {
         return new LedgerController(
             userId,
             new URL('http://my-json-ledger-api'),
+            undefined,
             false,
             authTokenProvider
         )
@@ -29,8 +30,9 @@ export default async function () {
             'my-grpc-admin-api',
             new URL('http://my-json-ledger-api'),
             userId,
-            authTokenProvider,
-            synchronizerId
+            synchronizerId,
+            undefined,
+            authTokenProvider
         )
     }
     const myValidatorFactory = (

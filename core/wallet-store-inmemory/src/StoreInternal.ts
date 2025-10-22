@@ -18,6 +18,7 @@ import {
     Network,
 } from '@canton-network/core-wallet-store'
 import { LedgerClient } from '@canton-network/core-ledger-client'
+import { AccessTokenProvider } from '@canton-network/core-types'
 
 interface UserStorage {
     wallets: Array<Wallet>
@@ -94,10 +95,17 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             const network = await this.getCurrentNetwork()
 
             // Get existing parties from participant
+            const userAccessTokenProvider: AccessTokenProvider = {
+                getUserAccessToken: async () => this.authContext!.accessToken,
+                getAdminAccessToken: async () => this.authContext!.accessToken,
+            }
+
             const ledgerClient = new LedgerClient(
                 new URL(network.ledgerApi.baseUrl),
                 this.logger,
-                this.authContext!.accessToken
+                false,
+                undefined,
+                userAccessTokenProvider
             )
             const rights = await ledgerClient.get(
                 '/v2/users/{user-id}/rights',

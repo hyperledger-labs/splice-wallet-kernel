@@ -88,13 +88,17 @@ class CoreService {
         private scanProxyClient: ScanProxyClient,
         private readonly logger: Logger,
         private accessTokenProvider: AccessTokenProvider,
-        private readonly isMasterUser: boolean
+        private readonly isMasterUser: boolean,
+        private isAdmin: boolean = false,
+        private accessToken: string = ''
     ) {}
 
     getTokenStandardClient(registryUrl: string): TokenStandardClient {
         return new TokenStandardClient(
             registryUrl,
             this.logger,
+            this.isAdmin,
+            this.accessToken,
             this.accessTokenProvider
         )
     }
