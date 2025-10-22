@@ -62,12 +62,14 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
 export class TokenStandardClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
-    private accessTokenProvider: AccessTokenProvider
+    private accessTokenProvider: AccessTokenProvider | undefined
 
     constructor(
         baseUrl: string,
         logger: Logger,
-        accessTokenProvider: AccessTokenProvider
+        isAdmin: boolean,
+        accessToken?: string,
+        accessTokenProvider?: AccessTokenProvider
     ) {
         this.accessTokenProvider = accessTokenProvider
         this.logger = logger
@@ -75,14 +77,17 @@ export class TokenStandardClient {
         this.client = createClient<paths>({
             baseUrl,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
-                const adminAccessToken =
-                    accessTokenProvider.getAdminAccessToken()
+                if (this.accessTokenProvider) {
+                    accessToken = isAdmin
+                        ? await this.accessTokenProvider.getAdminAccessToken()
+                        : await this.accessTokenProvider.getUserAccessToken()
+                }
                 return fetch(url, {
                     ...options,
                     headers: {
                         ...(options.headers || {}),
-                        ...(adminAccessToken
-                            ? { Authorization: `Bearer ${adminAccessToken}` }
+                        ...(accessToken
+                            ? { Authorization: `Bearer ${accessToken}` }
                             : {}),
                         'Content-Type': 'application/json',
                     },
