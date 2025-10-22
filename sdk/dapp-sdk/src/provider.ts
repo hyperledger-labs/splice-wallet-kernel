@@ -66,6 +66,8 @@ export class Provider implements SpliceProvider {
                 return controller.status() as Promise<T>
             case 'connect':
                 return controller.connect() as Promise<T>
+            case 'disconnect':
+                return controller.disconnect() as Promise<T>
             case 'darsAvailable':
                 return controller.darsAvailable() as Promise<T>
             case 'ledgerApi':
@@ -82,10 +84,6 @@ export class Provider implements SpliceProvider {
                 ) as Promise<T>
             case 'requestAccounts':
                 return controller.requestAccounts() as Promise<T>
-            case 'onAccountsChanged':
-                throw new Error('Only for events.')
-            case 'onTxChanged':
-                throw new Error('Only for events.')
             default:
                 throw new Error('Unsupported method')
         }
@@ -145,8 +143,8 @@ export const dappController = (provider: SpliceProvider) =>
                     method: 'connect',
                 })
 
-            if (!response.isConnected)
-                openKernelUserUI('remote', response.userUrl)
+            if (!response.status.isConnected)
+                openKernelUserUI('remote', response.status.userUrl)
 
             const promise = new Promise<dappAPI.ConnectResult>(
                 (resolve, reject) => {
@@ -154,13 +152,14 @@ export const dappController = (provider: SpliceProvider) =>
                     provider.on<dappRemoteAPI.OnConnectedEvent>(
                         'onConnected',
                         (event) => {
+                            console.log('SDK: OnConnectedEvent', event)
                             clearTimeout(timeout)
                             const result: dappAPI.ConnectResult = {
-                                kernel: event.kernel,
-                                isConnected: true,
-                                chainId: event.chainId,
                                 sessionToken: event.sessionToken ?? '',
-                                userUrl: event.userUrl,
+                                status: {
+                                    ...event,
+                                    isConnected: true,
+                                },
                             }
                             resolve(result)
                         }
@@ -169,6 +168,11 @@ export const dappController = (provider: SpliceProvider) =>
             )
 
             return promise
+        },
+        disconnect: async () => {
+            return provider.request<dappRemoteAPI.Null>({
+                method: 'disconnect',
+            })
         },
         darsAvailable: async () => {
             return provider.request<dappRemoteAPI.DarsAvailableResult>({
@@ -217,7 +221,7 @@ export const dappController = (provider: SpliceProvider) =>
                 params,
             }),
         status: async () => {
-            return provider.request<dappAPI.StatusResult>({ method: 'status' })
+            return provider.request<dappAPI.StatusEvent>({ method: 'status' })
         },
         requestAccounts: async () =>
             provider.request<dappRemoteAPI.RequestAccountsResult>({

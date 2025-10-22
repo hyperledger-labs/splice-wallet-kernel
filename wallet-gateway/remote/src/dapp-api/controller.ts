@@ -58,10 +58,27 @@ export const dappController = (
     const logger = _logger.child({ component: 'dapp-controller' })
     return buildController({
         connect: async () => ({
-            kernel: kernelInfo,
-            isConnected: false,
-            userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
+            sessionToken: '',
+            status: {
+                kernel: kernelInfo,
+                isConnected: false,
+                userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
+            },
         }),
+        disconnect: async () => {
+            if (!context) {
+                return null
+            } else {
+                const notifier = notificationService.getNotifier(context.userId)
+                notifier.emit('statusChanged', {
+                    kernel: kernelInfo,
+                    isConnected: false,
+                    userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
+                })
+            }
+
+            return null
+        },
         darsAvailable: async () => ({ dars: ['default-dar'] }),
         ledgerApi: async (params: LedgerApiParams) => {
             const network = await store.getCurrentNetwork()
@@ -182,6 +199,9 @@ export const dappController = (
             }
         },
         onConnected: async () => {
+            throw new Error('Only for events.')
+        },
+        onStatusChanged: async () => {
             throw new Error('Only for events.')
         },
         onAccountsChanged: async () => {
