@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-ui-components",
-    "version": "0.7.0",
+    "version": "0.8.0",
     "type": "module",
     "description": "Reusable UI components for the Splice wallet",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -24,6 +24,7 @@
         "build:old": "vite build && yarn workspace @canton-network/core-wallet-ui-components tsc --emitDeclarationOnly",
         "build:watch": "vite build --watch & tsc --emitDeclarationOnly --watch",
         "typecheck": "tsc --noEmit",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "dev": "storybook dev -p 6006"
     },
@@ -35,7 +36,7 @@
         "storybook": "^9.1.10",
         "tsx": "^4.20.4",
         "typescript": "^5.8.3",
-        "vite": "^6.3.5"
+        "vite": "^6.4.1"
     },
     "packageManager": "yarn@4.9.4",
     "dependencies": {

@@ -17,3 +17,5 @@ export const TRANSFER_FACTORY_INTERFACE_ID =
     '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferFactory'
 export const TRANSFER_INSTRUCTION_INTERFACE_ID =
     '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferInstruction'
+export const FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID =
+    '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy'

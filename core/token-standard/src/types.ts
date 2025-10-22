@@ -1,6 +1,8 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { PartyId } from '@canton-network/core-types'
+
 // Mirrored types from token standard codegen
 // With current rollup setup it's not possible to bundle types from codegen into this package /dist
 // TODO(#614) adjust pipeline to bundle types reexported from codegen
@@ -93,4 +95,9 @@ export type Transfer = {
     executeBefore: string
     inputHoldingCids: string[]
     meta: Metadata
+}
+
+export type Beneficiaries = {
+    beneficiary: PartyId
+    weight: number
 }

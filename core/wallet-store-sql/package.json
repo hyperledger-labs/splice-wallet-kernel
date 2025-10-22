@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-store-sql",
-    "version": "0.7.0",
+    "version": "0.9.0",
     "type": "module",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "description": "SQL implementation of the Store API",
@@ -12,6 +12,7 @@
     "scripts": {
         "build": "tsup && tsc -b tsconfig.types.json",
         "dev": "tsup --watch --onSuccess \"tsc -b tsconfig.types.json\"",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
     },

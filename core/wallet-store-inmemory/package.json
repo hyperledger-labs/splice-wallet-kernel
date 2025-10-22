@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-store-inmemory",
-    "version": "0.8.0",
+    "version": "0.10.0",
     "type": "module",
     "description": "In-memory implementation of the Store API",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -12,6 +12,7 @@
     "scripts": {
         "build": "tsup && tsc -b tsconfig.types.json",
         "dev": "tsup --watch --onSuccess \"tsc -b tsconfig.types.json\"",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
     },

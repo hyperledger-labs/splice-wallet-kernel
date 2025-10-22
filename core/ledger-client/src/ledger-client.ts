@@ -7,6 +7,11 @@ import * as v3_4 from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
 import createClient, { Client, FetchOptions } from 'openapi-fetch'
 import { Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
+import {
+    defaultRetryableOptions,
+    retryable,
+    retryableOptions,
+} from './ledger-api-utils.js'
 
 export const supportedVersions = ['3.3', '3.4'] as const
 
@@ -18,7 +23,7 @@ type paths = v3_3.paths | v3_4.paths
 
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional
-type PostEndpoint = {
+export type PostEndpoint = {
     [Pathname in keyof paths]: paths[Pathname] extends {
         post: unknown
     }
@@ -41,7 +46,7 @@ export type PostResponse<Path extends PostEndpoint> = paths[Path] extends {
     : never
 
 // Similar as above, for GETs
-type GetEndpoint = {
+export type GetEndpoint = {
     [Pathname in keyof paths]: paths[Pathname] extends {
         get: unknown
     }
@@ -444,7 +449,42 @@ export class LedgerClient {
         return this.valueOrError(resp)
     }
 
-    public async post<Path extends PostEndpoint>(
+    public async postWithRetry<Path extends PostEndpoint>(
+        path: Path,
+        body: PostRequest<Path>,
+        retryOptions: retryableOptions = defaultRetryableOptions,
+        params?: {
+            path?: Record<string, string>
+            query?: Record<string, string>
+        },
+        additionalOptions?: ExtraPostOpts
+    ): Promise<PostResponse<Path>> {
+        return await retryable(
+            () => this.post(path, body, params, additionalOptions),
+            retryOptions,
+            this.logger
+        )
+    }
+
+    public async getWithRetry<Path extends GetEndpoint>(
+        path: Path,
+        retryOptions: retryableOptions = defaultRetryableOptions,
+        params?: {
+            path?: Record<string, string>
+            query?: Record<string, string>
+        }
+    ): Promise<GetResponse<Path>> {
+        return await retryable(
+            () => this.get(path, params),
+            retryOptions,
+            this.logger
+        )
+    }
+
+    /**
+     * @deprecated use postWithRetry instead, should be made private
+     */
+    private async post<Path extends PostEndpoint>(
         path: Path,
         body: PostRequest<Path>,
         params?: {
@@ -461,7 +501,10 @@ export class LedgerClient {
         return this.valueOrError(resp)
     }
 
-    public async get<Path extends GetEndpoint>(
+    /**
+     * @deprecated use getWithRetry instead, should be made private
+     */
+    private async get<Path extends GetEndpoint>(
         path: Path,
         params?: {
             path?: Record<string, string>

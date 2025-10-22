@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-types",
-    "version": "0.7.0",
+    "version": "0.8.0",
     "type": "module",
     "description": "Types and transport-agnostic parsers for data sent across Wallet components.",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -21,6 +21,7 @@
     "scripts": {
         "build": "tsup && tsc -b tsconfig.types.json",
         "dev": "tsup --watch --onSuccess \"tsc -b tsconfig.types.json\"",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {

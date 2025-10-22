@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-token-standard",
-    "version": "0.8.0",
+    "version": "0.9.0",
     "type": "module",
     "description": "daml codegen js for core token standard",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -22,6 +22,7 @@
         "build:types": "tsc -p tsconfig.types.json",
         "bundle:types": "rollup -c rollup.dts.config.mjs",
         "dev": "tsup --watch",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {

@@ -140,9 +140,16 @@ try {
         5000,
         (await secondSpendCommandId)!
     )
-} catch (e) {
-    logger.info(
-        e,
-        'got double spend exception (LOCAL_VERDICT_LOCKED_CONTRACTS)'
-    )
+} catch (e: unknown) {
+    if (
+        typeof e === 'object' &&
+        e !== null &&
+        'message' in e &&
+        (e.message as string).includes('LOCAL_VERDICT_LOCKED_CONTRACTS')
+    ) {
+        logger.info(
+            e,
+            'got double spend exception (LOCAL_VERDICT_LOCKED_CONTRACTS)'
+        )
+    } else throw e
 }

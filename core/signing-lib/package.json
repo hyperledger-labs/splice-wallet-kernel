@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-lib",
-    "version": "0.9.0",
+    "version": "0.10.1",
     "type": "module",
     "description": "Core library for signing driver implementations",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -20,6 +20,7 @@
     "scripts": {
         "build": "tsup && tsc -b tsconfig.types.json",
         "dev": "tsup --watch --onSuccess \"tsc -b tsconfig.types.json\"",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean && rm -rf ./dist"
     },
     "dependencies": {
