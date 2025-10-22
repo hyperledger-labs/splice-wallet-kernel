@@ -165,7 +165,6 @@ export class ACSContainer {
         })
         const createdContracts = acs.initialAcs.concat(addedContracts)
 
-        //TODO: check this
         const result = createdContracts.filter(
             (contract) =>
                 !removedContractIds.has(
@@ -174,13 +173,6 @@ export class ACSContainer {
                 )
         )
 
-        // const result = createdContracts.filter(
-        //     (contract) =>
-        //         !removedContractIds.has(
-        //             (contract.contractEntry as JsContractEntryOneOf)
-        //                 .JsActiveContract.createdEvent.contractId
-        //         )
-        // )
         return Promise.resolve(result)
     }
 
@@ -252,8 +244,6 @@ export class ACSContainer {
             },
             verbose: false,
         }
-
-        //TODO: fix this
 
         const params: Record<string, unknown> = {
             query: {
