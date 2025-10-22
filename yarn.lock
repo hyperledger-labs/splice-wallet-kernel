@@ -1429,14 +1429,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-ledger-client@workspace:, @canton-network/core-ledger-client@workspace:core/ledger-client":
+"@canton-network/core-ledger-client@workspace:^, @canton-network/core-ledger-client@workspace:core/ledger-client":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-ledger-client@workspace:core/ledger-client"
   dependencies:
-    "@canton-network/core-ledger-proto": "workspace:"
-    "@canton-network/core-splice-client": "workspace:"
-    "@canton-network/core-token-standard": "workspace:"
-    "@canton-network/core-types": "workspace:"
+    "@canton-network/core-ledger-proto": "workspace:^"
+    "@canton-network/core-splice-client": "workspace:^"
+    "@canton-network/core-token-standard": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
     "@grpc/grpc-js": "npm:^1.14.0"
     "@jest/globals": "npm:^29.0.0"
     "@protobuf-ts/grpc-transport": "npm:^2.11.1"
@@ -1456,7 +1456,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-ledger-proto@workspace:, @canton-network/core-ledger-proto@workspace:core/ledger-proto":
+"@canton-network/core-ledger-proto@workspace:^, @canton-network/core-ledger-proto@workspace:core/ledger-proto":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-ledger-proto@workspace:core/ledger-proto"
   dependencies:
@@ -1468,7 +1468,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-rpc-errors@workspace:, @canton-network/core-rpc-errors@workspace:core/rpc-errors":
+"@canton-network/core-rpc-errors@workspace:^, @canton-network/core-rpc-errors@workspace:core/rpc-errors":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-rpc-errors@workspace:core/rpc-errors"
   dependencies:
@@ -1498,8 +1498,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-signing-fireblocks@workspace:core/signing-fireblocks"
   dependencies:
-    "@canton-network/core-signing-lib": "workspace:"
-    "@canton-network/core-wallet-auth": "workspace:"
+    "@canton-network/core-signing-lib": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
     "@fireblocks/ts-sdk": "npm:^10.2.0"
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.11.31"
@@ -1521,12 +1521,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-signing-internal@workspace:, @canton-network/core-signing-internal@workspace:core/signing-internal":
+"@canton-network/core-signing-internal@workspace:^, @canton-network/core-signing-internal@workspace:core/signing-internal":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-signing-internal@workspace:core/signing-internal"
   dependencies:
-    "@canton-network/core-signing-lib": "workspace:"
-    "@canton-network/core-wallet-auth": "workspace:"
+    "@canton-network/core-signing-lib": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"
@@ -1544,11 +1544,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-signing-lib@workspace:, @canton-network/core-signing-lib@workspace:core/signing-lib":
+"@canton-network/core-signing-lib@workspace:^, @canton-network/core-signing-lib@workspace:core/signing-lib":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-signing-lib@workspace:core/signing-lib"
   dependencies:
-    "@canton-network/core-wallet-auth": "workspace:"
+    "@canton-network/core-wallet-auth": "workspace:^"
     "@types/fs-extra": "npm:^11"
     "@types/lodash": "npm:^4.17.17"
     "@types/node": "npm:^22.15.29"
@@ -1560,13 +1560,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-signing-participant@workspace:, @canton-network/core-signing-participant@workspace:core/signing-participant":
+"@canton-network/core-signing-participant@workspace:^, @canton-network/core-signing-participant@workspace:core/signing-participant":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-signing-participant@workspace:core/signing-participant"
   dependencies:
-    "@canton-network/core-ledger-client": "workspace:"
-    "@canton-network/core-signing-lib": "workspace:"
-    "@canton-network/core-wallet-auth": "workspace:"
+    "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-signing-lib": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"
@@ -1580,11 +1580,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-splice-client@workspace:, @canton-network/core-splice-client@workspace:core/splice-client":
+"@canton-network/core-splice-client@workspace:^, @canton-network/core-splice-client@workspace:core/splice-client":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-splice-client@workspace:core/splice-client"
   dependencies:
-    "@canton-network/core-types": "workspace:"
+    "@canton-network/core-types": "workspace:^"
     openapi-fetch: "npm:^0.14.0"
     typescript: "npm:^5.8.3"
     uuid: "npm:^11.1.0"
@@ -1592,22 +1592,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-splice-provider@workspace:, @canton-network/core-splice-provider@workspace:core/splice-provider":
+"@canton-network/core-splice-provider@workspace:^, @canton-network/core-splice-provider@workspace:core/splice-provider":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-splice-provider@workspace:core/splice-provider"
   dependencies:
-    "@canton-network/core-types": "workspace:"
-    "@canton-network/core-wallet-ui-components": "workspace:"
+    "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-ui-components": "workspace:^"
     socket.io-client: "npm:^4.8.1"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-token-standard@workspace:, @canton-network/core-token-standard@workspace:core/token-standard":
+"@canton-network/core-token-standard@workspace:^, @canton-network/core-token-standard@workspace:core/token-standard":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-token-standard@workspace:core/token-standard"
   dependencies:
-    "@canton-network/core-types": "workspace:"
+    "@canton-network/core-types": "workspace:^"
     "@daml.js/token-standard-models-1.0.0": "workspace:^"
     "@daml/ledger": "npm:3.4.0-snapshot.20250616.13911.0.v482d9ec0"
     "@daml/types": "npm:3.4.0-snapshot.20250616.13911.0.v482d9ec0"
@@ -1624,11 +1624,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-tx-visualizer@workspace:, @canton-network/core-tx-visualizer@workspace:core/tx-visualizer":
+"@canton-network/core-tx-visualizer@workspace:^, @canton-network/core-tx-visualizer@workspace:core/tx-visualizer":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-tx-visualizer@workspace:core/tx-visualizer"
   dependencies:
-    "@canton-network/core-ledger-proto": "workspace:"
+    "@canton-network/core-ledger-proto": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.13.3"
     "@swc/jest": "npm:^0.2.38"
@@ -1643,7 +1643,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-types@workspace:, @canton-network/core-types@workspace:core/types":
+"@canton-network/core-types@workspace:^, @canton-network/core-types@workspace:core/types":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-types@workspace:core/types"
   dependencies:
@@ -1653,12 +1653,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-wallet-auth@workspace:, @canton-network/core-wallet-auth@workspace:core/wallet-auth":
+"@canton-network/core-wallet-auth@workspace:^, @canton-network/core-wallet-auth@workspace:core/wallet-auth":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-auth@workspace:core/wallet-auth"
   dependencies:
-    "@canton-network/core-rpc-errors": "workspace:"
-    "@canton-network/core-types": "workspace:"
+    "@canton-network/core-rpc-errors": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"
@@ -1670,11 +1670,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-wallet-dapp-remote-rpc-client@workspace:, @canton-network/core-wallet-dapp-remote-rpc-client@workspace:core/wallet-dapp-remote-rpc-client":
+"@canton-network/core-wallet-dapp-remote-rpc-client@workspace:^, @canton-network/core-wallet-dapp-remote-rpc-client@workspace:core/wallet-dapp-remote-rpc-client":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-dapp-remote-rpc-client@workspace:core/wallet-dapp-remote-rpc-client"
   dependencies:
-    "@canton-network/core-types": "workspace:"
+    "@canton-network/core-types": "workspace:^"
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
@@ -1688,11 +1688,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-wallet-dapp-rpc-client@workspace:, @canton-network/core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client":
+"@canton-network/core-wallet-dapp-rpc-client@workspace:^, @canton-network/core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client"
   dependencies:
-    "@canton-network/core-types": "workspace:"
+    "@canton-network/core-types": "workspace:^"
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
@@ -1706,14 +1706,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-wallet-store-inmemory@workspace:, @canton-network/core-wallet-store-inmemory@workspace:core/wallet-store-inmemory":
+"@canton-network/core-wallet-store-inmemory@workspace:^, @canton-network/core-wallet-store-inmemory@workspace:core/wallet-store-inmemory":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-store-inmemory@workspace:core/wallet-store-inmemory"
   dependencies:
-    "@canton-network/core-ledger-client": "workspace:"
-    "@canton-network/core-rpc-errors": "workspace:"
-    "@canton-network/core-wallet-auth": "workspace:"
-    "@canton-network/core-wallet-store": "workspace:"
+    "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-rpc-errors": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
+    "@canton-network/core-wallet-store": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"
@@ -1728,14 +1728,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-wallet-store-sql@workspace:, @canton-network/core-wallet-store-sql@workspace:core/wallet-store-sql":
+"@canton-network/core-wallet-store-sql@workspace:^, @canton-network/core-wallet-store-sql@workspace:core/wallet-store-sql":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-store-sql@workspace:core/wallet-store-sql"
   dependencies:
-    "@canton-network/core-ledger-client": "workspace:"
-    "@canton-network/core-rpc-errors": "workspace:"
-    "@canton-network/core-wallet-auth": "workspace:"
-    "@canton-network/core-wallet-store": "workspace:"
+    "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-rpc-errors": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
+    "@canton-network/core-wallet-store": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"
@@ -1756,7 +1756,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-wallet-store@workspace:, @canton-network/core-wallet-store@workspace:core/wallet-store":
+"@canton-network/core-wallet-store@workspace:^, @canton-network/core-wallet-store@workspace:core/wallet-store":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-store@workspace:core/wallet-store"
   dependencies:
@@ -1772,12 +1772,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-wallet-ui-components@workspace:, @canton-network/core-wallet-ui-components@workspace:core/wallet-ui-components":
+"@canton-network/core-wallet-ui-components@workspace:^, @canton-network/core-wallet-ui-components@workspace:core/wallet-ui-components":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-ui-components@workspace:core/wallet-ui-components"
   dependencies:
-    "@canton-network/core-types": "workspace:"
-    "@canton-network/core-wallet-store": "workspace:"
+    "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-store": "workspace:^"
     "@popperjs/core": "npm:^2.11.8"
     "@storybook/web-components-vite": "npm:^9.1.10"
     "@types/bootstrap": "npm:^5"
@@ -1792,11 +1792,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-wallet-user-rpc-client@workspace:, @canton-network/core-wallet-user-rpc-client@workspace:core/wallet-user-rpc-client":
+"@canton-network/core-wallet-user-rpc-client@workspace:^, @canton-network/core-wallet-user-rpc-client@workspace:core/wallet-user-rpc-client":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-user-rpc-client@workspace:core/wallet-user-rpc-client"
   dependencies:
-    "@canton-network/core-types": "workspace:"
+    "@canton-network/core-types": "workspace:^"
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
@@ -1810,15 +1810,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/dapp-sdk@workspace:, @canton-network/dapp-sdk@workspace:sdk/dapp-sdk":
+"@canton-network/dapp-sdk@workspace:^, @canton-network/dapp-sdk@workspace:sdk/dapp-sdk":
   version: 0.0.0-use.local
   resolution: "@canton-network/dapp-sdk@workspace:sdk/dapp-sdk"
   dependencies:
-    "@canton-network/core-splice-provider": "workspace:"
-    "@canton-network/core-types": "workspace:"
-    "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:"
-    "@canton-network/core-wallet-dapp-rpc-client": "workspace:"
-    "@canton-network/core-wallet-ui-components": "workspace:"
+    "@canton-network/core-splice-provider": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^"
+    "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
+    "@canton-network/core-wallet-ui-components": "workspace:^"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -1827,7 +1827,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/example@workspace:example"
   dependencies:
-    "@canton-network/dapp-sdk": "workspace:"
+    "@canton-network/dapp-sdk": "workspace:^"
     "@eslint/js": "npm:^9.25.0"
     "@playwright/test": "npm:^1.55.0"
     "@types/node": "npm:^24.3.0"
@@ -1887,10 +1887,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/wallet-gateway-extension@workspace:wallet-gateway/extension"
   dependencies:
-    "@canton-network/core-rpc-errors": "workspace:"
-    "@canton-network/core-types": "workspace:"
-    "@canton-network/core-wallet-store": "workspace:"
-    "@canton-network/core-wallet-ui-components": "workspace:"
+    "@canton-network/core-rpc-errors": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-store": "workspace:^"
+    "@canton-network/core-wallet-ui-components": "workspace:^"
     "@types/node": "npm:^24.0.4"
     "@types/webextension-polyfill": "npm:^0.12.0"
     esbuild: "npm:^0.25.5"
@@ -1906,20 +1906,20 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/wallet-gateway-remote@workspace:wallet-gateway/remote"
   dependencies:
-    "@canton-network/core-ledger-client": "workspace:"
-    "@canton-network/core-rpc-errors": "workspace:"
-    "@canton-network/core-signing-internal": "workspace:"
-    "@canton-network/core-signing-lib": "workspace:"
-    "@canton-network/core-signing-participant": "workspace:"
-    "@canton-network/core-tx-visualizer": "workspace:"
-    "@canton-network/core-types": "workspace:"
-    "@canton-network/core-wallet-auth": "workspace:"
-    "@canton-network/core-wallet-dapp-rpc-client": "workspace:"
-    "@canton-network/core-wallet-store": "workspace:"
-    "@canton-network/core-wallet-store-inmemory": "workspace:"
-    "@canton-network/core-wallet-store-sql": "workspace:"
-    "@canton-network/core-wallet-ui-components": "workspace:"
-    "@canton-network/core-wallet-user-rpc-client": "workspace:"
+    "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-rpc-errors": "workspace:^"
+    "@canton-network/core-signing-internal": "workspace:^"
+    "@canton-network/core-signing-lib": "workspace:^"
+    "@canton-network/core-signing-participant": "workspace:^"
+    "@canton-network/core-tx-visualizer": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
+    "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
+    "@canton-network/core-wallet-store": "workspace:^"
+    "@canton-network/core-wallet-store-inmemory": "workspace:^"
+    "@canton-network/core-wallet-store-sql": "workspace:^"
+    "@canton-network/core-wallet-ui-components": "workspace:^"
+    "@canton-network/core-wallet-user-rpc-client": "workspace:^"
     "@commander-js/extra-typings": "npm:^14.0.0"
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.11.31"
@@ -1954,18 +1954,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/wallet-sdk@workspace:, @canton-network/wallet-sdk@workspace:sdk/wallet-sdk":
+"@canton-network/wallet-sdk@workspace:^, @canton-network/wallet-sdk@workspace:sdk/wallet-sdk":
   version: 0.0.0-use.local
   resolution: "@canton-network/wallet-sdk@workspace:sdk/wallet-sdk"
   dependencies:
-    "@canton-network/core-ledger-client": "workspace:"
-    "@canton-network/core-ledger-proto": "workspace:"
-    "@canton-network/core-signing-lib": "workspace:"
-    "@canton-network/core-splice-client": "workspace:"
-    "@canton-network/core-token-standard": "workspace:"
-    "@canton-network/core-tx-visualizer": "workspace:"
-    "@canton-network/core-types": "workspace:"
-    "@canton-network/core-wallet-auth": "workspace:"
+    "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-ledger-proto": "workspace:^"
+    "@canton-network/core-signing-lib": "workspace:^"
+    "@canton-network/core-splice-client": "workspace:^"
+    "@canton-network/core-token-standard": "workspace:^"
+    "@canton-network/core-tx-visualizer": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
     "@types/node": "npm:^24.3.0"
     jose: "npm:^5.2.4"
     pino: "npm:^10.0.0"
@@ -9936,10 +9936,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "docs-wallet-integration-guide-examples@workspace:docs/wallet-integration-guide/examples"
   dependencies:
-    "@canton-network/core-ledger-client": "workspace:"
-    "@canton-network/core-signing-lib": "workspace:"
-    "@canton-network/core-types": "workspace:"
-    "@canton-network/wallet-sdk": "workspace:"
+    "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-signing-lib": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
+    "@canton-network/wallet-sdk": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"

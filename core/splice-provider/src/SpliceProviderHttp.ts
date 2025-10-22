@@ -84,7 +84,9 @@ export class SpliceProviderHttp extends SpliceProviderBase {
 
     public async request<T>({ method, params }: RequestPayload): Promise<T> {
         const response = await this.transport.submit({ method, params })
+
         if ('error' in response) throw new Error(response.error.message)
+
         const result = response.result as T
         if (method === 'prepareExecute') {
             const { userUrl } = result as { userUrl?: string }

@@ -23,10 +23,10 @@
         "web-ext": "^9.0.0"
     },
     "dependencies": {
-        "@canton-network/core-rpc-errors": "workspace:",
-        "@canton-network/core-types": "workspace:",
-        "@canton-network/core-wallet-store": "workspace:",
-        "@canton-network/core-wallet-ui-components": "workspace:",
+        "@canton-network/core-rpc-errors": "workspace:^",
+        "@canton-network/core-types": "workspace:^",
+        "@canton-network/core-wallet-store": "workspace:^",
+        "@canton-network/core-wallet-ui-components": "workspace:^",
         "lit": "^3.3.0",
         "webextension-polyfill": "^0.12.0"
     }

@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-fireblocks",
-    "version": "0.8.1",
+    "version": "0.9.0",
     "type": "module",
     "description": "Wallet Gateway signing driver for Fireblocks",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -15,8 +15,8 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "dependencies": {
-        "@canton-network/core-signing-lib": "workspace:",
-        "@canton-network/core-wallet-auth": "workspace:",
+        "@canton-network/core-signing-lib": "workspace:^",
+        "@canton-network/core-wallet-auth": "workspace:^",
         "@fireblocks/ts-sdk": "^10.2.0",
         "async-mutex": "^0.5.0",
         "fs-extra": "^11.3.0",

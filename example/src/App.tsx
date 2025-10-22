@@ -161,7 +161,9 @@ function App() {
                 {loading && <p>Loading...</p>}
                 <p>{status}</p>
                 <p>primary party: {primaryParty}</p>
-                {error && <p className="error">Error: {error}</p>}
+                {error && (
+                    <p className="error">Error: {JSON.stringify(error)}</p>
+                )}
             </div>
 
             <div className="card">

@@ -1,10 +1,10 @@
 [
     {
         "name": "Canton Wallet Gateway (Local)",
-        "rpcUrl": "http://localhost:3008/rpc"
+        "rpcUrl": "http://localhost:3030/api/v0/dapp"
     },
     {
         "name": "Example2",
-        "rpcUrl": "http://localhost:3008/rpc"
+        "rpcUrl": "http://localhost:3030/api/v0/dapp"
     }
 ]

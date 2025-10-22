@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-ui-components",
-    "version": "0.8.0",
+    "version": "0.9.0",
     "type": "module",
     "description": "Reusable UI components for the Splice wallet",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -32,8 +32,8 @@
     },
     "packageManager": "yarn@4.9.4",
     "dependencies": {
-        "@canton-network/core-types": "workspace:",
-        "@canton-network/core-wallet-store": "workspace:",
+        "@canton-network/core-types": "workspace:^",
+        "@canton-network/core-wallet-store": "workspace:^",
         "@popperjs/core": "^2.11.8",
         "bootstrap": "^5.3.7",
         "lit": "^3.3.0"
