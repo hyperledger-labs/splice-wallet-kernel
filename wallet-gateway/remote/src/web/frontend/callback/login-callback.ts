@@ -38,7 +38,7 @@ export class LoginCallback extends LitElement {
                 body: new URLSearchParams({
                     grant_type: 'authorization_code',
                     code,
-                    redirect_uri: 'http://localhost:3002/callback/',
+                    redirect_uri: window.location.origin + '/callback/',
                     client_id: state.clientId,
                     audience: state.audience,
                 }),

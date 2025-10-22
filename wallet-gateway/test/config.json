@@ -2,8 +2,8 @@
     "kernel": {
         "id": "remote-da",
         "clientType": "remote",
-        "url": "http://localhost:3008/rpc",
-        "userUrl": "http://localhost:3002"
+        "url": "http://localhost:3030/api/v0/dapp",
+        "userUrl": "http://localhost:3030"
     },
     "store": {
         "connection": {

@@ -4,8 +4,8 @@
 import { dapp } from './dapp-api/server.js'
 import { user } from './user-api/server.js'
 import { web } from './web/server.js'
+import cors from 'cors'
 import { Logger, pino } from 'pino'
-import ViteExpress from 'vite-express'
 import { StoreSql, connection } from '@canton-network/core-wallet-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
 import { Notifier } from './notification/NotificationService.js'
@@ -14,13 +14,10 @@ import { SigningProvider } from '@canton-network/core-signing-lib'
 import { ParticipantSigningDriver } from '@canton-network/core-signing-participant'
 import { InternalSigningDriver } from '@canton-network/core-signing-internal'
 import { jwtAuthService } from './auth/jwt-auth-service.js'
-import path, { dirname } from 'path'
-import { fileURLToPath } from 'url'
 import express from 'express'
-
-const dAppPort = Number(process.env.DAPP_API_PORT) || 3008
-const userPort = Number(process.env.USER_API_PORT) || 3001
-const webPort = Number(process.env.WEB_PORT) || 3002
+import { CliOptions } from './index.js'
+import { jwtAuth } from './middleware/jwtAuth.js'
+import { rpcRateLimit } from './middleware/rateLimit.js'
 
 class NotificationService implements NotificationService {
     private notifiers: Map<string, Notifier> = new Map()
@@ -49,10 +46,7 @@ class NotificationService implements NotificationService {
     }
 }
 
-export async function initialize(opts: {
-    config: string
-    logFormat: 'pretty' | 'json'
-}) {
+export async function initialize(opts: CliOptions) {
     const logger = pino({
         name: 'main',
         level: 'debug',
@@ -68,6 +62,8 @@ export async function initialize(opts: {
     const notificationService = new NotificationService(logger)
 
     const config = ConfigUtils.loadConfigFile(opts.config)
+    const port = opts.port ? Number(opts.port) : 3030
+
     const store = new StoreSql(connection(config.store), logger)
     const authService = jwtAuthService(store, logger)
 
@@ -76,46 +72,37 @@ export async function initialize(opts: {
         [SigningProvider.WALLET_KERNEL]: new InternalSigningDriver(),
     }
 
-    const dAppServer = dapp(
+    const app = express()
+    app.use(cors()) // TODO: read allowedOrigins from config
+    app.use('/api/*splat', express.json())
+    app.use('/api/*splat', rpcRateLimit)
+    app.use('/api/*splat', jwtAuth(authService, logger))
+
+    const server = app.listen(port, () => {
+        logger.info(`Remote Wallet Gateway running at http://localhost:${port}`)
+    })
+
+    // register dapp API handlers
+    dapp(
+        '/api/v0/dapp',
+        app,
+        server,
         config.kernel,
         notificationService,
         authService,
         store
-    ).listen(dAppPort, () => {
-        logger.info(`dApp Server running at http://localhost:${dAppPort}`)
-    })
+    )
 
-    const userServer = user(
+    // register user API handlers
+    user(
+        '/api/v0/user',
+        app,
         config.kernel,
         notificationService,
-        authService,
         drivers,
         store
-    ).listen(userPort, () => {
-        logger.info(`User Server running at http://localhost:${userPort}`)
-    })
+    )
 
-    const webServer =
-        process.env.NODE_ENV === 'development'
-            ? ViteExpress.listen(web, webPort, () =>
-                  logger.info(
-                      `Web server running at http://localhost:${webPort}`
-                  )
-              )
-            : web
-                  .use(
-                      express.static(
-                          path.resolve(
-                              dirname(fileURLToPath(import.meta.url)),
-                              '../dist/web/frontend'
-                          )
-                      )
-                  )
-                  .listen(webPort, () =>
-                      logger.info(
-                          `Web server running at http://localhost:${webPort}`
-                      )
-                  )
-
-    return { dAppServer, userServer, webServer }
+    // register web handler
+    web(app, server)
 }

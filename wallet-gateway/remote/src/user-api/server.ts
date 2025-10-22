@@ -7,10 +7,7 @@ import { pino } from 'pino'
 import { jsonRpcHandler } from '../middleware/jsonRpcHandler.js'
 import { Methods } from './rpc-gen/index.js'
 import { Store } from '@canton-network/core-wallet-store'
-import { AuthService, AuthAware } from '@canton-network/core-wallet-auth'
-import { jwtAuth } from '../middleware/jwtAuth.js'
-import { rpcRateLimit } from '../middleware/rateLimit.js'
-import cors from 'cors'
+import { AuthAware } from '@canton-network/core-wallet-auth'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo } from '../config/Config.js'
 import {
@@ -21,32 +18,26 @@ import {
 const logger = pino({ name: 'main', level: 'debug' })
 
 export const user = (
+    route: string,
+    app: express.Express,
     kernelInfo: KernelInfo,
     notificationService: NotificationService,
-    authService: AuthService,
     drivers: Partial<Record<SigningProvider, SigningDriverInterface>>,
     store: Store & AuthAware<Store>
 ) => {
-    const user = express()
-    user.use(cors())
-    user.use(express.json())
-    user.use(
-        '/rpc',
-        rpcRateLimit,
-        jwtAuth(authService, logger),
-        (req, res, next) =>
-            jsonRpcHandler<Methods>({
-                controller: userController(
-                    kernelInfo,
-                    store.withAuthContext(req.authContext),
-                    notificationService,
-                    req.authContext,
-                    drivers,
-                    logger
-                ),
-                logger,
-            })(req, res, next)
+    app.use(route, (req, res, next) =>
+        jsonRpcHandler<Methods>({
+            controller: userController(
+                kernelInfo,
+                store.withAuthContext(req.authContext),
+                notificationService,
+                req.authContext,
+                drivers,
+                logger
+            ),
+            logger,
+        })(req, res, next)
     )
 
-    return user
+    return app
 }

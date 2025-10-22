@@ -144,6 +144,7 @@ export const dappController = (provider: SpliceProvider) =>
                 await provider.request<dappRemoteAPI.ConnectResult>({
                     method: 'connect',
                 })
+
             if (!response.isConnected)
                 openKernelUserUI('remote', response.userUrl)
 
