@@ -14,7 +14,7 @@
         "clean": "tsc -b --clean && rm -rf ./dist"
     },
     "dependencies": {
-        "@canton-network/core-wallet-auth": "workspace:",
+        "@canton-network/core-wallet-auth": "workspace:^",
         "fs-extra": "^11.3.0",
         "lodash": "^4.17.21",
         "tweetnacl": "^1.0.3",

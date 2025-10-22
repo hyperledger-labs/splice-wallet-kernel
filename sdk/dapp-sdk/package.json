@@ -16,11 +16,11 @@
         "test": "echo \"Warning: no test specified\""
     },
     "dependencies": {
-        "@canton-network/core-splice-provider": "workspace:",
-        "@canton-network/core-types": "workspace:",
-        "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:",
-        "@canton-network/core-wallet-dapp-rpc-client": "workspace:",
-        "@canton-network/core-wallet-ui-components": "workspace:"
+        "@canton-network/core-splice-provider": "workspace:^",
+        "@canton-network/core-types": "workspace:^",
+        "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^",
+        "@canton-network/core-wallet-dapp-rpc-client": "workspace:^",
+        "@canton-network/core-wallet-ui-components": "workspace:^"
     },
     "devDependencies": {
         "typescript": "^5.8.3"
