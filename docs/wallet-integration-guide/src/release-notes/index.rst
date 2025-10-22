@@ -3,6 +3,96 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+0.13.0
+------
+
+**Released on October 22th, 2025**
+
+* **Important!: await completion has changed signature**
+
+
+.. code-block:: javascript
+
+        // old version
+        async waitForCompletion(
+            ledgerEnd: number | Types['GetLedgerEndResponse'],
+            timeoutMs: number,
+            commandId?: string,
+            submissionId?: string
+        ): Promise<Types['Completion']['value']> {
+
+        // new version
+        async waitForCompletion(
+            ledgerEnd: number | Types['GetLedgerEndResponse'],
+            timeoutMs: number,
+            commandIdOrSubmissionId: string
+        ): Promise<Types['Completion']['value']> {
+
+*this change is to make it simpler, the method would regardless throw an error if commandId and SubmissionId was undefined*
+
+* retry logic & stress testing
+
+*we have substantially tested and verified the SDK working on moderate and heavy load mimicking MainNet, this highlighted some
+retryable errors that could be handled.*
+
+* multi hosted party fix and synchronized handling
+
+*multi hosted parties have had a change under the hood, previously it would return the party asynchronously. This has been resolved
+ by calling the allocation on all the available ledger thereby ensuring the party is ready for use once it is returned by the method.*
+
+* proxy delegation for feature app marker for deposits
+
+*Proxy delegation support have been added for deposits allowing attaching a featured app marker flag to an incoming deposit, this requires
+running the dar `splice-util-featured-app-proxies-1.1.0.dar` on the validator.*
+
+.. code-block:: javascript
+
+    const delegateCommand = await sdk.userLedger?.createDelegateProxyCommand(
+        exchangeParty!,
+        treasuryParty!.partyId
+    )
+
+    const delegationContractResult =
+        await sdk.userLedger?.submitCommand(delegateCommand)
+
+    const [acceptCommand, disclosedContracts4] =
+        await sdk.tokenStandard?.exerciseTransferInstructionChoiceWithDelegate(
+            transferCid, //incoming transfer
+            'Accept',
+            proxyCid!,
+            featuredAppRights?.contract_id!,
+            [
+                {
+                    beneficiary: exchangeParty!,
+                    weight: 1.0,
+                },
+            ],
+            featuredAppRights!
+        )!
+
+    //prepare, sign and execute the above command
+
+* manual preapproval renewal and cancellation
+
+*you an now use the SDK to manually renew a preapproval or cancel it*
+
+.. code-block:: javascript
+
+    //create renew command to be prepared, signed and executed
+    const [renewCmd, disclosedContractsRenew] =
+        await sdk.tokenStandard!.createRenewTransferPreapproval(
+            preapproval.contractId,
+            preapproval.templateId,
+            validatorOperatorParty!
+        )
+
+    //create cancel command to be prepared, signed and executed
+    const [cancelCmd, disclosedContractsCancel] =
+        await sdk.tokenStandard!.createCancelTransferPreapproval(
+            preapprovalAfterRenewal.contractId,
+            preapprovalAfterRenewal.templateId,
+            receiver!.partyId
+        )
 0.12.0
 ------
 
