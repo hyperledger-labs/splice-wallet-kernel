@@ -1647,7 +1647,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-types@workspace:, @canton-network/core-types@workspace:core/types":
+"@canton-network/core-types@workspace:, @canton-network/core-types@workspace:^, @canton-network/core-types@workspace:core/types":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-types@workspace:core/types"
   dependencies:
@@ -1678,7 +1678,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-dapp-remote-rpc-client@workspace:core/wallet-dapp-remote-rpc-client"
   dependencies:
-    "@canton-network/core-types": "workspace:"
+    "@canton-network/core-types": "workspace:^"
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
@@ -1696,7 +1696,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client"
   dependencies:
-    "@canton-network/core-types": "workspace:"
+    "@canton-network/core-types": "workspace:^"
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
@@ -1800,7 +1800,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-user-rpc-client@workspace:core/wallet-user-rpc-client"
   dependencies:
-    "@canton-network/core-types": "workspace:"
+    "@canton-network/core-types": "workspace:^"
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^29.5.12"
     "@types/json-schema": "npm:7.0.3"
