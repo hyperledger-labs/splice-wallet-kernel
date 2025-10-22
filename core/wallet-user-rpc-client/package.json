@@ -8,8 +8,8 @@
     "types": "dist/index.d.ts",
     "main": "dist/index.js",
     "scripts": {
-        "build": "tsc && typedoc src/index.ts --out docs --excludeExternals --excludePrivate --hideGenerator --readme none",
-        "dev": "tsc -b --watch",
+        "build": "tsup && tsc -b tsconfig.types.json && yarn run docs",
+        "docs": "typedoc --tsconfig tsconfig.docs.json --entryPoints src/index.ts --out docs --excludeExternals --excludePrivate --hideGenerator --readme none",
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "files": [
@@ -30,6 +30,7 @@
         "@types/ws": "^6.0.1",
         "globals": "^16.0.0",
         "prettier": "^3.5.2",
+        "tsup": "^8.5.0",
         "typedoc": "^0.28.14",
         "typescript": "^5.0.0"
     }

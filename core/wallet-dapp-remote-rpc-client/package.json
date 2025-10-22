@@ -17,7 +17,6 @@
         }
     },
     "scripts": {
-        "build:old": "tsc && typedoc src/index.ts --out docs --excludeExternals --excludePrivate --hideGenerator --readme none",
         "build": "tsup && tsc -b tsconfig.types.json && yarn run docs",
         "docs": "typedoc --tsconfig tsconfig.docs.json --entryPoints src/index.ts --out docs --excludeExternals --excludePrivate --hideGenerator --readme none",
         "dev": "tsc -b --watch",
