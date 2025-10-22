@@ -38,7 +38,7 @@ retryable errors that could be handled.*
 * multi hosted party fix and synchronized handling
 
 *multi hosted parties have had a change under the hood, previously it would return the party asynchronously. This has been resolved
- by calling the allocation on all the available ledger thereby ensuring the party is ready for use once it is returned by the method.*
+by calling the allocation on all the available ledger thereby ensuring the party is ready for use once it is returned by the method.*
 
 * proxy delegation for feature app marker for deposits
 
@@ -93,6 +93,7 @@ running the dar `splice-util-featured-app-proxies-1.1.0.dar` on the validator.*
             preapprovalAfterRenewal.templateId,
             receiver!.partyId
         )
+
 0.12.0
 ------
 

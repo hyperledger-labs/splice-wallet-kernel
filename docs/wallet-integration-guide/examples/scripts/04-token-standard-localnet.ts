@@ -78,6 +78,15 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 )
 
 const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
+
+const sumAvailable = utxos!
+    .filter((utxo) => !utxo.interfaceViewValue.lock)
+    .reduce((acc, utxo) => acc + Number(utxo.interfaceViewValue.amount), 0)
+
+const sumLocked = utxos!
+    .filter((utxo) => utxo.interfaceViewValue.lock)
+    .reduce((acc, utxo) => acc + Number(utxo.interfaceViewValue.amount), 0)
+
 logger.info(utxos, 'List Available Token Standard Holding UTXOs')
 
 await sdk.tokenStandard
