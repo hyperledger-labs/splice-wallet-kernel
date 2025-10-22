@@ -60,9 +60,9 @@ export class LedgerController {
     constructor(
         userId: string,
         baseUrl: URL,
-        isAdmin: boolean,
-        accessTokenProvider?: AccessTokenProvider,
-        token?: string
+        token: string = '',
+        isAdmin: boolean = false,
+        accessTokenProvider?: AccessTokenProvider
     ) {
         this.client = new LedgerClient(
             baseUrl,
@@ -1003,6 +1003,7 @@ export const localLedgerDefault = (
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:5003'),
+        undefined,
         isAdmin,
         accessTokenProvider
     )
@@ -1028,6 +1029,7 @@ export const localNetLedgerAppUser = (
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:2975'),
+        undefined,
         isAdmin,
         accessTokenProvider
     )
@@ -1041,6 +1043,7 @@ export const localNetLedgerAppProvider = (
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:3975'),
+        undefined,
         isAdmin,
         accessTokenProvider
     )
