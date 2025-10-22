@@ -320,8 +320,9 @@ export class LedgerController {
         preparedParty: GenerateTransactionResponse,
         grantUserRights: boolean = true,
         hostingParticipantEndpoints: {
-            accessTokenProvider: AccessTokenProvider
             url: URL
+            accessToken?: string
+            accessTokenProvider?: AccessTokenProvider
         }[] = [],
         expectHeavyLoad: boolean = true
     ): Promise<AllocateExternalPartyResponse> {
@@ -418,8 +419,9 @@ export class LedgerController {
         partyHint?: string,
         confirmingThreshold?: number,
         hostingParticipantEndpoints?: {
-            accessTokenProvider: AccessTokenProvider
             url: URL
+            accessToken?: string
+            accessTokenProvider?: AccessTokenProvider
         }[],
         grantUserRights?: boolean
     ): Promise<GenerateTransactionResponse> {
