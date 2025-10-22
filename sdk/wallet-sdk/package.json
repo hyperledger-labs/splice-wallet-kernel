@@ -1,7 +1,7 @@
 {
     "name": "@canton-network/wallet-sdk",
     "type": "module",
-    "version": "0.13.0",
+    "version": "0.13.1",
     "description": "Node/browser SDK for integrating with Canton Network",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
