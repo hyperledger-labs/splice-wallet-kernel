@@ -72,7 +72,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     private assertConnected(): UserId {
-        return assertConnected(this.authContext)
+        return assertConnected(this.authContext).userId
     }
 
     private getStorage(): UserStorage {

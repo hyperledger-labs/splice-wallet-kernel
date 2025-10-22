@@ -28,6 +28,7 @@ import {
     ensureInterfaceViewIsPresent,
     TransactionFilterBySetup,
     EventFilterBySetup,
+    defaultRetryableOptions,
 } from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
 import {
@@ -130,7 +131,8 @@ class CoreService {
 
     async listContractsByInterface<T = ViewValue>(
         interfaceId: string,
-        partyId?: PartyId
+        partyId?: PartyId,
+        limit?: number
     ): Promise<PrettyContract<T>[]> {
         try {
             const ledgerEnd = await this.ledgerClient.getWithRetry(
@@ -146,6 +148,10 @@ class CoreService {
                         }),
                         verbose: false,
                         activeAtOffset: ledgerEnd.offset,
+                    },
+                    defaultRetryableOptions,
+                    {
+                        query: limit ? { limit: limit.toString() } : {},
                     }
                 )
 
@@ -1220,9 +1226,14 @@ export class TokenStandardService {
     // i.e. when querying by TransferInstruction interfaceId, <T> would be TransferInstructionView from daml codegen
     async listContractsByInterface<T = ViewValue>(
         interfaceId: string,
-        partyId?: PartyId
+        partyId?: PartyId,
+        limit?: number
     ): Promise<PrettyContract<T>[]> {
-        return this.core.listContractsByInterface<T>(interfaceId, partyId)
+        return this.core.listContractsByInterface<T>(
+            interfaceId,
+            partyId,
+            limit
+        )
     }
 
     async listHoldingTransactions(
