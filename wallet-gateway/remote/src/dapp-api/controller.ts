@@ -73,12 +73,12 @@ export const dappController = (
             let result: unknown
             switch (params.requestMethod) {
                 case 'GET':
-                    result = await ledgerClient.get(
+                    result = await ledgerClient.getWithRetry(
                         params.resource as GetEndpoint
                     )
                     break
                 case 'POST':
-                    result = await ledgerClient.post(
+                    result = await ledgerClient.postWithRetry(
                         params.resource as PostEndpoint,
                         params.body
                             ? (JSON.parse(params.body) as never)
