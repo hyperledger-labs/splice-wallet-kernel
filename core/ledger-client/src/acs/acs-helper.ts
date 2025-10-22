@@ -8,7 +8,7 @@ import { ACSContainer, ACSKey } from './acs-container.js'
 import { WSSupport } from './ws-support.js'
 import { PartyId } from '@canton-network/core-types'
 import { Logger } from 'pino'
-import { JsGetActiveContractsResponse } from './types'
+import { JsGetActiveContractsResponse } from './types.js'
 
 export type AcsHelperOptions = {
     useLocalStorage?: boolean

@@ -14,7 +14,7 @@ import {
     JsGetUpdatesResponse,
     GetUpdatesRequest,
     Event,
-} from './types'
+} from './types.js'
 
 interface ACSUpdateConfig {
     maxEventsBeforePrune: number
