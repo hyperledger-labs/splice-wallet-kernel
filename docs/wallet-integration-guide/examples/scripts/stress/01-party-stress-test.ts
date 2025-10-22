@@ -29,12 +29,12 @@ sdk.tokenStandard?.setTransferFactoryRegistryUrl(
     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
 )
 
-type partyDefiniton = {
+type partyDefinition = {
     keyPair: { publicKey: string; privateKey: string }
     partyId: PartyId
 }
 
-let createdParties: partyDefiniton[] = []
+let createdParties: partyDefinition[] = []
 let allTransferCommandIds = []
 
 const instrument = {
@@ -58,12 +58,12 @@ async function allocateParty() {
 
     return definition
 }
-function getRandomParty(): partyDefiniton {
+function getRandomParty(): partyDefinition {
     const rando = Math.floor(Math.random() * createdParties.length)
     return createdParties[rando]
 }
 
-async function tapAndTransfer(fromParty: partyDefiniton, count: number) {
+async function tapAndTransfer(fromParty: partyDefinition, count: number) {
     const transferSdk = new WalletSDKImpl().configure({
         logger: warnOnly,
         authFactory: localNetAuthDefault,
