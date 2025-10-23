@@ -8,10 +8,14 @@
 import type { RpcTransport } from '@protobuf-ts/runtime-rpc'
 import type { ServiceInfo } from '@protobuf-ts/runtime-rpc'
 import { PartyManagementService } from './party_management_service.js'
+import type { GenerateExternalPartyTopologyResponse } from './party_management_service.js'
+import type { GenerateExternalPartyTopologyRequest } from './party_management_service.js'
 import type { UpdatePartyIdentityProviderIdResponse } from './party_management_service.js'
 import type { UpdatePartyIdentityProviderIdRequest } from './party_management_service.js'
 import type { UpdatePartyDetailsResponse } from './party_management_service.js'
 import type { UpdatePartyDetailsRequest } from './party_management_service.js'
+import type { AllocateExternalPartyResponse } from './party_management_service.js'
+import type { AllocateExternalPartyRequest } from './party_management_service.js'
 import type { AllocatePartyResponse } from './party_management_service.js'
 import type { AllocatePartyRequest } from './party_management_service.js'
 import type { ListKnownPartiesResponse } from './party_management_service.js'
@@ -108,6 +112,27 @@ export interface IPartyManagementServiceClient {
         options?: RpcOptions
     ): UnaryCall<AllocatePartyRequest, AllocatePartyResponse>
     /**
+     * Alpha 3.3: Endpoint to allocate a new external party on a synchronizer
+     *
+     * Expected to be stable in 3.5
+     *
+     * The external party must be hosted (at least) on this node with either confirmation or observation permissions
+     * It can optionally be hosted on other nodes (then called a multi-hosted party).
+     * If hosted on additional nodes, explicit authorization of the hosting relationship must be performed on those nodes
+     * before the party can be used.
+     * Decentralized namespaces are supported but must be provided fully authorized by their owners.
+     * The individual owner namespace transactions can be submitted in the same call (fully authorized as well).
+     * In the simple case of a non-multi hosted, non-decentralized party, the RPC will return once the party is
+     * effectively allocated and ready to use, similarly to the AllocateParty behavior.
+     * For more complex scenarios applications may need to query the party status explicitly (only through the admin API as of now).
+     *
+     * @generated from protobuf rpc: AllocateExternalParty
+     */
+    allocateExternalParty(
+        input: AllocateExternalPartyRequest,
+        options?: RpcOptions
+    ): UnaryCall<AllocateExternalPartyRequest, AllocateExternalPartyResponse>
+    /**
      * Update selected modifiable participant-local attributes of a party details resource.
      * Can update the participant's local information for local parties.
      *
@@ -128,6 +153,27 @@ export interface IPartyManagementServiceClient {
     ): UnaryCall<
         UpdatePartyIdentityProviderIdRequest,
         UpdatePartyIdentityProviderIdResponse
+    >
+    /**
+     * Alpha 3.3: Convenience endpoint to generate topology transactions for external signing
+     *
+     * Expected to be stable in 3.5
+     *
+     * You may use this endpoint to generate the common external topology transactions
+     * which can be signed externally and uploaded as part of the allocate party process
+     *
+     * Note that this request will create a normal namespace using the same key for the
+     * identity as for signing. More elaborate schemes such as multi-signature
+     * or decentralized parties require you to construct the topology transactions yourself.
+     *
+     * @generated from protobuf rpc: GenerateExternalPartyTopology
+     */
+    generateExternalPartyTopology(
+        input: GenerateExternalPartyTopologyRequest,
+        options?: RpcOptions
+    ): UnaryCall<
+        GenerateExternalPartyTopologyRequest,
+        GenerateExternalPartyTopologyResponse
     >
 }
 /**
@@ -255,6 +301,34 @@ export class PartyManagementServiceClient
         )
     }
     /**
+     * Alpha 3.3: Endpoint to allocate a new external party on a synchronizer
+     *
+     * Expected to be stable in 3.5
+     *
+     * The external party must be hosted (at least) on this node with either confirmation or observation permissions
+     * It can optionally be hosted on other nodes (then called a multi-hosted party).
+     * If hosted on additional nodes, explicit authorization of the hosting relationship must be performed on those nodes
+     * before the party can be used.
+     * Decentralized namespaces are supported but must be provided fully authorized by their owners.
+     * The individual owner namespace transactions can be submitted in the same call (fully authorized as well).
+     * In the simple case of a non-multi hosted, non-decentralized party, the RPC will return once the party is
+     * effectively allocated and ready to use, similarly to the AllocateParty behavior.
+     * For more complex scenarios applications may need to query the party status explicitly (only through the admin API as of now).
+     *
+     * @generated from protobuf rpc: AllocateExternalParty
+     */
+    allocateExternalParty(
+        input: AllocateExternalPartyRequest,
+        options?: RpcOptions
+    ): UnaryCall<AllocateExternalPartyRequest, AllocateExternalPartyResponse> {
+        const method = this.methods[4],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<
+            AllocateExternalPartyRequest,
+            AllocateExternalPartyResponse
+        >('unary', this._transport, method, opt, input)
+    }
+    /**
      * Update selected modifiable participant-local attributes of a party details resource.
      * Can update the participant's local information for local parties.
      *
@@ -264,7 +338,7 @@ export class PartyManagementServiceClient
         input: UpdatePartyDetailsRequest,
         options?: RpcOptions
     ): UnaryCall<UpdatePartyDetailsRequest, UpdatePartyDetailsResponse> {
-        const method = this.methods[4],
+        const method = this.methods[5],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             UpdatePartyDetailsRequest,
@@ -283,11 +357,39 @@ export class PartyManagementServiceClient
         UpdatePartyIdentityProviderIdRequest,
         UpdatePartyIdentityProviderIdResponse
     > {
-        const method = this.methods[5],
+        const method = this.methods[6],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             UpdatePartyIdentityProviderIdRequest,
             UpdatePartyIdentityProviderIdResponse
+        >('unary', this._transport, method, opt, input)
+    }
+    /**
+     * Alpha 3.3: Convenience endpoint to generate topology transactions for external signing
+     *
+     * Expected to be stable in 3.5
+     *
+     * You may use this endpoint to generate the common external topology transactions
+     * which can be signed externally and uploaded as part of the allocate party process
+     *
+     * Note that this request will create a normal namespace using the same key for the
+     * identity as for signing. More elaborate schemes such as multi-signature
+     * or decentralized parties require you to construct the topology transactions yourself.
+     *
+     * @generated from protobuf rpc: GenerateExternalPartyTopology
+     */
+    generateExternalPartyTopology(
+        input: GenerateExternalPartyTopologyRequest,
+        options?: RpcOptions
+    ): UnaryCall<
+        GenerateExternalPartyTopologyRequest,
+        GenerateExternalPartyTopologyResponse
+    > {
+        const method = this.methods[7],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<
+            GenerateExternalPartyTopologyRequest,
+            GenerateExternalPartyTopologyResponse
         >('unary', this._transport, method, opt, input)
     }
 }
