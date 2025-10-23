@@ -3,22 +3,18 @@
 
 import { LitElement } from 'lit'
 import { customElement } from 'lit/decorators.js'
+import { createUserClient } from './rpc-client'
 
 import '@canton-network/core-wallet-ui-components'
 import '@canton-network/core-wallet-ui-components/dist/index.css'
 import '/index.css'
 import { stateManager } from './state-manager'
+import { WalletEvent } from '@canton-network/core-types'
 
 const DEFAULT_PAGE_REDIRECT = '/wallets'
 const NOT_FOUND_PAGE_REDIRECT = '/404'
 const LOGIN_PAGE_REDIRECT = '/login'
 const ALLOWED_ROUTES = ['/wallets', '/networks', '/approve', '/']
-
-window.addEventListener('beforeunload', () => {
-    if (window.name === 'wallet-popup') {
-        stateManager.accessToken.clear()
-    }
-})
 
 @customElement('user-ui')
 export class UserUI extends LitElement {
@@ -57,8 +53,37 @@ export class UserUIAuthRedirect extends LitElement {
             window.location.href = LOGIN_PAGE_REDIRECT
         }
 
-        if (stateManager.accessToken.get() && isLoginPage) {
+        const accessToken = stateManager.accessToken.get()
+        if (accessToken && isLoginPage) {
+            const chainId = stateManager.chainId.get()
+
+            if (!chainId) {
+                throw new Error('missing chainId in state manager')
+            }
+
+            authenticate(accessToken, chainId)
+
             window.location.href = DEFAULT_PAGE_REDIRECT
         }
+    }
+}
+
+export const authenticate = async (
+    accessToken: string,
+    chainId: string
+): Promise<void> => {
+    const authenticatedUserClient = createUserClient(accessToken)
+    await authenticatedUserClient.request('addSession', {
+        chainId,
+    })
+
+    if (window.opener && !window.opener.closed) {
+        window.opener.postMessage(
+            {
+                type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
+                token: stateManager.accessToken.get(),
+            },
+            '*'
+        )
     }
 }

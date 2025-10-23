@@ -19,3 +19,9 @@ export async function onTxChanged(
 ): Promise<void> {
     assertProvider().on<dappAPI.TxChangedEvent>('txChanged', listener)
 }
+
+export async function onStatusChanged(
+    listener: EventListener<dappAPI.StatusEvent>
+): Promise<void> {
+    assertProvider().on<dappAPI.StatusEvent>('statusChanged', listener)
+}

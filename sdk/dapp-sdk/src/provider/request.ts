@@ -55,13 +55,17 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
 }
 
 export async function disconnect(): Promise<dappAPI.Null> {
-    removeKernelSession()
-    removeKernelDiscovery()
-    closeKernelUserUI()
+    return await assertProvider()
+        .request<dappAPI.Null>({
+            method: 'disconnect',
+        })
+        .then(() => {
+            removeKernelSession()
+            removeKernelDiscovery()
+            closeKernelUserUI()
 
-    return await assertProvider().request<dappAPI.Null>({
-        method: 'disconnect',
-    })
+            return null
+        })
 }
 
 export async function status(): Promise<dappAPI.StatusEvent> {

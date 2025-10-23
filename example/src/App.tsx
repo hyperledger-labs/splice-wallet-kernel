@@ -64,7 +64,6 @@ function App() {
             })
             .catch((err) => {
                 console.error('Error requesting wallets:', err)
-                sdk.disconnect()
                 setError(err instanceof Error ? err.message : String(err))
             })
 

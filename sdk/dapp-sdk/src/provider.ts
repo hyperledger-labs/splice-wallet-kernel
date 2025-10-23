@@ -185,7 +185,7 @@ export const dappController = (provider: SpliceProvider) =>
             return promise
         },
         disconnect: async () => {
-            return provider.request<dappRemoteAPI.Null>({
+            return await provider.request<dappRemoteAPI.Null>({
                 method: 'disconnect',
             })
         },

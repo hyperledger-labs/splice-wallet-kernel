@@ -22,6 +22,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
         socketUrl.pathname = ''
 
         if (this.socket) {
+            console.debug('SpliceProviderHttp: closing existing socket')
             this.socket.disconnect()
         }
 
