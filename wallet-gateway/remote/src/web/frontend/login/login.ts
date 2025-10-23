@@ -8,6 +8,7 @@ import '@canton-network/core-wallet-ui-components'
 import { createUserClient } from '../rpc-client'
 import { Network } from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from '../state-manager'
+import '../index'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {

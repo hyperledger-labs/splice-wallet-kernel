@@ -5,6 +5,7 @@ import '@canton-network/core-wallet-ui-components'
 import { html, css, LitElement } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import '/index.css'
+import '../index'
 
 @customElement('user-ui-404')
 export class ApproveUi extends LitElement {
