@@ -33,7 +33,7 @@ import {
     allocationInstructionRegistryTypes,
     Beneficiaries,
 } from '@canton-network/core-token-standard'
-import { PartyId } from '@canton-network/core-types'
+import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject' | 'Withdraw'
@@ -61,33 +61,47 @@ export class TokenStandardController {
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
     private transferFactoryRegistryUrl: URL | undefined
+    private readonly accessTokenProvider: AccessTokenProvider
 
     /** Creates a new instance of the LedgerController.
      *
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
      * @param validatorBaseUrl the url for the validator api. Needed for Scan Proxy API access.
-     * @param accessToken the access token from the user, usually provided by an auth controller.
+     * @param accessToken the access token from the user, usually provided by an auth controller. This parameter will be removed with version 1.0.0, please use AuthTokenProvider version instead)
+     * @param accessTokenProvider provider for caching access tokens used to authenticate requests.
+     * @param isAdmin flag to set true when creating adminLedger.
      * @param isMasterUser if true, the transaction parser will interperate as if it has ReadAsAnyParty.
      */
     constructor(
         userId: string,
         baseUrl: URL,
         validatorBaseUrl: URL,
-        accessToken: string,
-        private isMasterUser: boolean = false
+        accessToken: string = '',
+        accessTokenProvider: AccessTokenProvider,
+        isAdmin: boolean = false,
+        isMasterUser: boolean = false
     ) {
-        this.client = new LedgerClient(baseUrl, accessToken, this.logger)
+        this.accessTokenProvider = accessTokenProvider
+        this.client = new LedgerClient(
+            baseUrl,
+            this.logger,
+            isAdmin,
+            accessToken,
+            this.accessTokenProvider
+        )
         const scanProxyClient = new ScanProxyClient(
             validatorBaseUrl,
             this.logger,
-            accessToken
+            isAdmin,
+            accessToken,
+            this.accessTokenProvider
         )
         this.service = new TokenStandardService(
             this.client,
             scanProxyClient,
             this.logger,
-            accessToken,
+            this.accessTokenProvider,
             isMasterUser
         )
         this.userId = userId
@@ -1262,13 +1276,17 @@ export class TokenStandardController {
  */
 export const localTokenStandardDefault = (
     userId: string,
-    token: string
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean,
+    accessToken: string = ''
 ): TokenStandardController => {
     return new TokenStandardController(
         userId,
         new URL('http://127.0.0.1:5003'),
         new URL('http://wallet.localhost:2000/api/validator'),
-        token
+        accessToken,
+        accessTokenProvider,
+        isAdmin
     )
 }
 
@@ -1278,31 +1296,46 @@ export const localTokenStandardDefault = (
  */
 export const localNetTokenStandardDefault = (
     userId: string,
-    token: string
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean,
+    accessToken: string = ''
 ): TokenStandardController => {
-    return localNetTokenStandardAppUser(userId, token)
+    return localNetTokenStandardAppUser(
+        userId,
+        accessTokenProvider,
+        isAdmin,
+        accessToken
+    )
 }
 
 export const localNetTokenStandardAppUser = (
     userId: string,
-    token: string
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean,
+    accessToken: string = ''
 ): TokenStandardController => {
     return new TokenStandardController(
         userId,
         new URL('http://127.0.0.1:2975'),
         new URL('http://wallet.localhost:2000/api/validator'),
-        token
+        accessToken,
+        accessTokenProvider,
+        isAdmin
     )
 }
 
 export const localNetTokenStandardAppProvider = (
     userId: string,
-    token: string
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean,
+    accessToken: string = ''
 ): TokenStandardController => {
     return new TokenStandardController(
         userId,
         new URL('http://127.0.0.1:3975'),
         new URL('http://wallet.localhost:3000/api/validator'),
-        token
+        accessToken,
+        accessTokenProvider,
+        isAdmin
     )
 }
