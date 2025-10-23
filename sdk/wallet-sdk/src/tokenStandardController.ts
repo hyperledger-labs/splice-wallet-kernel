@@ -222,15 +222,18 @@ export class TokenStandardController {
     /**
      * Lists all holding UTXOs for the current party.
      * @param includeLocked defaulted to true, this will include locked UTXOs.
+     * @param limit optional limit for number of UTXOs to return.
      * @returns A promise that resolves to an array of holding UTXOs.
      */
 
     async listHoldingUtxos(
-        includeLocked: boolean = true
+        includeLocked: boolean = true,
+        limit?: number
     ): Promise<PrettyContract<Holding>[]> {
         const utxos = await this.service.listContractsByInterface<Holding>(
             HOLDING_INTERFACE_ID,
-            this.getPartyId()
+            this.getPartyId(),
+            limit
         )
         const currentTime = new Date()
 
@@ -590,7 +593,10 @@ export class TokenStandardController {
             packageIdSelectionPreference: [],
         }
 
-        return await this.client.post('/v2/commands/submit-and-wait', request)
+        return await this.client.postWithRetry(
+            '/v2/commands/submit-and-wait',
+            request
+        )
     }
 
     /**
@@ -669,7 +675,7 @@ export class TokenStandardController {
             packageIdSelectionPreference: [],
         }
 
-        await this.client.post('/v2/commands/submit-and-wait', request)
+        await this.client.postWithRetry('/v2/commands/submit-and-wait', request)
 
         return this.lookupFeaturedApps(5, 1000)
     }

@@ -9,14 +9,24 @@ import { initialize } from './init.js'
 import { createCLI } from '@canton-network/core-wallet-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
 
+import { readFileSync } from 'fs'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const pkg = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8'))
+
 const program = new Command()
-    .name('wallet-gateway-remote')
+    .name('wallet-gateway')
+    .version(pkg.version)
     .description('Run a remotely hosted Wallet Gateway')
-    .option('-c, --config <path>', 'set config path', '../test/config.json')
+    .option('-c, --config <path>', 'set config path', './config.json')
+    .option('-p, --port [port]', 'set port', '3030')
     .addOption(
         new Option('-f, --log-format <format>', 'set log format')
             .choices(['json', 'pretty'])
-            .default('json')
+            .default('pretty')
     )
     .addOption(
         new Option('-s, --store-type <type>', 'set store type')
@@ -31,6 +41,9 @@ const program = new Command()
 // Parse only the options (without executing commands) to get config path
 program.parseOptions(process.argv)
 const options = program.opts()
+
+export type CliOptions = typeof options
+
 const config = ConfigUtils.loadConfigFile(options.config)
 
 // Add the `db` command now, before final parse

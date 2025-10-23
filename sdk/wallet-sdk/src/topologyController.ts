@@ -297,7 +297,8 @@ export class TopologyController {
             participantEndpoints.accessTokenProvider
         )
 
-        return (await lc.get('/v2/parties/participant-id')).participantId
+        return (await lc.getWithRetry('/v2/parties/participant-id'))
+            .participantId
     }
 
     /** Prepares, signs and submits a new external party topology in one step.

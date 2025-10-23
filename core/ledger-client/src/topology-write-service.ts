@@ -333,7 +333,7 @@ export class TopologyWriteService {
         // if no participantRights have been supplied, this party will be hosted on 1 validator (not multi-hosted)
         // the default is to get the participantId from ledger client with Confirmation rights
         if (!participantRights || participantRights.size === 0) {
-            const { participantId } = await this.ledgerClient.get(
+            const { participantId } = await this.ledgerClient.getWithRetry(
                 '/v2/parties/participant-id'
             )
 

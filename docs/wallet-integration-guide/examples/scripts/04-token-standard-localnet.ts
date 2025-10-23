@@ -68,7 +68,6 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
         instrumentAdmin: instrumentAdminPartyId,
     }
 )
-let offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand,
@@ -78,6 +77,7 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 )
 
 const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
+
 logger.info(utxos, 'List Available Token Standard Holding UTXOs')
 
 await sdk.tokenStandard
@@ -106,8 +106,6 @@ const [transferCommand, disclosedContracts2] =
         utxos?.map((t) => t.contractId),
         'memo-ref'
     )
-
-offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? offsetLatest
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     transferCommand,

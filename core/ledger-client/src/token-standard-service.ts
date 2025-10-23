@@ -32,6 +32,7 @@ import {
     ensureInterfaceViewIsPresent,
     TransactionFilterBySetup,
     EventFilterBySetup,
+    defaultRetryableOptions,
 } from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
 import {
@@ -138,21 +139,29 @@ class CoreService {
 
     async listContractsByInterface<T = ViewValue>(
         interfaceId: string,
-        partyId?: PartyId
+        partyId?: PartyId,
+        limit?: number
     ): Promise<PrettyContract<T>[]> {
         try {
-            const ledgerEnd = await this.ledgerClient.get(
+            const ledgerEnd = await this.ledgerClient.getWithRetry(
                 '/v2/state/ledger-end'
             )
             const acsResponses: JsGetActiveContractsResponse[] =
-                await this.ledgerClient.post('/v2/state/active-contracts', {
-                    filter: TransactionFilterBySetup(interfaceId, {
-                        isMasterUser: this.isMasterUser,
-                        partyId: partyId,
-                    }),
-                    verbose: false,
-                    activeAtOffset: ledgerEnd.offset,
-                })
+                await this.ledgerClient.postWithRetry(
+                    '/v2/state/active-contracts',
+                    {
+                        filter: TransactionFilterBySetup(interfaceId, {
+                            isMasterUser: this.isMasterUser,
+                            partyId: partyId,
+                        }),
+                        verbose: false,
+                        activeAtOffset: ledgerEnd.offset,
+                    },
+                    defaultRetryableOptions,
+                    {
+                        query: limit ? { limit: limit.toString() } : {},
+                    }
+                )
 
             /*  This filters out responses with entries of:
                 - JsEmpty
@@ -1225,9 +1234,14 @@ export class TokenStandardService {
     // i.e. when querying by TransferInstruction interfaceId, <T> would be TransferInstructionView from daml codegen
     async listContractsByInterface<T = ViewValue>(
         interfaceId: string,
-        partyId?: PartyId
+        partyId?: PartyId,
+        limit?: number
     ): Promise<PrettyContract<T>[]> {
-        return this.core.listContractsByInterface<T>(interfaceId, partyId)
+        return this.core.listContractsByInterface<T>(
+            interfaceId,
+            partyId,
+            limit
+        )
     }
 
     async listHoldingTransactions(
@@ -1239,15 +1253,19 @@ export class TokenStandardService {
             this.logger.debug('Set or query offset')
             const afterOffsetOrLatest =
                 Number(afterOffset) ||
-                (await this.ledgerClient.get('/v2/state/latest-pruned-offsets'))
-                    .participantPrunedUpToInclusive
+                (
+                    await this.ledgerClient.getWithRetry(
+                        '/v2/state/latest-pruned-offsets'
+                    )
+                ).participantPrunedUpToInclusive
             const beforeOffsetOrLatest =
                 Number(beforeOffset) ||
-                (await this.ledgerClient.get('/v2/state/ledger-end')).offset
+                (await this.ledgerClient.getWithRetry('/v2/state/ledger-end'))
+                    .offset
 
             this.logger.debug(afterOffsetOrLatest, 'Using offset')
             const updatesResponse: JsGetUpdatesResponse[] =
-                await this.ledgerClient.post('/v2/updates/flats', {
+                await this.ledgerClient.postWithRetry('/v2/updates/flats', {
                     updateFormat: {
                         includeTransactions: {
                             eventFormat: EventFilterBySetup(
@@ -1294,7 +1312,7 @@ export class TokenStandardService {
             transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
         }
 
-        const getTransactionResponse = await this.ledgerClient.post(
+        const getTransactionResponse = await this.ledgerClient.postWithRetry(
             '/v2/updates/transaction-by-id',
             {
                 updateId,

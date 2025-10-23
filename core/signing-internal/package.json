@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-internal",
-    "version": "0.7.0",
+    "version": "0.9.0",
     "type": "module",
     "description": "Wallet Gateway driver for offline Ed25519 keypairs",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",

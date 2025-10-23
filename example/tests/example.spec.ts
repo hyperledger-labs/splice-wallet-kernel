@@ -3,7 +3,7 @@
 
 import { test, expect } from '@playwright/test'
 
-const dappApiPort = process.env.DAPP_API_PORT ?? 3008
+const dappApiPort = 3030
 
 test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
     await dappPage.goto('http://localhost:8080/')
@@ -27,7 +27,7 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
     // Connect to remote Wallet Gateway
     await discoverPopup
         .getByRole('textbox', { name: 'RPC URL' })
-        .fill(`http://localhost:${dappApiPort}/rpc`)
+        .fill(`http://localhost:${dappApiPort}/api/v0/dapp`)
 
     const [wkPage] = await Promise.all([
         dappPage.waitForEvent('popup'),

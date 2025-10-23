@@ -3,7 +3,9 @@
 
 import { expect, test, jest } from '@jest/globals'
 
+import cors from 'cors'
 import request from 'supertest'
+import express from 'express'
 import { dapp } from './server.js'
 import { StoreInternal } from '@canton-network/core-wallet-store-inmemory'
 import { AuthService } from '@canton-network/core-wallet-auth'
@@ -11,6 +13,7 @@ import { ConfigUtils } from '../config/ConfigUtils.js'
 import { Notifier } from '../notification/NotificationService.js'
 import { pino } from 'pino'
 import { sink } from 'pino-test'
+import { createServer } from 'http'
 
 const authService: AuthService = {
     verifyToken: async () => {
@@ -34,10 +37,22 @@ const notificationService = {
 }
 
 test('call connect rpc', async () => {
+    const app = express()
+    app.use(cors())
+    app.use(express.json())
+    const server = createServer(app)
     const response = await request(
-        dapp(config.kernel, notificationService, authService, store)
+        dapp(
+            '/api/v0/dapp',
+            app,
+            server,
+            config.kernel,
+            notificationService,
+            authService,
+            store
+        )
     )
-        .post('/rpc')
+        .post('/api/v0/dapp')
         .send({ jsonrpc: '2.0', id: 0, method: 'connect', params: [] })
         .set('Accept', 'application/json')
 
@@ -49,11 +64,11 @@ test('call connect rpc', async () => {
             kernel: {
                 id: 'remote-da',
                 clientType: 'remote',
-                url: 'http://localhost:3008/rpc',
-                userUrl: 'http://localhost:3002',
+                url: 'http://localhost:3030/api/v0/dapp',
+                userUrl: 'http://localhost:3030',
             },
             isConnected: false,
-            userUrl: 'http://localhost:3002/login/',
+            userUrl: 'http://localhost:3030/login/',
         },
     })
 })

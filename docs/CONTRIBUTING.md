@@ -79,11 +79,10 @@ This uses `pm2` to run each dev server in parallel. See the `pm2` [cheatsheet](h
 
 After running `yarn start:all`, you'll have services exposed on the following ports:
 
-| Service          | Url            |
-| ---------------- | -------------- |
-| example dApp UI  | localhost:8080 |
-| HTTP WK dapp RPC | localhost:3008 |
-| HTTP WK user RPC | localhost:3001 |
+| Service         | Url            |
+| --------------- | -------------- |
+| example dApp UI | localhost:8080 |
+| HTTP WK gateway | localhost:3030 |
 
 ### canton
 

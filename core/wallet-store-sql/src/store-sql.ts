@@ -50,7 +50,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     }
 
     private assertConnected(): UserId {
-        return assertConnected(this.authContext)
+        return assertConnected(this.authContext).userId
     }
 
     // Wallet methods

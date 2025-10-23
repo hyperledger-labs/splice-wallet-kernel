@@ -62,6 +62,40 @@ export class NetworkForm extends BaseElement {
     onAuthTypeChange(e: Event) {
         const select = e.target as HTMLSelectElement
         this.authType = select.value
+
+        this.updateAuthStructure()
+    }
+
+    updateAuthStructure() {
+        const network = { ...this.network }
+
+        if (this.authType === 'implicit') {
+            network.auth = {
+                type: 'implicit',
+                identityProviderId: network.auth?.identityProviderId || '',
+                configUrl: network.auth?.configUrl || '',
+                clientId: network.auth?.clientId || '',
+                issuer: network.auth?.issuer || '',
+                audience: network.auth?.audience || '',
+                scope: network.auth?.scope || '',
+                admin: network.auth?.admin,
+            }
+        } else if (this.authType === 'password') {
+            network.auth = {
+                type: 'password',
+                identityProviderId: network.auth?.identityProviderId || '',
+                configUrl: network.auth?.configUrl || '',
+                clientId: network.auth?.clientId || '',
+                issuer: network.auth?.issuer || '',
+                audience: network.auth?.audience || '',
+                scope: network.auth?.scope || '',
+                tokenUrl: (network.auth as PasswordAuth)?.tokenUrl || '',
+                grantType: (network.auth as PasswordAuth)?.grantType || '',
+                admin: network.auth?.admin,
+            }
+        }
+
+        this.network = network
     }
 
     handleSubmit(e: Event) {
@@ -295,7 +329,7 @@ export class NetworkForm extends BaseElement {
                         <select
                             class="form-select mb-3"
                             name="authType"
-                            @network-input-change=${this.onAuthTypeChange}
+                            @change=${this.onAuthTypeChange}
                             .value=${this.authType}
                         >
                             <option value="password">password</option>

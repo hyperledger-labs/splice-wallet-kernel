@@ -81,11 +81,10 @@ export class PartyAllocationService {
         userId: string,
         hint: string
     ): Promise<AllocatedParty> {
-        const { participantId: namespace } = await this.ledgerClient.get(
-            '/v2/parties/participant-id'
-        )
+        const { participantId: namespace } =
+            await this.ledgerClient.getWithRetry('/v2/parties/participant-id')
 
-        const res = await this.ledgerClient.post('/v2/parties', {
+        const res = await this.ledgerClient.postWithRetry('/v2/parties', {
             partyIdHint: hint,
             identityProviderId: '',
         })

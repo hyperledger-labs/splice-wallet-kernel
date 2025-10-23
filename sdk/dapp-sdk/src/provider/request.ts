@@ -7,7 +7,7 @@ import { assertProvider, ConnectError, ErrorCode } from '../error.js'
 import * as storage from '../storage'
 import { injectProvider } from './index'
 import { GatewaysConfig } from '@canton-network/core-types'
-import gateways from './gateways.json'
+import gateways from '../gateways.json'
 
 export async function connect(): Promise<dappAPI.ConnectResult> {
     const config: GatewaysConfig[] = gateways
@@ -34,10 +34,20 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
             return response
         })
         .catch((err) => {
+            let details = JSON.stringify(err)
+
+            if (err instanceof Error) {
+                details = err.message
+            }
+
+            if ('message' in err) {
+                details = err.message
+            }
+
             throw {
                 status: 'error',
                 error: ErrorCode.Other,
-                details: err instanceof Error ? err.message : String(err),
+                details,
             } as ConnectError
         })
 }

@@ -8,36 +8,6 @@ permissions:
     contents: read
 
 jobs:
-    docker-amd64:
-        runs-on: ubuntu-24.04
-        needs: build
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-
-            - uses: ./.github/actions/setup_yarn
-
-            - name: Flat pack the repo
-              run: yarn docker:flat-pack
-
-            - name: Build docker image
-              run: yarn docker:build
-
-    docker-arm:
-        runs-on: ubuntu-24.04-arm
-        needs: build
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-
-            - uses: ./.github/actions/setup_yarn
-
-            - name: Flat pack the repo
-              run: yarn docker:flat-pack
-
-            - name: Build docker image
-              run: yarn docker:build
-
     build:
         runs-on: ubuntu-latest
         steps:
@@ -171,7 +141,7 @@ jobs:
                   '
 
             - name: Start remote WK
-              run: DAPP_API_PORT=3008 yarn nx run @canton-network/wallet-gateway-remote:start &
+              run: yarn nx run @canton-network/wallet-gateway-remote:start &
 
             - run: yarn nx run @canton-network/example:dev &
 
@@ -221,7 +191,7 @@ jobs:
               run: yarn workspace @canton-network/example run playwright install --with-deps
 
             - name: Run example e2e
-              run: DAPP_API_PORT=3008 yarn nx playwright:e2e @canton-network/example
+              run: yarn nx playwright:e2e @canton-network/example
 
             - uses: actions/upload-artifact@v4
               if: ${{ !cancelled() }}
