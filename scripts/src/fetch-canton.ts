@@ -17,7 +17,10 @@ import {
 } from './lib/utils.js'
 import * as fs from 'fs'
 
-async function fetchCanton(cantonVersions: CantonVersionAndHash) {
+async function fetchCanton(
+    cantonVersions: CantonVersionAndHash,
+    updateHash: boolean
+) {
     const tarfile = path.join(cantonVersions.version, 'canton.tar.gz')
     const archiveUrl = `https://www.canton.io/releases/canton-open-source-${cantonVersions.version}.tar.gz`
     const cantonDownloadPath = path.join(CANTON_PATH, cantonVersions.version)
@@ -25,6 +28,7 @@ async function fetchCanton(cantonVersions: CantonVersionAndHash) {
     await downloadAndUnpackTarball(archiveUrl, tarfile, cantonDownloadPath, {
         hash: cantonVersions.hash,
         strip: 1,
+        updateHash,
     })
 
     const CANTON_MAJOR_VERSION = cantonVersions.version.split('-')[0]
@@ -45,11 +49,14 @@ async function fetchCanton(cantonVersions: CantonVersionAndHash) {
 }
 
 async function main() {
-    Object.entries(SUPPORTED_VERSIONS).map(async ([env, data]) => {
-        const { version, hash } = data.canton
-        console.debug(`fetching canton for ${env}`)
-        await fetchCanton({ version, hash })
-    })
+    const updateHash = process.argv.includes('--updateHash')
+    await Promise.all(
+        Object.entries(SUPPORTED_VERSIONS).map(async ([env, data]) => {
+            const { version, hash } = data.canton
+            console.debug(`fetching canton for ${env}`)
+            await fetchCanton({ version, hash }, updateHash)
+        })
+    )
 }
 
 main().catch((e) => {

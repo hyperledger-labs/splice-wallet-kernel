@@ -92,7 +92,27 @@ export async function verifyFileIntegrity(
     if (!fs.existsSync(filePath)) {
         return false
     }
+    const computedHash = await computeFileHash(filePath, algo)
 
+    if (computedHash === expectedHash) {
+        console.log(
+            success(`${algo.toUpperCase()} checksum verified successfully.`)
+        )
+    } else {
+        console.log(
+            error(
+                `File hashes did not match.\n\tExpected: ${expectedHash}\n\tReceived: ${computedHash}\nDeleting ${filePath}...`
+            )
+        )
+        process.exit(1)
+    }
+    return true
+}
+
+async function computeFileHash(
+    filePath: string,
+    algo = 'sha256'
+): Promise<string> {
     return new Promise((resolve, reject) => {
         const hash = crypto.createHash(algo)
         const stream = fs.createReadStream(filePath)
@@ -100,24 +120,7 @@ export async function verifyFileIntegrity(
         stream.on('data', (chunk) => hash.update(chunk))
         stream.on('end', () => {
             const computedHash = hash.digest('hex')
-            const matches = computedHash === expectedHash
-
-            if (matches) {
-                console.log(
-                    success(
-                        `${algo.toUpperCase()} checksum verified successfully.`
-                    )
-                )
-            } else {
-                console.log(
-                    error(
-                        `File hashes did not match.\n\tExpected: ${expectedHash}\n\tReceived: ${computedHash}\nDeleting ${filePath}...`
-                    )
-                )
-                process.exit(1)
-            }
-
-            resolve(matches)
+            return computedHash
         })
         stream.on('error', (err) => reject(err))
     })
@@ -127,9 +130,10 @@ export async function downloadAndUnpackTarball(
     url: string,
     tarfile: string,
     unpackDir: string,
-    options?: { hash?: string; strip?: number }
+    options?: { hash?: string; strip?: number; updateHash?: boolean }
 ) {
     let shouldDownload = true
+    let currentHash = options?.hash
     const algo = 'sha256'
 
     ensureDir(path.dirname(tarfile))
@@ -149,10 +153,33 @@ export async function downloadAndUnpackTarball(
         await pipeline(res.body, fs.createWriteStream(tarfile))
         console.log(success('Download complete.'))
 
-        if (options?.hash) {
+        if (options?.updateHash) {
+            const newHash = await computeFileHash(tarfile, algo)
+
+            // Update the hash in utils.ts if present
+            const utilsPath = __filename
+            const fileContent = fs.readFileSync(utilsPath, 'utf8')
+            // Find the old hash in the file (matching the old value)
+            if (options?.hash && fileContent.includes(options.hash)) {
+                const updatedContent = fileContent.replace(
+                    options.hash,
+                    newHash
+                )
+                fs.writeFileSync(utilsPath, updatedContent, 'utf8')
+                console.log(success(`Updated hash in utils.ts to ${newHash}`))
+            } else {
+                console.log(
+                    warn('Old hash not found in utils.ts, no update performed.')
+                )
+            }
+
+            currentHash = newHash
+        }
+
+        if (currentHash) {
             const validFile = await verifyFileIntegrity(
                 tarfile,
-                options.hash,
+                currentHash,
                 algo
             )
 
@@ -164,7 +191,7 @@ export async function downloadAndUnpackTarball(
                 // Remove the bad file
                 throw new Error(
                     error(
-                        `Checksum mismatch for downloaded tarball.\n\tExpected: ${options.hash}\n\tReceived: ${downloadedHash}`
+                        `Checksum mismatch for downloaded tarball.\n\tExpected: ${currentHash}\n\tReceived: ${downloadedHash}`
                     )
                 )
             }
