@@ -73,6 +73,7 @@ export const userController = (
                     audience: network.auth.audience ?? '',
                     scope: network.auth.scope ?? '',
                     clientId: network.auth.clientId ?? '',
+                    admin: network.auth.admin ?? {},
                 }
             } else {
                 auth = {
@@ -85,6 +86,7 @@ export const userController = (
                     scope: network.auth.scope ?? '',
                     clientId: network.auth.clientId ?? '',
                     audience: network.auth.audience ?? '',
+                    admin: network.auth.admin ?? {},
                 }
             }
 
