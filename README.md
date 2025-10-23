@@ -45,4 +45,4 @@ For information about contributing to the repo, please refer to the [Contributin
 
 ## Testing
 
-TODO: Make Testing guide.
+TODO: Author a Testing guide.
