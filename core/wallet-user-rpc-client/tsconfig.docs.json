@@ -3,12 +3,23 @@
     "compilerOptions": {
         "rootDir": "./src"
     },
-    "include": ["src/index.ts"], // only your public entry
+    "include": ["src/index.ts"],
     "exclude": [
         "**/*.test.*",
         "**/*.spec.*",
         "**/__tests__/**",
-        "**/*.config.*", // exclude configs
-        "tsup.config.ts"
-    ]
+        "**/*.config.*",
+        "tsup.config.ts",
+        "node_modules",
+        "docs",
+        "dist"
+    ],
+    "typedocOptions": {
+        "entryPoints": ["src/index.ts"],
+        "out": "docs",
+        "excludeExternals": true,
+        "excludePrivate": true,
+        "hideGenerator": true,
+        "readme": "none"
+    }
 }
