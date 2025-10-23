@@ -3,10 +3,31 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+0.14.0
+------
+
+**Released on October 23th, 2025**
+
+* Fixed broken dependency problem introduced in 0.13.X
+
+0.13.1
+------
+
+**Released on October 22th, 2025**
+
+* Greatly reduced the size of the SDK from ~ 80 MB to ~ 35 MB
+* introduced optional `limit` field for `listHoldingsUtxo`
+
+
 0.13.0
 ------
 
 **Released on October 22th, 2025**
+
+.. important::
+
+   Release 0.13.0 & 0.13.1 have broken dependencies, use 0.14.0 instead.
+
 
 * **Important!: await completion has changed signature**
 
