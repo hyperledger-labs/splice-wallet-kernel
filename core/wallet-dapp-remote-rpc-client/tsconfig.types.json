@@ -10,6 +10,6 @@
         "noEmit": false,
         "composite": false
     },
-    "include": ["src/**/*.ts", "src/**/*.d.ts"],
+    "files": ["src/index.ts"],
     "exclude": ["**/*.test.*", "**/*.spec.*", "**/__tests__/**"]
 }

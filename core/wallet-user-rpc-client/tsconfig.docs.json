@@ -3,7 +3,7 @@
     "compilerOptions": {
         "rootDir": "./src"
     },
-    "include": ["src/index.ts"],
+    "files": ["src/index.ts"],
     "exclude": [
         "**/*.test.*",
         "**/*.spec.*",

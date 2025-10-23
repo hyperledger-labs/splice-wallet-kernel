@@ -21,6 +21,8 @@
         "docs",
         "dist",
         "jest.config.js",
+        "tsup.config.ts",
+        "**/*.config.*",
         "src/*.test.ts",
         "src/**/*.test.ts"
     ]
