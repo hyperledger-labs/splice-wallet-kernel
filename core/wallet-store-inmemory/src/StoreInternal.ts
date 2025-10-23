@@ -17,6 +17,7 @@ import {
     Transaction,
     Network,
 } from '@canton-network/core-wallet-store'
+import { AccessTokenProvider } from '@canton-network/core-types'
 import {
     LedgerClient,
     defaultRetryableOptions,
@@ -97,10 +98,17 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             const network = await this.getCurrentNetwork()
 
             // Get existing parties from participant
+            const userAccessTokenProvider: AccessTokenProvider = {
+                getUserAccessToken: async () => this.authContext!.accessToken,
+                getAdminAccessToken: async () => this.authContext!.accessToken,
+            }
+
             const ledgerClient = new LedgerClient(
                 new URL(network.ledgerApi.baseUrl),
-                this.authContext!.accessToken,
-                this.logger
+                this.logger,
+                false,
+                undefined,
+                userAccessTokenProvider
             )
             const rights = await ledgerClient.getWithRetry(
                 '/v2/users/{user-id}/rights',

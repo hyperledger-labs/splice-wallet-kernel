@@ -35,7 +35,7 @@ const singleHostedPartyKeyPair = createKeyPair()
 await sdk.connectAdmin()
 await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
-const adminToken = await sdk.auth.getAdminToken()
+const authTokenProvider = sdk.authTokenProvider
 
 const alice = await sdk.userLedger?.signAndAllocateExternalParty(
     singleHostedPartyKeyPair.privateKey,
@@ -50,7 +50,7 @@ await sdk.setPartyId(alice?.partyId!)
 const multiHostedParticipantEndpointConfig = [
     {
         url: new URL('http://127.0.0.1:3975'),
-        accessToken: adminToken.accessToken,
+        accessTokenProvider: authTokenProvider,
     },
 ]
 

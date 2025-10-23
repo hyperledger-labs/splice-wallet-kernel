@@ -25,7 +25,7 @@ import { v4 } from 'uuid'
 import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-proto'
 import { TopologyController } from './topologyController.js'
-import { PartyId } from '@canton-network/core-types'
+import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
 import { defaultRetryableOptions } from '@canton-network/core-ledger-client'
 
 export type RawCommandMap = {
@@ -54,14 +54,25 @@ export class LedgerController {
      *
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
-     * @param token the access token from the user, usually provided by an auth controller.
      * @param isAdmin optional flag to set true when creating adminLedger.
+     * @param accessTokenProvider provider for caching access tokens used to authenticate requests.
+     * @param token the access token from the user, usually provided by an auth controller. This parameter will be removed with version 1.0.0, please use accessTokenProvider instead)
      */
-    constructor(userId: string, baseUrl: URL, token: string, isAdmin: boolean) {
-        this.client = new LedgerClient(baseUrl, token, this.logger)
-        this.client.init().catch((error) => {
-            this.logger.error('LedgerClient initialization error:', error)
-        })
+    constructor(
+        userId: string,
+        baseUrl: URL,
+        token: string = '',
+        isAdmin: boolean = false,
+        accessTokenProvider?: AccessTokenProvider
+    ) {
+        this.client = new LedgerClient(
+            baseUrl,
+            this.logger,
+            isAdmin,
+            token,
+            accessTokenProvider
+        )
+        this.client.init()
         this.userId = userId
         this.isAdmin = isAdmin
         return this
@@ -313,7 +324,11 @@ export class LedgerController {
         signedHash: string,
         preparedParty: GenerateTransactionResponse,
         grantUserRights: boolean = true,
-        hostingParticipantEndpoints: { accessToken: string; url: URL }[] = [],
+        hostingParticipantEndpoints: {
+            url: URL
+            accessToken?: string
+            accessTokenProvider?: AccessTokenProvider
+        }[] = [],
         expectHeavyLoad: boolean = true
     ): Promise<AllocateExternalPartyResponse> {
         if (await this.client.checkIfPartyExists(preparedParty.partyId))
@@ -364,8 +379,10 @@ export class LedgerController {
             for (const endpoint of hostingParticipantEndpoints) {
                 const lc = new LedgerClient(
                     endpoint.url,
+                    this.logger,
+                    this.isAdmin,
                     endpoint.accessToken,
-                    this.logger
+                    endpoint.accessTokenProvider
                 )
 
                 await lc.allocateExternalParty(
@@ -406,7 +423,11 @@ export class LedgerController {
         privateKey: PrivateKey,
         partyHint?: string,
         confirmingThreshold?: number,
-        hostingParticipantEndpoints?: { accessToken: string; url: URL }[],
+        hostingParticipantEndpoints?: {
+            url: URL
+            accessToken?: string
+            accessTokenProvider?: AccessTokenProvider
+        }[],
         grantUserRights?: boolean
     ): Promise<GenerateTransactionResponse> {
         const otherHostingParticipantUids = await Promise.all(
@@ -415,8 +436,10 @@ export class LedgerController {
                     (endpoint) =>
                         new LedgerClient(
                             endpoint.url,
+                            this.logger,
+                            this.isAdmin,
                             endpoint.accessToken,
-                            this.logger
+                            endpoint.accessTokenProvider
                         )
                 )
                 .map((client) =>
@@ -998,14 +1021,16 @@ export class LedgerController {
  */
 export const localLedgerDefault = (
     userId: string,
-    token: string,
-    isAdmin: boolean
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean,
+    accessToken: string = ''
 ): LedgerController => {
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:5003'),
-        token,
-        isAdmin
+        accessToken,
+        isAdmin,
+        accessTokenProvider
     )
 }
 
@@ -1015,34 +1040,44 @@ export const localLedgerDefault = (
  */
 export const localNetLedgerDefault = (
     userId: string,
-    token: string,
-    isAdmin: boolean
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean,
+    accessToken: string = ''
 ): LedgerController => {
-    return localNetLedgerAppUser(userId, token, isAdmin)
+    return localNetLedgerAppUser(
+        userId,
+        accessTokenProvider,
+        isAdmin,
+        accessToken
+    )
 }
 
 export const localNetLedgerAppUser = (
     userId: string,
-    token: string,
-    isAdmin: boolean
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean,
+    accessToken: string = ''
 ): LedgerController => {
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:2975'),
-        token,
-        isAdmin
+        accessToken,
+        isAdmin,
+        accessTokenProvider
     )
 }
 
 export const localNetLedgerAppProvider = (
     userId: string,
-    token: string,
-    isAdmin: boolean
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean,
+    accessToken: string = ''
 ): LedgerController => {
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:3975'),
-        token,
-        isAdmin
+        accessToken,
+        isAdmin,
+        accessTokenProvider
     )
 }

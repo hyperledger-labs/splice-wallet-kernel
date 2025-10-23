@@ -19,6 +19,7 @@ import {
 } from './validatorController.js'
 export * from './ledgerController.js'
 export * from './authController.js'
+export * from './authTokenProvider.js'
 export * from './topologyController.js'
 export * from './tokenStandardController.js'
 export * from './validatorController.js'
@@ -33,35 +34,86 @@ export {
 } from '@canton-network/core-ledger-proto'
 export * from './config.js'
 import { PartyId } from '@canton-network/core-types'
+import { AuthTokenProvider } from './authTokenProvider.js'
 
 type AuthFactory = () => AuthController
-type LedgerFactory = (
+type LedgerFactory = {
+    /**
+     * @deprecated This method will be removed with version 1.0.0, please use AuthTokenProvider version instead)
+     */
+    (userId: string, token: string, isAdmin: boolean): LedgerController
+    (
+        userId: string,
+        authTokenProvider: AuthTokenProvider,
+        isAdmin: boolean
+    ): LedgerController
+}
+type LedgerFactoryWithCache = (
     userId: string,
-    token: string,
+    authTokenProvider: AuthTokenProvider,
     isAdmin: boolean
 ) => LedgerController
-type TopologyFactory = (
+
+type TopologyFactory = {
+    /**
+     * @deprecated This method will be removed with version 1.0.0, please use AuthTokenProvider version instead)
+     */
+    (
+        userId: string,
+        adminAccessToken: string,
+        synchronizerId: PartyId
+    ): TopologyController
+    (
+        userId: string,
+        authTokenProvider: AuthTokenProvider,
+        synchronizerId: PartyId
+    ): TopologyController
+}
+type TopologyFactoryWithCache = (
     userId: string,
-    adminAccessToken: string,
+    authTokenProvider: AuthTokenProvider,
     synchronizerId: PartyId
 ) => TopologyController
-type TokenStandardFactory = (
+
+type TokenStandardFactory = {
+    /**
+     * @deprecated This method will be removed with version 1.0.0, please use AuthTokenProvider version instead)
+     */
+    (userId: string, token: string, isAdmin: boolean): TokenStandardController
+    (
+        userId: string,
+        authTokenProvider: AuthTokenProvider,
+        isAdmin: boolean
+    ): TokenStandardController
+}
+type TokenStandardFactoryWithCache = (
     userId: string,
-    token: string
+    authTokenProvider: AuthTokenProvider,
+    isAdmin: boolean
 ) => TokenStandardController
-type ValidatorFactory = (userId: string, token: string) => ValidatorController
+
+type ValidatorFactory = {
+    (userId: string, token: string): ValidatorController
+    (userId: string, authTokenProvider: AuthTokenProvider): ValidatorController
+}
+
+type ValidatorFactoryWithCache = (
+    userId: string,
+    authTokenProvider: AuthTokenProvider
+) => ValidatorController
 
 export interface Config {
     authFactory?: AuthFactory
-    ledgerFactory?: LedgerFactory
-    topologyFactory?: TopologyFactory
-    tokenStandardFactory?: TokenStandardFactory
-    validatorFactory?: ValidatorFactory
+    ledgerFactory?: LedgerFactory | LedgerFactoryWithCache
+    topologyFactory?: TopologyFactory | TopologyFactoryWithCache
+    tokenStandardFactory?: TokenStandardFactory | TokenStandardFactoryWithCache
+    validatorFactory?: ValidatorFactory | ValidatorFactoryWithCache
     logger?: Logger
 }
 
 export interface WalletSDK {
     auth: AuthController
+    authTokenProvider: AuthTokenProvider
     configure(config: Config): WalletSDK
     connect(): Promise<WalletSDK>
     connectAdmin(): Promise<WalletSDK>
@@ -81,13 +133,26 @@ export interface WalletSDK {
  */
 export class WalletSDKImpl implements WalletSDK {
     auth: AuthController
+    private _authTokenProvider: AuthTokenProvider
 
+    get authTokenProvider(): AuthTokenProvider {
+        return this._authTokenProvider
+    }
+
+    constructor() {
+        this.auth = this.authFactory()
+        this._authTokenProvider = new AuthTokenProvider(this.auth)
+    }
     private authFactory: AuthFactory = localNetAuthDefault
-    private ledgerFactory: LedgerFactory = localNetLedgerDefault
-    private topologyFactory: TopologyFactory = localNetTopologyDefault
-    private tokenStandardFactory: TokenStandardFactory =
-        localNetTokenStandardDefault
-    private validatorFactory: ValidatorFactory = localValidatorDefault
+    private ledgerFactory: LedgerFactory | LedgerFactoryWithCache =
+        localNetLedgerDefault
+    private topologyFactory: TopologyFactory | TopologyFactoryWithCache =
+        localNetTopologyDefault
+    private tokenStandardFactory:
+        | TokenStandardFactory
+        | TokenStandardFactoryWithCache = localNetTokenStandardDefault
+    private validatorFactory: ValidatorFactory | ValidatorFactoryWithCache =
+        localValidatorDefault
 
     private logger: Logger | undefined
     userLedger: LedgerController | undefined
@@ -96,10 +161,6 @@ export class WalletSDKImpl implements WalletSDK {
     tokenStandard: TokenStandardController | undefined
     validator: ValidatorController | undefined
 
-    constructor() {
-        this.auth = this.authFactory()
-    }
-
     /**
      * Configures the SDK with the provided configuration.
      * @param config
@@ -107,7 +168,13 @@ export class WalletSDKImpl implements WalletSDK {
      */
     configure(config: Config): WalletSDK {
         if (config.logger) this.logger = config.logger
-        if (config.authFactory) this.auth = config.authFactory()
+        if (config.authFactory) {
+            if (!this.auth || this.authFactory !== config.authFactory) {
+                this.authFactory = config.authFactory
+                this.auth = this.authFactory()
+                this._authTokenProvider = new AuthTokenProvider(this.auth)
+            }
+        }
         if (config.ledgerFactory) this.ledgerFactory = config.ledgerFactory
         if (config.topologyFactory)
             this.topologyFactory = config.topologyFactory
@@ -124,10 +191,18 @@ export class WalletSDKImpl implements WalletSDK {
      * @returns A promise that resolves to the WalletSDK instance.
      */
     async connect(): Promise<WalletSDK> {
-        const { userId, accessToken } = await this.auth.getUserToken()
-        this.userLedger = this.ledgerFactory(userId, accessToken, false)
-        this.tokenStandard = this.tokenStandardFactory(userId, accessToken)
-        this.validator = this.validatorFactory(userId, accessToken)
+        const { userId } = await this.auth.getUserToken()
+        this.userLedger = this.ledgerFactory(
+            userId,
+            this._authTokenProvider,
+            false
+        )
+        this.tokenStandard = this.tokenStandardFactory(
+            userId,
+            this._authTokenProvider,
+            false
+        )
+        this.validator = this.validatorFactory(userId, this._authTokenProvider)
         return this
     }
 
@@ -135,8 +210,12 @@ export class WalletSDKImpl implements WalletSDK {
      * @returns A promise that resolves to the WalletSDK instance.
      */
     async connectAdmin(): Promise<WalletSDK> {
-        const { userId, accessToken } = await this.auth.getAdminToken()
-        this.adminLedger = this.ledgerFactory(userId, accessToken, true)
+        const { userId } = await this.auth.getAdminToken()
+        this.adminLedger = this.ledgerFactory(
+            userId,
+            this._authTokenProvider,
+            true
+        )
         return this
     }
 
@@ -160,7 +239,9 @@ export class WalletSDKImpl implements WalletSDK {
             const scanProxyClient = new ScanProxyClient(
                 synchronizer,
                 this.logger!,
-                accessToken
+                true,
+                accessToken,
+                this._authTokenProvider
             )
             const amuletSynchronizerId =
                 await scanProxyClient.getAmuletSynchronizerId()
@@ -177,7 +258,7 @@ export class WalletSDKImpl implements WalletSDK {
             )
         this.topology = this.topologyFactory(
             userId,
-            accessToken,
+            this._authTokenProvider,
             synchronizerId
         )
 

@@ -5,6 +5,7 @@ import {
     LedgerClient,
     TopologyWriteService,
 } from '@canton-network/core-ledger-client'
+import { AccessTokenProvider } from '@canton-network/core-types'
 import { Logger } from 'pino'
 
 export type AllocatedParty = {
@@ -23,14 +24,17 @@ export class PartyAllocationService {
 
     constructor(
         private synchronizerId: string,
-        adminToken: string,
+        accessTokenProvider: AccessTokenProvider,
         httpLedgerUrl: string,
-        private logger: Logger
+        private logger: Logger,
+        accessToken: string = ''
     ) {
         this.ledgerClient = new LedgerClient(
             new URL(httpLedgerUrl),
-            adminToken,
-            this.logger
+            this.logger,
+            true,
+            accessToken,
+            accessTokenProvider
         )
     }
 

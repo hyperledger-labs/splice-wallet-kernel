@@ -1,12 +1,14 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SignJWT } from 'jose'
+import { decodeJwt, SignJWT } from 'jose'
 import { Logger } from '@canton-network/core-types'
 import {
     AuthContext,
     ClientCredentialsService,
 } from '@canton-network/core-wallet-auth'
+
+type SubjectIdentifier = 'admin' | 'user'
 
 export interface AuthController {
     /** gets an auth context correlating to the ledger user provided.
@@ -17,6 +19,24 @@ export interface AuthController {
      */
     getAdminToken(): Promise<AuthContext>
     userId: string | undefined
+}
+
+abstract class BaseAuthController implements AuthController {
+    abstract userId: string | undefined
+    abstract getUserToken(): Promise<AuthContext>
+    abstract getAdminToken(): Promise<AuthContext>
+
+    protected _accessTokens: Partial<Record<SubjectIdentifier, string>> = {}
+
+    protected _isJwtValid(token: string): boolean {
+        try {
+            const payload = decodeJwt(token)
+            const now = Math.floor(Date.now() / 1000)
+            return typeof payload.exp === 'number' && payload.exp > now
+        } catch {
+            return false
+        }
+    }
 }
 
 /**
@@ -31,7 +51,7 @@ export interface AuthController {
  * - adminId
  * - adminSecret
  */
-export class ClientCredentialOAuthController implements AuthController {
+export class ClientCredentialOAuthController extends BaseAuthController {
     set logger(value: Logger) {
         this._logger = value
         this.service = new ClientCredentialsService(
@@ -77,6 +97,9 @@ export class ClientCredentialOAuthController implements AuthController {
     private _adminSecret: string | undefined
     private _scope: string | undefined
     private _audience: string | undefined
+    private _pendingTokenRequests: Partial<
+        Record<SubjectIdentifier, Promise<string>>
+    > = {}
 
     constructor(
         configUrl: string,
@@ -88,6 +111,7 @@ export class ClientCredentialOAuthController implements AuthController {
         scope?: string,
         audience?: string
     ) {
+        super()
         this.service = new ClientCredentialsService(configUrl, logger)
         this._configUrl = configUrl
         this._logger = logger
@@ -105,16 +129,37 @@ export class ClientCredentialOAuthController implements AuthController {
         if (this._userSecret === undefined)
             throw new Error('UserSecret is not defined.')
 
-        const accessToken = await this.service.fetchToken({
+        const cachedAccessToken = this._accessTokens['user']
+        if (cachedAccessToken && this._isJwtValid(cachedAccessToken)) {
+            this._logger?.debug('Using cached user token')
+            return { userId: this._userId!, accessToken: cachedAccessToken }
+        }
+
+        if (this._pendingTokenRequests['user']) {
+            const accessToken = await this._pendingTokenRequests['user']
+            return { userId: this._userId!, accessToken }
+        }
+
+        this._logger?.debug('Creating new user token')
+
+        const tokenPromise = this.service.fetchToken({
             clientId: this._userId!,
             clientSecret: this._userSecret!,
             scope: this._scope,
             audience: this._audience,
         })
 
-        return {
-            userId: this._userId!,
-            accessToken,
+        this._pendingTokenRequests['user'] = tokenPromise
+
+        try {
+            const accessToken = await tokenPromise
+            this._accessTokens['user'] = accessToken
+            return {
+                userId: this._userId!,
+                accessToken,
+            }
+        } finally {
+            delete this._pendingTokenRequests['user']
         }
     }
 
@@ -124,16 +169,36 @@ export class ClientCredentialOAuthController implements AuthController {
         if (this._adminSecret === undefined)
             throw new Error('AdminSecret is not defined.')
 
-        const accessToken = await this.service.fetchToken({
+        const cachedAccessToken = this._accessTokens['admin']
+        if (cachedAccessToken && this._isJwtValid(cachedAccessToken)) {
+            this._logger?.debug('Using cached admin token')
+            return { userId: this._adminId!, accessToken: cachedAccessToken }
+        }
+
+        if (this._pendingTokenRequests['admin']) {
+            const accessToken = await this._pendingTokenRequests['admin']
+            return { userId: this._adminId!, accessToken }
+        }
+        this._logger?.debug('Creating new admin token')
+
+        const tokenPromise = this.service.fetchToken({
             clientId: this._adminId!,
             clientSecret: this._adminSecret!,
             scope: this._scope,
             audience: this._audience,
         })
 
-        return {
-            userId: this._adminId!,
-            accessToken,
+        this._pendingTokenRequests['admin'] = tokenPromise
+
+        try {
+            const accessToken = await tokenPromise
+            this._accessTokens['admin'] = accessToken
+            return {
+                userId: this._adminId!,
+                accessToken,
+            }
+        } finally {
+            delete this._pendingTokenRequests['admin']
         }
     }
 }
@@ -151,7 +216,7 @@ export class ClientCredentialOAuthController implements AuthController {
  * the following properties are also required:
  * - adminId
  */
-export class UnsafeAuthController implements AuthController {
+export class UnsafeAuthController extends BaseAuthController {
     userId: string | undefined
     adminId: string | undefined
     audience: string | undefined
@@ -160,30 +225,43 @@ export class UnsafeAuthController implements AuthController {
     private _logger: Logger | undefined
 
     constructor(logger?: Logger) {
+        super()
         this._logger = logger
     }
 
     async getAdminToken(): Promise<AuthContext> {
-        return this._createJwtToken(this.adminId || 'admin')
+        return this._getOrCreateJwtToken(this.adminId || 'admin', 'admin')
     }
 
     async getUserToken(): Promise<AuthContext> {
-        return this._createJwtToken(this.userId || 'user')
+        return this._getOrCreateJwtToken(this.userId || 'user', 'user')
     }
 
-    private async _createJwtToken(sub: string): Promise<AuthContext> {
+    private async _getOrCreateJwtToken(
+        sub: string,
+        subIdentifier: SubjectIdentifier
+    ): Promise<AuthContext> {
         if (!this.unsafeSecret) throw new Error('unsafeSecret is not set')
+
+        const cachedAccessToken = this._accessTokens[subIdentifier]
+        if (cachedAccessToken && this._isJwtValid(cachedAccessToken)) {
+            this._logger?.debug('Using cached token')
+            return { userId: sub, accessToken: cachedAccessToken }
+        }
+        this._logger?.debug('Creating new token')
         const secret = new TextEncoder().encode(this.unsafeSecret)
         const now = Math.floor(Date.now() / 1000)
         const jwt = await new SignJWT({
             sub,
             aud: this.audience || '',
             iat: now,
-            exp: now + 60 * 60, // 1 hour expiry
+            exp: now + 3600, // 1 hour expiry
             iss: 'unsafe-auth',
         })
             .setProtectedHeader({ alg: 'HS256' })
             .sign(secret)
+
+        this._accessTokens[subIdentifier] = jwt
         return { userId: sub, accessToken: jwt }
     }
 }

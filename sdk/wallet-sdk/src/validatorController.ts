@@ -12,7 +12,7 @@ import {
     signTransactionHash,
     PrivateKey,
 } from '@canton-network/core-signing-lib'
-import { PartyId } from '@canton-network/core-types'
+import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
 
 /**
  * TokenStandardController handles token standard management tasks.
@@ -25,28 +25,38 @@ export class ValidatorController {
     private userId: string
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
+    private readonly accessTokenProvider: AccessTokenProvider
 
     /** Creates a new instance of the LedgerController.
      *
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
-     * @param accessToken the access token from the user, usually provided by an auth controller.
+     * @param accessTokenProvider provider for caching access tokens used to authenticate requests.
+     * @param isAdmin optional flag to set true when creating adminLedger.
+     * @param accessToken the access token from the user, usually provided by an auth controller. This parameter will be removed with version 1.0.0, please use accessTokenProvider instead)
      */
     constructor(
         userId: string,
         baseUrl: URL,
-        private accessToken: string
+        accessTokenProvider: AccessTokenProvider,
+        isAdmin: boolean = false,
+        accessToken: string = ''
     ) {
+        this.accessTokenProvider = accessTokenProvider
         this.validatorClient = new ValidatorInternalClient(
             baseUrl,
             this.logger,
-            this.accessToken
+            isAdmin,
+            accessToken,
+            this.accessTokenProvider
         )
 
         this.scanProxyClient = new ScanProxyClient(
             baseUrl,
             this.logger,
-            this.accessToken
+            isAdmin,
+            accessToken,
+            this.accessTokenProvider
         )
         this.userId = userId
         return this
@@ -247,12 +257,16 @@ export class ValidatorController {
  */
 export const localValidatorDefault = (
     userId: string,
-    token: string
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean = false,
+    accessToken: string = ''
 ): ValidatorController => {
     return new ValidatorController(
         userId,
         new URL('http://wallet.localhost:2000/api/validator'),
-        token
+        accessTokenProvider,
+        isAdmin,
+        accessToken
     )
 }
 
@@ -262,11 +276,15 @@ export const localValidatorDefault = (
  */
 export const localValidatorDefaultAppProvider = (
     userId: string,
-    token: string
+    accessTokenProvider: AccessTokenProvider,
+    isAdmin: boolean = false,
+    accessToken: string = ''
 ): ValidatorController => {
     return new ValidatorController(
         userId,
         new URL('http://wallet.localhost:3000/api/validator'),
-        token
+        accessTokenProvider,
+        isAdmin,
+        accessToken
     )
 }

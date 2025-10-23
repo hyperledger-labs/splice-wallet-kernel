@@ -3,7 +3,7 @@
 
 import { paths } from './generated-clients/validator-internal'
 import createClient, { Client } from 'openapi-fetch'
-import { Logger } from '@canton-network/core-types'
+import { AccessTokenProvider, Logger } from '@canton-network/core-types'
 
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional
@@ -48,21 +48,33 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
 export class ValidatorInternalClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
+    private accessTokenProvider: AccessTokenProvider | undefined
 
-    constructor(baseUrl: URL, logger: Logger, token?: string) {
+    constructor(
+        baseUrl: URL,
+        logger: Logger,
+        isAdmin: boolean,
+        accessToken?: string,
+        accessTokenProvider?: AccessTokenProvider
+    ) {
+        this.accessTokenProvider = accessTokenProvider
         this.logger = logger
-        this.logger.debug(
-            { baseUrl, token },
-            'ValidatorInternalClient initialized'
-        )
+        this.logger.debug({ baseUrl }, 'ValidatorInternalClient initialized')
         this.client = createClient<paths>({
             baseUrl: baseUrl.href,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
+                if (this.accessTokenProvider) {
+                    accessToken = isAdmin
+                        ? await this.accessTokenProvider.getAdminAccessToken()
+                        : await this.accessTokenProvider.getUserAccessToken()
+                }
                 return fetch(url, {
                     ...options,
                     headers: {
                         ...(options.headers || {}),
-                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        ...(accessToken
+                            ? { Authorization: `Bearer ${accessToken}` }
+                            : {}),
                         'Content-Type': 'application/json',
                     },
                 })

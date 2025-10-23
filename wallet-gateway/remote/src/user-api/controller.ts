@@ -4,6 +4,7 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { LedgerClient } from '@canton-network/core-ledger-client'
+import { AccessTokenProvider } from '@canton-network/core-types'
 import buildController from './rpc-gen/index.js'
 import {
     AddNetworkParams,
@@ -145,9 +146,14 @@ export const userController = (
                 'Fetched admin token for party allocation'
             )
 
+            const adminAccessTokenProvider: AccessTokenProvider = {
+                getUserAccessToken: async () => adminToken,
+                getAdminAccessToken: async () => adminToken,
+            }
+
             const partyAllocator = new PartyAllocationService(
                 network.synchronizerId,
-                adminToken,
+                adminAccessTokenProvider,
                 network.ledgerApi.baseUrl,
                 logger
             )
@@ -331,10 +337,18 @@ export const userController = (
 
             const notifier = notificationService.getNotifier(userId)
 
+            // Create AccessTokenProvider for user token
+            const userAccessTokenProvider: AccessTokenProvider = {
+                getUserAccessToken: async () => authContext!.accessToken,
+                getAdminAccessToken: async () => authContext!.accessToken,
+            }
+
             const ledgerClient = new LedgerClient(
                 new URL(network.ledgerApi.baseUrl),
-                authContext!.accessToken,
-                logger
+                logger,
+                false,
+                undefined,
+                userAccessTokenProvider
             )
 
             switch (wallet.signingProviderId) {
@@ -486,12 +500,20 @@ export const userController = (
         syncWallets: async function (): Promise<SyncWalletsResult> {
             const network = await store.getCurrentNetwork()
             assertConnected(authContext)
+
+            const userAccessTokenProvider: AccessTokenProvider = {
+                getUserAccessToken: async () => authContext!.accessToken,
+                getAdminAccessToken: async () => authContext!.accessToken,
+            }
+
             const service = new WalletSyncService(
                 store,
                 new LedgerClient(
                     new URL(network.ledgerApi.baseUrl),
-                    authContext!.accessToken,
-                    logger
+                    logger,
+                    false,
+                    undefined,
+                    userAccessTokenProvider
                 ),
                 authContext!,
                 logger

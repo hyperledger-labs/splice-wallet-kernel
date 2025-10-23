@@ -4,6 +4,7 @@
 import { jest } from '@jest/globals'
 import { pino } from 'pino'
 import { Network } from '@canton-network/core-wallet-store'
+import { AccessTokenProvider } from '@canton-network/core-types'
 import { sink } from 'pino-test'
 
 type AsyncFn = () => Promise<unknown>
@@ -73,9 +74,19 @@ describe('PartyAllocationService', () => {
         const mockLogger = pino(sink())
         const pas = await import('./party-allocation-service.js')
 
+        // Mock AccessTokenProvider
+        const mockAccessTokenProvider: AccessTokenProvider = {
+            getUserAccessToken: jest
+                .fn<() => Promise<string>>()
+                .mockResolvedValue('user.jwt'),
+            getAdminAccessToken: jest
+                .fn<() => Promise<string>>()
+                .mockResolvedValue('admin.jwt'),
+        }
+
         service = new pas.PartyAllocationService(
             network.synchronizerId,
-            'admin.jwt',
+            mockAccessTokenProvider,
             network.ledgerApi.baseUrl,
             mockLogger
         )

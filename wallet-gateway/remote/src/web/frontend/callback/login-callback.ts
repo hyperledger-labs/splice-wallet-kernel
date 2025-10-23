@@ -57,6 +57,13 @@ export class LoginCallback extends LitElement {
                     )
                 }
 
+                const payload = JSON.parse(
+                    atob(tokenResponse.access_token.split('.')[1])
+                )
+                stateManager.expirationDate.set(
+                    new Date(payload.exp * 1000).toString()
+                )
+
                 stateManager.accessToken.set(tokenResponse.access_token)
 
                 const authenticatedUserClient = createUserClient(
