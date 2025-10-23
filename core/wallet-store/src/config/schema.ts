@@ -48,10 +48,21 @@ const clientCredentialAuthSchema = z.object({
     admin: z.optional(clientCredentials),
 })
 
+const selfSignedAuthSchema = z.object({
+    identityProviderId: z.string(),
+    type: z.literal('self_signed'),
+    audience: z.string(),
+    scope: z.string(),
+    clientId: z.string(),
+    clientSecret: z.string(),
+    admin: z.optional(clientCredentials),
+})
+
 export const authSchema = z.discriminatedUnion('type', [
     passwordAuthSchema,
     implicitAuthSchema,
     clientCredentialAuthSchema,
+    selfSignedAuthSchema,
 ])
 
 export const networkSchema = z.object({
@@ -91,4 +102,5 @@ export type ImplicitAuth = z.infer<typeof implicitAuthSchema>
 export type PasswordAuth = z.infer<typeof passwordAuthSchema>
 export type ClientCredentials = z.infer<typeof clientCredentials>
 export type ClientCredentialAuth = z.infer<typeof clientCredentialAuthSchema>
+export type SelfSignedAuth = z.infer<typeof selfSignedAuthSchema>
 export type LedgerApi = z.infer<typeof ledgerApiSchema>
