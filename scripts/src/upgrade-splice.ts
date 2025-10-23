@@ -4,7 +4,7 @@
 import fs from 'fs'
 import path from 'path'
 import { spawnSync } from 'child_process'
-import { error, success } from './lib/utils.js'
+import { error, success, getRepoRoot } from './lib/utils.js'
 
 function usageAndExit() {
     console.error('Usage: upgrade-splice.ts <spliceVersion>')
@@ -14,11 +14,9 @@ function usageAndExit() {
 if (process.argv.length < 3) usageAndExit()
 
 const spliceVersion = process.argv[2]
-const utilsPath = path.resolve(__dirname, 'lib/utils.ts')
-const cantonSourcesPath = path.resolve(
-    process.cwd(),
-    '.splice/nix/canton-sources.json'
-)
+const repoRoot = getRepoRoot()
+const utilsPath = path.join(repoRoot, 'scripts/src/lib/utils.ts')
+const cantonSourcesPath = path.join(repoRoot, '.splice/nix/canton-sources.json')
 
 // Helper to backup and restore files
 //function backupFile(filePath: string) {
@@ -56,7 +54,7 @@ fs.writeFileSync(utilsPath, utilsContent, 'utf8')
 try {
     const fetchSplice = spawnSync(
         'node',
-        [path.resolve(__dirname, 'fetch-splice.ts'), '--updateHash'],
+        [path.join(repoRoot, 'scripts/src/fetch-splice.ts'), '--updateHash'],
         { stdio: 'inherit' }
     )
     if (fetchSplice.status !== 0) throw new Error('fetch-splice.ts failed')
@@ -118,7 +116,7 @@ for (const script of scripts) {
     try {
         const result = spawnSync(
             'node',
-            [path.resolve(__dirname, script), '--updateHash'],
+            [path.join(repoRoot, 'scripts/src', script), '--updateHash'],
             { stdio: 'inherit' }
         )
         if (result.status !== 0) throw new Error(`${script} failed`)
