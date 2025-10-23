@@ -14,6 +14,7 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
 ------
 
 **Released on October 22th, 2025**
+
 .. important::
 
    Release 0.13.0 & 0.13.1 have broken dependencies, use 0.14.0 instead.
