@@ -18,8 +18,8 @@
     },
     "scripts": {
         "build": "tsup && tsc -b tsconfig.types.json && yarn run docs",
-        "docs": "typedoc --tsconfig tsconfig.docs.json --entryPoints src/index.ts --out docs --excludeExternals --excludePrivate --hideGenerator --readme none",
-        "dev": "tsc -b --watch",
+        "docs": "typedoc --tsconfig tsconfig.docs.json",
+        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist"
     },

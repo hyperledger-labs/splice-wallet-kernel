@@ -1,7 +1,7 @@
 {
     "extends": "../../tsconfig.node.json",
-    "lib": ["ES2015"],
     "compilerOptions": {
+        "lib": ["ES2015"],
         "module": "ESNext",
         "esModuleInterop": true,
         "target": "ES2022",
@@ -15,18 +15,13 @@
         "moduleResolution": "bundler",
         "composite": true
     },
-    "typedocOptions": {
-        "name": "generated client",
-        "entryPoints": ["./src/index.ts"],
-        "out": "docs",
-        "readme": "./README.md",
-        "exclude": [
-            "node_modules",
-            "docs",
-            "dist",
-            "jest.config.js",
-            "src/*.test.ts",
-            "src/**/*.test.ts"
-        ]
-    }
+    "include": ["src"],
+    "exclude": [
+        "node_modules",
+        "docs",
+        "dist",
+        "jest.config.js",
+        "src/*.test.ts",
+        "src/**/*.test.ts"
+    ]
 }
