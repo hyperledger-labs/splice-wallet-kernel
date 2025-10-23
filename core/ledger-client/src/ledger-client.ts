@@ -6,7 +6,7 @@ import * as v3_3 from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import * as v3_4 from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
 import createClient, { Client, FetchOptions } from 'openapi-fetch'
 import { Logger } from 'pino'
-import { PartyId } from '@canton-network/core-types'
+import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
 import {
     defaultRetryableOptions,
     retryable,
@@ -84,24 +84,34 @@ export class LedgerClient {
     private clientVersion: SupportedVersions = '3.3' // default to 3.3 if not provided
     private currentClient: Client<paths>
     private initialized: boolean = false
+    private accessTokenProvider: AccessTokenProvider | undefined
     private readonly logger: Logger
 
     constructor(
         baseUrl: URL,
-        token: string,
         _logger: Logger,
+        isAdmin: boolean = false,
+        accessToken?: string,
+        accessTokenProvider?: AccessTokenProvider,
         version?: SupportedVersions
     ) {
         this.logger = _logger.child({ component: 'LedgerClient' })
+        this.accessTokenProvider = accessTokenProvider
+
         this.clients = {
             '3.3': createClient<v3_3.paths>({
                 baseUrl: baseUrl.href,
                 fetch: async (url: RequestInfo, options: RequestInit = {}) => {
+                    if (this.accessTokenProvider) {
+                        accessToken = isAdmin
+                            ? await this.accessTokenProvider.getAdminAccessToken()
+                            : await this.accessTokenProvider.getUserAccessToken()
+                    }
                     return fetch(url, {
                         ...options,
                         headers: {
                             ...(options.headers || {}),
-                            Authorization: `Bearer ${token}`,
+                            Authorization: `Bearer ${accessToken}`,
                         },
                     })
                 },
@@ -109,11 +119,16 @@ export class LedgerClient {
             '3.4': createClient<v3_4.paths>({
                 baseUrl: baseUrl.href,
                 fetch: async (url: RequestInfo, options: RequestInit = {}) => {
+                    if (this.accessTokenProvider) {
+                        accessToken = isAdmin
+                            ? await this.accessTokenProvider.getAdminAccessToken()
+                            : await this.accessTokenProvider.getUserAccessToken()
+                    }
                     return fetch(url, {
                         ...options,
                         headers: {
                             ...(options.headers || {}),
-                            Authorization: `Bearer ${token}`,
+                            Authorization: `Bearer ${accessToken}`,
                         },
                     })
                 },

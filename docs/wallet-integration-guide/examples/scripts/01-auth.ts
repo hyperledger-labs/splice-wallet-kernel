@@ -12,11 +12,12 @@ import {
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
     logger: console,
-    authFactory: localAuthDefault,
+    authFactory: () => localAuthDefault(console),
     ledgerFactory: localLedgerDefault,
     topologyFactory: localTopologyDefault,
     tokenStandardFactory: localTokenStandardDefault,
 })
+
 const fixedLocalNetSynchronizer =
     'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd'
 

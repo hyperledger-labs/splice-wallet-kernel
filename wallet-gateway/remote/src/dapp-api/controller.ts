@@ -84,8 +84,9 @@ export const dappController = (
             const network = await store.getCurrentNetwork()
             const ledgerClient = new LedgerClient(
                 new URL(network.ledgerApi.baseUrl),
-                assertConnected(context).accessToken,
-                logger
+                logger,
+                false,
+                assertConnected(context).accessToken
             )
             let result: unknown
             switch (params.requestMethod) {
@@ -125,8 +126,9 @@ export const dappController = (
 
             const ledgerClient = new LedgerClient(
                 new URL(network.ledgerApi.baseUrl),
-                context.accessToken,
-                logger
+                logger,
+                false,
+                context.accessToken
             )
 
             const userId = context.userId
@@ -172,8 +174,9 @@ export const dappController = (
 
             const ledgerClient = new LedgerClient(
                 new URL(network.ledgerApi.baseUrl),
-                context.accessToken,
-                logger
+                logger,
+                false,
+                context.accessToken
             )
 
             return prepareSubmission(

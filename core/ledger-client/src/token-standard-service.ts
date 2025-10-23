@@ -21,7 +21,11 @@ import {
     FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
     Beneficiaries,
 } from '@canton-network/core-token-standard'
-import { Logger, PartyId } from '@canton-network/core-types'
+import {
+    AccessTokenProvider,
+    Logger,
+    PartyId,
+} from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
 import { TokenStandardTransactionInterfaces } from './constants.js'
 import {
@@ -84,15 +88,19 @@ class CoreService {
         private ledgerClient: LedgerClient,
         private scanProxyClient: ScanProxyClient,
         private readonly logger: Logger,
-        private accessToken: string,
-        private readonly isMasterUser: boolean
+        private accessTokenProvider: AccessTokenProvider,
+        private readonly isMasterUser: boolean,
+        private isAdmin: boolean = false,
+        private accessToken: string = ''
     ) {}
 
     getTokenStandardClient(registryUrl: string): TokenStandardClient {
         return new TokenStandardClient(
             registryUrl,
             this.logger,
-            this.accessToken
+            this.isAdmin,
+            this.accessToken,
+            this.accessTokenProvider
         )
     }
 
@@ -1152,14 +1160,14 @@ export class TokenStandardService {
         private ledgerClient: LedgerClient,
         private scanProxyClient: ScanProxyClient,
         private logger: Logger,
-        private accessToken: string,
+        private accessTokenProvider: AccessTokenProvider,
         private readonly isMasterUser: boolean
     ) {
         this.core = new CoreService(
             ledgerClient,
             scanProxyClient,
             logger,
-            accessToken,
+            accessTokenProvider,
             isMasterUser
         )
         this.allocation = new AllocationService(this.core, this.logger)

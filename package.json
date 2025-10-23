@@ -16,7 +16,7 @@
         "generate:grpc": "tsx ./scripts/src/generate-protobufs.ts",
         "generate:all": "yarn generate:dapp && yarn generate:dapp-remote && yarn generate:user && yarn generate:signing && yarn run prettier . --write > /dev/null 2>&1",
         "build:all": "nx run-many -t build --parallel",
-        "clean:all": "nx run-many -t clean --parallel",
+        "clean:all": "nx run-many -t clean --parallel && yarn nx reset",
         "test:all": "nx run-many -t test --parallel",
         "postinstall": "husky",
         "script:cleancoding": "tsx ./scripts/src/clean-coding.ts",

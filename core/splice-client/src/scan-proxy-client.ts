@@ -3,7 +3,7 @@
 
 import { components, paths } from './generated-clients/scan-proxy'
 import createClient, { Client } from 'openapi-fetch'
-import { Logger } from '@canton-network/core-types'
+import { AccessTokenProvider, Logger } from '@canton-network/core-types'
 
 export type ScanProxyTypes = components['schemas']
 
@@ -50,18 +50,33 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
 export class ScanProxyClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
+    private accessTokenProvider: AccessTokenProvider | undefined
 
-    constructor(baseUrl: URL, logger: Logger, token: string) {
+    constructor(
+        baseUrl: URL,
+        logger: Logger,
+        isAdmin: boolean,
+        accessToken?: string,
+        accessTokenProvider?: AccessTokenProvider
+    ) {
+        this.accessTokenProvider = accessTokenProvider
         this.logger = logger
-        this.logger.debug({ baseUrl, token }, 'TokenStandardClient initialized')
+        this.logger.debug({ baseUrl }, 'TokenStandardClient initialized')
         this.client = createClient<paths>({
             baseUrl: baseUrl.href,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
+                if (this.accessTokenProvider) {
+                    accessToken = isAdmin
+                        ? await this.accessTokenProvider.getAdminAccessToken()
+                        : await this.accessTokenProvider.getUserAccessToken()
+                }
                 return fetch(url, {
                     ...options,
                     headers: {
                         ...(options.headers || {}),
-                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        ...(accessToken
+                            ? { Authorization: `Bearer ${accessToken}` }
+                            : {}),
                         'Content-Type': 'application/json',
                     },
                 })
