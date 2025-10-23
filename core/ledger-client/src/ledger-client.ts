@@ -508,6 +508,92 @@ export class LedgerClient {
         })
     }
 
+    async activeContracts2(options: {
+        offset: number
+        templateIds?: string[]
+        parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
+        filterByParty?: boolean
+    }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
+        const { offset, templateIds, parties, filterByParty } = options
+
+        if (templateIds?.length === 1 && parties?.length === 1) {
+            const party = parties[0]
+            const templateId = templateIds[0]
+            return this.acsHelper.activeContractsForTemplate(
+                offset,
+                party,
+                templateId
+            )
+        }
+
+        if (
+            filterByParty &&
+            templateIds?.length === 0 &&
+            parties?.length === 1
+        ) {
+            const party = parties[0]
+            return this.acsHelper.activeContractsForInterface(offset, party, '')
+        }
+
+        const filter = this.buildActiveContractsFilter(options)
+
+        return await this.postWithRetry('/v2/state/active-contracts', filter)
+    }
+
+    private buildActiveContractsFilter(options: {
+        offset: number
+        templateIds?: string[]
+        parties?: string[]
+        filterByParty?: boolean
+    }) {
+        const filter: PostRequest<'/v2/state/active-contracts'> = {
+            filter: {
+                filtersByParty: {},
+            },
+            verbose: false,
+            activeAtOffset: options?.offset,
+        }
+
+        // Helper to build TemplateFilter array
+        const buildTemplateFilter = (templateIds?: string[]) => {
+            if (!templateIds) return []
+            return [
+                {
+                    identifierFilter: {
+                        TemplateFilter: {
+                            value: {
+                                templateId: templateIds[0],
+                                includeCreatedEventBlob: true, //TODO: figure out if this should be configurable
+                            },
+                        },
+                    },
+                },
+            ]
+        }
+
+        if (
+            options?.filterByParty &&
+            options.parties &&
+            options.parties.length > 0
+        ) {
+            // Filter by party: set filtersByParty for each party
+            for (const party of options.parties) {
+                filter.filter!.filtersByParty[party] = {
+                    cumulative: options.templateIds
+                        ? buildTemplateFilter(options.templateIds)
+                        : [],
+                }
+            }
+        } else if (options?.templateIds) {
+            // Only template filter, no party
+            filter.filter!.filtersForAnyParty = {
+                cumulative: buildTemplateFilter(options.templateIds),
+            }
+        }
+
+        return filter
+    }
+
     public async postWithRetry<Path extends PostEndpoint>(
         path: Path,
         body: PostRequest<Path>,
