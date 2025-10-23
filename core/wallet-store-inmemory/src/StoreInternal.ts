@@ -21,7 +21,6 @@ import { LedgerClient } from '@canton-network/core-ledger-client'
 import { AccessTokenProvider } from '@canton-network/core-types'
 import { defaultRetryableOptions } from '@canton-network/core-ledger-client/dist/ledger-api-utils'
 
-
 interface UserStorage {
     wallets: Array<Wallet>
     transactions: Map<string, Transaction>
