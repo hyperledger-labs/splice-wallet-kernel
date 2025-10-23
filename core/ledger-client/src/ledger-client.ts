@@ -474,46 +474,6 @@ export class LedgerClient {
         parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
         filterByParty?: boolean
     }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
-        const partyFilter =
-            options.filterByParty && options.parties
-                ? options.parties[0]
-                : undefined
-
-        if (options.templateIds?.length === 1) {
-            return this.acsHelper.activeContractsForTemplate(
-                options.offset,
-                partyFilter ?? '',
-                options.templateIds[0]
-            )
-        }
-
-        if (
-            options.templateIds &&
-            options.filterByParty &&
-            options.parties?.length === 1
-        ) {
-            return this.acsHelper.activeContractsForInterface(
-                options.offset,
-                options.parties[0],
-                ''
-            )
-        }
-
-        return this.postWithRetry('/v2/state/active-contracts', {
-            filter: {
-                filtersByParty: {},
-            },
-            verbose: false,
-            activeAtOffset: options.offset,
-        })
-    }
-
-    async activeContracts2(options: {
-        offset: number
-        templateIds?: string[]
-        parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
-        filterByParty?: boolean
-    }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
         const { offset, templateIds, parties, filterByParty } = options
 
         if (templateIds?.length === 1 && parties?.length === 1) {
