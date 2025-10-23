@@ -4,7 +4,7 @@
 import fs from 'fs'
 import path from 'path'
 import { spawnSync } from 'child_process'
-import { error, success, getRepoRoot } from './lib/utils.js'
+import { error, success, getRepoRoot, UTILS_FILE_PATH } from './lib/utils.js'
 
 function usageAndExit() {
     console.error('Usage: upgrade-splice.ts <spliceVersion>')
@@ -15,15 +15,8 @@ if (process.argv.length < 3) usageAndExit()
 
 const spliceVersion = process.argv[2]
 const repoRoot = getRepoRoot()
-const utilsPath = path.join(repoRoot, 'scripts/src/lib/utils.ts')
 const cantonSourcesPath = path.join(repoRoot, '.splice/nix/canton-sources.json')
 
-// Helper to backup and restore files
-//function backupFile(filePath: string) {
-//    const backupPath = filePath + '.bak'
-//    fs.copyFileSync(filePath, backupPath)
-//    return backupPath
-//}
 function restoreFile(filePath: string) {
     const backupPath = filePath + '.bak'
     if (fs.existsSync(backupPath)) {
@@ -38,7 +31,7 @@ function cleanupBackups(filePath: string) {
 
 // Step 1: Update SPLICE_VERSION in utils.ts
 //const utilsBackup = backupFile(utilsPath)
-let utilsContent = fs.readFileSync(utilsPath, 'utf8')
+let utilsContent = fs.readFileSync(UTILS_FILE_PATH, 'utf8')
 const spliceVersionRegex = /export const SPLICE_VERSION = '([^']+)'/
 if (!spliceVersionRegex.test(utilsContent)) {
     console.error(error('SPLICE_VERSION not found in utils.ts'))
@@ -48,19 +41,19 @@ utilsContent = utilsContent.replace(
     spliceVersionRegex,
     `export const SPLICE_VERSION = '${spliceVersion}'`
 )
-fs.writeFileSync(utilsPath, utilsContent, 'utf8')
+fs.writeFileSync(UTILS_FILE_PATH, utilsContent, 'utf8')
 
 // Step 2: Run fetch-splice.ts with --updateHash
 try {
     const fetchSplice = spawnSync(
-        'node',
+        'tsx',
         [path.join(repoRoot, 'scripts/src/fetch-splice.ts'), '--updateHash'],
         { stdio: 'inherit' }
     )
     if (fetchSplice.status !== 0) throw new Error('fetch-splice.ts failed')
 } catch {
     console.error(error('fetch-splice.ts failed, rolling back changes.'))
-    restoreFile(utilsPath)
+    restoreFile(UTILS_FILE_PATH)
     process.exit(1)
 }
 
@@ -73,7 +66,7 @@ try {
     if (!damlRelease)
         throw new Error('version not found in canton-sources.json')
     // Update DAML_RELEASE_VERSION
-    utilsContent = fs.readFileSync(utilsPath, 'utf8')
+    utilsContent = fs.readFileSync(UTILS_FILE_PATH, 'utf8')
     const damlRegex = /export const DAML_RELEASE_VERSION = '([^']+)'/
     if (!damlRegex.test(utilsContent))
         throw new Error('DAML_RELEASE_VERSION not found in utils.ts')
@@ -95,14 +88,14 @@ try {
         }
         return match
     })
-    fs.writeFileSync(utilsPath, utilsContent, 'utf8')
+    fs.writeFileSync(UTILS_FILE_PATH, utilsContent, 'utf8')
 } catch {
     console.error(
         error(
             'Failed to update DAML_RELEASE_VERSION or SUPPORTED_VERSIONS, rolling back.'
         )
     )
-    restoreFile(utilsPath)
+    restoreFile(UTILS_FILE_PATH)
     process.exit(1)
 }
 
@@ -115,17 +108,17 @@ const scripts = [
 for (const script of scripts) {
     try {
         const result = spawnSync(
-            'node',
+            'tsx',
             [path.join(repoRoot, 'scripts/src', script), '--updateHash'],
             { stdio: 'inherit' }
         )
         if (result.status !== 0) throw new Error(`${script} failed`)
     } catch {
         console.error(error(`${script} failed, rolling back changes.`))
-        restoreFile(utilsPath)
+        restoreFile(UTILS_FILE_PATH)
         process.exit(1)
     }
 }
 
-cleanupBackups(utilsPath)
+cleanupBackups(UTILS_FILE_PATH)
 console.log(success('Upgrade completed successfully.'))

@@ -21,10 +21,15 @@ async function fetchCanton(
     cantonVersions: CantonVersionAndHash,
     updateHash: boolean
 ) {
-    const tarfile = path.join(cantonVersions.version, 'canton.tar.gz')
+    const tarfile = path.join(
+        CANTON_PATH,
+        cantonVersions.version,
+        'canton.tar.gz'
+    )
     const archiveUrl = `https://www.canton.io/releases/canton-open-source-${cantonVersions.version}.tar.gz`
     const cantonDownloadPath = path.join(CANTON_PATH, cantonVersions.version)
 
+    console.log(cantonDownloadPath)
     await downloadAndUnpackTarball(archiveUrl, tarfile, cantonDownloadPath, {
         hash: cantonVersions.hash,
         strip: 1,
