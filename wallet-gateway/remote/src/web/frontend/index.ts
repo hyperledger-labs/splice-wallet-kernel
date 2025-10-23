@@ -14,6 +14,12 @@ const NOT_FOUND_PAGE_REDIRECT = '/404'
 const LOGIN_PAGE_REDIRECT = '/login'
 const ALLOWED_ROUTES = ['/wallets', '/networks', '/approve', '/']
 
+window.addEventListener('beforeunload', () => {
+    if (window.name === 'wallet-popup') {
+        stateManager.accessToken.clear()
+    }
+})
+
 @customElement('user-ui')
 export class UserUI extends LitElement {
     connectedCallback(): void {

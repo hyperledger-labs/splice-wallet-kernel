@@ -70,6 +70,8 @@ export const dappController = (
                 return null
             } else {
                 const notifier = notificationService.getNotifier(context.userId)
+                await store.removeSession()
+
                 notifier.emit('statusChanged', {
                     kernel: kernelInfo,
                     isConnected: false,

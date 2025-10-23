@@ -3,7 +3,11 @@ import './App.css'
 import * as sdk from '@canton-network/dapp-sdk'
 import { createPingCommand } from './commands/createPingCommand'
 
-function statusInfo(status: sdk.dappAPI.StatusEvent) {
+function statusInfo(status?: sdk.dappAPI.StatusEvent) {
+    if (!status) {
+        return 'status: 🔴 disconnected'
+    }
+
     return `Wallet Gateway: ${status.kernel.id}, status: ${
         status.isConnected ? '🟢 connected' : '🔴 disconnected'
     }, chain: ${status.chainId}`
@@ -12,7 +16,7 @@ function statusInfo(status: sdk.dappAPI.StatusEvent) {
 function App() {
     const [loading, setLoading] = useState(false)
     const [status, setStatus] = useState<sdk.dappAPI.StatusEvent | undefined>()
-    const [infoMsg, setInfoMsg] = useState('uninitialized')
+    const [infoMsg, setInfoMsg] = useState('')
     const [error, setError] = useState('')
     const [messages, setMessages] = useState<string[]>([])
     const [primaryParty, setPrimaryParty] = useState<string>()
@@ -21,16 +25,13 @@ function App() {
     )
 
     useEffect(() => {
-        if (status) {
-            setInfoMsg(statusInfo(status))
-        }
+        setInfoMsg(statusInfo(status))
     }, [status])
 
     useEffect(() => {
         const provider = window.canton // either postMsg provider or httpProvider
 
         if (!provider) {
-            setInfoMsg('Splice provider not found')
             return
         }
 
@@ -63,6 +64,7 @@ function App() {
             })
             .catch((err) => {
                 console.error('Error requesting wallets:', err)
+                sdk.disconnect()
                 setError(err instanceof Error ? err.message : String(err))
             })
 
@@ -158,7 +160,6 @@ function App() {
                                 setLoading(true)
                                 sdk.connect()
                                     .then(({ status }) => {
-                                        console.log('HELLO 2', status)
                                         setLoading(false)
                                         setStatus(status)
                                         setError('')

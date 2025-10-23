@@ -105,13 +105,22 @@ export class Provider implements SpliceProvider {
     }
 }
 
+let kernelUiPopup: WindowProxy | null = null
+
 export const openKernelUserUI = (
     walletType: DiscoverResult['walletType'],
     userUrl: string
 ) => {
     switch (walletType) {
         case 'remote':
-            popupHref(new URL(userUrl))
+            // Focus the existing popup if it's already open
+            if (kernelUiPopup === null || kernelUiPopup.closed) {
+                popupHref(new URL(userUrl)).then((window) => {
+                    kernelUiPopup = window
+                })
+            } else {
+                kernelUiPopup.focus()
+            }
             break
         case 'extension': {
             const msg: SpliceMessage = {
@@ -121,6 +130,13 @@ export const openKernelUserUI = (
             window.postMessage(msg, '*')
             break
         }
+    }
+}
+
+export const closeKernelUserUI = () => {
+    if (kernelUiPopup && !kernelUiPopup.closed) {
+        kernelUiPopup.close()
+        kernelUiPopup = null
     }
 }
 
@@ -152,7 +168,6 @@ export const dappController = (provider: SpliceProvider) =>
                     provider.on<dappRemoteAPI.OnConnectedEvent>(
                         'onConnected',
                         (event) => {
-                            console.log('SDK: OnConnectedEvent', event)
                             clearTimeout(timeout)
                             const result: dappAPI.ConnectResult = {
                                 sessionToken: event.sessionToken ?? '',

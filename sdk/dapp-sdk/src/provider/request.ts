@@ -9,6 +9,7 @@ import { injectProvider } from './index'
 import { GatewaysConfig } from '@canton-network/core-types'
 import gateways from '../gateways.json'
 import { removeKernelDiscovery, removeKernelSession } from '../storage'
+import { closeKernelUserUI } from '../provider.js'
 
 export async function connect(): Promise<dappAPI.ConnectResult> {
     const config: GatewaysConfig[] = gateways
@@ -56,6 +57,7 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
 export async function disconnect(): Promise<dappAPI.Null> {
     removeKernelSession()
     removeKernelDiscovery()
+    closeKernelUserUI()
 
     return await assertProvider().request<dappAPI.Null>({
         method: 'disconnect',

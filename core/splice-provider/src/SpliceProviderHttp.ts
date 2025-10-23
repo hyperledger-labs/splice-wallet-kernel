@@ -67,17 +67,24 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 // We requery the status explicitly here, as it's not guaranteed that the socket will be open & authenticated
                 // before the `onConnected` event is fired from the `addSession` RPC call. The dappApi.StatusResult and
                 // dappApi.OnConnectedEvent are mapped manually to avoid dependency.
-                this.request({ method: 'status' }).then((status) => {
-                    const statusResult = status as {
-                        kernel: unknown
-                        chainId?: unknown
-                    }
-                    this.emit('onConnected', {
-                        kernel: statusResult.kernel,
-                        chainId: statusResult.chainId,
-                        sessionToken: this.sessionToken,
+                this.request({ method: 'status' })
+                    .then((status) => {
+                        const statusResult = status as {
+                            kernel: unknown
+                            chainId?: unknown
+                        }
+                        this.emit('onConnected', {
+                            kernel: statusResult.kernel,
+                            chainId: statusResult.chainId,
+                            sessionToken: this.sessionToken,
+                        })
                     })
-                })
+                    .catch((err) => {
+                        console.error(
+                            'Error requesting status after auth:',
+                            err
+                        )
+                    })
             }
         })
     }
