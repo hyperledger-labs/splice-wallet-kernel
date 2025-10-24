@@ -423,18 +423,15 @@ export class ACSContainer {
         }
 
         if (key.party) {
-            // No interface → empty filter for the party
             if (!key.interfaceId && !key.templateId) {
                 baseFormat.filtersByParty[key.party] = {}
                 return baseFormat
             }
 
-            // Has interface/template → cumulative filter for the party
             baseFormat.filtersByParty[key.party] = cumulativeFilter
             return baseFormat
         }
 
-        // No party → use global filter
         return {
             ...baseFormat,
             filtersForAnyParty: cumulativeFilter,
