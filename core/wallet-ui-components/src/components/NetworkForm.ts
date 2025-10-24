@@ -6,6 +6,7 @@ import {
     Network,
     networkSchema,
     PasswordAuth,
+    SelfSignedAuth,
 } from '@canton-network/core-wallet-store'
 import { html } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
@@ -91,6 +92,17 @@ export class NetworkForm extends BaseElement {
                 scope: network.auth?.scope || '',
                 tokenUrl: (network.auth as PasswordAuth)?.tokenUrl || '',
                 grantType: (network.auth as PasswordAuth)?.grantType || '',
+                admin: network.auth?.admin,
+            }
+        } else if (this.authType === 'self_signed') {
+            network.auth = {
+                type: 'self_signed',
+                identityProviderId: network.auth?.identityProviderId || '',
+                audience: network.auth?.audience || '',
+                scope: network.auth?.scope || '',
+                clientId: network.auth?.clientId || '',
+                clientSecret:
+                    (network.auth as SelfSignedAuth)?.clientSecret || '',
                 admin: network.auth?.admin,
             }
         }
