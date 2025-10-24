@@ -424,7 +424,7 @@ export class ACSContainer {
 
         if (key.party) {
             // No interface → empty filter for the party
-            if (!key.interfaceId) {
+            if (!key.interfaceId && !key.templateId) {
                 baseFormat.filtersByParty[key.party] = {}
                 return baseFormat
             }
