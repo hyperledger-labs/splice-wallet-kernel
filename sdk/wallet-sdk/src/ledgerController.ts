@@ -851,6 +851,9 @@ export class LedgerController {
         })
     }
 
+    /**
+     * Returns stats for the internal acs cache
+     */
     getACSCacheStats() {
         return this.client.getCacheStats()
     }
