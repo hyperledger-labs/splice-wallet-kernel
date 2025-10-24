@@ -54,9 +54,6 @@ const multiHostedParticipantEndpointConfig = [
     },
 ]
 
-const token = await sdk.authTokenProvider.getAdminAccessToken()
-logger.info(token)
-
 logger.info('multi host party starting...')
 
 const multiHostedParty = await sdk.userLedger?.signAndAllocateExternalParty(
