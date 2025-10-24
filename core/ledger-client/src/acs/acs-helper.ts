@@ -26,6 +26,9 @@ export class ACSHelper {
     private hits = 0
     private misses = 0
     private evictions = 0
+    private totalLookuptime = 0
+    private totalCacheServeTime = 0
+    private totalCacheMissServeTime = 0
 
     constructor(
         apiInstance: LedgerClient,
@@ -67,13 +70,22 @@ export class ACSHelper {
 
     getCacheStats() {
         const totalCalls = this.hits + this.misses
+        const hitRate = totalCalls
+            ? ((totalCalls / this.hits) * 100) / totalCalls
+            : 0
+        const avgLookupTime =
+            totalCalls > 0 ? this.totalLookuptime / totalCalls : 0
+
         return {
             totalCalls,
             hits: this.hits,
             misses: this.misses,
             evictions: this.evictions,
             cacheSize: this.contractsSet.size,
-            hitRate: `${(this.hits / totalCalls) * 100}%`,
+            hitRate: hitRate.toFixed(2) + '%',
+            averageLookupTime: avgLookupTime.toFixed(3) + ' ms',
+            cacheServiceTime: this.totalCacheServeTime.toFixed(3),
+            missServiceTime: this.totalCacheMissServeTime.toFixed(3),
         }
     }
 
@@ -91,7 +103,10 @@ export class ACSHelper {
 
     private findACSContainer(key: ACSKey): ACSContainer {
         const keyStr = ACSHelper.keyToString(key)
+        const start = performance.now()
         const existing = this.contractsSet.get(keyStr)
+        const end = performance.now()
+        this.totalLookuptime += end - start
 
         if (existing) {
             this.hits++
@@ -135,8 +150,23 @@ export class ACSHelper {
         templateId: string
     ): Promise<Array<JsGetActiveContractsResponse>> {
         const key = ACSHelper.createKey(partyFilter, templateId, undefined)
+        const start = performance.now()
         const container = this.findACSContainer(key)
-        return container.update(offset, key, this.apiInstance, this.wsSupport)
+        const result = container.update(
+            offset,
+            key,
+            this.apiInstance,
+            this.wsSupport
+        )
+        const end = performance.now()
+
+        if (this.contractsSet.has(ACSHelper.keyToString(key))) {
+            this.totalCacheServeTime += end - start
+        } else {
+            this.totalCacheMissServeTime += end - start
+        }
+
+        return result
     }
 
     async activeContractsForInterface(
@@ -145,19 +175,24 @@ export class ACSHelper {
         interfaceId: string
     ): Promise<Array<JsGetActiveContractsResponse>> {
         const key = ACSHelper.createKey(partyFilter, undefined, interfaceId)
-
+        const start = performance.now()
         const container = this.findACSContainer(key)
 
-        try {
-            return container.update(
-                offset,
-                key,
-                this.apiInstance,
-                this.wsSupport
-            )
-        } catch (e) {
-            this.logger.error(e, `updating container failed with`)
-            throw e
+        const result = container.update(
+            offset,
+            key,
+            this.apiInstance,
+            this.wsSupport
+        )
+
+        const end = performance.now()
+
+        if (this.contractsSet.has(ACSHelper.keyToString(key))) {
+            this.totalCacheServeTime += end - start
+        } else {
+            this.totalCacheMissServeTime += end - start
         }
+
+        return result
     }
 }
