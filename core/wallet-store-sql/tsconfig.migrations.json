@@ -1,0 +1,16 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "composite": false,
+        "noEmit": false,
+        "emitDeclarationOnly": false,
+        "declaration": false,
+        "declarationMap": false,
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "sourceMap": true
+    },
+    "include": ["src/migrations/**/*.ts", "src/schema.ts"]
+}

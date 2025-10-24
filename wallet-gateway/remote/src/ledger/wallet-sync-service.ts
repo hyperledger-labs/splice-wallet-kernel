@@ -1,8 +1,10 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerClient } from '@canton-network/core-ledger-client'
-import { defaultRetryableOptions } from '@canton-network/core-ledger-client/dist/ledger-api-utils.js'
+import {
+    LedgerClient,
+    defaultRetryableOptions,
+} from '@canton-network/core-ledger-client'
 import { AuthContext } from '@canton-network/core-wallet-auth'
 import { Store, Wallet } from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'

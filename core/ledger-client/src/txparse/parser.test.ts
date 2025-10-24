@@ -27,8 +27,7 @@ const EVENTS_BY_CID_PATH = '/v2/events/events-by-contract-id' as const
 const txsMock = rawTxsMock as unknown as JsTransaction[]
 
 const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const testDataDir = `${__dirname}/test-data`
+const testDataDir = `${dirname(__filename)}/test-data`
 
 const makeLedgerClientFromEventsResponses = (
     responses: JsGetEventsByContractIdResponse[]

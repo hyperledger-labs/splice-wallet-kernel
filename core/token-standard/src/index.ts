@@ -4,3 +4,5 @@
 export * from './token-standard-client.js'
 export * from './interface-ids.const.js'
 export * from './types'
+
+export * from '@daml.js/token-standard-models-1.0.0'
