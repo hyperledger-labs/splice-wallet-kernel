@@ -5,7 +5,8 @@ export * from './topology-write-service.js'
 export * from './token-standard-service.js'
 export * from './ledger-client.js'
 export * from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
-
+export * from './acs/acs-container.js'
+export * from './acs/ws-support.js'
 export type {
     Transaction,
     TokenStandardEvent,

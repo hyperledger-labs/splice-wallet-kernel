@@ -13,6 +13,7 @@ import {
     retryableOptions,
 } from './ledger-api-utils.js'
 
+import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
 export const supportedVersions = ['3.3', '3.4'] as const
 
 export type SupportedVersions = (typeof supportedVersions)[number]
@@ -85,6 +86,7 @@ export class LedgerClient {
     private currentClient: Client<paths>
     private initialized: boolean = false
     private accessTokenProvider: AccessTokenProvider | undefined
+    private acsHelper: ACSHelper
     private readonly logger: Logger
 
     constructor(
@@ -93,7 +95,8 @@ export class LedgerClient {
         isAdmin: boolean = false,
         accessToken?: string,
         accessTokenProvider?: AccessTokenProvider,
-        version?: SupportedVersions
+        version?: SupportedVersions,
+        acsHelperOptions?: AcsHelperOptions
     ) {
         this.logger = _logger.child({ component: 'LedgerClient' })
         this.accessTokenProvider = accessTokenProvider
@@ -137,6 +140,7 @@ export class LedgerClient {
 
         this.clientVersion = version ?? this.clientVersion
         this.currentClient = this.clients[this.clientVersion]
+        this.acsHelper = new ACSHelper(this, _logger, acsHelperOptions)
     }
 
     public async init() {
@@ -464,6 +468,98 @@ export class LedgerClient {
         return this.valueOrError(resp)
     }
 
+    async activeContracts(options: {
+        offset: number
+        templateIds?: string[]
+        parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
+        filterByParty?: boolean
+    }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
+        const { offset, templateIds, parties, filterByParty } = options
+
+        this.logger.debug(options, 'options for active contracts')
+
+        if (templateIds?.length === 1 && parties?.length === 1) {
+            const party = parties[0]
+            const templateId = templateIds[0]
+            return this.acsHelper.activeContractsForTemplate(
+                offset,
+                party,
+                templateId
+            )
+        }
+
+        if (filterByParty && !templateIds?.length && parties?.length === 1) {
+            const party = parties[0]
+            const r = this.acsHelper.activeContractsForInterface(
+                offset,
+                party,
+                ''
+            )
+            this.logger.info(r)
+            return r
+        }
+
+        const filter = this.buildActiveContractsFilter(options)
+
+        this.logger.debug('falling back to post request')
+
+        return await this.postWithRetry('/v2/state/active-contracts', filter)
+    }
+
+    private buildActiveContractsFilter(options: {
+        offset: number
+        templateIds?: string[]
+        parties?: string[]
+        filterByParty?: boolean
+    }) {
+        const filter: PostRequest<'/v2/state/active-contracts'> = {
+            filter: {
+                filtersByParty: {},
+            },
+            verbose: false,
+            activeAtOffset: options?.offset,
+        }
+
+        // Helper to build TemplateFilter array
+        const buildTemplateFilter = (templateIds?: string[]) => {
+            if (!templateIds) return []
+            return [
+                {
+                    identifierFilter: {
+                        TemplateFilter: {
+                            value: {
+                                templateId: templateIds[0],
+                                includeCreatedEventBlob: true, //TODO: figure out if this should be configurable
+                            },
+                        },
+                    },
+                },
+            ]
+        }
+
+        if (
+            options?.filterByParty &&
+            options.parties &&
+            options.parties.length > 0
+        ) {
+            // Filter by party: set filtersByParty for each party
+            for (const party of options.parties) {
+                filter.filter!.filtersByParty[party] = {
+                    cumulative: options.templateIds
+                        ? buildTemplateFilter(options.templateIds)
+                        : [],
+                }
+            }
+        } else if (options?.templateIds) {
+            // Only template filter, no party
+            filter.filter!.filtersForAnyParty = {
+                cumulative: buildTemplateFilter(options.templateIds),
+            }
+        }
+
+        return filter
+    }
+
     public async postWithRetry<Path extends PostEndpoint>(
         path: Path,
         body: PostRequest<Path>,
@@ -496,6 +592,10 @@ export class LedgerClient {
         )
     }
 
+    public getCacheStats() {
+        return this.acsHelper.getCacheStats()
+    }
+
     /**
      * @deprecated use postWithRetry instead, should be made private
      */
@@ -504,7 +604,7 @@ export class LedgerClient {
         body: PostRequest<Path>,
         params?: {
             path?: Record<string, string>
-            query?: Record<string, string>
+            query?: Record<string, string | number | boolean>
         },
         // needed when posting to /packages, so content type and jsonification of bytes can be overriden
         additionalOptions?: ExtraPostOpts
