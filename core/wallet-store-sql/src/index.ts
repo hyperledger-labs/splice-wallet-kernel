@@ -4,3 +4,4 @@
 export * from './store-sql.js'
 export * from './migrator.js'
 export * from './cli.js'
+export * from './bootstrap.js'
