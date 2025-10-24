@@ -23,6 +23,8 @@ export class ACSHelper {
     private readonly wsSupport: WSSupport | undefined
     private readonly logger: Logger
     private useLocalStorage: boolean
+    private hits = 0
+    private misses = 0
 
     constructor(
         apiInstance: LedgerClient,
@@ -78,6 +80,8 @@ export class ACSHelper {
         const existing = this.contractsSet.get(keyStr)
 
         if (existing) {
+            this.hits++
+            this.logger.info('cache hit')
             return existing
         }
         if (this.useLocalStorage) {
@@ -103,7 +107,10 @@ export class ACSHelper {
             }
         }
 
+        this.logger.info('cache miss')
+        this.misses++
         const newContainer = new ACSContainer()
+
         this.contractsSet.set(keyStr, newContainer)
         return newContainer
     }
@@ -124,7 +131,19 @@ export class ACSHelper {
         interfaceId: string
     ): Promise<Array<JsGetActiveContractsResponse>> {
         const key = ACSHelper.createKey(partyFilter, undefined, interfaceId)
+
         const container = this.findACSContainer(key)
-        return container.update(offset, key, this.apiInstance, this.wsSupport)
+
+        try {
+            return container.update(
+                offset,
+                key,
+                this.apiInstance,
+                this.wsSupport
+            )
+        } catch (e) {
+            this.logger.error(e, `updating container failed with`)
+            throw e
+        }
     }
 }

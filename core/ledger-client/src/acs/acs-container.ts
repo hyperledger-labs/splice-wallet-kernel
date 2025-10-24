@@ -15,6 +15,7 @@ import {
     GetUpdatesRequest,
     Event,
 } from './types.js'
+import pino from 'pino'
 
 interface ACSUpdateConfig {
     maxEventsBeforePrune: number
@@ -284,14 +285,18 @@ export class ACSContainer {
         api: LedgerClient,
         wsSupport?: WSSupport
     ): Promise<ACSSet> {
-        if (wsSupport && wsSupport.enabled()) {
-            return ACSContainer.readACSUsingWs(offset, key, wsSupport).catch(
-                () => {
-                    console.log('Falling back to HTTP for ACS read')
-                    return ACSContainer.readHttpACS(offset, key, api)
-                }
-            )
-        }
+        const logger = pino()
+        logger.info('in readACS function')
+        const truthy = (wsSupport && wsSupport.enabled()) ?? false
+        logger.info(truthy, 'truth evaluated')
+        // if (wsSupport && wsSupport.enabled()) {
+        //     return ACSContainer.readACSUsingWs(offset, key, wsSupport).catch(
+        //         () => {
+        //             console.log('Falling back to HTTP for ACS read')
+        //             return ACSContainer.readHttpACS(offset, key, api)
+        //         }
+        //     )
+        // }
         return ACSContainer.readHttpACS(offset, key, api)
     }
 
@@ -416,6 +421,19 @@ export class ACSContainer {
         const cumulativeFilter = key.templateId
             ? ACSContainer.createTemplateFilter(key.templateId)
             : ACSContainer.createInterfaceFilter(key.interfaceId ?? '')
+
+        const logger = pino()
+        const formatCondition = key.party && !key.interfaceId
+        logger.info(formatCondition)
+
+        if (key.party && !key.interfaceId) {
+            return {
+                filtersByParty: {
+                    [key.party]: {},
+                },
+                verbose: false,
+            }
+        }
 
         if (key.party) {
             return {
