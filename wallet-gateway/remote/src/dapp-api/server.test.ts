@@ -61,14 +61,17 @@ test('call connect rpc', async () => {
         id: 0,
         jsonrpc: '2.0',
         result: {
-            kernel: {
-                id: 'remote-da',
-                clientType: 'remote',
-                url: 'http://localhost:3030/api/v0/dapp',
-                userUrl: 'http://localhost:3030',
+            sessionToken: '',
+            status: {
+                kernel: {
+                    id: 'remote-da',
+                    clientType: 'remote',
+                    url: 'http://localhost:3030/api/v0/dapp',
+                    userUrl: 'http://localhost:3030',
+                },
+                isConnected: false,
+                userUrl: 'http://localhost:3030/login/',
             },
-            isConnected: false,
-            userUrl: 'http://localhost:3030/login/',
         },
     })
 })

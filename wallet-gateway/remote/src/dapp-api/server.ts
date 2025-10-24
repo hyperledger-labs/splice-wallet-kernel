@@ -55,6 +55,9 @@ export const dapp = (
         const onAccountsChanged = (...event: unknown[]) => {
             io.emit('accountsChanged', ...event)
         }
+        const onStatusChanged = (...event: unknown[]) => {
+            io.emit('statusChanged', ...event)
+        }
         const onConnected = (...event: unknown[]) => {
             io.emit('onConnected', ...event)
         }
@@ -75,6 +78,7 @@ export const dapp = (
 
                 notifier.on('accountsChanged', onAccountsChanged)
                 notifier.on('onConnected', onConnected)
+                notifier.on('statusChanged', onStatusChanged)
                 notifier.on('txChanged', onTxChanged)
             })
 
@@ -84,6 +88,7 @@ export const dapp = (
             if (notifier) {
                 notifier.removeListener('accountsChanged', onAccountsChanged)
                 notifier.removeListener('onConnected', onConnected)
+                notifier.removeListener('statusChanged', onStatusChanged)
                 notifier.removeListener('txChanged', onTxChanged)
             }
         })

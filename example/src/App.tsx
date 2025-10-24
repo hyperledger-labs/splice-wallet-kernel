@@ -3,9 +3,20 @@ import './App.css'
 import * as sdk from '@canton-network/dapp-sdk'
 import { createPingCommand } from './commands/createPingCommand'
 
+function statusInfo(status?: sdk.dappAPI.StatusEvent) {
+    if (!status) {
+        return 'status: 🔴 disconnected'
+    }
+
+    return `Wallet Gateway: ${status.kernel.id}, status: ${
+        status.isConnected ? '🟢 connected' : '🔴 disconnected'
+    }, chain: ${status.chainId}`
+}
+
 function App() {
     const [loading, setLoading] = useState(false)
-    const [status, setStatus] = useState('')
+    const [status, setStatus] = useState<sdk.dappAPI.StatusEvent | undefined>()
+    const [infoMsg, setInfoMsg] = useState('')
     const [error, setError] = useState('')
     const [messages, setMessages] = useState<string[]>([])
     const [primaryParty, setPrimaryParty] = useState<string>()
@@ -14,22 +25,23 @@ function App() {
     )
 
     useEffect(() => {
+        setInfoMsg(statusInfo(status))
+    }, [status])
+
+    useEffect(() => {
         const provider = window.canton // either postMsg provider or httpProvider
 
         if (!provider) {
-            setStatus('Splice provider not found')
             return
         }
 
         // Attempt to get WK status on initial load
         provider
-            .request<sdk.dappAPI.StatusResult>({ method: 'status' })
+            .request<sdk.dappAPI.StatusEvent>({ method: 'status' })
             .then((result) => {
-                setStatus(
-                    `Wallet Gateway: ${result.kernel.id}, status: ${result.isConnected ? 'connected' : 'disconnected'}, chain: ${result.chainId}`
-                )
+                setStatus(result)
             })
-            .catch(() => setStatus('disconnected'))
+            .catch(() => setInfoMsg('failed to get status'))
 
         provider
             .request({
@@ -71,6 +83,11 @@ function App() {
             }
         }
 
+        const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
+            console.log('Status changed event: ', status)
+            setStatus(status)
+        }
+
         // Listen for connected events from the provider
         // This will be triggered when the user connects to the Wallet Gateway
         provider.on<sdk.dappAPI.TxChangedEvent>('txChanged', messageListener)
@@ -78,10 +95,12 @@ function App() {
             'accountsChanged',
             onAccountsChanged
         )
+        provider.on<sdk.dappAPI.StatusEvent>('statusChanged', onStatusChanged)
 
         return () => {
             provider.removeListener('txChanged', messageListener)
             provider.removeListener('accountsChanged', onAccountsChanged)
+            provider.removeListener('statusChanged', onStatusChanged)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -114,36 +133,52 @@ function App() {
             <div className="card">
                 <div
                     style={{
-                        display: 'flex',
                         gap: '10px',
+                        display: 'flex',
                         justifyContent: 'center',
                     }}
                 >
+                    {status?.isConnected ? (
+                        <button
+                            disabled={loading}
+                            onClick={() => {
+                                console.log(
+                                    'Disconnecting from Wallet Gateway...'
+                                )
+                                setLoading(true)
+                                sdk.disconnect().then(() => setLoading(false))
+                            }}
+                        >
+                            disconnect
+                        </button>
+                    ) : (
+                        <button
+                            disabled={loading}
+                            onClick={() => {
+                                console.log('Connecting to Wallet Gateway...')
+                                setLoading(true)
+                                sdk.connect()
+                                    .then(({ status }) => {
+                                        setLoading(false)
+                                        setStatus(status)
+                                        setError('')
+                                    })
+                                    .catch((err) => {
+                                        console.error(
+                                            'Error setting status:',
+                                            err
+                                        )
+                                        setLoading(false)
+                                        setInfoMsg('error')
+                                        setError(err.details)
+                                    })
+                            }}
+                        >
+                            connect to Wallet Gateway
+                        </button>
+                    )}
                     <button
-                        disabled={loading}
-                        onClick={() => {
-                            console.log('Connecting to Wallet Gateway...')
-                            setLoading(true)
-                            sdk.connect()
-                                .then(({ kernel, isConnected, chainId }) => {
-                                    setLoading(false)
-                                    setStatus(
-                                        `Wallet Gateway: ${kernel.id}, status: ${isConnected ? 'connected' : 'disconnected'}, chain: ${chainId}`
-                                    )
-                                    setError('')
-                                })
-                                .catch((err) => {
-                                    console.error('Error setting status:', err)
-                                    setLoading(false)
-                                    setStatus('error')
-                                    setError(err.details)
-                                })
-                        }}
-                    >
-                        connect to Wallet Gateway
-                    </button>
-                    <button
-                        disabled={status.includes('disconnected') || loading}
+                        disabled={!status?.isConnected || loading}
                         onClick={() => {
                             console.log('Opening to Wallet Gateway...')
                             sdk.open()
@@ -159,7 +194,7 @@ function App() {
                     </button>
                 </div>
                 {loading && <p>Loading...</p>}
-                <p>{status}</p>
+                <p>{infoMsg}</p>
                 <p>primary party: {primaryParty}</p>
                 {error && (
                     <p className="error">Error: {JSON.stringify(error)}</p>

@@ -180,7 +180,18 @@ export class AppHeader extends BaseElement {
     /** TODO: abstract this -- the component library might be used in a desktop Electron app */
     private logout() {
         localStorage.clear()
-        window.location.href = '/login'
+
+        if (
+            window.name === 'wallet-popup' &&
+            window.opener &&
+            !window.opener.closed
+        ) {
+            // close the gateway UI automatically if we are within a popup
+            window.close()
+        } else {
+            // if the gateway UI is running in the main window, redirect to login
+            window.location.href = '/login'
+        }
     }
 
     render() {
