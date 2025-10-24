@@ -70,9 +70,7 @@ export class ACSHelper {
 
     getCacheStats() {
         const totalCalls = this.hits + this.misses
-        const hitRate = totalCalls
-            ? ((totalCalls / this.hits) * 100) / totalCalls
-            : 0
+        const hitRate = totalCalls ? (this.hits / totalCalls) * 100 : 0
         const avgLookupTime =
             totalCalls > 0 ? this.totalLookuptime / totalCalls : 0
 
