@@ -4,7 +4,7 @@
 import { jest, describe, it, expect, beforeEach } from '@jest/globals'
 
 import { TransactionParser } from './parser.js'
-import type { Transaction } from './types.js'
+import type { PrettyTransactions, Transaction } from './types.js'
 import eventsByContractIdResponses from './test-data/mock/eventsByContractIdResponses.js'
 import rawTxsMock from './test-data/mock/txs.js'
 import txsExpected from './test-data/expected/txs.js'
@@ -172,6 +172,10 @@ describe('TransactionParser', () => {
             `${testDataDir}/mock/utility-payload-ledger-effects.json`,
             'utf-8'
         )
+        const result = fs.readFileSync(
+            `${testDataDir}/expected/utility-payload-ledger-effects-sender.json`,
+            'utf-8'
+        )
 
         const updates: JsGetUpdatesResponse[] = JSON.parse(data)
         const partyId =
@@ -189,6 +193,7 @@ describe('TransactionParser', () => {
             partyId,
             mockLedgerClient
         )
-        console.log(JSON.stringify(pretty))
+        const prettyResult: PrettyTransactions = JSON.parse(result)
+        expect(pretty).toEqual(prettyResult)
     })
 })
