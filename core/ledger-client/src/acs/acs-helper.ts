@@ -28,7 +28,6 @@ export class ACSHelper {
     private evictions = 0
     private totalLookuptime = 0
     private totalCacheServeTime = 0
-    private totalCacheMissServeTime = 0
 
     constructor(
         apiInstance: LedgerClient,
@@ -82,8 +81,7 @@ export class ACSHelper {
             cacheSize: this.contractsSet.size,
             hitRate: hitRate.toFixed(2) + '%',
             averageLookupTime: avgLookupTime.toFixed(3) + ' ms',
-            cacheServiceTime: this.totalCacheServeTime.toFixed(3),
-            missServiceTime: this.totalCacheMissServeTime.toFixed(3),
+            cacheServeTime: this.totalCacheServeTime.toFixed(3),
         }
     }
 
@@ -108,7 +106,7 @@ export class ACSHelper {
 
         if (existing) {
             this.hits++
-            this.logger.info('cache hit')
+            this.logger.debug('cache hit')
             return existing
         }
         if (this.useLocalStorage) {
@@ -134,7 +132,7 @@ export class ACSHelper {
             }
         }
 
-        this.logger.info('cache miss')
+        this.logger.debug('cache miss')
         this.misses++
         const newContainer = new ACSContainer()
 
@@ -160,8 +158,6 @@ export class ACSHelper {
 
         if (this.contractsSet.has(ACSHelper.keyToString(key))) {
             this.totalCacheServeTime += end - start
-        } else {
-            this.totalCacheMissServeTime += end - start
         }
 
         return result
@@ -187,8 +183,6 @@ export class ACSHelper {
 
         if (this.contractsSet.has(ACSHelper.keyToString(key))) {
             this.totalCacheServeTime += end - start
-        } else {
-            this.totalCacheMissServeTime += end - start
         }
 
         return result
