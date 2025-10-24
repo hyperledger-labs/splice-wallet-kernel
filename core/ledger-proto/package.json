@@ -7,20 +7,23 @@
     "license": "Apache-2.0",
     "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
     "packageManager": "yarn@4.9.4",
-    "main": "dist/index.cjs",
-    "module": "dist/index.js",
+    "main": "dist/cjs/index.js",
+    "module": "dist/esm/index.js",
     "types": "dist/types/index.d.ts",
     "exports": {
         ".": {
             "types": "./dist/types/index.d.ts",
-            "import": "./dist/index.js",
-            "require": "./dist/index.cjs",
-            "default": "./dist/index.js"
+            "import": "./dist/esm/index.js",
+            "require": "./dist/cjs/index.js",
+            "default": "./dist/esm/index.js"
         }
     },
     "scripts": {
-        "build": "tsup && tsc -b tsconfig.types.json",
-        "dev": "tsup --watch --onSuccess \"tsc -b tsconfig.types.json\"",
+        "build": "yarn build:esm && yarn build:cjs && yarn build:types",
+        "build:esm": "tsc -p tsconfig.esm.json",
+        "build:cjs": "tsc -p tsconfig.cjs.json && yarn postbuild:cjs",
+        "postbuild:cjs": "node -e \"require('fs').mkdirSync('dist/cjs', {recursive:true}); require('fs').writeFileSync('dist/cjs/package.json', '{\\\"type\\\":\\\"commonjs\\\"}\\n')\"",
+        "build:types": "tsc -p tsconfig.types.json",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist"
     },
