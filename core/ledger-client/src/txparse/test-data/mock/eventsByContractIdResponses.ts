@@ -3071,4 +3071,112 @@ export default [
             synchronizerId: 'sync::normalized',
         },
     },
+    {
+        archived: {
+            archivedEvent: {
+                contractId:
+                    '0027bd11771073016844744a664ae407f590c36090602e6ed6fa5c044c6185b911ca111220d8c8c605a8a79276475e4f3e2133cf1ef154669624084fde9fcf7ded8c08dc9a',
+                implementedInterfaces: [
+                    '718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b:Splice.Api.Token.HoldingV1:Holding',
+                ],
+                nodeId: 2,
+                offset: 60697,
+                packageName: 'utility-registry-holding-v0',
+                templateId:
+                    'dd3a9f2d51cc4c52d9ec2e1d7ff235298dcfb3afd1d50ab44328b1aaa9a18587:Utility.Registry.Holding.V0.Holding:Holding',
+                witnessParties: [
+                    'test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad',
+                ],
+            },
+            synchronizerId:
+                'global-domain::1220458886f67bf93662e28d6f39dbd564e59769f696d5ff870891a79d9e8be75534',
+        },
+        created: {
+            createdEvent: {
+                contractId:
+                    '0027bd11771073016844744a664ae407f590c36090602e6ed6fa5c044c6185b911ca111220d8c8c605a8a79276475e4f3e2133cf1ef154669624084fde9fcf7ded8c08dc9a',
+                contractKey: null,
+                createArgument: {
+                    operator:
+                        'utility-operator::12204e0c5059c70f8347186bb8685b4e6f83f529502ab1d7f81eaca8dc02cdca6dfe',
+                    provider:
+                        'test-provider::12205704c1a9968a1a57fab9f54cd0b7c1a65b99fac99171db677daa8d3320e3463f',
+                    registrar:
+                        'test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6',
+                    owner: 'test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad',
+                    instrument: {
+                        source: 'test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6',
+                        id: 'LOAD',
+                        scheme: 'RegistrarInternalScheme',
+                    },
+                    label: '',
+                    amount: '1016.0000000000',
+                    lock: {
+                        lockers: {
+                            map: [
+                                [
+                                    'test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6',
+                                    {},
+                                ],
+                            ],
+                        },
+                        context: 'burn-some-phillip',
+                    },
+                },
+                createdAt: '2025-10-14T11:31:02.003238Z',
+                createdEventBlob: '',
+                interfaceViews: [
+                    {
+                        interfaceId:
+                            '718a0f77e505a8de22f188bd4c87fe74101274e9d4cb1bfac7d09aec7158d35b:Splice.Api.Token.HoldingV1:Holding',
+                        viewStatus: {
+                            code: 0,
+                            message: '',
+                            details: [],
+                        },
+                        viewValue: {
+                            owner: 'test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad',
+                            instrumentId: {
+                                admin: 'test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6',
+                                id: 'LOAD',
+                            },
+                            amount: '1016.0000000000',
+                            lock: {
+                                holders: [
+                                    'test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6',
+                                ],
+                                expiresAt: null,
+                                expiresAfter: null,
+                                context: 'burn-some-phillip',
+                            },
+                            meta: {
+                                values: {
+                                    'utility.digitalasset.com/holding-label':
+                                        '',
+                                },
+                            },
+                        },
+                    },
+                ],
+                nodeId: 7,
+                observers: [
+                    'test-provider::12205704c1a9968a1a57fab9f54cd0b7c1a65b99fac99171db677daa8d3320e3463f',
+                    'utility-operator::12204e0c5059c70f8347186bb8685b4e6f83f529502ab1d7f81eaca8dc02cdca6dfe',
+                ],
+                offset: 60694,
+                packageName: 'utility-registry-holding-v0',
+                signatories: [
+                    'test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6',
+                    'test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad',
+                ],
+                templateId:
+                    '170929b11d5f0ed1385f890f42887c31ff7e289c0f4bc482aff193a7173d576c:Utility.Registry.App.V0.Service.AllocationFactory:AllocationFactory',
+                witnessParties: [
+                    'test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad',
+                ],
+            },
+            synchronizerId:
+                'global-domain::1220458886f67bf93662e28d6f39dbd564e59769f696d5ff870891a79d9e8be75534',
+        },
+    },
 ]

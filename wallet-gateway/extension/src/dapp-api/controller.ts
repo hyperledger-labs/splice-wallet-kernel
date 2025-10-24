@@ -25,12 +25,15 @@ export const dappController = (store?: Store) =>
     buildController({
         connect: async () =>
             Promise.resolve({
-                kernel: kernelInfo,
-                isConnected: false,
-                chainId: 'default-chain-id',
-                userUrl: Browser.runtime.getURL('pages/user.html'),
+                status: {
+                    kernel: kernelInfo,
+                    isConnected: false,
+                    chainId: 'default-chain-id',
+                    userUrl: Browser.runtime.getURL('pages/user.html'),
+                },
                 sessionToken: 'default-session-token',
             }),
+        disconnect: async () => Promise.resolve(null),
         darsAvailable: async () => Promise.resolve({ dars: ['default-dar'] }),
         ledgerApi: async (params: LedgerApiParams) =>
             Promise.resolve({ response: 'default-response' }),
