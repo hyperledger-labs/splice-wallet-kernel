@@ -15,7 +15,6 @@ import {
     GetUpdatesRequest,
     Event,
 } from './types.js'
-import pino from 'pino'
 
 interface ACSUpdateConfig {
     maxEventsBeforePrune: number
@@ -418,31 +417,27 @@ export class ACSContainer {
             ? ACSContainer.createTemplateFilter(key.templateId)
             : ACSContainer.createInterfaceFilter(key.interfaceId ?? '')
 
-        const logger = pino()
-        const formatCondition = key.party && !key.interfaceId
-        logger.info(formatCondition)
-
-        if (key.party && !key.interfaceId) {
-            return {
-                filtersByParty: {
-                    [key.party]: {},
-                },
-                verbose: false,
-            }
+        const baseFormat: EventFormat = {
+            filtersByParty: {},
+            verbose: false,
         }
 
         if (key.party) {
-            return {
-                filtersByParty: {
-                    [key.party]: cumulativeFilter,
-                },
-                verbose: false,
+            // No interface → empty filter for the party
+            if (!key.interfaceId) {
+                baseFormat.filtersByParty[key.party] = {}
+                return baseFormat
             }
+
+            // Has interface/template → cumulative filter for the party
+            baseFormat.filtersByParty[key.party] = cumulativeFilter
+            return baseFormat
         }
+
+        // No party → use global filter
         return {
-            filtersByParty: {},
+            ...baseFormat,
             filtersForAnyParty: cumulativeFilter,
-            verbose: false,
         }
     }
 }
