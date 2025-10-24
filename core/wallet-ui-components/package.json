@@ -20,7 +20,7 @@
         "./themes": "./themes"
     },
     "scripts": {
-        "build": "vite build && yarn workspace @canton-network/core-wallet-ui-components tsc -p tsconfig.types.json",
+        "build": "vite build && tsc -p tsconfig.types.json",
         "build:old": "vite build && yarn workspace @canton-network/core-wallet-ui-components tsc --emitDeclarationOnly",
         "build:watch": "vite build --watch & tsc --emitDeclarationOnly --watch",
         "typecheck": "tsc --noEmit",

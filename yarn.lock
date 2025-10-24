@@ -1465,6 +1465,7 @@ __metadata:
     "@protobuf-ts/runtime-rpc": "npm:^2.11.1"
     "@swc/core": "npm:^1.11.31"
     "@types/node": "npm:^22.15.30"
+    esbuild-plugin-replace: "npm:^1.4.0"
     tsup: "npm:^8.5.0"
     typescript: "npm:^5.8.3"
   languageName: unknown
@@ -9500,12 +9501,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cjs-713d90@workspace:core/ledger-proto/dist/cjs":
-  version: 0.0.0-use.local
-  resolution: "cjs-713d90@workspace:core/ledger-proto/dist/cjs"
-  languageName: unknown
-  linkType: soft
-
 "cjs-module-lexer@npm:^1.0.0":
   version: 1.4.3
   resolution: "cjs-module-lexer@npm:1.4.3"
@@ -10828,6 +10823,15 @@ __metadata:
   version: 4.1.1
   resolution: "es6-error@npm:4.1.1"
   checksum: 10c0/357663fb1e845c047d548c3d30f86e005db71e122678f4184ced0693f634688c3f3ef2d7de7d4af732f734de01f528b05954e270f06aa7d133679fb9fe6600ef
+  languageName: node
+  linkType: hard
+
+"esbuild-plugin-replace@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "esbuild-plugin-replace@npm:1.4.0"
+  dependencies:
+    magic-string: "npm:^0.25.7"
+  checksum: 10c0/9574557ca6a63bb31818df3383618d8c12c32f142145cbdd1a80db5d7b88ed032e989708e302651a74bc9fa40bcf441c1aa6cbbce0fce5c511a5843577906f6a
   languageName: node
   linkType: hard
 
@@ -14914,6 +14918,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"magic-string@npm:^0.25.7":
+  version: 0.25.9
+  resolution: "magic-string@npm:0.25.9"
+  dependencies:
+    sourcemap-codec: "npm:^1.4.8"
+  checksum: 10c0/37f5e01a7e8b19a072091f0b45ff127cda676232d373ce2c551a162dd4053c575ec048b9cbb4587a1f03adb6c5d0fd0dd49e8ab070cd2c83a4992b2182d9cb56
+  languageName: node
+  linkType: hard
+
 "magic-string@npm:^0.30.17, magic-string@npm:^0.30.3":
   version: 0.30.19
   resolution: "magic-string@npm:0.30.19"
@@ -18244,6 +18257,13 @@ __metadata:
   version: 0.6.1
   resolution: "source-map@npm:0.6.1"
   checksum: 10c0/ab55398007c5e5532957cb0beee2368529618ac0ab372d789806f5718123cc4367d57de3904b4e6a4170eb5a0b0f41373066d02ca0735a0c4d75c7d328d3e011
+  languageName: node
+  linkType: hard
+
+"sourcemap-codec@npm:^1.4.8":
+  version: 1.4.8
+  resolution: "sourcemap-codec@npm:1.4.8"
+  checksum: 10c0/f099279fdaae070ff156df7414bbe39aad69cdd615454947ed3e19136bfdfcb4544952685ee73f56e17038f4578091e12b17b283ed8ac013882916594d95b9e6
   languageName: node
   linkType: hard
 
