@@ -85,6 +85,7 @@ export type Label =
     | Burn
     | Mint
     | Unlock
+    | Lock
     | ExpireDust
     | UnknownAction
 type UnknownAction = RawArchive | RawCreate
@@ -132,6 +133,10 @@ export interface Unlock extends KnownLabel {
     type: 'Unlock'
 }
 
+export interface Lock extends KnownLabel {
+    type: 'Lock'
+}
+
 export interface ExpireDust extends KnownLabel {
     type: 'ExpireDust'
 }
@@ -148,7 +153,7 @@ export interface RawArchive extends BaseLabel {
     meta: any
 }
 export interface RawCreate extends BaseLabel {
-    type: 'Create'
+    type: 'Create' | 'Lock'
     parentChoice: string
     contractId: string
     offset: number
