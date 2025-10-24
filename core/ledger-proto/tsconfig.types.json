@@ -1,15 +1,12 @@
 {
-    "extends": "../../tsconfig.node.json",
+    "extends": "../../tsconfig.web.json",
     "compilerOptions": {
         "emitDeclarationOnly": true,
         "declaration": true,
         "declarationMap": true,
         "rootDir": "./src",
-        "outDir": "./dist/types",
-
-        "module": "NodeNext",
-        "moduleResolution": "NodeNext",
-        "target": "ES2020",
+        "outDir": "./dist",
+        "moduleResolution": "bundler",
         "noEmit": false,
         "composite": false
     },
