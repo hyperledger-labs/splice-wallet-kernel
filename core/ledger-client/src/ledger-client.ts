@@ -476,10 +476,9 @@ export class LedgerClient {
     }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
         const { offset, templateIds, parties, filterByParty } = options
 
-        this.logger.info(options, 'options for active contracts')
+        this.logger.debug(options, 'options for active contracts')
 
         if (templateIds?.length === 1 && parties?.length === 1) {
-            this.logger.info('querying active contracts for template')
             const party = parties[0]
             const templateId = templateIds[0]
             return this.acsHelper.activeContractsForTemplate(
@@ -489,15 +488,7 @@ export class LedgerClient {
             )
         }
 
-        const result =
-            filterByParty && !templateIds?.length && parties?.length === 1
-        this.logger.info(result, `is this true????`)
-        this.logger.info(
-            `broken up result: ${filterByParty} templateIdCheck: ${!templateIds?.length} and partiesCheck :${parties?.length}`
-        )
-
         if (filterByParty && !templateIds?.length && parties?.length === 1) {
-            this.logger.info('querying active contracts for interface')
             const party = parties[0]
             const r = this.acsHelper.activeContractsForInterface(
                 offset,
@@ -510,7 +501,7 @@ export class LedgerClient {
 
         const filter = this.buildActiveContractsFilter(options)
 
-        this.logger.info('falling back to post request')
+        this.logger.debug('falling back to post request')
 
         return await this.postWithRetry('/v2/state/active-contracts', filter)
     }
