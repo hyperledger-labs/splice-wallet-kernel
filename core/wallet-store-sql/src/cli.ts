@@ -2,16 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command } from 'commander'
-import { connection, StoreSql } from './store-sql.js'
+import { connection } from './store-sql.js'
 import { migrator } from './migrator.js'
 import type { StoreConfig } from '@canton-network/core-wallet-store'
 import { pino } from 'pino'
+import { bootstrap } from './bootstrap.js'
 
 const logger = pino({ name: 'main', level: 'debug' })
 
 export function createCLI(config: StoreConfig): Command {
-    console.log('Wallet Store Sql CLI')
-
     const program = new Command()
 
     program
@@ -72,10 +71,7 @@ export function createCLI(config: StoreConfig): Command {
         .description('Bootstrap DB from config')
         .action(async () => {
             const db = connection(config)
-            const store = new StoreSql(db, logger)
-            await Promise.all(
-                config.networks.map((network) => store.addNetwork(network))
-            )
+            await bootstrap(db, config, logger)
             await db.destroy()
         })
 
