@@ -9,10 +9,10 @@
     "packageManager": "yarn@4.9.4",
     "main": "dist/index.cjs",
     "module": "dist/index.js",
-    "types": "dist/types/index.d.ts",
+    "types": "dist/index.d.ts",
     "exports": {
         ".": {
-            "types": "./dist/types/index.d.ts",
+            "types": "./dist/index.d.ts",
             "import": "./dist/index.js",
             "require": "./dist/index.cjs",
             "default": "./dist/index.js"
@@ -25,7 +25,7 @@
         "dev": "tsup --watch",
         "clean": "tsc -b --clean; rm -rf dist",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
-        "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
+        "test": "jest --passWithNoTests"
     },
     "devDependencies": {
         "@jest/globals": "^29.0.0",

@@ -23,7 +23,7 @@
         "dev": "tsup --watch --onSuccess \"tsc -b tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
+        "test": "jest --passWithNoTests"
     },
     "devDependencies": {
         "@jest/globals": "^29.0.0",

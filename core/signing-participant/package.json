@@ -22,7 +22,7 @@
         "dev": "tsup --watch --onSuccess \"tsc -b tsconfig.types.json\"",
         "clean": "tsc -b --clean && rm -rf ./dist",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
-        "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
+        "test": "jest --passWithNoTests"
     },
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
