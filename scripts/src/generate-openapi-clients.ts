@@ -43,7 +43,7 @@ type OpenApiSpec = OpenApiFileSpec | OpenApiUrlSpec
 
 const root = getRepoRoot()
 
-async function fetchSpliceSpecs() {
+async function fetchSpliceSpecs(updateHash: boolean) {
     const archiveUrl = `https://github.com/digital-asset/decentralized-canton-sync/releases/download/v${SPLICE_VERSION}/${SPLICE_VERSION}_openapi.tar.gz`
     const tarfile = path.join(SPLICE_SPEC_PATH, `${SPLICE_VERSION}.tar.gz`)
     const unpackDir = path.join(root, 'api-specs/splice', SPLICE_VERSION)
@@ -51,6 +51,7 @@ async function fetchSpliceSpecs() {
     await downloadAndUnpackTarball(archiveUrl, tarfile, unpackDir, {
         hash: SPLICE_SPEC_ARCHIVE_HASH,
         strip: 0,
+        updateHash,
     })
 }
 
@@ -126,7 +127,8 @@ const specs: OpenApiSpec[] = [
 ]
 
 async function main() {
-    await fetchSpliceSpecs()
+    const updateHash = process.argv.includes('--updateHash')
+    await fetchSpliceSpecs(updateHash)
     Promise.all(specs.map(generateOpenApiClient)).then(() => {
         console.log(
             success('Generated fresh TypeScript clients for all OpenAPI specs')

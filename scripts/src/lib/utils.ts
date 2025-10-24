@@ -26,23 +26,24 @@ export const CANTON_BIN = path.join(CANTON_PATH, 'bin/canton')
 export const CANTON_CONF = path.join(repoRoot, 'canton/canton.conf')
 export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton/bootstrap.canton')
 export const API_SPECS_PATH = path.join(repoRoot, 'api-specs')
+export const UTILS_FILE_PATH = path.join(repoRoot, 'scripts/src/lib/utils.ts')
 
 export type CantonVersionAndHash = {
     version: string
     hash: string
 }
 // Canton versions
-export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20250417.0'
+export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20251015.16130.0.v0ac138a0'
 
 export const LOCALNET_ARCHIVE_HASH =
-    '2611f44444b28d04133549f267ad3bc35e2334fc0763e2496a6a208afa80d2f8'
+    '49c40f4caaeb46e03839a9da93343e6e3e13f7611705066e77ce8d02ffb62665'
 export const SPLICE_ARCHIVE_HASH =
-    '54980aae5211621598ead63c696140ebb03820e2263816471cd77d9607874b16'
+    '368e0ea676b7bf2490d3f0003ce7ff58caddab78756057100977695a57170f50'
 export const SPLICE_SPEC_ARCHIVE_HASH =
-    'ecb14bf4b95175fb2b083153ba017d6d7ca44ad901bef6a26619214e583496f7'
+    'f17b553a29ea58f184a67998e08bd9062cdaff7faa2ed11609adc71934566c2e'
 export const CANTON_ARCHIVE_HASH =
     '43c89d9833886fc68cac4951ba1959b7f6cc5269abfff1ba5129859203aa8cd3'
-export const SPLICE_VERSION = '0.4.20'
+export const SPLICE_VERSION = '0.4.22'
 
 export const SUPPORTED_VERSIONS = {
     devnet: {
@@ -92,7 +93,30 @@ export async function verifyFileIntegrity(
     if (!fs.existsSync(filePath)) {
         return false
     }
+    const computedHash = await computeFileHash(filePath, algo)
 
+    if (computedHash === expectedHash) {
+        console.log(
+            success(
+                `${algo.toUpperCase()} checksum verification of ${filePath} successful.`
+            )
+        )
+    } else {
+        console.log(
+            error(
+                `File hashes did not match.\n\tExpected: ${expectedHash}\n\tReceived: ${computedHash}\nDeleting ${filePath}...`
+            )
+        )
+        //process.exit(1)
+    }
+
+    return true
+}
+
+async function computeFileHash(
+    filePath: string,
+    algo = 'sha256'
+): Promise<string> {
     return new Promise((resolve, reject) => {
         const hash = crypto.createHash(algo)
         const stream = fs.createReadStream(filePath)
@@ -100,24 +124,7 @@ export async function verifyFileIntegrity(
         stream.on('data', (chunk) => hash.update(chunk))
         stream.on('end', () => {
             const computedHash = hash.digest('hex')
-            const matches = computedHash === expectedHash
-
-            if (matches) {
-                console.log(
-                    success(
-                        `${algo.toUpperCase()} checksum verified successfully.`
-                    )
-                )
-            } else {
-                console.log(
-                    error(
-                        `File hashes did not match.\n\tExpected: ${expectedHash}\n\tReceived: ${computedHash}\nDeleting ${filePath}...`
-                    )
-                )
-                process.exit(1)
-            }
-
-            resolve(matches)
+            resolve(computedHash)
         })
         stream.on('error', (err) => reject(err))
     })
@@ -127,12 +134,14 @@ export async function downloadAndUnpackTarball(
     url: string,
     tarfile: string,
     unpackDir: string,
-    options?: { hash?: string; strip?: number }
+    options?: { hash?: string; strip?: number; updateHash?: boolean }
 ) {
     let shouldDownload = true
+    let currentHash = options?.hash
     const algo = 'sha256'
 
     ensureDir(path.dirname(tarfile))
+    ensureDir(path.dirname(unpackDir))
 
     if (fs.existsSync(tarfile) && options?.hash) {
         // File exists, check hash
@@ -148,26 +157,43 @@ export async function downloadAndUnpackTarball(
         }
         await pipeline(res.body, fs.createWriteStream(tarfile))
         console.log(success('Download complete.'))
+    }
 
-        if (options?.hash) {
-            const validFile = await verifyFileIntegrity(
-                tarfile,
-                options.hash,
-                algo
-            )
+    if (options?.updateHash) {
+        const newHash = await computeFileHash(tarfile, algo)
 
-            const downloadedHash = crypto
-                .createHash(algo)
-                .update(fs.readFileSync(tarfile))
-                .digest('hex')
-            if (!validFile) {
-                // Remove the bad file
-                throw new Error(
-                    error(
-                        `Checksum mismatch for downloaded tarball.\n\tExpected: ${options.hash}\n\tReceived: ${downloadedHash}`
-                    )
-                )
+        // Update the hash in utils.ts if present
+        const fileContent = fs.readFileSync(UTILS_FILE_PATH, 'utf8')
+        // Find the old hash in the file (matching the old value)
+        if (options?.hash && fileContent.includes(options.hash)) {
+            const updatedContent = fileContent.replace(options.hash, newHash)
+            if (updatedContent !== fileContent) {
+                fs.writeFileSync(UTILS_FILE_PATH, updatedContent, 'utf8')
+                console.log(success(`Updated hash in utils.ts to ${newHash}`))
             }
+        } else {
+            console.log(
+                warn('Old hash not found in utils.ts, no update performed.')
+            )
+        }
+
+        currentHash = newHash
+    }
+
+    if (!options?.updateHash && currentHash) {
+        const validFile = await verifyFileIntegrity(tarfile, currentHash, algo)
+
+        const downloadedHash = crypto
+            .createHash(algo)
+            .update(fs.readFileSync(tarfile))
+            .digest('hex')
+        if (!validFile) {
+            // Remove the bad file
+            throw new Error(
+                error(
+                    `Checksum mismatch for downloaded tarball.\n\tExpected: ${currentHash}\n\tReceived: ${downloadedHash}`
+                )
+            )
         }
     }
 

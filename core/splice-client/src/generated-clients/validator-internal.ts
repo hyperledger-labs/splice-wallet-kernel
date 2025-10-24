@@ -247,6 +247,7 @@ export interface components {
             migration_id: number
             domain_id: string
             created_at: string
+            synchronizer_was_paused?: boolean
         }
         GetValidatorDomainDataSnapshotResponse: {
             data_snapshot: components['schemas']['DomainMigrationDump']
