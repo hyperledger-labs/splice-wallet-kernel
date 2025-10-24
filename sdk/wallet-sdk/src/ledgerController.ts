@@ -851,6 +851,10 @@ export class LedgerController {
         })
     }
 
+    getACSCacheStats() {
+        return this.client.getCacheStats()
+    }
+
     /**
      * Retrieves active contracts with optional filtering by template IDs and parties.
      * @param options Optional parameters for filtering:

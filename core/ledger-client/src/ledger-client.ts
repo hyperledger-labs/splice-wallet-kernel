@@ -592,6 +592,10 @@ export class LedgerClient {
         )
     }
 
+    public getCacheStats() {
+        return this.acsHelper.getCacheStats()
+    }
+
     /**
      * @deprecated use postWithRetry instead, should be made private
      */

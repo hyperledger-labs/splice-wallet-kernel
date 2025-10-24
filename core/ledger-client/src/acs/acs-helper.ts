@@ -25,6 +25,7 @@ export class ACSHelper {
     private useLocalStorage: boolean
     private hits = 0
     private misses = 0
+    private evictions = 0
 
     constructor(
         apiInstance: LedgerClient,
@@ -39,6 +40,7 @@ export class ACSHelper {
             entryExpirationTimeInMS:
                 options.entryExpirationTime ?? 10 * 60 * 1000, // 10 minutes
             onEntryEvicted: (entry) => {
+                this.evictions++
                 if (!this.useLocalStorage) {
                     return
                 }
@@ -61,6 +63,18 @@ export class ACSHelper {
         this.apiInstance = apiInstance
         this.wsSupport = options.wsSupport
         this.logger = _logger.child({ component: 'ACSHelper' })
+    }
+
+    getCacheStats() {
+        const totalCalls = this.hits + this.misses
+        return {
+            totalCalls,
+            hits: this.hits,
+            misses: this.misses,
+            evictions: this.evictions,
+            cacheSize: this.contractsSet.size,
+            hitRate: `${(this.hits / totalCalls) * 100}%`,
+        }
     }
 
     private static createKey(
