@@ -48,7 +48,6 @@ export const ACS_UPDATE_CONFIG: ACSUpdateConfig = {
 if (typeof window !== 'undefined') {
     ;(window as any)['ACS_UPDATE_CONFIG'] = ACS_UPDATE_CONFIG
 }
-/* eslint-enable */
 
 export interface ACSKey {
     party?: PartyId | undefined
