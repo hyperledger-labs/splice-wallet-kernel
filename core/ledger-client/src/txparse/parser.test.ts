@@ -10,14 +10,25 @@ import rawTxsMock from './test-data/mock/txs.js'
 import txsExpected from './test-data/expected/txs.js'
 import type { LedgerClient } from '../ledger-client'
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT.js'
+import * as fs from 'fs'
+import { dirname } from 'path'
+import { fileURLToPath } from 'url'
+import { CoreService, JsGetUpdatesResponse } from '../token-standard-service.js'
+import { ScanProxyClient } from '@canton-network/core-splice-client'
+import { AccessTokenProvider } from '@canton-network/core-types'
 
 type JsTransaction = components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =
     components['schemas']['JsGetEventsByContractIdResponse']
+
 type CreatedEvent = components['schemas']['CreatedEvent']
 
 const EVENTS_BY_CID_PATH = '/v2/events/events-by-contract-id' as const
 const txsMock = rawTxsMock as unknown as JsTransaction[]
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const testDataDir = `${__dirname}/test-data`
 
 const makeLedgerClientFromEventsResponses = (
     responses: JsGetEventsByContractIdResponse[]
@@ -52,6 +63,8 @@ const makeLedgerClientFromEventsResponses = (
 const mockLedgerClient: LedgerClient = makeLedgerClientFromEventsResponses(
     eventsByContractIdResponses
 )
+const mockScanProxy: ScanProxyClient = {} as unknown as ScanProxyClient
+const mockAccessTokenProvider = {} as unknown as AccessTokenProvider
 
 describe('TransactionParser', () => {
     beforeEach(() => {
@@ -152,5 +165,30 @@ describe('TransactionParser', () => {
         await expect(
             (mockLedgerClient.postWithRetry as jest.Mock).mock.results[0].value
         ).rejects.toMatchObject({ code: 'CONTRACT_EVENTS_NOT_FOUND' })
+    })
+
+    it('correctly parses utilities events as sender', async () => {
+        const data = fs.readFileSync(
+            `${testDataDir}/mock/utility-payload-ledger-effects.json`,
+            'utf-8'
+        )
+
+        const updates: JsGetUpdatesResponse[] = JSON.parse(data)
+        const partyId =
+            'test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad'
+
+        const core = new CoreService(
+            mockLedgerClient,
+            mockScanProxy,
+            console,
+            mockAccessTokenProvider,
+            false
+        )
+        const pretty = await core.toPrettyTransactions(
+            updates,
+            partyId,
+            mockLedgerClient
+        )
+        console.log(JSON.stringify(pretty))
     })
 })
