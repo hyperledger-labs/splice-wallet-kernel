@@ -113,6 +113,7 @@ export const userController = (
                 auth = {
                     type: 'self_signed',
                     identityProviderId: network.auth.identityProviderId,
+                    issuer: network.auth.issuer ?? '',
                     audience: network.auth.audience ?? '',
                     scope: network.auth.scope ?? '',
                     clientId: network.auth.clientId ?? '',

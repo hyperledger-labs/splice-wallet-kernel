@@ -124,6 +124,7 @@ export const toAuth = (table: IdpTable): Auth => {
             return {
                 identityProviderId: table.identityProviderId,
                 type: table.type,
+                issuer: table.issuer,
                 audience: table.audience,
                 scope: table.scope,
                 clientId: table.clientId,

@@ -98,6 +98,7 @@ export class NetworkForm extends BaseElement {
             network.auth = {
                 type: 'self_signed',
                 identityProviderId: network.auth?.identityProviderId || '',
+                issuer: network.auth?.issuer || '',
                 audience: network.auth?.audience || '',
                 scope: network.auth?.scope || '',
                 clientId: network.auth?.clientId || '',

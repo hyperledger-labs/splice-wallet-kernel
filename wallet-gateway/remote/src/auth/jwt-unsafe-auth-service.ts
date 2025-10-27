@@ -3,11 +3,11 @@
 
 import { AuthService } from '@canton-network/core-wallet-auth'
 import { Auth, Store } from '@canton-network/core-wallet-store'
-import { createRemoteJWKSet, decodeJwt, jwtVerify } from 'jose'
+import { decodeJwt } from 'jose'
 import { Logger } from 'pino'
 
 /**
- * Creates an AuthService that verifies JWT tokens using a remote JWK set.
+ * Creates an AuthService that verifies unsafe JWT tokens.
  * @param store - The Store instance to access network configurations.
  * @param logger - Logger instance for logging debug and warning messages.
  * @returns An AuthService implementation that verifies JWT tokens.
@@ -29,6 +29,12 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 return undefined
             }
 
+            const sub = decoded.sub
+            if (!sub) {
+                logger.warn('JWT does not contain a subject')
+                return undefined
+            }
+
             // TODO: change once IDP is decoupled from networks
             const networks = await store.listNetworks()
             const idp: Auth | undefined = networks.find(
@@ -39,33 +45,15 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 return undefined
             }
 
-            if (idp.type == 'self_signed') {
-                logger.debug(idp, 'Using self-signed IDP')
-                const sub = decoded.sub
-                if (!sub) {
-                    logger.warn('JWT does not contain a subject')
-                    return undefined
-                }
-                return { userId: sub, accessToken: jwt }
-            }
-            logger.debug(idp, 'Using IDP')
-            const response = await fetch(idp.configUrl)
-            const config = await response.json()
-            const jwks = createRemoteJWKSet(new URL(config.jwks_uri))
-
-            const { payload } = await jwtVerify(jwt, jwks, {
-                algorithms: ['RS256'],
-            })
-
-            if (!payload.sub) {
+            if (idp.type !== 'self_signed') {
+                logger.warn(
+                    `Cannot verify token for non-self-signed IDP: ${iss}`
+                )
                 return undefined
             }
 
-            logger.debug(
-                { userId: payload.sub, accessToken: jwt },
-                'JWT verified'
-            )
-            return { userId: payload.sub, accessToken: jwt }
+            // TODO: Verify JWT signature using idp.clientSecret / idp.admin.clientSecret
+            return { userId: sub, accessToken: jwt }
         } catch (error) {
             if (error instanceof Error) {
                 logger.warn(error, `Failed to verify token: ${error.message}`)

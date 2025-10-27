@@ -51,6 +51,7 @@ const clientCredentialAuthSchema = z.object({
 const selfSignedAuthSchema = z.object({
     identityProviderId: z.string(),
     type: z.literal('self_signed'),
+    issuer: z.string(),
     audience: z.string(),
     scope: z.string(),
     clientId: z.string(),
