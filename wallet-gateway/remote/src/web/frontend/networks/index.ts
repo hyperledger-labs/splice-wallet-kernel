@@ -5,6 +5,7 @@ import '@canton-network/core-wallet-ui-components'
 import { LitElement, html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import {
+    Auth,
     Network,
     RemoveNetworkParams,
     Session,
@@ -202,16 +203,12 @@ export class UserUiNetworks extends LitElement {
     }
 
     private async handleDelete(e: NetworkCardDeleteEvent) {
-        const network: Network = {
-            ...e.network,
-            ledgerApi: e.network.ledgerApi.baseUrl,
-        }
-
-        if (!confirm(`Delete network "${network.name}"?`)) return
-
+        if (!confirm(`Delete network "${e.network.name}"?`)) return
         try {
             // TODO: rename parameter to chainId in User API
-            const params: RemoveNetworkParams = { networkName: network.chainId }
+            const params: RemoveNetworkParams = {
+                networkName: e.network.chainId,
+            }
             const userClient = createUserClient(stateManager.accessToken.get())
             await userClient.request('removeNetwork', params)
             await this.listNetworks()
@@ -223,8 +220,76 @@ export class UserUiNetworks extends LitElement {
     private handleSubmit = async (e: NetworkEditSaveEvent) => {
         e.preventDefault()
 
+        let auth: Auth
+        switch (e.network.auth.type) {
+            case 'implicit':
+                auth = {
+                    type: 'implicit',
+                    identityProviderId: e.network.auth.identityProviderId,
+                    issuer: e.network.auth.issuer ?? '',
+                    configUrl: e.network.auth.configUrl ?? '',
+                    audience: e.network.auth.audience ?? '',
+                    scope: e.network.auth.scope ?? '',
+                    clientId: e.network.auth.clientId ?? '',
+                    admin: {
+                        clientId: e.network.auth.admin?.clientId ?? '',
+                        clientSecret: e.network.auth.admin?.clientSecret ?? '',
+                    },
+                }
+                break
+            case 'client_credentials':
+                auth = {
+                    type: 'client_credentials',
+                    identityProviderId: e.network.auth.identityProviderId,
+                    issuer: e.network.auth.issuer ?? '',
+                    configUrl: e.network.auth.configUrl ?? '',
+                    audience: e.network.auth.audience ?? '',
+                    scope: e.network.auth.scope ?? '',
+                    clientId: e.network.auth.clientId ?? '',
+                    clientSecret: e.network.auth.clientSecret ?? '',
+                    admin: {
+                        clientId: e.network.auth.admin?.clientId ?? '',
+                        clientSecret: e.network.auth.admin?.clientSecret ?? '',
+                    },
+                }
+                break
+            case 'password':
+                auth = {
+                    type: 'password',
+                    identityProviderId: e.network.auth.identityProviderId,
+                    issuer: e.network.auth.issuer ?? '',
+                    configUrl: e.network.auth.configUrl ?? '',
+                    audience: e.network.auth.audience ?? '',
+                    tokenUrl: e.network.auth.tokenUrl ?? '',
+                    grantType: e.network.auth.grantType ?? '',
+                    scope: e.network.auth.scope ?? '',
+                    clientId: e.network.auth.clientId ?? '',
+                    admin: {
+                        clientId: e.network.auth.admin?.clientId ?? '',
+                        clientSecret: e.network.auth.admin?.clientSecret ?? '',
+                    },
+                }
+                break
+            case 'self_signed':
+                auth = {
+                    type: 'self_signed',
+                    audience: e.network.auth.audience ?? '',
+                    scope: e.network.auth.scope ?? '',
+                    clientId: e.network.auth.clientId ?? '',
+                    clientSecret: e.network.auth.clientSecret ?? '',
+                    admin: {
+                        clientId: e.network.auth.admin?.clientId ?? '',
+                        clientSecret: e.network.auth.admin?.clientSecret ?? '',
+                    },
+                    issuer: '',
+                    configUrl: '',
+                }
+                break
+        }
+
         const network: Network = {
             ...e.network,
+            auth: auth,
             ledgerApi: e.network.ledgerApi.baseUrl,
         }
 

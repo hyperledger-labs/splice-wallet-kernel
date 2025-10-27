@@ -4,7 +4,7 @@
 import { Logger } from 'pino'
 import { createRemoteJWKSet, decodeJwt, jwtVerify } from 'jose'
 import { AuthService } from '@canton-network/core-wallet-auth'
-import { Auth, Store } from '@canton-network/core-wallet-store'
+import { Auth, ImplicitAuth, Store } from '@canton-network/core-wallet-store'
 
 /**
  * Creates an AuthService that verifies JWT tokens using a remote JWK set.
@@ -37,8 +37,14 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 logger.warn(`No identity provider found for issuer: ${iss}`)
                 return undefined
             }
+            if ((<ImplicitAuth>idp).configUrl === undefined) {
+                logger.warn(
+                    `IDP for issuer: ${iss} is not of type ImplicitAuth`
+                )
+                return undefined
+            }
             logger.debug(idp, 'Using IDP')
-            const response = await fetch(idp.configUrl)
+            const response = await fetch((<ImplicitAuth>idp).configUrl)
             const config = await response.json()
             const jwks = createRemoteJWKSet(new URL(config.jwks_uri))
 

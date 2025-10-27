@@ -73,8 +73,12 @@ export const userController = (
                     audience: network.auth.audience ?? '',
                     scope: network.auth.scope ?? '',
                     clientId: network.auth.clientId ?? '',
+                    admin: {
+                        clientId: network.auth.admin?.clientId ?? '',
+                        clientSecret: network.auth.admin?.clientSecret ?? '',
+                    },
                 }
-            } else {
+            } else if (network.auth.type === 'password') {
                 auth = {
                     type: 'password',
                     identityProviderId: network.auth.identityProviderId,
@@ -85,7 +89,41 @@ export const userController = (
                     scope: network.auth.scope ?? '',
                     clientId: network.auth.clientId ?? '',
                     audience: network.auth.audience ?? '',
+                    admin: {
+                        clientId: network.auth.admin?.clientId ?? '',
+                        clientSecret: network.auth.admin?.clientSecret ?? '',
+                    },
                 }
+            } else if (network.auth.type === 'client_credentials') {
+                auth = {
+                    type: 'client_credentials',
+                    identityProviderId: network.auth.identityProviderId,
+                    issuer: network.auth.issuer ?? '',
+                    configUrl: network.auth.configUrl ?? '',
+                    audience: network.auth.audience ?? '',
+                    scope: network.auth.scope ?? '',
+                    clientId: network.auth.clientId ?? '',
+                    clientSecret: network.auth.clientSecret ?? '',
+                    admin: {
+                        clientId: network.auth.admin?.clientId ?? '',
+                        clientSecret: network.auth.admin?.clientSecret ?? '',
+                    },
+                }
+            } else if (network.auth.type === 'self_signed') {
+                auth = {
+                    type: 'self_signed',
+                    identityProviderId: network.auth.identityProviderId,
+                    audience: network.auth.audience ?? '',
+                    scope: network.auth.scope ?? '',
+                    clientId: network.auth.clientId ?? '',
+                    clientSecret: network.auth.clientSecret ?? '',
+                    admin: {
+                        clientId: network.auth.admin?.clientId ?? '',
+                        clientSecret: network.auth.admin?.clientSecret ?? '',
+                    },
+                }
+            } else {
+                throw new Error(`Unsupported auth type: ${network.auth.type}`)
             }
 
             const newNetwork: Network = {
