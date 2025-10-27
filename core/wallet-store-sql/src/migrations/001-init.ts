@@ -5,8 +5,6 @@ import { Kysely } from 'kysely'
 import { DB } from '../schema.js'
 
 export async function up(db: Kysely<DB>): Promise<void> {
-    console.log('Running initial migration...')
-
     // --- idps ---
     await db.schema
         .createTable('idps')
@@ -34,7 +32,6 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .addColumn('synchronizer_id', 'text', (col) => col.notNull())
         .addColumn('description', 'text')
         .addColumn('ledger_api_base_url', 'text', (col) => col.notNull())
-        .addColumn('ledger_api_admin_grpc_url', 'text', (col) => col.notNull())
         .addColumn('user_id', 'text') // optional/global if null
         .addColumn('identity_provider_id', 'text', (col) =>
             col.references('idps.identity_provider_id').onDelete('cascade')

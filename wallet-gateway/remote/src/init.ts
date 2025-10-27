@@ -5,7 +5,12 @@ import { dapp } from './dapp-api/server.js'
 import { user } from './user-api/server.js'
 import { web } from './web/server.js'
 import { Logger, pino } from 'pino'
-import { StoreSql, connection } from '@canton-network/core-wallet-store-sql'
+import {
+    StoreSql,
+    bootstrap,
+    connection,
+    migrator,
+} from '@canton-network/core-wallet-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
 import { Notifier } from './notification/NotificationService.js'
 import EventEmitter from 'events'
@@ -17,6 +22,10 @@ import express from 'express'
 import { CliOptions } from './index.js'
 import { jwtAuth } from './middleware/jwtAuth.js'
 import { rpcRateLimit } from './middleware/rateLimit.js'
+import { Config } from './config/Config.js'
+import { existsSync } from 'fs'
+
+let isReady = false
 
 class NotificationService implements NotificationService {
     private notifiers: Map<string, Notifier> = new Map()
@@ -45,7 +54,40 @@ class NotificationService implements NotificationService {
     }
 }
 
-let isReady = false
+async function initializeDatabase(
+    config: Config,
+    logger: Logger
+): Promise<StoreSql> {
+    logger.info('Checking for database migrations...')
+
+    let exists = true
+    if (config.store.connection.type === 'sqlite') {
+        exists = existsSync(config.store.connection.database)
+    }
+
+    const db = connection(config.store)
+    const umzug = migrator(db)
+    const pending = await umzug.pending()
+
+    if (pending.length > 0) {
+        logger.info(
+            { pendingMigrations: pending.map((m) => m.name) },
+            'Applying database migrations...'
+        )
+        await umzug.up()
+        logger.info('Database migrations applied successfully.')
+    } else {
+        logger.info('No pending database migrations found.')
+    }
+
+    // bootstrap database from config file if it did not exist before
+    if (!exists) {
+        logger.info('Bootstrapping database from config...')
+        await bootstrap(db, config.store, logger)
+    }
+
+    return new StoreSql(db, logger)
+}
 
 export async function initialize(opts: CliOptions) {
     const port = opts.port ? Number(opts.port) : 3030
@@ -81,7 +123,8 @@ export async function initialize(opts: CliOptions) {
     const notificationService = new NotificationService(logger)
 
     const config = ConfigUtils.loadConfigFile(opts.config)
-    const store = new StoreSql(connection(config.store), logger)
+
+    const store = await initializeDatabase(config, logger)
     const authService = jwtAuthService(store, logger)
 
     const drivers = {
