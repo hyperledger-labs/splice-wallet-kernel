@@ -11,7 +11,7 @@ export default defineConfig({
     clean: true,
     treeshake: true,
     target: 'es2020',
-    platform: 'neutral', // TODO check to make sure it's good with window object
-    dts: false, // TODO I probably should have applied it in all tsups
+    platform: 'neutral',
+    dts: false,
     outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
 })

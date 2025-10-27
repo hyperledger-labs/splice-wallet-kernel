@@ -12,6 +12,6 @@ export default defineConfig({
     treeshake: true,
     target: 'es2020',
     platform: 'browser',
-    dts: false, // TODO I probably should have applied it in all tsups
+    dts: false,
     outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
 })

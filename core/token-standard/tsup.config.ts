@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { defineConfig } from 'tsup'
-
+// TODO do I still need that?
 export default defineConfig({
     entry: ['src/index.ts'],
     format: ['esm', 'cjs'],
