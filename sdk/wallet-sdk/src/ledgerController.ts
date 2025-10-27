@@ -403,7 +403,10 @@ export class LedgerController {
         }
 
         if (grantUserRights) {
-            await this.client.grantUserRights(this.userId, partyId)
+            await this.client.waitForPartyAndGrantUserRights(
+                this.userId,
+                partyId
+            )
         }
 
         return { partyId }

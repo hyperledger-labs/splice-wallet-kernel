@@ -295,7 +295,10 @@ export class LedgerClient {
      * @param partyId The ID of the party to grant rights for.
      * @returns A promise that resolves when the rights have been granted.
      */
-    public async grantUserRights(userId: string, partyId: PartyId) {
+    public async waitForPartyAndGrantUserRights(
+        userId: string,
+        partyId: PartyId
+    ) {
         await this.init()
         // Wait for party to appear on participant
         let partyFound = false
