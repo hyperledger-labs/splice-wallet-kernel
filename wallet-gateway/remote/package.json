@@ -9,18 +9,13 @@
     },
     "type": "module",
     "scripts": {
-        "build": "vite build && tsc -b && tsc -b tsconfig.frontend.json && yarn db:migrate:reset && yarn db:bootstrap",
+        "build": "vite build && tsc -b && tsc -b tsconfig.frontend.json",
         "clean": "tsc -b --clean && rm -rf ./dist && rm ./store.sqlite || true",
         "dev": "NODE_ENV=development tsx watch src/index.ts -f pretty -c ../test/config.json",
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)",
         "start": "yarn node dist/index.js -c ../test/config.json",
         "debug": "yarn node --inspect-brk dist/index.js -c ../test/config.json",
-        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
-        "db:bootstrap": "tsx ./src/index -c ../test/config.json db bootstrap",
-        "db:migrate:up": "tsx ./src/index -c ../test/config.json db up",
-        "db:migrate:down": "tsx ./src/index -c ../test/config.json db down",
-        "db:migrate:status": "tsx ./src/index -c ../test/config.json db status",
-        "db:migrate:reset": "tsx ./src/index -c ../test/config.json db reset"
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\""
     },
     "keywords": [],
     "author": "",
