@@ -1631,7 +1631,6 @@ __metadata:
     rollup: "npm:^4.52.5"
     rollup-plugin-dts: "npm:^6.2.3"
     tslib: "npm:^2.8.1"
-    tsup: "npm:^8.5.0"
     typescript: "npm:^5.8.3"
     uuid: "npm:^11.1.0"
     zod: "npm:^3.25.67"

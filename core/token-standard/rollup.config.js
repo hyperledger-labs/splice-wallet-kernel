@@ -5,8 +5,29 @@ import typescript from '@rollup/plugin-typescript'
 import commonjs from '@rollup/plugin-commonjs'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
+import dts from 'rollup-plugin-dts'
+import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+
+const DAML_JS_PACKAGES = [
+    '@daml.js/token-standard-models-1.0.0',
+    '@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0',
+    '@daml.js/daml-stdlib-DA-Time-Types-1.0.0',
+]
+function buildPathsMap(pkgs) {
+    const map = {}
+    for (const name of pkgs) {
+        const pkgJsonPath = require.resolve(path.join(name, 'package.json'))
+        const pkgDir = path.dirname(pkgJsonPath)
+        const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
+        const typesRel = pkgJson.types || pkgJson.typings || 'lib/index.d.ts'
+        map[name] = [path.resolve(pkgDir, typesRel)]
+    }
+    return map
+}
+const pathsMap = buildPathsMap(DAML_JS_PACKAGES)
 
 const pkgPath = path.resolve(process.cwd(), 'package.json')
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
@@ -18,18 +39,50 @@ const external = [
     ...Object.keys(pkg.peerDependencies || {}),
 ].filter((dep) => !exceptions.includes(dep))
 
-export default {
+// bundle ESM
+const codeEsm = {
+    input: 'src/index.ts',
+    output: { file: 'dist/index.js', format: 'es', sourcemap: true },
+    external,
+    plugins: [
+        commonjs({ transformMixedEsModules: true }),
+        nodeResolve(),
+        typescript(),
+    ],
+}
+
+// bundle CJS
+const codeCjs = {
     input: 'src/index.ts',
     output: {
-        dir: 'dist',
-        format: 'es',
+        file: 'dist/index.cjs',
+        format: 'cjs',
+        sourcemap: true,
+        exports: 'named',
     },
     external,
     plugins: [
-        commonjs({
-            transformMixedEsModules: true,
-        }),
-        typescript(),
+        commonjs({ transformMixedEsModules: true }),
         nodeResolve(),
+        typescript(),
     ],
 }
+
+// bundle DTS including types from codegen
+const types = {
+    input: 'src/index.ts',
+    output: { file: 'dist/index.d.ts', format: 'es' },
+    plugins: [
+        dts({
+            respectExternal: false,
+            compilerOptions: {
+                baseUrl: '.',
+                paths: pathsMap,
+                declaration: true,
+                emitDeclarationOnly: true,
+            },
+        }),
+    ],
+}
+
+export default [codeEsm, codeCjs, types]

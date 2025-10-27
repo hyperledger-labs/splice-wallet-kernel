@@ -18,12 +18,11 @@
         }
     },
     "scripts": {
-        "build": "yarn clean && tsup && yarn build:types && yarn bundle:types",
-        "build:types": "tsc -b tsconfig.types.json",
-        "bundle:types": "rollup -c rollup.dts.config.js",
-        "dev": "tsup --watch --onSuccess \"yarn build:types && yarn bundle:types\"",
+        "build": "yarn clean && rollup -c && yarn clean:types-tmp",
+        "dev": "rollup -c -w",
+        "clean:types-tmp": "rm -rf dist/types",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
-        "clean": "tsc -b --clean; rm -rf dist"
+        "clean": "rm -rf dist"
     },
     "dependencies": {
         "@canton-network/core-types": "workspace:^",
@@ -44,7 +43,6 @@
         "rollup": "^4.52.5",
         "rollup-plugin-dts": "^6.2.3",
         "tslib": "^2.8.1",
-        "tsup": "^8.5.0",
         "typescript": "^5.8.3"
     },
     "files": [
