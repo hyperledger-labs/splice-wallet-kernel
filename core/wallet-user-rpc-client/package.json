@@ -17,9 +17,9 @@
         }
     },
     "scripts": {
-        "build": "tsup && tsc -b tsconfig.types.json && yarn run docs",
+        "build": "tsup && tsc -p tsconfig.types.json && yarn run docs",
         "docs": "typedoc --tsconfig tsconfig.docs.json",
-        "dev": "tsup --watch --onSuccess \"tsc -b tsconfig.types.json\"",
+        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist"
     },

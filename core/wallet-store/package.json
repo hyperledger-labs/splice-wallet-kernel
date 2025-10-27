@@ -11,7 +11,7 @@
     "types": "./dist/index.d.ts",
     "scripts": {
         "build": "tsup && tsc -p tsconfig.types.json",
-        "dev": "tsup --watch --onSuccess \"tsc -b tsconfig.types.json\"",
+        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "jest --passWithNoTests"

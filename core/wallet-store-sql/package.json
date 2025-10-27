@@ -19,8 +19,8 @@
         }
     },
     "scripts": {
-        "build": "tsup && tsc -b tsconfig.types.json && tsc -b tsconfig.migrations.json",
-        "dev": "tsup --watch --onSuccess \"tsc -b tsconfig.types.json  && tsc -b tsconfig.migrations.json\"",
+        "build": "tsup && tsc -p tsconfig.types.json && tsc -b tsconfig.migrations.json",
+        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json  && tsc -b tsconfig.migrations.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
