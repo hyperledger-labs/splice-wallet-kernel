@@ -1454,6 +1454,7 @@ __metadata:
     ts-jest-resolver: "npm:^2.0.1"
     tsup: "npm:^8.5.0"
     typescript: "npm:^5.8.3"
+    typescript-lru-cache: "npm:^2.0.0"
   languageName: unknown
   linkType: soft
 
@@ -19375,6 +19376,13 @@ __metadata:
     eslint: ^8.57.0 || ^9.0.0
     typescript: ">=4.8.4 <6.0.0"
   checksum: 10c0/ee8429b16a5b7678136b8b2688bec03d11b5f1590895523ba9b8c6920c7a0876c9bf3bf0ff415df79e57c10ed48955cf183b727394b1c228ca75b5168fb466a1
+  languageName: node
+  linkType: hard
+
+"typescript-lru-cache@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "typescript-lru-cache@npm:2.0.0"
+  checksum: 10c0/69864dd8a3538f18002c50a644ef7a7f2d5e320a12fa6266b8c715d6530fec38e475349cd35f75b5196a39d1a28f8b12ebf16afce699b743bdf385dce7df1e0e
   languageName: node
   linkType: hard
 

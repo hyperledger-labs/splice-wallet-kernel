@@ -1,4 +1,3 @@
-import { PartyId } from '@canton-network/core-types'
 import {
     WalletSDKImpl,
     localNetAuthDefault,
@@ -10,6 +9,7 @@ import {
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
+import { getRandomElement, partyDefinition } from './utils.js'
 
 const logger = pino({ name: '01-party-stress', level: 'info' })
 const warnOnly = pino({ name: '01-party-stress', level: 'warn' })
@@ -28,11 +28,6 @@ await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(
     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
 )
-
-type partyDefinition = {
-    keyPair: { publicKey: string; privateKey: string }
-    partyId: PartyId
-}
 
 let createdParties: partyDefinition[] = []
 let allTransferCommandIds = []
@@ -57,10 +52,6 @@ async function allocateParty() {
     createdParties.push(definition)
 
     return definition
-}
-function getRandomParty(): partyDefinition {
-    const rando = Math.floor(Math.random() * createdParties.length)
-    return createdParties[rando]
 }
 
 async function tapAndTransfer(fromParty: partyDefinition, count: number) {
@@ -99,7 +90,7 @@ async function tapAndTransfer(fromParty: partyDefinition, count: number) {
                     disclosedContracts
                 )
                 .then(async () => {
-                    const toParty = getRandomParty()
+                    const toParty = getRandomElement(createdParties)!
                     const [command, dc] =
                         await transferSdk.tokenStandard!.createTransfer(
                             fromParty.partyId,

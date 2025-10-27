@@ -48,7 +48,8 @@
         "bignumber.js": "^9.2.1",
         "dayjs": "^1.11.13",
         "openapi-fetch": "^0.14.0",
-        "pino": "^10.0.0"
+        "pino": "^10.0.0",
+        "typescript-lru-cache": "^2.0.0"
     },
     "files": [
         "dist/**"
