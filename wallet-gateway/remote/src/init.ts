@@ -4,7 +4,6 @@
 import { dapp } from './dapp-api/server.js'
 import { user } from './user-api/server.js'
 import { web } from './web/server.js'
-import cors from 'cors'
 import { Logger, pino } from 'pino'
 import { StoreSql, connection } from '@canton-network/core-wallet-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
@@ -46,7 +45,11 @@ class NotificationService implements NotificationService {
     }
 }
 
+let isReady = false
+
 export async function initialize(opts: CliOptions) {
+    const port = opts.port ? Number(opts.port) : 3030
+
     const logger = pino({
         name: 'main',
         level: 'debug',
@@ -59,11 +62,25 @@ export async function initialize(opts: CliOptions) {
             : {}),
     })
 
+    const app = express()
+    const server = app.listen(port, () => {
+        logger.info(
+            `Remote Wallet Gateway starting on http://localhost:${port}`
+        )
+    })
+
+    app.use('/healthz', rpcRateLimit, (_req, res) => res.status(200).send('OK'))
+    app.use('/readyz', rpcRateLimit, (_req, res) => {
+        if (isReady) {
+            res.status(200).send('OK')
+        } else {
+            res.status(503).send('UNAVAILABLE')
+        }
+    })
+
     const notificationService = new NotificationService(logger)
 
     const config = ConfigUtils.loadConfigFile(opts.config)
-    const port = opts.port ? Number(opts.port) : 3030
-
     const store = new StoreSql(connection(config.store), logger)
     const authService = jwtAuthService(store, logger)
 
@@ -72,15 +89,9 @@ export async function initialize(opts: CliOptions) {
         [SigningProvider.WALLET_KERNEL]: new InternalSigningDriver(),
     }
 
-    const app = express()
-    app.use(cors()) // TODO: read allowedOrigins from config
     app.use('/api/*splat', express.json())
     app.use('/api/*splat', rpcRateLimit)
     app.use('/api/*splat', jwtAuth(authService, logger))
-
-    const server = app.listen(port, () => {
-        logger.info(`Remote Wallet Gateway running at http://localhost:${port}`)
-    })
 
     // register dapp API handlers
     dapp(
@@ -105,4 +116,7 @@ export async function initialize(opts: CliOptions) {
 
     // register web handler
     web(app, server)
+    isReady = true
+
+    logger.info('Wallet Gateway initialization complete')
 }
