@@ -20,8 +20,7 @@
         "./themes": "./themes"
     },
     "scripts": {
-        "build": "vite build && tsc -p tsconfig.types.json",
-        "build:old": "vite build && yarn workspace @canton-network/core-wallet-ui-components tsc --emitDeclarationOnly",
+        "build": "vite build && tsc -b tsconfig.types.json",
         "build:watch": "vite build --watch & tsc --emitDeclarationOnly --watch",
         "typecheck": "tsc --noEmit",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",

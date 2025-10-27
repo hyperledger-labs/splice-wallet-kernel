@@ -19,9 +19,9 @@
     },
     "scripts": {
         "build": "yarn clean && tsup && yarn build:types && yarn bundle:types",
-        "build:types": "tsc -p tsconfig.types.json",
-        "bundle:types": "rollup -c rollup.dts.config.mjs",
-        "dev": "tsup --watch",
+        "build:types": "tsc -b tsconfig.types.json",
+        "bundle:types": "rollup -c rollup.dts.config.js",
+        "dev": "tsup --watch --onSuccess \"yarn build:types && yarn bundle:types\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist"
     },

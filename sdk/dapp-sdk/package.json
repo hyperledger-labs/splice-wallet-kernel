@@ -8,19 +8,18 @@
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "main": "dist/index.cjs",
     "module": "dist/index.js",
-    "types": "dist/types/index.d.ts",
+    "types": "dist/index.d.ts",
     "exports": {
         ".": {
-            "types": "./dist/types/index.d.ts",
+            "types": "./dist/index.d.ts",
             "import": "./dist/index.js",
             "require": "./dist/index.cjs",
             "default": "./dist/index.js"
         }
     },
     "scripts": {
-        "build": "yarn build:js && yarn build:types",
-        "build:js": "tsup",
-        "build:types": "tsc -p tsconfig.types.json",
+        "build": "tsup && tsc -b && tsc -b tsconfig.types.json",
+        "dev": "tsup --watch --onSuccess \"tsc -b tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "echo \"Warning: no test specified\""
