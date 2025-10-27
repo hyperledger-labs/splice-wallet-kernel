@@ -744,8 +744,11 @@ export class LedgerController {
     /**
      * A function to grant either readAs or actAs rights
      */
-    async grantRights(readAs?: PartyId[], actAs?: PartyId[]) {
-        return await this.client.grantRights(this.userId, readAs, actAs)
+    async grantRights(readAsRights?: PartyId[], actAsRights?: PartyId[]) {
+        return await this.client.grantRights(this.userId, {
+            readAs: readAsRights ?? [],
+            actAs: actAsRights ?? [],
+        })
     }
 
     /**
@@ -949,11 +952,10 @@ export class LedgerController {
             throw new Error('Use adminLedger to call grantMasterUserRights')
         }
 
-        return await this.client.grantMasterUserRights(
-            userId,
+        return await this.client.grantRights(userId, {
             canReadAsAnyParty,
-            canExecuteAsAnyParty
-        )
+            canExecuteAsAnyParty,
+        })
     }
 
     /**

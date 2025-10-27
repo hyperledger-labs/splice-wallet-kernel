@@ -313,30 +313,9 @@ export class LedgerClient {
             throw new Error('timed out waiting for new party to appear')
         }
 
-        // Assign user rights to party
-        const result = await this.post(
-            '/v2/users/{user-id}/rights',
-            {
-                identityProviderId: '',
-                userId,
-                rights: [
-                    {
-                        kind: {
-                            CanActAs: {
-                                value: {
-                                    party: partyId,
-                                },
-                            },
-                        },
-                    },
-                ],
-            },
-            {
-                path: {
-                    'user-id': userId,
-                },
-            }
-        )
+        const result = await this.grantRights(userId, {
+            actAs: [partyId],
+        })
 
         if (!result.newlyGrantedRights) {
             throw new Error('Failed to grant user rights')
@@ -347,13 +326,17 @@ export class LedgerClient {
 
     public async grantRights(
         userId: string,
-        readAs?: PartyId[],
-        actAs?: PartyId[]
+        userRightsOptions: {
+            canReadAsAnyParty?: boolean
+            canExecuteAsAnyParty?: boolean
+            readAs?: PartyId[]
+            actAs?: PartyId[]
+        }
     ) {
         await this.init()
         const rights = []
 
-        for (const partyId of readAs ?? []) {
+        for (const partyId of userRightsOptions.readAs ?? []) {
             rights.push({
                 kind: {
                     CanReadAs: {
@@ -365,13 +348,30 @@ export class LedgerClient {
             })
         }
 
-        for (const partyId of actAs ?? []) {
+        for (const partyId of userRightsOptions.actAs ?? []) {
             rights.push({
                 kind: {
                     CanActAs: {
                         value: {
                             party: partyId,
                         },
+                    },
+                },
+            })
+        }
+
+        if (userRightsOptions.canReadAsAnyParty) {
+            rights.push({
+                kind: {
+                    CanReadAsAnyParty: { value: {} as Record<string, never> },
+                },
+            })
+        }
+        if (userRightsOptions.canExecuteAsAnyParty) {
+            rights.push({
+                kind: {
+                    CanExecuteAsAnyParty: {
+                        value: {} as Record<string, never>,
                     },
                 },
             })
@@ -395,7 +395,7 @@ export class LedgerClient {
             throw new Error('Failed to grant user rights')
         }
 
-        return
+        return result
     }
 
     /** TODO: simplify once 3.4 snapshot contains this endpoint */
