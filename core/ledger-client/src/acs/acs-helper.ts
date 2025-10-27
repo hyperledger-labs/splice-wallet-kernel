@@ -11,18 +11,19 @@ import { Logger } from 'pino'
 import { JsGetActiveContractsResponse } from './types.js'
 
 export type AcsHelperOptions = {
-    useLocalStorage?: boolean
     wsSupport?: WSSupport
     maxCacheSize?: number
     entryExpirationTime?: number
 }
+
+const DEFAULT_MAX_CACHE_SIZE = 50
+const DEFAULT_ENTRY_EXPIRATION_TIME = 10 * 60 * 1000
 
 export class ACSHelper {
     private contractsSet: LRUCache<string, ACSContainer>
     private readonly apiInstance: LedgerClient
     private readonly wsSupport: WSSupport | undefined
     private readonly logger: Logger
-    private useLocalStorage: boolean
     private hits = 0
     private misses = 0
     private evictions = 0
@@ -32,38 +33,21 @@ export class ACSHelper {
     constructor(
         apiInstance: LedgerClient,
         _logger: Logger,
-        options: AcsHelperOptions = {
-            useLocalStorage: false,
-        }
+        options?: AcsHelperOptions
     ) {
-        this.useLocalStorage = options.useLocalStorage ?? false
         this.contractsSet = new LRUCache({
-            maxSize: options.maxCacheSize ?? 50,
+            maxSize: options?.maxCacheSize ?? DEFAULT_MAX_CACHE_SIZE,
             entryExpirationTimeInMS:
-                options.entryExpirationTime ?? 10 * 60 * 1000, // 10 minutes
+                options?.entryExpirationTime ?? DEFAULT_ENTRY_EXPIRATION_TIME, // 10 minutes
             onEntryEvicted: (entry) => {
-                this.evictions++
-                if (!this.useLocalStorage) {
-                    return
-                }
                 this.logger.debug(
-                    `Storing ACSContainer (cache) for key  ${entry.key}`
+                    `entry ${entry.key} isExpired =  ${entry.isExpired}. evicting entry.`
                 )
-                try {
-                    localStorage.setItem(entry.key, JSON.stringify(entry.value))
-                } catch (e) {
-                    if (e instanceof DOMException) {
-                        this.logger.debug(
-                            `Failed to store ACSContainer (cache) for key  ${entry.key} in localStorage: ${e.message}`
-                        ) // possibly quota exceeded
-                    } else {
-                        this.logger.error(e)
-                    }
-                }
+                this.evictions++
             },
         })
         this.apiInstance = apiInstance
-        this.wsSupport = options.wsSupport
+        this.wsSupport = options?.wsSupport
         this.logger = _logger.child({ component: 'ACSHelper' })
     }
 
@@ -108,28 +92,6 @@ export class ACSHelper {
             this.hits++
             this.logger.debug('cache hit')
             return existing
-        }
-        if (this.useLocalStorage) {
-            const persistedData = localStorage.getItem(keyStr)
-            if (persistedData) {
-                try {
-                    const parsed = JSON.parse(persistedData) as ACSContainer
-                    const restored = new ACSContainer(parsed)
-                    this.contractsSet.set(keyStr, restored)
-                    this.logger.debug(
-                        `Restored ACSContainer (cache) for key  ${keyStr} from localStorage`
-                    )
-                    return restored
-                } catch (e) {
-                    if (e instanceof DOMException) {
-                        this.logger.debug(
-                            `Failed to restore ACSContainer (cache) for key  ${keyStr} from localStorage: ${e.message}`
-                        )
-                    } else {
-                        throw e
-                    }
-                }
-            }
         }
 
         this.logger.debug('cache miss')
