@@ -18,7 +18,7 @@
     },
     "packageManager": "yarn@4.9.4",
     "scripts": {
-        "build": "tsup && tsc -b tsconfig.types.json",
+        "build": "tsup && tsc -p tsconfig.types.json",
         "dev": "tsup --watch --onSuccess \"tsc -b tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist"

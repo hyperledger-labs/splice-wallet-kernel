@@ -16,6 +16,7 @@ const DAML_JS_PACKAGES = [
     '@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0',
     '@daml.js/daml-stdlib-DA-Time-Types-1.0.0',
 ]
+
 function buildPathsMap(pkgs) {
     const map = {}
     for (const name of pkgs) {
@@ -23,7 +24,14 @@ function buildPathsMap(pkgs) {
         const pkgDir = path.dirname(pkgJsonPath)
         const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
         const typesRel = pkgJson.types || pkgJson.typings || 'lib/index.d.ts'
-        map[name] = [path.resolve(pkgDir, typesRel)]
+        const typesAbs = path.resolve(pkgDir, typesRel)
+        const libDir = path.resolve(pkgDir, 'lib')
+        map[name] = [typesAbs]
+        map[`${name}/*`] = [path.join(libDir, '*')]
+
+        // Force deep "module.js" -> ".d.ts" resolution so dts can inline
+        map[`${name}/lib/*/module.js`] = [path.join(libDir, '*/module.d.ts')]
+        map[`${name}/lib/*/index.js`] = [path.join(libDir, '*/index.d.ts')]
     }
     return map
 }

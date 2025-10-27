@@ -6,7 +6,10 @@
         "declarationMap": true,
         "rootDir": "./src",
         "outDir": "./dist",
-        "resolveJsonModule": true
+        "moduleResolution": "bundler",
+        "noEmit": false,
+        "composite": false
     },
-    "include": ["src", "src/**/*.json"]
+    "files": ["src/index.ts"],
+    "exclude": ["**/*.test.*", "**/*.spec.*", "**/__tests__/**"]
 }
