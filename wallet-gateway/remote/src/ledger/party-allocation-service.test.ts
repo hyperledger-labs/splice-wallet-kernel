@@ -31,7 +31,7 @@ jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
         return {
             getWithRetry: mockLedgerGet,
             postWithRetry: mockLedgerPost,
-            grantUserRights: mockLedgerGrantUserRights,
+            waitForPartyAndGrantUserRights: mockLedgerGrantUserRights,
             generateTopology: jest.fn<AsyncFn>().mockResolvedValue({
                 partyId: 'party2::mypublickey',
                 publicKeyFingerprint: 'mypublickey',
