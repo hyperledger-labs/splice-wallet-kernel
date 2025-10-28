@@ -8,11 +8,18 @@ export default defineConfig({
     build: {
         emptyOutDir: false,
         lib: {
-            formats: ['es'],
             entry: 'src/index.ts',
-            fileName: 'index',
+            formats: ['es', 'cjs'],
+            fileName: (format) => (format === 'cjs' ? 'index.cjs' : 'index.js'),
             cssFileName: 'index',
         },
+        rollupOptions: {
+            external: ['lit', 'bootstrap', '@popperjs/core'],
+            output: {
+                exports: 'auto',
+            },
+        },
+        sourcemap: true,
     },
     plugins: [dts()],
 })

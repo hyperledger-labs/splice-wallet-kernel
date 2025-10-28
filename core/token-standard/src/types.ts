@@ -1,101 +1,106 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { Splice } from '@daml.js/token-standard-models-1.0.0'
 import { PartyId } from '@canton-network/core-types'
 
-// Mirrored types from token standard codegen
-// With current rollup setup it's not possible to bundle types from codegen into this package /dist
-// TODO(#614) adjust pipeline to bundle types reexported from codegen
+export * from './interface-ids.const.js'
 
-export type InstrumentId = {
-    admin: string
-    id: string
-}
+export const TransferInstructionV1 = Splice.Api.Token.TransferInstructionV1
+export const AllocationInstructionV1 = Splice.Api.Token.AllocationInstructionV1
+export const AllocationRequestV1 = Splice.Api.Token.AllocationRequestV1
+export const AllocationV1 = Splice.Api.Token.AllocationV1
+export const HoldingV1 = Splice.Api.Token.HoldingV1
+export const MetadataV1 = Splice.Api.Token.MetadataV1
 
-export type Metadata = {
-    values: { [key: string]: string }
-}
+export type {
+    Holding,
+    HoldingView,
+    Lock,
+    InstrumentId,
+    HoldingInterface,
+} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/HoldingV1/module.js'
 
-export type HoldingView = {
-    owner: string
-    instrumentId: InstrumentId
-    amount: string
-    lock: Record<string, string | number>
-    meta: Metadata
-}
+export type {
+    Transfer,
+    TransferInstruction,
+    TransferInstructionView,
+    TransferInstruction_Accept,
+    TransferInstruction_Reject,
+    TransferInstruction_Withdraw,
+    TransferInstruction_Update,
+    TransferFactory,
+    TransferFactoryView,
+    TransferFactory_PublicFetch,
+    TransferFactory_Transfer,
+    TransferInstructionResult,
+    TransferInstructionResult_Output,
+    TransferInstructionStatus,
+    TransferFactoryInterface,
+    TransferInstructionInterface,
+} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/TransferInstructionV1/module.js'
 
-export type AllocationRequestView = {
-    settlement: SettlementInfo
-    transferLegs: { [key: string]: TransferLeg }
-    meta: Metadata
-}
+export type {
+    AllocationFactory_Allocate,
+    AllocationFactoryView,
+    AllocationFactory_PublicFetch,
+    AllocationInstruction_Update,
+    AllocationInstruction_Withdraw,
+    AllocationInstructionView,
+    AllocationInstructionResult,
+    AllocationInstructionResult_Output,
+    AllocationFactory,
+    AllocationFactoryInterface,
+    AllocationInstruction,
+    AllocationInstructionInterface,
+} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/AllocationInstructionV1/module.js'
 
-export type TransferLeg = {
-    sender: string
-    receiver: string
-    amount: string
-    instrumentId: InstrumentId
-    meta: Metadata
-}
+export type {
+    AllocationRequest,
+    AllocationRequestView,
+    AllocationRequest_Reject,
+    AllocationRequest_Withdraw,
+    AllocationRequestInterface,
+} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/AllocationRequestV1/module.js'
 
-export interface Reference {
-    id: string
-    cid?: string
-}
+export type {
+    AllocationSpecification,
+    TransferLeg,
+    SettlementInfo,
+    Reference,
+    AllocationView,
+    Allocation,
+    AllocationInterface,
+    Allocation_Withdraw,
+    Allocation_Cancel,
+    Allocation_ExecuteTransfer,
+    Allocation_WithdrawResult,
+    Allocation_CancelResult,
+    Allocation_ExecuteTransferResult,
+} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/AllocationV1/module.js'
 
-export interface SettlementInfo {
-    executor: string
-    settlementRef: Reference
-    requestedAt: string
-    allocateBefore: string
-    settleBefore: string
-    meta: Metadata
-}
+export type {
+    ExtraArgs,
+    Metadata,
+    ChoiceExecutionMetadata,
+    AnyContract,
+    AnyContractInterface,
+    AnyContractView,
+    ChoiceContext,
+    AnyValue,
+} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/MetadataV1/module.js'
 
-export interface AllocationSpecification {
-    settlement: SettlementInfo
-    transferLegId: string
-    transferLeg: TransferLeg
-}
-
-export interface ExtraArgs {
-    context: { values: Record<string, unknown> }
-    meta: Metadata
-}
-
-export interface AllocationFactory_Allocate {
-    expectedAdmin: string
-    allocation: AllocationSpecification
-    requestedAt: string
-    inputHoldingCids: string[]
-    extraArgs: ExtraArgs
-}
-
-export type AllocationInstructionView = {
-    originalInstructionCid: string | null
-    allocation: AllocationSpecification
-    pendingActions: Record<string, string>
-    requestedAt: string
-    inputHoldingCids: string[]
-    meta: Metadata
-}
-
-export type AllocationView = {
-    allocation: AllocationSpecification
-    holdingCids: string[]
-    meta: Metadata
-}
-
-export type Transfer = {
-    sender: string
-    receiver: string
-    amount: string
-    instrumentId: InstrumentId
-    requestedAt: string
-    executeBefore: string
-    inputHoldingCids: string[]
-    meta: Metadata
-}
+export type {
+    ContractId,
+    Party,
+    Time,
+    Date,
+    Numeric,
+    Int,
+    Map,
+    Optional,
+    Serializable,
+} from '@daml/types'
 
 export type Beneficiaries = {
     beneficiary: PartyId

@@ -1,0 +1,25 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "./src"
+    },
+    "files": ["src/index.ts"],
+    "exclude": [
+        "**/*.test.*",
+        "**/*.spec.*",
+        "**/__tests__/**",
+        "**/*.config.*",
+        "tsup.config.ts",
+        "node_modules",
+        "docs",
+        "dist"
+    ],
+    "typedocOptions": {
+        "entryPoints": ["src/index.ts"],
+        "out": "docs",
+        "excludeExternals": true,
+        "excludePrivate": true,
+        "hideGenerator": true,
+        "readme": "none"
+    }
+}
