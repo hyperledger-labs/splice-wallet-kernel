@@ -690,17 +690,21 @@ export class LedgerController {
                 await this.client.getWithRetry('/v2/parties')
             ).partyDetails!.map((p) => p.party)
         } else {
-            const canReadAsPartyRight = rights.rights?.find(
-                (r) => 'CanReadAsParty' in r.kind
-            ) as { CanReadAsParty?: { parties: PartyId[] } } | undefined
-            if (
-                canReadAsPartyRight &&
-                canReadAsPartyRight.CanReadAsParty &&
-                Array.isArray(canReadAsPartyRight.CanReadAsParty.parties)
-            ) {
-                return canReadAsPartyRight.CanReadAsParty.parties
-            }
-            return []
+            const canReadAsPartyRights =
+                rights.rights?.filter(
+                    (
+                        r
+                    ): r is {
+                        kind: { CanReadAs: { value: { party: string } } }
+                    } => 'CanReadAs' in r.kind
+                ) ?? []
+            if (!canReadAsPartyRights) return []
+
+            const parties = canReadAsPartyRights.map(
+                (r) => r.kind.CanReadAs?.value?.party
+            )
+
+            return parties
         }
     }
 
