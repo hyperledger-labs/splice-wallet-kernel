@@ -3,7 +3,7 @@
 
 import { z } from 'zod'
 
-const clientCredentials = z.object({
+const credentials = z.object({
     clientId: z.string(),
     clientSecret: z.string(),
 })
@@ -18,7 +18,7 @@ const passwordAuthSchema = z.object({
     grantType: z.string(),
     scope: z.string(),
     clientId: z.string(),
-    admin: z.optional(clientCredentials),
+    admin: z.optional(credentials),
 })
 
 const implicitAuthSchema = z.object({
@@ -29,7 +29,7 @@ const implicitAuthSchema = z.object({
     audience: z.string(),
     scope: z.string(),
     clientId: z.string(),
-    admin: z.optional(clientCredentials),
+    admin: z.optional(credentials),
 })
 
 const clientCredentialAuthSchema = z.object({
@@ -41,7 +41,7 @@ const clientCredentialAuthSchema = z.object({
     scope: z.string(),
     clientId: z.string(),
     clientSecret: z.string(),
-    admin: z.optional(clientCredentials),
+    admin: z.optional(credentials),
 })
 
 const selfSignedAuthSchema = z.object({
@@ -52,7 +52,7 @@ const selfSignedAuthSchema = z.object({
     scope: z.string(),
     clientId: z.string(),
     clientSecret: z.string(),
-    admin: z.optional(clientCredentials),
+    admin: z.optional(credentials),
 })
 
 export const authSchema = z.discriminatedUnion('type', [
@@ -65,6 +65,6 @@ export const authSchema = z.discriminatedUnion('type', [
 export type Auth = z.infer<typeof authSchema>
 export type ImplicitAuth = z.infer<typeof implicitAuthSchema>
 export type PasswordAuth = z.infer<typeof passwordAuthSchema>
-// export type ClientCredentials = z.infer<typeof clientCredentials>
+export type Credentials = z.infer<typeof credentials>
 export type ClientCredentialAuth = z.infer<typeof clientCredentialAuthSchema>
 export type SelfSignedAuth = z.infer<typeof selfSignedAuthSchema>

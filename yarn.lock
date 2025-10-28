@@ -1784,6 +1784,7 @@ __metadata:
   resolution: "@canton-network/core-wallet-ui-components@workspace:core/wallet-ui-components"
   dependencies:
     "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
     "@canton-network/core-wallet-store": "workspace:^"
     "@popperjs/core": "npm:^2.11.8"
     "@storybook/web-components-vite": "npm:^9.1.10"
