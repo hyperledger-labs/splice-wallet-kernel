@@ -1,11 +1,10 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { WalletEvent } from '@canton-network/core-types'
 import { LitElement, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { stateManager } from '../state-manager'
-import { createUserClient } from '../rpc-client'
+import { authenticate } from '..'
 
 @customElement('login-callback')
 export class LoginCallback extends LitElement {
@@ -47,16 +46,6 @@ export class LoginCallback extends LitElement {
             const tokenResponse = await res.json()
 
             if (tokenResponse.access_token) {
-                if (window.opener && !window.opener.closed) {
-                    window.opener.postMessage(
-                        {
-                            type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
-                            token: tokenResponse.access_token,
-                        },
-                        '*'
-                    )
-                }
-
                 const payload = JSON.parse(
                     atob(tokenResponse.access_token.split('.')[1])
                 )
@@ -66,15 +55,12 @@ export class LoginCallback extends LitElement {
 
                 stateManager.accessToken.set(tokenResponse.access_token)
 
-                const authenticatedUserClient = createUserClient(
-                    tokenResponse.access_token
-                )
-
-                await authenticatedUserClient.request('addSession', {
-                    chainId: stateManager.chainId.get() || '',
+                authenticate(
+                    tokenResponse.access_token,
+                    stateManager.chainId.get() || ''
+                ).then(() => {
+                    window.location.replace('/')
                 })
-
-                window.location.replace('/')
             }
         }
     }

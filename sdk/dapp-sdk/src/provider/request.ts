@@ -8,6 +8,8 @@ import * as storage from '../storage'
 import { injectProvider } from './index'
 import { GatewaysConfig } from '@canton-network/core-types'
 import gateways from '../gateways.json'
+import { removeKernelDiscovery, removeKernelSession } from '../storage'
+import { closeKernelUserUI } from '../provider.js'
 
 export async function connect(): Promise<dappAPI.ConnectResult> {
     const config: GatewaysConfig[] = gateways
@@ -22,7 +24,7 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
                 method: 'connect',
             })
 
-            if (!response.isConnected) {
+            if (!response.status.isConnected) {
                 // TODO: error dialog
                 console.error('SDK: Not connected', response)
                 // openKernelUserUI(result.walletType, response.userUrl)
@@ -52,8 +54,22 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
         })
 }
 
-export async function status(): Promise<dappAPI.StatusResult> {
-    return await assertProvider().request<dappAPI.StatusResult>({
+export async function disconnect(): Promise<dappAPI.Null> {
+    return await assertProvider()
+        .request<dappAPI.Null>({
+            method: 'disconnect',
+        })
+        .then(() => {
+            removeKernelSession()
+            removeKernelDiscovery()
+            closeKernelUserUI()
+
+            return null
+        })
+}
+
+export async function status(): Promise<dappAPI.StatusEvent> {
+    return await assertProvider().request<dappAPI.StatusEvent>({
         method: 'status',
     })
 }

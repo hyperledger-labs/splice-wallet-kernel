@@ -113,7 +113,6 @@ export class TransactionParser {
                     `Impossible event: ${JSON.stringify(currentEvent)}`
                 )
             }
-
             if (parsed && isLeafEventNode(parsed)) {
                 // Exclude events where nothing happened
                 if (holdingChangesNonEmpty(parsed.event)) {
@@ -140,14 +139,17 @@ export class TransactionParser {
         create: CreatedEvent,
         parentChoice: string
     ): EventParseResult | null {
-        return this.buildRawEvent(create, create.nodeId, (payload) => {
+        return this.buildRawEvent(create, create.nodeId, (result) => {
             return {
-                type: 'Create',
+                type:
+                    Number(result.lockedHoldingsChangeSummary.amountChange) > 0
+                        ? 'Lock'
+                        : 'Create',
                 parentChoice,
                 contractId: create.contractId,
                 offset: create.offset,
                 templateId: create.templateId,
-                payload,
+                payload: result.payload,
                 packageName: create.packageName,
                 meta: undefined,
             }
@@ -165,7 +167,7 @@ export class TransactionParser {
         return this.buildRawEvent(
             events.created.createdEvent,
             archive.nodeId,
-            (payload) => {
+            (result) => {
                 return {
                     type: 'Archive',
                     parentChoice,
@@ -175,7 +177,7 @@ export class TransactionParser {
                     packageName: archive.packageName,
                     actingParties:
                         (archive as ExercisedEvent).actingParties || [],
-                    payload,
+                    payload: result.payload,
                     meta: undefined,
                 }
             }
@@ -185,7 +187,11 @@ export class TransactionParser {
     private buildRawEvent(
         originalCreate: CreatedEvent,
         nodeId: number,
-        buildLabel: (payload: any) => Label
+        buildLabel: (result: {
+            payload: any
+            lockedHoldingsChangeSummary: HoldingsChangeSummary
+            unlockedHoldingsChangeSummary: HoldingsChangeSummary
+        }) => Label
     ): EventParseResult | null {
         const view = getKnownInterfaceView(originalCreate)
         let result: {
@@ -261,7 +267,7 @@ export class TransactionParser {
             result && {
                 continueAfterNodeId: nodeId,
                 event: {
-                    label: buildLabel(result.payload),
+                    label: buildLabel(result),
                     unlockedHoldingsChange: result.unlockedHoldingsChange,
                     lockedHoldingsChange: result.lockedHoldingsChange,
                     lockedHoldingsChangeSummary:
@@ -284,6 +290,7 @@ export class TransactionParser {
             exerciseResult: exercise.exerciseResult,
         }
         switch (exercise.choice) {
+            case 'TransferRule_Transfer':
             case 'TransferFactory_Transfer':
                 result = await this.buildTransfer(exercise, tokenStandardChoice)
                 break

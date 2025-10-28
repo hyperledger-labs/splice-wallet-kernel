@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import express from 'express'
+import cors from 'cors'
 import { dappController } from './controller.js'
 import { pino } from 'pino'
 import { jsonRpcHandler } from '../middleware/jsonRpcHandler.js'
@@ -27,6 +28,7 @@ export const dapp = (
     authService: AuthService,
     store: Store & AuthAware<Store>
 ) => {
+    app.use(cors()) // TODO: read allowedOrigins from config
     app.use(route, (req, res, next) =>
         jsonRpcHandler<Methods>({
             controller: dappController(
@@ -55,6 +57,9 @@ export const dapp = (
         const onAccountsChanged = (...event: unknown[]) => {
             io.emit('accountsChanged', ...event)
         }
+        const onStatusChanged = (...event: unknown[]) => {
+            io.emit('statusChanged', ...event)
+        }
         const onConnected = (...event: unknown[]) => {
             io.emit('onConnected', ...event)
         }
@@ -75,6 +80,7 @@ export const dapp = (
 
                 notifier.on('accountsChanged', onAccountsChanged)
                 notifier.on('onConnected', onConnected)
+                notifier.on('statusChanged', onStatusChanged)
                 notifier.on('txChanged', onTxChanged)
             })
 
@@ -84,6 +90,7 @@ export const dapp = (
             if (notifier) {
                 notifier.removeListener('accountsChanged', onAccountsChanged)
                 notifier.removeListener('onConnected', onConnected)
+                notifier.removeListener('statusChanged', onStatusChanged)
                 notifier.removeListener('txChanged', onTxChanged)
             }
         })

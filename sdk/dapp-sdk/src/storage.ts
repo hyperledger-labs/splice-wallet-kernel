@@ -28,6 +28,10 @@ export const setKernelDiscovery = (discovery: DiscoverResult): void => {
     )
 }
 
+export const removeKernelDiscovery = (): void => {
+    localStorage.removeItem(LOCAL_STORAGE.KERNEL_DISCOVERY)
+}
+
 export const getKernelSession = (): dappAPI.ConnectResult | undefined => {
     const session = localStorage.getItem(LOCAL_STORAGE.KERNEL_SESSION)
     if (session) {

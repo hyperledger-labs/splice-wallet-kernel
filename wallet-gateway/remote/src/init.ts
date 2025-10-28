@@ -4,9 +4,13 @@
 import { dapp } from './dapp-api/server.js'
 import { user } from './user-api/server.js'
 import { web } from './web/server.js'
-import cors from 'cors'
 import { Logger, pino } from 'pino'
-import { StoreSql, connection } from '@canton-network/core-wallet-store-sql'
+import {
+    StoreSql,
+    bootstrap,
+    connection,
+    migrator,
+} from '@canton-network/core-wallet-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
 import { Notifier } from './notification/NotificationService.js'
 import EventEmitter from 'events'
@@ -18,6 +22,10 @@ import express from 'express'
 import { CliOptions } from './index.js'
 import { jwtAuth } from './middleware/jwtAuth.js'
 import { rpcRateLimit } from './middleware/rateLimit.js'
+import { Config } from './config/Config.js'
+import { existsSync } from 'fs'
+
+let isReady = false
 
 class NotificationService implements NotificationService {
     private notifiers: Map<string, Notifier> = new Map()
@@ -46,7 +54,44 @@ class NotificationService implements NotificationService {
     }
 }
 
+async function initializeDatabase(
+    config: Config,
+    logger: Logger
+): Promise<StoreSql> {
+    logger.info('Checking for database migrations...')
+
+    let exists = true
+    if (config.store.connection.type === 'sqlite') {
+        exists = existsSync(config.store.connection.database)
+    }
+
+    const db = connection(config.store)
+    const umzug = migrator(db)
+    const pending = await umzug.pending()
+
+    if (pending.length > 0) {
+        logger.info(
+            { pendingMigrations: pending.map((m) => m.name) },
+            'Applying database migrations...'
+        )
+        await umzug.up()
+        logger.info('Database migrations applied successfully.')
+    } else {
+        logger.info('No pending database migrations found.')
+    }
+
+    // bootstrap database from config file if it did not exist before
+    if (!exists) {
+        logger.info('Bootstrapping database from config...')
+        await bootstrap(db, config.store, logger)
+    }
+
+    return new StoreSql(db, logger)
+}
+
 export async function initialize(opts: CliOptions) {
+    const port = opts.port ? Number(opts.port) : 3030
+
     const logger = pino({
         name: 'main',
         level: 'debug',
@@ -59,12 +104,27 @@ export async function initialize(opts: CliOptions) {
             : {}),
     })
 
+    const app = express()
+    const server = app.listen(port, () => {
+        logger.info(
+            `Remote Wallet Gateway starting on http://localhost:${port}`
+        )
+    })
+
+    app.use('/healthz', rpcRateLimit, (_req, res) => res.status(200).send('OK'))
+    app.use('/readyz', rpcRateLimit, (_req, res) => {
+        if (isReady) {
+            res.status(200).send('OK')
+        } else {
+            res.status(503).send('UNAVAILABLE')
+        }
+    })
+
     const notificationService = new NotificationService(logger)
 
     const config = ConfigUtils.loadConfigFile(opts.config)
-    const port = opts.port ? Number(opts.port) : 3030
 
-    const store = new StoreSql(connection(config.store), logger)
+    const store = await initializeDatabase(config, logger)
     const authService = jwtAuthService(store, logger)
 
     const drivers = {
@@ -72,15 +132,9 @@ export async function initialize(opts: CliOptions) {
         [SigningProvider.WALLET_KERNEL]: new InternalSigningDriver(),
     }
 
-    const app = express()
-    app.use(cors()) // TODO: read allowedOrigins from config
     app.use('/api/*splat', express.json())
     app.use('/api/*splat', rpcRateLimit)
     app.use('/api/*splat', jwtAuth(authService, logger))
-
-    const server = app.listen(port, () => {
-        logger.info(`Remote Wallet Gateway running at http://localhost:${port}`)
-    })
 
     // register dapp API handlers
     dapp(
@@ -105,4 +159,7 @@ export async function initialize(opts: CliOptions) {
 
     // register web handler
     web(app, server)
+    isReady = true
+
+    logger.info('Wallet Gateway initialization complete')
 }

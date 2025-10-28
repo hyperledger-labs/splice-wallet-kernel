@@ -56,7 +56,7 @@ export type DisclosedContract = Types['DisclosedContract']
 const EMPTY_META: Metadata = { values: {} }
 
 type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
-type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
+export type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
 type JsGetTransactionResponse = Types['JsGetTransactionResponse']
 type OffsetCheckpoint2 = Types['OffsetCheckpoint2']
 type JsTransaction = Types['JsTransaction']
@@ -83,7 +83,7 @@ type CreateTransferChoiceArgs = {
     extraArgs: ExtraArgs
 }
 
-class CoreService {
+export class CoreService {
     constructor(
         private ledgerClient: LedgerClient,
         private scanProxyClient: ScanProxyClient,

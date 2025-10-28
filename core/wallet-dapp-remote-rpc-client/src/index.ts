@@ -45,7 +45,7 @@ export interface KernelInfo {
 }
 /**
  *
- * Whether or not a connection to a network is esablished.
+ * Whether or not a connection to a network is established.
  *
  */
 export type IsConnected = boolean
@@ -55,12 +55,18 @@ export type IsConnected = boolean
  *
  */
 export type ChainId = string
+export interface StatusEvent {
+    kernel: KernelInfo
+    isConnected: IsConnected
+    chainId?: ChainId
+    [k: string]: any
+}
 /**
  *
- * A URL that points to a user interface.
+ * JWT authentication token (if applicable).
  *
  */
-export type UserUrl = string
+export type SessionToken = string
 export type Dar = string
 export type Dars = Dar[]
 /**
@@ -85,13 +91,13 @@ export interface JsPrepareSubmissionResponse {
     preparedTransactionHash?: PreparedTransactionHash
     [k: string]: any
 }
-export type Response = string
 /**
  *
- * JWT authentication token (if applicable).
+ * A URL that points to a user interface.
  *
  */
-export type SessionToken = string
+export type UserUrl = string
+export type Response = string
 /**
  *
  * Set as primary wallet for dApp usage.
@@ -269,19 +275,17 @@ export interface LedgerApiParams {
     body?: Body
     [k: string]: any
 }
-export interface StatusResult {
-    kernel: KernelInfo
-    isConnected: IsConnected
-    chainId?: ChainId
-    [k: string]: any
-}
 export interface ConnectResult {
-    kernel: KernelInfo
-    isConnected: IsConnected
-    chainId?: ChainId
-    userUrl: UserUrl
+    status: StatusEvent
+    sessionToken: SessionToken
     [k: string]: any
 }
+/**
+ *
+ * Represents a null value, used in responses where no data is returned.
+ *
+ */
+export type Null = null
 export interface DarsAvailableResult {
     dars: Dars
     [k: string]: any
@@ -334,8 +338,9 @@ export type TxChangedEvent =
  *
  */
 
-export type Status = () => Promise<StatusResult>
+export type Status = () => Promise<StatusEvent>
 export type Connect = () => Promise<ConnectResult>
+export type Disconnect = () => Promise<Null>
 export type DarsAvailable = () => Promise<DarsAvailableResult>
 export type PrepareReturn = (
     params: PrepareReturnParams
@@ -345,6 +350,7 @@ export type PrepareExecute = (
 ) => Promise<PrepareExecuteResult>
 export type LedgerApi = (params: LedgerApiParams) => Promise<LedgerApiResult>
 export type OnConnected = () => Promise<OnConnectedEvent>
+export type OnStatusChanged = () => Promise<StatusEvent>
 export type OnAccountsChanged = () => Promise<AccountsChangedEvent>
 export type RequestAccounts = () => Promise<RequestAccountsResult>
 export type OnTxChanged = () => Promise<TxChangedEvent>
@@ -373,6 +379,15 @@ export class SpliceWalletJSONRPCRemoteDAppAPI {
         method: 'connect',
         ...params: Parameters<Connect>
     ): ReturnType<Connect>
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public async request(
+        method: 'disconnect',
+        ...params: Parameters<Disconnect>
+    ): ReturnType<Disconnect>
 
     /**
      *
@@ -418,6 +433,15 @@ export class SpliceWalletJSONRPCRemoteDAppAPI {
         method: 'onConnected',
         ...params: Parameters<OnConnected>
     ): ReturnType<OnConnected>
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public async request(
+        method: 'onStatusChanged',
+        ...params: Parameters<OnStatusChanged>
+    ): ReturnType<OnStatusChanged>
 
     /**
      *

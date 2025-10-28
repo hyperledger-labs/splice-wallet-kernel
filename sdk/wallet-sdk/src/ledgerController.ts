@@ -4,7 +4,6 @@
 import {
     LedgerClient,
     PostResponse,
-    PostRequest,
     GetResponse,
     Types,
     awaitCompletion,
@@ -405,7 +404,10 @@ export class LedgerController {
         }
 
         if (grantUserRights) {
-            await this.client.grantUserRights(this.userId, partyId)
+            await this.client.waitForPartyAndGrantUserRights(
+                this.userId,
+                partyId
+            )
         }
 
         return { partyId }
@@ -689,17 +691,37 @@ export class LedgerController {
                 await this.client.getWithRetry('/v2/parties')
             ).partyDetails!.map((p) => p.party)
         } else {
-            const canReadAsPartyRight = rights.rights?.find(
-                (r) => 'CanReadAsParty' in r.kind
-            ) as { CanReadAsParty?: { parties: PartyId[] } } | undefined
-            if (
-                canReadAsPartyRight &&
-                canReadAsPartyRight.CanReadAsParty &&
-                Array.isArray(canReadAsPartyRight.CanReadAsParty.parties)
-            ) {
-                return canReadAsPartyRight.CanReadAsParty.parties
-            }
-            return []
+            const canReadAsPartyRights =
+                rights.rights?.filter(
+                    (
+                        r
+                    ): r is {
+                        kind: { CanReadAs: { value: { party: string } } }
+                    } => 'CanReadAs' in r.kind
+                ) ?? []
+            if (!canReadAsPartyRights) return []
+
+            const readAsParties = canReadAsPartyRights.map(
+                (r) => r.kind.CanReadAs?.value?.party
+            )
+
+            const canActAsPartyRights =
+                rights.rights?.filter(
+                    (
+                        r
+                    ): r is {
+                        kind: { CanActAs: { value: { party: string } } }
+                    } => 'CanActAs' in r.kind
+                ) ?? []
+            if (!canActAsPartyRights) return []
+
+            const actAsParties = canActAsPartyRights.map(
+                (r) => r.kind.CanActAs?.value?.party
+            )
+
+            const allWallets = [...actAsParties, ...readAsParties]
+
+            return Array.from(new Set(allWallets))
         }
     }
 
@@ -746,8 +768,11 @@ export class LedgerController {
     /**
      * A function to grant either readAs or actAs rights
      */
-    async grantRights(readAs?: PartyId[], actAs?: PartyId[]) {
-        return await this.client.grantRights(this.userId, readAs, actAs)
+    async grantRights(readAsRights?: PartyId[], actAsRights?: PartyId[]) {
+        return await this.client.grantRights(this.userId, {
+            readAs: readAsRights ?? [],
+            actAs: actAsRights ?? [],
+        })
     }
 
     /**
@@ -854,6 +879,13 @@ export class LedgerController {
     }
 
     /**
+     * Returns stats for the internal acs cache
+     */
+    getACSCacheStats() {
+        return this.client.getCacheStats()
+    }
+
+    /**
      * Retrieves active contracts with optional filtering by template IDs and parties.
      * @param options Optional parameters for filtering:
      *  - offset: The ledger offset to query active contracts at.
@@ -862,62 +894,14 @@ export class LedgerController {
      *  - filterByParty: If true, filters contracts for each party individually; if false, filters for any known party.
      * @returns A list of active contracts matching the specified filters.
      */
+
     async activeContracts(options: {
         offset: number
         templateIds?: string[]
         parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
         filterByParty?: boolean
-    }): Promise<PostResponse<'/v2/state/active-contracts'>> {
-        const filter: PostRequest<'/v2/state/active-contracts'> = {
-            filter: {
-                filtersByParty: {},
-            },
-            verbose: false,
-            activeAtOffset: options?.offset,
-        }
-
-        // Helper to build TemplateFilter array
-        const buildTemplateFilter = (templateIds?: string[]) => {
-            if (!templateIds) return []
-            return [
-                {
-                    identifierFilter: {
-                        TemplateFilter: {
-                            value: {
-                                templateId: templateIds[0],
-                                includeCreatedEventBlob: true, //TODO: figure out if this should be configurable
-                            },
-                        },
-                    },
-                },
-            ]
-        }
-
-        if (
-            options?.filterByParty &&
-            options.parties &&
-            options.parties.length > 0
-        ) {
-            // Filter by party: set filtersByParty for each party
-            for (const party of options.parties) {
-                filter.filter!.filtersByParty[party] = {
-                    cumulative: options.templateIds
-                        ? buildTemplateFilter(options.templateIds)
-                        : [],
-                }
-            }
-        } else if (options?.templateIds) {
-            // Only template filter, no party
-            filter.filter!.filtersForAnyParty = {
-                cumulative: buildTemplateFilter(options.templateIds),
-            }
-        }
-
-        //TODO: figure out if this should automatically be converted to a format that is more user friendly
-        return await this.client.postWithRetry(
-            '/v2/state/active-contracts',
-            filter
-        )
+    }) {
+        return await this.client.activeContracts(options)
     }
 
     async uploadDar(
@@ -992,11 +976,10 @@ export class LedgerController {
             throw new Error('Use adminLedger to call grantMasterUserRights')
         }
 
-        return await this.client.grantMasterUserRights(
-            userId,
+        return await this.client.grantRights(userId, {
             canReadAsAnyParty,
-            canExecuteAsAnyParty
-        )
+            canExecuteAsAnyParty,
+        })
     }
 
     /**

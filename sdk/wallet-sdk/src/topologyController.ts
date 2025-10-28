@@ -232,7 +232,7 @@ export class TopologyController {
         )
 
         if (grantUserRights) {
-            await this.client.grantUserRights(
+            await this.client.waitForPartyAndGrantUserRights(
                 this.userId,
                 preparedParty.partyId
             )
@@ -356,7 +356,10 @@ export class TopologyController {
             await service.authorizePartyToParticipant(preparedParty.partyId)
         }
 
-        await this.client.grantUserRights(this.userId, preparedParty.partyId)
+        await this.client.waitForPartyAndGrantUserRights(
+            this.userId,
+            preparedParty.partyId
+        )
 
         return { partyId: preparedParty.partyId }
     }

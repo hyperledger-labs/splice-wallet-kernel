@@ -12,27 +12,10 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "StatusResult",
-                    "type": "object",
-                    "properties": {
-                        "kernel": {
-                            "$ref": "#/components/schemas/KernelInfo"
-                        },
-                        "isConnected": {
-                            "title": "isConnected",
-                            "type": "boolean",
-                            "description": "Whether or not a connection to a network is established."
-                        },
-                        "chainId": {
-                            "title": "chainId",
-                            "type": "string",
-                            "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
-                        }
-                    },
-                    "required": ["kernel", "isConnected"]
+                    "$ref": "#/components/schemas/StatusEvent"
                 }
             },
-            "description": "Returns the current chainId if connected."
+            "description": "Returns the current status of the wallet gateway session."
         },
         {
             "name": "connect",
@@ -43,27 +26,30 @@
                     "title": "ConnectResult",
                     "type": "object",
                     "properties": {
-                        "kernel": {
-                            "$ref": "#/components/schemas/KernelInfo"
+                        "status": {
+                            "$ref": "#/components/schemas/StatusEvent"
                         },
-                        "isConnected": {
-                            "title": "isConnected",
-                            "type": "boolean",
-                            "description": "Whether or not a connection to a network is esablished."
-                        },
-                        "chainId": {
-                            "title": "chainId",
+                        "sessionToken": {
+                            "title": "sessionToken",
                             "type": "string",
-                            "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
-                        },
-                        "userUrl": {
-                            "$ref": "#/components/schemas/UserUrl"
+                            "description": "JWT authentication token (if applicable)."
                         }
                     },
-                    "required": ["kernel", "isConnected", "userUrl"]
+                    "required": ["status", "sessionToken"]
                 }
             },
-            "description": "Ensures ledger connectivity. Returns the current chainId if connected, or the user url if disconnected."
+            "description": "Ensures ledger connectivity and returns the connected network information along with the user access token. ChainId should follow CAIP-2 and represent the synchronizerId."
+        },
+        {
+            "name": "disconnect",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/Null"
+                }
+            },
+            "description": "Invoke a disconnect of the wallet gateway session."
         },
         {
             "name": "darsAvailable",
@@ -213,6 +199,16 @@
                 }
             },
             "description": "Informs when the user connects to a network."
+        },
+        {
+            "name": "onStatusChanged",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/StatusEvent"
+                }
+            }
         },
         {
             "name": "onAccountsChanged",
@@ -474,6 +470,26 @@
                         "$ref": "#/components/schemas/TxChangedFailedEvent"
                     }
                 ]
+            },
+            "StatusEvent": {
+                "title": "StatusEvent",
+                "type": "object",
+                "properties": {
+                    "kernel": {
+                        "$ref": "#/components/schemas/KernelInfo"
+                    },
+                    "isConnected": {
+                        "title": "isConnected",
+                        "type": "boolean",
+                        "description": "Whether or not a connection to a network is established."
+                    },
+                    "chainId": {
+                        "title": "chainId",
+                        "type": "string",
+                        "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
+                    }
+                },
+                "required": ["kernel", "isConnected"]
             }
         }
     }

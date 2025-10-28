@@ -52,7 +52,7 @@ export interface KernelInfo {
 }
 /**
  *
- * Whether or not a connection to a network is esablished.
+ * Whether or not a connection to a network is established.
  *
  */
 export type IsConnected = boolean
@@ -62,6 +62,12 @@ export type IsConnected = boolean
  *
  */
 export type ChainId = string
+export interface StatusEvent {
+    kernel: KernelInfo
+    isConnected: IsConnected
+    chainId?: ChainId
+    [k: string]: any
+}
 /**
  *
  * JWT authentication token (if applicable).
@@ -270,19 +276,17 @@ export interface LedgerApiParams {
     body?: Body
     [k: string]: any
 }
-export interface StatusResult {
-    kernel: KernelInfo
-    isConnected: IsConnected
-    chainId?: ChainId
-    [k: string]: any
-}
 export interface ConnectResult {
-    kernel: KernelInfo
-    isConnected: IsConnected
-    chainId?: ChainId
+    status: StatusEvent
     sessionToken: SessionToken
     [k: string]: any
 }
+/**
+ *
+ * Represents a null value, used in responses where no data is returned.
+ *
+ */
+export type Null = null
 export interface DarsAvailableResult {
     dars: Dars
     [k: string]: any
@@ -329,8 +333,9 @@ export type TxChangedEvent =
  *
  */
 
-export type Status = () => Promise<StatusResult>
+export type Status = () => Promise<StatusEvent>
 export type Connect = () => Promise<ConnectResult>
+export type Disconnect = () => Promise<Null>
 export type DarsAvailable = () => Promise<DarsAvailableResult>
 export type PrepareReturn = (
     params: PrepareReturnParams
@@ -367,6 +372,15 @@ export class SpliceWalletJSONRPCDAppAPI {
         method: 'connect',
         ...params: Parameters<Connect>
     ): ReturnType<Connect>
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public async request(
+        method: 'disconnect',
+        ...params: Parameters<Disconnect>
+    ): ReturnType<Disconnect>
 
     /**
      *

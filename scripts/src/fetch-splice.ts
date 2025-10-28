@@ -16,12 +16,14 @@ import {
 import path from 'path'
 
 async function main() {
+    const updateHash = process.argv.includes('--updateHash')
     const archiveUrl = `https://github.com/hyperledger-labs/splice/archive/refs/tags/${SPLICE_VERSION}.tar.gz`
     const tarfile = path.join(SPLICE_PATH, `${SPLICE_VERSION}.tar.gz`)
 
     await downloadAndUnpackTarball(archiveUrl, tarfile, SPLICE_PATH, {
         hash: SPLICE_ARCHIVE_HASH,
         strip: 1,
+        updateHash,
     })
 }
 
