@@ -1,8 +1,8 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { AuthService } from '@canton-network/core-wallet-auth'
-import { Auth, Store } from '@canton-network/core-wallet-store'
+import { Auth, AuthService } from '@canton-network/core-wallet-auth'
+import { Store } from '@canton-network/core-wallet-store'
 import { createRemoteJWKSet, decodeJwt, jwtVerify } from 'jose'
 import { Logger } from 'pino'
 

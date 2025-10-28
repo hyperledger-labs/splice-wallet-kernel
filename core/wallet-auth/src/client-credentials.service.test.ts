@@ -2,11 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { jest } from '@jest/globals'
-import {
-    ClientCredentials,
-    ClientCredentialsService,
-    OIDCConfig,
-} from './client-credentials-service.js'
+import { ClientCredentialsService } from './client-credentials-service.js'
+import { ClientCredentials, OIDCConfig } from './auth-service.js'
 
 describe('ClientCredentialsService', () => {
     const configUrl = 'http://idp/.well-known/openid-configuration'

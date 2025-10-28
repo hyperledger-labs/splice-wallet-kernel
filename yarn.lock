@@ -1667,6 +1667,7 @@ __metadata:
     ts-jest: "npm:^29.4.0"
     ts-jest-resolver: "npm:^2.0.1"
     typescript: "npm:^5.8.3"
+    zod: "npm:^3.25.64"
   languageName: unknown
   linkType: soft
 
@@ -1761,6 +1762,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-store@workspace:core/wallet-store"
   dependencies:
+    "@canton-network/core-wallet-auth": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"

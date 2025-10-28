@@ -10,9 +10,8 @@ import {
     Store,
     LedgerApi,
     Network,
-    PasswordAuth,
 } from '@canton-network/core-wallet-store'
-import { AuthContext } from '@canton-network/core-wallet-auth'
+import { AuthContext, PasswordAuth } from '@canton-network/core-wallet-auth'
 import { pino, Logger } from 'pino'
 import { sink } from 'pino-test'
 

@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AuthService } from '@canton-network/core-wallet-auth'
-import { Auth, Store } from '@canton-network/core-wallet-store'
+import { Auth } from '@canton-network/core-wallet-auth'
+import { Store } from '@canton-network/core-wallet-store'
 import { decodeJwt } from 'jose'
 import { Logger } from 'pino'
 

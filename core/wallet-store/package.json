@@ -17,6 +17,7 @@
         "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
     },
     "dependencies": {
+        "@canton-network/core-wallet-auth": "workspace:^",
         "zod": "^3.25.64"
     },
     "devDependencies": {

@@ -17,16 +17,12 @@ import {
     SetPrimaryWalletParams,
     SyncWalletsResult,
 } from './rpc-gen/typings.js'
-import {
-    Store,
-    Auth,
-    Transaction,
-    Network,
-} from '@canton-network/core-wallet-store'
+import { Store, Transaction, Network } from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'
 import { NotificationService } from '../notification/NotificationService.js'
 import {
     assertConnected,
+    Auth,
     AuthContext,
     clientCredentialsService,
 } from '@canton-network/core-wallet-auth'

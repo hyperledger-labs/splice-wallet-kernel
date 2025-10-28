@@ -4,3 +4,4 @@
 export * from './auth-service.js'
 export * from './client-credentials-service.js'
 export * from './auth-utils.js'
+export * from './config/schema.js'

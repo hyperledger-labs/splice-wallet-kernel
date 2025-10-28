@@ -1,12 +1,11 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { UserId } from '@canton-network/core-wallet-auth'
+import { Auth, UserId } from '@canton-network/core-wallet-auth'
 import {
     Wallet,
     Transaction,
     Session,
-    Auth,
     Network,
 } from '@canton-network/core-wallet-store'
 
