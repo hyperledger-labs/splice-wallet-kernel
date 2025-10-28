@@ -704,12 +704,15 @@ export class LedgerController {
                 (r) => r.kind.CanReadAs?.value?.party
             )
 
-            const hasActAsRight =
-                rights.rights?.some(
-                    (r) =>
-                        'CanActAs' in r.kind &&
-                        r.kind.CanActAs.value.party === this.getPartyId()
-                ) ?? false
+            let hasActAsRight = false
+            if (this.partyId) {
+                hasActAsRight =
+                    rights.rights?.some(
+                        (r) =>
+                            'CanActAs' in r.kind &&
+                            r.kind.CanActAs.value.party === this.getPartyId()
+                    ) ?? false
+            }
 
             const allWallets = [
                 ...(hasActAsRight ? [this.getPartyId()] : []),
