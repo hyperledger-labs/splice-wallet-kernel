@@ -17,18 +17,6 @@ const spliceVersion = process.argv[2]
 const repoRoot = getRepoRoot()
 const cantonSourcesPath = path.join(repoRoot, '.splice/nix/canton-sources.json')
 
-function restoreFile(filePath: string) {
-    const backupPath = filePath + '.bak'
-    if (fs.existsSync(backupPath)) {
-        fs.copyFileSync(backupPath, filePath)
-        fs.unlinkSync(backupPath)
-    }
-}
-function cleanupBackups(filePath: string) {
-    const backupPath = filePath + '.bak'
-    if (fs.existsSync(backupPath)) fs.unlinkSync(backupPath)
-}
-
 // Step 1: Update SPLICE_VERSION in utils.ts
 //const utilsBackup = backupFile(utilsPath)
 let utilsContent = fs.readFileSync(UTILS_FILE_PATH, 'utf8')
@@ -52,8 +40,7 @@ try {
     )
     if (fetchSplice.status !== 0) throw new Error('fetch-splice.ts failed')
 } catch {
-    console.error(error('fetch-splice.ts failed, rolling back changes.'))
-    restoreFile(UTILS_FILE_PATH)
+    console.error(error('fetch-splice.ts failed, roll back changes using git.'))
     process.exit(1)
 }
 
@@ -91,11 +78,8 @@ try {
     fs.writeFileSync(UTILS_FILE_PATH, utilsContent, 'utf8')
 } catch {
     console.error(
-        error(
-            'Failed to update DAML_RELEASE_VERSION or SUPPORTED_VERSIONS, rolling back.'
-        )
+        error('Failed to update DAML_RELEASE_VERSION or SUPPORTED_VERSIONS.')
     )
-    restoreFile(UTILS_FILE_PATH)
     process.exit(1)
 }
 
@@ -114,11 +98,8 @@ for (const script of scripts) {
         )
         if (result.status !== 0) throw new Error(`${script} failed`)
     } catch {
-        console.error(error(`${script} failed, rolling back changes.`))
-        restoreFile(UTILS_FILE_PATH)
+        console.error(error(`${script} failed`))
         process.exit(1)
     }
 }
-
-cleanupBackups(UTILS_FILE_PATH)
 console.log(success('Upgrade completed successfully.'))
