@@ -190,7 +190,7 @@ export const fromAuth = (auth: Auth): IdpTable => {
             return {
                 identityProviderId: auth.identityProviderId,
                 type: auth.type,
-                issuer: '',
+                issuer: auth.issuer,
                 configUrl: '',
                 audience: auth.audience,
                 tokenUrl: '',
