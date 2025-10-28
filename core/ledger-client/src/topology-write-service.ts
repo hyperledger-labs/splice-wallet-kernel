@@ -38,7 +38,7 @@ import {
 } from '@canton-network/core-ledger-proto'
 import { GrpcTransport } from '@protobuf-ts/grpc-transport'
 import { ChannelCredentials } from '@grpc/grpc-js'
-import fs from 'fs'
+import fs from 'node:fs'
 
 function prefixedInt(value: number, bytes: Buffer | Uint8Array): Buffer {
     const buffer = Buffer.alloc(4 + bytes.length)

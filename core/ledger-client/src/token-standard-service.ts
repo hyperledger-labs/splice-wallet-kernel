@@ -19,6 +19,8 @@ import {
     ExtraArgs,
     Metadata,
     FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
+    Holding,
+    ContractId,
     Beneficiaries,
 } from '@canton-network/core-token-standard'
 import {
@@ -358,7 +360,8 @@ class AllocationService {
             requestedAt:
                 requestedAt ??
                 new Date(Date.now() - REQUESTED_AT_SKEW_MS).toISOString(),
-            inputHoldingCids,
+            inputHoldingCids:
+                inputHoldingCids as unknown as ContractId<Holding>[],
             extraArgs: {
                 context: { values: {} },
                 meta: { values: {} },
@@ -708,7 +711,8 @@ class TransferService {
                 executeBefore: (
                     expiryDate ?? new Date(Date.now() + 24 * 60 * 60 * 1000)
                 ).toISOString(),
-                inputHoldingCids,
+                inputHoldingCids:
+                    inputHoldingCids as unknown as ContractId<Holding>[],
                 meta: { values: { [MEMO_KEY]: memo || '', ...meta?.values } },
             },
             extraArgs: {
