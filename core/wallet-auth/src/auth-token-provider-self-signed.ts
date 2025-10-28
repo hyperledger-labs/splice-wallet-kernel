@@ -16,6 +16,7 @@ export class AuthTokenProviderSelfSigned implements AccessTokenProvider {
     async getUserAccessToken(): Promise<string> {
         this.logger.debug('Fetching self-signed user auth token')
         return AuthTokenProviderSelfSigned.fetchToken(
+            this.logger,
             {
                 clientId: this.auth.clientId,
                 clientSecret: this.auth.clientSecret,
@@ -33,6 +34,7 @@ export class AuthTokenProviderSelfSigned implements AccessTokenProvider {
             throw new Error('Admin credentials are not configured')
         }
         return AuthTokenProviderSelfSigned.fetchToken(
+            this.logger,
             {
                 clientId: this.auth.admin.clientId,
                 clientSecret: this.auth.admin.clientSecret,
@@ -45,6 +47,7 @@ export class AuthTokenProviderSelfSigned implements AccessTokenProvider {
     }
 
     static async fetchToken(
+        logger: Logger,
         credentials: ClientCredentials,
         issuer: string,
         expirySeconds: number = 3600
@@ -61,6 +64,7 @@ export class AuthTokenProviderSelfSigned implements AccessTokenProvider {
             .setProtectedHeader({ alg: 'HS256' })
             .sign(secret)
 
+        logger.info(`Generated self-signed JWT token: ${jwt}`)
         return jwt
     }
 }

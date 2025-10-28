@@ -241,6 +241,7 @@ export class LoginUI extends LitElement {
 
     protected async selfSign(credentials: ClientCredentials) {
         const access_token = await AuthTokenProviderSelfSigned.fetchToken(
+            console,
             credentials,
             'unsafe-auth',
             3600
