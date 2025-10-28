@@ -24,7 +24,7 @@ import {
     assertConnected,
     Auth,
     AuthContext,
-    clientCredentialsService,
+    AuthTokenProvider,
 } from '@canton-network/core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
 import {
@@ -166,29 +166,10 @@ export const userController = (
                 throw new Error('No network session found')
             }
 
-            const adminToken = await clientCredentialsService(
-                network.auth.configUrl,
-                logger
-            ).fetchToken({
-                clientId: network.auth.admin.clientId,
-                clientSecret: network.auth.admin.clientSecret,
-                scope: network.auth.scope,
-                audience: network.auth.audience,
-            })
-
-            logger.debug(
-                { adminToken },
-                'Fetched admin token for party allocation'
-            )
-
-            const adminAccessTokenProvider: AccessTokenProvider = {
-                getUserAccessToken: async () => adminToken,
-                getAdminAccessToken: async () => adminToken,
-            }
-
+            const tokenProvider = new AuthTokenProvider(network.auth, logger)
             const partyAllocator = new PartyAllocationService(
                 network.synchronizerId,
-                adminAccessTokenProvider,
+                tokenProvider,
                 network.ledgerApi.baseUrl,
                 logger
             )

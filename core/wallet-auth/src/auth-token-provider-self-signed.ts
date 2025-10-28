@@ -14,7 +14,7 @@ export class AuthTokenProviderSelfSigned implements AccessTokenProvider {
     ) {}
 
     async getUserAccessToken(): Promise<string> {
-        this.logger.debug('Fetching user auth token')
+        this.logger.debug('Fetching self-signed user auth token')
         return AuthTokenProviderSelfSigned.fetchToken(
             {
                 clientId: this.auth.clientId,
@@ -28,7 +28,7 @@ export class AuthTokenProviderSelfSigned implements AccessTokenProvider {
     }
 
     async getAdminAccessToken(): Promise<string> {
-        this.logger.debug('Fetching admin auth token')
+        this.logger.debug('Fetching self-signed admin auth token')
         if (!this.auth.admin) {
             throw new Error('Admin credentials are not configured')
         }
