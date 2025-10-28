@@ -18317,6 +18317,7 @@ __metadata:
     ts-node: "npm:10.9.1"
     ts-proto: "npm:^2.7.7"
     tslib: "npm:^2.3.0"
+    tsup: "npm:^8.5.0"
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.8.3"
     typescript-eslint: "npm:^8.33.1"

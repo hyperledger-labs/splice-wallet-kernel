@@ -2,16 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { defineConfig } from 'tsup'
+import { base } from '../../tsup.base'
 
 export default defineConfig({
+    ...base,
     entry: ['src/index.ts'],
-    format: ['esm', 'cjs'],
-    outDir: 'dist',
-    sourcemap: true,
-    clean: true,
-    treeshake: true,
-    target: 'es2020',
-    platform: 'browser',
-    dts: false,
-    outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
 })
