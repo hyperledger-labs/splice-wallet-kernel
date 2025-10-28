@@ -19,8 +19,6 @@ when setting up your own custom connectivity configuration:
             :language: typescript
             :dedent:
 
-you dont need to configure all controllers every time, for instance the ``topologyController`` is only need if you are creating a
-new external party.
 
 How do validate my configurations?
 ----------------------------------
@@ -69,6 +67,10 @@ an expected output
 
 the fields may vary based on your configuration.
 
+.. important ::
+
+   the topology controller is deprecated so the below section for **my-grpc-admin-api** is not needed anymore.
+
 **my-grpc-admin-api** can be identified with ``grpcurl -plaintext ${my-grpc-admin-api} list`` it should produce an output like
 
 
@@ -97,11 +99,16 @@ the fields may vary based on your configuration.
 
 the list might differed based on you canton configuration, the most important part is `TopologyManagerReadService` & `TopologyManagerWriteService`
 
-**my-validator-app-api** & **my-scan-proxy-api** can both be identified with ``curl ${api}/version`` they both produce an output like
+**my-validator-app-api** can be identified with ``curl ${api}/version`` it should produce an output like
 
 .. code-block:: JSON
 
     {"version":"0.4.15","commit_ts":"2025-09-05T11:38:13Z"}
+
+**my-scan-proxy-api** is a api inside the validator api and can be defined as ``${my-validator-app-api}/v0/scan-proxy``.
+
+**my-registry-api** is the registry for the token you want to use, for Canton Coin you can use **my-validator-app-api**, however for any other
+token standard token it is required to source the api from a reputable source.
 
 Configuring Auth Controller
 ---------------------------
