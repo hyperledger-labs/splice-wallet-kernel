@@ -704,20 +704,21 @@ export class LedgerController {
                 (r) => r.kind.CanReadAs?.value?.party
             )
 
-            let hasActAsRight = false
-            if (this.partyId) {
-                hasActAsRight =
-                    rights.rights?.some(
-                        (r) =>
-                            'CanActAs' in r.kind &&
-                            r.kind.CanActAs.value.party === this.getPartyId()
-                    ) ?? false
-            }
+            const canActAsPartyRights =
+                rights.rights?.filter(
+                    (
+                        r
+                    ): r is {
+                        kind: { CanActAs: { value: { party: string } } }
+                    } => 'CanActAs' in r.kind
+                ) ?? []
+            if (!canActAsPartyRights) return []
 
-            const allWallets = [
-                ...(hasActAsRight ? [this.getPartyId()] : []),
-                ...readAsParties,
-            ]
+            const actAsParties = canActAsPartyRights.map(
+                (r) => r.kind.CanActAs?.value?.party
+            )
+
+            const allWallets = [...actAsParties, ...readAsParties]
 
             return Array.from(new Set(allWallets))
         }
