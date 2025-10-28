@@ -4,6 +4,7 @@
 import typescript from '@rollup/plugin-typescript'
 import commonjs from '@rollup/plugin-commonjs'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
+import json from '@rollup/plugin-json'
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -41,7 +42,7 @@ const pkgPath = path.resolve(process.cwd(), 'package.json')
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
 
 // Collect deps + peerDeps (but not devDeps, or excepeted ones)
-const exceptions = ['@daml/types']
+const exceptions = ['@daml/types', '@daml/ledger']
 const external = [
     ...Object.keys(pkg.dependencies || {}),
     ...Object.keys(pkg.peerDependencies || {}),
@@ -53,6 +54,7 @@ const codeEsm = {
     output: { file: 'dist/index.js', format: 'es', sourcemap: true },
     external,
     plugins: [
+        json(),
         commonjs({ transformMixedEsModules: true }),
         nodeResolve(),
         typescript(),
@@ -65,11 +67,13 @@ const codeCjs = {
     output: {
         file: 'dist/index.cjs',
         format: 'cjs',
+        interop: 'auto',
         sourcemap: true,
         exports: 'named',
     },
     external,
     plugins: [
+        json(),
         commonjs({ transformMixedEsModules: true }),
         nodeResolve(),
         typescript(),
