@@ -12,7 +12,8 @@ import {
     signTransactionHash,
     PrivateKey,
 } from '@canton-network/core-signing-lib'
-import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
+import { PartyId } from '@canton-network/core-types'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 /**
  * TokenStandardController handles token standard management tasks.

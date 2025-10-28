@@ -20,12 +20,13 @@ import {
     computeMultiHashForTopology,
     computeSha256CantonHash,
 } from '@canton-network/core-tx-visualizer'
-import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
+import { PartyId } from '@canton-network/core-types'
 import {
     Enums_ParticipantPermission,
     PreparedTransaction,
     SigningPublicKey,
 } from '@canton-network/core-ledger-proto'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 export { Enums_ParticipantPermission } from '@canton-network/core-ledger-proto'
 
 export type PreparedParty = {

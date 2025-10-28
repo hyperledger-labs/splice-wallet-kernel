@@ -3,23 +3,35 @@
 
 export type UserId = string
 
+/**
+ * Authentication context containing user ID and access token
+ */
 export interface AuthContext {
     userId: UserId
     accessToken: string
 }
 
+/**
+ * Interface for types that are aware of authentication context
+ */
+export interface AuthAware<T> {
+    authContext: AuthContext | undefined
+    withAuthContext: (context?: AuthContext) => T
+}
+
+/**
+ * Interface for verifying access tokens
+ */
 export interface AuthService {
     verifyToken(accessToken?: string): Promise<AuthContext | undefined>
 }
 
-export interface TokenProvider {
-    getToken(): Promise<string | undefined>
-    getAdminToken(): Promise<string | undefined>
-}
-
-export interface AuthAware<T> {
-    authContext: AuthContext | undefined
-    withAuthContext: (context?: AuthContext) => T
+/**
+ * Interface for providing access tokens used to authenticate requests
+ */
+export interface AccessTokenProvider {
+    getUserAccessToken(): Promise<string>
+    getAdminAccessToken(): Promise<string>
 }
 
 export interface OIDCConfig {

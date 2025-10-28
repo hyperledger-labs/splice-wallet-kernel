@@ -4,7 +4,6 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { LedgerClient } from '@canton-network/core-ledger-client'
-import { AccessTokenProvider } from '@canton-network/core-types'
 import buildController from './rpc-gen/index.js'
 import {
     AddNetworkParams,
@@ -21,6 +20,7 @@ import { Store, Transaction, Network } from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'
 import { NotificationService } from '../notification/NotificationService.js'
 import {
+    AccessTokenProvider,
     assertConnected,
     Auth,
     AuthContext,

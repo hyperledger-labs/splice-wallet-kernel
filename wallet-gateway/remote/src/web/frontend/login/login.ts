@@ -10,8 +10,10 @@ import { Network } from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
 import { WalletEvent } from '@canton-network/core-types'
-import { ClientCredentials } from '@canton-network/core-wallet-auth'
-import { fetchToken } from './self-signed-service'
+import {
+    AuthTokenProviderSelfSigned,
+    ClientCredentials,
+} from '@canton-network/core-wallet-auth'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
@@ -238,7 +240,11 @@ export class LoginUI extends LitElement {
     }
 
     protected async selfSign(credentials: ClientCredentials) {
-        const access_token = await fetchToken(credentials)
+        const access_token = await AuthTokenProviderSelfSigned.fetchToken(
+            credentials,
+            'unsafe-auth',
+            3600
+        )
 
         if (window.opener && !window.opener.closed) {
             window.opener.postMessage(
