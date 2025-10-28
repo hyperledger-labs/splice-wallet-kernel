@@ -7,17 +7,28 @@
     "license": "Apache-2.0",
     "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
     "packageManager": "yarn@4.9.4",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "main": "dist/cjs/index.cjs",
+    "module": "dist/esm/index.js",
+    "types": "dist/types/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/types/index.d.ts",
+            "import": "./dist/esm/index.js",
+            "require": "./dist/cjs/index.cjs",
+            "default": "./dist/esm/index.js"
+        }
+    },
     "scripts": {
-        "build": "tsc -b",
-        "dev": "tsc -b --watch",
+        "build": "tsup && tsc -p tsconfig.types.json",
+        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "devDependencies": {
         "@swc/core": "^1.11.31",
         "@types/node": "^22.15.30",
+        "esbuild-plugin-replace": "^1.4.0",
+        "tsup": "^8.5.0",
         "typescript": "^5.8.3"
     },
     "dependencies": {

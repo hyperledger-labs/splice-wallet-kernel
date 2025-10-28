@@ -18,8 +18,10 @@ import {
     Transaction,
     Network,
 } from '@canton-network/core-wallet-store'
-import { LedgerClient } from '@canton-network/core-ledger-client'
-import { defaultRetryableOptions } from '@canton-network/core-ledger-client/dist/ledger-api-utils'
+import {
+    LedgerClient,
+    defaultRetryableOptions,
+} from '@canton-network/core-ledger-client'
 
 interface UserStorage {
     wallets: Array<Wallet>
