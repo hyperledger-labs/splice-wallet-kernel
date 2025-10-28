@@ -16,11 +16,13 @@ const TAR_PATH = path.join(LOCALNET_PATH, TAR_FILENAME)
 const DOWNLOAD_URL = `https://github.com/digital-asset/decentralized-canton-sync/releases/download/v${SPLICE_VERSION}/${SPLICE_VERSION}_splice-node.tar.gz`
 
 async function main() {
+    const updateHash = process.argv.includes('--updateHash')
     await ensureDir(LOCALNET_PATH)
 
     await downloadAndUnpackTarball(DOWNLOAD_URL, TAR_PATH, LOCALNET_PATH, {
         hash: LOCALNET_ARCHIVE_HASH,
         strip: 1,
+        updateHash,
     })
 }
 
