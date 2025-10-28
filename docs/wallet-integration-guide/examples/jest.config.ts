@@ -5,8 +5,8 @@ import type { Config } from 'jest'
 
 export default {
     rootDir: '.',
-    extensionsToTreatAsEsm: ['.ts'],
-    resolver: 'ts-jest-resolver',
+    injectGlobals: false,
+    transformIgnorePatterns: ['/node_modules/(?!jose/)'],
     transform: {
         '^.+\\.(t|j)sx?$': '@swc/jest',
     },

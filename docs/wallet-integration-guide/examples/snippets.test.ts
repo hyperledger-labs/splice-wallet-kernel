@@ -1,6 +1,7 @@
-import { test, expect, jest } from '@jest/globals'
+import { test, expect, describe, jest } from '@jest/globals'
 import { readdirSync, readFileSync } from 'fs'
-import path from 'path'
+import path, { dirname } from 'path'
+import { fileURLToPath } from 'url'
 
 // WARNING: the `allocate-party.ts` snippet does not succeed if ran 2 or more times without stopping and restarting localnet (as the same mocked party identity is then already onboarded)
 
@@ -23,31 +24,29 @@ jest.mock('@canton-network/core-signing-lib', () => {
     ) as any
 
     return {
-        __esModule: true, // Use it when dealing with esModules
         ...originalModule,
         createKeyPair: jest.fn().mockReturnValue(mockKeyPair),
     }
 })
 
+const snippets = readdirSync('./snippets').filter(
+    (f) =>
+        f.endsWith('.ts') &&
+        !readFileSync(`./snippets/${f}`).includes('// @disable-snapshot-test')
+)
+
 describe('testing doc snippets', () => {
-    const snippets = readdirSync('./snippets').filter((f) => f.endsWith('.ts'))
-
     for (const filename of snippets) {
+        const __dirname = dirname(fileURLToPath(import.meta.url))
         const fullpath = path.join(__dirname, './snippets', filename)
-        const contents = readFileSync(fullpath)
-
-        if (contents.includes('// @disable-snapshot-test')) {
-            continue
-        }
 
         test(
             filename,
             async () => {
-                const mod = await import(fullpath.replace('.ts', '.js'))
-                expect(mod.default).toBeDefined()
+                const { default: fn } = await import(fullpath)
+                expect(fn).toBeDefined()
 
-                const result = await mod.default()
-
+                const result = await fn()
                 // Run `yarn jest -u` to update snapshots for new changes
                 expect(result).toMatchSnapshot()
             },
