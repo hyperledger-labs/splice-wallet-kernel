@@ -15,7 +15,7 @@ import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { CoreService, JsGetUpdatesResponse } from '../token-standard-service.js'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
-import { AccessTokenProvider } from '@canton-network/core-types'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 type JsTransaction = components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =

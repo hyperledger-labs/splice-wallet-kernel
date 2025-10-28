@@ -1437,6 +1437,7 @@ __metadata:
     "@canton-network/core-splice-client": "workspace:^"
     "@canton-network/core-token-standard": "workspace:^"
     "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
     "@grpc/grpc-js": "npm:^1.14.0"
     "@jest/globals": "npm:^29.0.0"
     "@protobuf-ts/grpc-transport": "npm:^2.11.1"
@@ -1586,6 +1587,7 @@ __metadata:
   resolution: "@canton-network/core-splice-client@workspace:core/splice-client"
   dependencies:
     "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
     openapi-fetch: "npm:^0.14.0"
     typescript: "npm:^5.8.3"
     uuid: "npm:^11.1.0"
@@ -10220,6 +10222,7 @@ __metadata:
     "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-signing-lib": "workspace:^"
     "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
     "@canton-network/wallet-sdk": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.11.31"

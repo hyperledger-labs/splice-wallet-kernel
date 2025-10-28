@@ -21,11 +21,7 @@ import {
     FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
     Beneficiaries,
 } from '@canton-network/core-token-standard'
-import {
-    AccessTokenProvider,
-    Logger,
-    PartyId,
-} from '@canton-network/core-types'
+import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
 import { TokenStandardTransactionInterfaces } from './constants.js'
 import {
@@ -47,6 +43,7 @@ import {
     ScanProxyClient,
     ScanProxyTypes,
 } from '@canton-network/core-splice-client'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
 const REQUESTED_AT_SKEW_MS = 60_000

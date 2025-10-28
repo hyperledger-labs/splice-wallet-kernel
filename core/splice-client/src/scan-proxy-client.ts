@@ -3,7 +3,8 @@
 
 import { components, paths } from './generated-clients/scan-proxy'
 import createClient, { Client } from 'openapi-fetch'
-import { AccessTokenProvider, Logger } from '@canton-network/core-types'
+import { Logger } from '@canton-network/core-types'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 export type ScanProxyTypes = components['schemas']
 

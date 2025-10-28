@@ -6,7 +6,7 @@ import * as v3_3 from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import * as v3_4 from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
 import createClient, { Client, FetchOptions } from 'openapi-fetch'
 import { Logger } from 'pino'
-import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
+import { PartyId } from '@canton-network/core-types'
 import {
     defaultRetryableOptions,
     retryable,
@@ -14,6 +14,7 @@ import {
 } from './ledger-api-utils.js'
 
 import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 export const supportedVersions = ['3.3', '3.4'] as const
 
 export type SupportedVersions = (typeof supportedVersions)[number]
