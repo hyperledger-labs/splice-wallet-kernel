@@ -107,7 +107,7 @@ the list might differed based on you canton configuration, the most important pa
 
 **my-scan-proxy-api** is a api inside the validator api and can be defined as ``${my-validator-app-api}/v0/scan-proxy``.
 
-**my-registry-api** is the registry for the token you want to use, for Canton Coin you can use **my-validator-app-api**, however for any other
+**my-registry-api** is the registry for the token you want to use, for Canton Coin you can use **my-scan-proxy-api**, however for any other
 token standard token it is required to source the api from a reputable source.
 
 Configuring Auth Controller
