@@ -139,7 +139,6 @@ const bob = await bobSDK.userLedger?.signAndAllocateExternalParty(
 )
 logger.info(`Created party: ${bob!.partyId}`)
 await bobSDK.setPartyId(bob!.partyId)
-await bobSDK.userLedger?.grantRights([bob!.partyId])
 
 logger.info('alice and bob each create an external party')
 
@@ -160,6 +159,10 @@ if (aliceWalletView?.find((p) => p === bob!.partyId)) {
     throw new Error('alice user can see bob party')
 }
 
+if (!aliceWalletView?.find((p) => p === alice!.partyId)) {
+    throw new Error('alice user cannot see alice party')
+}
+
 const bobWalletView = await bobSDK.userLedger?.listWallets()
 
 if (bobWalletView?.find((p) => p === alice!.partyId)) {
@@ -170,6 +173,12 @@ logger.info(
     'alice and bob have proper isolation and cannot see each others external parties'
 )
 
-if (!bobWalletView?.find((p) => p === bob!.partyId)) {
-    throw new Error('bob user cannot see bob party even with ReadAs rights')
+//user management test
+
+await bobSDK.userLedger?.grantRights([alice!.partyId])
+
+const bobWalletViewAfterGrantRights = await bobSDK.userLedger?.listWallets()
+
+if (!bobWalletViewAfterGrantRights?.find((p) => p === alice!.partyId)) {
+    throw new Error('bob user cannot see alice party even with ReadAs rights')
 }

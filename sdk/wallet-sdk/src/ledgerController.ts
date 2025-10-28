@@ -700,11 +700,23 @@ export class LedgerController {
                 ) ?? []
             if (!canReadAsPartyRights) return []
 
-            const parties = canReadAsPartyRights.map(
+            const readAsParties = canReadAsPartyRights.map(
                 (r) => r.kind.CanReadAs?.value?.party
             )
 
-            return parties
+            const hasActAsRight =
+                rights.rights?.some(
+                    (r) =>
+                        'CanActAs' in r.kind &&
+                        r.kind.CanActAs.value.party === this.getPartyId()
+                ) ?? false
+
+            const allWallets = [
+                ...(hasActAsRight ? [this.getPartyId()] : []),
+                ...readAsParties,
+            ]
+
+            return Array.from(new Set(allWallets))
         }
     }
 
