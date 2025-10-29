@@ -45,6 +45,7 @@ test('call connect rpc', async () => {
         dapp(
             '/api/v0/dapp',
             app,
+            pino(sink()),
             server,
             config.kernel,
             notificationService,

@@ -4,7 +4,7 @@
 import express from 'express'
 import cors from 'cors'
 import { dappController } from './controller.js'
-import { pino } from 'pino'
+import { Logger } from 'pino'
 import { jsonRpcHandler } from '../middleware/jsonRpcHandler.js'
 import { Methods } from './rpc-gen/index.js'
 import { Store } from '@canton-network/core-wallet-store'
@@ -17,11 +17,10 @@ import {
 } from '../notification/NotificationService.js'
 import { KernelInfo } from '../config/Config.js'
 
-const logger = pino({ name: 'main', level: 'debug' })
-
 export const dapp = (
     route: string,
     app: express.Express,
+    logger: Logger,
     server: Server,
     kernelInfo: KernelInfo,
     notificationService: NotificationService,

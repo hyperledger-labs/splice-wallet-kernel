@@ -273,6 +273,7 @@ export class UserUiNetworks extends LitElement {
             case 'self_signed':
                 auth = {
                     type: 'self_signed',
+                    identityProviderId: e.network.auth.identityProviderId,
                     issuer: e.network.auth.issuer ?? '',
                     audience: e.network.auth.audience ?? '',
                     scope: e.network.auth.scope ?? '',
