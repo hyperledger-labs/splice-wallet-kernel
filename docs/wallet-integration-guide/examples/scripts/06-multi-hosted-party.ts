@@ -30,8 +30,8 @@ await sdk.connect()
 logger.info('Connected to ledger')
 
 const multiHostedPartyKeyPair = createKeyPair()
-const multiHostedPartyKeyPair2 = createKeyPair()
 const singleHostedPartyKeyPair = createKeyPair()
+const multiHostedKeyPairWithObserverParticipant = createKeyPair()
 
 await sdk.connectAdmin()
 await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
@@ -84,7 +84,7 @@ logger.info(pingCommandResponse, 'ping command response')
 
 const multiHostedPartyWithObservingParticipant =
     await sdk.userLedger?.signAndAllocateExternalParty(
-        multiHostedPartyKeyPair2.privateKey,
+        multiHostedKeyPairWithObserverParticipant.privateKey,
         'jon',
         1,
         [],
@@ -108,7 +108,7 @@ const createPingCommand2 = sdk.userLedger?.createPingCommand(
 
 const pingCommandResponse2 = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     createPingCommand2,
-    multiHostedPartyKeyPair2.privateKey,
+    multiHostedKeyPairWithObserverParticipant.privateKey,
     v4()
 )
 logger.info(pingCommandResponse2, 'ping command response')
