@@ -49,7 +49,7 @@ jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
 describe('PartyAllocationService', () => {
     const network: Network = {
         name: 'test',
-        chainId: 'chain-id',
+        id: 'network-id',
         synchronizerId: 'sync-id',
         description: 'desc',
         ledgerApi: {

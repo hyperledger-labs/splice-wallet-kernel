@@ -25,7 +25,7 @@ export const Default: StoryObj = {
 
 const sampleNetworkImplicit: Network = {
     name: 'Local (OAuth IDP)',
-    chainId: 'canton:local-oauth',
+    id: 'canton:local-oauth',
     synchronizerId:
         'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd',
     description: 'Mock OAuth IDP',
@@ -60,7 +60,7 @@ export const PopulatedImplicitAuth: StoryObj = {
 
 const sampleNetworkPassword: Network = {
     name: 'Local (password IDP)',
-    chainId: 'canton:local-password',
+    id: 'canton:local-password',
     synchronizerId:
         'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd',
     description: 'Unimplemented Password Auth',

@@ -30,8 +30,8 @@ interface IdpTable {
 }
 
 interface NetworkTable {
+    id: string
     name: string
-    chainId: string
     synchronizerId: string
     description: string
     ledgerApiBaseUrl: string
@@ -45,7 +45,7 @@ interface WalletTable {
     hint: string
     publicKey: string
     namespace: string
-    chainId: string
+    networkId: string
     signingProviderId: string
     userId: UserId
 }
@@ -212,7 +212,7 @@ export const toNetwork = (
     }
     return {
         name: table.name,
-        chainId: table.chainId,
+        id: table.id,
         synchronizerId: table.synchronizerId,
         description: table.description,
         ledgerApi: {
@@ -228,7 +228,7 @@ export const fromNetwork = (
 ): NetworkTable => {
     return {
         name: network.name,
-        chainId: network.chainId,
+        id: network.id,
         synchronizerId: network.synchronizerId,
         description: network.description,
         ledgerApiBaseUrl: network.ledgerApi.baseUrl,

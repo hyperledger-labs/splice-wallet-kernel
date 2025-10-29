@@ -28,7 +28,7 @@ export const dappController = (store?: Store) =>
                 status: {
                     kernel: kernelInfo,
                     isConnected: false,
-                    chainId: 'default-chain-id',
+                    networkId: 'default-network-id',
                     userUrl: Browser.runtime.getURL('pages/user.html'),
                 },
                 sessionToken: 'default-session-token',
