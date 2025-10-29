@@ -8,6 +8,7 @@ import createClient, { Client, FetchOptions } from 'openapi-fetch'
 import { Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
 import {
+    asJsCantonError,
     defaultRetryableOptions,
     retryable,
     retryableOptions,
@@ -578,7 +579,9 @@ export class LedgerClient {
             () => this.post(path, body, params, additionalOptions),
             retryOptions,
             this.logger
-        )
+        ).catch((e) => {
+            throw asJsCantonError(e)
+        })
     }
 
     public async getWithRetry<Path extends GetEndpoint>(
@@ -593,7 +596,9 @@ export class LedgerClient {
             () => this.get(path, params),
             retryOptions,
             this.logger
-        )
+        ).catch((e) => {
+            throw asJsCantonError(e)
+        })
     }
 
     public getCacheStats() {

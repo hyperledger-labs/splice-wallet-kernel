@@ -28,6 +28,7 @@ type PartySignatures = Types['PartySignatures']
 type Command = Types['Command']
 type DeduplicationPeriod2 = Types['DeduplicationPeriod2']
 type Completion = Types['Completion']['value']
+export type JsCantonError = Types['JsCantonError']
 
 export function TransactionFilterBySetup(
     interfaceNames: string[] | string,
@@ -602,8 +603,16 @@ export async function retryable<T>(
 }
 
 // Helper for differentiating ledger errors from others and satisfying TS when checking error properties
-export const isJsCantonError = (e: unknown): e is Types['JsCantonError'] =>
+export const isJsCantonError = (e: unknown): e is JsCantonError =>
     typeof e === 'object' && e !== null && 'status' in e && 'errorCategory' in e
+
+export const asJsCantonError = (e: unknown): JsCantonError => {
+    if (isJsCantonError(e)) {
+        return e
+    } else {
+        throw e
+    }
+}
 
 export const asGrpcError = (
     e: unknown

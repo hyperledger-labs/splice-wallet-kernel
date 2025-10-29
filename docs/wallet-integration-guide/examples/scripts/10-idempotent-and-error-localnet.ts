@@ -6,7 +6,9 @@ import {
     localNetTokenStandardDefault,
     createKeyPair,
     localNetStaticConfig,
+    signTransactionHash,
 } from '@canton-network/wallet-sdk'
+import { error } from 'console'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 
@@ -152,4 +154,53 @@ try {
             'got double spend exception (LOCAL_VERDICT_LOCKED_CONTRACTS)'
         )
     } else throw e
+}
+
+logger.info('Submitting identical ping commands to test idempotency')
+const createPingCommand = sdk.userLedger?.createPingCommand(sender!.partyId)
+
+const prepareResponse =
+    await sdk.userLedger?.prepareSubmission(createPingCommand)
+
+const signedCommandHash = signTransactionHash(
+    prepareResponse!.preparedTransactionHash!,
+    keyPairSender.privateKey
+)
+
+logger.info('Submit command')
+const responses: any[] = []
+
+const submissionPromises = []
+for (let i = 0; i < 10; i++) {
+    const promise = sdk.userLedger
+        ?.executeSubmissionAndWaitFor(
+            prepareResponse!,
+            signedCommandHash,
+            keyPairSender.publicKey,
+            v4()
+        )
+        .then((response) => {
+            responses.push(response)
+        })
+        .catch((error) => {
+            logger.error({ error }, 'Error executing submission')
+        })
+    submissionPromises.push(promise)
+}
+
+// Wait for all submissions to complete
+await Promise.all(submissionPromises)
+
+// Check that all objects in responses are identical
+if (responses.length == 10) {
+    const first = JSON.stringify(responses[0])
+    const allIdentical = responses.every((r) => JSON.stringify(r) === first)
+    if (!allIdentical) {
+        logger.error({ responses }, 'Not all responses are identical!')
+        throw new Error('Not all responses are identical!')
+    } else {
+        logger.info('All responses are identical.')
+    }
+} else {
+    throw new Error(`only received ${responses.length}, expected 10`)
 }

@@ -35,5 +35,7 @@ export {
     awaitCompletion,
     promiseWithTimeout,
     isJsCantonError,
+    asJsCantonError,
+    JsCantonError,
     defaultRetryableOptions,
 } from './ledger-api-utils.js'
