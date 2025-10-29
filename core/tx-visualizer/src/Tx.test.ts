@@ -5,7 +5,11 @@ import { expect, test } from '@jest/globals'
 import { PreparedTransaction } from '@canton-network/core-ledger-proto'
 import * as path from 'path'
 import { readFileSync } from 'fs'
-import { decodePreparedTransaction, hashPreparedTransaction } from '.'
+import {
+    decodePreparedTransaction,
+    decodeTopologyTransaction,
+    hashPreparedTransaction,
+} from '.'
 import camelcaseKeys from 'camelcase-keys'
 
 test('decode a base 64 encoded prepared tx', async () => {
@@ -36,4 +40,72 @@ test('hash from preparedTx ledger api call should match calculated hash', async 
     const hashResult = await hashPreparedTransaction(preparedTx2, 'base64')
 
     expect(hashResult === preparedTxFromLedgerAPi)
+})
+
+test('decode a base 64 encoded topology tx', async () => {
+    const namespaceDelegationBase64 =
+        'CosBCAEQARqEAQqBAQpEMTIyMDEyMzA4N2U2YmY2NmQyMjVkMDQ3ZTZhZjhiMDk0NGJjNTBjYzQ3MGNiNDZhZmQ5NTE1YTU1OGJmNTU2MDU0NDESNxAEGiwwKjAFBgMrZXADIQD6i6Mh8nmGPt1X6XoI8ZfRh2D3eozd7HgsY/abhbRNeyoDAQUEMAEiABAe'
+
+    const partyToKeyMappingBase64 =
+        'CpMBCAEQARqMAYIBiAEKS2FsaWNlOjoxMjIwNWE1MGViOWI5ZDY0YmIzMGFjNDEyNWFmYTFhZWVhN2JjYWU1MTc5MmFjMmQxNzRhNjEzMmNlZWM5MjkwZDA2MhgBIjcQBBosMCowBQYDK2VwAyEAA5ufeUjSCCrbYVs4FipJRBhJQIFYKL++qE2t8lEccgoqAwEFBDABEB4='
+
+    const partyToParticipantMappingBase64 =
+        'CrABCAEQARqpAUqmAQpLYWxpY2U6OjEyMjA1YTUwZWI5YjlkNjRiYjMwYWM0MTI1YWZhMWFlZWE3YmNhZTUxNzkyYWMyZDE3NGE2MTMyY2VlYzkyOTBkMDYyEAEaVQpRcGFydGljaXBhbnQ6OjEyMjAyZTk1ZDJmNjFlZmU3YjIzMmI2ZDE2M2ZlMDA2MTg4YWYzYjZiMDU4ODViZDU5ZDQ3ZTUyZTE3NjUwMWI1NmNkEAIQHg=='
+    const decodedNameSpaceDelegation = decodeTopologyTransaction(
+        namespaceDelegationBase64
+    )
+
+    const decodedPartyToKeyMapping = decodeTopologyTransaction(
+        partyToKeyMappingBase64
+    )
+
+    const decodedPartyToParticipantMapping = decodeTopologyTransaction(
+        partyToParticipantMappingBase64
+    )
+
+    expect(
+        decodedPartyToKeyMapping.mapping?.mapping.oneofKind ===
+            'partyToKeyMapping'
+    )
+
+    if (
+        decodedPartyToKeyMapping.mapping?.mapping.oneofKind ===
+        'partyToKeyMapping'
+    ) {
+        expect(
+            decodedPartyToKeyMapping.mapping?.mapping.partyToKeyMapping
+                .party ===
+                'alice::12205a50eb9b9d64bb30ac4125afa1aeea7bcae51792ac2d174a6132ceec9290d062' &&
+                decodedPartyToKeyMapping.mapping?.mapping.partyToKeyMapping
+                    .threshold === 1
+        )
+    }
+
+    expect(
+        decodedPartyToParticipantMapping.mapping?.mapping.oneofKind ===
+            'partyToParticipant'
+    )
+
+    console.log(JSON.stringify(decodedPartyToParticipantMapping))
+
+    if (
+        decodedPartyToParticipantMapping.mapping?.mapping.oneofKind ===
+        'partyToParticipant'
+    ) {
+        expect(
+            decodedPartyToParticipantMapping.mapping?.mapping.partyToParticipant
+                .party ===
+                'alice::12205a50eb9b9d64bb30ac4125afa1aeea7bcae51792ac2d174a6132ceec9290d062' &&
+                decodedPartyToParticipantMapping.mapping?.mapping.partyToParticipant.participants.find(
+                    (p) =>
+                        p.participantUid ===
+                        'participant::12202e95d2f61efe7b232b6d163fe006188af3b6b05885bd59d47e52e176501b56cd'
+                )
+        )
+    }
+
+    expect(
+        decodedNameSpaceDelegation.mapping?.mapping.oneofKind ===
+            'namespaceDelegation'
+    )
 })
