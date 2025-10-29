@@ -41,6 +41,11 @@ const sender = await sdk.userLedger?.signAndAllocateExternalParty(
 logger.info(`Created party: ${sender!.partyId}`)
 await sdk.setPartyId(sender!.partyId)
 
+sender?.topologyTransactions!.map((topologyTx) => {
+    const decodedTx = sdk.userLedger?.toDecodedTopologyTransaction(topologyTx)
+    logger.info(decodedTx)
+})
+
 const receiver = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairReceiver.privateKey,
     'bob'
