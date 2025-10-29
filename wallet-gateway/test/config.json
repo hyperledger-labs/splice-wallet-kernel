@@ -20,15 +20,7 @@
             {
                 "id": "idp-self-signed",
                 "type": "self_signed",
-                "issuer": "unsafe-auth",
-                "audience": "https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424",
-                "scope": "openid daml_ledger_api offline_access",
-                "clientId": "operator",
-                "clientSecret": "unsafe",
-                "admin": {
-                    "clientId": "participant_admin",
-                    "clientSecret": "admin-client-secret"
-                }
+                "issuer": "unsafe-auth"
             },
             {
                 "id": "idp-devnet-auth0",
@@ -45,16 +37,15 @@
                 "synchronizerId": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
                 "identityProviderId": "local-mock-oauth",
                 "auth": {
-                    "user": {
-                        "method": "pkce",
-                        "clientId": "operator",
-                        "scope": "openid daml_ledger_api offline_access",
-                        "audience": "https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"
-                    },
-                    "admin": {
-                        "clientId": "participant_admin",
-                        "clientSecret": "admin-client-secret"
-                    }
+                    "method": "pkce",
+                    "clientId": "operator",
+                    "scope": "openid daml_ledger_api offline_access",
+                    "audience": "https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"
+                },
+                "adminAuth": {
+                    "type": "client_credentials",
+                    "clientId": "participant_admin",
+                    "clientSecret": "admin-client-secret"
                 },
                 "ledgerApi": {
                     "baseUrl": "http://127.0.0.1:5003"
@@ -67,17 +58,16 @@
                 "synchronizerId": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
                 "identityProviderId": "local-mock-oauth",
                 "auth": {
-                    "user": {
-                        "method": "client_credentials",
-                        "clientId": "operator",
-                        "clientSecret": "your-client-secret",
-                        "audience": "https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424",
-                        "scope": "openid daml_ledger_api offline_access"
-                    },
-                    "admin": {
-                        "clientId": "participant_admin",
-                        "clientSecret": "admin-client-secret"
-                    }
+                    "method": "client_credentials",
+                    "clientId": "operator",
+                    "clientSecret": "your-client-secret",
+                    "audience": "https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424",
+                    "scope": "openid daml_ledger_api offline_access"
+                },
+                "adminAuth": {
+                    "method": "client_credentials",
+                    "clientId": "participant_admin",
+                    "clientSecret": "admin-client-secret"
                 },
                 "ledgerApi": {
                     "baseUrl": "http://127.0.0.1:5003"
@@ -90,10 +80,16 @@
                 "synchronizerId": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
                 "identityProviderId": "idp-self-signed",
                 "auth": {
-                    "user": {
-                        "method": "self_signed"
-                    },
-                    "admin": {}
+                    "method": "self_signed",
+                    "audience": "https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424",
+                    "scope": "openid daml_ledger_api offline_access",
+                    "clientId": "operator",
+                    "clientSecret": "unsafe"
+                },
+                "adminAuth": {
+                    "method": "self_signed",
+                    "clientId": "participant_admin",
+                    "clientSecret": "admin-client-secret"
                 },
                 "ledgerApi": {
                     "baseUrl": "http://127.0.0.1:5003"
@@ -106,16 +102,15 @@
                 "synchronizerId": "global-domain::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a",
                 "identityProviderId": "idp-devnet-auth0",
                 "auth": {
-                    "user": {
-                        "method": "pkce",
-                        "scope": "daml_ledger_api",
-                        "audience": "https://canton.network.global",
-                        "clientId": "EQrKrlT5Z2B3F6TXDepQMGC4YdfnlLLR"
-                    },
-                    "admin": {
-                        "clientId": "uHh5IA2hQWc78HHEPDJTmZm6GYhJbfev",
-                        "clientSecret": "GET_FROM_AUTH0"
-                    }
+                    "method": "pkce",
+                    "scope": "daml_ledger_api",
+                    "audience": "https://canton.network.global",
+                    "clientId": "EQrKrlT5Z2B3F6TXDepQMGC4YdfnlLLR"
+                },
+                "adminAuth": {
+                    "method": "client_credentials",
+                    "clientId": "uHh5IA2hQWc78HHEPDJTmZm6GYhJbfev",
+                    "clientSecret": "GET_FROM_AUTH0"
                 },
                 "ledgerApi": {
                     "baseUrl": "https://lab-operator.utility.cnu.devnet.da-int.net/api/json-api"

@@ -7,7 +7,14 @@ import { z } from 'zod'
 export const idpSchema = z.discriminatedUnion('type', [
     z.object({
         id: z.string(),
-        type: z.enum(['oauth', 'self-signed']),
+        type: z.literal('self_signed'),
+        issuer: z.string(),
+    }),
+    z.object({
+        id: z.string(),
+        type: z.literal('oauth'),
+        issuer: z.string(),
+        configUrl: z.string().url(),
     }),
 ])
 
@@ -16,12 +23,14 @@ export const ledgerApiSchema = z.object({
 })
 
 export const networkSchema = z.object({
+    id: z.string(),
     name: z.string(),
-    chainId: z.string(),
-    synchronizerId: z.string(),
     description: z.string(),
+    synchronizerId: z.string(),
+    identityProviderId: z.string(),
     ledgerApi: ledgerApiSchema,
     auth: authSchema,
+    adminAuth: authSchema.optional(),
 })
 
 export const storeConfigSchema = z.object({

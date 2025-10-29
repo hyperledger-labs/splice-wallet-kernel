@@ -3,53 +3,37 @@
 
 import { z } from 'zod'
 
-const credentials = z.object({
-    clientId: z.string(),
-    clientSecret: z.string(),
-})
-
-const implicitAuthSchema = z.object({
-    identityProviderId: z.string(),
-    type: z.literal('implicit'),
-    issuer: z.string(),
-    configUrl: z.string(),
+const pkceAuthSchema = z.object({
+    method: z.literal('pkce'),
     audience: z.string(),
     scope: z.string(),
     clientId: z.string(),
-    admin: z.optional(credentials),
 })
 
-const clientCredentialAuthSchema = z.object({
-    identityProviderId: z.string(),
-    type: z.literal('client_credentials'),
-    issuer: z.string(),
-    configUrl: z.string(),
+const clientCredentialsAuthSchema = z.object({
+    method: z.literal('client_credentials'),
     audience: z.string(),
     scope: z.string(),
     clientId: z.string(),
     clientSecret: z.string(),
-    admin: z.optional(credentials),
 })
 
 const selfSignedAuthSchema = z.object({
-    identityProviderId: z.string(),
-    type: z.literal('self_signed'),
+    method: z.literal('self_signed'),
     issuer: z.string(),
     audience: z.string(),
     scope: z.string(),
     clientId: z.string(),
     clientSecret: z.string(),
-    admin: z.optional(credentials),
 })
 
-export const authSchema = z.discriminatedUnion('type', [
-    implicitAuthSchema,
-    clientCredentialAuthSchema,
+export const authSchema = z.discriminatedUnion('method', [
+    pkceAuthSchema,
+    clientCredentialsAuthSchema,
     selfSignedAuthSchema,
 ])
 
 export type Auth = z.infer<typeof authSchema>
-export type ImplicitAuth = z.infer<typeof implicitAuthSchema>
-export type Credentials = z.infer<typeof credentials>
-export type ClientCredentialAuth = z.infer<typeof clientCredentialAuthSchema>
+export type PkceAuth = z.infer<typeof pkceAuthSchema>
+export type ClientCredentialsAuth = z.infer<typeof clientCredentialsAuthSchema>
 export type SelfSignedAuth = z.infer<typeof selfSignedAuthSchema>
