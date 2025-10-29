@@ -543,7 +543,7 @@ export class LedgerController {
             throw new Error('preparedTransaction is undefined')
         }
         const transaction: string = prepared.preparedTransaction
-
+        let replaceableSubmissionId = submissionId
         if (
             !this.verifyTxHash(
                 prepared.preparedTransactionHash,
@@ -583,11 +583,33 @@ export class LedgerController {
             },
         }
 
-        await this.client.postWithRetry(
-            '/v2/interactive-submission/execute',
-            request
-        )
-        return submissionId
+        await this.client
+            .postWithRetry('/v2/interactive-submission/execute', request)
+            .catch((e) => {
+                if (
+                    (isJsCantonError(e) &&
+                        e.code === 'REQUEST_ALREADY_IN_FLIGHT') ||
+                    e.code === 'SUBMISSION_ALREADY_IN_FLIGHT'
+                ) {
+                    //string format is Some(<uuid>)
+                    const match =
+                        e.context.existingSubmissionId.match(
+                            /^Some\(([^)]+)\)$/
+                        )
+                    const uuid = match
+                        ? match[1]
+                        : e.context.existingSubmissionId
+
+                    if (uuid.length === 0) {
+                        //if we could not extract the UUID then we rethrow
+                        throw e
+                    }
+                    replaceableSubmissionId = uuid
+                } else {
+                    throw e
+                }
+            })
+        return replaceableSubmissionId
     }
 
     /**
@@ -607,14 +629,24 @@ export class LedgerController {
         timeoutMs: number = 15000
     ): Promise<Types['Completion']['value']> {
         const ledgerEnd = await this.ledgerEnd()
-        await this.executeSubmission(
+        const returnedSubmissionId = await this.executeSubmission(
             prepared,
             signature,
             publicKey,
             submissionId
         )
 
-        return this.waitForCompletion(ledgerEnd, timeoutMs, submissionId)
+        if (returnedSubmissionId !== submissionId) {
+            this.logger.warn(
+                `Detected inflight submission, using existing submissionId ${returnedSubmissionId} instead`
+            )
+        }
+
+        return this.waitForCompletion(
+            ledgerEnd,
+            timeoutMs,
+            returnedSubmissionId
+        )
     }
 
     /**
