@@ -52,6 +52,17 @@ export class ScanProxyClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
     private accessTokenProvider: AccessTokenProvider | undefined
+    private baseUrlHref: string
+    // shared cache for all instances of ScanProxyClient
+    private static amuletRulesCache = new Map<
+        string,
+        ScanProxyTypes['Contract']
+    >()
+    // one promise for all calls that trigger fetching amulet rules before it's cached
+    private static amuletRulesInflight = new Map<
+        string,
+        Promise<ScanProxyTypes['Contract']>
+    >()
 
     constructor(
         baseUrl: URL,
@@ -60,9 +71,10 @@ export class ScanProxyClient {
         accessToken?: string,
         accessTokenProvider?: AccessTokenProvider
     ) {
+        this.baseUrlHref = baseUrl.href
         this.accessTokenProvider = accessTokenProvider
         this.logger = logger
-        this.logger.debug({ baseUrl }, 'TokenStandardClient initialized')
+        this.logger.debug({ baseUrl }, 'ScanProxyClient initialized')
         this.client = createClient<paths>({
             baseUrl: baseUrl.href,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
@@ -130,9 +142,39 @@ export class ScanProxyClient {
         }
     }
 
+    private async fetchAmuletRulesOnce(): Promise<ScanProxyTypes['Contract']> {
+        const resp = await this.get('/v0/scan-proxy/amulet-rules')
+        const contract = resp?.amulet_rules?.contract
+        if (!contract?.contract_id || !contract?.template_id) {
+            throw new Error('Malformed AmuletRules response')
+        }
+        ScanProxyClient.amuletRulesCache.set(this.baseUrlHref, contract)
+        return contract
+    }
+
     public async getAmuletRules(): Promise<ScanProxyTypes['Contract']> {
-        const amuletRules = await this.get('/v0/scan-proxy/amulet-rules')
-        return amuletRules.amulet_rules.contract
+        const key = this.baseUrlHref
+
+        const cached = ScanProxyClient.amuletRulesCache.get(key)
+        // clone to prevent external mutation of cache by object reference
+        if (cached) return structuredClone(cached)
+
+        let inflight = ScanProxyClient.amuletRulesInflight.get(key)
+        if (!inflight) {
+            inflight = this.fetchAmuletRulesOnce().finally(() => {
+                ScanProxyClient.amuletRulesInflight.delete(key)
+            })
+            ScanProxyClient.amuletRulesInflight.set(key, inflight)
+        }
+
+        const contract = await inflight
+        return structuredClone(contract)
+    }
+
+    public static invalidateAmuletRulesCache(baseUrl: URL) {
+        const key = baseUrl.href
+        this.amuletRulesCache.delete(key)
+        this.amuletRulesInflight.delete(key)
     }
 
     public async getOpenMiningRounds(): Promise<ScanProxyTypes['Contract'][]> {
