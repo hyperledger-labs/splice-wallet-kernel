@@ -311,7 +311,8 @@ export class LedgerController {
         publicKey: PublicKey,
         partyHint?: string,
         confirmingThreshold?: number,
-        hostingParticipantUids?: string[]
+        hostingParticipantUids?: string[],
+        observingParticipantUids?: string[]
     ): Promise<GenerateTransactionResponse> {
         return this.client.generateTopology(
             this.getSynchronizerId(),
@@ -319,7 +320,8 @@ export class LedgerController {
             partyHint || v4(),
             false,
             confirmingThreshold,
-            hostingParticipantUids
+            hostingParticipantUids,
+            observingParticipantUids
         )
     }
 
@@ -337,6 +339,11 @@ export class LedgerController {
         preparedParty: GenerateTransactionResponse,
         grantUserRights: boolean = true,
         hostingParticipantEndpoints: {
+            url: URL
+            accessToken?: string
+            accessTokenProvider?: AccessTokenProvider
+        }[] = [],
+        observingParticipantEndpoints: {
             url: URL
             accessToken?: string
             accessTokenProvider?: AccessTokenProvider
@@ -415,6 +422,34 @@ export class LedgerController {
             }
         }
 
+        if (observingParticipantEndpoints) {
+            for (const endpoint of observingParticipantEndpoints) {
+                const lc = new LedgerClient(
+                    endpoint.url,
+                    this.logger,
+                    this.isAdmin,
+                    endpoint.accessToken,
+                    endpoint.accessTokenProvider
+                )
+
+                await lc.allocateExternalParty(
+                    this.getSynchronizerId(),
+                    topologyTransactions!.map((transaction) => ({
+                        transaction,
+                    })),
+                    [
+                        {
+                            format: 'SIGNATURE_FORMAT_CONCAT',
+                            signature: signedHash,
+                            signedBy: publicKeyFingerprint,
+                            signingAlgorithmSpec:
+                                'SIGNING_ALGORITHM_SPEC_ED25519',
+                        },
+                    ]
+                )
+            }
+        }
+
         if (grantUserRights) {
             await this.client.waitForPartyAndGrantUserRights(
                 this.userId,
@@ -443,6 +478,11 @@ export class LedgerController {
             accessToken?: string
             accessTokenProvider?: AccessTokenProvider
         }[],
+        observingParticipantEndpoints?: {
+            url: URL
+            accessToken?: string
+            accessTokenProvider?: AccessTokenProvider
+        }[],
         grantUserRights?: boolean
     ): Promise<GenerateTransactionResponse> {
         const otherHostingParticipantUids = await Promise.all(
@@ -464,11 +504,31 @@ export class LedgerController {
                 ) || []
         )
 
+        const observingParticipantUids = await Promise.all(
+            observingParticipantEndpoints
+                ?.map(
+                    (endpoint) =>
+                        new LedgerClient(
+                            endpoint.url,
+                            this.logger,
+                            this.isAdmin,
+                            endpoint.accessToken,
+                            endpoint.accessTokenProvider
+                        )
+                )
+                .map((client) =>
+                    client
+                        .getWithRetry('/v2/parties/participant-id')
+                        .then((res) => res.participantId)
+                ) || []
+        )
+
         const preparedParty = await this.generateExternalParty(
             getPublicKeyFromPrivate(privateKey),
             partyHint,
             confirmingThreshold,
-            otherHostingParticipantUids
+            otherHostingParticipantUids,
+            observingParticipantUids
         )
 
         if (!preparedParty) {
@@ -484,7 +544,8 @@ export class LedgerController {
             signedHash,
             preparedParty,
             grantUserRights,
-            hostingParticipantEndpoints
+            hostingParticipantEndpoints,
+            observingParticipantEndpoints
         )
 
         return preparedParty

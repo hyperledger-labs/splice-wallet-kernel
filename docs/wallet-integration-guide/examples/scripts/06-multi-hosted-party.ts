@@ -30,6 +30,7 @@ await sdk.connect()
 logger.info('Connected to ledger')
 
 const multiHostedPartyKeyPair = createKeyPair()
+const multiHostedPartyKeyPair2 = createKeyPair()
 const singleHostedPartyKeyPair = createKeyPair()
 
 await sdk.connectAdmin()
@@ -80,3 +81,34 @@ const pingCommandResponse = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     v4()
 )
 logger.info(pingCommandResponse, 'ping command response')
+
+const multiHostedPartyWithObservingParticipant =
+    await sdk.userLedger?.signAndAllocateExternalParty(
+        multiHostedPartyKeyPair2.privateKey,
+        'jon',
+        1,
+        [],
+        [
+            {
+                url: new URL('http://127.0.0.1:3975'),
+                accessTokenProvider: authTokenProvider,
+            },
+        ]
+    )
+logger.info(
+    multiHostedPartyWithObservingParticipant,
+    'created party with an observing participant'
+)
+
+await sdk.setPartyId(multiHostedPartyWithObservingParticipant?.partyId!)
+
+const createPingCommand2 = sdk.userLedger?.createPingCommand(
+    multiHostedPartyWithObservingParticipant!.partyId!
+)
+
+const pingCommandResponse2 = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    createPingCommand2,
+    multiHostedPartyKeyPair2.privateKey,
+    v4()
+)
+logger.info(pingCommandResponse2, 'ping command response')
