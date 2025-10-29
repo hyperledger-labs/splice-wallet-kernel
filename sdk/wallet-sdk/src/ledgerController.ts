@@ -311,7 +311,7 @@ export class LedgerController {
      * @param publicKey
      * @param partyHint (optional) hint to use for the partyId, if not provided the publicKey will be used.
      * @param confirmingThreshold (optional) parameter for multi-hosted parties (default is 1).
-     * @param hostingParticipantUids (optional) list of participant UIDs that will host the party with confirming permissions.
+     * @param confirmingParticipantUids (optional) list of participant UIDs that will host the party with confirming permissions.
      * @param observingParticipantUids (optional) list of participant UIDs that will have Observation (read-only) permissions.
      * @returns
      */
@@ -319,7 +319,7 @@ export class LedgerController {
         publicKey: PublicKey,
         partyHint?: string,
         confirmingThreshold?: number,
-        hostingParticipantUids?: string[],
+        confirmingParticipantUids?: string[],
         observingParticipantUids?: string[]
     ): Promise<GenerateTransactionResponse> {
         return this.client.generateTopology(
@@ -328,7 +328,7 @@ export class LedgerController {
             partyHint || v4(),
             false,
             confirmingThreshold,
-            hostingParticipantUids,
+            confirmingParticipantUids,
             observingParticipantUids
         )
     }
@@ -338,7 +338,7 @@ export class LedgerController {
      * @param signedHash The signed combined hash of the prepared transactions.
      * @param preparedParty The prepared party object from prepareExternalPartyTopology.
      * @param grantUserRights Defines if the transaction should also grant user right to current user (default is true)
-     * @param hostingParticipantEndpoints List of endpoints to the respective hosting participant ledger API (default is empty array) with confirming rights.
+     * @param confirmingParticipantEndpoints List of endpoints to the respective hosting participant ledger API (default is empty array) with confirming rights.
      * @param observingParticipantEndpoints List of endpoints to the respective observing participant ledger API (default is empty array).
      * @param expectHeavyLoad If true, the method will handle potential timeouts from the ledger api (default is true).
      * @returns An AllocatedParty object containing the partyId of the new party.
@@ -347,7 +347,7 @@ export class LedgerController {
         signedHash: string,
         preparedParty: GenerateTransactionResponse,
         grantUserRights: boolean = true,
-        hostingParticipantEndpoints: ParticipantEndpointConfig[] = [],
+        confirmingParticipantEndpoints: ParticipantEndpointConfig[] = [],
         observingParticipantEndpoints: ParticipantEndpointConfig[] = [],
         expectHeavyLoad: boolean = true
     ): Promise<AllocateExternalPartyResponse> {
@@ -396,7 +396,7 @@ export class LedgerController {
         }
 
         const combinedParticipantEndpoints = [
-            ...hostingParticipantEndpoints,
+            ...confirmingParticipantEndpoints,
             ...observingParticipantEndpoints,
         ]
 
@@ -420,7 +420,7 @@ export class LedgerController {
     }
 
     /**
-     * calls the allocate endpoint for other hosting participants if a party is multi-hosted
+     * Calls the allocate endpoint for other hosting participants if a party is multi-hosted
      * all nodes will get the resepective right indicated in the generate-topology request (refleted in the topology transactions)
      * @param endpointConfig hostingParticipant endpoints to connect to
      * @param topologyTransactions  The serialized topology transactions which need to be signed and submitted as part of the allocate party process
@@ -464,7 +464,7 @@ export class LedgerController {
      * @param privateKey The private key of the new external party, used to sign the topology transactions.
      * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
      * @param confirmingThreshold optional parameter for multi-hosted parties (default is 1).
-     * @param hostingParticipantEndpoints optional list of connection details for other participants to multi-host this party with confirming permissions.
+     * @param confirmingParticipantEndpoints optional list of connection details for other participants to multi-host this party with confirming permissions.
      * @param observingParticipantEndpoints optional list of connection details for other participants to multi-host this party with observing permissions.
      * @param grantUserRights Defines if the transaction should also grant user right to current user, defaults to true if undefined
      * @returns An AllocatedParty object containing the partyId of the new party.
@@ -473,12 +473,12 @@ export class LedgerController {
         privateKey: PrivateKey,
         partyHint?: string,
         confirmingThreshold?: number,
-        hostingParticipantEndpoints?: ParticipantEndpointConfig[],
+        confirmingParticipantEndpoints?: ParticipantEndpointConfig[],
         observingParticipantEndpoints?: ParticipantEndpointConfig[],
         grantUserRights?: boolean
     ): Promise<GenerateTransactionResponse> {
         const otherHostingParticipantUids = await this.getParticipantUids(
-            hostingParticipantEndpoints ?? []
+            confirmingParticipantEndpoints ?? []
         )
 
         const observingParticipantUids = await this.getParticipantUids(
@@ -506,7 +506,7 @@ export class LedgerController {
             signedHash,
             preparedParty,
             grantUserRights,
-            hostingParticipantEndpoints,
+            confirmingParticipantEndpoints,
             observingParticipantEndpoints
         )
 
