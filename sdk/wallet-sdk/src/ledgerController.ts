@@ -27,6 +27,7 @@ import { TopologyController } from './topologyController.js'
 import { PartyId } from '@canton-network/core-types'
 import { defaultRetryableOptions } from '@canton-network/core-ledger-client'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import { decodeTopologyTransaction } from '@canton-network/core-tx-visualizer'
 
 export type RawCommandMap = {
     ExerciseCommand: Types['ExerciseCommand']
@@ -161,6 +162,17 @@ export class LedgerController {
             return false
         }
     }
+
+    /**
+     * Decodeds a base64 encoded string to a TopologyTransaction
+     * This can be used to decode the partyTransactions in the PreparedParty object
+     * @param preparedTopologyTransaction base64 encoded string
+     * @returns A TopologyTransaction
+     */
+    toDecodedTopologyTransaction(preparedTopologyTransaction: string) {
+        return decodeTopologyTransaction(preparedTopologyTransaction)
+    }
+
     /**
      * Prepares, signs and executes a transaction on the ledger (using interactive submission).
      * @param commands the commands to be executed.
