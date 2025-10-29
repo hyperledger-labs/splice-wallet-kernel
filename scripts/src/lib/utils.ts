@@ -10,6 +10,10 @@ import * as process from 'process'
 import { white, green, italic, red, yellow, bold } from 'yoctocolors'
 import * as jsonc from 'jsonc-parser'
 import * as tar from 'tar-fs'
+import { exec } from 'child_process'
+import { promisify } from 'util'
+
+const ex = promisify(exec)
 
 export const info = (message: string): string => italic(white(message))
 export const warn = (message: string): string => bold(yellow(message))
@@ -393,4 +397,49 @@ export function elideMiddle(s: string, len = 8) {
         elider +
         s.slice(halfway + Math.floor(len / 2))
     )
+}
+
+/**
+ * Use Nx to get all dependencies of a project in the repo.
+ */
+export async function getAllNxDependencies(
+    projectName: string
+): Promise<string[]> {
+    const projects: string[] = await ex(`yarn nx show projects --json`, {
+        cwd: repoRoot,
+    }).then(({ stdout }) => JSON.parse(stdout))
+
+    if (!projects.includes(projectName)) {
+        throw new Error(`Project ${projectName} does not exist.`)
+    }
+
+    interface NxGraph {
+        nodes: Record<string, { data: { tags: string[] } }>
+        dependencies: Record<string, { target: string }[]>
+    }
+
+    const { nodes, dependencies }: NxGraph = await ex(
+        `yarn nx graph --print --focus=${projectName}`,
+        { cwd: repoRoot }
+    ).then(({ stdout }) => JSON.parse(stdout).graph)
+
+    // Nx shows both child dependencies and parent (reverse) dependencies for the focused package.
+    // Filter out reverse dependencies.
+    const childDependencies: string[] = Object.entries(dependencies).reduce<
+        string[]
+    >((prev, current) => {
+        const [key, value] = current
+        if (value.every((dep) => dep.target !== projectName)) {
+            prev.push(key)
+        }
+        return prev
+    }, [])
+
+    // Nx shows dependencies (example: @daml.js) that are not published to npm
+    // Filter to only public packages (those tagged with "npm:public").
+    const publicDependencies: string[] = childDependencies.filter((dep) => {
+        return nodes[dep].data.tags.includes('npm:public')
+    })
+
+    return publicDependencies
 }
