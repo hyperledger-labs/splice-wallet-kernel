@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // Generate a release for all packages. Performs a version bump and opens a PR against `main`
 
-import { promisify } from 'util'
-import { exec, spawn } from 'child_process'
-import readline from 'readline'
+import { spawn } from 'child_process'
+import { program } from '@commander-js/extra-typings'
+import { getAllNxDependencies } from './lib/utils.js'
+import { confirm, select } from '@inquirer/prompts'
 
-const ex = promisify(exec)
-
+// This helper passes through the underlying command's input/output to console
 async function cmd(command: string): Promise<void> {
     const [bin, ...args] = command.split(' ')
     const child = spawn(bin, args, { stdio: 'inherit', shell: true })
@@ -24,79 +24,76 @@ async function cmd(command: string): Promise<void> {
     })
 }
 
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-})
+const ALL_OPTION = '(all packages)'
+const QUIT_OPTION = '(quit)'
 
-async function main() {
-    await checkGit()
-    await checkGitHubCli()
-    await checkBranchIsReady()
+program
+    .option('--dry-run', 'Perform a dry run (default: true)')
+    .option('--no-dry-run', 'Perform a real release')
+    .action(async ({ dryRun = true }) => {
+        const project = await select({
+            message: 'Select project to release',
+            choices: [
+                'wallet-sdk',
+                'dapp-sdk',
+                'wallet-gateway-remote',
+                ALL_OPTION,
+                QUIT_OPTION,
+            ],
+        }).catch(() => process.exit(0))
 
-    rl.question(
-        'This will push new version tags to git for all packages, and open a release PR. Continue? (y/n) ',
-        (answer) => {
-            if (answer.toLowerCase() !== 'y') {
-                console.log('Release cancelled')
-                rl.close()
-                return
-            }
-            runRelease()
-            rl.close()
+        if (project === QUIT_OPTION) {
+            console.log('Aborting')
+            process.exit(0)
         }
-    )
-}
 
-async function runRelease() {
-    const branch = `release/${Date.now()}`
+        let deps = undefined
 
-    await cmd(`git checkout -b ${branch}`)
-    await cmd(`git push --set-upstream origin ${branch}`)
-    await cmd(`yarn nx release --skip-publish`)
-    await cmd(`gh pr create --fill --base main --head ${branch}`)
-}
+        if (project === ALL_OPTION) {
+            console.log('Cutting a release for everything.')
+        } else {
+            deps = await getAllNxDependencies(`@canton-network/${project}`)
+        }
 
-async function checkGitHubCli() {
-    return ex('gh --version').catch(() => {
-        console.error('GitHub CLI is not installed')
-        process.exit(1)
+        await runRelease(dryRun, deps)
+        process.exit(0)
     })
-}
+    .parseAsync(process.argv)
 
-async function checkGit() {
-    return ex('git --version').catch(() => {
-        console.error('Git is not installed')
-        process.exit(1)
-    })
-}
+async function runRelease(dryRun: boolean, projects?: string[]): Promise<void> {
+    let releaseCmd = `yarn nx release --skip-publish`
 
-async function checkBranchIsReady() {
-    const { stdout: branch } = await ex('git branch --show-current')
+    if (dryRun === false) {
+        const proceedDryRun = await confirm({
+            message:
+                'Dry run is off, and this will result in real GitHub tags & releases being made. Proceed?',
+            default: false,
+        })
 
-    if (branch.trim() !== 'main') {
-        console.error(
-            `You must be on the main branch to release (detected branch: ${branch.trim()})`
-        )
-        process.exit(1)
+        if (!proceedDryRun) {
+            console.log('Aborting')
+            process.exit(0)
+        }
+    } else {
+        releaseCmd += ' --dry-run'
     }
 
-    const { stdout: count } = await ex('git rev-list --count HEAD..origin/main')
-
-    if (count.trim() !== '0') {
-        console.error(
-            'Your branch may be behind the remote, run `git pull` to update it'
-        )
-        process.exit(1)
+    if (projects && projects.length > 0) {
+        console.log('Releasing the following set of packages: ', projects)
+        releaseCmd += ` --projects='${projects.join(',')}'`
     }
 
-    const { stdout: porcelain } = await ex('git status --porcelain')
+    if (!dryRun) {
+        const proceedRelease = await confirm({
+            message: `About to run:\n\n${releaseCmd}\n\nProceed?`,
+            default: false,
+        })
 
-    if (porcelain.trim()) {
-        console.error('Git working directory is not clean:')
-        console.error(porcelain)
-        process.exit(1)
+        if (!proceedRelease) {
+            console.log('Aborting')
+            process.exit(0)
+        }
     }
+
+    await cmd(releaseCmd)
 }
-
-main()

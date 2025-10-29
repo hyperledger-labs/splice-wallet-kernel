@@ -15,7 +15,7 @@ import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { CoreService, JsGetUpdatesResponse } from '../token-standard-service.js'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
-import { AccessTokenProvider } from '@canton-network/core-types'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 type JsTransaction = components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =
@@ -27,8 +27,7 @@ const EVENTS_BY_CID_PATH = '/v2/events/events-by-contract-id' as const
 const txsMock = rawTxsMock as unknown as JsTransaction[]
 
 const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const testDataDir = `${__dirname}/test-data`
+const testDataDir = `${dirname(__filename)}/test-data`
 
 const makeLedgerClientFromEventsResponses = (
     responses: JsGetEventsByContractIdResponse[]

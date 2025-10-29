@@ -1,12 +1,11 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { UserId } from '@canton-network/core-wallet-auth'
+import { Auth, UserId } from '@canton-network/core-wallet-auth'
 import {
     Wallet,
     Transaction,
     Session,
-    Auth,
     Network,
 } from '@canton-network/core-wallet-store'
 
@@ -120,6 +119,20 @@ export const toAuth = (table: IdpTable): Auth => {
                     clientSecret: table.adminClientSecret,
                 },
             }
+        case 'self_signed':
+            return {
+                identityProviderId: table.identityProviderId,
+                type: table.type,
+                issuer: table.issuer,
+                audience: table.audience,
+                scope: table.scope,
+                clientId: table.clientId,
+                clientSecret: table.clientSecret,
+                admin: {
+                    clientId: table.adminClientId,
+                    clientSecret: table.adminClientSecret,
+                },
+            }
         default:
             throw new Error(`Unknown auth type: ${table.type}`)
     }
@@ -172,8 +185,21 @@ export const fromAuth = (auth: Auth): IdpTable => {
                 adminClientId: auth.admin?.clientId || '',
                 adminClientSecret: auth.admin?.clientSecret || '',
             }
-        default:
-            throw new Error(`Unknown auth type`)
+        case 'self_signed':
+            return {
+                identityProviderId: auth.identityProviderId,
+                type: auth.type,
+                issuer: auth.issuer,
+                configUrl: '',
+                audience: auth.audience,
+                tokenUrl: '',
+                grantType: '',
+                scope: auth.scope,
+                clientId: auth.clientId,
+                clientSecret: auth.clientSecret,
+                adminClientId: auth.admin?.clientId || '',
+                adminClientSecret: auth.admin?.clientSecret || '',
+            }
     }
 }
 

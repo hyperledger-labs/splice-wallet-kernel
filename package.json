@@ -30,6 +30,7 @@
         "script:openrpc:titles": "tsx ./scripts/src/schema-title-validation.ts",
         "script:validate:package": "tsx ./scripts/src/package-and-verify-wallet-sdk.ts",
         "script:test:examples": "tsx ./scripts/src/test-example-scripts.ts",
+        "script:release": "tsx ./scripts/src/release.ts",
         "script:retag": "tsx ./scripts/src/retag.ts",
         "script:flat-pack": "tsx ./scripts/src/flat-pack.ts",
         "script:upgrade:splice": "tsx ./scripts/src/upgrade-splice.ts $@",
@@ -82,6 +83,7 @@
         "ts-node": "10.9.1",
         "ts-proto": "^2.7.7",
         "tslib": "^2.3.0",
+        "tsup": "^8.5.0",
         "tsx": "^4.20.3",
         "typescript": "^5.8.3",
         "typescript-eslint": "^8.33.1",
@@ -95,5 +97,8 @@
     "dependencies": {
         "@nx/js": "21.5.1",
         "nx": "^21.3.11"
+    },
+    "resolutions": {
+        "jose": "^5.10.0"
     }
 }

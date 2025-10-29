@@ -8,8 +8,8 @@ This repository is a monorepo of independently versioned Javascript packages. We
 4. Push the branch to the remote: `git push --set-upstream origin <branch from prior step>`
 5. Ensure you have the `gh` CLI tool installed and authenticated: `gh auth status`
     - if unauthenticated, `gh auth login`
-6. Run `yarn nx release --skip-publish --dry-run` to sanity check the new update versions
-7. Run `yarn nx release --skip-publish` if all looks good. This will
+6. Run `yarn script:release` to sanity check the new update versions via a dry-run
+7. Run `yarn script:release --no-dry-run` if all looks good. This will
     - create and push new git tags for each package
     - create new GH releases with changelogs
     - create a commit containing the version bumps in all affected package.json's

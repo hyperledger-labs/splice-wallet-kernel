@@ -483,6 +483,10 @@
                         "title": "clientId",
                         "type": "string"
                     },
+                    "clientSecret": {
+                        "title": "clientSecret",
+                        "type": "string"
+                    },
                     "issuer": {
                         "title": "issuer",
                         "type": "string"
@@ -494,6 +498,21 @@
                     "audience": {
                         "title": "audience",
                         "type": "string"
+                    },
+                    "admin": {
+                        "title": "admin",
+                        "type": "object",
+                        "properties": {
+                            "clientId": {
+                                "title": "clientId",
+                                "type": "string"
+                            },
+                            "clientSecret": {
+                                "title": "clientSecret",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["clientId", "clientSecret"]
                     }
                 },
                 "required": ["type", "issuer", "configUrl"]

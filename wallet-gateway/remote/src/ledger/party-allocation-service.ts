@@ -5,7 +5,7 @@ import {
     LedgerClient,
     TopologyWriteService,
 } from '@canton-network/core-ledger-client'
-import { AccessTokenProvider } from '@canton-network/core-types'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { Logger } from 'pino'
 
 export type AllocatedParty = {
@@ -92,7 +92,10 @@ export class PartyAllocationService {
         if (!res.partyDetails?.party) {
             throw new Error('Failed to allocate party')
         }
-        await this.ledgerClient.grantUserRights(userId, res.partyDetails.party)
+        await this.ledgerClient.waitForPartyAndGrantUserRights(
+            userId,
+            res.partyDetails.party
+        )
 
         return { hint, namespace, partyId: res.partyDetails.party }
     }
@@ -129,7 +132,10 @@ export class PartyAllocationService {
             ]
         )
 
-        await this.ledgerClient.grantUserRights(userId, res.partyId)
+        await this.ledgerClient.waitForPartyAndGrantUserRights(
+            userId,
+            res.partyId
+        )
         return { hint, partyId: res.partyId, namespace }
     }
 }

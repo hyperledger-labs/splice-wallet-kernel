@@ -3,7 +3,7 @@
 
 import { LedgerClient } from './ledger-client.js'
 import { createHash } from 'node:crypto'
-import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
+import { PartyId } from '@canton-network/core-types'
 import {
     CryptoKeyFormat,
     SigningKeyScheme,
@@ -38,7 +38,8 @@ import {
 } from '@canton-network/core-ledger-proto'
 import { GrpcTransport } from '@protobuf-ts/grpc-transport'
 import { ChannelCredentials } from '@grpc/grpc-js'
-import fs from 'fs'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import fs from 'node:fs'
 
 function prefixedInt(value: number, bytes: Buffer | Uint8Array): Buffer {
     const buffer = Buffer.alloc(4 + bytes.length)

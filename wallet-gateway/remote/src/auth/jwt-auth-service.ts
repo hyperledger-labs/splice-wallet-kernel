@@ -1,10 +1,10 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Logger } from 'pino'
+import { Auth, AuthService } from '@canton-network/core-wallet-auth'
+import { Store } from '@canton-network/core-wallet-store'
 import { createRemoteJWKSet, decodeJwt, jwtVerify } from 'jose'
-import { AuthService } from '@canton-network/core-wallet-auth'
-import { Auth, Store } from '@canton-network/core-wallet-store'
+import { Logger } from 'pino'
 
 /**
  * Creates an AuthService that verifies JWT tokens using a remote JWK set.
@@ -22,7 +22,8 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
         logger.debug({ jwt }, 'Verifying JWT token')
 
         try {
-            const iss = decodeJwt(jwt).iss
+            const decoded = decodeJwt(jwt)
+            const iss = decoded.iss
             if (!iss) {
                 logger.warn('JWT does not contain an issuer')
                 return undefined
@@ -36,6 +37,16 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
             if (!idp) {
                 logger.warn(`No identity provider found for issuer: ${iss}`)
                 return undefined
+            }
+
+            if (idp.type == 'self_signed') {
+                logger.debug(idp, 'Using self-signed IDP')
+                const sub = decoded.sub
+                if (!sub) {
+                    logger.warn('JWT does not contain a subject')
+                    return undefined
+                }
+                return { userId: sub, accessToken: jwt }
             }
             logger.debug(idp, 'Using IDP')
             const response = await fetch(idp.configUrl)

@@ -3,7 +3,8 @@
 
 import { paths } from './generated-clients/validator-internal'
 import createClient, { Client } from 'openapi-fetch'
-import { AccessTokenProvider, Logger } from '@canton-network/core-types'
+import { Logger } from '@canton-network/core-types'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional

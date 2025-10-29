@@ -10,13 +10,14 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "scripts": {
-        "build": "tsc -b",
-        "dev": "tsc -b --watch",
+        "build": "tsup && tsc -p tsconfig.types.json",
+        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
+        "test": "jest --passWithNoTests"
     },
     "dependencies": {
+        "@canton-network/core-wallet-auth": "workspace:^",
         "zod": "^3.25.64"
     },
     "devDependencies": {
@@ -27,6 +28,7 @@
         "jest": "^30.0.0",
         "ts-jest": "^29.4.0",
         "ts-jest-resolver": "^2.0.1",
+        "tsup": "^8.5.0",
         "typescript": "^5.8.3"
     },
     "files": [

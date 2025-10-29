@@ -9,6 +9,11 @@ import { createUserClient } from '../rpc-client'
 import { Network } from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
+import { WalletEvent } from '@canton-network/core-types'
+import {
+    AuthTokenProviderSelfSigned,
+    ClientCredentials,
+} from '@canton-network/core-wallet-auth'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
@@ -218,10 +223,50 @@ export class LoginUI extends LitElement {
             setTimeout(() => {
                 window.location.href = `${config.authorization_endpoint}?${params.toString()}`
             }, 400)
+        } else if (this.selectedNetwork.auth.type === 'self_signed') {
+            await this.selfSign({
+                clientId: this.selectedNetwork.auth.clientId || '',
+                clientSecret: this.selectedNetwork.auth.clientSecret || '',
+                scope: this.selectedNetwork.auth.scope,
+                audience: this.selectedNetwork.auth.audience,
+            } as ClientCredentials)
+            setTimeout(() => {
+                window.location.replace('/')
+            }, 400)
         } else {
             this.messageType = 'error'
             this.message = 'This authentication type is not supported yet.'
         }
+    }
+
+    protected async selfSign(credentials: ClientCredentials) {
+        const access_token = await AuthTokenProviderSelfSigned.fetchToken(
+            console,
+            credentials,
+            'unsafe-auth',
+            3600
+        )
+
+        if (window.opener && !window.opener.closed) {
+            window.opener.postMessage(
+                {
+                    type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
+                    token: access_token,
+                },
+                '*'
+            )
+        }
+
+        const payload = JSON.parse(atob(access_token.split('.')[1]))
+        stateManager.expirationDate.set(new Date(payload.exp * 1000).toString())
+
+        stateManager.accessToken.set(access_token)
+
+        const authenticatedUserClient = createUserClient(access_token)
+
+        await authenticatedUserClient.request('addSession', {
+            chainId: stateManager.chainId.get() || '',
+        })
     }
 
     protected render() {
@@ -235,7 +280,9 @@ export class LoginUI extends LitElement {
                         (net, index) =>
                             html`<option
                                 value=${index}
-                                ?disabled=${net.auth.type !== 'implicit'}
+                                ?disabled=${net.auth.type ==
+                                    'client_credentials' ||
+                                net.auth.type == 'password'}
                             >
                                 ${net.name}
                             </option>`

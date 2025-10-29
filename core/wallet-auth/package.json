@@ -7,14 +7,23 @@
     "license": "Apache-2.0",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "packageManager": "yarn@4.9.4",
-    "main": "./dist/index.js",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "default": "./dist/index.js"
+        }
+    },
     "scripts": {
-        "build": "tsc -b",
-        "dev": "tsc -b --watch",
+        "build": "tsup && tsc -p tsconfig.types.json",
+        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "yarn node --experimental-vm-modules $(yarn bin jest) --passWithNoTests"
+        "test": "jest --passWithNoTests"
     },
     "devDependencies": {
         "@jest/globals": "^29.0.0",
@@ -24,11 +33,14 @@
         "jest": "^30.0.0",
         "ts-jest": "^29.4.0",
         "ts-jest-resolver": "^2.0.1",
+        "tsup": "^8.5.0",
         "typescript": "^5.8.3"
     },
     "dependencies": {
         "@canton-network/core-rpc-errors": "workspace:^",
-        "@canton-network/core-types": "workspace:^"
+        "@canton-network/core-types": "workspace:^",
+        "jose": "^5.10.0",
+        "zod": "^3.25.64"
     },
     "files": [
         "dist/**"

@@ -32,9 +32,15 @@ export type TokenUrl = string
 export type GrantType = string
 export type Scope = string
 export type ClientId = string
+export type ClientSecret = string
 export type Issuer = string
 export type ConfigUrl = string
 export type Audience = string
+export interface Admin {
+    clientId: ClientId
+    clientSecret: ClientSecret
+    [k: string]: any
+}
 /**
  *
  * Represents the type of auth (implicit or password) for a specified network
@@ -46,9 +52,11 @@ export interface Auth {
     grantType?: GrantType
     scope?: Scope
     clientId?: ClientId
+    clientSecret?: ClientSecret
     issuer: Issuer
     configUrl: ConfigUrl
     audience?: Audience
+    admin?: Admin
     [k: string]: any
 }
 /**

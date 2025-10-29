@@ -24,8 +24,9 @@ import { v4 } from 'uuid'
 import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-proto'
 import { TopologyController } from './topologyController.js'
-import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
-import { defaultRetryableOptions } from '@canton-network/core-ledger-client/dist/ledger-api-utils.js'
+import { PartyId } from '@canton-network/core-types'
+import { defaultRetryableOptions } from '@canton-network/core-ledger-client'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 export type RawCommandMap = {
     ExerciseCommand: Types['ExerciseCommand']
@@ -403,7 +404,10 @@ export class LedgerController {
         }
 
         if (grantUserRights) {
-            await this.client.grantUserRights(this.userId, partyId)
+            await this.client.waitForPartyAndGrantUserRights(
+                this.userId,
+                partyId
+            )
         }
 
         return { partyId }
@@ -719,17 +723,37 @@ export class LedgerController {
                 await this.client.getWithRetry('/v2/parties')
             ).partyDetails!.map((p) => p.party)
         } else {
-            const canReadAsPartyRight = rights.rights?.find(
-                (r) => 'CanReadAsParty' in r.kind
-            ) as { CanReadAsParty?: { parties: PartyId[] } } | undefined
-            if (
-                canReadAsPartyRight &&
-                canReadAsPartyRight.CanReadAsParty &&
-                Array.isArray(canReadAsPartyRight.CanReadAsParty.parties)
-            ) {
-                return canReadAsPartyRight.CanReadAsParty.parties
-            }
-            return []
+            const canReadAsPartyRights =
+                rights.rights?.filter(
+                    (
+                        r
+                    ): r is {
+                        kind: { CanReadAs: { value: { party: string } } }
+                    } => 'CanReadAs' in r.kind
+                ) ?? []
+            if (!canReadAsPartyRights) return []
+
+            const readAsParties = canReadAsPartyRights.map(
+                (r) => r.kind.CanReadAs?.value?.party
+            )
+
+            const canActAsPartyRights =
+                rights.rights?.filter(
+                    (
+                        r
+                    ): r is {
+                        kind: { CanActAs: { value: { party: string } } }
+                    } => 'CanActAs' in r.kind
+                ) ?? []
+            if (!canActAsPartyRights) return []
+
+            const actAsParties = canActAsPartyRights.map(
+                (r) => r.kind.CanActAs?.value?.party
+            )
+
+            const allWallets = [...actAsParties, ...readAsParties]
+
+            return Array.from(new Set(allWallets))
         }
     }
 
@@ -776,8 +800,11 @@ export class LedgerController {
     /**
      * A function to grant either readAs or actAs rights
      */
-    async grantRights(readAs?: PartyId[], actAs?: PartyId[]) {
-        return await this.client.grantRights(this.userId, readAs, actAs)
+    async grantRights(readAsRights?: PartyId[], actAsRights?: PartyId[]) {
+        return await this.client.grantRights(this.userId, {
+            readAs: readAsRights ?? [],
+            actAs: actAsRights ?? [],
+        })
     }
 
     /**
@@ -981,11 +1008,10 @@ export class LedgerController {
             throw new Error('Use adminLedger to call grantMasterUserRights')
         }
 
-        return await this.client.grantMasterUserRights(
-            userId,
+        return await this.client.grantRights(userId, {
             canReadAsAnyParty,
-            canExecuteAsAnyParty
-        )
+            canExecuteAsAnyParty,
+        })
     }
 
     /**

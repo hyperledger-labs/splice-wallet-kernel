@@ -6,11 +6,20 @@
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
-    "main": "dist/index.js",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
     "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "default": "./dist/index.js"
+        }
+    },
     "scripts": {
-        "build": "tsc -b",
-        "dev": "tsc -b --watch",
+        "build": "tsup && tsc -p tsconfig.types.json",
+        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "echo \"Warning: no test specified\""
@@ -24,12 +33,13 @@
         "@canton-network/core-tx-visualizer": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
-        "jose": "^5.2.4",
+        "jose": "^5.10.0",
         "pino": "^10.0.0",
         "uuid": "^11.1.0"
     },
     "devDependencies": {
         "@types/node": "^24.3.0",
+        "tsup": "^8.5.0",
         "typescript": "^5.8.3"
     },
     "files": [

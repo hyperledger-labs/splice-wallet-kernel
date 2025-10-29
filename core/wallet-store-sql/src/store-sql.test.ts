@@ -3,11 +3,10 @@
 
 import { describe, expect, test } from '@jest/globals'
 
-import { AuthContext } from '@canton-network/core-wallet-auth'
+import { AuthContext, PasswordAuth } from '@canton-network/core-wallet-auth'
 import {
     LedgerApi,
     Network,
-    PasswordAuth,
     Session,
     Wallet,
 } from '@canton-network/core-wallet-store'
