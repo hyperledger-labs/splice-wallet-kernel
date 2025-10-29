@@ -86,8 +86,6 @@ test('decode a base 64 encoded topology tx', async () => {
             'partyToParticipant'
     )
 
-    console.log(JSON.stringify(decodedPartyToParticipantMapping))
-
     if (
         decodedPartyToParticipantMapping.mapping?.mapping.oneofKind ===
         'partyToParticipant'
