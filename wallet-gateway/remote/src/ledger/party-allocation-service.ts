@@ -5,7 +5,7 @@ import {
     LedgerClient,
     TopologyWriteService,
 } from '@canton-network/core-ledger-client'
-import { AccessTokenProvider } from '@canton-network/core-types'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { Logger } from 'pino'
 
 export type AllocatedParty = {

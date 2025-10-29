@@ -4,7 +4,6 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { LedgerClient } from '@canton-network/core-ledger-client'
-import { AccessTokenProvider } from '@canton-network/core-types'
 import buildController from './rpc-gen/index.js'
 import {
     AddNetworkParams,
@@ -17,18 +16,15 @@ import {
     SetPrimaryWalletParams,
     SyncWalletsResult,
 } from './rpc-gen/typings.js'
-import {
-    Store,
-    Auth,
-    Transaction,
-    Network,
-} from '@canton-network/core-wallet-store'
+import { Store, Transaction, Network } from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'
 import { NotificationService } from '../notification/NotificationService.js'
 import {
+    AccessTokenProvider,
     assertConnected,
+    Auth,
     AuthContext,
-    clientCredentialsService,
+    AuthTokenProvider,
 } from '@canton-network/core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
 import {
@@ -73,9 +69,12 @@ export const userController = (
                     audience: network.auth.audience ?? '',
                     scope: network.auth.scope ?? '',
                     clientId: network.auth.clientId ?? '',
-                    admin: network.auth.admin ?? {},
+                    admin: {
+                        clientId: network.auth.admin?.clientId ?? '',
+                        clientSecret: network.auth.admin?.clientSecret ?? '',
+                    },
                 }
-            } else {
+            } else if (network.auth.type === 'password') {
                 auth = {
                     type: 'password',
                     identityProviderId: network.auth.identityProviderId,
@@ -86,8 +85,42 @@ export const userController = (
                     scope: network.auth.scope ?? '',
                     clientId: network.auth.clientId ?? '',
                     audience: network.auth.audience ?? '',
-                    admin: network.auth.admin ?? {},
+                    admin: {
+                        clientId: network.auth.admin?.clientId ?? '',
+                        clientSecret: network.auth.admin?.clientSecret ?? '',
+                    },
                 }
+            } else if (network.auth.type === 'client_credentials') {
+                auth = {
+                    type: 'client_credentials',
+                    identityProviderId: network.auth.identityProviderId,
+                    issuer: network.auth.issuer ?? '',
+                    configUrl: network.auth.configUrl ?? '',
+                    audience: network.auth.audience ?? '',
+                    scope: network.auth.scope ?? '',
+                    clientId: network.auth.clientId ?? '',
+                    clientSecret: network.auth.clientSecret ?? '',
+                    admin: {
+                        clientId: network.auth.admin?.clientId ?? '',
+                        clientSecret: network.auth.admin?.clientSecret ?? '',
+                    },
+                }
+            } else if (network.auth.type === 'self_signed') {
+                auth = {
+                    type: 'self_signed',
+                    identityProviderId: network.auth.identityProviderId,
+                    issuer: network.auth.issuer ?? '',
+                    audience: network.auth.audience ?? '',
+                    scope: network.auth.scope ?? '',
+                    clientId: network.auth.clientId ?? '',
+                    clientSecret: network.auth.clientSecret ?? '',
+                    admin: {
+                        clientId: network.auth.admin?.clientId ?? '',
+                        clientSecret: network.auth.admin?.clientSecret ?? '',
+                    },
+                }
+            } else {
+                throw new Error(`Unsupported auth type: ${network.auth.type}`)
             }
 
             const newNetwork: Network = {
@@ -133,29 +166,10 @@ export const userController = (
                 throw new Error('No network session found')
             }
 
-            const adminToken = await clientCredentialsService(
-                network.auth.configUrl,
-                logger
-            ).fetchToken({
-                clientId: network.auth.admin.clientId,
-                clientSecret: network.auth.admin.clientSecret,
-                scope: network.auth.scope,
-                audience: network.auth.audience,
-            })
-
-            logger.debug(
-                { adminToken },
-                'Fetched admin token for party allocation'
-            )
-
-            const adminAccessTokenProvider: AccessTokenProvider = {
-                getUserAccessToken: async () => adminToken,
-                getAdminAccessToken: async () => adminToken,
-            }
-
+            const tokenProvider = new AuthTokenProvider(network.auth, logger)
             const partyAllocator = new PartyAllocationService(
                 network.synchronizerId,
-                adminAccessTokenProvider,
+                tokenProvider,
                 network.ledgerApi.baseUrl,
                 logger
             )

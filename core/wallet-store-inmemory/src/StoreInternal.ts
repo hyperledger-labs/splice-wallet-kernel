@@ -7,6 +7,7 @@ import {
     UserId,
     AuthAware,
     assertConnected,
+    AccessTokenProvider,
 } from '@canton-network/core-wallet-auth'
 import {
     Store,
@@ -17,7 +18,6 @@ import {
     Transaction,
     Network,
 } from '@canton-network/core-wallet-store'
-import { AccessTokenProvider } from '@canton-network/core-types'
 import {
     LedgerClient,
     defaultRetryableOptions,

@@ -24,8 +24,9 @@ import { v4 } from 'uuid'
 import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-proto'
 import { TopologyController } from './topologyController.js'
-import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
+import { PartyId } from '@canton-network/core-types'
 import { defaultRetryableOptions } from '@canton-network/core-ledger-client'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 export type RawCommandMap = {
     ExerciseCommand: Types['ExerciseCommand']

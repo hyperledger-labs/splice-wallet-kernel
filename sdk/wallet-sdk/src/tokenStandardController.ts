@@ -33,8 +33,9 @@ import {
     allocationInstructionRegistryTypes,
     Beneficiaries,
 } from '@canton-network/core-token-standard'
-import { AccessTokenProvider, PartyId } from '@canton-network/core-types'
+import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject' | 'Withdraw'
 export type AllocationInstructionChoice = 'Withdraw'

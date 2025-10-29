@@ -1,16 +1,17 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    ClientCredentials,
-    Network,
-    networkSchema,
-    PasswordAuth,
-} from '@canton-network/core-wallet-store'
+import { Network, networkSchema } from '@canton-network/core-wallet-store'
 import { html } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/BaseElement.js'
 import { NetworkInputChangedEvent } from './NetworkFormInput.js'
+import {
+    Credentials,
+    ImplicitAuth,
+    PasswordAuth,
+    SelfSignedAuth,
+} from '@canton-network/core-wallet-auth'
 
 /**
  * Emitted when the user clicks the Cancel button on the form
@@ -37,7 +38,7 @@ type NetworkKeys = Exclude<keyof Network, 'auth' | 'ledgerApi'>
 type LedgerApiKeys = keyof Network['ledgerApi']
 
 type CommonAuth = Exclude<keyof Network['auth'], 'type' | 'admin'>
-type AdminAuth = keyof ClientCredentials
+type AdminAuth = keyof Credentials
 type PasswordAuthKeys = Exclude<keyof PasswordAuth, 'type' | 'admin'>
 
 @customElement('network-form')
@@ -70,28 +71,42 @@ export class NetworkForm extends BaseElement {
         const network = { ...this.network }
 
         if (this.authType === 'implicit') {
+            const auth = network.auth as ImplicitAuth
             network.auth = {
                 type: 'implicit',
-                identityProviderId: network.auth?.identityProviderId || '',
-                configUrl: network.auth?.configUrl || '',
-                clientId: network.auth?.clientId || '',
-                issuer: network.auth?.issuer || '',
-                audience: network.auth?.audience || '',
-                scope: network.auth?.scope || '',
-                admin: network.auth?.admin,
+                identityProviderId: auth.identityProviderId || '',
+                configUrl: auth.configUrl || '',
+                clientId: auth.clientId || '',
+                issuer: auth.issuer || '',
+                audience: auth.audience || '',
+                scope: auth.scope || '',
+                admin: auth.admin,
             }
         } else if (this.authType === 'password') {
+            const auth = network.auth as PasswordAuth
             network.auth = {
                 type: 'password',
-                identityProviderId: network.auth?.identityProviderId || '',
-                configUrl: network.auth?.configUrl || '',
-                clientId: network.auth?.clientId || '',
-                issuer: network.auth?.issuer || '',
-                audience: network.auth?.audience || '',
-                scope: network.auth?.scope || '',
-                tokenUrl: (network.auth as PasswordAuth)?.tokenUrl || '',
-                grantType: (network.auth as PasswordAuth)?.grantType || '',
+                identityProviderId: auth.identityProviderId || '',
+                configUrl: auth.configUrl || '',
+                clientId: auth.clientId || '',
+                issuer: auth.issuer || '',
+                audience: auth.audience || '',
+                scope: auth.scope || '',
+                tokenUrl: auth.tokenUrl || '',
+                grantType: auth.grantType || '',
                 admin: network.auth?.admin,
+            }
+        } else if (this.authType === 'self_signed') {
+            const auth = network.auth as SelfSignedAuth
+            network.auth = {
+                type: 'self_signed',
+                identityProviderId: auth.identityProviderId || '',
+                issuer: auth.issuer || '',
+                audience: auth.audience || '',
+                scope: auth.scope || '',
+                clientId: auth.clientId || '',
+                clientSecret: auth.clientSecret || '',
+                admin: auth.admin,
             }
         }
 
@@ -133,6 +148,15 @@ export class NetworkForm extends BaseElement {
     setAuth(field: CommonAuth) {
         return (ev: NetworkInputChangedEvent) => {
             this.network.auth[field] = ev.value
+        }
+    }
+
+    setAuthConfigUrl() {
+        return (ev: NetworkInputChangedEvent) => {
+            if (this.network.auth.type === 'self_signed') {
+                return
+            }
+            this.network.auth['configUrl'] = ev.value
         }
     }
 
@@ -180,8 +204,10 @@ export class NetworkForm extends BaseElement {
                 required
                 label="Config URL"
                 text="URL to the OpenID Connect configuration (e.g. https://<your-domain>/.well-known/openid-configuration)"
-                .value=${this.network.auth.configUrl}
-                @network-input-change=${this.setAuth('configUrl')}
+                .value=${this.network.auth.type !== 'self_signed'
+                    ? this.network.auth.configUrl
+                    : ''}
+                @network-input-change=${this.setAuthConfigUrl()}
             ></network-form-input>
             <network-form-input
                 required

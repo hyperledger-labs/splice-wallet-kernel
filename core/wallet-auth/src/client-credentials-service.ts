@@ -2,17 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logger } from '@canton-network/core-types'
-
-export interface OIDCConfig {
-    token_endpoint: string
-}
-
-export interface ClientCredentials {
-    clientId: string
-    clientSecret: string
-    scope: string | undefined
-    audience: string | undefined
-}
+import { ClientCredentials, OIDCConfig } from './auth-service.js'
 
 export class ClientCredentialsService {
     constructor(

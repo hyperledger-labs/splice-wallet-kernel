@@ -1437,6 +1437,7 @@ __metadata:
     "@canton-network/core-splice-client": "workspace:^"
     "@canton-network/core-token-standard": "workspace:^"
     "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
     "@grpc/grpc-js": "npm:^1.14.0"
     "@jest/globals": "npm:^29.0.0"
     "@protobuf-ts/grpc-transport": "npm:^2.11.1"
@@ -1594,6 +1595,7 @@ __metadata:
   resolution: "@canton-network/core-splice-client@workspace:core/splice-client"
   dependencies:
     "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
     openapi-fetch: "npm:^0.14.0"
     tsup: "npm:^8.5.0"
     typescript: "npm:^5.8.3"
@@ -1681,10 +1683,12 @@ __metadata:
     "@swc/jest": "npm:^0.2.38"
     "@types/jest": "npm:^30.0.0"
     jest: "npm:^30.0.0"
+    jose: "npm:^6.0.12"
     ts-jest: "npm:^29.4.0"
     ts-jest-resolver: "npm:^2.0.1"
     tsup: "npm:^8.5.0"
     typescript: "npm:^5.8.3"
+    zod: "npm:^3.25.64"
   languageName: unknown
   linkType: soft
 
@@ -1783,6 +1787,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-store@workspace:core/wallet-store"
   dependencies:
+    "@canton-network/core-wallet-auth": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.11.31"
     "@swc/jest": "npm:^0.2.38"
@@ -1801,6 +1806,7 @@ __metadata:
   resolution: "@canton-network/core-wallet-ui-components@workspace:core/wallet-ui-components"
   dependencies:
     "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
     "@canton-network/core-wallet-store": "workspace:^"
     "@popperjs/core": "npm:^2.11.8"
     "@storybook/web-components-vite": "npm:^9.1.10"
@@ -10708,6 +10714,7 @@ __metadata:
     "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-signing-lib": "workspace:^"
     "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
     "@canton-network/wallet-sdk": "workspace:^"
     "@jest/globals": "npm:^29.0.0"
     "@swc/core": "npm:^1.11.31"

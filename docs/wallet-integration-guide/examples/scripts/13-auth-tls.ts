@@ -9,7 +9,7 @@ import {
 import { pino } from 'pino'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { AccessTokenProvider } from '@canton-network/core-types'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 const logger = pino({ name: '01-auth', level: 'info' })
 

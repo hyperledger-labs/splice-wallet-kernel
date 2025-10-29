@@ -49,9 +49,10 @@ test('call listNetworks rpc', async () => {
     const json = await response.body.result
 
     expect(response.statusCode).toBe(200)
-    expect(json.networks.length).toBe(4)
+    expect(json.networks.length).toBe(5)
     expect(json.networks[0].name).toBe('Local (password IDP)')
     expect(json.networks[1].name).toBe('Local (OAuth IDP)')
     expect(json.networks[2].name).toBe('Local (OAuth IDP - Client Credentials)')
-    expect(json.networks[3].name).toBe('Devnet (Auth0)')
+    expect(json.networks[3].name).toBe('Local (Self signed)')
+    expect(json.networks[4].name).toBe('Devnet (Auth0)')
 })

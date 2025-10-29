@@ -4,8 +4,8 @@
 import { jest } from '@jest/globals'
 import { pino } from 'pino'
 import { Network } from '@canton-network/core-wallet-store'
-import { AccessTokenProvider } from '@canton-network/core-types'
 import { sink } from 'pino-test'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 type AsyncFn = () => Promise<unknown>
 
