@@ -39,7 +39,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         private logger: Logger,
         authContext?: AuthContext
     ) {
-        this.logger = logger.child({ component: 'StoreInternal' })
+        this.logger = logger.child({ component: 'StoreSql' })
         this.authContext = authContext
 
         // this.syncWallets()
@@ -236,14 +236,19 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         const userId = this.assertConnected()
         // todo: check and compare userid of existing network
         await this.db.transaction().execute(async (trx) => {
+            const networkEntry = fromNetwork(network, userId)
+            this.logger.info(networkEntry, 'Updating network table')
             await trx
                 .updateTable('networks')
-                .set(fromNetwork(network, userId))
+                .set(networkEntry)
                 .where('chainId', '=', network.chainId)
                 .execute()
+
+            const authEntry = fromAuth(network.auth)
+            this.logger.info(authEntry, 'Updating auth table')
             await trx
                 .updateTable('idps')
-                .set(fromAuth(network.auth))
+                .set(authEntry)
                 .where(
                     'identityProviderId',
                     '=',
