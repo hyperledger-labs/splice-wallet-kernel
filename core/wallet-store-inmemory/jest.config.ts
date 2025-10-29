@@ -3,26 +3,11 @@
 
 import type { Config } from 'jest'
 
-const config: Config = {
+export default {
     rootDir: 'src',
-    testEnvironment: 'node',
     extensionsToTreatAsEsm: ['.ts'],
+    resolver: 'ts-jest-resolver',
     transform: {
-        '^.+\\.(t|j)sx?$': [
-            '@swc/jest',
-            {
-                jsc: { parser: { syntax: 'typescript' }, target: 'es2020' },
-                module: { type: 'es6' },
-            },
-        ],
+        '^.+\\.(t|j)sx?$': '@swc/jest',
     },
-    resolver: null,
-    moduleNameMapper: {
-        '^(@canton-network/core-wallet-auth)$':
-            '<rootDir>/../../wallet-auth/dist/index.js',
-        '^(\\.{1,2}/.*)\\.js$': '$1',
-    },
-    // transformIgnorePatterns: ['/node_modules/'],
 } satisfies Config
-
-export default config

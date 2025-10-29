@@ -39,7 +39,7 @@
     "dependencies": {
         "@canton-network/core-rpc-errors": "workspace:^",
         "@canton-network/core-types": "workspace:^",
-        "jose": "^6.0.12",
+        "jose": "^5.10.0",
         "zod": "^3.25.64"
     },
     "files": [

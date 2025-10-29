@@ -1683,7 +1683,7 @@ __metadata:
     "@swc/jest": "npm:^0.2.38"
     "@types/jest": "npm:^30.0.0"
     jest: "npm:^30.0.0"
-    jose: "npm:^6.0.12"
+    jose: "npm:^5.10.0"
     ts-jest: "npm:^29.4.0"
     ts-jest-resolver: "npm:^2.0.1"
     tsup: "npm:^8.5.0"
@@ -1968,7 +1968,7 @@ __metadata:
     express: "npm:^5.1.0"
     express-rate-limit: "npm:^7.5.1"
     jest: "npm:^29.7.0"
-    jose: "npm:^6.0.12"
+    jose: "npm:^5.10.0"
     lit: "npm:^3.3.0"
     pino: "npm:^9.7.0"
     pino-pretty: "npm:^13.0.0"
@@ -2001,7 +2001,7 @@ __metadata:
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
     "@types/node": "npm:^24.3.0"
-    jose: "npm:^5.2.4"
+    jose: "npm:^5.10.0"
     pino: "npm:^10.0.0"
     tsup: "npm:^8.5.0"
     typescript: "npm:^5.8.3"
@@ -14393,24 +14393,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:5.9.6":
-  version: 5.9.6
-  resolution: "jose@npm:5.9.6"
-  checksum: 10c0/d6bcd8c7d655b5cda8e182952a76f0c093347f5476d74795405bb91563f7ab676f61540310dd4b1531c60d685335ceb600571a409551d2cbd2ab3e9f9fbf1e4d
-  languageName: node
-  linkType: hard
-
-"jose@npm:^5.2.4":
+"jose@npm:^5.10.0":
   version: 5.10.0
   resolution: "jose@npm:5.10.0"
   checksum: 10c0/e20d9fc58d7e402f2e5f04e824b8897d5579aae60e64cb88ebdea1395311c24537bf4892f7de413fab1acf11e922797fb1b42269bc8fc65089a3749265ccb7b0
-  languageName: node
-  linkType: hard
-
-"jose@npm:^6.0.11, jose@npm:^6.0.12":
-  version: 6.1.0
-  resolution: "jose@npm:6.1.0"
-  checksum: 10c0/f4518579e907317e144facd15c7627acd06097bbea17735097437217498aa419564c039dd4020f6af5f2d024a7cee6b7be4648ccbbdc238aedb80a47c061217d
   languageName: node
   linkType: hard
 
