@@ -9,7 +9,6 @@ import { NetworkInputChangedEvent } from './NetworkFormInput.js'
 import {
     Credentials,
     ImplicitAuth,
-    PasswordAuth,
     SelfSignedAuth,
 } from '@canton-network/core-wallet-auth'
 
@@ -39,7 +38,6 @@ type LedgerApiKeys = keyof Network['ledgerApi']
 
 type CommonAuth = Exclude<keyof Network['auth'], 'type' | 'admin'>
 type AdminAuth = keyof Credentials
-type PasswordAuthKeys = Exclude<keyof PasswordAuth, 'type' | 'admin'>
 
 @customElement('network-form')
 export class NetworkForm extends BaseElement {
@@ -81,20 +79,6 @@ export class NetworkForm extends BaseElement {
                 audience: auth.audience || '',
                 scope: auth.scope || '',
                 admin: auth.admin,
-            }
-        } else if (this.authType === 'password') {
-            const auth = network.auth as PasswordAuth
-            network.auth = {
-                type: 'password',
-                identityProviderId: auth.identityProviderId || '',
-                configUrl: auth.configUrl || '',
-                clientId: auth.clientId || '',
-                issuer: auth.issuer || '',
-                audience: auth.audience || '',
-                scope: auth.scope || '',
-                tokenUrl: auth.tokenUrl || '',
-                grantType: auth.grantType || '',
-                admin: network.auth?.admin,
             }
         } else if (this.authType === 'self_signed') {
             const auth = network.auth as SelfSignedAuth
@@ -165,29 +149,6 @@ export class NetworkForm extends BaseElement {
             if (this.network.auth.admin) {
                 this.network.auth.admin[field] = ev.value
             }
-        }
-    }
-
-    setPasswordAuth(field: PasswordAuthKeys) {
-        return (ev: NetworkInputChangedEvent) => {
-            if (this.network.auth.type !== 'password') {
-                return
-            }
-
-            if (!this.network.auth) {
-                this.network.auth = {
-                    type: 'password',
-                    clientId: '',
-                    identityProviderId: '',
-                    issuer: '',
-                    configUrl: '',
-                    audience: '',
-                    tokenUrl: '',
-                    grantType: '',
-                    scope: '',
-                }
-            }
-            this.network.auth[field] = ev.value
         }
     }
 
@@ -270,41 +231,6 @@ export class NetworkForm extends BaseElement {
             }
 
             return html`${commonFields}${adminFields}`
-        } else if (this.authType === 'password') {
-            let auth = this.network.auth
-            if (auth.type !== 'password') {
-                auth = {
-                    type: 'password',
-                    identityProviderId: '',
-                    configUrl: '',
-                    clientId: '',
-                    issuer: '',
-                    audience: '',
-                    scope: '',
-                    tokenUrl: '',
-                    grantType: '',
-                }
-                this.network.auth = auth
-            }
-
-            const netauth = this.network.auth as PasswordAuth
-
-            return html`
-                ${commonFields}
-                <network-form-input
-                    required
-                    label="Token Url"
-                    .value=${netauth.tokenUrl}
-                    @network-input-change=${this.setPasswordAuth('tokenUrl')}
-                ></network-form-input>
-                <network-form-input
-                    required
-                    label="Grant Type"
-                    .value=${netauth.grantType}
-                    @network-input-change=${this.setPasswordAuth('grantType')}
-                ></network-form-input>
-                ${adminFields}
-            `
         } else if (this.authType === 'self_signed') {
             let auth = this.network.auth
             if (auth.type !== 'self_signed') {

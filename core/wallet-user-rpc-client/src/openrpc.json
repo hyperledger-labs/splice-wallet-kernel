@@ -471,14 +471,6 @@
                         "title": "identityProviderId",
                         "type": "string"
                     },
-                    "tokenUrl": {
-                        "title": "tokenUrl",
-                        "type": "string"
-                    },
-                    "grantType": {
-                        "title": "grantType",
-                        "type": "string"
-                    },
                     "scope": {
                         "title": "scope",
                         "type": "string"

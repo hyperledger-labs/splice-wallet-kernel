@@ -11,7 +11,7 @@ import {
     LedgerApi,
     Network,
 } from '@canton-network/core-wallet-store'
-import { AuthContext, PasswordAuth } from '@canton-network/core-wallet-auth'
+import { AuthContext, ImplicitAuth } from '@canton-network/core-wallet-auth'
 import { pino, Logger } from 'pino'
 import { sink } from 'pino-test'
 
@@ -147,13 +147,11 @@ implementations.forEach(([name, StoreImpl]) => {
             const ledgerApi: LedgerApi = {
                 baseUrl: 'http://api',
             }
-            const auth: PasswordAuth = {
+            const auth: ImplicitAuth = {
                 identityProviderId: 'idp1',
-                type: 'password',
+                type: 'implicit',
                 issuer: 'http://auth',
                 configUrl: 'http://auth/.well-known/openid-configuration',
-                tokenUrl: 'http://auth',
-                grantType: 'password',
                 clientId: 'cid',
                 scope: 'scope',
                 audience: 'aud',

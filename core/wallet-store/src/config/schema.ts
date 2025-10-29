@@ -4,7 +4,12 @@
 import { authSchema } from '@canton-network/core-wallet-auth'
 import { z } from 'zod'
 
-export const idpSchema = z.object({})
+export const idpSchema = z.discriminatedUnion('type', [
+    z.object({
+        id: z.string(),
+        type: z.enum(['oauth', 'self-signed']),
+    }),
+])
 
 export const ledgerApiSchema = z.object({
     baseUrl: z.string().url(),

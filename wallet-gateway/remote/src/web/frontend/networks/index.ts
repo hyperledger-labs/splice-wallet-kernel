@@ -253,23 +253,6 @@ export class UserUiNetworks extends LitElement {
                     },
                 }
                 break
-            case 'password':
-                auth = {
-                    type: 'password',
-                    identityProviderId: e.network.auth.identityProviderId,
-                    issuer: e.network.auth.issuer ?? '',
-                    configUrl: e.network.auth.configUrl ?? '',
-                    audience: e.network.auth.audience ?? '',
-                    tokenUrl: e.network.auth.tokenUrl ?? '',
-                    grantType: e.network.auth.grantType ?? '',
-                    scope: e.network.auth.scope ?? '',
-                    clientId: e.network.auth.clientId ?? '',
-                    admin: {
-                        clientId: e.network.auth.admin?.clientId ?? '',
-                        clientSecret: e.network.auth.admin?.clientSecret ?? '',
-                    },
-                }
-                break
             case 'self_signed':
                 auth = {
                     type: 'self_signed',

@@ -29,8 +29,6 @@ export type SynchronizerId = string
 export type ChainId = string
 export type Type = string
 export type IdentityProviderId = string
-export type TokenUrl = string
-export type GrantType = string
 export type Scope = string
 export type ClientId = string
 export type ClientSecret = string
@@ -50,8 +48,6 @@ export interface Admin {
 export interface Auth {
     authType?: Type
     identityProviderId: IdentityProviderId
-    tokenUrl?: TokenUrl
-    grantType?: GrantType
     scope?: Scope
     clientId?: ClientId
     clientSecret?: ClientSecret

@@ -8,19 +8,6 @@ const credentials = z.object({
     clientSecret: z.string(),
 })
 
-const passwordAuthSchema = z.object({
-    identityProviderId: z.string(),
-    type: z.literal('password'),
-    issuer: z.string(),
-    configUrl: z.string(),
-    audience: z.string(),
-    tokenUrl: z.string(),
-    grantType: z.string(),
-    scope: z.string(),
-    clientId: z.string(),
-    admin: z.optional(credentials),
-})
-
 const implicitAuthSchema = z.object({
     identityProviderId: z.string(),
     type: z.literal('implicit'),
@@ -56,7 +43,6 @@ const selfSignedAuthSchema = z.object({
 })
 
 export const authSchema = z.discriminatedUnion('type', [
-    passwordAuthSchema,
     implicitAuthSchema,
     clientCredentialAuthSchema,
     selfSignedAuthSchema,
@@ -64,7 +50,6 @@ export const authSchema = z.discriminatedUnion('type', [
 
 export type Auth = z.infer<typeof authSchema>
 export type ImplicitAuth = z.infer<typeof implicitAuthSchema>
-export type PasswordAuth = z.infer<typeof passwordAuthSchema>
 export type Credentials = z.infer<typeof credentials>
 export type ClientCredentialAuth = z.infer<typeof clientCredentialAuthSchema>
 export type SelfSignedAuth = z.infer<typeof selfSignedAuthSchema>
