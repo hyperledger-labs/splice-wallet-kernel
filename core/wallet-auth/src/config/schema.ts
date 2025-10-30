@@ -3,8 +3,8 @@
 
 import { z } from 'zod'
 
-const pkceAuthSchema = z.object({
-    method: z.literal('pkce'),
+const authorizationCodeAuthSchema = z.object({
+    method: z.literal('authorization_code'),
     audience: z.string(),
     scope: z.string(),
     clientId: z.string(),
@@ -28,12 +28,12 @@ const selfSignedAuthSchema = z.object({
 })
 
 export const authSchema = z.discriminatedUnion('method', [
-    pkceAuthSchema,
+    authorizationCodeAuthSchema,
     clientCredentialsAuthSchema,
     selfSignedAuthSchema,
 ])
 
 export type Auth = z.infer<typeof authSchema>
-export type PkceAuth = z.infer<typeof pkceAuthSchema>
+export type AuthorizationCodeAuth = z.infer<typeof authorizationCodeAuthSchema>
 export type ClientCredentialsAuth = z.infer<typeof clientCredentialsAuthSchema>
 export type SelfSignedAuth = z.infer<typeof selfSignedAuthSchema>

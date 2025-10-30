@@ -12,21 +12,21 @@
         },
         "idps": [
             {
-                "id": "local-mock-oauth",
+                "id": "idp-mock-oauth",
                 "type": "oauth",
                 "issuer": "http://127.0.0.1:8889",
                 "configUrl": "http://127.0.0.1:8889/.well-known/openid-configuration"
-            },
-            {
-                "id": "idp-self-signed",
-                "type": "self_signed",
-                "issuer": "unsafe-auth"
             },
             {
                 "id": "idp-devnet-auth0",
                 "type": "oauth",
                 "issuer": "https://canton-registry-app-dev-1.eu.auth0.com/",
                 "configUrl": "https://canton-registry-app-dev-1.eu.auth0.com/.well-known/openid-configuration"
+            },
+            {
+                "id": "idp-self-signed",
+                "type": "self_signed",
+                "issuer": "unsafe-auth"
             }
         ],
         "networks": [
@@ -35,15 +35,15 @@
                 "name": "Local (OAuth IDP)",
                 "description": "Mock OAuth IDP",
                 "synchronizerId": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
-                "identityProviderId": "local-mock-oauth",
+                "identityProviderId": "idp-mock-oauth",
                 "auth": {
-                    "method": "pkce",
+                    "method": "authorization_code",
                     "clientId": "operator",
                     "scope": "openid daml_ledger_api offline_access",
                     "audience": "https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"
                 },
                 "adminAuth": {
-                    "type": "client_credentials",
+                    "method": "client_credentials",
                     "clientId": "participant_admin",
                     "clientSecret": "admin-client-secret"
                 },
@@ -56,7 +56,7 @@
                 "name": "Local (OAuth IDP - Client Credentials)",
                 "description": "Mock OAuth IDP (Client Credentials)",
                 "synchronizerId": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
-                "identityProviderId": "local-mock-oauth",
+                "identityProviderId": "idp-mock-oauth",
                 "auth": {
                     "method": "client_credentials",
                     "clientId": "operator",
@@ -102,7 +102,7 @@
                 "synchronizerId": "global-domain::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a",
                 "identityProviderId": "idp-devnet-auth0",
                 "auth": {
-                    "method": "pkce",
+                    "method": "authorization_code",
                     "scope": "daml_ledger_api",
                     "audience": "https://canton.network.global",
                     "clientId": "EQrKrlT5Z2B3F6TXDepQMGC4YdfnlLLR"
