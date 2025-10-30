@@ -16,7 +16,7 @@ export default meta
 const networks: Network[] = [
     {
         name: 'Local (password IDP)',
-        chainId: 'canton:local-password',
+        id: 'canton:local-password',
         synchronizerId:
             'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd',
         description: 'Unimplemented Password Auth',

@@ -77,8 +77,8 @@
                                 "type": "string",
                                 "description": "The party hint and name of the wallet."
                             },
-                            "chainId": {
-                                "title": "chainId",
+                            "networkId": {
+                                "title": "networkId",
                                 "type": "string",
                                 "description": "The network ID the wallet corresponds to."
                             },
@@ -90,7 +90,7 @@
                         },
                         "required": [
                             "partyHint",
-                            "chainId",
+                            "networkId",
                             "signingProviderId"
                         ]
                     }
@@ -366,13 +366,13 @@
                         "title": "AddSessionParams",
                         "type": "object",
                         "properties": {
-                            "chainId": {
-                                "title": "chainId",
+                            "networkId": {
+                                "title": "networkId",
                                 "type": "string",
                                 "description": "Network Id"
                             }
                         },
-                        "required": ["chainId"]
+                        "required": ["networkId"]
                     }
                 }
             ],
@@ -419,6 +419,11 @@
                 "type": "object",
                 "description": "Structure representing the Networks",
                 "properties": {
+                    "id": {
+                        "title": "networkId",
+                        "type": "string",
+                        "description": "Network ID"
+                    },
                     "name": {
                         "title": "name",
                         "type": "string",
@@ -434,11 +439,6 @@
                         "type": "string",
                         "description": "Synchronizer ID"
                     },
-                    "chainId": {
-                        "title": "chainId",
-                        "type": "string",
-                        "description": "Network Id"
-                    },
                     "auth": {
                         "$ref": "#/components/schemas/Auth"
                     },
@@ -449,9 +449,9 @@
                     }
                 },
                 "required": [
+                    "id",
                     "name",
                     "description",
-                    "chainId",
                     "synchronizerId",
                     "auth",
                     "ledgerApi"
@@ -548,8 +548,8 @@
                         "type": "string",
                         "description": "The namespace of the party."
                     },
-                    "chainId": {
-                        "title": "chainId",
+                    "networkId": {
+                        "title": "networkId",
                         "type": "string",
                         "description": "The network ID the wallet corresponds to."
                     },
@@ -565,7 +565,7 @@
                     "hint",
                     "publicKey",
                     "namespace",
-                    "chainId",
+                    "networkId",
                     "signingProviderId"
                 ]
             },
@@ -574,12 +574,12 @@
                 "type": "object",
                 "description": "Filter for wallets",
                 "properties": {
-                    "chainIds": {
-                        "title": "chainIds",
+                    "networkIds": {
+                        "title": "networkIds",
                         "type": "array",
                         "description": "Filter wallets by network IDs.",
                         "items": {
-                            "title": "chainId",
+                            "title": "networkId",
                             "type": "string"
                         }
                     },

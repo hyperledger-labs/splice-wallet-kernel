@@ -199,7 +199,7 @@ export const dappController = (
                 return {
                     kernel: kernelInfo,
                     isConnected: true,
-                    chainId: (await store.getCurrentNetwork()).chainId,
+                    networkId: (await store.getCurrentNetwork()).id,
                 }
             }
         },

@@ -38,7 +38,7 @@
                     "required": ["status", "sessionToken"]
                 }
             },
-            "description": "Ensures ledger connectivity and returns the connected network information along with the user access token."
+            "description": "Ensures ledger connectivity and returns the connected network information along with the user access token. Network ID should follow CAIP-2 and represent the synchronizerId."
         },
         {
             "name": "disconnect",

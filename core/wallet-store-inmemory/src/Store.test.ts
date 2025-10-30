@@ -50,7 +50,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
-                chainId: 'network1',
+                networkId: 'network1',
             }
             await store.addWallet(wallet)
             const wallets = await store.getWallets()
@@ -65,7 +65,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 signingProviderId: 'internal1',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
-                chainId: 'network1',
+                networkId: 'network1',
             }
             const wallet2: Wallet = {
                 primary: false,
@@ -74,7 +74,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 signingProviderId: 'internal2',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
-                chainId: 'network1',
+                networkId: 'network1',
             }
             const wallet3: Wallet = {
                 primary: false,
@@ -83,27 +83,27 @@ implementations.forEach(([name, StoreImpl]) => {
                 signingProviderId: 'internal2',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
-                chainId: 'network2',
+                networkId: 'network2',
             }
             await store.addWallet(wallet1)
             await store.addWallet(wallet2)
             await store.addWallet(wallet3)
             const getAllWallets = await store.getWallets()
-            const getWalletsByChainId = await store.getWallets({
-                chainIds: ['network1'],
+            const getWalletsByNetworkId = await store.getWallets({
+                networkIds: ['network1'],
             })
             const getWalletsBySigningProviderId = await store.getWallets({
                 signingProviderIds: ['internal2'],
             })
-            const getWalletsByChainIdAndSigningProviderId =
+            const getWalletsByNetworkIdAndSigningProviderId =
                 await store.getWallets({
-                    chainIds: ['network1'],
+                    networkIds: ['network1'],
                     signingProviderIds: ['internal2'],
                 })
             expect(getAllWallets).toHaveLength(3)
-            expect(getWalletsByChainId).toHaveLength(2)
+            expect(getWalletsByNetworkId).toHaveLength(2)
             expect(getWalletsBySigningProviderId).toHaveLength(2)
-            expect(getWalletsByChainIdAndSigningProviderId).toHaveLength(1)
+            expect(getWalletsByNetworkIdAndSigningProviderId).toHaveLength(1)
         })
 
         test('should set and get primary wallet', async () => {
@@ -114,7 +114,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
-                chainId: 'network1',
+                networkId: 'network1',
             }
             const wallet2: Wallet = {
                 primary: false,
@@ -123,7 +123,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
-                chainId: 'network1',
+                networkId: 'network1',
             }
             await store.addWallet(wallet1)
             await store.addWallet(wallet2)
@@ -157,8 +157,8 @@ implementations.forEach(([name, StoreImpl]) => {
                 audience: 'aud',
             }
             const network: Network = {
+                id: 'network1',
                 name: 'testnet',
-                chainId: 'network1',
                 synchronizerId: 'sync1::fingerprint',
                 description: 'Test Network',
                 ledgerApi,

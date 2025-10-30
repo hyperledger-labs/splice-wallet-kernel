@@ -25,7 +25,7 @@ export async function up(db: Kysely<DB>): Promise<void> {
     await db.schema
         .createTable('networks')
         .ifNotExists()
-        .addColumn('chain_id', 'text', (col) => col.primaryKey())
+        .addColumn('id', 'text', (col) => col.primaryKey())
         .addColumn('name', 'text', (col) => col.notNull())
         .addColumn('synchronizer_id', 'text', (col) => col.notNull())
         .addColumn('description', 'text')
@@ -48,8 +48,8 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .addColumn('public_key', 'text', (col) => col.notNull())
         .addColumn('namespace', 'text', (col) => col.notNull())
         .addColumn('user_id', 'text', (col) => col.notNull())
-        .addColumn('chain_id', 'text', (col) =>
-            col.references('networks.chain_id').onDelete('cascade')
+        .addColumn('network_id', 'text', (col) =>
+            col.references('networks.id').onDelete('cascade')
         )
         .addColumn('signing_provider_id', 'text', (col) => col.notNull())
         .execute()

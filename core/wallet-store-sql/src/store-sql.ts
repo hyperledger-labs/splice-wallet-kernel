@@ -57,8 +57,8 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
 
     async getWallets(filter: WalletFilter = {}): Promise<Array<Wallet>> {
         const userId = this.assertConnected()
-        const { chainIds, signingProviderIds } = filter
-        const chainIdSet = chainIds ? new Set(chainIds) : null
+        const { networkIds, signingProviderIds } = filter
+        const networkIdSet = networkIds ? new Set(networkIds) : null
         const signingProviderIdSet = signingProviderIds
             ? new Set(signingProviderIds)
             : null
@@ -71,13 +71,13 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
 
         return wallets
             .filter((wallet) => {
-                const matchedChainIds = chainIdSet
-                    ? chainIdSet.has(wallet.chainId)
+                const matchedNetworkIds = networkIdSet
+                    ? networkIdSet.has(wallet.networkId)
                     : true
-                const matchedStorageProviderIdS = signingProviderIdSet
+                const matchedSigningProviderIds = signingProviderIdSet
                     ? signingProviderIdSet.has(wallet.signingProviderId)
                     : true
-                return matchedChainIds && matchedStorageProviderIdS
+                return matchedNetworkIds && matchedSigningProviderIds
             })
             .map((table) => toWallet(table))
     }
@@ -150,9 +150,11 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
 
     // Session methods
     async getSession(): Promise<Session | undefined> {
+        const userId = this.assertConnected()
         const sessions = await this.db
             .selectFrom('sessions')
             .selectAll()
+            .where('userId', '=', userId)
             .executeTakeFirst()
         return sessions
     }
@@ -160,14 +162,16 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     async setSession(session: Session): Promise<void> {
         const userId = this.assertConnected()
         await this.db.transaction().execute(async (trx) => {
-            await trx
+            const deleted = await trx
                 .deleteFrom('sessions')
                 .where('userId', '=', userId)
                 .execute()
-            await trx
+            this.logger.debug(deleted, 'Deleted old session')
+            const inserted = await trx
                 .insertInto('sessions')
                 .values({ ...session, userId })
                 .execute()
+            this.logger.debug(inserted, 'Inserted new session')
         })
     }
 
@@ -180,14 +184,14 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     }
 
     // Network methods
-    async getNetwork(chainId: string): Promise<Network> {
+    async getNetwork(networkId: string): Promise<Network> {
         this.assertConnected()
 
         const networks = await this.listNetworks()
         if (!networks) throw new Error('No networks available')
 
-        const network = networks.find((n) => n.chainId === chainId)
-        if (!network) throw new Error(`Network "${chainId}" not found`)
+        const network = networks.find((n) => n.id === networkId)
+        if (!network) throw new Error(`Network "${networkId}" not found`)
         return network
     }
 
@@ -196,15 +200,15 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         if (!session) {
             throw new Error('No session found')
         }
-        const chainId = session.network
-        if (!chainId) {
+        const networkId = session.network
+        if (!networkId) {
             throw new Error('No current network set in session')
         }
 
         const networks = await this.listNetworks()
-        const network = networks.find((n) => n.chainId === chainId)
+        const network = networks.find((n) => n.id === networkId)
         if (!network) {
-            throw new Error(`Network "${chainId}" not found`)
+            throw new Error(`Network "${networkId}" not found`)
         }
         return network
     }
@@ -241,7 +245,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             await trx
                 .updateTable('networks')
                 .set(networkEntry)
-                .where('chainId', '=', network.chainId)
+                .where('id', '=', network.id)
                 .execute()
 
             const authEntry = fromAuth(network.auth)
@@ -264,10 +268,10 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             const networkAlreadyExists = await trx
                 .selectFrom('networks')
                 .selectAll()
-                .where('chainId', '=', network.chainId)
+                .where('id', '=', network.id)
                 .executeTakeFirst()
             if (networkAlreadyExists) {
-                throw new Error(`Network ${network.chainId} already exists`)
+                throw new Error(`Network ${network.id} already exists`)
             } else {
                 await trx
                     .insertInto('idps')
@@ -281,25 +285,25 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         })
     }
 
-    async removeNetwork(chainId: string): Promise<void> {
+    async removeNetwork(networkId: string): Promise<void> {
         const userId = this.assertConnected()
         await this.db.transaction().execute(async (trx) => {
             const network = await trx
                 .selectFrom('networks')
                 .selectAll()
-                .where('chainId', '=', chainId)
+                .where('id', '=', networkId)
                 .executeTakeFirst()
             if (!network) {
-                throw new Error(`Network ${chainId} does not exists`)
+                throw new Error(`Network ${networkId} does not exists`)
             }
             if (network.userId !== userId) {
                 throw new Error(
-                    `Network ${chainId} is not owned by user ${userId}`
+                    `Network ${networkId} is not owned by user ${userId}`
                 )
             }
             await trx
                 .deleteFrom('networks')
-                .where('chainId', '=', chainId)
+                .where('id', '=', networkId)
                 .execute()
             await trx
                 .deleteFrom('idps')

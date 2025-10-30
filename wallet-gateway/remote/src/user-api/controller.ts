@@ -109,7 +109,7 @@ export const userController = (
 
             const newNetwork: Network = {
                 name: network.name,
-                chainId: network.chainId,
+                id: network.id,
                 description: network.description,
                 synchronizerId: network.synchronizerId,
                 auth,
@@ -118,9 +118,7 @@ export const userController = (
 
             // TODO: Add an explicit updateNetwork method to the User API spec and controller
             const existingNetworks = await store.listNetworks()
-            if (
-                existingNetworks.find((n) => n.chainId === newNetwork.chainId)
-            ) {
+            if (existingNetworks.find((n) => n.id === newNetwork.id)) {
                 await store.updateNetwork(newNetwork)
             } else {
                 await store.addNetwork(newNetwork)
@@ -135,7 +133,7 @@ export const userController = (
         createWallet: async (params: {
             primary?: boolean
             partyHint: string
-            chainId: string
+            networkId: string
             signingProviderId: string
         }) => {
             logger.info(
@@ -209,7 +207,7 @@ export const userController = (
 
             const wallet = {
                 signingProviderId: params.signingProviderId,
-                chainId: params.chainId,
+                networkId: params.networkId,
                 primary: params.primary ?? false,
                 publicKey: publicKey || party.namespace,
                 ...party,
@@ -233,7 +231,7 @@ export const userController = (
         removeWallet: async (params: { partyId: string }) =>
             Promise.resolve({}),
         listWallets: async (params: {
-            filter?: { chainIds?: string[]; signingProviderIds?: string[] }
+            filter?: { networkIds?: string[]; signingProviderIds?: string[] }
         }) => {
             // TODO: support filters
             return store.getWallets()
@@ -442,7 +440,7 @@ export const userController = (
         ): Promise<AddSessionResult> {
             try {
                 await store.setSession({
-                    network: params.chainId,
+                    network: params.networkId,
                     accessToken: authContext?.accessToken || '',
                 })
                 const network = await store.getCurrentNetwork()
@@ -454,20 +452,13 @@ export const userController = (
                 notifier.emit('onConnected', {
                     kernel: kernelInfo,
                     sessionToken: accessToken,
-                    chainId: network.chainId,
+                    networkId: network.id,
                 })
 
                 return Promise.resolve({
                     accessToken,
+                    network,
                     status: 'connected',
-                    network: {
-                        name: network.name,
-                        chainId: network.chainId,
-                        synchronizerId: network.synchronizerId,
-                        description: network.description,
-                        ledgerApi: network.ledgerApi,
-                        auth: network.auth,
-                    },
                 })
             } catch (error) {
                 logger.error(`Failed to add session: ${error}`)
@@ -483,16 +474,9 @@ export const userController = (
             return {
                 sessions: [
                     {
+                        network,
                         accessToken: authContext!.accessToken,
                         status: 'connected',
-                        network: {
-                            name: network.name,
-                            chainId: network.chainId,
-                            synchronizerId: network.synchronizerId,
-                            description: network.description,
-                            ledgerApi: network.ledgerApi,
-                            auth: network.auth,
-                        },
                     },
                 ],
             }

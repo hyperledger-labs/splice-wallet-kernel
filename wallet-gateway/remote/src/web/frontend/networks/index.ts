@@ -205,9 +205,8 @@ export class UserUiNetworks extends LitElement {
     private async handleDelete(e: NetworkCardDeleteEvent) {
         if (!confirm(`Delete network "${e.network.name}"?`)) return
         try {
-            // TODO: rename parameter to chainId in User API
             const params: RemoveNetworkParams = {
-                networkName: e.network.chainId,
+                networkName: e.network.id,
             }
             const userClient = createUserClient(stateManager.accessToken.get())
             await userClient.request('removeNetwork', params)
@@ -309,7 +308,7 @@ export class UserUiNetworks extends LitElement {
                         ${this.sessions.map(
                             (session) => html`
                                 <tr>
-                                    <td>${session.network.chainId}</td>
+                                    <td>${session.network.id}</td>
                                     <td>${session.status}</td>
                                     <td>
                                         <button

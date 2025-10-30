@@ -147,7 +147,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                             hint: hint,
                             publicKey: namespace,
                             namespace: namespace,
-                            chainId: network.chainId,
+                            networkId: network.id,
                             signingProviderId: 'participant', // todo: determine based on partyDetails.isLocal
                         }
                     }) || []
@@ -171,20 +171,20 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     async getWallets(filter: WalletFilter = {}): Promise<Array<Wallet>> {
-        const { chainIds, signingProviderIds } = filter
-        const chainIdSet = chainIds ? new Set(chainIds) : null
+        const { networkIds, signingProviderIds } = filter
+        const networkIdSet = networkIds ? new Set(networkIds) : null
         const signingProviderIdSet = signingProviderIds
             ? new Set(signingProviderIds)
             : null
 
         return this.getStorage().wallets.filter((wallet) => {
-            const matchedChainIds = chainIdSet
-                ? chainIdSet.has(wallet.chainId)
+            const matchedNetworkIds = networkIdSet
+                ? networkIdSet.has(wallet.networkId)
                 : true
-            const matchedStorageProviderIdS = signingProviderIdSet
+            const matchedSigningProviderIds = signingProviderIdSet
                 ? signingProviderIdSet.has(wallet.signingProviderId)
                 : true
-            return matchedChainIds && matchedStorageProviderIdS
+            return matchedNetworkIds && matchedSigningProviderIds
         })
     }
 
@@ -251,14 +251,14 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     // Network methods
-    async getNetwork(chainId: string): Promise<Network> {
+    async getNetwork(networkId: string): Promise<Network> {
         this.assertConnected()
 
         const networks = await this.listNetworks()
         if (!networks) throw new Error('No networks available')
 
-        const network = networks.find((n) => n.chainId === chainId)
-        if (!network) throw new Error(`Network "${chainId}" not found`)
+        const network = networks.find((n) => n.id === networkId)
+        if (!network) throw new Error(`Network "${networkId}" not found`)
         return network
     }
 
@@ -267,15 +267,15 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         if (!session) {
             throw new Error('No session found')
         }
-        const chainId = session.network
-        if (!chainId) {
+        const networkId = session.network
+        if (!networkId) {
             throw new Error('No current network set in session')
         }
 
         const networks = await this.listNetworks()
-        const network = networks.find((n) => n.chainId === chainId)
+        const network = networks.find((n) => n.id === networkId)
         if (!network) {
-            throw new Error(`Network "${chainId}" not found`)
+            throw new Error(`Network "${networkId}" not found`)
         }
         return network
     }
@@ -286,25 +286,25 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
 
     async updateNetwork(network: Network): Promise<void> {
         this.assertConnected()
-        this.removeNetwork(network.chainId) // Ensure no duplicates
+        this.removeNetwork(network.id) // Ensure no duplicates
         this.systemStorage.networks.push(network)
     }
 
     async addNetwork(network: Network): Promise<void> {
         const networkAlreadyExists = this.systemStorage.networks.find(
-            (n) => n.chainId === network.chainId
+            (n) => n.id === network.id
         )
         if (networkAlreadyExists) {
-            throw new Error(`Network ${network.chainId} already exists`)
+            throw new Error(`Network ${network.id} already exists`)
         } else {
             this.systemStorage.networks.push(network)
         }
     }
 
-    async removeNetwork(chainId: string): Promise<void> {
+    async removeNetwork(networkId: string): Promise<void> {
         this.assertConnected()
         this.systemStorage.networks = this.systemStorage.networks.filter(
-            (n) => n.chainId !== chainId
+            (n) => n.id !== networkId
         )
     }
 

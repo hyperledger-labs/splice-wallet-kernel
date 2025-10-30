@@ -17,23 +17,26 @@ const exec = promisify(ex)
  * The script is idempotent. If the tags are already corrected, it will do nothing.
  */
 async function main() {
-    const hash = process.argv[2]
-
-    if (!hash) {
-        console.error('Usage: yarn script:retag <commit-sha>')
+    if (process.argv.length < 4) {
+        console.error('Usage: yarn script:retag <fake-sha> <real-sha>')
         process.exit(1)
     }
 
-    console.log(`Retagging release tags to commit ${bold(hash)}`)
+    const fakeSha = process.argv[2]
+    const realSha = process.argv[3]
+
+    console.log(
+        `Retagging release tags from commit ${bold(fakeSha)} to ${bold(realSha)}`
+    )
 
     const { stdout: commitMessage } = await exec(
-        `git rev-list --format=%B --max-count=1 ${hash}`
+        `git rev-list --format=%B --max-count=1 ${realSha}`
     )
 
     if (!commitMessage.includes('chore(release): publish'))
         throw new Error('Provided commit is not a release commit')
 
-    const tags = parseTagsFromCommit(commitMessage)
+    const tags = await getTagsFromCommit(fakeSha)
 
     if (tags.length === 0)
         throw new Error('No tags found in the provided commit message')
@@ -42,7 +45,7 @@ async function main() {
 
     for (const tag of tags) {
         const current = await currentTagCommit(tag)
-        preview[tag] = { current, target: hash }
+        preview[tag] = { current, target: realSha }
     }
 
     console.log('The following tags will be moved:')
@@ -98,13 +101,13 @@ async function main() {
 
 type TagPreview = Record<string, { current: string; target: string }>
 
-function parseTagsFromCommit(message: string): string[] {
-    return message
-        .split('\n')
-        .map((line) => line.trim())
-        .filter((line) => line.startsWith('- project:'))
-        .map((line) => line.replace('- project: ', '').trim())
-        .map((line) => line.split(' ').join('@'))
+async function getTagsFromCommit(fakeSha: string): Promise<string[]> {
+    return exec(`git tag --points-at ${fakeSha}`).then((res) =>
+        res.stdout
+            .split('\n')
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0)
+    )
 }
 
 async function currentTagCommit(tag: string) {
