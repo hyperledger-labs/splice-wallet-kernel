@@ -192,7 +192,6 @@ export class NetworkForm extends BaseElement {
     }
 
     renderAuthForm() {
-        console.log('calling render auth')
         const commonFields = html`
             <network-form-input
                 required
@@ -306,6 +305,21 @@ export class NetworkForm extends BaseElement {
                 ></network-form-input>
                 ${adminFields}
             `
+        } else if (this.authType === 'self_signed') {
+            let auth = this.network.auth
+            if (auth.type !== 'self_signed') {
+                auth = {
+                    type: 'self_signed',
+                    identityProviderId: '',
+                    issuer: '',
+                    audience: '',
+                    scope: '',
+                    clientId: '',
+                    clientSecret: '',
+                }
+                this.network.auth = auth
+            }
+            return html`${commonFields}${adminFields}`
         } else {
             throw new Error(`Unsupported auth type: ${this.authType}`)
         }
@@ -324,8 +338,8 @@ export class NetworkForm extends BaseElement {
                 <network-form-input
                     required
                     label="Network Id"
-                    .value=${this.network.chainId ?? ''}
-                    @network-input-change=${this.setNetwork('chainId')}
+                    .value=${this.network.id ?? ''}
+                    @network-input-change=${this.setNetwork('id')}
                 ></network-form-input>
 
                 <network-form-input
@@ -360,6 +374,7 @@ export class NetworkForm extends BaseElement {
                         >
                             <option value="password">password</option>
                             <option value="implicit">implicit</option>
+                            <option value="self_signed">self_signed</option>
                         </select>
                     </div>
                 </div>

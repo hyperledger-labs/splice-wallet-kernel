@@ -12,6 +12,7 @@ import { ConfigUtils } from './config/ConfigUtils.js'
 import { readFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
+import pino from 'pino'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -34,8 +35,20 @@ const program = new Command()
             .default('sqlite')
     )
     .action((opts) => {
+        // Define project-global logger
+        const logger = pino({
+            name: 'main',
+            level: 'debug',
+            ...(opts.logFormat === 'pretty'
+                ? {
+                      transport: {
+                          target: 'pino-pretty',
+                      },
+                  }
+                : {}),
+        })
         // Initialize the database with the provided config
-        initialize(opts)
+        initialize(opts, logger)
     })
 
 // Parse only the options (without executing commands) to get config path

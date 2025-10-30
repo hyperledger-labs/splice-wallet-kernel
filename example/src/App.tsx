@@ -10,7 +10,7 @@ function statusInfo(status?: sdk.dappAPI.StatusEvent) {
 
     return `Wallet Gateway: ${status.kernel.id}, status: ${
         status.isConnected ? '🟢 connected' : '🔴 disconnected'
-    }, chain: ${status.chainId}`
+    }, network: ${status.networkId}`
 }
 
 function App() {

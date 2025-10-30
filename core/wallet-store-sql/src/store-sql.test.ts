@@ -53,7 +53,7 @@ const auth: PasswordAuth = {
 }
 const network: Network = {
     name: 'testnet',
-    chainId: 'network1',
+    id: 'network1',
     synchronizerId: 'sync1::fingerprint',
     description: 'Test Network',
     ledgerApi,
@@ -82,7 +82,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
-                chainId: 'network1',
+                networkId: 'network1',
             }
             const store = new StoreImpl(db, pino(sink()), authContextMock)
             await store.addNetwork(network)
@@ -105,7 +105,7 @@ implementations.forEach(([name, StoreImpl]) => {
             }
             const network2: Network = {
                 name: 'testnet',
-                chainId: 'network2',
+                id: 'network2',
                 synchronizerId: 'sync1::fingerprint',
                 description: 'Test Network',
                 ledgerApi,
@@ -118,7 +118,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
-                chainId: 'network1',
+                networkId: 'network1',
             }
             const wallet2: Wallet = {
                 primary: false,
@@ -127,7 +127,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
-                chainId: 'network1',
+                networkId: 'network1',
             }
             const wallet3: Wallet = {
                 primary: false,
@@ -136,7 +136,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
-                chainId: 'network2',
+                networkId: 'network2',
             }
             const store = new StoreImpl(db, pino(sink()), authContextMock)
             await store.addNetwork(network)
@@ -145,21 +145,21 @@ implementations.forEach(([name, StoreImpl]) => {
             await store.addWallet(wallet2)
             await store.addWallet(wallet3)
             const getAllWallets = await store.getWallets()
-            const getWalletsByChainId = await store.getWallets({
-                chainIds: ['network1'],
+            const getWalletsByNetworkId = await store.getWallets({
+                networkIds: ['network1'],
             })
             const getWalletsBySigningProviderId = await store.getWallets({
                 signingProviderIds: ['internal'],
             })
-            const getWalletsByChainIdAndSigningProviderId =
+            const getWalletsByNetworkIdAndSigningProviderId =
                 await store.getWallets({
-                    chainIds: ['network1'],
+                    networkIds: ['network1'],
                     signingProviderIds: ['internal'],
                 })
             expect(getAllWallets).toHaveLength(3)
-            expect(getWalletsByChainId).toHaveLength(2)
+            expect(getWalletsByNetworkId).toHaveLength(2)
             expect(getWalletsBySigningProviderId).toHaveLength(3)
-            expect(getWalletsByChainIdAndSigningProviderId).toHaveLength(2)
+            expect(getWalletsByNetworkIdAndSigningProviderId).toHaveLength(2)
         })
 
         test('should set and get primary wallet', async () => {
@@ -170,7 +170,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
-                chainId: 'network1',
+                networkId: 'network1',
             }
             const wallet2: Wallet = {
                 primary: false,
@@ -179,7 +179,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
                 namespace: 'namespace',
-                chainId: 'network1',
+                networkId: 'network1',
             }
             const store = new StoreImpl(db, pino(sink()), authContextMock)
             await store.addNetwork(network)

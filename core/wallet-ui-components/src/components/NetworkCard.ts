@@ -68,7 +68,7 @@ export class NetworkCard extends BaseElement {
                     </h6>
                     <div class="network-meta">
                         <strong>ID:</strong>
-                        ${this.network.chainId}<br />
+                        ${this.network.id}<br />
                         <strong>Auth:</strong> ${this.network.auth.type}<br />
                         <strong>Synchronizer:</strong>
                         ${this.network.synchronizerId}

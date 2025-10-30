@@ -4,7 +4,7 @@
 import { dapp } from './dapp-api/server.js'
 import { user } from './user-api/server.js'
 import { web } from './web/server.js'
-import { Logger, pino } from 'pino'
+import { Logger } from 'pino'
 import {
     StoreSql,
     bootstrap,
@@ -89,20 +89,8 @@ async function initializeDatabase(
     return new StoreSql(db, logger)
 }
 
-export async function initialize(opts: CliOptions) {
+export async function initialize(opts: CliOptions, logger: Logger) {
     const port = opts.port ? Number(opts.port) : 3030
-
-    const logger = pino({
-        name: 'main',
-        level: 'debug',
-        ...(opts.logFormat === 'pretty'
-            ? {
-                  transport: {
-                      target: 'pino-pretty',
-                  },
-              }
-            : {}),
-    })
 
     const app = express()
     const server = app.listen(port, () => {
@@ -140,6 +128,7 @@ export async function initialize(opts: CliOptions) {
     dapp(
         '/api/v0/dapp',
         app,
+        logger,
         server,
         config.kernel,
         notificationService,
@@ -151,6 +140,7 @@ export async function initialize(opts: CliOptions) {
     user(
         '/api/v0/user',
         app,
+        logger,
         config.kernel,
         notificationService,
         drivers,

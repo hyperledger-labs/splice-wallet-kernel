@@ -36,6 +36,7 @@ test('call listNetworks rpc', async () => {
         user(
             '/api/v0/user',
             app,
+            pino(sink()),
             config.kernel,
             notificationService,
             drivers,
