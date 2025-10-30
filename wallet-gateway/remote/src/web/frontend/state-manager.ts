@@ -39,10 +39,10 @@ class StateManager {
         clear: () => this.clearWithStorage('accessToken'),
     }
 
-    chainId = {
-        get: () => this.getWithStorage('chainId'),
-        set: (chainId: string) => this.setWithStorage('chainId', chainId),
-        clear: () => this.clearWithStorage('chainId'),
+    networkId = {
+        get: () => this.getWithStorage('networkId'),
+        set: (networkId: string) => this.setWithStorage('networkId', networkId),
+        clear: () => this.clearWithStorage('networkId'),
     }
 
     expirationDate = {

@@ -338,8 +338,8 @@ export class NetworkForm extends BaseElement {
                 <network-form-input
                     required
                     label="Network Id"
-                    .value=${this.network.chainId ?? ''}
-                    @network-input-change=${this.setNetwork('chainId')}
+                    .value=${this.network.id ?? ''}
+                    @network-input-change=${this.setNetwork('id')}
                 ></network-form-input>
 
                 <network-form-input

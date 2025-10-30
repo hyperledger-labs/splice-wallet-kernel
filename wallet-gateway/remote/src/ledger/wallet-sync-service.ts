@@ -95,7 +95,7 @@ export class WalletSyncService {
                             hint: hint,
                             publicKey: namespace,
                             namespace: namespace,
-                            chainId: network.chainId,
+                            networkId: network.id,
                             signingProviderId: 'participant', // todo: determine based on partyDetails.isLocal
                         }
                     }) || []

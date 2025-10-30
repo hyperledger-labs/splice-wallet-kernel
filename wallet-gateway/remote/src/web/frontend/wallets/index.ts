@@ -254,7 +254,7 @@ export class UserUiWallets extends LitElement {
                                 <strong>Party ID:</strong>
                                 ${wallet.partyId}<br />
                                 <strong>Network:</strong>
-                                ${wallet.chainId}<br />
+                                ${wallet.networkId}<br />
                                 <strong>Signing Provider:</strong>
                                 ${wallet.signingProviderId}
                             </div>
@@ -289,7 +289,7 @@ export class UserUiWallets extends LitElement {
     private async updateNetworks() {
         const userClient = createUserClient(stateManager.accessToken.get())
         userClient.request('listNetworks').then(({ networks }) => {
-            this.networks = networks.map((network) => network.chainId)
+            this.networks = networks.map((network) => network.id)
         })
     }
 
@@ -319,13 +319,13 @@ export class UserUiWallets extends LitElement {
         const partyHint = this._partyHintInput?.value || ''
         const primary = this._primaryCheckbox?.checked || false
         const signingProviderId = this._signingProviderSelect?.value || ''
-        const chainId = this._networkSelect?.value || ''
+        const networkId = this._networkSelect?.value || ''
 
         try {
             const body: CreateWalletParams = {
                 primary,
                 partyHint,
-                chainId,
+                networkId,
                 signingProviderId,
             }
 
