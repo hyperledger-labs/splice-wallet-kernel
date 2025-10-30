@@ -150,9 +150,11 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
 
     // Session methods
     async getSession(): Promise<Session | undefined> {
+        const userId = this.assertConnected()
         const sessions = await this.db
             .selectFrom('sessions')
             .selectAll()
+            .where('userId', '=', userId)
             .executeTakeFirst()
         return sessions
     }
@@ -160,14 +162,16 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     async setSession(session: Session): Promise<void> {
         const userId = this.assertConnected()
         await this.db.transaction().execute(async (trx) => {
-            await trx
+            const deleted = await trx
                 .deleteFrom('sessions')
                 .where('userId', '=', userId)
                 .execute()
-            await trx
+            this.logger.debug(deleted, 'Deleted old session')
+            const inserted = await trx
                 .insertInto('sessions')
                 .values({ ...session, userId })
                 .execute()
+            this.logger.debug(inserted, 'Inserted new session')
         })
     }
 
