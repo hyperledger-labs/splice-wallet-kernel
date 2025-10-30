@@ -11,7 +11,7 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
 
 .. important::
 
-    with the support of CJS, the module used will in some question have to be specifically set. If you see an error like
+    Due to CommonJS compatibility, the module type needs to be explicitly declared in certain cases. If you see an error like
     `ERROR: Top-level await is currently not supported with the "cjs" output format` and are intended on using ESM then
     you should set `"type": "module"` in your package.json.
 
