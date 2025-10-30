@@ -1435,7 +1435,8 @@ export class TokenStandardService {
             throw new Error('AmuletRules contract not found')
         }
 
-        const latestOpenMiningRound = await this.core.getActiveOpenMiningRound()
+        const latestOpenMiningRound =
+            await this.scanProxyClient.getActiveOpenMiningRound()
         if (!latestOpenMiningRound) {
             throw new Error(
                 'OpenMiningRound active at current moment not found'
@@ -1505,7 +1506,8 @@ export class TokenStandardService {
         inputUtxos?: string[]
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         const amuletRules = await this.scanProxyClient.getAmuletRules()
-        const activeRound = await this.core.getActiveOpenMiningRound()
+        const activeRound =
+            await this.scanProxyClient.getActiveOpenMiningRound()
 
         if (!amuletRules) {
             throw new Error('AmuletRules contract not found')
