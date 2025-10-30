@@ -41,10 +41,7 @@ import {
 
 import type { PrettyTransactions, Transaction } from './txparse/types.js'
 import { Types } from './ledger-client.js'
-import {
-    ScanProxyClient,
-    ScanProxyTypes,
-} from '@canton-network/core-splice-client'
+import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
@@ -292,31 +289,6 @@ export class CoreService {
                 interfaceId
             ).viewValue as T,
         }
-    }
-
-    async getActiveOpenMiningRound(): Promise<
-        ScanProxyTypes['Contract'] | null
-    > {
-        const openMiningRounds =
-            await this.scanProxyClient.getOpenMiningRounds()
-        if (!(Array.isArray(openMiningRounds) && openMiningRounds.length)) {
-            throw new Error('OpenMiningRound contract not found')
-        }
-
-        const nowForOpenMiningRounds = Date.now()
-        const latestOpenMiningRound = openMiningRounds.findLast(
-            (openMiningRound) => {
-                const { opensAt, targetClosesAt } = openMiningRound.payload
-                const opensAtMs = Number(new Date(opensAt))
-                const targetClosesAtMs = Number(new Date(targetClosesAt))
-
-                return (
-                    opensAtMs <= nowForOpenMiningRounds &&
-                    targetClosesAtMs > nowForOpenMiningRounds
-                )
-            }
-        )
-        return latestOpenMiningRound ?? null
     }
 }
 
