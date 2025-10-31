@@ -8,8 +8,9 @@ function statusInfo(status?: sdk.dappAPI.StatusEvent) {
         return 'status: 🔴 disconnected'
     }
 
-    return `Wallet Gateway: ${status.kernel.id}, status: ${status.isConnected ? '🟢 connected' : '🔴 disconnected'
-        }, network: ${status.networkId}`
+    return `Wallet Gateway: ${status.kernel.id}, status: ${
+        status.isConnected ? '🟢 connected' : '🔴 disconnected'
+    }, network: ${status.networkId}`
 }
 
 function App() {
@@ -198,7 +199,7 @@ function App() {
                             setLoading(true)
                             const queryString = new URLSearchParams([
                                 ['package-name', 'AdminWorkflows'],
-                                ['parties', primaryParty!]
+                                ['parties', primaryParty!],
                             ]).toString()
                             sdk.ledgerApi({
                                 requestMethod: 'GET',
