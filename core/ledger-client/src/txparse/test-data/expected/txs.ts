@@ -1430,6 +1430,10 @@ export default [
                             tag: 'TransferPendingReceiverAcceptance',
                             value: {},
                         },
+                        current: {
+                            tag: 'Completed',
+                            value: {},
+                        },
                     },
                     transfer: {
                         amount: '1000.0000000000',
@@ -1577,6 +1581,10 @@ export default [
                             tag: 'TransferPendingReceiverAcceptance',
                             value: {},
                         },
+                        current: {
+                            tag: 'Rejected',
+                            value: {},
+                        },
                     },
                     transfer: {
                         amount: '1000.0000000000',
@@ -1722,6 +1730,10 @@ export default [
                     status: {
                         before: {
                             tag: 'TransferPendingReceiverAcceptance',
+                            value: {},
+                        },
+                        current: {
+                            tag: 'Withdrawn',
                             value: {},
                         },
                     },
@@ -1886,6 +1898,10 @@ export default [
                     status: {
                         before: {
                             tag: 'TransferPendingReceiverAcceptance',
+                            value: {},
+                        },
+                        current: {
+                            tag: 'Completed',
                             value: {},
                         },
                     },

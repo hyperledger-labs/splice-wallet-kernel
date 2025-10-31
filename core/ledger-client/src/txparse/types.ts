@@ -67,16 +67,26 @@ export const EmptyHoldingsChangeSummary: HoldingsChangeSummary = {
  */
 // TODO investigate because it actually differs from TransferInstructionView from daml codegen
 // where status is: { tag, value }
+// TODO regarding above, as it's somehow different from actual daml, maybe use different name to avoid namespace conflicts?
 export interface TransferInstructionView {
+    // TODO can I add it super easily?
     // currentInstructionCid: string // TODO (#505): add
     originalInstructionCid: string | null
-    transfer: any
+    // TODO maybe check in what cases this is undefined when working on ledger instead of jest and comment
+    transfer?: any
     status: {
         before: any
-        // current: any; // TODO (#505): add
+        // TODO can we make it non-optional?
+        current?: { tag: TransferInstructionCurrentTag; value: unknown } | null
     }
-    meta: any
+    meta: any // TODO Maybe use metadata from codegen?
 }
+
+export type TransferInstructionCurrentTag =
+    | 'Pending'
+    | 'Completed'
+    | 'Rejected'
+    | 'Withdrawn'
 
 export type Label =
     | TransferOut

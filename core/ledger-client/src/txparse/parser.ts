@@ -30,6 +30,7 @@ import {
     EmptyHoldingsChangeSummary,
     TokenStandardChoice,
     TransferInstructionView,
+    TransferInstructionCurrentTag,
 } from './types.js'
 
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
@@ -48,6 +49,38 @@ type Event = components['schemas']['Event']
 type JsTransaction = components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =
     components['schemas']['JsGetEventsByContractIdResponse']
+
+function currentFromChoiceOrResult(
+    choice?: string | undefined,
+    resultTag?: string | undefined
+): TransferInstructionCurrentTag {
+    switch (choice) {
+        case 'TransferInstruction_Reject':
+            return 'Rejected'
+        case 'TransferInstruction_Withdraw':
+            return 'Withdrawn'
+        case 'TransferInstruction_Accept':
+            // Accept may still be result Pending/Failed per spec
+            // TODO add Failed
+            return resultTag === 'TransferInstructionResult_Completed'
+                ? 'Completed'
+                : 'Pending'
+        case 'TransferInstruction_Update':
+            // TODO can it be Rejected/Failed?
+            return resultTag === 'TransferInstructionResult_Completed'
+                ? 'Completed'
+                : 'Pending'
+    }
+    // Fallback: derive only from the result tag
+    switch (resultTag) {
+        case 'TransferInstructionResult_Completed':
+            return 'Completed'
+        case 'TransferInstructionResult_Pending':
+        case 'TransferInstructionResult_Failed':
+        default:
+            return 'Pending'
+    }
+}
 
 export class TransactionParser {
     private readonly ledgerClient: LedgerClient
@@ -249,7 +282,16 @@ export class TransactionParser {
                 } else {
                     result = {
                         payload: transferInstructionView,
-                        transferInstruction: transferInstructionView,
+                        transferInstruction: {
+                            originalInstructionCid:
+                                transferInstructionView.originalInstructionCid,
+                            transfer: transferInstructionView.transfer,
+                            meta: transferInstructionView.meta,
+                            status: {
+                                before: transferInstructionView.status, // raw DAML pending sub-state
+                                current: { tag: 'Pending', value: {} }, // normalized
+                            },
+                        },
                         unlockedHoldingsChange: { creates: [], archives: [] },
                         lockedHoldingsChange: { creates: [], archives: [] },
                         unlockedHoldingsChangeSummary:
@@ -395,7 +437,7 @@ export class TransactionParser {
         const reason = getMetaKeyValue(ReasonMetaKey, meta)
         const choiceArgumentTransfer = (
             exercisedEvent.choiceArgument as {
-                transfer: any
+                transfer?: any // TODO can we make it without any?
             }
         ).transfer
 
@@ -459,7 +501,9 @@ export class TransactionParser {
         }
         const transferInstruction: TransferInstructionView = {
             originalInstructionCid: null,
-            transfer: choiceArgumentTransfer,
+            ...(choiceArgumentTransfer !== undefined && {
+                transfer: choiceArgumentTransfer,
+            }),
             status: {
                 before: null,
             },
@@ -531,13 +575,24 @@ export class TransactionParser {
             meta: transferInstructionView.meta,
             status: {
                 before: transferInstructionView.status,
+                // we set current below
             },
         }
-        const exerciseResultOutputTag = (
-            exercisedEvent.exerciseResult as {
-                output: any
-            }
-        ).output.tag
+        // TODO can we narrow the tag?
+        const resultTag =
+            (
+                exercisedEvent.exerciseResult as
+                    | { output?: { tag?: string } }
+                    | undefined
+            )?.output?.tag || undefined
+
+        const currentTag = currentFromChoiceOrResult(
+            exercisedEvent.choice,
+            resultTag
+        )
+        transferInstruction.status.current = { tag: currentTag, value: {} }
+
+        const exerciseResultOutputTag = resultTag
         let result: ParsedKnownExercisedEvent | null = null
 
         switch (exerciseResultOutputTag) {
