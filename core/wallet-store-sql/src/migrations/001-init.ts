@@ -14,8 +14,6 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .addColumn('issuer', 'text', (col) => col.notNull())
         .addColumn('config_url', 'text', (col) => col.notNull())
         .addColumn('audience', 'text', (col) => col.notNull())
-        .addColumn('token_url', 'text')
-        .addColumn('grant_type', 'text')
         .addColumn('scope', 'text', (col) => col.notNull())
         .addColumn('client_id', 'text', (col) => col.notNull())
         .addColumn('client_secret', 'text')

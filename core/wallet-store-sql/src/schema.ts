@@ -20,8 +20,6 @@ interface IdpTable {
     issuer: string
     configUrl: string
     audience: string
-    tokenUrl: string
-    grantType: string
     scope: string
     clientId: string
     clientSecret: string
@@ -74,22 +72,6 @@ export interface DB {
 
 export const toAuth = (table: IdpTable): Auth => {
     switch (table.type) {
-        case 'password':
-            return {
-                identityProviderId: table.identityProviderId,
-                type: table.type,
-                issuer: table.issuer,
-                configUrl: table.configUrl,
-                audience: table.audience,
-                tokenUrl: table.tokenUrl || '',
-                grantType: table.grantType || '',
-                scope: table.scope,
-                clientId: table.clientId,
-                admin: {
-                    clientId: table.adminClientId,
-                    clientSecret: table.adminClientSecret,
-                },
-            }
         case 'implicit':
             return {
                 identityProviderId: table.identityProviderId,
@@ -140,21 +122,6 @@ export const toAuth = (table: IdpTable): Auth => {
 
 export const fromAuth = (auth: Auth): IdpTable => {
     switch (auth.type) {
-        case 'password':
-            return {
-                identityProviderId: auth.identityProviderId,
-                type: auth.type,
-                issuer: auth.issuer,
-                configUrl: auth.configUrl,
-                audience: auth.audience,
-                tokenUrl: auth.tokenUrl,
-                grantType: auth.grantType,
-                scope: auth.scope,
-                clientId: auth.clientId,
-                clientSecret: '',
-                adminClientId: auth.admin?.clientId || '',
-                adminClientSecret: auth.admin?.clientSecret || '',
-            }
         case 'implicit':
             return {
                 identityProviderId: auth.identityProviderId,
@@ -162,8 +129,6 @@ export const fromAuth = (auth: Auth): IdpTable => {
                 issuer: auth.issuer,
                 configUrl: auth.configUrl,
                 audience: auth.audience,
-                tokenUrl: '',
-                grantType: '',
                 scope: auth.scope,
                 clientId: auth.clientId,
                 clientSecret: '',
@@ -177,8 +142,6 @@ export const fromAuth = (auth: Auth): IdpTable => {
                 issuer: auth.issuer,
                 configUrl: auth.configUrl,
                 audience: auth.audience,
-                tokenUrl: '',
-                grantType: '',
                 scope: auth.scope,
                 clientId: auth.clientId,
                 clientSecret: auth.clientSecret,
@@ -192,8 +155,6 @@ export const fromAuth = (auth: Auth): IdpTable => {
                 issuer: auth.issuer,
                 configUrl: '',
                 audience: auth.audience,
-                tokenUrl: '',
-                grantType: '',
                 scope: auth.scope,
                 clientId: auth.clientId,
                 clientSecret: auth.clientSecret,

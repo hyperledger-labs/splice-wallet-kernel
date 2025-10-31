@@ -10,10 +10,7 @@ test('config from json file', async () => {
     expect(resp.store.networks[0].ledgerApi.baseUrl).toBe('https://test')
     expect(resp.store.networks[0].auth.clientId).toBe('wk-service-account')
     expect(resp.store.networks[0].auth.scope).toBe('openid')
-    expect(resp.store.networks[0].auth.type).toBe('password')
-    if (resp.store.networks[0].auth.type === 'password') {
-        expect(resp.store.networks[0].auth.tokenUrl).toBe('tokenUrl')
-    }
+    expect(resp.store.networks[0].auth.type).toBe('implicit')
     expect(resp.store.networks[1].auth.type).toBe('implicit')
     if (resp.store.networks[1].auth.type === 'implicit') {
         expect(resp.store.networks[1].auth.audience).toBe(

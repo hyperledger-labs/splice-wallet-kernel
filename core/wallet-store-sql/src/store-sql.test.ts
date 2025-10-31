@@ -3,7 +3,7 @@
 
 import { describe, expect, test } from '@jest/globals'
 
-import { AuthContext, PasswordAuth } from '@canton-network/core-wallet-auth'
+import { AuthContext, ImplicitAuth } from '@canton-network/core-wallet-auth'
 import {
     LedgerApi,
     Network,
@@ -26,6 +26,7 @@ const storeConfig = {
     connection: {
         type: 'memory' as const,
     },
+    idps: [],
     networks: [],
 }
 
@@ -40,13 +41,11 @@ const implementations: Array<[string, StoreCtor]> = [['StoreSql', StoreSql]]
 const ledgerApi: LedgerApi = {
     baseUrl: 'http://api',
 }
-const auth: PasswordAuth = {
+const auth: ImplicitAuth = {
     identityProviderId: 'idp1',
-    type: 'password',
+    type: 'implicit',
     issuer: 'http://auth',
     configUrl: 'http://auth/.well-known/openid-configuration',
-    tokenUrl: 'http://auth',
-    grantType: 'password',
     clientId: 'cid',
     scope: 'scope',
     audience: 'aud',
@@ -92,13 +91,11 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should filter wallets', async () => {
-            const auth2: PasswordAuth = {
+            const auth2: ImplicitAuth = {
                 identityProviderId: 'idp2',
-                type: 'password',
+                type: 'implicit',
                 issuer: 'http://auth',
                 configUrl: 'http://auth/.well-known/openid-configuration',
-                tokenUrl: 'http://auth',
-                grantType: 'password',
                 clientId: 'cid',
                 scope: 'scope',
                 audience: 'aud',

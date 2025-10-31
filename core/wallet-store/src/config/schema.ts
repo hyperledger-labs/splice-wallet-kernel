@@ -4,6 +4,20 @@
 import { authSchema } from '@canton-network/core-wallet-auth'
 import { z } from 'zod'
 
+export const idpSchema = z.discriminatedUnion('type', [
+    z.object({
+        id: z.string(),
+        type: z.literal('self_signed'),
+        issuer: z.string(),
+    }),
+    z.object({
+        id: z.string(),
+        type: z.literal('oauth'),
+        issuer: z.string(),
+        configUrl: z.string().url(),
+    }),
+])
+
 export const ledgerApiSchema = z.object({
     baseUrl: z.string().url(),
 })
@@ -11,10 +25,12 @@ export const ledgerApiSchema = z.object({
 export const networkSchema = z.object({
     id: z.string(),
     name: z.string(),
-    synchronizerId: z.string(),
     description: z.string(),
+    synchronizerId: z.string(),
+    identityProviderId: z.string(),
     ledgerApi: ledgerApiSchema,
     auth: authSchema,
+    adminAuth: authSchema.optional(),
 })
 
 export const storeConfigSchema = z.object({
@@ -35,6 +51,7 @@ export const storeConfigSchema = z.object({
             database: z.string(),
         }),
     ]),
+    idps: z.array(idpSchema),
     networks: z.array(networkSchema),
 })
 

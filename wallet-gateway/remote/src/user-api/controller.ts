@@ -74,22 +74,6 @@ export const userController = (
                         clientSecret: network.auth.admin?.clientSecret ?? '',
                     },
                 }
-            } else if (network.auth.type === 'password') {
-                auth = {
-                    type: 'password',
-                    identityProviderId: network.auth.identityProviderId,
-                    issuer: network.auth.issuer ?? '',
-                    configUrl: network.auth.configUrl ?? '',
-                    tokenUrl: network.auth.tokenUrl ?? '',
-                    grantType: network.auth.grantType ?? '',
-                    scope: network.auth.scope ?? '',
-                    clientId: network.auth.clientId ?? '',
-                    audience: network.auth.audience ?? '',
-                    admin: {
-                        clientId: network.auth.admin?.clientId ?? '',
-                        clientSecret: network.auth.admin?.clientSecret ?? '',
-                    },
-                }
             } else if (network.auth.type === 'client_credentials') {
                 auth = {
                     type: 'client_credentials',
