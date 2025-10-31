@@ -438,7 +438,8 @@ export class LedgerClient {
         partyHint: string,
         localParticipantObservationOnly: boolean = false,
         confirmationThreshold: number = 1,
-        otherConfirmingParticipantUids: string[] = []
+        otherConfirmingParticipantUids: string[] = [],
+        observingParticipantUids: string[] = []
     ): Promise<GenerateTransactionResponse> {
         await this.init()
 
@@ -461,6 +462,7 @@ export class LedgerClient {
             localParticipantObservationOnly,
             confirmationThreshold,
             otherConfirmingParticipantUids,
+            observingParticipantUids,
         }
 
         this.logger.debug(body, 'generateTopology request body')
