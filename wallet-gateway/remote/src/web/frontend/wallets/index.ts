@@ -151,6 +151,20 @@ export class UserUiWallets extends LitElement {
     `
 
     protected render() {
+        const shownWallets = this.wallets.reduce(
+            (acc, w) => {
+                if (w.partyId) {
+                    acc.verifiedWallets.push(w)
+                } else {
+                    acc.unverifiedWallets.push(w)
+                }
+                return acc
+            },
+            {
+                verifiedWallets: [] as Wallet[],
+                unverifiedWallets: [] as Wallet[],
+            }
+        )
         return html`
             <div class="header">
                 <h1>Wallets</h1>
@@ -238,7 +252,41 @@ export class UserUiWallets extends LitElement {
                     : ''}
             </div>
             <div class="card-list">
-                ${this.wallets.map(
+                ${shownWallets.unverifiedWallets.map(
+                    (wallet) => html`
+                        <div class="wallet-card">
+                            <div class="wallet-title">
+                                ${wallet.hint || wallet.partyId}
+                                ${wallet.primary
+                                    ? html`<span
+                                          style="font-size:0.95rem; color:#009900;"
+                                          >(Primary)</span
+                                      >`
+                                    : ''}
+                            </div>
+                            <div class="wallet-meta">
+                                <strong>Transaction ID:</strong>
+                                ${wallet.txId}<br />
+                                <strong>Network:</strong>
+                                ${wallet.chainId}<br />
+                                <strong>Signing Provider:</strong>
+                                ${wallet.signingProviderId}
+                            </div>
+                            <div class="wallet-actions">
+                                <button
+                                    class="buttons"
+                                    ?disabled=${this.loading}
+                                    @click=${() => this._allocateParty(wallet)}
+                                >
+                                    Allocate party
+                                </button>
+                            </div>
+                        </div>
+                    `
+                )}
+            </div>
+            <div class="card-list">
+                ${shownWallets.verifiedWallets.map(
                     (wallet) => html`
                         <div class="wallet-card">
                             <div class="wallet-title">
@@ -340,6 +388,26 @@ export class UserUiWallets extends LitElement {
             this._partyHintInput.value = ''
         }
 
+        this.updateWallets()
+    }
+
+    private async _allocateParty(wallet: Wallet) {
+        this.loading = true
+        try {
+            const userClient = createUserClient(stateManager.accessToken.get())
+            await userClient.request('allocateWallet', {
+                partyHint: wallet.hint,
+                signingProviderId: wallet.signingProviderId,
+                txId: wallet.txId || '',
+                transactions: wallet.transactions || '',
+                namespace: wallet.namespace,
+                id: wallet.id,
+            })
+        } catch (e) {
+            handleErrorToast(e)
+        }
+
+        this.loading = false
         this.updateWallets()
     }
 }

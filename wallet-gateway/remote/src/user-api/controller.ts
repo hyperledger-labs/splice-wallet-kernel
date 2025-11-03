@@ -15,6 +15,7 @@ import {
     ListSessionsResult,
     SetPrimaryWalletParams,
     SyncWalletsResult,
+    AllocateWalletParams,
 } from './rpc-gen/typings.js'
 import { Store, Transaction, Network } from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'
@@ -184,6 +185,7 @@ export const userController = (
 
             let party: AllocatedParty
             let publicKey: string | undefined
+            let txId: string = ''
 
             switch (params.signingProviderId) {
                 case SigningProvider.PARTICIPANT: {
@@ -215,18 +217,65 @@ export const userController = (
                     publicKey = key.publicKey
                     break
                 }
+                case SigningProvider.FIREBLOCKS: {
+                    const keys = await driver.getKeys()
+                    const key = keys?.keys?.find(
+                        (k) => k.name === params.partyHint
+                    )
+                    if (!key) throw new Error('Fireblocks key not found')
+
+                    party = await partyAllocator.allocateParty(
+                        userId,
+                        params.partyHint,
+                        Buffer.from(key.publicKey, 'hex').toString('base64'),
+                        async (hash) => {
+                            const { status, txId: id } =
+                                await driver.signTransaction({
+                                    tx: '',
+                                    txHash: Buffer.from(
+                                        hash,
+                                        'base64'
+                                    ).toString('hex'),
+                                    publicKey: key.publicKey,
+                                })
+
+                            if (status === 'signed') {
+                                const { signature } =
+                                    await driver.getTransaction({
+                                        userId,
+                                        txId: id,
+                                    })
+
+                                return Buffer.from(signature, 'hex').toString(
+                                    'base64'
+                                )
+                            }
+
+                            // Store the txId for unsigned transactions
+                            txId = id
+                            return ''
+                        }
+                    )
+                    publicKey = key.publicKey
+
+                    break
+                }
                 default:
                     throw new Error(
                         `Unsupported signing provider: ${params.signingProviderId}`
                     )
             }
 
+            const { transactions, ...partyArgs } = party
+
             const wallet = {
                 signingProviderId: params.signingProviderId,
                 networkId: params.networkId,
                 primary: params.primary ?? false,
                 publicKey: publicKey || party.namespace,
-                ...party,
+                txId,
+                transactions: transactions?.join(', ') ?? '',
+                ...partyArgs,
             }
 
             await store.addWallet(wallet)
@@ -234,7 +283,70 @@ export const userController = (
             const wallets = await store.getWallets()
             notifier?.emit('accountsChanged', wallets)
 
-            return { wallet }
+            return null
+        },
+        allocateWallet: async (params: AllocateWalletParams) => {
+            logger.info(
+                `Allocate wallet party with params: ${JSON.stringify(params)}`
+            )
+
+            const userId = assertConnected(authContext).userId
+            const notifier = notificationService.getNotifier(userId)
+            const network = await store.getCurrentNetwork()
+
+            if (network === undefined) {
+                throw new Error('No network session found')
+            }
+
+            const tokenProvider = new AuthTokenProvider(network.auth, logger)
+            const partyAllocator = new PartyAllocationService(
+                network.synchronizerId,
+                tokenProvider,
+                network.ledgerApi.baseUrl,
+                logger
+            )
+            const driver =
+                drivers[
+                    params.signingProviderId as SigningProvider
+                ]?.controller(userId)
+
+            if (!driver) {
+                throw new Error(
+                    `Signing provider ${params.signingProviderId} not supported`
+                )
+            }
+
+            if (params.signingProviderId === SigningProvider.FIREBLOCKS) {
+                const keys = await driver.getKeys()
+                const key = keys?.keys?.find((k) => k.name === params.partyHint)
+                if (!key) throw new Error('Fireblocks key not found')
+
+                const { signature, status } = await driver.getTransaction({
+                    userId,
+                    txId: params.txId,
+                })
+
+                if (!['pending', 'signed'].includes(status)) {
+                    await store.removeWallet(params.id)
+                }
+
+                if (signature) {
+                    const partyId =
+                        await partyAllocator.allocatePartyWithExistingWallet(
+                            params.namespace,
+                            params.transactions.split(', '),
+                            Buffer.from(signature, 'hex').toString('base64'),
+                            userId
+                        )
+                    await store.updateWallet({ id: params.id, partyId })
+                }
+
+                const wallets = await store.getWallets()
+                notifier?.emit('accountsChanged', wallets)
+                return null
+            }
+
+            return null
         },
         setPrimaryWallet: async (params: SetPrimaryWalletParams) => {
             store.setPrimaryWallet(params.partyId)

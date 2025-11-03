@@ -34,6 +34,7 @@
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
         "@canton-network/core-rpc-errors": "workspace:^",
+        "@canton-network/core-signing-fireblocks": "workspace:^",
         "@canton-network/core-signing-internal": "workspace:^",
         "@canton-network/core-signing-lib": "workspace:^",
         "@canton-network/core-signing-participant": "workspace:^",

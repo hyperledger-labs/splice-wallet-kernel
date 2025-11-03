@@ -17,6 +17,7 @@ import {
     Transaction,
     Network,
     StoreConfig,
+    UpdateWallet,
 } from '@canton-network/core-wallet-store'
 import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely'
 import Database from 'better-sqlite3'
@@ -79,7 +80,13 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                     : true
                 return matchedNetworkIds && matchedSigningProviderIds
             })
-            .map((table) => toWallet(table))
+            .map((table) =>
+                toWallet({
+                    ...table,
+                    txId: table.txId ?? '',
+                    transactions: table.transactions ?? '',
+                })
+            )
     }
 
     async getPrimaryWallet(): Promise<Wallet | undefined> {
@@ -116,7 +123,11 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         const userId = this.assertConnected()
 
         const wallets = await this.getWallets()
-        if (wallets.some((w) => w.partyId === wallet.partyId)) {
+        if (
+            wallets.some(
+                (w) => w.partyId === wallet.partyId && w.partyId !== ''
+            )
+        ) {
             throw new Error(
                 `Wallet with partyId "${wallet.partyId}" already exists`
             )
@@ -145,6 +156,26 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                 .insertInto('wallets')
                 .values(fromWallet(wallet, userId))
                 .execute()
+        })
+    }
+
+    async updateWallet({ id, partyId }: UpdateWallet): Promise<void> {
+        this.logger.info('Updating wallet')
+
+        await this.db.transaction().execute(async (trx) => {
+            await trx
+                .updateTable('wallets')
+                .set({ partyId })
+                .where('id', '=', id)
+                .execute()
+        })
+    }
+
+    async removeWallet(id: number): Promise<void> {
+        this.logger.info('Removing wallet')
+
+        await this.db.transaction().execute(async (trx) => {
+            await trx.deleteFrom('wallets').where('id', '=', id).execute()
         })
     }
 

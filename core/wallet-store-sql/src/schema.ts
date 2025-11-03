@@ -8,6 +8,7 @@ import {
     Session,
     Network,
 } from '@canton-network/core-wallet-store'
+import { Generated } from 'kysely'
 
 interface MigrationTable {
     name: string
@@ -40,6 +41,7 @@ interface NetworkTable {
 }
 
 interface WalletTable {
+    id: Generated<number>
     primary: number
     partyId: string
     hint: string
@@ -48,6 +50,8 @@ interface WalletTable {
     networkId: string
     signingProviderId: string
     userId: UserId
+    txId?: string
+    transactions?: string
 }
 
 interface TransactionTable {
@@ -237,7 +241,10 @@ export const fromNetwork = (
     }
 }
 
-export const fromWallet = (wallet: Wallet, userId: UserId): WalletTable => {
+export const fromWallet = (
+    wallet: Wallet,
+    userId: UserId
+): Omit<WalletTable, 'id'> => {
     return {
         ...wallet,
         primary: wallet.primary ? 1 : 0,
@@ -245,7 +252,9 @@ export const fromWallet = (wallet: Wallet, userId: UserId): WalletTable => {
     }
 }
 
-export const toWallet = (table: WalletTable): Wallet => {
+export const toWallet = (
+    table: Omit<WalletTable, 'id'> & { id: number }
+): Wallet => {
     return {
         ...table,
         primary: table.primary === 1,

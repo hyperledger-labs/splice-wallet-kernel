@@ -99,19 +99,69 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "CreateWalletResult",
-                    "type": "object",
-                    "properties": {
-                        "wallet": {
-                            "type": "object",
-                            "description": "The newly created wallet.",
-                            "$ref": "#/components/schemas/Wallet"
-                        }
-                    },
-                    "required": ["wallet"]
+                    "$ref": "#/components/schemas/Null"
                 }
             },
             "description": "Allocates a new wallet and party with the given hint."
+        },
+        {
+            "name": "allocateWallet",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "AllocateWalletParams",
+                        "type": "object",
+                        "properties": {
+                            "partyHint": {
+                                "title": "partyHint",
+                                "type": "string",
+                                "description": "The party hint and name of the wallet."
+                            },
+                            "signingProviderId": {
+                                "title": "signingProviderId",
+                                "type": "string",
+                                "description": "The signing provider ID the wallet corresponds to."
+                            },
+                            "txId": {
+                                "title": "txId",
+                                "type": "string",
+                                "description": "The transaction ID"
+                            },
+                            "transactions": {
+                                "title": "topologyTransactions",
+                                "type": "string",
+                                "description": "The topology transactions"
+                            },
+                            "namespace": {
+                                "title": "namespace",
+                                "type": "string",
+                                "description": "The namespace of wallet"
+                            },
+                            "id": {
+                                "title": "walletId",
+                                "type": "number",
+                                "description": "The id of wallet"
+                            }
+                        },
+                        "required": [
+                            "partyHint",
+                            "signingProviderId",
+                            "txId",
+                            "transactions",
+                            "namespace",
+                            "id"
+                        ]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/Null"
+                }
+            },
+            "description": "Allocate party with the given wallet."
         },
         {
             "name": "setPrimaryWallet",
@@ -531,6 +581,11 @@
                 "type": "object",
                 "description": "Structure representing a wallet",
                 "properties": {
+                    "id": {
+                        "title": "walletId",
+                        "type": "number",
+                        "description": "The ID of the wallet"
+                    },
                     "primary": {
                         "title": "primary",
                         "type": "boolean",
@@ -565,9 +620,20 @@
                         "title": "signingProviderId",
                         "type": "string",
                         "description": "The signing provider ID the wallet corresponds to."
+                    },
+                    "txId": {
+                        "title": "txId",
+                        "type": "string",
+                        "description": "Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway."
+                    },
+                    "transactions": {
+                        "title": "topologyTransactions",
+                        "type": "string",
+                        "description": "The topology transactions"
                     }
                 },
                 "required": [
+                    "id",
                     "primary",
                     "partyId",
                     "hint",
