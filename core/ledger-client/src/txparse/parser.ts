@@ -82,6 +82,27 @@ function currentFromChoiceOrResult(
     }
 }
 
+function correlationIdFromTI(
+    currentInstructionCid: string,
+    originalInstructionCid?: string | null
+): string {
+    return originalInstructionCid ?? currentInstructionCid
+}
+
+function tryGetPendingTiCid(
+    exercisedEvent: ExercisedEvent
+): string | undefined {
+    const output = (
+        exercisedEvent.exerciseResult as
+            | { output?: { tag?: string; value?: any } }
+            | undefined
+    )?.output
+    if (output?.tag === 'TransferInstructionResult_Pending') {
+        return output.value?.transferInstructionCid ?? undefined
+    }
+    return undefined
+}
+
 export class TransactionParser {
     private readonly ledgerClient: LedgerClient
     private readonly partyId: PartyId
@@ -280,6 +301,10 @@ export class TransactionParser {
                 ) {
                     result = null
                 } else {
+                    const correlationId = correlationIdFromTI(
+                        originalCreate.contractId,
+                        transferInstructionView.originalInstructionCid ?? null
+                    )
                     result = {
                         payload: transferInstructionView,
                         transferInstruction: {
@@ -291,6 +316,7 @@ export class TransactionParser {
                                 before: transferInstructionView.status, // raw DAML pending sub-state
                                 current: { tag: 'Pending', value: {} }, // normalized
                             },
+                            correlationId,
                         },
                         unlockedHoldingsChange: { creates: [], archives: [] },
                         lockedHoldingsChange: { creates: [], archives: [] },
@@ -453,6 +479,18 @@ export class TransactionParser {
             return null
         }
 
+        const resultTag =
+            (
+                exercisedEvent.exerciseResult as
+                    | { output?: { tag?: string } }
+                    | undefined
+            )?.output?.tag || undefined
+        const pendingCid = tryGetPendingTiCid(exercisedEvent)
+        const currentTag = currentFromChoiceOrResult(
+            exercisedEvent.choice,
+            resultTag
+        )
+
         const children = await this.getChildren(exercisedEvent)
         const receiverAmounts = new Map<string, BigNumber>()
         children.creates
@@ -499,6 +537,17 @@ export class TransactionParser {
                 meta,
             }
         }
+
+        if (transferInstructions) {
+            transferInstructions.status.current = transferInstructions.status
+                .current || { tag: currentTag, value: {} }
+            return {
+                label,
+                children,
+                transferInstruction: transferInstructions,
+            }
+        }
+
         const transferInstruction: TransferInstructionView = {
             originalInstructionCid: null,
             ...(choiceArgumentTransfer !== undefined && {
@@ -506,8 +555,10 @@ export class TransactionParser {
             }),
             status: {
                 before: null,
+                current: { tag: currentTag, value: {} },
             },
             meta: null,
+            ...(pendingCid ? { correlationId: pendingCid } : {}),
         }
 
         return {
@@ -556,6 +607,7 @@ export class TransactionParser {
         exercisedEvent: ExercisedEvent,
         tokenStandardChoice: TokenStandardChoice
     ): Promise<ParsedKnownExercisedEvent | null> {
+        const instructionCid = exercisedEvent.contractId
         const transferInstructionEvents =
             await this.getEventsForArchive(exercisedEvent)
         if (!transferInstructionEvents) {
@@ -568,9 +620,16 @@ export class TransactionParser {
             transferInstructionEvents.created.createdEvent,
             TRANSFER_INSTRUCTION_INTERFACE_ID
         ).viewValue as TransferInstructionView
+
+        const correlationId = correlationIdFromTI(
+            instructionCid,
+            transferInstructionView.originalInstructionCid ?? null
+        )
+
         const transferInstruction: TransferInstructionView = {
             originalInstructionCid:
                 transferInstructionView.originalInstructionCid,
+            correlationId,
             transfer: transferInstructionView.transfer,
             meta: transferInstructionView.meta,
             status: {

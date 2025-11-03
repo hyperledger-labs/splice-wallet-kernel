@@ -80,6 +80,8 @@ export interface TransferInstructionView {
         current?: { tag: TransferInstructionCurrentTag; value: unknown } | null
     }
     meta: any // TODO Maybe use metadata from codegen?
+    // Like in java parser TODO add comment
+    correlationId?: string
 }
 
 export type TransferInstructionCurrentTag =
@@ -87,6 +89,7 @@ export type TransferInstructionCurrentTag =
     | 'Completed'
     | 'Rejected'
     | 'Withdrawn'
+    | 'Failed' // TODO handle this as well
 
 export type Label =
     | TransferOut
@@ -192,16 +195,16 @@ const renderTransactionEvent = (e: TokenStandardEvent): any => {
         ...e,
         lockedHoldingsChange: lockedHoldingsChange
             ? { ...lockedHoldingsChange }
-            : undefined,
+            : null,
         unlockedHoldingsChange: unlockedHoldingsChange
             ? { ...unlockedHoldingsChange }
-            : undefined,
+            : null,
         lockedHoldingsChangeSummary: lockedHoldingsChangeSummary
             ? { ...lockedHoldingsChangeSummary }
-            : undefined,
+            : null,
         unlockedHoldingsChangeSummary: unlockedHoldingsChangeSummary
             ? { ...unlockedHoldingsChangeSummary }
-            : undefined,
+            : null,
     }
 }
 

@@ -60,6 +60,10 @@ export default [
                     originalInstructionCid: null,
                     status: {
                         before: null,
+                        current: {
+                            tag: 'Pending',
+                            value: {},
+                        },
                     },
                 },
                 unlockedHoldingsChange: {
@@ -190,6 +194,10 @@ export default [
                     originalInstructionCid: null,
                     status: {
                         before: null,
+                        current: {
+                            tag: 'Completed',
+                            value: {},
+                        },
                     },
                     transfer: {
                         amount: '100.0000000000',
@@ -298,6 +306,10 @@ export default [
                     originalInstructionCid: null,
                     status: {
                         before: null,
+                        current: {
+                            tag: 'Pending',
+                            value: {},
+                        },
                     },
                 },
                 unlockedHoldingsChange: {
@@ -521,8 +533,13 @@ export default [
                 transferInstruction: {
                     meta: null,
                     originalInstructionCid: null,
+                    correlationId: '31',
                     status: {
                         before: null,
+                        current: {
+                            tag: 'Pending',
+                            value: {},
+                        },
                     },
                     transfer: {
                         amount: '1000.0000000000',
@@ -717,8 +734,13 @@ export default [
                 transferInstruction: {
                     meta: null,
                     originalInstructionCid: null,
+                    correlationId: '36',
                     status: {
                         before: null,
+                        current: {
+                            tag: 'Pending',
+                            value: {},
+                        },
                     },
                     transfer: {
                         amount: '1000.0000000000',
@@ -895,8 +917,13 @@ export default [
                 transferInstruction: {
                     meta: null,
                     originalInstructionCid: null,
+                    correlationId: '41',
                     status: {
                         before: null,
+                        current: {
+                            tag: 'Pending',
+                            value: {},
+                        },
                     },
                     transfer: {
                         amount: '1000.0000000000',
@@ -1073,8 +1100,13 @@ export default [
                 transferInstruction: {
                     meta: null,
                     originalInstructionCid: null,
+                    correlationId: '46',
                     status: {
                         before: null,
+                        current: {
+                            tag: 'Pending',
+                            value: {},
+                        },
                     },
                     transfer: {
                         amount: '1000.0000000000',
@@ -1251,8 +1283,13 @@ export default [
                 transferInstruction: {
                     meta: null,
                     originalInstructionCid: null,
+                    correlationId: '51',
                     status: {
                         before: null,
+                        current: {
+                            tag: 'Pending',
+                            value: {},
+                        },
                     },
                     transfer: {
                         amount: '1000.0000000000',
@@ -1425,6 +1462,7 @@ export default [
                         values: {},
                     },
                     originalInstructionCid: null,
+                    correlationId: '31',
                     status: {
                         before: {
                             tag: 'TransferPendingReceiverAcceptance',
@@ -1576,6 +1614,7 @@ export default [
                         values: {},
                     },
                     originalInstructionCid: null,
+                    correlationId: '36',
                     status: {
                         before: {
                             tag: 'TransferPendingReceiverAcceptance',
@@ -1727,6 +1766,7 @@ export default [
                         values: {},
                     },
                     originalInstructionCid: null,
+                    correlationId: '41',
                     status: {
                         before: {
                             tag: 'TransferPendingReceiverAcceptance',
@@ -1895,6 +1935,7 @@ export default [
                         values: {},
                     },
                     originalInstructionCid: null,
+                    correlationId: '62',
                     status: {
                         before: {
                             tag: 'TransferPendingReceiverAcceptance',
@@ -2084,6 +2125,10 @@ export default [
                     originalInstructionCid: null,
                     status: {
                         before: null,
+                        current: {
+                            tag: 'Completed',
+                            value: {},
+                        },
                     },
                     transfer: {
                         amount: '1.0000000000',
