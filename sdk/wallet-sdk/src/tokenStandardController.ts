@@ -327,14 +327,6 @@ export class TokenStandardController {
         )
     }
 
-    //TODO: remove
-    async getInstrumentById(instrumentId: string) {
-        return this.service.getInstrumentById(
-            this.getTransferFactoryRegistryUrl().href,
-            instrumentId
-        )
-    }
-
     async buyMemberTraffic(
         dso: PartyId,
         provider: PartyId,

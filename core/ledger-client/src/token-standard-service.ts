@@ -1195,20 +1195,6 @@ export class TokenStandardService {
         }
     }
 
-    async getMetaDataInfo(registryUrl: string) {
-        const client = this.core.getTokenStandardClient(registryUrl)
-
-        return client.get('/registry/metadata/v1/info')
-    }
-
-    /*      data TransferContext = TransferContext
-  with
-    openMiningRound : ContractId OpenMiningRound
-    issuingMiningRounds : Map Round (ContractId IssuingMiningRound)
-    validatorRights : Map Party (ContractId ValidatorRight) -- ^ Map from user to ValidatorRight contract.
-    featuredAppRight : Optional (ContractId FeaturedAppRight) -- ^ Optional proof that the provider is a featured app provider.
-  deriving (Show, Eq)s
-    */
     async buyMemberTraffic(
         dso: PartyId,
         provider: PartyId,
@@ -1226,7 +1212,6 @@ export class TokenStandardService {
             provider,
             inputUtxos
         )
-        this.logger.info(inputHoldings, 'inputHoldings')
 
         if (!amuletRules) {
             throw new Error('AmuletRules contract not found')
@@ -1253,7 +1238,6 @@ export class TokenStandardService {
         ]
 
         const context = {
-            // openMiningRound: latestMiningRound[0].contract_id,
             openMiningRound: activeRound.contract_id,
             issuingMiningRounds: [],
             validatorRights: [],
