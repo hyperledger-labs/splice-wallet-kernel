@@ -327,6 +327,16 @@ export class TokenStandardController {
         )
     }
 
+    /**
+     * Build an Exercise command to Buy Member Traffic.
+     * @param dso Party that the sender expects to represent the DSO party of the AmuletRules contract they are calling
+     * @param provider Provider party whose inputs will fund the traffic purchase
+     * @param trafficAmount Amount of traffic to purchase
+     * @param memberId The id of the sequencer member (participant or mediator) for which traffic has been purchased
+     * @param migrationId The migration id of the synchronizer for which this contract tracks purchased extra traffic
+     * @param inputUtxos Optional list of specific holding CIDs to use as inputs.
+     * @returns  AmuletRules_BuyMemberTraffic exercise command and disclosed contracts
+     */
     async buyMemberTraffic(
         dso: PartyId,
         provider: PartyId,
@@ -350,6 +360,16 @@ export class TokenStandardController {
         return [{ ExerciseCommand: command }, disclosed]
     }
 
+    /**
+     * Buys member traffic for an internal party
+     * @param dso Party that the sender expects to represent the DSO party of the AmuletRules contract they are calling
+     * @param provider Provider party whose inputs will fund the traffic purchase
+     * @param trafficAmount Amount of traffic to purchase
+     * @param memberId The id of the sequencer member (participant or mediator) for which traffic has been purchased
+     * @param migrationId The migration id of the synchronizer for which this contract tracks purchased extra traffic
+     * @param inputUtxos Optional list of specific holding CIDs to use as inputs.
+     * @returns  /v2/commands/submit-and-wait Response
+     */
     async buyMemberTrafficInternal(
         dso: PartyId,
         provider: PartyId,
