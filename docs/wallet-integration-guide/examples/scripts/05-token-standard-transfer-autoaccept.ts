@@ -160,16 +160,15 @@ const [buyTrafficCommand, buyTrafficDisclosedContracts] =
 
 logger.info(buyTrafficCommand)
 
-const buyTrafficCommandResult =
-    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-        buyTrafficCommand,
-        keyPairSender.privateKey,
-        v4(),
-        buyTrafficDisclosedContracts
-    )
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    buyTrafficCommand,
+    keyPairSender.privateKey,
+    v4(),
+    buyTrafficDisclosedContracts
+)
 
 logger.info(
-    `buy member traffic for sender party completed ${sender?.partyId} with ${JSON.stringify(buyTrafficCommandResult)}`
+    `buy member traffic for sender (${sender?.partyId}) party completed ${sender?.partyId}`
 )
 
 const utxos3 = await sdk.tokenStandard?.listHoldingUtxos()
