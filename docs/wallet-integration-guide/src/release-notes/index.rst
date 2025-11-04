@@ -3,6 +3,44 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+0.15.0
+------
+
+**Released on October 29th, 2025**
+
+
+.. important::
+
+    Due to CommonJS compatibility, the module type needs to be explicitly declared in certain cases. If you see an error like
+    `ERROR: Top-level await is currently not supported with the "cjs" output format` and are intended on using ESM then
+    you should set `"type": "module"` in your package.json.
+
+* Handling inflight transmissions
+
+*Introduced special handling cases for `REQUEST_ALREADY_IN_FLIGHT` and `SUBMISSION_ALREADY_IN_FLIGHT`, now in those cases
+the SDK will retrieve the inflight submission and track that for ..AndWait functions.*
+
+* support cjs module
+
+*The SDK now has a cjs release for consumption.*
+
+* better handling of readAs and actAs rights
+
+*Upgraded the handling in regards to readAs and actAs to be more fleshed out, especially also for the listWallets function.*
+
+* ACS client side caching
+
+*Querying the ACS is an expensive ledger API operation, as an alternative the ACS is fetched into memory once and subscribe to new
+events instead. This should significantly reduce the load on the ledger especially in heavy read operations.*
+
+* Caching of Access Tokens
+
+*Previously a new token was retrieved from the AuthController every time a request was made, this is not a huge problem for `unsafe` tokens,
+however still unnecessary. Tokens are now kept in memory and reused and a new token is only requested upon expiry.*
+
+*For this change to take effect you need to alter your token usage to use `AccessTokenProvider` instead, all examples are updated accordingly.*
+
+
 0.14.0
 ------
 
@@ -18,7 +56,7 @@ Below are the release notes for the Wallet SDK versions, detailing new features,
 .. important::
 
    Release 0.13.0 & 0.13.1 have broken dependencies, use 0.14.0 instead.
-   
+
 * Greatly reduced the size of the SDK from ~ 80 MB to ~ 35 MB
 * introduced optional `limit` field for `listHoldingsUtxo`
 

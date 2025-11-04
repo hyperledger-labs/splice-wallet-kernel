@@ -193,7 +193,7 @@ export class LoginUI extends LitElement {
             return
         }
 
-        stateManager.chainId.set(this.selectedNetwork.chainId)
+        stateManager.networkId.set(this.selectedNetwork.id)
         const redirectUri = `${window.origin}/callback/`
 
         if (this.selectedNetwork.auth.type === 'implicit') {
@@ -265,7 +265,7 @@ export class LoginUI extends LitElement {
         const authenticatedUserClient = createUserClient(access_token)
 
         await authenticatedUserClient.request('addSession', {
-            chainId: stateManager.chainId.get() || '',
+            networkId: stateManager.networkId.get() || '',
         })
     }
 

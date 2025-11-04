@@ -14,6 +14,7 @@ export type AcsHelperOptions = {
     wsSupport?: WSSupport
     maxCacheSize?: number
     entryExpirationTime?: number
+    includeCreatedEventBlob?: boolean
 }
 
 const DEFAULT_MAX_CACHE_SIZE = 50
@@ -24,6 +25,7 @@ export class ACSHelper {
     private readonly apiInstance: LedgerClient
     private readonly wsSupport: WSSupport | undefined
     private readonly logger: Logger
+    private includeCreatedEventBlob: boolean
     private hits = 0
     private misses = 0
     private evictions = 0
@@ -49,6 +51,7 @@ export class ACSHelper {
         this.apiInstance = apiInstance
         this.wsSupport = options?.wsSupport
         this.logger = _logger.child({ component: 'ACSHelper' })
+        this.includeCreatedEventBlob = options?.includeCreatedEventBlob ?? true
     }
 
     getCacheStats() {
@@ -96,7 +99,9 @@ export class ACSHelper {
 
         this.logger.debug('cache miss')
         this.misses++
-        const newContainer = new ACSContainer()
+        const newContainer = new ACSContainer(undefined, {
+            includeCreatedEventBlob: this.includeCreatedEventBlob,
+        })
 
         this.contractsSet.set(keyStr, newContainer)
         return newContainer

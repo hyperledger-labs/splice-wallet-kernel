@@ -55,13 +55,13 @@ export class UserUIAuthRedirect extends LitElement {
 
         const accessToken = stateManager.accessToken.get()
         if (accessToken && isLoginPage) {
-            const chainId = stateManager.chainId.get()
+            const networkId = stateManager.networkId.get()
 
-            if (!chainId) {
-                throw new Error('missing chainId in state manager')
+            if (!networkId) {
+                throw new Error('missing networkId in state manager')
             }
 
-            authenticate(accessToken, chainId)
+            authenticate(accessToken, networkId)
 
             window.location.href = DEFAULT_PAGE_REDIRECT
         }
@@ -70,11 +70,11 @@ export class UserUIAuthRedirect extends LitElement {
 
 export const authenticate = async (
     accessToken: string,
-    chainId: string
+    networkId: string
 ): Promise<void> => {
     const authenticatedUserClient = createUserClient(accessToken)
     await authenticatedUserClient.request('addSession', {
-        chainId,
+        networkId,
     })
 
     if (window.opener && !window.opener.closed) {

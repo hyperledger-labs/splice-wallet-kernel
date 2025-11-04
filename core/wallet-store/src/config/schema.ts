@@ -9,8 +9,8 @@ export const ledgerApiSchema = z.object({
 })
 
 export const networkSchema = z.object({
+    id: z.string(),
     name: z.string(),
-    chainId: z.string(),
     synchronizerId: z.string(),
     description: z.string(),
     ledgerApi: ledgerApiSchema,

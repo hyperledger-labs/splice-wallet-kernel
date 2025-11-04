@@ -12,8 +12,8 @@
         },
         "networks": [
             {
+                "id": "canton:local-password",
                 "name": "Local (password IDP)",
-                "chainId": "canton:local-password",
                 "synchronizerId": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
                 "description": "Unimplemented Password Auth",
                 "ledgerApi": {
@@ -36,8 +36,8 @@
                 }
             },
             {
+                "id": "canton:local-oauth",
                 "name": "Local (OAuth IDP)",
-                "chainId": "canton:local-oauth",
                 "synchronizerId": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
                 "description": "Mock OAuth IDP",
                 "ledgerApi": {
@@ -58,8 +58,8 @@
                 }
             },
             {
+                "id": "canton:local-oauth-client-credentials",
                 "name": "Local (OAuth IDP - Client Credentials)",
-                "chainId": "canton:local-oauth-client-credentials",
                 "synchronizerId": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
                 "description": "Mock OAuth IDP (Client Credentials)",
                 "ledgerApi": {
@@ -82,8 +82,8 @@
                 }
             },
             {
+                "id": "canton:local-self-signed",
                 "name": "Local (Self signed)",
-                "chainId": "canton:local-self-signed",
                 "synchronizerId": "wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd",
                 "description": "Mock OAuth IDP",
                 "ledgerApi": {
@@ -104,8 +104,8 @@
                 }
             },
             {
+                "id": "canton:devnet-auth0",
                 "name": "Devnet (Auth0)",
-                "chainId": "canton:devnet-auth0",
                 "synchronizerId": "global-domain::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a",
                 "description": "devnet configuration pointing to CNU's lab-operator",
                 "ledgerApi": {

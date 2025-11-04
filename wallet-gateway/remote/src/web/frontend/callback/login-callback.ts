@@ -57,7 +57,7 @@ export class LoginCallback extends LitElement {
 
                 authenticate(
                     tokenResponse.access_token,
-                    stateManager.chainId.get() || ''
+                    stateManager.networkId.get() || ''
                 ).then(() => {
                     window.location.replace('/')
                 })

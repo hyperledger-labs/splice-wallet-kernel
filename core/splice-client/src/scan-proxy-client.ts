@@ -51,7 +51,25 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
 export class ScanProxyClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
-    private accessTokenProvider: AccessTokenProvider | undefined
+    private readonly accessTokenProvider: AccessTokenProvider | undefined
+    private readonly baseUrlHref: string
+    // shared caches for all instances of ScanProxyClient
+    private static amuletRulesCache = new Map<
+        string,
+        ScanProxyTypes['Contract']
+    >()
+    private static roundsCache = new Map<string, ScanProxyTypes['Contract'][]>()
+    // one in-flight fetch per baseUrl for rules/rounds
+    private static amuletRulesInflight = new Map<
+        string,
+        Promise<ScanProxyTypes['Contract']>
+    >()
+    private static roundsInflight = new Map<
+        string,
+        Promise<ScanProxyTypes['Contract'][]>
+    >()
+    // time after surpassing which mining rounds should be refreshed
+    private static roundsNextChangeAt = new Map<string, number>()
 
     constructor(
         baseUrl: URL,
@@ -60,9 +78,10 @@ export class ScanProxyClient {
         accessToken?: string,
         accessTokenProvider?: AccessTokenProvider
     ) {
+        this.baseUrlHref = baseUrl.href
         this.accessTokenProvider = accessTokenProvider
         this.logger = logger
-        this.logger.debug({ baseUrl }, 'TokenStandardClient initialized')
+        this.logger.debug({ baseUrl }, 'ScanProxyClient initialized')
         this.client = createClient<paths>({
             baseUrl: baseUrl.href,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
@@ -130,18 +149,144 @@ export class ScanProxyClient {
         }
     }
 
+    private async fetchAmuletRulesOnce(): Promise<ScanProxyTypes['Contract']> {
+        const resp = await this.get('/v0/scan-proxy/amulet-rules')
+        const contract = resp?.amulet_rules?.contract
+        if (!contract?.contract_id || !contract?.template_id) {
+            throw new Error('Malformed AmuletRules response')
+        }
+        ScanProxyClient.amuletRulesCache.set(this.baseUrlHref, contract)
+        return contract
+    }
+
     public async getAmuletRules(): Promise<ScanProxyTypes['Contract']> {
-        const amuletRules = await this.get('/v0/scan-proxy/amulet-rules')
-        return amuletRules.amulet_rules.contract
+        const key = this.baseUrlHref
+
+        const cached = ScanProxyClient.amuletRulesCache.get(key)
+        // clone to prevent external mutation of cache by object reference
+        if (cached) return structuredClone(cached)
+
+        let inflight = ScanProxyClient.amuletRulesInflight.get(key)
+        if (!inflight) {
+            inflight = this.fetchAmuletRulesOnce().finally(() => {
+                ScanProxyClient.amuletRulesInflight.delete(key)
+            })
+            ScanProxyClient.amuletRulesInflight.set(key, inflight)
+        }
+
+        const contract = await inflight
+        return structuredClone(contract)
+    }
+
+    public static invalidateAmuletRulesCache(baseUrl: URL) {
+        const key = baseUrl.href
+        this.amuletRulesCache.delete(key)
+        this.amuletRulesInflight.delete(key)
+    }
+
+    private computeNextChangeAt(rounds: ScanProxyTypes['Contract'][]): number {
+        const now = Date.now()
+        let next = Number.POSITIVE_INFINITY
+
+        for (const round of rounds) {
+            const { opensAt, targetClosesAt } = round.payload ?? {}
+            const openMs = opensAt ? Number(new Date(opensAt)) : NaN
+            const closeMs = targetClosesAt
+                ? Number(new Date(targetClosesAt))
+                : NaN
+
+            if (Number.isFinite(openMs) && openMs > now && openMs < next) {
+                next = openMs
+            }
+            if (Number.isFinite(closeMs) && closeMs > now && closeMs < next) {
+                next = closeMs
+            }
+        }
+
+        // If we couldn't parse anything sensible, force an immediate refresh.
+        return Number.isFinite(next) ? next : now
+    }
+
+    private async fetchOpenMiningRoundsOnce(): Promise<
+        ScanProxyTypes['Contract'][]
+    > {
+        const resp = await this.get(
+            '/v0/scan-proxy/open-and-issuing-mining-rounds'
+        )
+        const rounds = (resp.open_mining_rounds ?? []).map(
+            (x) => x.contract
+        ) as ScanProxyTypes['Contract'][]
+
+        const key = this.baseUrlHref
+        ScanProxyClient.roundsCache.set(key, rounds)
+        ScanProxyClient.roundsNextChangeAt.set(
+            key,
+            this.computeNextChangeAt(rounds)
+        )
+        return rounds
+    }
+
+    private async refreshRounds(
+        key: string
+    ): Promise<ScanProxyTypes['Contract'][]> {
+        let inflight = ScanProxyClient.roundsInflight.get(key)
+        if (!inflight) {
+            inflight = this.fetchOpenMiningRoundsOnce().finally(() => {
+                ScanProxyClient.roundsInflight.delete(key)
+            })
+            ScanProxyClient.roundsInflight.set(key, inflight)
+        }
+        return inflight
     }
 
     public async getOpenMiningRounds(): Promise<ScanProxyTypes['Contract'][]> {
-        const openAndIssuingMiningRounds = await this.get(
-            '/v0/scan-proxy/open-and-issuing-mining-rounds'
-        )
-        return openAndIssuingMiningRounds.open_mining_rounds.map(
-            (openMiningRound) => openMiningRound.contract
-        )
+        const key = this.baseUrlHref
+        const now = Date.now()
+        const cached = ScanProxyClient.roundsCache.get(key)
+        const next = ScanProxyClient.roundsNextChangeAt.get(key)
+
+        if (cached && next !== undefined && now < next) {
+            return structuredClone(cached)
+        }
+        const fresh = await this.refreshRounds(key)
+        return structuredClone(fresh)
+    }
+
+    public async getActiveOpenMiningRound(): Promise<
+        ScanProxyTypes['Contract'] | null
+    > {
+        const pickActive = (
+            rounds: ScanProxyTypes['Contract'][],
+            timestamp: number
+        ) =>
+            rounds
+                .filter((round) => {
+                    const { opensAt, targetClosesAt } = round.payload
+                    const openMs = opensAt ? Number(new Date(opensAt)) : NaN
+                    const closeMs = targetClosesAt
+                        ? Number(new Date(targetClosesAt))
+                        : NaN
+                    return (
+                        Number.isFinite(openMs) &&
+                        Number.isFinite(closeMs) &&
+                        openMs <= timestamp &&
+                        timestamp < closeMs
+                    )
+                })
+                .sort((a, b) => a.payload.opensAt - b.payload.opensAt)
+                .at(-1) ?? null
+
+        const now = Date.now()
+        const rounds = await this.getOpenMiningRounds()
+        const active = pickActive(rounds, now)
+        return active ? structuredClone(active) : null
+    }
+
+    public static invalidateOpenMiningRoundsCache(baseUrl: URL) {
+        const key = baseUrl.href
+        this.roundsCache.delete(key)
+        this.roundsInflight.delete(key)
+        this.roundsNextChangeAt.delete(key)
     }
 
     public async getAmuletSynchronizerId(): Promise<string | undefined> {

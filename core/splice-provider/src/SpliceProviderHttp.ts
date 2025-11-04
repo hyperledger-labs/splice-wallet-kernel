@@ -72,11 +72,11 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                     .then((status) => {
                         const statusResult = status as {
                             kernel: unknown
-                            chainId?: unknown
+                            networkId?: unknown
                         }
                         this.emit('onConnected', {
                             kernel: statusResult.kernel,
-                            chainId: statusResult.chainId,
+                            networkId: statusResult.networkId,
                             sessionToken: this.sessionToken,
                         })
                     })

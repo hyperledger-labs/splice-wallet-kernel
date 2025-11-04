@@ -42,7 +42,6 @@ export const ACS_UPDATE_CONFIG: ACSUpdateConfig = {
     // lower values will make the UI more responsive in case of problems, but may lead to unnecessary fallbacks
     wsTimeoutBeforeFirstElement: 10000,
 }
-
 // Config attached to window for easier debugging / live configuration via browser console
 /* eslint-disable */
 if (typeof window !== 'undefined') {
@@ -69,9 +68,14 @@ interface ACSSet {
 
 export class ACSContainer {
     private acsSet: ACSSet | null = null
+    private settings: { includeCreatedEventBlob: boolean }
 
-    constructor(orginalContainer: ACSContainer | null = null) {
+    constructor(
+        orginalContainer: ACSContainer | null = null,
+        settings = { includeCreatedEventBlob: true }
+    ) {
         this.acsSet = orginalContainer ? orginalContainer.acsSet : null
+        this.settings = settings
     }
 
     async update(
@@ -81,7 +85,7 @@ export class ACSContainer {
         wsSupport?: WSSupport
     ): Promise<Array<JsGetActiveContractsResponse>> {
         if (this.acsSet === null) {
-            const acs = await ACSContainer.readACS(offset, key, api, wsSupport)
+            const acs = await this.readACS(offset, key, api, wsSupport)
             this.acsSet = acs
             return ACSContainer.calculateAt(acs, offset)
         }
@@ -97,7 +101,7 @@ export class ACSContainer {
         const updates = await ACSContainer.updateContracts(
             this.acsSet.lastUpdateOffset,
             offset,
-            ACSContainer.createEventFormat(key),
+            this.createEventFormat(key),
             api
         )
 
@@ -277,29 +281,27 @@ export class ACSContainer {
         return acs
     }
 
-    private static async readACS(
+    private async readACS(
         offset: number,
         key: ACSKey,
         api: LedgerClient,
         wsSupport?: WSSupport
     ): Promise<ACSSet> {
         if (wsSupport && wsSupport.enabled()) {
-            return ACSContainer.readACSUsingWs(offset, key, wsSupport).catch(
-                () => {
-                    console.log('Falling back to HTTP for ACS read')
-                    return ACSContainer.readHttpACS(offset, key, api)
-                }
-            )
+            return this.readACSUsingWs(offset, key, wsSupport).catch(() => {
+                console.log('Falling back to HTTP for ACS read')
+                return this.readHttpACS(offset, key, api)
+            })
         }
-        return ACSContainer.readHttpACS(offset, key, api)
+        return this.readHttpACS(offset, key, api)
     }
 
-    private static async readHttpACS(
+    private async readHttpACS(
         offset: number,
         key: ACSKey,
         api: LedgerClient
     ): Promise<ACSSet> {
-        const format = ACSContainer.createEventFormat(key)
+        const format = this.createEventFormat(key)
         const acs = await api.postWithRetry('/v2/state/active-contracts', {
             activeAtOffset: offset,
             verbose: false,
@@ -313,13 +315,13 @@ export class ACSContainer {
         }
     }
 
-    private static readACSUsingWs(
+    private readACSUsingWs(
         offset: number,
         key: ACSKey,
         wsSupport: WSSupport
     ): Promise<ACSSet> {
         const wsACSURL = `${wsSupport.baseUrl}/v2/state/active-contracts`
-        const format = ACSContainer.createEventFormat(key)
+        const format = this.createEventFormat(key)
         const request: GetActiveContractsRequest = {
             activeAtOffset: offset,
             verbose: false,
@@ -376,7 +378,7 @@ export class ACSContainer {
         })
     }
 
-    private static createInterfaceFilter(interfaceId: string): Filters {
+    private createInterfaceFilter(interfaceId: string): Filters {
         return {
             cumulative: [
                 {
@@ -385,7 +387,8 @@ export class ACSContainer {
                             value: {
                                 interfaceId,
                                 includeInterfaceView: true,
-                                includeCreatedEventBlob: false,
+                                includeCreatedEventBlob:
+                                    this.settings.includeCreatedEventBlob,
                             },
                         },
                     },
@@ -394,7 +397,7 @@ export class ACSContainer {
         }
     }
 
-    private static createTemplateFilter(templateId: string): Filters {
+    private createTemplateFilter(templateId: string): Filters {
         return {
             cumulative: [
                 {
@@ -402,7 +405,8 @@ export class ACSContainer {
                         TemplateFilter: {
                             value: {
                                 templateId,
-                                includeCreatedEventBlob: false,
+                                includeCreatedEventBlob:
+                                    this.settings.includeCreatedEventBlob,
                             },
                         },
                     },
@@ -411,10 +415,10 @@ export class ACSContainer {
         }
     }
 
-    private static createEventFormat(key: ACSKey): EventFormat {
+    private createEventFormat(key: ACSKey): EventFormat {
         const cumulativeFilter = key.templateId
-            ? ACSContainer.createTemplateFilter(key.templateId)
-            : ACSContainer.createInterfaceFilter(key.interfaceId ?? '')
+            ? this.createTemplateFilter(key.templateId)
+            : this.createInterfaceFilter(key.interfaceId ?? '')
 
         const baseFormat: EventFormat = {
             filtersByParty: {},

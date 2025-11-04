@@ -61,11 +61,11 @@ export type IsConnected = boolean
  * The network ID the wallet corresponds to.
  *
  */
-export type ChainId = string
+export type NetworkId = string
 export interface StatusEvent {
     kernel: KernelInfo
     isConnected: IsConnected
-    chainId?: ChainId
+    networkId?: NetworkId
     [k: string]: any
 }
 /**
@@ -184,7 +184,7 @@ export interface Wallet {
     hint: Hint
     publicKey: PublicKey
     namespace: Namespace
-    chainId: ChainId
+    networkId: NetworkId
     signingProviderId: SigningProviderId
     [k: string]: any
 }

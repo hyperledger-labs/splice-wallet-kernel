@@ -1,7 +1,10 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { PreparedTransaction } from '@canton-network/core-ledger-proto'
+import {
+    PreparedTransaction,
+    TopologyTransaction,
+} from '@canton-network/core-ledger-proto'
 import { computePreparedTransaction } from './hashing_scheme_v2.js'
 import { fromBase64, toBase64, toHex } from './utils.js'
 export {
@@ -20,6 +23,13 @@ export const decodePreparedTransaction = (
 ): PreparedTransaction => {
     const bytes = fromBase64(preparedTransaction)
     return PreparedTransaction.fromBinary(bytes)
+}
+
+export const decodeTopologyTransaction = (
+    topologyTx: string
+): TopologyTransaction => {
+    const bytes = fromBase64(topologyTx)
+    return TopologyTransaction.fromBinary(bytes)
 }
 
 /**

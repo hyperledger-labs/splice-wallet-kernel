@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-tx-visualizer",
-    "version": "0.10.0",
+    "version": "0.11.0",
     "type": "module",
     "description": "Decode and visualize prepared transactions from Canton",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
