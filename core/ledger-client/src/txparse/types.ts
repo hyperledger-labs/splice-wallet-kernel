@@ -3,6 +3,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
+import { Metadata } from '@canton-network/core-token-standard'
 
 export type ViewValue = components['schemas']['JsInterfaceView']['viewValue'] // unknown | undefined
 export type JsActiveContract = components['schemas']['JsActiveContract']
@@ -67,21 +68,17 @@ export const EmptyHoldingsChangeSummary: HoldingsChangeSummary = {
  */
 // TODO investigate because it actually differs from TransferInstructionView from daml codegen
 // where status is: { tag, value }
-// TODO regarding above, as it's somehow different from actual daml, maybe use different name to avoid namespace conflicts?
 export interface TransferInstructionView {
-    // TODO can I add it super easily?
     // currentInstructionCid: string // TODO (#505): add
     originalInstructionCid: string | null
-    // TODO maybe check in what cases this is undefined when working on ledger instead of jest and comment
     transfer?: any
     status: {
         before: any
-        // TODO can we make it non-optional?
-        current?: { tag: TransferInstructionCurrentTag; value: unknown } | null
+        current: { tag: TransferInstructionCurrentTag; value: unknown } | null
     }
-    meta: any // TODO Maybe use metadata from codegen?
-    // Like in java parser TODO add comment
-    correlationId?: string
+    meta: Metadata | null
+    // Stable id to track one TransferInstruction lifecycle across updates, inspired by Java parser
+    multiStepCorrelationId?: string
 }
 
 export type TransferInstructionCurrentTag =
@@ -89,7 +86,7 @@ export type TransferInstructionCurrentTag =
     | 'Completed'
     | 'Rejected'
     | 'Withdrawn'
-    | 'Failed' // TODO handle this as well
+    | 'Failed'
 
 export type Label =
     | TransferOut
@@ -193,24 +190,16 @@ const renderTransactionEvent = (e: TokenStandardEvent): any => {
     )
     return {
         ...e,
-        lockedHoldingsChange: lockedHoldingsChange
-            ? { ...lockedHoldingsChange }
-            : null,
-        unlockedHoldingsChange: unlockedHoldingsChange
-            ? { ...unlockedHoldingsChange }
-            : null,
-        lockedHoldingsChangeSummary: lockedHoldingsChangeSummary
-            ? { ...lockedHoldingsChangeSummary }
-            : null,
-        unlockedHoldingsChangeSummary: unlockedHoldingsChangeSummary
-            ? { ...unlockedHoldingsChangeSummary }
-            : null,
+        lockedHoldingsChange,
+        unlockedHoldingsChange,
+        lockedHoldingsChangeSummary,
+        unlockedHoldingsChangeSummary,
     }
 }
 
 const renderHoldingsChangeSummary = (
     s: HoldingsChangeSummary
-): Partial<HoldingsChangeSummary> | undefined => {
+): Partial<HoldingsChangeSummary> | null => {
     if (
         s.numInputs === 0 &&
         s.numOutputs === 0 &&
@@ -218,7 +207,7 @@ const renderHoldingsChangeSummary = (
         s.outputAmount === '0' &&
         s.amountChange === '0'
     ) {
-        return undefined
+        return null
     }
     return {
         ...(s.numInputs !== 0 && { numInputs: s.numInputs }),
@@ -231,9 +220,9 @@ const renderHoldingsChangeSummary = (
 
 const renderHoldingsChange = (
     c: HoldingsChange
-): Partial<HoldingsChange> | undefined => {
+): Partial<HoldingsChange> | null => {
     if (c.creates.length === 0 && c.archives.length === 0) {
-        return undefined
+        return null
     }
     return {
         ...(c.creates.length !== 0 && { creates: c.creates }),
