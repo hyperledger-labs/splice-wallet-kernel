@@ -327,6 +327,73 @@ export class TokenStandardController {
         )
     }
 
+    //TODO: remove
+    async getInstrumentById(instrumentId: string) {
+        return this.service.getInstrumentById(
+            this.getTransferFactoryRegistryUrl().href,
+            instrumentId
+        )
+    }
+
+    async buyMemberTraffic(
+        dso: PartyId,
+        provider: PartyId,
+        trafficAmount: number,
+        memberId: string,
+        migrationId: number,
+        inputUtxos?: string[]
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const [command, disclosed] = await this.service.buyMemberTraffic(
+            dso,
+            provider,
+            trafficAmount,
+            this.getSynchronizerId(),
+            memberId,
+            migrationId,
+            inputUtxos
+        )
+
+        return [{ ExerciseCommand: command }, disclosed]
+    }
+
+    async buyMemberTrafficInternal(
+        dso: PartyId,
+        provider: PartyId,
+        trafficAmount: number,
+        memberId: string,
+        migrationId: number,
+        inputUtxos?: string[]
+    ) {
+        const [command, disclosed] = await this.service.buyMemberTraffic(
+            dso,
+            provider,
+            trafficAmount,
+            this.getSynchronizerId(),
+            memberId,
+            migrationId,
+            inputUtxos
+        )
+
+        const request = {
+            commands: [{ ExerciseCommand: command }],
+            commandId: v4(),
+            userId: this.userId,
+            actAs: [this.getPartyId()],
+            readAs: [],
+            disclosedContracts: disclosed || [],
+            synchronizerId: this.getSynchronizerId(),
+            verboseHashing: false,
+            packageIdSelectionPreference: [],
+        }
+
+        return await this.client.postWithRetry(
+            '/v2/commands/submit-and-wait',
+            request
+        )
+    }
+
     // TODO(#583) TransferPreapproval methods could be moved to SpliceController
     /**  Lookup a TransferPreapproval by the receiver party
      * @param receiverId receiver party id
