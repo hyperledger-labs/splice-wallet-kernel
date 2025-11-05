@@ -244,7 +244,7 @@ export class LedgerController {
         timeoutMs: number = 15000
     ): Promise<Types['Completion']['value']> {
         const ledgerEnd = await this.ledgerEnd()
-        this.logger.info(commands)
+
         await this.prepareSignAndExecuteTransaction(
             commands,
             privateKey,
