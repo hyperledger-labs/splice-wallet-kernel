@@ -37,3 +37,19 @@ export type Auth = z.infer<typeof authSchema>
 export type AuthorizationCodeAuth = z.infer<typeof authorizationCodeAuthSchema>
 export type ClientCredentialsAuth = z.infer<typeof clientCredentialsAuthSchema>
 export type SelfSignedAuth = z.infer<typeof selfSignedAuthSchema>
+
+export const idpSchema = z.discriminatedUnion('type', [
+    z.object({
+        id: z.string(),
+        type: z.literal('self_signed'),
+        issuer: z.string(),
+    }),
+    z.object({
+        id: z.string(),
+        type: z.literal('oauth'),
+        issuer: z.string(),
+        configUrl: z.string().url(),
+    }),
+])
+
+export type Idp = z.infer<typeof idpSchema>

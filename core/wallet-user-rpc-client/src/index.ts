@@ -27,34 +27,30 @@ export type Description = string
  *
  */
 export type SynchronizerId = string
-export type Type = string
+/**
+ *
+ * Identity Provider ID
+ *
+ */
 export type IdentityProviderId = string
+export type Method = string
 export type Scope = string
 export type ClientId = string
 export type ClientSecret = string
 export type Issuer = string
-export type ConfigUrl = string
 export type Audience = string
-export interface Admin {
-    clientId: ClientId
-    clientSecret: ClientSecret
-    [k: string]: any
-}
 /**
  *
- * Represents the type of auth (implicit or password) for a specified network
+ * Represents the type of auth for a specified network
  *
  */
 export interface Auth {
-    authType?: Type
-    identityProviderId: IdentityProviderId
+    method: Method
     scope?: Scope
     clientId?: ClientId
     clientSecret?: ClientSecret
     issuer: Issuer
-    configUrl: ConfigUrl
     audience?: Audience
-    admin?: Admin
     [k: string]: any
 }
 /**
@@ -73,7 +69,9 @@ export interface Network {
     name: Name
     description: Description
     synchronizerId: SynchronizerId
+    identityProviderId: IdentityProviderId
     auth: Auth
+    adminAuth?: Auth
     ledgerApi: LedgerApi
 }
 /**

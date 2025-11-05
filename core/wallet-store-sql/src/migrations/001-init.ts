@@ -13,12 +13,12 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .addColumn('type', 'text', (col) => col.notNull())
         .addColumn('issuer', 'text', (col) => col.notNull())
         .addColumn('config_url', 'text', (col) => col.notNull())
-        .addColumn('audience', 'text', (col) => col.notNull())
-        .addColumn('scope', 'text', (col) => col.notNull())
-        .addColumn('client_id', 'text', (col) => col.notNull())
-        .addColumn('client_secret', 'text')
-        .addColumn('admin_client_id', 'text')
-        .addColumn('admin_client_secret', 'text')
+        // .addColumn('audience', 'text', (col) => col.notNull())
+        // .addColumn('scope', 'text', (col) => col.notNull())
+        // .addColumn('client_id', 'text', (col) => col.notNull())
+        // .addColumn('client_secret', 'text')
+        // .addColumn('admin_client_id', 'text')
+        // .addColumn('admin_client_secret', 'text')
         .execute()
 
     // --- networks ---

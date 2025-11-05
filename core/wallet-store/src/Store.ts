@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Account
 
+import { Idp } from '@canton-network/core-wallet-auth'
 import { Network } from './config/schema'
 
 export enum AddressType {
@@ -66,6 +67,13 @@ export interface Store {
     getSession(): Promise<Session | undefined>
     setSession(session: Session): Promise<void>
     removeSession(): Promise<void>
+
+    // IDP methods
+    getIdp(idpId: string): Promise<Idp>
+    listIdps(): Promise<Array<Idp>>
+    updateIdp(idp: Idp): Promise<void>
+    addIdp(idp: Idp): Promise<void>
+    removeIdp(idpId: string): Promise<void>
 
     // Network methods
     getNetwork(networkId: string): Promise<Network>

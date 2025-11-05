@@ -1,22 +1,8 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { authSchema } from '@canton-network/core-wallet-auth'
+import { authSchema, idpSchema } from '@canton-network/core-wallet-auth'
 import { z } from 'zod'
-
-export const idpSchema = z.discriminatedUnion('type', [
-    z.object({
-        id: z.string(),
-        type: z.literal('self_signed'),
-        issuer: z.string(),
-    }),
-    z.object({
-        id: z.string(),
-        type: z.literal('oauth'),
-        issuer: z.string(),
-        configUrl: z.string().url(),
-    }),
-])
 
 export const ledgerApiSchema = z.object({
     baseUrl: z.string().url(),

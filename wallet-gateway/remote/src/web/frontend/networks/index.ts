@@ -5,7 +5,7 @@ import '@canton-network/core-wallet-ui-components'
 import { LitElement, html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import {
-    Auth,
+    Auth as ApiAuth,
     Network,
     RemoveNetworkParams,
     Session,
@@ -20,6 +20,7 @@ import {
     NetworkCardDeleteEvent,
     NetworkEditSaveEvent,
 } from '@canton-network/core-wallet-ui-components'
+import { Auth } from '@canton-network/core-wallet-auth'
 
 @customElement('user-ui-networks')
 export class UserUiNetworks extends LitElement {
@@ -216,64 +217,35 @@ export class UserUiNetworks extends LitElement {
         }
     }
 
+    private toApiAuth(auth?: Auth): ApiAuth {
+        if (auth) {
+            return {
+                method: auth.method,
+                audience: auth.audience ?? '',
+                scope: auth.scope ?? '',
+                clientId: auth.clientId ?? '',
+                issuer: (auth as ApiAuth).issuer ?? '',
+                clientSecret: (auth as ApiAuth).clientSecret ?? '',
+            }
+        } else {
+            return {
+                method: 'implicit',
+                issuer: '',
+            }
+        }
+    }
+
     private handleSubmit = async (e: NetworkEditSaveEvent) => {
         e.preventDefault()
 
-        let auth: Auth
-        switch (e.network.auth.type) {
-            case 'implicit':
-                auth = {
-                    type: 'implicit',
-                    identityProviderId: e.network.auth.identityProviderId,
-                    issuer: e.network.auth.issuer ?? '',
-                    configUrl: e.network.auth.configUrl ?? '',
-                    audience: e.network.auth.audience ?? '',
-                    scope: e.network.auth.scope ?? '',
-                    clientId: e.network.auth.clientId ?? '',
-                    admin: {
-                        clientId: e.network.auth.admin?.clientId ?? '',
-                        clientSecret: e.network.auth.admin?.clientSecret ?? '',
-                    },
-                }
-                break
-            case 'client_credentials':
-                auth = {
-                    type: 'client_credentials',
-                    identityProviderId: e.network.auth.identityProviderId,
-                    issuer: e.network.auth.issuer ?? '',
-                    configUrl: e.network.auth.configUrl ?? '',
-                    audience: e.network.auth.audience ?? '',
-                    scope: e.network.auth.scope ?? '',
-                    clientId: e.network.auth.clientId ?? '',
-                    clientSecret: e.network.auth.clientSecret ?? '',
-                    admin: {
-                        clientId: e.network.auth.admin?.clientId ?? '',
-                        clientSecret: e.network.auth.admin?.clientSecret ?? '',
-                    },
-                }
-                break
-            case 'self_signed':
-                auth = {
-                    type: 'self_signed',
-                    identityProviderId: e.network.auth.identityProviderId,
-                    issuer: e.network.auth.issuer ?? '',
-                    audience: e.network.auth.audience ?? '',
-                    scope: e.network.auth.scope ?? '',
-                    clientId: e.network.auth.clientId ?? '',
-                    clientSecret: e.network.auth.clientSecret ?? '',
-                    admin: {
-                        clientId: e.network.auth.admin?.clientId ?? '',
-                        clientSecret: e.network.auth.admin?.clientSecret ?? '',
-                    },
-                    configUrl: '',
-                }
-                break
-        }
+        const auth = this.toApiAuth(e.network.auth)
+        const adminAuth = this.toApiAuth(e.network.adminAuth)
 
         const network: Network = {
             ...e.network,
-            auth: auth,
             ledgerApi: e.network.ledgerApi.baseUrl,
+            auth,
+            adminAuth,
         }
 
         try {

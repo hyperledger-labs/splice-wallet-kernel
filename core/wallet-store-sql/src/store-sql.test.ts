@@ -3,7 +3,10 @@
 
 import { describe, expect, test } from '@jest/globals'
 
-import { AuthContext, ImplicitAuth } from '@canton-network/core-wallet-auth'
+import {
+    AuthContext,
+    AuthorizationCodeAuth,
+} from '@canton-network/core-wallet-auth'
 import {
     LedgerApi,
     Network,
@@ -41,11 +44,8 @@ const implementations: Array<[string, StoreCtor]> = [['StoreSql', StoreSql]]
 const ledgerApi: LedgerApi = {
     baseUrl: 'http://api',
 }
-const auth: ImplicitAuth = {
-    identityProviderId: 'idp1',
-    type: 'implicit',
-    issuer: 'http://auth',
-    configUrl: 'http://auth/.well-known/openid-configuration',
+const auth: AuthorizationCodeAuth = {
+    method: 'authorization_code',
     clientId: 'cid',
     scope: 'scope',
     audience: 'aud',
@@ -54,6 +54,7 @@ const network: Network = {
     name: 'testnet',
     id: 'network1',
     synchronizerId: 'sync1::fingerprint',
+    identityProviderId: 'idp1',
     description: 'Test Network',
     ledgerApi,
     auth,
@@ -91,11 +92,8 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should filter wallets', async () => {
-            const auth2: ImplicitAuth = {
-                identityProviderId: 'idp2',
-                type: 'implicit',
-                issuer: 'http://auth',
-                configUrl: 'http://auth/.well-known/openid-configuration',
+            const auth2: AuthorizationCodeAuth = {
+                method: 'authorization_code',
                 clientId: 'cid',
                 scope: 'scope',
                 audience: 'aud',
@@ -104,6 +102,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 name: 'testnet',
                 id: 'network2',
                 synchronizerId: 'sync1::fingerprint',
+                identityProviderId: 'idp2',
                 description: 'Test Network',
                 ledgerApi,
                 auth: auth2,

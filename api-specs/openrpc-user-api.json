@@ -439,7 +439,15 @@
                         "type": "string",
                         "description": "Synchronizer ID"
                     },
+                    "identityProviderId": {
+                        "title": "identityProviderId",
+                        "type": "string",
+                        "description": "Identity Provider ID"
+                    },
                     "auth": {
+                        "$ref": "#/components/schemas/Auth"
+                    },
+                    "adminAuth": {
                         "$ref": "#/components/schemas/Auth"
                     },
                     "ledgerApi": {
@@ -453,6 +461,7 @@
                     "name",
                     "description",
                     "synchronizerId",
+                    "identityProviderId",
                     "auth",
                     "ledgerApi"
                 ],
@@ -461,14 +470,10 @@
             "Auth": {
                 "title": "auth",
                 "type": "object",
-                "description": "Represents the type of auth (implicit or password) for a specified network",
+                "description": "Represents the type of auth for a specified network",
                 "properties": {
-                    "authType": {
-                        "title": "type",
-                        "type": "string"
-                    },
-                    "identityProviderId": {
-                        "title": "identityProviderId",
+                    "method": {
+                        "title": "method",
                         "type": "string"
                     },
                     "scope": {
@@ -487,36 +492,12 @@
                         "title": "issuer",
                         "type": "string"
                     },
-                    "configUrl": {
-                        "title": "configUrl",
-                        "type": "string"
-                    },
                     "audience": {
                         "title": "audience",
                         "type": "string"
-                    },
-                    "admin": {
-                        "title": "admin",
-                        "type": "object",
-                        "properties": {
-                            "clientId": {
-                                "title": "clientId",
-                                "type": "string"
-                            },
-                            "clientSecret": {
-                                "title": "clientSecret",
-                                "type": "string"
-                            }
-                        },
-                        "required": ["clientId", "clientSecret"]
                     }
                 },
-                "required": [
-                    "type",
-                    "identityProviderId",
-                    "issuer",
-                    "configUrl"
-                ]
+                "required": ["method", "issuer"]
             },
             "Wallet": {
                 "title": "Wallet",
