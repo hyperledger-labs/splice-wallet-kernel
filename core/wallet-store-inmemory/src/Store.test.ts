@@ -173,6 +173,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 ledgerApi,
                 auth,
             }
+            await store.addIdp(idp)
             await store.updateIdp(idp)
             await store.updateNetwork(network)
             const listed = await store.listNetworks()

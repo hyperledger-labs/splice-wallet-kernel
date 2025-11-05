@@ -9,16 +9,10 @@ export async function up(db: Kysely<DB>): Promise<void> {
     await db.schema
         .createTable('idps')
         .ifNotExists()
-        .addColumn('identity_provider_id', 'text', (col) => col.primaryKey())
+        .addColumn('id', 'text', (col) => col.primaryKey())
         .addColumn('type', 'text', (col) => col.notNull())
         .addColumn('issuer', 'text', (col) => col.notNull())
-        .addColumn('config_url', 'text', (col) => col.notNull())
-        // .addColumn('audience', 'text', (col) => col.notNull())
-        // .addColumn('scope', 'text', (col) => col.notNull())
-        // .addColumn('client_id', 'text', (col) => col.notNull())
-        // .addColumn('client_secret', 'text')
-        // .addColumn('admin_client_id', 'text')
-        // .addColumn('admin_client_secret', 'text')
+        .addColumn('config_url', 'text')
         .execute()
 
     // --- networks ---
@@ -32,8 +26,10 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .addColumn('ledger_api_base_url', 'text', (col) => col.notNull())
         .addColumn('user_id', 'text') // optional/global if null
         .addColumn('identity_provider_id', 'text', (col) =>
-            col.references('idps.identity_provider_id').onDelete('cascade')
+            col.references('idps.id').onDelete('cascade')
         )
+        .addColumn('auth', 'jsonb', (col) => col.notNull())
+        .addColumn('admin_auth', 'jsonb')
         .execute()
 
     // --- wallets ---
