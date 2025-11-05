@@ -329,28 +329,30 @@ export class TokenStandardController {
 
     /**
      * Build an Exercise command to Buy Member Traffic.
-     * @param dso Party that the sender expects to represent the DSO party of the AmuletRules contract they are calling
-     * @param provider Provider party whose inputs will fund the traffic purchase
-     * @param trafficAmount Amount of traffic to purchase
+     * @param buyer Provider party whose inputs will fund the traffic purchase
+     * @param ccAmount Amount of traffic to purchase
      * @param memberId The id of the sequencer member (participant or mediator) for which traffic has been purchased
+     * @param inputUtxos list of specific holding CIDs to use as inputs.
      * @param migrationId The migration id of the synchronizer for which this contract tracks purchased extra traffic
-     * @param inputUtxos Optional list of specific holding CIDs to use as inputs.
      * @returns  AmuletRules_BuyMemberTraffic exercise command and disclosed contracts
      */
     async buyMemberTraffic(
-        dso: PartyId,
-        provider: PartyId,
-        trafficAmount: number,
+        buyer: PartyId,
+        ccAmount: number,
         memberId: string,
-        migrationId: number,
-        inputUtxos?: string[]
+        inputUtxos: string[],
+        migrationId: number = 0
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
+        const expectedDso = await this.getInstrumentAdmin()
+        if (expectedDso === undefined) {
+            throw new Error('no expected dso found')
+        }
         const [command, disclosed] = await this.service.buyMemberTraffic(
-            dso,
-            provider,
-            trafficAmount,
+            expectedDso,
+            buyer,
+            ccAmount,
             this.getSynchronizerId(),
             memberId,
             migrationId,
@@ -358,52 +360,6 @@ export class TokenStandardController {
         )
 
         return [{ ExerciseCommand: command }, disclosed]
-    }
-
-    /**
-     * Buys member traffic for an internal party
-     * @param dso Party that the sender expects to represent the DSO party of the AmuletRules contract they are calling
-     * @param provider Provider party whose inputs will fund the traffic purchase
-     * @param trafficAmount Amount of traffic to purchase
-     * @param memberId The id of the sequencer member (participant or mediator) for which traffic has been purchased
-     * @param migrationId The migration id of the synchronizer for which this contract tracks purchased extra traffic
-     * @param inputUtxos Optional list of specific holding CIDs to use as inputs.
-     * @returns  /v2/commands/submit-and-wait Response
-     */
-    async buyMemberTrafficInternal(
-        dso: PartyId,
-        provider: PartyId,
-        trafficAmount: number,
-        memberId: string,
-        migrationId: number,
-        inputUtxos?: string[]
-    ) {
-        const [command, disclosed] = await this.service.buyMemberTraffic(
-            dso,
-            provider,
-            trafficAmount,
-            this.getSynchronizerId(),
-            memberId,
-            migrationId,
-            inputUtxos
-        )
-
-        const request = {
-            commands: [{ ExerciseCommand: command }],
-            commandId: v4(),
-            userId: this.userId,
-            actAs: [this.getPartyId()],
-            readAs: [],
-            disclosedContracts: disclosed || [],
-            synchronizerId: this.getSynchronizerId(),
-            verboseHashing: false,
-            packageIdSelectionPreference: [],
-        }
-
-        return await this.client.postWithRetry(
-            '/v2/commands/submit-and-wait',
-            request
-        )
     }
 
     // TODO(#583) TransferPreapproval methods could be moved to SpliceController
