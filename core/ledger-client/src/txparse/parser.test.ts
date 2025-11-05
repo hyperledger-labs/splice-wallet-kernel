@@ -6,8 +6,6 @@ import { jest, describe, it, expect, beforeEach } from '@jest/globals'
 import { TransactionParser } from './parser.js'
 import type { PrettyTransactions, Transaction } from './types.js'
 import eventsByContractIdResponses from './test-data/mock/eventsByContractIdResponses.js'
-import rawTxsMock from './test-data/mock/txs.js'
-import txsExpected from './test-data/expected/txs.js'
 import type { LedgerClient } from '../ledger-client'
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import * as fs from 'fs'
@@ -24,7 +22,6 @@ type JsGetEventsByContractIdResponse =
 type CreatedEvent = components['schemas']['CreatedEvent']
 
 const EVENTS_BY_CID_PATH = '/v2/events/events-by-contract-id' as const
-const txsMock = rawTxsMock as unknown as JsTransaction[]
 
 const __filename = fileURLToPath(import.meta.url)
 const testDataDir = `${dirname(__filename)}/test-data`
@@ -64,6 +61,13 @@ const mockLedgerClient: LedgerClient = makeLedgerClientFromEventsResponses(
 )
 const mockScanProxy: ScanProxyClient = {} as unknown as ScanProxyClient
 const mockAccessTokenProvider = {} as unknown as AccessTokenProvider
+
+const txsMock: JsTransaction[] = JSON.parse(
+    fs.readFileSync(`${testDataDir}/mock/txs.json`, 'utf-8')
+)
+const txsExpected: Transaction[] = JSON.parse(
+    fs.readFileSync(`${testDataDir}/expected/txs.json`, 'utf-8')
+)
 
 describe('TransactionParser', () => {
     beforeEach(() => {
