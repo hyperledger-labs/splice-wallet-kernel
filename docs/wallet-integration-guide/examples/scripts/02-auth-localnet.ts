@@ -2,7 +2,6 @@ import {
     WalletSDKImpl,
     localNetAuthDefault,
     localNetLedgerDefault,
-    localNetTopologyDefault,
     localNetTokenStandardDefault,
     createKeyPair,
     signTransactionHash,
@@ -18,7 +17,6 @@ const sdk = new WalletSDKImpl().configure({
     logger: logger,
     authFactory: localNetAuthDefault,
     ledgerFactory: localNetLedgerDefault,
-    topologyFactory: localNetTopologyDefault,
     tokenStandardFactory: localNetTokenStandardDefault,
 })
 
@@ -26,27 +24,6 @@ logger.info('SDK initialized')
 
 await sdk.connect()
 logger.info('Connected to ledger')
-
-await sdk.userLedger
-    ?.listWallets()
-    .then((wallets) => {
-        logger.info(wallets, 'Wallets')
-    })
-    .catch((error) => {
-        logger.error(error, 'Error listing wallets')
-    })
-
-await sdk.connectAdmin()
-logger.info('Connected to admin ledger')
-
-await sdk.adminLedger
-    ?.listWallets()
-    .then((wallets) => {
-        logger.info(wallets, 'Wallets')
-    })
-    .catch((error) => {
-        logger.error(error, 'Error listing wallets')
-    })
 
 await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 logger.info('Connected to topology')
@@ -63,12 +40,11 @@ if (!generatedParty) {
     throw new Error('Error creating prepared party')
 }
 
-const { multiHash, partyId } = generatedParty
-
-logger.info('Prepared external topology')
-
 logger.info('Signing the hash')
-const signedHash = signTransactionHash(multiHash, keyPair.privateKey)
+const signedHash = signTransactionHash(
+    generatedParty.multiHash,
+    keyPair.privateKey
+)
 
 const allocatedParty = await sdk.userLedger?.allocateExternalParty(
     signedHash,
@@ -78,9 +54,11 @@ const allocatedParty = await sdk.userLedger?.allocateExternalParty(
 logger.info({ partyId: allocatedParty!.partyId }, 'Allocated party')
 await sdk.setPartyId(allocatedParty!.partyId!)
 
-logger.info({ partyId: partyId }, 'Create ping command for party')
+logger.info(allocatedParty, 'Create ping command for party')
 
-const createPingCommand = sdk.userLedger?.createPingCommand(partyId)
+const createPingCommand = sdk.userLedger?.createPingCommand(
+    allocatedParty!.partyId!
+)
 
 logger.info('Prepare command submission for ping create command')
 const prepareResponse =
