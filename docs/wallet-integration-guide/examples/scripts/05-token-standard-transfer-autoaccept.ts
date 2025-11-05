@@ -101,28 +101,9 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     v4()
 )
 
-const utxos = await sdk.tokenStandard?.listHoldingUtxos()
-logger.info(utxos, 'utxos for validator operator')
-const cids = utxos?.map((t) => t.contractId)
-
 logger.info('transfer pre approval proposal is created')
 
-const participantId = await sdk.userLedger?.getParticipantId()
-
-logger.info(participantId, 'participant id is')
-
-await sdk.setPartyId(validatorOperatorParty!)
-
-await sdk.tokenStandard!.buyMemberTrafficInternal(
-    instrumentAdminPartyId,
-    validatorOperatorParty!,
-    200000,
-    participantId!,
-    0,
-    cids
-)
-
-await sdk.setPartyId(sender!.partyId!)
+await sdk.setPartyId(sender?.partyId!)
 
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     sender!.partyId,
@@ -133,8 +114,6 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     }
 )
 
-logger.info(tapCommand)
-
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand,
     keyPairSender.privateKey,
@@ -142,37 +121,8 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     disclosedContracts
 )
 
-logger.info(`executed tap command for external party ${sender?.partyId}`)
-
-const utxos2 = await sdk.tokenStandard?.listHoldingUtxos()
-logger.info(utxos2, 'utxos for sender')
-const cids2 = utxos2?.map((t) => t.contractId)
-
-const [buyTrafficCommand, buyTrafficDisclosedContracts] =
-    await sdk.tokenStandard!.buyMemberTraffic(
-        instrumentAdminPartyId,
-        sender?.partyId!,
-        200000,
-        participantId!,
-        0,
-        cids2
-    )
-
-logger.info(buyTrafficCommand)
-
-await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-    buyTrafficCommand,
-    keyPairSender.privateKey,
-    v4(),
-    buyTrafficDisclosedContracts
-)
-
-logger.info(
-    `buy member traffic for sender (${sender?.partyId}) party completed ${sender?.partyId}`
-)
-
-const utxos3 = await sdk.tokenStandard?.listHoldingUtxos()
-logger.info(utxos3, 'List Token Standard Holding UTXOs')
+const utxos = await sdk.tokenStandard?.listHoldingUtxos()
+logger.info(utxos, 'List Token Standard Holding UTXOs')
 
 await sdk.tokenStandard
     ?.listHoldingTransactions()
