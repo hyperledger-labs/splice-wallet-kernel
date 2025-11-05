@@ -497,7 +497,7 @@
                         "type": "string"
                     }
                 },
-                "required": ["method", "issuer"]
+                "required": ["method", "audience", "scope", "clientId"]
             },
             "Wallet": {
                 "title": "Wallet",
