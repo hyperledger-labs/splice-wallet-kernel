@@ -3,6 +3,8 @@
 
 import { AddNetwork } from './typings.js'
 import { RemoveNetwork } from './typings.js'
+import { ListNetworks } from './typings.js'
+import { ListIdps } from './typings.js'
 import { CreateWallet } from './typings.js'
 import { SetPrimaryWallet } from './typings.js'
 import { RemoveWallet } from './typings.js'
@@ -10,13 +12,14 @@ import { ListWallets } from './typings.js'
 import { SyncWallets } from './typings.js'
 import { Sign } from './typings.js'
 import { Execute } from './typings.js'
-import { ListNetworks } from './typings.js'
 import { AddSession } from './typings.js'
 import { ListSessions } from './typings.js'
 
 export type Methods = {
     addNetwork: AddNetwork
     removeNetwork: RemoveNetwork
+    listNetworks: ListNetworks
+    listIdps: ListIdps
     createWallet: CreateWallet
     setPrimaryWallet: SetPrimaryWallet
     removeWallet: RemoveWallet
@@ -24,7 +27,6 @@ export type Methods = {
     syncWallets: SyncWallets
     sign: Sign
     execute: Execute
-    listNetworks: ListNetworks
     addSession: AddSession
     listSessions: ListSessions
 }
@@ -33,6 +35,8 @@ function buildController(methods: Methods) {
     return {
         addNetwork: methods.addNetwork,
         removeNetwork: methods.removeNetwork,
+        listNetworks: methods.listNetworks,
+        listIdps: methods.listIdps,
         createWallet: methods.createWallet,
         setPrimaryWallet: methods.setPrimaryWallet,
         removeWallet: methods.removeWallet,
@@ -40,7 +44,6 @@ function buildController(methods: Methods) {
         syncWallets: methods.syncWallets,
         sign: methods.sign,
         execute: methods.execute,
-        listNetworks: methods.listNetworks,
         addSession: methods.addSession,
         listSessions: methods.listSessions,
     }

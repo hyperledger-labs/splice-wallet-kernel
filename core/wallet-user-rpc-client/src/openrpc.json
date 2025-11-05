@@ -59,6 +59,48 @@
             "description": "Removes a new network configuration (similar to EIP-3085)."
         },
         {
+            "name": "listNetworks",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "ListNetworksResult",
+                    "type": "object",
+                    "properties": {
+                        "networks": {
+                            "title": "networks",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/Network"
+                            }
+                        }
+                    },
+                    "required": ["networks"]
+                }
+            }
+        },
+        {
+            "name": "listIdps",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "ListIdpsResult",
+                    "type": "object",
+                    "properties": {
+                        "idps": {
+                            "title": "idps",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/Idp"
+                            }
+                        }
+                    },
+                    "required": ["idps"]
+                }
+            }
+        },
+        {
             "name": "createWallet",
             "params": [
                 {
@@ -336,27 +378,6 @@
             "description": "Executes a signed transaction."
         },
         {
-            "name": "listNetworks",
-            "params": [],
-            "result": {
-                "name": "result",
-                "schema": {
-                    "title": "ListNetworksResult",
-                    "type": "object",
-                    "properties": {
-                        "networks": {
-                            "title": "networks",
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/components/schemas/Network"
-                            }
-                        }
-                    },
-                    "required": ["networks"]
-                }
-            }
-        },
-        {
             "name": "addSession",
             "description": "Adds a network session.",
             "params": [
@@ -467,10 +488,40 @@
                 ],
                 "additionalProperties": false
             },
+            "Idp": {
+                "title": "Idp",
+                "type": "object",
+                "description": "Structure representing the Identity Providers",
+                "properties": {
+                    "id": {
+                        "title": "id",
+                        "type": "string",
+                        "description": "ID of the identity provider"
+                    },
+                    "type": {
+                        "title": "type",
+                        "type": "string",
+                        "description": "Type of identity provider (OAuth2 or Self-Signed)"
+                    },
+                    "issuer": {
+                        "title": "issuer",
+                        "type": "string",
+                        "description": "Issuer of identity provider"
+                    },
+                    "configUrl": {
+                        "title": "configUrl",
+                        "type": "string",
+                        "description": "URL to fetch the identity provider configuration"
+                    }
+                },
+                "required": ["id", "type", "issuer"],
+                "additionalProperties": false
+            },
             "Auth": {
                 "title": "auth",
                 "type": "object",
                 "description": "Represents the type of auth for a specified network",
+                "additionalProperties": false,
                 "properties": {
                     "method": {
                         "title": "method",
@@ -497,7 +548,7 @@
                         "type": "string"
                     }
                 },
-                "required": ["method", "issuer"]
+                "required": ["method", "audience", "scope", "clientId"]
             },
             "Wallet": {
                 "title": "Wallet",

@@ -89,6 +89,9 @@ export const userController = (
             await store.removeNetwork(params.networkName)
             return null
         },
+        listNetworks: async () =>
+            Promise.resolve({ networks: await store.listNetworks() }),
+        listIdps: async () => Promise.resolve({ idps: await store.listIdps() }),
         createWallet: async (params: {
             primary?: boolean
             partyHint: string
@@ -399,8 +402,6 @@ export const userController = (
                     )
             }
         },
-        listNetworks: async () =>
-            Promise.resolve({ networks: await store.listNetworks() }),
         addSession: async function (
             params: AddSessionParams
         ): Promise<AddSessionResult> {

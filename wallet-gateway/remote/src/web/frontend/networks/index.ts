@@ -161,7 +161,7 @@ export class UserUiNetworks extends LitElement {
     @state() accessor isModalOpen = false
     @state() accessor editingNetwork: Network | null = null
     @state() accessor authType: string =
-        this.editingNetwork?.auth?.type ?? 'implicit'
+        this.editingNetwork?.auth?.method ?? 'authorization_code'
 
     private async listNetworks() {
         const userClient = createUserClient(stateManager.accessToken.get())
@@ -217,21 +217,14 @@ export class UserUiNetworks extends LitElement {
         }
     }
 
-    private toApiAuth(auth?: Auth): ApiAuth {
-        if (auth) {
-            return {
-                method: auth.method,
-                audience: auth.audience ?? '',
-                scope: auth.scope ?? '',
-                clientId: auth.clientId ?? '',
-                issuer: (auth as ApiAuth).issuer ?? '',
-                clientSecret: (auth as ApiAuth).clientSecret ?? '',
-            }
-        } else {
-            return {
-                method: 'implicit',
-                issuer: '',
-            }
+    private toApiAuth(auth: Auth): ApiAuth {
+        return {
+            method: auth.method,
+            audience: auth.audience ?? '',
+            scope: auth.scope ?? '',
+            clientId: auth.clientId ?? '',
+            issuer: (auth as ApiAuth).issuer ?? '',
+            clientSecret: (auth as ApiAuth).clientSecret ?? '',
         }
     }
 
@@ -239,7 +232,15 @@ export class UserUiNetworks extends LitElement {
         e.preventDefault()
 
         const auth = this.toApiAuth(e.network.auth)
-        const adminAuth = this.toApiAuth(e.network.adminAuth)
+        const adminAuth = e.network.adminAuth
+            ? this.toApiAuth(e.network.adminAuth)
+            : {
+                  method: 'client_credentials',
+                  audience: '',
+                  scope: '',
+                  clientId: '',
+                  clientSecret: '',
+              }
 
         const network: Network = {
             ...e.network,
