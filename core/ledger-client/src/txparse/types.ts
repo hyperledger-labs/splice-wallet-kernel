@@ -3,6 +3,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
+import { Metadata } from '@canton-network/core-token-standard'
 
 export type ViewValue = components['schemas']['JsInterfaceView']['viewValue'] // unknown | undefined
 export type JsActiveContract = components['schemas']['JsActiveContract']
@@ -70,13 +71,22 @@ export const EmptyHoldingsChangeSummary: HoldingsChangeSummary = {
 export interface TransferInstructionView {
     // currentInstructionCid: string // TODO (#505): add
     originalInstructionCid: string | null
-    transfer: any
+    transfer?: any
     status: {
         before: any
-        // current: any; // TODO (#505): add
+        current: { tag: TransferInstructionCurrentTag; value: unknown } | null
     }
-    meta: any
+    meta: Metadata | null
+    // Stable id to track one TransferInstruction lifecycle across updates, inspired by Java parser
+    multiStepCorrelationId?: string
 }
+
+export type TransferInstructionCurrentTag =
+    | 'Pending'
+    | 'Completed'
+    | 'Rejected'
+    | 'Withdrawn'
+    | 'Failed'
 
 export type Label =
     | TransferOut
@@ -180,24 +190,16 @@ const renderTransactionEvent = (e: TokenStandardEvent): any => {
     )
     return {
         ...e,
-        lockedHoldingsChange: lockedHoldingsChange
-            ? { ...lockedHoldingsChange }
-            : undefined,
-        unlockedHoldingsChange: unlockedHoldingsChange
-            ? { ...unlockedHoldingsChange }
-            : undefined,
-        lockedHoldingsChangeSummary: lockedHoldingsChangeSummary
-            ? { ...lockedHoldingsChangeSummary }
-            : undefined,
-        unlockedHoldingsChangeSummary: unlockedHoldingsChangeSummary
-            ? { ...unlockedHoldingsChangeSummary }
-            : undefined,
+        lockedHoldingsChange,
+        unlockedHoldingsChange,
+        lockedHoldingsChangeSummary,
+        unlockedHoldingsChangeSummary,
     }
 }
 
 const renderHoldingsChangeSummary = (
     s: HoldingsChangeSummary
-): Partial<HoldingsChangeSummary> | undefined => {
+): Partial<HoldingsChangeSummary> | null => {
     if (
         s.numInputs === 0 &&
         s.numOutputs === 0 &&
@@ -205,7 +207,7 @@ const renderHoldingsChangeSummary = (
         s.outputAmount === '0' &&
         s.amountChange === '0'
     ) {
-        return undefined
+        return null
     }
     return {
         ...(s.numInputs !== 0 && { numInputs: s.numInputs }),
@@ -218,9 +220,9 @@ const renderHoldingsChangeSummary = (
 
 const renderHoldingsChange = (
     c: HoldingsChange
-): Partial<HoldingsChange> | undefined => {
+): Partial<HoldingsChange> | null => {
     if (c.creates.length === 0 && c.archives.length === 0) {
-        return undefined
+        return null
     }
     return {
         ...(c.creates.length !== 0 && { creates: c.creates }),
