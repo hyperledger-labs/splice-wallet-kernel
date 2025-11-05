@@ -30,8 +30,8 @@ export default async function () {
         )
     const [renewCmd, disclosedContractsRenew] =
         await sdk.tokenStandard!.createRenewTransferPreapproval(
-            preapproval.contractId,
-            preapproval.templateId,
+            preapproval!.contractId,
+            preapproval!.templateId,
             validatorOperatorParty!
         )
 
