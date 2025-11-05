@@ -130,8 +130,6 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                 })
 
             // Merge Wallets
-            const storage = this.getStorage()
-            const walletsLength = storage.wallets.length
             const existingWallets = await this.getWallets()
             const existingPartyIds = new Set(
                 existingWallets.map((w) => w.partyId)
@@ -142,10 +140,9 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                         (party) => !existingPartyIds.has(party)
                         // todo: filter on idp id
                     )
-                    .map((party, index) => {
+                    .map((party) => {
                         const [hint, namespace] = party.split('::')
                         return {
-                            id: index + walletsLength,
                             primary: false,
                             partyId: party,
                             hint: hint,
@@ -155,7 +152,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                             signingProviderId: 'participant', // todo: determine based on partyDetails.isLocal
                         }
                     }) || []
-
+            const storage = this.getStorage()
             const wallets = [...storage.wallets, ...participantWallets]
 
             // Set primary wallet if none exists
@@ -214,13 +211,9 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         this.updateStorage(storage)
     }
 
-    async addWallet(wallet: Omit<Wallet, 'id'>): Promise<void> {
+    async addWallet(wallet: Wallet): Promise<void> {
         const storage = this.getStorage()
-        if (
-            storage.wallets.some(
-                (w) => w.partyId === wallet.partyId && w.partyId !== ''
-            )
-        ) {
+        if (storage.wallets.some((w) => w.partyId === wallet.partyId)) {
             throw new Error(
                 `Wallet with partyId "${wallet.partyId}" already exists`
             )
@@ -236,24 +229,26 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             // If the new wallet is primary, set all others to non-primary
             storage.wallets.map((w) => (w.primary = false))
         }
-        wallets.push({ ...wallet, id: wallets.length })
+        wallets.push(wallet)
         storage.wallets = wallets
         this.updateStorage(storage)
     }
 
-    async updateWallet({ id, partyId }: UpdateWallet): Promise<void> {
+    async updateWallet({ status, partyId }: UpdateWallet): Promise<void> {
         const storage = this.getStorage()
         const wallets = (await this.getWallets()).map((wallet) =>
-            wallet.id === id ? { ...wallet, partyId } : wallet
+            wallet.partyId === partyId ? { ...wallet, status } : wallet
         )
 
         storage.wallets = wallets
         this.updateStorage(storage)
     }
 
-    async removeWallet(id: number): Promise<void> {
+    async removeWallet(partyId: string): Promise<void> {
         const storage = this.getStorage()
-        const wallets = (await this.getWallets()).filter((w) => w.id !== id)
+        const wallets = (await this.getWallets()).filter(
+            (w) => w.partyId !== partyId
+        )
 
         storage.wallets = wallets
         this.updateStorage(storage)

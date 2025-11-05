@@ -81,7 +81,7 @@ export class WalletSyncService {
                 existingWallets.map((w) => [w.partyId, w.signingProviderId])
             )
 
-            const newParticipantWallets: Array<Omit<Wallet, 'id'>> =
+            const newParticipantWallets: Array<Wallet> =
                 Array.from(partiesWithRights.keys())
                     ?.filter(
                         (party) => !existingPartyIdToSigningProvider.has(party)
@@ -116,15 +116,8 @@ export class WalletSyncService {
             }
 
             this.logger.debug(wallets, 'Wallet sync completed.')
-
-            const newParticipantWalletsIds = newParticipantWallets.map(
-                (w) => w.partyId
-            )
-            const createdParticipantWallets = wallets.filter((w) =>
-                newParticipantWalletsIds.includes(w.partyId)
-            )
             return {
-                added: createdParticipantWallets,
+                added: newParticipantWallets,
                 removed: [],
             } as WalletSyncReport
         } catch (err) {

@@ -54,6 +54,9 @@ export async function up(db: Kysely<DB>): Promise<void> {
             col.references('networks.id').onDelete('cascade')
         )
         .addColumn('signing_provider_id', 'text', (col) => col.notNull())
+        .addColumn('status', 'text')
+        .addColumn('external_tx_id', 'text')
+        .addColumn('topology_transactions', 'text')
         .execute()
 
     // --- transactions ---

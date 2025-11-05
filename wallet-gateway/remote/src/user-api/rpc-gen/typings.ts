@@ -104,12 +104,13 @@ export type PartyHint = string
  *
  */
 export type SigningProviderId = string
+export type PartyId = string
 /**
  *
  * Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway.
  *
  */
-export type TxId = string
+export type ExternalTxId = string
 /**
  *
  * The topology transactions
@@ -124,11 +125,16 @@ export type TopologyTransactions = string
 export type Namespace = string
 /**
  *
- * The ID of the wallet
+ * Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.
  *
  */
-export type WalletId = number
-export type PartyId = string
+export interface SigningProviderContext {
+    partyId: PartyId
+    externalTxId: ExternalTxId
+    topologyTransactions: TopologyTransactions
+    namespace: Namespace
+    [k: string]: any
+}
 /**
  *
  * Filter wallets by network IDs.
@@ -179,7 +185,6 @@ export type PublicKey = string
  *
  */
 export interface Wallet {
-    id: WalletId
     primary: Primary
     partyId: PartyId
     hint: Hint
@@ -187,8 +192,8 @@ export interface Wallet {
     namespace: Namespace
     networkId: NetworkId
     signingProviderId: SigningProviderId
-    txId?: TxId
-    transactions?: TopologyTransactions
+    externalTxId?: ExternalTxId
+    topologyTransactions?: TopologyTransactions
     [k: string]: any
 }
 export type Added = Wallet[]
@@ -225,15 +230,7 @@ export interface CreateWalletParams {
     partyHint: PartyHint
     networkId: NetworkId
     signingProviderId: SigningProviderId
-    [k: string]: any
-}
-export interface AllocateWalletParams {
-    partyHint: PartyHint
-    signingProviderId: SigningProviderId
-    txId: TxId
-    transactions: TopologyTransactions
-    namespace: Namespace
-    id: WalletId
+    signingProviderContext?: SigningProviderContext
     [k: string]: any
 }
 export interface SetPrimaryWalletParams {
@@ -272,6 +269,10 @@ export interface AddSessionParams {
  *
  */
 export type Null = null
+export interface CreateWalletResult {
+    wallet: Wallet
+    [k: string]: any
+}
 export interface RemovePartyResult {
     [key: string]: any
 }
@@ -326,8 +327,9 @@ export interface ListSessionsResult {
 
 export type AddNetwork = (params: AddNetworkParams) => Promise<Null>
 export type RemoveNetwork = (params: RemoveNetworkParams) => Promise<Null>
-export type CreateWallet = (params: CreateWalletParams) => Promise<Null>
-export type AllocateWallet = (params: AllocateWalletParams) => Promise<Null>
+export type CreateWallet = (
+    params: CreateWalletParams
+) => Promise<CreateWalletResult>
 export type SetPrimaryWallet = (params: SetPrimaryWalletParams) => Promise<Null>
 export type RemoveWallet = (
     params: RemoveWalletParams

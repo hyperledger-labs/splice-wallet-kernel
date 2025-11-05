@@ -15,7 +15,7 @@ import {
     ListSessionsResult,
     SetPrimaryWalletParams,
     SyncWalletsResult,
-    AllocateWalletParams,
+    CreateWalletParams,
 } from './rpc-gen/typings.js'
 import { Store, Transaction, Network } from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'
@@ -147,15 +147,19 @@ export const userController = (
             await store.removeNetwork(params.networkName)
             return null
         },
-        createWallet: async (params: {
-            primary?: boolean
-            partyHint: string
-            networkId: string
-            signingProviderId: string
-        }) => {
+        createWallet: async (params: CreateWalletParams) => {
             logger.info(
                 `Allocating party with params: ${JSON.stringify(params)}`
             )
+
+            const {
+                signingProviderId,
+                signingProviderContext,
+                primary,
+                chainId,
+                networkId,
+                partyHint,
+            } = params
 
             const userId = assertConnected(authContext).userId
             const notifier = notificationService.getNotifier(userId)
@@ -173,36 +177,37 @@ export const userController = (
                 logger
             )
             const driver =
-                drivers[
-                    params.signingProviderId as SigningProvider
-                ]?.controller(userId)
+                drivers[signingProviderId as SigningProvider]?.controller(
+                    userId
+                )
 
             if (!driver) {
                 throw new Error(
-                    `Signing provider ${params.signingProviderId} not supported`
+                    `Signing provider ${signingProviderId} not supported`
                 )
             }
 
             let party: AllocatedParty
             let publicKey: string | undefined
             let txId: string = ''
+            let walletStatus: string = 'allocated'
 
-            switch (params.signingProviderId) {
+            switch (signingProviderId) {
                 case SigningProvider.PARTICIPANT: {
                     party = await partyAllocator.allocateParty(
                         userId,
-                        params.partyHint
+                        partyHint
                     )
                     break
                 }
                 case SigningProvider.WALLET_KERNEL: {
                     const key = await driver.createKey({
-                        name: params.partyHint,
+                        name: partyHint,
                     })
 
                     party = await partyAllocator.allocateParty(
                         userId,
-                        params.partyHint,
+                        partyHint,
                         key.publicKey,
                         async (hash) => {
                             const { signature } = await driver.signTransaction({
@@ -220,133 +225,120 @@ export const userController = (
                 case SigningProvider.FIREBLOCKS: {
                     const keys = await driver.getKeys()
                     const key = keys?.keys?.find(
-                        (k) => k.name === params.partyHint
+                        (k) => k.name === 'Canton Party'
                     )
                     if (!key) throw new Error('Fireblocks key not found')
 
-                    party = await partyAllocator.allocateParty(
-                        userId,
-                        params.partyHint,
-                        Buffer.from(key.publicKey, 'hex').toString('base64'),
-                        async (hash) => {
-                            const { status, txId: id } =
-                                await driver.signTransaction({
-                                    tx: '',
-                                    txHash: Buffer.from(
-                                        hash,
-                                        'base64'
-                                    ).toString('hex'),
-                                    publicKey: key.publicKey,
-                                })
+                    if (signingProviderContext) {
+                        walletStatus = 'created'
+                        const { signature, status } =
+                            await driver.getTransaction({
+                                userId,
+                                txId: signingProviderContext.externalTxId,
+                            })
 
-                            if (status === 'signed') {
-                                const { signature } =
-                                    await driver.getTransaction({
-                                        userId,
-                                        txId: id,
+                        if (!['pending', 'signed'].includes(status)) {
+                            await store.removeWallet(
+                                signingProviderContext.partyId
+                            )
+                        }
+
+                        if (signature) {
+                            await partyAllocator.allocatePartyWithExistingWallet(
+                                signingProviderContext.namespace,
+                                signingProviderContext.topologyTransactions.split(
+                                    ', '
+                                ),
+                                Buffer.from(signature, 'hex').toString(
+                                    'base64'
+                                ),
+                                userId
+                            )
+                            walletStatus = 'allocated'
+                        }
+                        party = {
+                            partyId: signingProviderContext.partyId,
+                            namespace: signingProviderContext.namespace,
+                            hint: partyHint,
+                        }
+                    } else {
+                        party = await partyAllocator.allocateParty(
+                            userId,
+                            partyHint,
+                            Buffer.from(key.publicKey, 'hex').toString(
+                                'base64'
+                            ),
+                            async (hash) => {
+                                const { status, txId: id } =
+                                    await driver.signTransaction({
+                                        tx: '',
+                                        txHash: Buffer.from(
+                                            hash,
+                                            'base64'
+                                        ).toString('hex'),
+                                        publicKey: key.publicKey,
                                     })
 
-                                return Buffer.from(signature, 'hex').toString(
-                                    'base64'
-                                )
+                                if (status === 'signed') {
+                                    const { signature } =
+                                        await driver.getTransaction({
+                                            userId,
+                                            txId: id,
+                                        })
+
+                                    return Buffer.from(
+                                        signature,
+                                        'hex'
+                                    ).toString('base64')
+                                }
+
+                                // Store the txId for unsigned transactions
+                                txId = id
+                                walletStatus = 'created'
+                                return ''
                             }
-
-                            // Store the txId for unsigned transactions
-                            txId = id
-                            return ''
-                        }
-                    )
+                        )
+                    }
                     publicKey = key.publicKey
-
                     break
                 }
                 default:
                     throw new Error(
-                        `Unsupported signing provider: ${params.signingProviderId}`
+                        `Unsupported signing provider: ${signingProviderId}`
                     )
             }
 
-            const { transactions, ...partyArgs } = party
+            const { transactions, partyId, ...partyArgs } = party
 
             const wallet = {
-                signingProviderId: params.signingProviderId,
-                networkId: params.networkId,
-                primary: params.primary ?? false,
-                publicKey: publicKey || party.namespace,
-                txId,
-                transactions: transactions?.join(', ') ?? '',
+                signingProviderId,
+                networkId,
+                chainId,
+                primary: primary ?? false,
+                publicKey: publicKey || partyArgs.namespace,
+                externalTxId: txId,
+                topologyTransactions: transactions?.join(', ') ?? '',
+                status: walletStatus,
+                partyId:
+                    partyId !== ''
+                        ? partyId
+                        : `${partyArgs.hint}::${partyArgs.namespace}`,
                 ...partyArgs,
             }
 
-            await store.addWallet(wallet)
+            if (signingProviderContext && walletStatus === 'allocated') {
+                await store.updateWallet({
+                    partyId: wallet.partyId,
+                    status: wallet.status,
+                })
+            } else if (!signingProviderContext) {
+                await store.addWallet(wallet)
+            }
 
             const wallets = await store.getWallets()
             notifier?.emit('accountsChanged', wallets)
 
-            return null
-        },
-        allocateWallet: async (params: AllocateWalletParams) => {
-            logger.info(
-                `Allocate wallet party with params: ${JSON.stringify(params)}`
-            )
-
-            const userId = assertConnected(authContext).userId
-            const notifier = notificationService.getNotifier(userId)
-            const network = await store.getCurrentNetwork()
-
-            if (network === undefined) {
-                throw new Error('No network session found')
-            }
-
-            const tokenProvider = new AuthTokenProvider(network.auth, logger)
-            const partyAllocator = new PartyAllocationService(
-                network.synchronizerId,
-                tokenProvider,
-                network.ledgerApi.baseUrl,
-                logger
-            )
-            const driver =
-                drivers[
-                    params.signingProviderId as SigningProvider
-                ]?.controller(userId)
-
-            if (!driver) {
-                throw new Error(
-                    `Signing provider ${params.signingProviderId} not supported`
-                )
-            }
-
-            if (params.signingProviderId === SigningProvider.FIREBLOCKS) {
-                const keys = await driver.getKeys()
-                const key = keys?.keys?.find((k) => k.name === params.partyHint)
-                if (!key) throw new Error('Fireblocks key not found')
-
-                const { signature, status } = await driver.getTransaction({
-                    userId,
-                    txId: params.txId,
-                })
-
-                if (!['pending', 'signed'].includes(status)) {
-                    await store.removeWallet(params.id)
-                }
-
-                if (signature) {
-                    const partyId =
-                        await partyAllocator.allocatePartyWithExistingWallet(
-                            params.namespace,
-                            params.transactions.split(', '),
-                            Buffer.from(signature, 'hex').toString('base64'),
-                            userId
-                        )
-                    await store.updateWallet({ id: params.id, partyId })
-                }
-
-                const wallets = await store.getWallets()
-                notifier?.emit('accountsChanged', wallets)
-                return null
-            }
-
-            return null
+            return { wallet }
         },
         setPrimaryWallet: async (params: SetPrimaryWalletParams) => {
             store.setPrimaryWallet(params.partyId)

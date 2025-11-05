@@ -83,8 +83,9 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             .map((table) =>
                 toWallet({
                     ...table,
-                    txId: table.txId ?? '',
-                    transactions: table.transactions ?? '',
+                    externalTxId: table.externalTxId ?? '',
+                    topologyTransactions: table.topologyTransactions ?? '',
+                    status: table.status ?? '',
                 })
             )
     }
@@ -123,11 +124,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         const userId = this.assertConnected()
 
         const wallets = await this.getWallets()
-        if (
-            wallets.some(
-                (w) => w.partyId === wallet.partyId && w.partyId !== ''
-            )
-        ) {
+        if (wallets.some((w) => w.partyId === wallet.partyId)) {
             throw new Error(
                 `Wallet with partyId "${wallet.partyId}" already exists`
             )
@@ -159,23 +156,26 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         })
     }
 
-    async updateWallet({ id, partyId }: UpdateWallet): Promise<void> {
+    async updateWallet({ status, partyId }: UpdateWallet): Promise<void> {
         this.logger.info('Updating wallet')
 
         await this.db.transaction().execute(async (trx) => {
             await trx
                 .updateTable('wallets')
-                .set({ partyId })
-                .where('id', '=', id)
+                .set({ status })
+                .where('partyId', '=', partyId)
                 .execute()
         })
     }
 
-    async removeWallet(id: number): Promise<void> {
+    async removeWallet(partyId: string): Promise<void> {
         this.logger.info('Removing wallet')
 
         await this.db.transaction().execute(async (trx) => {
-            await trx.deleteFrom('wallets').where('id', '=', id).execute()
+            await trx
+                .deleteFrom('wallets')
+                .where('partyId', '=', partyId)
+                .execute()
         })
     }
 

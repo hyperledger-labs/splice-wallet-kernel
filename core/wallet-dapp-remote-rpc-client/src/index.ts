@@ -100,12 +100,6 @@ export type UserUrl = string
 export type Response = string
 /**
  *
- * The ID of the wallet
- *
- */
-export type WalletId = number
-/**
- *
  * Set as primary wallet for dApp usage.
  *
  */
@@ -145,7 +139,7 @@ export type SigningProviderId = string
  * Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway.
  *
  */
-export type TxId = string
+export type ExternalTxId = string
 /**
  *
  * The topology transactions
@@ -158,7 +152,6 @@ export type TopologyTransactions = string
  *
  */
 export interface Wallet {
-    id: WalletId
     primary: Primary
     partyId: PartyId
     hint: Hint
@@ -166,8 +159,8 @@ export interface Wallet {
     namespace: Namespace
     networkId: NetworkId
     signingProviderId: SigningProviderId
-    txId?: TxId
-    transactions?: TopologyTransactions
+    externalTxId?: ExternalTxId
+    topologyTransactions?: TopologyTransactions
     [k: string]: any
 }
 /**

@@ -153,7 +153,7 @@ export class UserUiWallets extends LitElement {
     protected render() {
         const shownWallets = this.wallets.reduce(
             (acc, w) => {
-                if (w.partyId) {
+                if (w.status === 'allocated') {
                     acc.verifiedWallets.push(w)
                 } else {
                     acc.unverifiedWallets.push(w)
@@ -266,7 +266,7 @@ export class UserUiWallets extends LitElement {
                             </div>
                             <div class="wallet-meta">
                                 <strong>Transaction ID:</strong>
-                                ${wallet.txId}<br />
+                                ${wallet.externalTxId}<br />
                                 <strong>Network:</strong>
                                 ${wallet.chainId}<br />
                                 <strong>Signing Provider:</strong>
@@ -395,13 +395,17 @@ export class UserUiWallets extends LitElement {
         this.loading = true
         try {
             const userClient = createUserClient(stateManager.accessToken.get())
-            await userClient.request('allocateWallet', {
+            await userClient.request('createWallet', {
+                primary: wallet.primary,
                 partyHint: wallet.hint,
+                chainId: wallet.chainId,
                 signingProviderId: wallet.signingProviderId,
-                txId: wallet.txId || '',
-                transactions: wallet.transactions || '',
-                namespace: wallet.namespace,
-                id: wallet.id,
+                signingProviderContext: {
+                    partyId: wallet.partyId,
+                    externalTxId: wallet.externalTxId || '',
+                    topologyTransactions: wallet.topologyTransactions || '',
+                    namespace: wallet.namespace,
+                },
             })
         } catch (e) {
             handleErrorToast(e)

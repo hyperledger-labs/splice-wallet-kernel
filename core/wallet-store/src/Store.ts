@@ -27,12 +27,11 @@ export interface WalletFilter {
 }
 
 export interface UpdateWallet {
-    id: number
+    status: string
     partyId: string
 }
 
 export interface Wallet {
-    id: number
     primary: boolean
     partyId: PartyId
     hint: string
@@ -40,8 +39,9 @@ export interface Wallet {
     namespace: string
     networkId: string
     signingProviderId: string
-    txId?: string
-    transactions?: string
+    externalTxId?: string
+    topologyTransactions?: string
+    status?: string
     // hosted: [network]
 }
 
@@ -67,9 +67,9 @@ export interface Store {
     getWallets(filter?: WalletFilter): Promise<Array<Wallet>>
     getPrimaryWallet(): Promise<Wallet | undefined>
     setPrimaryWallet(partyId: PartyId): Promise<void>
-    addWallet(wallet: Omit<Wallet, 'id'>): Promise<void>
+    addWallet(wallet: Wallet): Promise<void>
     updateWallet(params: UpdateWallet): Promise<void>
-    removeWallet(id: number): Promise<void>
+    removeWallet(partyId: string): Promise<void>
 
     // Session methods
     getSession(): Promise<Session | undefined>
