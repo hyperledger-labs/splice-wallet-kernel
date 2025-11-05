@@ -181,4 +181,20 @@ The below script setup transfer preapproval for Bob and performs a 1-step transf
     :language: typescript
     :dedent:
 
+How to renew or cancel a transfer preapproval
+---------------------------------------------
+If you have used the validator operator party as the provider, then it will automatically renew the transfer preapproval approximately
+20 days before expiry, however there are cases where you would like to perform the preapproval renewal manually:
 
+.. literalinclude:: ../../examples/snippets/renew-preapproval.ts
+    :language: typescript
+    :dedent:
+
+You can also deploy a secondary transfer preapproval, however this means that there are simply two preapprovals instead of it replacing
+the existing.
+
+If you have accidentally create a transfer preapproval that you dont want to keep you can perform a cancel instead:
+
+.. literalinclude:: ../../examples/snippets/cancel-preapproval.ts
+    :language: typescript
+    :dedent:
