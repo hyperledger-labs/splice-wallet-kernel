@@ -2,25 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import '@canton-network/core-wallet-ui-components'
+import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
+
 import { LitElement, html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
-import {
-    Auth as ApiAuth,
-    Network,
-    RemoveNetworkParams,
-    Session,
-} from '@canton-network/core-wallet-user-rpc-client'
+import { Network, Session } from '@canton-network/core-wallet-user-rpc-client'
 
 import '../index'
 import '/index.css'
 import { stateManager } from '../state-manager'
 import { createUserClient } from '../rpc-client'
-import { handleErrorToast } from '../handle-errors'
-import {
-    NetworkCardDeleteEvent,
-    NetworkEditSaveEvent,
-} from '@canton-network/core-wallet-ui-components'
-import { Auth } from '@canton-network/core-wallet-auth'
 
 import './networks'
 
@@ -43,6 +34,10 @@ export class UserUiSettings extends LitElement {
     @state() accessor editingNetwork: Network | null = null
     @state() accessor authType: string =
         this.editingNetwork?.auth?.method ?? 'authorization_code'
+
+    // private async getClient() {
+    // return createUserClient(stateManager.accessToken.get())
+    // }
 
     private async listNetworks() {
         const userClient = createUserClient(stateManager.accessToken.get())
@@ -84,62 +79,62 @@ export class UserUiSettings extends LitElement {
         this.listNetworks()
     }
 
-    private async handleDelete(e: NetworkCardDeleteEvent) {
-        if (!confirm(`Delete network "${e.network.name}"?`)) return
-        try {
-            const params: RemoveNetworkParams = {
-                networkName: e.network.id,
-            }
-            const userClient = createUserClient(stateManager.accessToken.get())
-            await userClient.request('removeNetwork', params)
-            await this.listNetworks()
-        } catch (e) {
-            handleErrorToast(e)
-        }
-    }
+    // private async handleDelete(e: NetworkCardDeleteEvent) {
+    //     if (!confirm(`Delete network "${e.network.name}"?`)) return
+    //     try {
+    //         const params: RemoveNetworkParams = {
+    //             networkName: e.network.id,
+    //         }
+    //         const userClient = createUserClient(stateManager.accessToken.get())
+    //         await userClient.request('removeNetwork', params)
+    //         await this.listNetworks()
+    //     } catch (e) {
+    //         handleErrorToast(e)
+    //     }
+    // }
 
-    private toApiAuth(auth: Auth): ApiAuth {
-        return {
-            method: auth.method,
-            audience: auth.audience ?? '',
-            scope: auth.scope ?? '',
-            clientId: auth.clientId ?? '',
-            issuer: (auth as ApiAuth).issuer ?? '',
-            clientSecret: (auth as ApiAuth).clientSecret ?? '',
-        }
-    }
+    // private toApiAuth(auth: Auth): ApiAuth {
+    //     return {
+    //         method: auth.method,
+    //         audience: auth.audience ?? '',
+    //         scope: auth.scope ?? '',
+    //         clientId: auth.clientId ?? '',
+    //         issuer: (auth as ApiAuth).issuer ?? '',
+    //         clientSecret: (auth as ApiAuth).clientSecret ?? '',
+    //     }
+    // }
 
-    private handleSubmit = async (e: NetworkEditSaveEvent) => {
-        e.preventDefault()
+    // private handleSubmit = async (e: NetworkEditSaveEvent) => {
+    //     e.preventDefault()
 
-        const auth = this.toApiAuth(e.network.auth)
-        const adminAuth = e.network.adminAuth
-            ? this.toApiAuth(e.network.adminAuth)
-            : {
-                  method: 'client_credentials',
-                  audience: '',
-                  scope: '',
-                  clientId: '',
-                  clientSecret: '',
-              }
+    //     const auth = this.toApiAuth(e.network.auth)
+    //     const adminAuth = e.network.adminAuth
+    //         ? this.toApiAuth(e.network.adminAuth)
+    //         : {
+    //               method: 'client_credentials',
+    //               audience: '',
+    //               scope: '',
+    //               clientId: '',
+    //               clientSecret: '',
+    //           }
 
-        const network: Network = {
-            ...e.network,
-            ledgerApi: e.network.ledgerApi.baseUrl,
-            auth,
-            adminAuth,
-        }
+    //     const network: Network = {
+    //         ...e.network,
+    //         ledgerApi: e.network.ledgerApi.baseUrl,
+    //         auth,
+    //         adminAuth,
+    //     }
 
-        try {
-            const userClient = createUserClient(stateManager.accessToken.get())
-            await userClient.request('addNetwork', { network })
-            await this.listNetworks()
-        } catch (e) {
-            handleErrorToast(e)
-        } finally {
-            this.closeModal()
-        }
-    }
+    //     try {
+    //         const userClient = createUserClient(stateManager.accessToken.get())
+    //         await userClient.request('addNetwork', { network })
+    //         await this.listNetworks()
+    //     } catch (e) {
+    //         handleErrorToast(e)
+    //     } finally {
+    //         this.closeModal()
+    //     }
+    // }
 
     onAuthTypeChange(e: Event) {
         const select = e.target as HTMLSelectElement
@@ -147,8 +142,11 @@ export class UserUiSettings extends LitElement {
     }
 
     protected render() {
+        const client = createUserClient(stateManager.accessToken.get())
+
         return html`
             <wg-sessions .sessions=${this.sessions}></wg-sessions>
+            <wg-wallets .client=${client}></wg-wallets>
             <user-ui-settings-networks></user-ui-settings-networks>
         `
     }

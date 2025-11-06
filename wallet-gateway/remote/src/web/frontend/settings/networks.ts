@@ -14,7 +14,7 @@ import '../index'
 import '/index.css'
 import { stateManager } from '../state-manager'
 import { createUserClient } from '../rpc-client'
-import { handleErrorToast } from '../handle-errors'
+import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
 import {
     NetworkCardDeleteEvent,
     NetworkEditSaveEvent,
@@ -153,18 +153,6 @@ export class UserUiSettingsNetworks extends LitElement {
         this.editingNetwork = null
     }
 
-    syncWallets = async () => {
-        try {
-            const userClient = createUserClient(stateManager.accessToken.get())
-            const result = await userClient.request('syncWallets')
-            alert(
-                `Wallet sync completed. Added ${result.added.length} wallets.`
-            )
-        } catch (e) {
-            handleErrorToast(e)
-        }
-    }
-
     closeModal = () => {
         this.isModalOpen = false
         this.listNetworks()
@@ -234,36 +222,6 @@ export class UserUiSettingsNetworks extends LitElement {
 
     protected render() {
         return html`
-            <div class="header"><h1>Wallets</h1></div>
-            <div class="info-box">
-                <svg
-                    width="20"
-                    height="20"
-                    fill="currentColor"
-                    style="flex-shrink:0;"
-                    viewBox="0 0 20 20"
-                >
-                    <circle cx="10" cy="10" r="10" fill="#1769aa" />
-                    <text
-                        x="10"
-                        y="15"
-                        text-anchor="middle"
-                        fill="#fff"
-                        font-size="14"
-                        font-family="Arial"
-                        font-weight="bold"
-                    >
-                        i
-                    </text>
-                </svg>
-                <span
-                    >Keep your wallets in sync with the connected network.</span
-                >
-            </div>
-            <button class="buttons" @click=${this.syncWallets}>
-                Sync Wallets
-            </button>
-
             <div class="header"><h1>Networks</h1></div>
             <button class="buttons" @click=${this.openAddModal}>
                 Add Network
