@@ -819,7 +819,7 @@ export class LedgerController {
                 ) ?? []
 
             const executeAsParties = canExecuteAsPartyRights.map(
-                (r) => r.kind.CanActAs?.value?.party
+                (r) => r.kind.CanExecuteAs?.value?.party
             )
 
             const allWallets = [
