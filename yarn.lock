@@ -1808,6 +1808,7 @@ __metadata:
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
     "@canton-network/core-wallet-store": "workspace:^"
+    "@canton-network/core-wallet-user-rpc-client": "workspace:^"
     "@popperjs/core": "npm:^2.11.8"
     "@storybook/web-components-vite": "npm:^9.1.10"
     "@types/bootstrap": "npm:^5"

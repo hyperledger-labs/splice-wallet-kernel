@@ -8,7 +8,6 @@ import {
     Auth as ApiAuth,
     Network,
     RemoveNetworkParams,
-    Session,
 } from '@canton-network/core-wallet-user-rpc-client'
 
 import '../index'
@@ -22,8 +21,8 @@ import {
 } from '@canton-network/core-wallet-ui-components'
 import { Auth } from '@canton-network/core-wallet-auth'
 
-@customElement('user-ui-networks')
-export class UserUiNetworks extends LitElement {
+@customElement('user-ui-settings-networks')
+export class UserUiSettingsNetworks extends LitElement {
     static styles = css`
         :host {
             display: block;
@@ -35,30 +34,6 @@ export class UserUiNetworks extends LitElement {
         }
         .header {
             margin-bottom: 1rem;
-        }
-        .table-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            width: 100%;
-            overflow-x: auto;
-            margin-bottom: 2rem;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        }
-        th,
-        td {
-            padding: 0.75rem 0.5rem;
-            border-bottom: 1px solid #eee;
-            text-align: left;
-            font-size: 1rem;
-        }
-        th {
-            background: #f7f7f7;
-            font-weight: 600;
         }
         .buttons {
             background: #0052cc;
@@ -157,7 +132,6 @@ export class UserUiNetworks extends LitElement {
     `
 
     @state() accessor networks: Network[] = []
-    @state() accessor sessions: Session[] = []
     @state() accessor isModalOpen = false
     @state() accessor editingNetwork: Network | null = null
     @state() accessor authType: string =
@@ -169,16 +143,9 @@ export class UserUiNetworks extends LitElement {
         this.networks = response.networks
     }
 
-    private async listSessions() {
-        const userClient = createUserClient(stateManager.accessToken.get())
-        const response = await userClient.request('listSessions')
-        this.sessions = response.sessions
-    }
-
     connectedCallback(): void {
         super.connectedCallback()
         this.listNetworks()
-        this.listSessions()
     }
 
     openAddModal = () => {
@@ -267,41 +234,6 @@ export class UserUiNetworks extends LitElement {
 
     protected render() {
         return html`
-            <div class="header"><h1>Sessions</h1></div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Network ID</th>
-                            <th>Status</th>
-                            <th>AccessToken</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${this.sessions.map(
-                            (session) => html`
-                                <tr>
-                                    <td>${session.network.id}</td>
-                                    <td>${session.status}</td>
-                                    <td>
-                                        <button
-                                            type="button"
-                                            @click=${() =>
-                                                navigator.clipboard.writeText(
-                                                    session.accessToken
-                                                )}
-                                            title="Copy access token"
-                                        >
-                                            Copy to clipboard
-                                        </button>
-                                    </td>
-                                </tr>
-                            `
-                        )}
-                    </tbody>
-                </table>
-            </div>
-
             <div class="header"><h1>Wallets</h1></div>
             <div class="info-box">
                 <svg
