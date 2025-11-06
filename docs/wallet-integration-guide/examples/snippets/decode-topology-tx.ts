@@ -5,6 +5,7 @@ import {
     localNetTopologyDefault,
     TopologyController,
     WalletSDKImpl,
+    LedgerController,
 } from '@canton-network/wallet-sdk'
 
 // @disable-snapshot-test
@@ -28,7 +29,7 @@ export default async function () {
 
     return generateExternalPartyResponse!.topologyTransactions!.map(
         (topologyTx) => {
-            sdk.userLedger!.toDecodedTopologyTransaction(topologyTx)
+            LedgerController.toDecodedTopologyTransaction(topologyTx)
         }
     )
 }
