@@ -809,7 +809,24 @@ export class LedgerController {
                 (r) => r.kind.CanActAs?.value?.party
             )
 
-            const allWallets = [...actAsParties, ...readAsParties]
+            const canExecuteAsPartyRights =
+                rights.rights?.filter(
+                    (
+                        r
+                    ): r is {
+                        kind: { CanExecuteAs: { value: { party: string } } }
+                    } => 'CanExecuteAs' in r.kind
+                ) ?? []
+
+            const executeAsParties = canExecuteAsPartyRights.map(
+                (r) => r.kind.CanExecuteAs?.value?.party
+            )
+
+            const allWallets = [
+                ...actAsParties,
+                ...readAsParties,
+                ...executeAsParties,
+            ]
 
             return Array.from(new Set(allWallets))
         }
