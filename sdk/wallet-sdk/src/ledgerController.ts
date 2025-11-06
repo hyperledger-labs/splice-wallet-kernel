@@ -176,8 +176,17 @@ export class LedgerController {
      * @param preparedTopologyTransaction base64 encoded string
      * @returns A TopologyTransaction
      */
-    toDecodedTopologyTransaction(preparedTopologyTransaction: string) {
+    static toDecodedTopologyTransaction(preparedTopologyTransaction: string) {
         return decodeTopologyTransaction(preparedTopologyTransaction)
+    }
+
+    /**
+     * @deprecated use static method LedgerController.decodeTopologyTransaction instead
+     */
+    toDecodedTopologyTransaction(preparedTopologyTransaction: string) {
+        return LedgerController.toDecodedTopologyTransaction(
+            preparedTopologyTransaction
+        )
     }
 
     /**

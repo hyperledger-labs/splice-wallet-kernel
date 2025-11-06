@@ -7,6 +7,7 @@ import {
     createKeyPair,
     localValidatorDefault,
     localNetStaticConfig,
+    LedgerController,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
@@ -42,7 +43,7 @@ logger.info(`Created party: ${sender!.partyId}`)
 await sdk.setPartyId(sender!.partyId)
 
 sender?.topologyTransactions!.map((topologyTx) => {
-    const decodedTx = sdk.userLedger?.toDecodedTopologyTransaction(topologyTx)
+    const decodedTx = LedgerController.toDecodedTopologyTransaction(topologyTx)
     logger.info(decodedTx)
 })
 
