@@ -18,7 +18,6 @@ const sdk = new WalletSDKImpl().configure({
     logger,
     authFactory: localNetAuthDefault,
     ledgerFactory: localNetLedgerDefault,
-    topologyFactory: localNetTopologyDefault,
     tokenStandardFactory: localNetTokenStandardDefault,
     validatorFactory: localValidatorDefault,
 })
@@ -31,7 +30,6 @@ logger.info('Connected to ledger')
 const keyPairSender = createKeyPair()
 const keyPairReceiver = createKeyPair()
 
-await sdk.connectAdmin()
 await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
 const sender = await sdk.userLedger?.signAndAllocateExternalParty(
@@ -41,25 +39,11 @@ const sender = await sdk.userLedger?.signAndAllocateExternalParty(
 logger.info(`Created party: ${sender!.partyId}`)
 await sdk.setPartyId(sender!.partyId)
 
-sender?.topologyTransactions!.map((topologyTx) => {
-    const decodedTx = sdk.userLedger?.toDecodedTopologyTransaction(topologyTx)
-    logger.info(decodedTx)
-})
-
 const receiver = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairReceiver.privateKey,
     'bob'
 )
 logger.info(`Created party: ${receiver!.partyId}`)
-
-await sdk.userLedger
-    ?.listWallets()
-    .then((wallets) => {
-        logger.info(wallets, 'Wallets:')
-    })
-    .catch((error) => {
-        logger.error({ error }, 'Error listing wallets')
-    })
 
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(
     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
@@ -71,7 +55,7 @@ const validatorOperatorParty = await sdk.validator?.getValidatorUser()
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
-await new Promise((res) => setTimeout(res, 5000))
+logger.info(`instrument admin party id ${instrumentAdminPartyId}`)
 
 logger.info('creating transfer preapproval proposal')
 
@@ -106,8 +90,6 @@ const participantId = await sdk.userLedger?.getParticipantId()
 
 logger.info(participantId, 'participant id is')
 
-await sdk.setPartyId(validatorOperatorParty!)
-
 await sdk.setPartyId(sender!.partyId!)
 
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
@@ -130,16 +112,12 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 
 logger.info(`executed tap command for external party ${sender?.partyId}`)
 
-const utxos2 = await sdk.tokenStandard?.listHoldingUtxos()
-logger.info(utxos2, 'utxos for sender')
-const cids2 = utxos2?.map((t) => t.contractId)
-
 const [buyTrafficCommand, buyTrafficDisclosedContracts] =
     await sdk.tokenStandard!.buyMemberTraffic(
         sender?.partyId!,
         200000,
         participantId!,
-        cids2 ?? []
+        []
     )
 
 logger.info(buyTrafficCommand)
@@ -151,6 +129,7 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     buyTrafficDisclosedContracts
 )
 
+//TODO: validate buy checking the traffic status of the validator operator party
 logger.info(
     `buy member traffic for sender (${sender?.partyId}) party completed ${sender?.partyId}`
 )
@@ -192,17 +171,6 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     disclosedContracts2
 )
 logger.info('Submitted transfer transaction')
-
-await sdk.setPartyId(validatorOperatorParty!)
-
-const validatorFeatureAppRights =
-    await sdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
-
-logger.info(
-    validatorFeatureAppRights,
-    `Featured App Rights for validator ${validatorOperatorParty}`
-)
-
 {
     await sdk.setPartyId(sender!.partyId)
     const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
