@@ -28,9 +28,7 @@ import { LedgerClient } from './ledger-client.js'
 import { TokenStandardTransactionInterfaces } from './constants.js'
 import {
     ensureInterfaceViewIsPresent,
-    TransactionFilterBySetup,
     EventFilterBySetup,
-    defaultRetryableOptions,
 } from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
 import {
@@ -133,31 +131,99 @@ export class CoreService {
              */
     }
 
+    async listContractsByInterface2(interfaceId: string, partyId?: PartyId) {
+        try {
+            const ledgerEnd = await this.ledgerClient.getWithRetry(
+                '/v2/state/ledger-end'
+            )
+            // const acsResponses: JsGetActiveContractsResponse[] =
+            //     await this.ledgerClient.postWithRetry(
+            //         '/v2/state/active-contracts',
+            //         {
+            //             filter: TransactionFilterBySetup(interfaceId, {
+            //                 isMasterUser: this.isMasterUser,
+            //                 partyId: partyId,
+            //             }),
+            //             verbose: false,
+            //             activeAtOffset: ledgerEnd.offset,
+            //         },
+            //         defaultRetryableOptions,
+            //         {
+            //             query: limit ? { limit: limit.toString() } : {},
+            //         }
+            //     )
+
+            this.logger.info(interfaceId)
+            this.logger.info(partyId!)
+            const acsResponses: JsGetActiveContractsResponse[] =
+                await this.ledgerClient.activeContracts({
+                    offset: ledgerEnd.offset,
+                    interfaceIds: [interfaceId],
+                    parties: [partyId!],
+                    filterByParty: true,
+                })
+
+            /*  This filters out responses with entries of:
+                - JsEmpty
+                - JsIncompleteAssigned
+                - JsIncompleteUnassigned
+                while leaving JsActiveContract.
+                It works fine only with single synchronizer
+                TODO (#353) add support for multiple synchronizers
+             */
+            const isActiveContractEntry = (
+                acsResponse: JsGetActiveContractsResponse
+            ): acsResponse is JsActiveContractEntryResponse =>
+                !!acsResponse.contractEntry.JsActiveContract?.createdEvent
+
+            const activeContractEntries = acsResponses.filter(
+                isActiveContractEntry
+            )
+            return activeContractEntries
+        } catch (err) {
+            this.logger.error(
+                `Failed to list contracts of interface ${interfaceId}`,
+                err
+            )
+            throw err
+        }
+    }
+
     async listContractsByInterface<T = ViewValue>(
         interfaceId: string,
         partyId?: PartyId,
         limit?: number
     ): Promise<PrettyContract<T>[]> {
         try {
+            console.log(limit)
             const ledgerEnd = await this.ledgerClient.getWithRetry(
                 '/v2/state/ledger-end'
             )
+
+            // const acsResponses: JsGetActiveContractsResponse[] =
+            //     await this.ledgerClient.postWithRetry(
+            //         '/v2/state/active-contracts',
+            //         {
+            //             filter: TransactionFilterBySetup(interfaceId, {
+            //                 isMasterUser: this.isMasterUser,
+            //                 partyId: partyId,
+            //             }),
+            //             verbose: false,
+            //             activeAtOffset: ledgerEnd.offset,
+            //         },
+            //         defaultRetryableOptions,
+            //         {
+            //             query: limit ? { limit: limit.toString() } : {},
+            //         }
+            //     )
+
             const acsResponses: JsGetActiveContractsResponse[] =
-                await this.ledgerClient.postWithRetry(
-                    '/v2/state/active-contracts',
-                    {
-                        filter: TransactionFilterBySetup(interfaceId, {
-                            isMasterUser: this.isMasterUser,
-                            partyId: partyId,
-                        }),
-                        verbose: false,
-                        activeAtOffset: ledgerEnd.offset,
-                    },
-                    defaultRetryableOptions,
-                    {
-                        query: limit ? { limit: limit.toString() } : {},
-                    }
-                )
+                await this.ledgerClient.activeContracts({
+                    offset: ledgerEnd.offset,
+                    interfaceIds: [interfaceId],
+                    parties: [partyId!],
+                    filterByParty: true,
+                })
 
             /*  This filters out responses with entries of:
                 - JsEmpty
@@ -1208,6 +1274,9 @@ export class TokenStandardService {
         const activeRound =
             await this.scanProxyClient.getActiveOpenMiningRound()
 
+        //         const instrumentAdminPartyId =
+        // (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
+
         const inputHoldings = await this.core.getInputHoldingsCids(
             provider,
             inputUtxos
@@ -1288,6 +1357,12 @@ export class TokenStandardService {
             partyId,
             limit
         )
+    }
+
+    // <T> is shape of viewValue related to queried interface.
+    // i.e. when querying by TransferInstruction interfaceId, <T> would be TransferInstructionView from daml codegen
+    async listContractsByInterface2(interfaceId: string, partyId?: PartyId) {
+        return this.core.listContractsByInterface2(interfaceId, partyId)
     }
 
     async listHoldingTransactions(

@@ -480,8 +480,10 @@ export class LedgerClient {
         templateIds?: string[]
         parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
         filterByParty?: boolean
+        interfaceIds?: string[]
     }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
-        const { offset, templateIds, parties, filterByParty } = options
+        const { offset, templateIds, parties, filterByParty, interfaceIds } =
+            options
 
         this.logger.debug(options, 'options for active contracts')
 
@@ -492,6 +494,16 @@ export class LedgerClient {
                 offset,
                 party,
                 templateId
+            )
+        }
+
+        if (interfaceIds?.length === 1 && parties?.length === 1) {
+            const party = parties[0]
+            const interfaceId = interfaceIds[0]
+            return this.acsHelper.activeContractsForInterface(
+                offset,
+                party,
+                interfaceId
             )
         }
 
@@ -506,19 +518,6 @@ export class LedgerClient {
             return r
         }
 
-        const filter = this.buildActiveContractsFilter(options)
-
-        this.logger.debug('falling back to post request')
-
-        return await this.postWithRetry('/v2/state/active-contracts', filter)
-    }
-
-    private buildActiveContractsFilter(options: {
-        offset: number
-        templateIds?: string[]
-        parties?: string[]
-        filterByParty?: boolean
-    }) {
         const filter: PostRequest<'/v2/state/active-contracts'> = {
             filter: {
                 filtersByParty: {},
@@ -544,17 +543,45 @@ export class LedgerClient {
             ]
         }
 
+        const buildInterfaceFilter = (interfaceIds?: string[]) => {
+            if (!interfaceIds) return []
+            return [
+                {
+                    identifierFilter: {
+                        InterfaceFilter: {
+                            value: {
+                                interfaceId: interfaceIds[0],
+                                includeCreatedEventBlob: true, //TODO: figure out if this should be configurable
+                                includeInterfaceView: true,
+                            },
+                        },
+                    },
+                },
+            ]
+        }
+
+        this.logger.info(options, 'active contract query options')
         if (
             options?.filterByParty &&
             options.parties &&
             options.parties.length > 0
         ) {
             // Filter by party: set filtersByParty for each party
-            for (const party of options.parties) {
-                filter.filter!.filtersByParty[party] = {
-                    cumulative: options.templateIds
-                        ? buildTemplateFilter(options.templateIds)
-                        : [],
+            if (options?.templateIds && !options?.interfaceIds) {
+                for (const party of options.parties) {
+                    filter.filter!.filtersByParty[party] = {
+                        cumulative: options.templateIds
+                            ? buildTemplateFilter(options.templateIds)
+                            : [],
+                    }
+                }
+            } else if (options?.interfaceIds && !options?.templateIds) {
+                for (const party of options.parties) {
+                    filter.filter!.filtersByParty[party] = {
+                        cumulative: options.interfaceIds
+                            ? buildInterfaceFilter(options.interfaceIds)
+                            : [],
+                    }
                 }
             }
         } else if (options?.templateIds) {
@@ -562,10 +589,105 @@ export class LedgerClient {
             filter.filter!.filtersForAnyParty = {
                 cumulative: buildTemplateFilter(options.templateIds),
             }
+        } else if (options?.interfaceIds) {
+            filter.filter!.filtersForAnyParty = {
+                cumulative: buildInterfaceFilter(options.templateIds),
+            }
         }
 
-        return filter
+        this.logger.debug('falling back to post request')
+
+        return await this.postWithRetry('/v2/state/active-contracts', filter)
     }
+
+    // private buildActiveContractsFilter(options: {
+    //     offset: number
+    //     templateIds?: string[]
+    //     parties?: string[]
+    //     filterByParty?: boolean
+    //     interfaceIds?: string[]
+    // }) {
+    //     const filter: PostRequest<'/v2/state/active-contracts'> = {
+    //         filter: {
+    //             filtersByParty: {},
+    //         },
+    //         verbose: false,
+    //         activeAtOffset: options?.offset,
+    //     }
+
+    //     this.logger.info('BUILD ACTIVE CONTRACTS FILTER')
+
+    //     // Helper to build TemplateFilter array
+    //     const buildTemplateFilter = (templateIds?: string[]) => {
+    //         if (!templateIds) return []
+    //         return [
+    //             {
+    //                 identifierFilter: {
+    //                     TemplateFilter: {
+    //                         value: {
+    //                             templateId: templateIds[0],
+    //                             includeCreatedEventBlob: true, //TODO: figure out if this should be configurable
+    //                         },
+    //                     },
+    //                 },
+    //             },
+    //         ]
+    //     }
+
+    //     const buildInterfaceFilter = (interfaceIds?: string[]) => {
+    //         if (!interfaceIds) return []
+    //         return [
+    //             {
+    //                 identifierFilter: {
+    //                     InterfaceFilter: {
+    //                         value: {
+    //                             interfaceId: interfaceIds[0],
+    //                             includeCreatedEventBlob: true, //TODO: figure out if this should be configurable
+    //                             includeInterfaceView: true,
+    //                         },
+    //                     },
+    //                 },
+    //             },
+    //         ]
+    //     }
+
+    //     this.logger.info(options, 'active contract query options')
+    //     if (
+    //         options?.filterByParty &&
+    //         options.parties &&
+    //         options.parties.length > 0
+    //     ) {
+    //         // Filter by party: set filtersByParty for each party
+    //         if (options?.templateIds && !options?.interfaceIds) {
+    //             for (const party of options.parties) {
+    //                 filter.filter!.filtersByParty[party] = {
+    //                     cumulative: options.templateIds
+    //                         ? buildTemplateFilter(options.templateIds)
+    //                         : [],
+    //                 }
+    //             }
+    //         } else if (options?.interfaceIds && !options?.templateIds) {
+    //             for (const party of options.parties) {
+    //                 filter.filter!.filtersByParty[party] = {
+    //                     cumulative: options.interfaceIds
+    //                         ? buildInterfaceFilter(options.interfaceIds)
+    //                         : [],
+    //                 }
+    //             }
+    //         }
+    //     } else if (options?.templateIds) {
+    //         // Only template filter, no party
+    //         filter.filter!.filtersForAnyParty = {
+    //             cumulative: buildTemplateFilter(options.templateIds),
+    //         }
+    //     } else if (options?.interfaceIds) {
+    //         filter.filter!.filtersForAnyParty = {
+    //             cumulative: buildInterfaceFilter(options.templateIds),
+    //         }
+    //     }
+
+    //     return filter
+    // }
 
     public async postWithRetry<Path extends PostEndpoint>(
         path: Path,

@@ -255,6 +255,12 @@ export class TokenStandardController {
     }
 
     /**
+     * Returns stats for the internal acs cache for token standard controller ledger client
+     */
+    getACSCacheStats() {
+        return this.client.getCacheStats()
+    }
+    /**
      * List specific holding utxo
      * @param contractId id of the holding UTXO
      * @throws error if the holding with the specified contractId is not found

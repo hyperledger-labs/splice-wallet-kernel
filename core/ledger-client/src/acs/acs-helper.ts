@@ -17,7 +17,7 @@ export type AcsHelperOptions = {
     includeCreatedEventBlob?: boolean
 }
 
-const DEFAULT_MAX_CACHE_SIZE = 50
+const DEFAULT_MAX_CACHE_SIZE = 5000
 const DEFAULT_ENTRY_EXPIRATION_TIME = 10 * 60 * 1000
 
 export class ACSHelper {
@@ -86,6 +86,7 @@ export class ACSHelper {
 
     private findACSContainer(key: ACSKey): ACSContainer {
         const keyStr = ACSHelper.keyToString(key)
+        this.logger.info(`ACS KEY ${keyStr}`)
         const start = performance.now()
         const existing = this.contractsSet.get(keyStr)
         const end = performance.now()
@@ -93,11 +94,11 @@ export class ACSHelper {
 
         if (existing) {
             this.hits++
-            this.logger.debug('cache hit')
+            this.logger.info('cache hit')
             return existing
         }
 
-        this.logger.debug('cache miss')
+        this.logger.info('cache miss')
         this.misses++
         const newContainer = new ACSContainer(undefined, {
             includeCreatedEventBlob: this.includeCreatedEventBlob,
