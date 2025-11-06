@@ -18,6 +18,7 @@ export default async function () {
         topologyFactory: localNetTopologyDefault, // or use your specific configuration
     })
 
+    await sdk.connect()
     await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
     const { publicKey, privateKey } = TopologyController.createNewKeyPair()
@@ -25,11 +26,10 @@ export default async function () {
     const partyHint = 'my-wallet-1'
 
     const generateExternalPartyResponse =
-        await sdk.userLedger?.generateExternalParty(privateKey, partyHint)
+        await sdk.userLedger?.generateExternalParty(publicKey, partyHint)
 
     return generateExternalPartyResponse!.topologyTransactions!.map(
-        (topologyTx) => {
+        (topologyTx) =>
             LedgerController.toDecodedTopologyTransaction(topologyTx)
-        }
     )
 }
