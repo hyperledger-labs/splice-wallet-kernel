@@ -244,6 +244,7 @@ export class LedgerController {
         timeoutMs: number = 15000
     ): Promise<Types['Completion']['value']> {
         const ledgerEnd = await this.ledgerEnd()
+
         await this.prepareSignAndExecuteTransaction(
             commands,
             privateKey,
@@ -999,6 +1000,11 @@ export class LedgerController {
      */
     getACSCacheStats() {
         return this.client.getCacheStats()
+    }
+
+    async getParticipantId(): Promise<PartyId> {
+        return (await this.client.getWithRetry('/v2/parties/participant-id'))
+            .participantId
     }
 
     /**

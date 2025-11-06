@@ -1195,6 +1195,79 @@ export class TokenStandardService {
         }
     }
 
+    async buyMemberTraffic(
+        dso: PartyId,
+        provider: PartyId,
+        trafficAmount: number,
+        synchronizerId: string,
+        memberId: string,
+        migrationId: number,
+        inputUtxos?: string[]
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const amuletRules = await this.scanProxyClient.getAmuletRules()
+        const activeRound =
+            await this.scanProxyClient.getActiveOpenMiningRound()
+
+        const inputHoldings = await this.core.getInputHoldingsCids(
+            provider,
+            inputUtxos
+        )
+
+        if (!amuletRules) {
+            throw new Error('AmuletRules contract not found')
+        }
+        if (!activeRound) {
+            throw new Error(
+                'OpenMiningRound active at current moment not found'
+            )
+        }
+
+        const disclosed: DisclosedContract[] = [
+            {
+                templateId: amuletRules.template_id,
+                contractId: amuletRules.contract_id,
+                createdEventBlob: amuletRules.created_event_blob,
+                synchronizerId,
+            },
+            {
+                templateId: activeRound.template_id!,
+                contractId: activeRound.contract_id,
+                createdEventBlob: activeRound.created_event_blob,
+                synchronizerId,
+            },
+        ]
+
+        const context = {
+            openMiningRound: activeRound.contract_id,
+            issuingMiningRounds: [],
+            validatorRights: [],
+            featuredAppRight: null,
+        }
+
+        const choiceArgs = {
+            context,
+            inputs: inputHoldings.map((cid) => ({
+                tag: 'InputAmulet',
+                value: cid,
+            })),
+            provider,
+            memberId,
+            synchronizerId,
+            migrationId,
+            trafficAmount,
+            expectedDso: dso,
+        }
+
+        const exercise: ExerciseCommand = {
+            templateId: '#splice-amulet:Splice.AmuletRules:AmuletRules',
+            contractId: amuletRules.contract_id,
+            choice: 'AmuletRules_BuyMemberTraffic',
+            choiceArgument: choiceArgs,
+        }
+
+        return [exercise, disclosed]
+    }
+
     async getInstrumentAdmin(registryUrl: string): Promise<string | undefined> {
         const client = this.core.getTokenStandardClient(registryUrl)
 

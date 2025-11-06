@@ -327,6 +327,41 @@ export class TokenStandardController {
         )
     }
 
+    /**
+     * Build an Exercise command to Buy Member Traffic.
+     * @param buyer Provider party whose inputs will fund the traffic purchase
+     * @param ccAmount Amount of traffic to purchase
+     * @param memberId The id of the sequencer member (participant or mediator) for which traffic has been purchased
+     * @param inputUtxos list of specific holding CIDs to use as inputs.
+     * @param migrationId The migration id of the synchronizer for which this contract tracks purchased extra traffic
+     * @returns  AmuletRules_BuyMemberTraffic exercise command and disclosed contracts
+     */
+    async buyMemberTraffic(
+        buyer: PartyId,
+        ccAmount: number,
+        memberId: string,
+        inputUtxos: string[],
+        migrationId: number = 0
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const expectedDso = await this.getInstrumentAdmin()
+        if (expectedDso === undefined) {
+            throw new Error('no expected dso found')
+        }
+        const [command, disclosed] = await this.service.buyMemberTraffic(
+            expectedDso,
+            buyer,
+            ccAmount,
+            this.getSynchronizerId(),
+            memberId,
+            migrationId,
+            inputUtxos
+        )
+
+        return [{ ExerciseCommand: command }, disclosed]
+    }
+
     // TODO(#583) TransferPreapproval methods could be moved to SpliceController
     /**  Lookup a TransferPreapproval by the receiver party
      * @param receiverId receiver party id
