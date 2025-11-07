@@ -39,14 +39,6 @@ export class WgNetworks extends BaseElement {
                     padding: 1rem;
                     min-width: unset;
                 }
-                table,
-                th,
-                td {
-                    font-size: 0.95rem;
-                }
-                .header h1 {
-                    font-size: 1.2rem;
-                }
             }
             @media (max-width: 400px) {
                 .modal-content {
