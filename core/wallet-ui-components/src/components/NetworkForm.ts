@@ -317,9 +317,11 @@ export class NetworkForm extends BaseElement {
                 <div class="mt-1 mb-1 text-danger">${this._error}</div>
 
                 <div class="buttons">
-                    <button class="btn btn-primary" type="submit">Save</button>
+                    <button class="btn btn-sm btn-primary" type="submit">
+                        Save
+                    </button>
                     <button
-                        class="btn btn-secondary"
+                        class="btn btn-sm btn-secondary"
                         type="button"
                         @click=${() =>
                             this.dispatchEvent(new NetworkEditCancelEvent())}

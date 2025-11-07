@@ -8,8 +8,8 @@ import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 import { infoCircleFillIcon } from '../icons'
 import { handleErrorToast } from '../handle-errors'
 
-@customElement('wg-wallets')
-export class WgWallets extends BaseElement {
+@customElement('wg-wallets-sync')
+export class WgWalletsSync extends BaseElement {
     static styles = [
         BaseElement.styles,
         css`
@@ -40,21 +40,23 @@ export class WgWallets extends BaseElement {
 
     protected render() {
         return html`
-            <div class="header"><h1>Wallets</h1></div>
-            <div
-                class="alert alert-primary d-flex align-items-center py-2"
-                role="alert"
-            >
-                <span class="icon me-2">${infoCircleFillIcon}</span>
-                Keep your wallets in sync with the connected network.
+            <div class="mb-5">
+                <div class="header"><h1>Wallets</h1></div>
+                <div
+                    class="alert alert-primary d-flex align-items-center py-2"
+                    role="alert"
+                >
+                    <span class="icon me-2">${infoCircleFillIcon}</span>
+                    Keep your wallets in sync with the connected network.
+                </div>
+                <button
+                    class="btn btn-primary"
+                    .disabled=${!this.client}
+                    @click=${this.syncWallets}
+                >
+                    Sync Wallets
+                </button>
             </div>
-            <button
-                class="btn btn-primary"
-                .disabled=${!this.client}
-                @click=${this.syncWallets}
-            >
-                Sync Wallets
-            </button>
         `
     }
 }

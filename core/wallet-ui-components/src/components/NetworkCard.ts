@@ -4,7 +4,7 @@
 import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/BaseElement'
 import { css, html } from 'lit'
-import { Network } from '@canton-network/core-wallet-store'
+import { Network } from '@canton-network/core-wallet-user-rpc-client'
 
 /** Emitted when the user clicks the "Delete" button on a network card */
 export class NetworkCardDeleteEvent extends Event {
@@ -76,13 +76,13 @@ export class NetworkCard extends BaseElement {
                     <div class="network-desc">${this.network.description}</div>
                     <div>
                         <button
-                            class="btn btn-secondary"
+                            class="btn btn-sm btn-secondary"
                             @click=${() => (this._editing = true)}
                         >
                             Update
                         </button>
                         <button
-                            class="btn btn-danger"
+                            class="btn btn-sm btn-danger"
                             @click=${() =>
                                 this.dispatchEvent(
                                     new NetworkCardDeleteEvent(this.network!)

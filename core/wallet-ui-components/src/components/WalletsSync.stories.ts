@@ -5,22 +5,22 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite'
 import { html } from 'lit'
 
 const meta: Meta = {
-    title: 'Wallets',
+    title: 'WalletsSync',
 }
 
 export default meta
 
 export const Default: StoryObj = {
-    render: () => html`<wg-wallets></wg-wallets>`,
+    render: () => html`<wg-wallets-sync></wg-wallets-sync>`,
 }
 
 export const SyncError: StoryObj = {
     render: () =>
-        html`<wg-wallets
+        html`<wg-wallets-sync
             .client=${{
                 request: async () => {
                     throw new Error('Test error')
                 },
             }}
-        ></wg-wallets>`,
+        ></wg-wallets-sync>`,
 }

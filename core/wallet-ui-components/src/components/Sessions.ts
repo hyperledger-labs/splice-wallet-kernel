@@ -16,7 +16,6 @@ export class WgSessions extends BaseElement {
                 grid-template-columns: 1fr;
                 width: 100%;
                 overflow-x: auto;
-                margin-bottom: 2rem;
             }
             table {
                 width: 100%;
@@ -47,40 +46,42 @@ export class WgSessions extends BaseElement {
 
     protected render() {
         return html`
-            <div class="header"><h1>Sessions</h1></div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Network ID</th>
-                            <th>Status</th>
-                            <th>Access Token</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${this.sessions.map(
-                            (session) => html`
-                                <tr>
-                                    <td>${session.network.id}</td>
-                                    <td>${session.status}</td>
-                                    <td>
-                                        <button
-                                            type="button"
-                                            class="btn btn-primary btn-sm"
-                                            @click=${() =>
-                                                navigator.clipboard.writeText(
-                                                    session.accessToken
-                                                )}
-                                            title="Copy access token"
-                                        >
-                                            Copy to clipboard
-                                        </button>
-                                    </td>
-                                </tr>
-                            `
-                        )}
-                    </tbody>
-                </table>
+            <div class="mb-5">
+                <div class="header"><h1>Sessions</h1></div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Network ID</th>
+                                <th>Status</th>
+                                <th>Access Token</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${this.sessions.map(
+                                (session) => html`
+                                    <tr>
+                                        <td>${session.network.id}</td>
+                                        <td>${session.status}</td>
+                                        <td>
+                                            <button
+                                                type="button"
+                                                class="btn btn-primary btn-sm"
+                                                @click=${() =>
+                                                    navigator.clipboard.writeText(
+                                                        session.accessToken
+                                                    )}
+                                                title="Copy access token"
+                                            >
+                                                Copy to clipboard
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         `
     }
