@@ -176,8 +176,17 @@ export class LedgerController {
      * @param preparedTopologyTransaction base64 encoded string
      * @returns A TopologyTransaction
      */
-    toDecodedTopologyTransaction(preparedTopologyTransaction: string) {
+    static toDecodedTopologyTransaction(preparedTopologyTransaction: string) {
         return decodeTopologyTransaction(preparedTopologyTransaction)
+    }
+
+    /**
+     * @deprecated use static method LedgerController.decodeTopologyTransaction instead
+     */
+    toDecodedTopologyTransaction(preparedTopologyTransaction: string) {
+        return LedgerController.toDecodedTopologyTransaction(
+            preparedTopologyTransaction
+        )
     }
 
     /**
@@ -235,6 +244,7 @@ export class LedgerController {
         timeoutMs: number = 15000
     ): Promise<Types['Completion']['value']> {
         const ledgerEnd = await this.ledgerEnd()
+
         await this.prepareSignAndExecuteTransaction(
             commands,
             privateKey,
@@ -809,7 +819,24 @@ export class LedgerController {
                 (r) => r.kind.CanActAs?.value?.party
             )
 
-            const allWallets = [...actAsParties, ...readAsParties]
+            const canExecuteAsPartyRights =
+                rights.rights?.filter(
+                    (
+                        r
+                    ): r is {
+                        kind: { CanExecuteAs: { value: { party: string } } }
+                    } => 'CanExecuteAs' in r.kind
+                ) ?? []
+
+            const executeAsParties = canExecuteAsPartyRights.map(
+                (r) => r.kind.CanExecuteAs?.value?.party
+            )
+
+            const allWallets = [
+                ...actAsParties,
+                ...readAsParties,
+                ...executeAsParties,
+            ]
 
             return Array.from(new Set(allWallets))
         }
@@ -973,6 +1000,11 @@ export class LedgerController {
      */
     getACSCacheStats() {
         return this.client.getCacheStats()
+    }
+
+    async getParticipantId(): Promise<PartyId> {
+        return (await this.client.getWithRetry('/v2/parties/participant-id'))
+            .participantId
     }
 
     /**
