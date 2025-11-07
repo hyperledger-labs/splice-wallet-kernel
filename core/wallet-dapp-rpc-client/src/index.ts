@@ -70,6 +70,12 @@ export interface StatusEvent {
 }
 /**
  *
+ * The user ID associated with the session.
+ *
+ */
+export type UserId = string
+/**
+ *
  * JWT authentication token (if applicable).
  *
  */
@@ -278,6 +284,7 @@ export interface LedgerApiParams {
 }
 export interface ConnectResult {
     status: StatusEvent
+    userId: UserId
     sessionToken: SessionToken
     [k: string]: any
 }

@@ -100,6 +100,12 @@ export type UserUrl = string
 export type Response = string
 /**
  *
+ * The user ID associated with the session.
+ *
+ */
+export type UserId = string
+/**
+ *
  * Set as primary wallet for dApp usage.
  *
  */
@@ -307,6 +313,7 @@ export interface LedgerApiResult {
 export interface OnConnectedEvent {
     kernel: KernelInfo
     networkId: NetworkId
+    userId?: UserId
     sessionToken?: SessionToken
     [k: string]: any
 }
