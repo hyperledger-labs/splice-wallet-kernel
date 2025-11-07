@@ -1195,12 +1195,26 @@ export class TokenStandardService {
         }
     }
 
-    async getInstrumentAdmin(registryUrl: string): Promise<string | undefined> {
+    async getInstrumentAdmin(registryUrl: string): Promise<string> {
         const client = this.core.getTokenStandardClient(registryUrl)
 
         const info = await client.get('/registry/metadata/v1/info')
 
         return info.adminId
+    }
+
+    async listInstruments(
+        registryUrl: string,
+        pageSize?: number,
+        pageToken?: string
+    ) {
+        const client = this.core.getTokenStandardClient(registryUrl)
+        return client.get('/registry/metadata/v1/instruments', {
+            query: {
+                ...(pageSize && { pageSize }),
+                ...(pageToken && { pageToken }),
+            },
+        })
     }
 
     // <T> is shape of viewValue related to queried interface.
