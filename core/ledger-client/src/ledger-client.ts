@@ -521,7 +521,12 @@ export class LedgerClient {
             )
         }
 
-        if (filterByParty && !templateIds?.length && parties?.length === 1) {
+        if (
+            filterByParty &&
+            !templateIds?.length &&
+            !interfaceIds?.length &&
+            parties?.length === 1
+        ) {
             const party = parties[0]
             const r = this.acsHelper.activeContractsForInterface(
                 offset,
