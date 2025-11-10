@@ -29,22 +29,6 @@ sdk.tokenStandard?.setTransferFactoryRegistryUrl(
     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
 )
 
-const transferSdk = new WalletSDKImpl().configure({
-    logger: warnOnly,
-    authFactory: localNetAuthDefault,
-    ledgerFactory: localNetLedgerDefault,
-    topologyFactory: localNetTopologyDefault,
-    tokenStandardFactory: localNetTokenStandardDefault,
-})
-await transferSdk.connect()
-await transferSdk.connectAdmin()
-await transferSdk.connectTopology(
-    localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL
-)
-transferSdk.tokenStandard?.setTransferFactoryRegistryUrl(
-    localNetStaticConfig.LOCALNET_REGISTRY_API_URL
-)
-
 let createdParties: partyDefinition[] = []
 let allTransferCommandIds = []
 
@@ -71,23 +55,22 @@ async function allocateParty() {
 }
 
 async function tapAndTransfer(fromParty: partyDefinition, count: number) {
-    // const transferSdk = new WalletSDKImpl().configure({
-    //     logger: warnOnly,
-    //     authFactory: localNetAuthDefault,
-    //     ledgerFactory: localNetLedgerDefault,
-    //     topologyFactory: localNetTopologyDefault,
-    //     tokenStandardFactory: localNetTokenStandardDefault,
-    // })
-    // await transferSdk.connect()
-    // await transferSdk.connectAdmin()
-    // await transferSdk.connectTopology(
-    //     localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL
-    // )
-    // transferSdk.tokenStandard?.setTransferFactoryRegistryUrl(
-    //     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
-    // )
+    const transferSdk = new WalletSDKImpl().configure({
+        logger: warnOnly,
+        authFactory: localNetAuthDefault,
+        ledgerFactory: localNetLedgerDefault,
+        topologyFactory: localNetTopologyDefault,
+        tokenStandardFactory: localNetTokenStandardDefault,
+    })
+    await transferSdk.connect()
+    await transferSdk.connectAdmin()
+    await transferSdk.connectTopology(
+        localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL
+    )
+    transferSdk.tokenStandard?.setTransferFactoryRegistryUrl(
+        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+    )
     await transferSdk.setPartyId(fromParty.partyId)
-    logger.info(fromParty.partyId)
 
     for (let i = 1; i <= count; i++) {
         try {
@@ -98,7 +81,6 @@ async function tapAndTransfer(fromParty: partyDefinition, count: number) {
                     instrument
                 )
 
-            logger.info(tapCommand)
             //we create a tap and then perform a transfer after it is complete
             transferSdk.userLedger
                 ?.prepareSignExecuteAndWaitFor(
@@ -128,7 +110,7 @@ async function tapAndTransfer(fromParty: partyDefinition, count: number) {
                 })
                 .catch((error) => {
                     logger.error(
-                        `[${fromParty.partyId}] Tap ${i} failed: ${JSON.stringify(error)}`
+                        `[${fromParty.partyId}] Tap ${i} failed: ${error}`
                     )
                 })
         } catch (error) {
@@ -164,13 +146,13 @@ await sdk.tokenStandard?.createAndSubmitTapInternal(
 
 const partiesPerInterval = process.env.PARTIES_PER_INTERVAL
     ? parseInt(process.env.PARTIES_PER_INTERVAL, 0)
-    : 1
+    : 2
 const intervalLengthMs = process.env.INTERVAL_LENGTH_MS
     ? parseInt(process.env.INTERVAL_LENGTH_MS, 0)
-    : 6000
+    : 5000
 const transfersPerParty = process.env.TRANSFERS_PER_PARTY
     ? parseInt(process.env.TRANSFERS_PER_PARTY, 0)
-    : 4
+    : 5
 
 let currentInterval = 0
 
@@ -207,9 +189,9 @@ setInterval(async () => {
 }, intervalLengthMs)
 
 process.on('SIGINT', () => {
-    logger.info('Caught interrupt signal, exiting...')
-    const cacheStats = transferSdk.tokenStandard!.getACSCacheStats()
+    const cacheStats = sdk.userLedger?.getACSCacheStats()
     logger.info(cacheStats, `cache stats`)
 
+    logger.info('Caught interrupt signal, exiting...')
     process.exit()
 })

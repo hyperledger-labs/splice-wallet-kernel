@@ -17,6 +17,7 @@ import {
 import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
 import { SharedACSCache } from './acs/acs-shared-cache.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+
 export const supportedVersions = ['3.3', '3.4'] as const
 
 export type SupportedVersions = (typeof supportedVersions)[number]
@@ -489,9 +490,16 @@ export class LedgerClient {
         parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
         filterByParty?: boolean
         interfaceIds?: string[]
+        limit?: number
     }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
-        const { offset, templateIds, parties, filterByParty, interfaceIds } =
-            options
+        const {
+            offset,
+            templateIds,
+            parties,
+            filterByParty,
+            interfaceIds,
+            limit,
+        } = options
 
         this.logger.debug(options, 'options for active contracts')
 
@@ -605,7 +613,14 @@ export class LedgerClient {
 
         this.logger.debug('falling back to post request')
 
-        return await this.postWithRetry('/v2/state/active-contracts', filter)
+        return await this.postWithRetry(
+            '/v2/state/active-contracts',
+            filter,
+            defaultRetryableOptions,
+            {
+                query: limit ? { limit: limit.toString() } : {},
+            }
+        )
     }
 
     // private buildActiveContractsFilter(options: {
@@ -750,6 +765,16 @@ export class LedgerClient {
         // needed when posting to /packages, so content type and jsonification of bytes can be overriden
         additionalOptions?: ExtraPostOpts
     ): Promise<PostResponse<Path>> {
+        // const pathString = path.toString()
+
+        // try {
+        //     if (pathString.includes('active-contracts')) {
+        //         this.logger.info('found a match')
+        //         this.logger.info(JSON.stringify(body))
+        //     }
+        // } catch (e) {
+        //     this.logger.error(e)
+        // }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
         const options = { body, params, ...additionalOptions } as any
 

@@ -10,4 +10,17 @@ export const DEFAULT_ENTRY_EXPIRATION_TIME = 10 * 60 * 1000
 export const SharedACSCache = new LRUCache<string, ACSContainer>({
     maxSize: DEFAULT_MAX_CACHE_SIZE,
     entryExpirationTimeInMS: DEFAULT_ENTRY_EXPIRATION_TIME,
+    onEntryEvicted: (entry) => {
+        console.debug(`${entry} has expired`)
+        SharedACSCacheStats.evictions++
+    },
 })
+
+export const SharedACSCacheStats = {
+    hits: 0,
+    misses: 0,
+    evictions: 0,
+    cacheSize: 0,
+    totalLookupTime: 0,
+    totalCacheServeTime: 0,
+}

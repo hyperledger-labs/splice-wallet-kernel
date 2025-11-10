@@ -195,12 +195,11 @@ export class CoreService {
         limit?: number
     ): Promise<PrettyContract<T>[]> {
         try {
-            console.log(limit)
             const ledgerEnd = await this.ledgerClient.getWithRetry(
                 '/v2/state/ledger-end'
             )
 
-            // const acsResponses: JsGetActiveContractsResponse[] =
+            // const acsResponse2s: JsGetActiveContractsResponse[] =
             //     await this.ledgerClient.postWithRetry(
             //         '/v2/state/active-contracts',
             //         {
@@ -211,19 +210,22 @@ export class CoreService {
             //             verbose: false,
             //             activeAtOffset: ledgerEnd.offset,
             //         },
-            //         defaultRetryableOptions,
-            //         {
-            //             query: limit ? { limit: limit.toString() } : {},
-            //         }
+            // defaultRetryableOptions,
+            // {
+            //     query: limit ? { limit: limit.toString() } : {},
+            // }
             //     )
 
+            const options = {
+                offset: ledgerEnd.offset,
+                interfaceIds: [interfaceId],
+                parties: [partyId!],
+                filterByParty: true,
+                limit: limit ?? 100,
+            }
+
             const acsResponses: JsGetActiveContractsResponse[] =
-                await this.ledgerClient.activeContracts({
-                    offset: ledgerEnd.offset,
-                    interfaceIds: [interfaceId],
-                    parties: [partyId!],
-                    filterByParty: true,
-                })
+                await this.ledgerClient.activeContracts(options)
 
             /*  This filters out responses with entries of:
                 - JsEmpty
