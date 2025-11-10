@@ -5,6 +5,10 @@ import { LedgerClient } from '../ledger-client'
 
 import { LRUCache } from 'typescript-lru-cache'
 import { ACSContainer, ACSKey } from './acs-container.js'
+import {
+    DEFAULT_MAX_CACHE_SIZE,
+    DEFAULT_ENTRY_EXPIRATION_TIME,
+} from './acs-shared-cache.js'
 import { WSSupport } from './ws-support.js'
 import { PartyId } from '@canton-network/core-types'
 import { Logger } from 'pino'
@@ -35,19 +39,23 @@ export class ACSHelper {
     constructor(
         apiInstance: LedgerClient,
         _logger: Logger,
-        options?: AcsHelperOptions
+        options?: AcsHelperOptions,
+        sharedCache?: LRUCache<string, ACSContainer>
     ) {
-        this.contractsSet = new LRUCache({
-            maxSize: options?.maxCacheSize ?? DEFAULT_MAX_CACHE_SIZE,
-            entryExpirationTimeInMS:
-                options?.entryExpirationTime ?? DEFAULT_ENTRY_EXPIRATION_TIME, // 10 minutes
-            onEntryEvicted: (entry) => {
-                this.logger.debug(
-                    `entry ${entry.key} isExpired =  ${entry.isExpired}. evicting entry.`
-                )
-                this.evictions++
-            },
-        })
+        this.contractsSet =
+            sharedCache ??
+            new LRUCache({
+                maxSize: options?.maxCacheSize ?? DEFAULT_MAX_CACHE_SIZE,
+                entryExpirationTimeInMS:
+                    options?.entryExpirationTime ??
+                    DEFAULT_ENTRY_EXPIRATION_TIME, // 10 minutes
+                onEntryEvicted: (entry) => {
+                    this.logger.debug(
+                        `entry ${entry.key} isExpired =  ${entry.isExpired}. evicting entry.`
+                    )
+                    this.evictions++
+                },
+            })
         this.apiInstance = apiInstance
         this.wsSupport = options?.wsSupport
         this.logger = _logger.child({ component: 'ACSHelper' })
@@ -80,12 +88,12 @@ export class ACSHelper {
         return { party, templateId, interfaceId }
     }
 
-    private static keyToString(key: ACSKey): string {
-        return `${key.party ? key.party : 'ANY'}_T:${key.templateId ?? '()'}_I:${key.interfaceId ?? '()'}`
+    private static keyToString(key: ACSKey, ledgerBaseUrl: string): string {
+        return `${ledgerBaseUrl}_${key.party ? key.party : 'ANY'}_T:${key.templateId ?? '()'}_I:${key.interfaceId ?? '()'}`
     }
 
     private findACSContainer(key: ACSKey): ACSContainer {
-        const keyStr = ACSHelper.keyToString(key)
+        const keyStr = ACSHelper.keyToString(key, this.apiInstance.baseUrl.href)
         this.logger.info(`ACS KEY ${keyStr}`)
         const start = performance.now()
         const existing = this.contractsSet.get(keyStr)
@@ -94,11 +102,11 @@ export class ACSHelper {
 
         if (existing) {
             this.hits++
-            this.logger.info('cache hit')
+            this.logger.debug('cache hit')
             return existing
         }
 
-        this.logger.info('cache miss')
+        this.logger.debug('cache miss')
         this.misses++
         const newContainer = new ACSContainer(undefined, {
             includeCreatedEventBlob: this.includeCreatedEventBlob,
@@ -124,7 +132,11 @@ export class ACSHelper {
         )
         const end = performance.now()
 
-        if (this.contractsSet.has(ACSHelper.keyToString(key))) {
+        if (
+            this.contractsSet.has(
+                ACSHelper.keyToString(key, this.apiInstance.baseUrl.href)
+            )
+        ) {
             this.totalCacheServeTime += end - start
         }
 
@@ -149,7 +161,11 @@ export class ACSHelper {
 
         const end = performance.now()
 
-        if (this.contractsSet.has(ACSHelper.keyToString(key))) {
+        if (
+            this.contractsSet.has(
+                ACSHelper.keyToString(key, this.apiInstance.baseUrl.href)
+            )
+        ) {
             this.totalCacheServeTime += end - start
         }
 
