@@ -268,7 +268,7 @@ export class UserUiWallets extends LitElement {
                                 <strong>Transaction ID:</strong>
                                 ${wallet.externalTxId}<br />
                                 <strong>Network:</strong>
-                                ${wallet.chainId}<br />
+                                ${wallet.networkId}<br />
                                 <strong>Signing Provider:</strong>
                                 ${wallet.signingProviderId}
                             </div>
@@ -398,7 +398,7 @@ export class UserUiWallets extends LitElement {
             await userClient.request('createWallet', {
                 primary: wallet.primary,
                 partyHint: wallet.hint,
-                chainId: wallet.chainId,
+                networkId: wallet.networkId,
                 signingProviderId: wallet.signingProviderId,
                 signingProviderContext: {
                     partyId: wallet.partyId,

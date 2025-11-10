@@ -168,7 +168,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         })
     }
 
-    async removeWallet(partyId: string): Promise<void> {
+    async removeWallet(partyId: PartyId): Promise<void> {
         this.logger.info('Removing wallet')
 
         await this.db.transaction().execute(async (trx) => {

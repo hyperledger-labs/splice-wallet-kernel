@@ -69,7 +69,7 @@ export interface Store {
     setPrimaryWallet(partyId: PartyId): Promise<void>
     addWallet(wallet: Wallet): Promise<void>
     updateWallet(params: UpdateWallet): Promise<void>
-    removeWallet(partyId: string): Promise<void>
+    removeWallet(partyId: PartyId): Promise<void>
 
     // Session methods
     getSession(): Promise<Session | undefined>
