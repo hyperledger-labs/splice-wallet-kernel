@@ -8,6 +8,7 @@ import { ACSContainer, ACSKey } from './acs-container.js'
 import {
     DEFAULT_MAX_CACHE_SIZE,
     DEFAULT_ENTRY_EXPIRATION_TIME,
+    SharedACSCacheStats,
 } from './acs-shared-cache.js'
 import { WSSupport } from './ws-support.js'
 import { PartyId } from '@canton-network/core-types'
@@ -27,10 +28,6 @@ export class ACSHelper {
     private readonly wsSupport: WSSupport | undefined
     private readonly logger: Logger
     private includeCreatedEventBlob: boolean
-    private hits = 0
-    private misses = 0
-    private evictions = 0
-    private totalLookuptime = 0
     private totalCacheServeTime = 0
 
     constructor(
@@ -50,7 +47,7 @@ export class ACSHelper {
                     this.logger.debug(
                         `entry ${entry.key} isExpired =  ${entry.isExpired}. evicting entry.`
                     )
-                    this.evictions++
+                    SharedACSCacheStats.evictions++
                 },
             })
         this.apiInstance = apiInstance
@@ -60,16 +57,20 @@ export class ACSHelper {
     }
 
     getCacheStats() {
-        const totalCalls = this.hits + this.misses
-        const hitRate = totalCalls ? (this.hits / totalCalls) * 100 : 0
+        const totalCalls = SharedACSCacheStats.hits + SharedACSCacheStats.misses
+        const hitRate = totalCalls
+            ? (SharedACSCacheStats.hits / totalCalls) * 100
+            : 0
         const avgLookupTime =
-            totalCalls > 0 ? this.totalLookuptime / totalCalls : 0
+            totalCalls > 0
+                ? SharedACSCacheStats.totalLookupTime / totalCalls
+                : 0
 
         return {
             totalCalls,
-            hits: this.hits,
-            misses: this.misses,
-            evictions: this.evictions,
+            hits: SharedACSCacheStats.hits,
+            misses: SharedACSCacheStats.misses,
+            evictions: SharedACSCacheStats.evictions,
             cacheSize: this.contractsSet.size,
             hitRate: hitRate.toFixed(2) + '%',
             averageLookupTime: avgLookupTime.toFixed(3) + ' ms',
@@ -91,19 +92,20 @@ export class ACSHelper {
 
     private findACSContainer(key: ACSKey): ACSContainer {
         const keyStr = ACSHelper.keyToString(key, this.apiInstance.baseUrl.href)
+        // this.logger.info(`ACS KEY ${keyStr}`)
         const start = performance.now()
         const existing = this.contractsSet.get(keyStr)
         const end = performance.now()
-        this.totalLookuptime += end - start
+        SharedACSCacheStats.totalLookupTime += end - start
 
         if (existing) {
-            this.hits++
+            SharedACSCacheStats.hits++
             this.logger.debug('cache hit')
             return existing
         }
 
         this.logger.debug('cache miss')
-        this.misses++
+        SharedACSCacheStats.misses++
         const newContainer = new ACSContainer(undefined, {
             includeCreatedEventBlob: this.includeCreatedEventBlob,
         })
@@ -133,7 +135,7 @@ export class ACSHelper {
                 ACSHelper.keyToString(key, this.apiInstance.baseUrl.href)
             )
         ) {
-            this.totalCacheServeTime += end - start
+            SharedACSCacheStats.totalCacheServeTime += end - start
         }
 
         return result
@@ -162,7 +164,7 @@ export class ACSHelper {
                 ACSHelper.keyToString(key, this.apiInstance.baseUrl.href)
             )
         ) {
-            this.totalCacheServeTime += end - start
+            SharedACSCacheStats.totalCacheServeTime += end - start
         }
 
         return result
