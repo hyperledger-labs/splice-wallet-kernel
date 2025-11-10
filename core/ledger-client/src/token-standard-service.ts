@@ -28,9 +28,7 @@ import { LedgerClient } from './ledger-client.js'
 import { TokenStandardTransactionInterfaces } from './constants.js'
 import {
     ensureInterfaceViewIsPresent,
-    TransactionFilterBySetup,
     EventFilterBySetup,
-    defaultRetryableOptions,
 } from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
 import {
@@ -142,22 +140,17 @@ export class CoreService {
             const ledgerEnd = await this.ledgerClient.getWithRetry(
                 '/v2/state/ledger-end'
             )
+
+            const options = {
+                offset: ledgerEnd.offset,
+                interfaceIds: [interfaceId],
+                parties: [partyId!],
+                filterByParty: true,
+                limit: limit ?? 100,
+            }
+
             const acsResponses: JsGetActiveContractsResponse[] =
-                await this.ledgerClient.postWithRetry(
-                    '/v2/state/active-contracts',
-                    {
-                        filter: TransactionFilterBySetup(interfaceId, {
-                            isMasterUser: this.isMasterUser,
-                            partyId: partyId,
-                        }),
-                        verbose: false,
-                        activeAtOffset: ledgerEnd.offset,
-                    },
-                    defaultRetryableOptions,
-                    {
-                        query: limit ? { limit: limit.toString() } : {},
-                    }
-                )
+                await this.ledgerClient.activeContracts(options)
 
             /*  This filters out responses with entries of:
                 - JsEmpty
