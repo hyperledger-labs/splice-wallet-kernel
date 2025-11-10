@@ -15,6 +15,7 @@ import {
 } from './ledger-api-utils.js'
 
 import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
+import { SharedACSCache } from './acs/acs-shared-cache.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 export const supportedVersions = ['3.3', '3.4'] as const
 
@@ -90,6 +91,7 @@ export class LedgerClient {
     private accessTokenProvider: AccessTokenProvider | undefined
     private acsHelper: ACSHelper
     private readonly logger: Logger
+    baseUrl: URL
 
     constructor(
         baseUrl: URL,
@@ -142,7 +144,13 @@ export class LedgerClient {
 
         this.clientVersion = version ?? this.clientVersion
         this.currentClient = this.clients[this.clientVersion]
-        this.acsHelper = new ACSHelper(this, _logger, acsHelperOptions)
+        this.baseUrl = baseUrl
+        this.acsHelper = new ACSHelper(
+            this,
+            _logger,
+            acsHelperOptions,
+            SharedACSCache
+        )
     }
 
     public async init() {
