@@ -9,12 +9,19 @@ import {
     CreateKeyResult,
     isRpcError,
     Key,
+    Methods,
     Transaction,
 } from '@canton-network/core-signing-lib'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
-import { Methods } from '@canton-network/core-signing-lib/dist/rpc-gen/index.js'
 import { AuthContext } from '@canton-network/core-wallet-auth'
+import {
+    StoreSql,
+    connection,
+    migrator,
+} from '@canton-network/core-signing-store-sql'
+import { pino } from 'pino'
+import { sink } from 'pino-test'
 
 const TEST_KEY_NAME = 'test-key-name'
 const TEST_TRANSACTION = 'test-tx'
@@ -33,7 +40,20 @@ interface TestValues {
 }
 
 async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
-    const signingDriver = new InternalSigningDriver()
+    const db = connection({
+        connection: {
+            type: 'sqlite',
+            database: 'store.sqlite',
+        },
+    })
+    const umzug = migrator(db)
+    const pending = await umzug.pending()
+    if (pending.length > 0) {
+        await umzug.up()
+    }
+    const store = new StoreSql(db, pino(sink()), authContext)
+
+    const signingDriver = new InternalSigningDriver(store)
     const controller = signingDriver.controller(authContext.userId)
     const key = await controller.createKey({ name: keyName })
     return {

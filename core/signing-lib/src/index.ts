@@ -14,8 +14,6 @@ export { SigningProvider }
 export { default as buildController, Methods } from './rpc-gen/index.js'
 export * from './rpc-gen/typings.js'
 export * from './SigningDriverStore.js'
-export * from './SigningDriverProxy.js'
-export * from './SigningDriverFactory.js'
 export * from './config/schema.js'
 
 export const CC_COIN_TYPE = 6767

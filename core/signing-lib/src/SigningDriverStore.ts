@@ -12,6 +12,11 @@ export interface SigningDriverStore {
         userId: string,
         keyId: string
     ): Promise<SigningKey | undefined>
+    getSigningKeyByPublicKey(publicKey: string): Promise<SigningKey | undefined>
+    listSigningTransactionsByTxIdsAndPublicKeys(
+        txIds: string[],
+        publicKeys: string[]
+    ): Promise<SigningTransaction[]>
     setSigningKey(userId: string, key: SigningKey): Promise<void>
     deleteSigningKey(userId: string, keyId: string): Promise<void>
     listSigningKeys(userId: string): Promise<SigningKey[]>
@@ -43,7 +48,6 @@ export interface SigningDriverStore {
     ): Promise<SigningDriverConfig | undefined>
     setSigningDriverConfiguration(
         userId: string,
-        driverId: string,
         config: SigningDriverConfig
     ): Promise<void>
 

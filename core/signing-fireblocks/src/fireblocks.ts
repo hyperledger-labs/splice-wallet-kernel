@@ -8,7 +8,11 @@ import {
     VaultAccount,
 } from '@fireblocks/ts-sdk'
 import { pino } from 'pino'
-import { SigningStatus, CC_COIN_TYPE } from '@canton-network/core-signing-lib'
+import {
+    SigningStatus,
+    CC_COIN_TYPE,
+    SigningDriverStore,
+} from '@canton-network/core-signing-lib'
 import { z } from 'zod'
 
 const RawMessageSchema = z.object({
@@ -49,6 +53,7 @@ export interface FireblocksApiKeyInfo {
 const logger = pino({ name: 'main', level: 'debug' })
 
 export class FireblocksHandler {
+    private store: SigningDriverStore
     private defaultClient: Fireblocks | undefined = undefined
     private clients: Map<string, Fireblocks> = new Map()
 
@@ -68,8 +73,10 @@ export class FireblocksHandler {
     constructor(
         defaultKey: FireblocksApiKeyInfo | undefined,
         userKeys: Map<string, FireblocksApiKeyInfo>,
+        store: SigningDriverStore,
         apiPath: string = 'https://api.fireblocks.io/v1'
     ) {
+        this.store = store
         if (defaultKey) {
             this.defaultClient = new Fireblocks({
                 apiKey: defaultKey.apiKey,

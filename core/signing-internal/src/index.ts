@@ -2,4 +2,3 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './controller.js'
-export { InternalSigningDriverFactory } from './InternalSigningDriverFactory.js'
