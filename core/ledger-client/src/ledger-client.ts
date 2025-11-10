@@ -528,7 +528,6 @@ export class LedgerClient {
                 party,
                 ''
             )
-            this.logger.info(r)
             return r
         }
 
