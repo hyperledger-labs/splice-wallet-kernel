@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Auth, UserId } from '@canton-network/core-wallet-auth'
+import { authSchema, Idp, UserId } from '@canton-network/core-wallet-auth'
 import {
     Wallet,
     Transaction,
@@ -15,18 +15,10 @@ interface MigrationTable {
 }
 
 interface IdpTable {
-    identityProviderId: string
-    type: string
+    id: string
+    type: 'oauth' | 'self_signed'
     issuer: string
-    configUrl: string
-    audience: string
-    tokenUrl: string
-    grantType: string
-    scope: string
-    clientId: string
-    clientSecret: string
-    adminClientId: string
-    adminClientSecret: string
+    configUrl: string | undefined
 }
 
 interface NetworkTable {
@@ -35,8 +27,11 @@ interface NetworkTable {
     synchronizerId: string
     description: string
     ledgerApiBaseUrl: string
-    userId: UserId | undefined // global if undefined
     identityProviderId: string
+    userId: UserId | undefined // global if undefined
+
+    auth: string // json stringified
+    adminAuth: string | undefined // json stringified
 }
 
 interface WalletTable {
@@ -75,153 +70,62 @@ export interface DB {
     sessions: SessionTable
 }
 
-export const toAuth = (table: IdpTable): Auth => {
+export const toIdp = (table: IdpTable): Idp => {
     switch (table.type) {
-        case 'password':
-            return {
-                identityProviderId: table.identityProviderId,
-                type: table.type,
-                issuer: table.issuer,
-                configUrl: table.configUrl,
-                audience: table.audience,
-                tokenUrl: table.tokenUrl || '',
-                grantType: table.grantType || '',
-                scope: table.scope,
-                clientId: table.clientId,
-                admin: {
-                    clientId: table.adminClientId,
-                    clientSecret: table.adminClientSecret,
-                },
+        case 'oauth': {
+            if (!table.configUrl) {
+                throw new Error(`Missing configUrl for oauth IdP: ${table.id}`)
             }
-        case 'implicit':
-            return {
-                identityProviderId: table.identityProviderId,
-                type: table.type,
-                issuer: table.issuer,
-                configUrl: table.configUrl,
-                audience: table.audience,
-                scope: table.scope,
-                clientId: table.clientId,
-                admin: {
-                    clientId: table.adminClientId,
-                    clientSecret: table.adminClientSecret,
-                },
-            }
-        case 'client_credentials':
-            return {
-                identityProviderId: table.identityProviderId,
-                type: table.type,
-                issuer: table.issuer,
-                configUrl: table.configUrl,
-                audience: table.audience,
-                scope: table.scope,
-                clientId: table.clientId,
-                clientSecret: table.clientSecret,
-                admin: {
-                    clientId: table.adminClientId,
-                    clientSecret: table.adminClientSecret,
-                },
-            }
-        case 'self_signed':
-            return {
-                identityProviderId: table.identityProviderId,
-                type: table.type,
-                issuer: table.issuer,
-                audience: table.audience,
-                scope: table.scope,
-                clientId: table.clientId,
-                clientSecret: table.clientSecret,
-                admin: {
-                    clientId: table.adminClientId,
-                    clientSecret: table.adminClientSecret,
-                },
-            }
-        default:
-            throw new Error(`Unknown auth type: ${table.type}`)
-    }
-}
 
-export const fromAuth = (auth: Auth): IdpTable => {
-    switch (auth.type) {
-        case 'password':
             return {
-                identityProviderId: auth.identityProviderId,
-                type: auth.type,
-                issuer: auth.issuer,
-                configUrl: auth.configUrl,
-                audience: auth.audience,
-                tokenUrl: auth.tokenUrl,
-                grantType: auth.grantType,
-                scope: auth.scope,
-                clientId: auth.clientId,
-                clientSecret: '',
-                adminClientId: auth.admin?.clientId || '',
-                adminClientSecret: auth.admin?.clientSecret || '',
+                id: table.id,
+                type: table.type,
+                issuer: table.issuer,
+                configUrl: table.configUrl,
             }
-        case 'implicit':
-            return {
-                identityProviderId: auth.identityProviderId,
-                type: auth.type,
-                issuer: auth.issuer,
-                configUrl: auth.configUrl,
-                audience: auth.audience,
-                tokenUrl: '',
-                grantType: '',
-                scope: auth.scope,
-                clientId: auth.clientId,
-                clientSecret: '',
-                adminClientId: auth.admin?.clientId || '',
-                adminClientSecret: auth.admin?.clientSecret || '',
-            }
-        case 'client_credentials':
-            return {
-                identityProviderId: auth.identityProviderId,
-                type: auth.type,
-                issuer: auth.issuer,
-                configUrl: auth.configUrl,
-                audience: auth.audience,
-                tokenUrl: '',
-                grantType: '',
-                scope: auth.scope,
-                clientId: auth.clientId,
-                clientSecret: auth.clientSecret,
-                adminClientId: auth.admin?.clientId || '',
-                adminClientSecret: auth.admin?.clientSecret || '',
-            }
+        }
         case 'self_signed':
             return {
-                identityProviderId: auth.identityProviderId,
-                type: auth.type,
-                issuer: auth.issuer,
-                configUrl: '',
-                audience: auth.audience,
-                tokenUrl: '',
-                grantType: '',
-                scope: auth.scope,
-                clientId: auth.clientId,
-                clientSecret: auth.clientSecret,
-                adminClientId: auth.admin?.clientId || '',
-                adminClientSecret: auth.admin?.clientSecret || '',
+                id: table.id,
+                type: table.type,
+                issuer: table.issuer,
             }
     }
 }
 
-export const toNetwork = (
-    table: NetworkTable,
-    authTable?: IdpTable
-): Network => {
-    if (!authTable) {
-        throw new Error(`Missing auth table for network: ${table.name}`)
+export const fromIdp = (idp: Idp): IdpTable => {
+    switch (idp.type) {
+        case 'oauth':
+            return {
+                id: idp.id,
+                type: idp.type,
+                issuer: idp.issuer,
+                configUrl: idp.configUrl,
+            }
+        case 'self_signed':
+            return {
+                id: idp.id,
+                type: idp.type,
+                issuer: idp.issuer,
+                configUrl: undefined,
+            }
     }
+}
+
+export const toNetwork = (table: NetworkTable): Network => {
     return {
         name: table.name,
         id: table.id,
         synchronizerId: table.synchronizerId,
+        identityProviderId: table.identityProviderId,
         description: table.description,
         ledgerApi: {
             baseUrl: table.ledgerApiBaseUrl,
         },
-        auth: toAuth(authTable),
+        auth: authSchema.parse(JSON.parse(table.auth)),
+        adminAuth: table.adminAuth
+            ? authSchema.parse(JSON.parse(table.adminAuth))
+            : undefined,
     }
 }
 
@@ -236,7 +140,11 @@ export const fromNetwork = (
         description: network.description,
         ledgerApiBaseUrl: network.ledgerApi.baseUrl,
         userId: userId,
-        identityProviderId: network.auth.identityProviderId,
+        identityProviderId: network.identityProviderId,
+        auth: JSON.stringify(network.auth),
+        adminAuth: network.adminAuth
+            ? JSON.stringify(network.adminAuth)
+            : undefined,
     }
 }
 

@@ -11,7 +11,11 @@ import {
     LedgerApi,
     Network,
 } from '@canton-network/core-wallet-store'
-import { AuthContext, PasswordAuth } from '@canton-network/core-wallet-auth'
+import {
+    AuthContext,
+    AuthorizationCodeAuth,
+    Idp,
+} from '@canton-network/core-wallet-auth'
 import { pino, Logger } from 'pino'
 import { sink } from 'pino-test'
 
@@ -21,6 +25,7 @@ const authContextMock: AuthContext = {
 }
 
 const storeConfig: StoreInternalConfig = {
+    idps: [],
     networks: [],
 }
 
@@ -144,16 +149,17 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should add, list, get, update, and remove networks', async () => {
+            const idp: Idp = {
+                id: 'idp1',
+                type: 'oauth' as const,
+                issuer: 'http://auth',
+                configUrl: 'http://auth/.well-known/openid-configuration',
+            }
             const ledgerApi: LedgerApi = {
                 baseUrl: 'http://api',
             }
-            const auth: PasswordAuth = {
-                identityProviderId: 'idp1',
-                type: 'password',
-                issuer: 'http://auth',
-                configUrl: 'http://auth/.well-known/openid-configuration',
-                tokenUrl: 'http://auth',
-                grantType: 'password',
+            const auth: AuthorizationCodeAuth = {
+                method: 'authorization_code',
                 clientId: 'cid',
                 scope: 'scope',
                 audience: 'aud',
@@ -163,9 +169,12 @@ implementations.forEach(([name, StoreImpl]) => {
                 name: 'testnet',
                 synchronizerId: 'sync1::fingerprint',
                 description: 'Test Network',
+                identityProviderId: 'idp1',
                 ledgerApi,
                 auth,
             }
+            await store.addIdp(idp)
+            await store.updateIdp(idp)
             await store.updateNetwork(network)
             const listed = await store.listNetworks()
             expect(listed).toHaveLength(1)

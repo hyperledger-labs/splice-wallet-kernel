@@ -3,7 +3,11 @@
 
 import { describe, expect, test } from '@jest/globals'
 
-import { AuthContext, PasswordAuth } from '@canton-network/core-wallet-auth'
+import {
+    AuthContext,
+    AuthorizationCodeAuth,
+    Idp,
+} from '@canton-network/core-wallet-auth'
 import {
     LedgerApi,
     Network,
@@ -26,6 +30,7 @@ const storeConfig = {
     connection: {
         type: 'memory' as const,
     },
+    idps: [],
     networks: [],
 }
 
@@ -40,21 +45,29 @@ const implementations: Array<[string, StoreCtor]> = [['StoreSql', StoreSql]]
 const ledgerApi: LedgerApi = {
     baseUrl: 'http://api',
 }
-const auth: PasswordAuth = {
-    identityProviderId: 'idp1',
-    type: 'password',
-    issuer: 'http://auth',
-    configUrl: 'http://auth/.well-known/openid-configuration',
-    tokenUrl: 'http://auth',
-    grantType: 'password',
+const auth: AuthorizationCodeAuth = {
+    method: 'authorization_code',
     clientId: 'cid',
     scope: 'scope',
     audience: 'aud',
 }
+const idp: Idp = {
+    id: 'idp1',
+    issuer: 'http://idp1',
+    type: 'oauth',
+    configUrl: 'http://idp-config',
+}
+const idp2: Idp = {
+    id: 'idp2',
+    type: 'self_signed',
+    issuer: 'http://idp2',
+}
+
 const network: Network = {
     name: 'testnet',
     id: 'network1',
     synchronizerId: 'sync1::fingerprint',
+    identityProviderId: 'idp1',
     description: 'Test Network',
     ledgerApi,
     auth,
@@ -85,6 +98,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 networkId: 'network1',
             }
             const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addIdp(idp)
             await store.addNetwork(network)
             await store.addWallet(wallet)
             const wallets = await store.getWallets()
@@ -92,13 +106,8 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should filter wallets', async () => {
-            const auth2: PasswordAuth = {
-                identityProviderId: 'idp2',
-                type: 'password',
-                issuer: 'http://auth',
-                configUrl: 'http://auth/.well-known/openid-configuration',
-                tokenUrl: 'http://auth',
-                grantType: 'password',
+            const auth2: AuthorizationCodeAuth = {
+                method: 'authorization_code',
                 clientId: 'cid',
                 scope: 'scope',
                 audience: 'aud',
@@ -107,6 +116,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 name: 'testnet',
                 id: 'network2',
                 synchronizerId: 'sync1::fingerprint',
+                identityProviderId: 'idp2',
                 description: 'Test Network',
                 ledgerApi,
                 auth: auth2,
@@ -139,6 +149,8 @@ implementations.forEach(([name, StoreImpl]) => {
                 networkId: 'network2',
             }
             const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addIdp(idp)
+            await store.addIdp(idp2)
             await store.addNetwork(network)
             await store.addNetwork(network2)
             await store.addWallet(wallet1)
@@ -182,6 +194,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 networkId: 'network1',
             }
             const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addIdp(idp)
             await store.addNetwork(network)
             await store.addWallet(wallet1)
             await store.addWallet(wallet2)
@@ -193,6 +206,7 @@ implementations.forEach(([name, StoreImpl]) => {
 
         test('should set and get session', async () => {
             const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addIdp(idp)
             await store.addNetwork(network)
             const session: Session = {
                 network: 'network1',
@@ -211,6 +225,7 @@ implementations.forEach(([name, StoreImpl]) => {
 
         test('should add, list, get, update, and remove networks', async () => {
             const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addIdp(idp)
             await store.addNetwork(network)
 
             const listed = await store.listNetworks()

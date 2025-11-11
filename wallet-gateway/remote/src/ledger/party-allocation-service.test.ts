@@ -52,18 +52,22 @@ describe('PartyAllocationService', () => {
         id: 'network-id',
         synchronizerId: 'sync-id',
         description: 'desc',
+        identityProviderId: 'idp',
         ledgerApi: {
             baseUrl: 'http://ledger',
         },
         auth: {
-            identityProviderId: 'idp',
-            type: 'implicit',
-            issuer: 'http://idp',
-            configUrl: 'http://idp/.well-known/openid-configuration',
+            method: 'authorization_code',
             audience: 'aud',
             scope: 'scope',
             clientId: 'cid',
-            admin: { clientId: 'cid', clientSecret: 'secret' },
+        },
+        adminAuth: {
+            method: 'client_credentials',
+            audience: 'aud',
+            scope: 'scope',
+            clientId: 'cid',
+            clientSecret: 'secret',
         },
     }
 

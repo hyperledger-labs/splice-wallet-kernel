@@ -23,8 +23,8 @@ import { NotificationService } from '../notification/NotificationService.js'
 import {
     AccessTokenProvider,
     assertConnected,
-    Auth,
     AuthContext,
+    authSchema,
     AuthTokenProvider,
 } from '@canton-network/core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
@@ -60,76 +60,19 @@ export const userController = (
                 baseUrl: network.ledgerApi ?? '',
             }
 
-            let auth: Auth
-            if (network.auth.type === 'implicit') {
-                auth = {
-                    type: 'implicit',
-                    identityProviderId: network.auth.identityProviderId,
-                    issuer: network.auth.issuer ?? '',
-                    configUrl: network.auth.configUrl ?? '',
-                    audience: network.auth.audience ?? '',
-                    scope: network.auth.scope ?? '',
-                    clientId: network.auth.clientId ?? '',
-                    admin: {
-                        clientId: network.auth.admin?.clientId ?? '',
-                        clientSecret: network.auth.admin?.clientSecret ?? '',
-                    },
-                }
-            } else if (network.auth.type === 'password') {
-                auth = {
-                    type: 'password',
-                    identityProviderId: network.auth.identityProviderId,
-                    issuer: network.auth.issuer ?? '',
-                    configUrl: network.auth.configUrl ?? '',
-                    tokenUrl: network.auth.tokenUrl ?? '',
-                    grantType: network.auth.grantType ?? '',
-                    scope: network.auth.scope ?? '',
-                    clientId: network.auth.clientId ?? '',
-                    audience: network.auth.audience ?? '',
-                    admin: {
-                        clientId: network.auth.admin?.clientId ?? '',
-                        clientSecret: network.auth.admin?.clientSecret ?? '',
-                    },
-                }
-            } else if (network.auth.type === 'client_credentials') {
-                auth = {
-                    type: 'client_credentials',
-                    identityProviderId: network.auth.identityProviderId,
-                    issuer: network.auth.issuer ?? '',
-                    configUrl: network.auth.configUrl ?? '',
-                    audience: network.auth.audience ?? '',
-                    scope: network.auth.scope ?? '',
-                    clientId: network.auth.clientId ?? '',
-                    clientSecret: network.auth.clientSecret ?? '',
-                    admin: {
-                        clientId: network.auth.admin?.clientId ?? '',
-                        clientSecret: network.auth.admin?.clientSecret ?? '',
-                    },
-                }
-            } else if (network.auth.type === 'self_signed') {
-                auth = {
-                    type: 'self_signed',
-                    identityProviderId: network.auth.identityProviderId,
-                    issuer: network.auth.issuer ?? '',
-                    audience: network.auth.audience ?? '',
-                    scope: network.auth.scope ?? '',
-                    clientId: network.auth.clientId ?? '',
-                    clientSecret: network.auth.clientSecret ?? '',
-                    admin: {
-                        clientId: network.auth.admin?.clientId ?? '',
-                        clientSecret: network.auth.admin?.clientSecret ?? '',
-                    },
-                }
-            } else {
-                throw new Error(`Unsupported auth type: ${network.auth.type}`)
-            }
+            const auth = authSchema.parse(network.auth)
+            const adminAuth = network.adminAuth
+                ? authSchema.parse(network.adminAuth)
+                : undefined
 
             const newNetwork: Network = {
                 name: network.name,
                 id: network.id,
                 description: network.description,
                 synchronizerId: network.synchronizerId,
+                identityProviderId: network.identityProviderId,
                 auth,
+                adminAuth,
                 ledgerApi,
             }
 
@@ -147,6 +90,9 @@ export const userController = (
             await store.removeNetwork(params.networkName)
             return null
         },
+        listNetworks: async () =>
+            Promise.resolve({ networks: await store.listNetworks() }),
+        listIdps: async () => Promise.resolve({ idps: await store.listIdps() }),
         createWallet: async (params: CreateWalletParams) => {
             logger.info(
                 `Allocating party with params: ${JSON.stringify(params)}`
@@ -168,7 +114,14 @@ export const userController = (
                 throw new Error('No network session found')
             }
 
-            const tokenProvider = new AuthTokenProvider(network.auth, logger)
+            const idp = await store.getIdp(network.identityProviderId)
+
+            const tokenProvider = new AuthTokenProvider(
+                idp,
+                network.auth,
+                network.adminAuth,
+                logger
+            )
             const partyAllocator = new PartyAllocationService(
                 network.synchronizerId,
                 tokenProvider,
@@ -566,8 +519,6 @@ export const userController = (
                     )
             }
         },
-        listNetworks: async () =>
-            Promise.resolve({ networks: await store.listNetworks() }),
         addSession: async function (
             params: AddSessionParams
         ): Promise<AddSessionResult> {

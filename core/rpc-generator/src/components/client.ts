@@ -103,7 +103,7 @@ const hooks: IHooks = {
                         versionMap.get(component.name) ??
                         openrpcDocument.info.version,
                 })
-                execSync(`yarn prettier --write ${dest}/**/*`)
+                execSync(`yarn prettier --write ${dest}/src/**/*`)
                 return await writeFile(packagePath, updatedPkg)
             }
             if (component.language === 'rust') {
