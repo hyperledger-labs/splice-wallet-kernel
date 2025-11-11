@@ -119,13 +119,20 @@ export async function initialize(opts: CliOptions, logger: Logger) {
 
     // Provide apiKey from User API in Fireblocks
     const apiPath = path.resolve(process.cwd(), 'fireblocks_api.key')
-    const apiKey = readFileSync(apiPath, 'utf8')
     const secretPath = path.resolve(process.cwd(), 'fireblocks_secret.key')
-    const keyInfo = {
-        apiKey,
-        apiSecret: readFileSync(secretPath, 'utf8'),
+    let apiKey = ''
+    let apiSecret = ''
+
+    if (existsSync(apiPath) && existsSync(secretPath)) {
+        apiKey = readFileSync(apiPath, 'utf8')
+        apiSecret = readFileSync(secretPath, 'utf8')
+    } else {
+        apiKey = 'missing'
+        apiSecret = 'missing'
+        logger.warn('Fireblocks keys files are missing')
     }
 
+    const keyInfo = { apiKey, apiSecret }
     const userApiKeys = new Map([['user', keyInfo]])
 
     const drivers = {
