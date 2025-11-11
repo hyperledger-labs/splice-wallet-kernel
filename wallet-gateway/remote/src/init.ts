@@ -17,13 +17,15 @@ import EventEmitter from 'events'
 import { SigningProvider } from '@canton-network/core-signing-lib'
 import { ParticipantSigningDriver } from '@canton-network/core-signing-participant'
 import { InternalSigningDriver } from '@canton-network/core-signing-internal'
+import FireblocksSigningProvider from '@canton-network/core-signing-fireblocks'
 import { jwtAuthService } from './auth/jwt-auth-service.js'
 import express from 'express'
 import { CliOptions } from './index.js'
 import { jwtAuth } from './middleware/jwtAuth.js'
 import { rpcRateLimit } from './middleware/rateLimit.js'
 import { Config } from './config/Config.js'
-import { existsSync } from 'fs'
+import { existsSync, readFileSync } from 'fs'
+import path from 'path'
 
 let isReady = false
 
@@ -115,9 +117,31 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const store = await initializeDatabase(config, logger)
     const authService = jwtAuthService(store, logger)
 
+    // Provide apiKey from User API in Fireblocks
+    const apiPath = path.resolve(process.cwd(), 'fireblocks_api.key')
+    const secretPath = path.resolve(process.cwd(), 'fireblocks_secret.key')
+    let apiKey = ''
+    let apiSecret = ''
+
+    if (existsSync(apiPath) && existsSync(secretPath)) {
+        apiKey = readFileSync(apiPath, 'utf8')
+        apiSecret = readFileSync(secretPath, 'utf8')
+    } else {
+        apiKey = 'missing'
+        apiSecret = 'missing'
+        logger.warn('Fireblocks keys files are missing')
+    }
+
+    const keyInfo = { apiKey, apiSecret }
+    const userApiKeys = new Map([['user', keyInfo]])
+
     const drivers = {
         [SigningProvider.PARTICIPANT]: new ParticipantSigningDriver(),
         [SigningProvider.WALLET_KERNEL]: new InternalSigningDriver(),
+        [SigningProvider.FIREBLOCKS]: new FireblocksSigningProvider({
+            defaultKeyInfo: keyInfo,
+            userApiKeys,
+        }),
     }
 
     app.use('/api/*splat', express.json())

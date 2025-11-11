@@ -175,6 +175,18 @@ export type Namespace = string
 export type SigningProviderId = string
 /**
  *
+ * Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway.
+ *
+ */
+export type ExternalTxId = string
+/**
+ *
+ * The topology transactions
+ *
+ */
+export type TopologyTransactions = string
+/**
+ *
  * Structure representing a wallet
  *
  */
@@ -186,6 +198,8 @@ export interface Wallet {
     namespace: Namespace
     networkId: NetworkId
     signingProviderId: SigningProviderId
+    externalTxId?: ExternalTxId
+    topologyTransactions?: TopologyTransactions
     [k: string]: any
 }
 /**

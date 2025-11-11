@@ -43,6 +43,9 @@ interface WalletTable {
     networkId: string
     signingProviderId: string
     userId: UserId
+    externalTxId?: string
+    topologyTransactions?: string
+    status?: string
 }
 
 interface TransactionTable {

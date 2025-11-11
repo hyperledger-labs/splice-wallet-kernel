@@ -128,6 +128,11 @@
                                 "title": "signingProviderId",
                                 "type": "string",
                                 "description": "The signing provider ID the wallet corresponds to."
+                            },
+                            "signingProviderContext": {
+                                "type": "object",
+                                "description": "Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.",
+                                "$ref": "#/components/schemas/SigningProviderContext"
                             }
                         },
                         "required": [
@@ -589,6 +594,16 @@
                         "title": "signingProviderId",
                         "type": "string",
                         "description": "The signing provider ID the wallet corresponds to."
+                    },
+                    "externalTxId": {
+                        "title": "externalTxId",
+                        "type": "string",
+                        "description": "Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway."
+                    },
+                    "topologyTransactions": {
+                        "title": "topologyTransactions",
+                        "type": "string",
+                        "description": "The topology transactions"
                     }
                 },
                 "required": [
@@ -648,6 +663,39 @@
                 },
                 "required": ["network", "status", "accessToken"],
                 "additionalProperties": false
+            },
+            "SigningProviderContext": {
+                "title": "SigningProviderContext",
+                "type": "object",
+                "description": "Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.",
+                "properties": {
+                    "partyId": {
+                        "title": "partyId",
+                        "type": "string",
+                        "description": "The party ID corresponding to the wallet."
+                    },
+                    "externalTxId": {
+                        "title": "externalTxId",
+                        "type": "string",
+                        "description": "The transaction ID"
+                    },
+                    "topologyTransactions": {
+                        "title": "topologyTransactions",
+                        "type": "string",
+                        "description": "The topology transactions"
+                    },
+                    "namespace": {
+                        "title": "namespace",
+                        "type": "string",
+                        "description": "The namespace of wallet"
+                    }
+                },
+                "required": [
+                    "partyId",
+                    "externalTxId",
+                    "topologyTransactions",
+                    "namespace"
+                ]
             }
         }
     }

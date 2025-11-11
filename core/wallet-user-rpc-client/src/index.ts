@@ -100,6 +100,36 @@ export type SigningProviderId = string
 export type PartyId = string
 /**
  *
+ * Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway.
+ *
+ */
+export type ExternalTxId = string
+/**
+ *
+ * The topology transactions
+ *
+ */
+export type TopologyTransactions = string
+/**
+ *
+ * The namespace of the party.
+ *
+ */
+export type Namespace = string
+/**
+ *
+ * Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.
+ *
+ */
+export interface SigningProviderContext {
+    partyId: PartyId
+    externalTxId: ExternalTxId
+    topologyTransactions: TopologyTransactions
+    namespace: Namespace
+    [k: string]: any
+}
+/**
+ *
  * Filter wallets by network IDs.
  *
  */
@@ -175,12 +205,6 @@ export type Hint = string
 export type PublicKey = string
 /**
  *
- * The namespace of the party.
- *
- */
-export type Namespace = string
-/**
- *
  * Structure representing a wallet
  *
  */
@@ -192,6 +216,8 @@ export interface Wallet {
     namespace: Namespace
     networkId: NetworkId
     signingProviderId: SigningProviderId
+    externalTxId?: ExternalTxId
+    topologyTransactions?: TopologyTransactions
     [k: string]: any
 }
 export type Added = Wallet[]
@@ -227,6 +253,7 @@ export interface CreateWalletParams {
     partyHint: PartyHint
     networkId: NetworkId
     signingProviderId: SigningProviderId
+    signingProviderContext?: SigningProviderContext
     [k: string]: any
 }
 export interface SetPrimaryWalletParams {
