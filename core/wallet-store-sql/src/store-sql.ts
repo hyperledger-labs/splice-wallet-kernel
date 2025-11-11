@@ -7,6 +7,7 @@ import {
     UserId,
     AuthAware,
     assertConnected,
+    Idp,
 } from '@canton-network/core-wallet-auth'
 import {
     Store as BaseStore,
@@ -22,10 +23,11 @@ import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely'
 import Database from 'better-sqlite3'
 import {
     DB,
-    fromAuth,
+    fromIdp,
     fromNetwork,
     fromTransaction,
     fromWallet,
+    toIdp,
     toNetwork,
     toTransaction,
     toWallet,
@@ -183,6 +185,69 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             .execute()
     }
 
+    // IDP methods
+
+    async getIdp(idpId: string): Promise<Idp> {
+        this.assertConnected()
+
+        const idps = await this.listIdps()
+        if (!idps) throw new Error('No IDPs available')
+
+        const idp = idps.find((n) => n.id === idpId)
+        if (!idp) throw new Error(`IDP "${idpId}" not found`)
+        return idp
+    }
+
+    async listIdps(): Promise<Array<Idp>> {
+        // All IDPs are global for now -- TO-DO: user-specific IDPs
+        const query = this.db.selectFrom('idps').selectAll()
+
+        const idps = await query.execute()
+        return idps.map((table) => toIdp(table))
+    }
+
+    async updateIdp(idp: Idp): Promise<void> {
+        // todo: check and compare userid of existing idp
+        await this.db.transaction().execute(async (trx) => {
+            const idpEntry = fromIdp(idp)
+            this.logger.info(idpEntry, 'Updating idp table')
+            await trx
+                .updateTable('idps')
+                .set(idpEntry)
+                .where('id', '=', idp.id)
+                .execute()
+        })
+    }
+
+    async addIdp(idp: Idp): Promise<void> {
+        await this.db.transaction().execute(async (trx) => {
+            const idpAlreadyExists = await trx
+                .selectFrom('idps')
+                .selectAll()
+                .where('id', '=', idp.id)
+                .executeTakeFirst()
+            if (idpAlreadyExists) {
+                throw new Error(`IDP ${idp.id} already exists`)
+            } else {
+                await trx.insertInto('idps').values(fromIdp(idp)).execute()
+            }
+        })
+    }
+
+    async removeIdp(idpId: string): Promise<void> {
+        await this.db.transaction().execute(async (trx) => {
+            const idp = await trx
+                .selectFrom('idps')
+                .selectAll()
+                .where('id', '=', idpId)
+                .executeTakeFirst()
+            if (!idp) {
+                throw new Error(`IDP ${idpId} does not exists`)
+            }
+            await trx.deleteFrom('idps').where('id', '=', idpId).execute()
+        })
+    }
+
     // Network methods
     async getNetwork(networkId: string): Promise<Network> {
         this.assertConnected()
@@ -229,14 +294,11 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         }
 
         const networks = await query.execute()
-        const idps = await this.db.selectFrom('idps').selectAll().execute()
-        const idpMap = new Map(idps.map((idp) => [idp.identityProviderId, idp]))
-        return networks.map((table) =>
-            toNetwork(table, idpMap.get(table.identityProviderId))
-        )
+        return networks.map((table) => toNetwork(table))
     }
 
     async updateNetwork(network: Network): Promise<void> {
+        // todo: check and compare idpId of existing network
         this.assertConnected()
         await this.db.transaction().execute(async (trx) => {
             // we do not set a userId for now and leave all networks global when updating
@@ -247,23 +309,22 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                 .set(networkEntry)
                 .where('id', '=', network.id)
                 .execute()
-
-            const authEntry = fromAuth(network.auth)
-            this.logger.info(authEntry, 'Updating auth table')
-            await trx
-                .updateTable('idps')
-                .set(authEntry)
-                .where(
-                    'identityProviderId',
-                    '=',
-                    network.auth.identityProviderId
-                )
-                .execute()
         })
     }
 
     async addNetwork(network: Network): Promise<void> {
         const userId = this.authContext?.userId
+        const idps = await this.listIdps()
+        const networkIdp = idps.find(
+            (idp) => idp.id === network.identityProviderId
+        )
+
+        if (!networkIdp) {
+            throw new Error(
+                `Identity provider "${network.identityProviderId}" not found`
+            )
+        }
+
         await this.db.transaction().execute(async (trx) => {
             const networkAlreadyExists = await trx
                 .selectFrom('networks')
@@ -273,10 +334,6 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             if (networkAlreadyExists) {
                 throw new Error(`Network ${network.id} already exists`)
             } else {
-                await trx
-                    .insertInto('idps')
-                    .values(fromAuth(network.auth))
-                    .execute()
                 await trx
                     .insertInto('networks')
                     .values(fromNetwork(network, userId))
@@ -304,10 +361,6 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             await trx
                 .deleteFrom('networks')
                 .where('id', '=', networkId)
-                .execute()
-            await trx
-                .deleteFrom('idps')
-                .where('identityProviderId', '=', network.identityProviderId)
                 .execute()
         })
     }

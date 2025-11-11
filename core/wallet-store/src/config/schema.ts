@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { authSchema } from '@canton-network/core-wallet-auth'
+import { authSchema, idpSchema } from '@canton-network/core-wallet-auth'
 import { z } from 'zod'
 
 export const ledgerApiSchema = z.object({
@@ -11,10 +11,12 @@ export const ledgerApiSchema = z.object({
 export const networkSchema = z.object({
     id: z.string(),
     name: z.string(),
-    synchronizerId: z.string(),
     description: z.string(),
+    synchronizerId: z.string(),
+    identityProviderId: z.string(),
     ledgerApi: ledgerApiSchema,
     auth: authSchema,
+    adminAuth: authSchema.optional(),
 })
 
 export const storeConfigSchema = z.object({
@@ -35,6 +37,7 @@ export const storeConfigSchema = z.object({
             database: z.string(),
         }),
     ]),
+    idps: z.array(idpSchema),
     networks: z.array(networkSchema),
 })
 
