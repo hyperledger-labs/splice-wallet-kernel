@@ -244,7 +244,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         this.updateStorage(storage)
     }
 
-    async removeWallet(partyId: string): Promise<void> {
+    async removeWallet(partyId: PartyId): Promise<void> {
         const storage = this.getStorage()
         const wallets = (await this.getWallets()).filter(
             (w) => w.partyId !== partyId

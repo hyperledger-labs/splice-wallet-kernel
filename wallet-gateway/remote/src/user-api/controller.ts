@@ -190,6 +190,7 @@ export const userController = (
             let publicKey: string | undefined
             let txId: string = ''
             let walletStatus: string = 'allocated'
+            let topologyTransactions: string[] = []
 
             switch (signingProviderId) {
                 case SigningProvider.PARTICIPANT: {
@@ -261,42 +262,56 @@ export const userController = (
                             hint: partyHint,
                         }
                     } else {
-                        party = await partyAllocator.allocateParty(
-                            userId,
-                            partyHint,
-                            Buffer.from(key.publicKey, 'hex').toString(
-                                'base64'
-                            ),
-                            async (hash) => {
-                                const { status, txId: id } =
-                                    await driver.signTransaction({
-                                        tx: '',
-                                        txHash: Buffer.from(
-                                            hash,
-                                            'base64'
-                                        ).toString('hex'),
-                                        publicKey: key.publicKey,
-                                    })
+                        const formattedPublicKey = Buffer.from(
+                            key.publicKey,
+                            'hex'
+                        ).toString('base64')
+                        const namespace =
+                            partyAllocator.createFingerprintFromKey(
+                                formattedPublicKey
+                            )
+                        const transactions =
+                            await partyAllocator.generateTopologyTransactions(
+                                partyHint,
+                                formattedPublicKey
+                            )
+                        topologyTransactions =
+                            transactions.topologyTransactions!
+                        let partyId = ''
 
-                                if (status === 'signed') {
-                                    const { signature } =
-                                        await driver.getTransaction({
-                                            userId,
-                                            txId: id,
-                                        })
+                        const { status, txId: id } =
+                            await driver.signTransaction({
+                                tx: '',
+                                txHash: Buffer.from(
+                                    transactions.multiHash,
+                                    'base64'
+                                ).toString('hex'),
+                                publicKey: key.publicKey,
+                            })
+                        if (status === 'signed') {
+                            const { signature } = await driver.getTransaction({
+                                userId,
+                                txId: id,
+                            })
+                            partyId =
+                                await partyAllocator.allocatePartyWithExistingWallet(
+                                    namespace,
+                                    transactions.topologyTransactions!,
+                                    Buffer.from(signature, 'hex').toString(
+                                        'base64'
+                                    ),
+                                    userId
+                                )
+                        } else {
+                            txId = id
+                            walletStatus = 'created'
+                        }
 
-                                    return Buffer.from(
-                                        signature,
-                                        'hex'
-                                    ).toString('base64')
-                                }
-
-                                // Store the txId for unsigned transactions
-                                txId = id
-                                walletStatus = 'created'
-                                return ''
-                            }
-                        )
+                        party = {
+                            partyId,
+                            namespace,
+                            hint: partyHint,
+                        }
                     }
                     publicKey = key.publicKey
                     break
@@ -307,7 +322,7 @@ export const userController = (
                     )
             }
 
-            const { transactions, partyId, ...partyArgs } = party
+            const { partyId, ...partyArgs } = party
 
             const wallet = {
                 signingProviderId,
@@ -315,7 +330,7 @@ export const userController = (
                 primary: primary ?? false,
                 publicKey: publicKey || partyArgs.namespace,
                 externalTxId: txId,
-                topologyTransactions: transactions?.join(', ') ?? '',
+                topologyTransactions: topologyTransactions?.join(', ') ?? '',
                 status: walletStatus,
                 partyId:
                     partyId !== ''

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+    GenerateTransactionResponse,
     LedgerClient,
     TopologyWriteService,
 } from '@canton-network/core-ledger-client'
@@ -12,7 +13,6 @@ export type AllocatedParty = {
     partyId: string
     hint: string
     namespace: string
-    transactions?: string[]
 }
 
 type SigningCbFn = (hash: string) => Promise<string>
@@ -79,6 +79,37 @@ export class PartyAllocationService {
     }
 
     /**
+     * Create fingerprint
+     * @param publicKey The public key of the user.
+     */
+    createFingerprintFromKey(publicKey: string): string
+
+    createFingerprintFromKey(publicKey: string): string {
+        return TopologyWriteService.createFingerprintFromKey(publicKey)
+    }
+
+    /**
+     * Generate topology transactions
+     * @param hint A hint for the party ID.
+     * @param publicKey The public key of the user.
+     */
+    async generateTopologyTransactions(
+        hint: string,
+        publicKey: string
+    ): Promise<GenerateTransactionResponse>
+
+    async generateTopologyTransactions(
+        hint: string,
+        publicKey: string
+    ): Promise<GenerateTransactionResponse> {
+        return this.ledgerClient.generateTopology(
+            this.synchronizerId,
+            publicKey,
+            hint
+        )
+    }
+
+    /**
      * Allocate party with wallet
      * @param namespace The namespace of wallet.
      * @param transactions There are topology transactions.
@@ -92,18 +123,32 @@ export class PartyAllocationService {
         userId: string
     ): Promise<string>
 
-    public allocatePartyWithExistingWallet(
+    async allocatePartyWithExistingWallet(
         namespace: string,
         transactions: string[],
         signature: string,
         userId: string
     ): Promise<string> {
-        return this.allocateExternalPartyWithExistingWallet(
-            namespace,
-            transactions,
-            signature,
-            userId
+        const res = await this.ledgerClient.allocateExternalParty(
+            this.synchronizerId,
+            transactions.map((transaction) => ({
+                transaction,
+            })),
+            [
+                {
+                    format: 'SIGNATURE_FORMAT_CONCAT',
+                    signature: signature,
+                    signedBy: namespace,
+                    signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
+                },
+            ]
         )
+
+        await this.ledgerClient.waitForPartyAndGrantUserRights(
+            userId,
+            res.partyId
+        )
+        return res.partyId
     }
 
     private async allocateInternalParty(
@@ -135,27 +180,14 @@ export class PartyAllocationService {
         publicKey: string,
         signingCallback: SigningCbFn
     ): Promise<AllocatedParty> {
-        const namespace =
-            TopologyWriteService.createFingerprintFromKey(publicKey)
+        const namespace = this.createFingerprintFromKey(publicKey)
 
-        const transactions = await this.ledgerClient.generateTopology(
-            this.synchronizerId,
-            publicKey,
-            hint
+        const transactions = await this.generateTopologyTransactions(
+            hint,
+            publicKey
         )
 
         const signature = await signingCallback(transactions.multiHash)
-
-        if (!signature) {
-            return {
-                hint,
-                partyId: '',
-                namespace,
-                transactions: transactions.topologyTransactions!.map(
-                    (transaction) => transaction
-                ),
-            }
-        }
 
         const res = await this.ledgerClient.allocateExternalParty(
             this.synchronizerId,
@@ -177,33 +209,5 @@ export class PartyAllocationService {
             res.partyId
         )
         return { hint, partyId: res.partyId, namespace }
-    }
-
-    private async allocateExternalPartyWithExistingWallet(
-        namespace: string,
-        transactions: string[],
-        signature: string,
-        userId: string
-    ): Promise<string> {
-        const res = await this.ledgerClient.allocateExternalParty(
-            this.synchronizerId,
-            transactions.map((transaction) => ({
-                transaction,
-            })),
-            [
-                {
-                    format: 'SIGNATURE_FORMAT_CONCAT',
-                    signature: signature,
-                    signedBy: namespace,
-                    signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
-                },
-            ]
-        )
-
-        await this.ledgerClient.waitForPartyAndGrantUserRights(
-            userId,
-            res.partyId
-        )
-        return res.partyId
     }
 }
