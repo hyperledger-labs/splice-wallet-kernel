@@ -45,10 +45,22 @@ export interface KernelInfo {
 }
 /**
  *
+ * Whether or not the user is authenticated.
+ *
+ */
+export type IsAuthenticated = boolean
+/**
+ *
  * Whether or not a connection to a network is established.
  *
  */
 export type IsConnected = boolean
+/**
+ *
+ * If not connected, the reason why.
+ *
+ */
+export type ConnectReason = string
 /**
  *
  * The network ID the wallet corresponds to.
@@ -57,7 +69,9 @@ export type IsConnected = boolean
 export type NetworkId = string
 export interface StatusEvent {
     kernel: KernelInfo
+    isAuthenticated: IsAuthenticated
     isConnected: IsConnected
+    connectReason?: ConnectReason
     networkId?: NetworkId
     [k: string]: any
 }
@@ -320,7 +334,7 @@ export interface LedgerApiResult {
 }
 export interface OnConnectedEvent {
     kernel: KernelInfo
-    networkId: NetworkId
+    status: StatusEvent
     sessionToken?: SessionToken
     [k: string]: any
 }

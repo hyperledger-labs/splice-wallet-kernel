@@ -184,10 +184,8 @@
                         "kernel": {
                             "$ref": "#/components/schemas/KernelInfo"
                         },
-                        "networkId": {
-                            "title": "networkId",
-                            "type": "string",
-                            "description": "A CAIP-2 compliant network ID, e.g. 'canton:da-mainnet'."
+                        "status": {
+                            "$ref": "#/components/schemas/StatusEvent"
                         },
                         "sessionToken": {
                             "title": "sessionToken",
@@ -195,7 +193,7 @@
                             "description": "JWT authentication token (if applicable)."
                         }
                     },
-                    "required": ["kernel", "networkId"]
+                    "required": ["kernel", "status"]
                 }
             },
             "description": "Informs when the user connects to a network."
@@ -478,18 +476,28 @@
                     "kernel": {
                         "$ref": "#/components/schemas/KernelInfo"
                     },
+                    "isAuthenticated": {
+                        "title": "isAuthenticated",
+                        "type": "boolean",
+                        "description": "Whether or not the user is authenticated."
+                    },
                     "isConnected": {
                         "title": "isConnected",
                         "type": "boolean",
                         "description": "Whether or not a connection to a network is established."
                     },
+                    "connectReason": {
+                        "title": "connectReason",
+                        "type": "string",
+                        "description": "If not connected, the reason why."
+                    },
                     "networkId": {
                         "title": "networkId",
                         "type": "string",
-                        "description": "A CAIP-2 compliant network ID, e.g. 'canton:da-mainnet'."
+                        "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
                     }
                 },
-                "required": ["kernel", "isConnected"]
+                "required": ["kernel", "isAuthenticated", "isConnected"]
             }
         }
     }
