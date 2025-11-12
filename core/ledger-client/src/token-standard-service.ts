@@ -98,44 +98,11 @@ export class CoreService {
         )
     }
 
-    async getInputHoldingsCids(sender: PartyId, inputUtxos?: string[]) {
-        const now = new Date()
-        if (inputUtxos && inputUtxos.length > 0) {
-            return inputUtxos
-        }
-        const senderHoldings = await this.listContractsByInterface<HoldingView>(
-            HOLDING_INTERFACE_ID,
-            sender
-        )
-        if (senderHoldings.length === 0) {
-            throw new Error(
-                "Sender has no holdings, so transfer can't be executed."
-            )
-        }
-
-        return senderHoldings
-            .filter((utxo) => {
-                //filter out locked holdings
-                const lock = utxo.interfaceViewValue.lock
-                if (!lock) return true
-
-                const expiresAt = lock.expiresAt
-                if (!expiresAt) return false
-
-                const expiresAtDate = new Date(expiresAt)
-                return expiresAtDate <= now
-            })
-            .map((h) => h.contractId)
-        /* TODO: optimize input holding selection, currently if you transfer 10 CC and have 10 inputs of 1000 CC,
-                then all 10 of those are chose as input.
-             */
-    }
-
-    async getInputHoldingsCidsWithAmount(
+    async getInputHoldingsCids(
         sender: PartyId,
-        amount: number,
-        inputUtxos?: string[]
-    ): Promise<string[]> {
+        inputUtxos?: string[],
+        amount?: number
+    ) {
         const now = new Date()
         if (inputUtxos && inputUtxos.length > 0) {
             return inputUtxos
@@ -166,54 +133,61 @@ export class CoreService {
             this.logger.warn(`Sender has more than 100 unlocked utxos.`)
         }
 
-        //find holding that is the exact amount if possible
+        if (amount) {
+            //find holding that is the exact amount if possible
 
-        const exactAmount = unlockedSenderHoldings.find(
-            (holding) =>
-                parseFloat(holding.interfaceViewValue.amount) === amount
-        )
+            const exactAmount = unlockedSenderHoldings.find(
+                (holding) =>
+                    parseFloat(holding.interfaceViewValue.amount) === amount
+            )
 
-        if (exactAmount !== undefined) {
-            return [exactAmount.contractId]
-        }
-
-        //sort holdings from smallest to largest
-        const sortedUnlockedSenderHoldings = unlockedSenderHoldings.toSorted(
-            (a, b) =>
-                parseFloat(a.interfaceViewValue.amount) -
-                parseFloat(b.interfaceViewValue.amount)
-        )!
-
-        const largestHoldingAmount = sortedUnlockedSenderHoldings.pop()!
-
-        let currentSum = parseFloat(
-            largestHoldingAmount.interfaceViewValue.amount
-        )
-        const cIds = [largestHoldingAmount.contractId]
-
-        for (const h of sortedUnlockedSenderHoldings) {
-            const currentHoldingAmount = parseFloat(h.interfaceViewValue.amount)
-            if (currentSum + currentHoldingAmount > amount) {
-                break
+            if (exactAmount !== undefined) {
+                return [exactAmount.contractId]
             }
 
-            currentSum += currentHoldingAmount
-            cIds.push(h.contractId)
-        }
+            //sort holdings from smallest to largest
+            const sortedUnlockedSenderHoldings =
+                unlockedSenderHoldings.toSorted(
+                    (a, b) =>
+                        parseFloat(a.interfaceViewValue.amount) -
+                        parseFloat(b.interfaceViewValue.amount)
+                )!
 
-        if (currentSum < amount) {
-            throw new Error(
-                `Sender doesn't have sufficient funds for this transfer. Missing amount: ${amount - currentSum}`
+            const largestHoldingAmount = sortedUnlockedSenderHoldings.pop()!
+
+            let currentSum = parseFloat(
+                largestHoldingAmount.interfaceViewValue.amount
             )
-        }
+            const cIds = [largestHoldingAmount.contractId]
 
-        if (cIds.length > 100) {
-            throw new Error(
-                `Exceeded the maximum of 100 utxos in 1 transaction`
-            )
-        }
+            for (const h of sortedUnlockedSenderHoldings) {
+                const currentHoldingAmount = parseFloat(
+                    h.interfaceViewValue.amount
+                )
+                if (currentSum + currentHoldingAmount > amount) {
+                    break
+                }
 
-        return cIds
+                currentSum += currentHoldingAmount
+                cIds.push(h.contractId)
+            }
+
+            if (currentSum < amount) {
+                throw new Error(
+                    `Sender doesn't have sufficient funds for this transfer. Missing amount: ${amount - currentSum}`
+                )
+            }
+
+            if (cIds.length > 100) {
+                throw new Error(
+                    `Exceeded the maximum of 100 utxos in 1 transaction`
+                )
+            }
+
+            return cIds
+        } else {
+            return unlockedSenderHoldings.map((h) => h.contractId)
+        }
     }
 
     async listContractsByInterface<T = ViewValue>(
@@ -740,12 +714,11 @@ class TransferService {
         expiryDate?: Date,
         meta?: Metadata
     ): Promise<CreateTransferChoiceArgs> {
-        const inputHoldingCids: string[] =
-            await this.core.getInputHoldingsCidsWithAmount(
-                sender,
-                parseFloat(amount),
-                inputUtxos
-            )
+        const inputHoldingCids: string[] = await this.core.getInputHoldingsCids(
+            sender,
+            inputUtxos,
+            parseFloat(amount)
+        )
 
         return {
             expectedAdmin: instrumentAdmin,
@@ -1288,10 +1261,10 @@ export class TokenStandardService {
         const activeRound =
             await this.scanProxyClient.getActiveOpenMiningRound()
 
-        const inputHoldings = await this.core.getInputHoldingsCidsWithAmount(
+        const inputHoldings = await this.core.getInputHoldingsCids(
             provider,
-            trafficAmount,
-            inputUtxos
+            inputUtxos,
+            trafficAmount
         )
 
         if (!amuletRules) {

@@ -12,7 +12,7 @@ import {
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 
-const logger = pino({ name: '05-external-party-setup', level: 'info' })
+const logger = pino({ name: '17-input-cid-filtering', level: 'info' })
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
