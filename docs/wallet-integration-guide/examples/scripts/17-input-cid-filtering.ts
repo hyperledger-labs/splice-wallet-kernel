@@ -122,42 +122,42 @@ await sdk.tokenStandard
         )
     })
 
-// try {
-//     logger.info(
-//         'Creating transfer transaction with not enough holdings from the sender'
-//     )
+try {
+    logger.info(
+        'Creating transfer transaction with not enough holdings from the sender'
+    )
 
-//     const [transferCommand, disclosedContracts2] =
-//         await sdk.tokenStandard!.createTransfer(
-//             sender!.partyId,
-//             receiver!.partyId,
-//             '3000',
-//             {
-//                 instrumentId: 'Amulet',
-//                 instrumentAdmin: instrumentAdminPartyId,
-//             },
-//             [],
-//             'memo-ref'
-//         )
+    const [transferCommand, disclosedContracts2] =
+        await sdk.tokenStandard!.createTransfer(
+            sender!.partyId,
+            receiver!.partyId,
+            '3000',
+            {
+                instrumentId: 'Amulet',
+                instrumentAdmin: instrumentAdminPartyId,
+            },
+            [],
+            'memo-ref'
+        )
 
-//     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-//         transferCommand,
-//         keyPairSender.privateKey,
-//         v4(),
-//         disclosedContracts2
-//     )
-// } catch (e: unknown) {
-//     if (
-//         typeof e === 'object' &&
-//         e !== null &&
-//         'message' in e &&
-//         (e.message as string).includes(
-//             "Sender doesn't have enough accumulated holdings for this transfer"
-//         )
-//     ) {
-//         logger.info(e, 'Received correct error for not having enough funds.')
-//     } else throw e
-// }
+    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+        transferCommand,
+        keyPairSender.privateKey,
+        v4(),
+        disclosedContracts2
+    )
+} catch (e: unknown) {
+    if (
+        typeof e === 'object' &&
+        e !== null &&
+        'message' in e &&
+        (e.message as string).includes(
+            "Sender doesn't have enough accumulated holdings for this transfer"
+        )
+    ) {
+        logger.info(e, 'Received correct error for not having enough funds.')
+    } else throw e
+}
 
 for (let i = 0; i < 10; i++) {
     const [tapCommand2, disclosedContracts2] =
