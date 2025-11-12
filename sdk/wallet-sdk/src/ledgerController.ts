@@ -731,7 +731,7 @@ export class LedgerController {
      */
     createPingCommand(partyId: PartyId) {
         const version = this.client.getCurrentClientVersion()
-        if (version == '3.4') {
+        if (version === '3.4') {
             return [
                 {
                     CreateCommand: {
