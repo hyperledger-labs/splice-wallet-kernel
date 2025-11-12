@@ -1292,8 +1292,8 @@ export class TokenStandardService {
 
     async listHoldingTransactions(
         partyId: PartyId,
-        afterOffset?: string,
-        beforeOffset?: string
+        afterOffset?: string | number,
+        beforeOffset?: string | number
     ): Promise<PrettyTransactions> {
         try {
             this.logger.debug('Set or query offset')
