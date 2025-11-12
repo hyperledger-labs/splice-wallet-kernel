@@ -80,6 +80,58 @@
             }
         },
         {
+            "name": "addIdp",
+            "description": "Adds a new identity provider.",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "AddIdpParams",
+                        "type": "object",
+                        "properties": {
+                            "idp": {
+                                "$ref": "#/components/schemas/Idp"
+                            }
+                        },
+                        "required": ["idp"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/Null"
+                }
+            }
+        },
+        {
+            "name": "removeIdp",
+            "description": "Removes an identity provider. Fails if an existing network is using the identity provider.",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "RemoveIdpParams",
+                        "type": "object",
+                        "properties": {
+                            "identityProviderId": {
+                                "title": "identityProviderId",
+                                "type": "string",
+                                "description": "Identity Provider ID"
+                            }
+                        },
+                        "required": ["identityProviderId"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/Null"
+                }
+            }
+        },
+        {
             "name": "listIdps",
             "params": [],
             "result": {
@@ -87,6 +139,7 @@
                 "schema": {
                     "title": "ListIdpsResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "idps": {
                             "title": "idps",
@@ -490,32 +543,62 @@
             },
             "Idp": {
                 "title": "Idp",
-                "type": "object",
                 "description": "Structure representing the Identity Providers",
-                "properties": {
-                    "id": {
-                        "title": "id",
-                        "type": "string",
-                        "description": "ID of the identity provider"
+                "oneOf": [
+                    {
+                        "title": "IdpSelfSigned",
+                        "type": "object",
+                        "description": "A self-signed identity provider",
+                        "properties": {
+                            "id": {
+                                "title": "id",
+                                "type": "string",
+                                "description": "ID of the identity provider"
+                            },
+                            "type": {
+                                "title": "type",
+                                "type": "string",
+                                "description": "Type of identity provider (self_signed)"
+                            },
+                            "issuer": {
+                                "title": "issuer",
+                                "type": "string",
+                                "description": "Issuer of identity provider"
+                            }
+                        },
+                        "required": ["id", "type", "issuer"],
+                        "additionalProperties": false
                     },
-                    "type": {
-                        "title": "type",
-                        "type": "string",
-                        "description": "Type of identity provider (OAuth2 or Self-Signed)"
-                    },
-                    "issuer": {
-                        "title": "issuer",
-                        "type": "string",
-                        "description": "Issuer of identity provider"
-                    },
-                    "configUrl": {
-                        "title": "configUrl",
-                        "type": "string",
-                        "description": "URL to fetch the identity provider configuration"
+                    {
+                        "title": "IdpOAuth2",
+                        "type": "object",
+                        "description": "A OAuth2 identity provider",
+                        "properties": {
+                            "id": {
+                                "title": "id",
+                                "type": "string",
+                                "description": "ID of the identity provider"
+                            },
+                            "type": {
+                                "title": "type",
+                                "type": "string",
+                                "description": "Type of identity provider (oauth)"
+                            },
+                            "issuer": {
+                                "title": "issuer",
+                                "type": "string",
+                                "description": "Issuer of identity provider"
+                            },
+                            "configUrl": {
+                                "title": "configUrl",
+                                "type": "string",
+                                "description": "URL to fetch the identity provider configuration"
+                            }
+                        },
+                        "required": ["id", "type", "issuer"],
+                        "additionalProperties": false
                     }
-                },
-                "required": ["id", "type", "issuer"],
-                "additionalProperties": false
+                ]
             },
             "Auth": {
                 "title": "auth",

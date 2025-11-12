@@ -4,53 +4,57 @@
 import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/BaseElement'
 import { html } from 'lit'
-import { Network } from '@canton-network/core-wallet-store'
+import { Idp } from '@canton-network/core-wallet-user-rpc-client'
 import { cardStyles } from '../styles/card'
 
 /** Emitted when the user clicks the "Delete" button on a network card */
-export class NetworkCardDeleteEvent extends Event {
-    constructor(public network: Network) {
+export class IdpCardDeleteEvent extends Event {
+    constructor(public idp: Idp) {
         super('delete', { bubbles: true, composed: true })
     }
 }
 
 /** Emitted when the user clicks the "Update" button on a network card */
-export class NetworkCardUpdateEvent extends Event {
+export class IdpCardUpdateEvent extends Event {
     constructor() {
         super('update', { bubbles: true, composed: true })
     }
 }
 
-@customElement('network-card')
-export class NetworkCard extends BaseElement {
-    @property({ type: Object }) network: Network | null = null
+@customElement('idp-card')
+export class IdpCard extends BaseElement {
+    @property({ type: Object }) idp: Idp | null = null
 
     @state() private _editing = false
 
     static styles = [BaseElement.styles, cardStyles]
 
     render() {
-        let body = html`<p>no network supplied</p>`
+        let body = html`<p>no idp supplied</p>`
 
-        if (this.network !== null) {
+        if (this.idp !== null) {
             if (this._editing) {
-                body = html` <network-form
-                    .network=${this.network}
-                    @network-edit-cancel=${() => (this._editing = false)}
-                    @network-edit-save=${() => (this._editing = false)}
-                ></network-form>`
+                body = html` <idp-form
+                    .idp=${this.idp}
+                    @idp-edit-cancel=${() => (this._editing = false)}
+                    @idp-edit-save=${() => (this._editing = false)}
+                ></idp-form>`
             } else {
                 body = html` <h6 class="card-title text-primary fw-bold">
-                        ${this.network.name}
+                        ${this.idp.id}
                     </h6>
                     <div class="network-meta">
-                        <strong>ID:</strong>
-                        ${this.network.id}<br />
-                        <strong>Auth:</strong> ${this.network.auth.method}<br />
-                        <strong>Synchronizer:</strong>
-                        ${this.network.synchronizerId}
+                        <strong>Type:</strong> ${this.idp.type}<br />
+                        <strong>Issuer:</strong>
+                        ${this.idp.issuer}<br />
+                        ${'configUrl' in this.idp
+                            ? html`
+                                  <strong>Config URL:</strong> ${this.idp
+                                      .configUrl}
+                              `
+                            : ''}
+                        <br />
                     </div>
-                    <div class="network-desc">${this.network.description}</div>
                     <div>
                         <button
                             class="btn btn-sm btn-secondary"
@@ -62,7 +66,7 @@ export class NetworkCard extends BaseElement {
                             class="btn btn-sm btn-danger"
                             @click=${() =>
                                 this.dispatchEvent(
-                                    new NetworkCardDeleteEvent(this.network!)
+                                    new IdpCardDeleteEvent(this.idp!)
                                 )}
                         >
                             Delete

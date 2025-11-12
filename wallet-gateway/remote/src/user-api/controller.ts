@@ -15,6 +15,8 @@ import {
     ListSessionsResult,
     SetPrimaryWalletParams,
     SyncWalletsResult,
+    AddIdpParams,
+    RemoveIdpParams,
 } from './rpc-gen/typings.js'
 import { Store, Transaction, Network } from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'
@@ -25,6 +27,7 @@ import {
     AuthContext,
     authSchema,
     AuthTokenProvider,
+    idpSchema,
 } from '@canton-network/core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
 import {
@@ -91,6 +94,15 @@ export const userController = (
         },
         listNetworks: async () =>
             Promise.resolve({ networks: await store.listNetworks() }),
+        addIdp: async (params: AddIdpParams) => {
+            const validatedIdp = idpSchema.parse(params.idp)
+            await store.addIdp(validatedIdp)
+            return null
+        },
+        removeIdp: async (params: RemoveIdpParams) => {
+            await store.removeIdp(params.identityProviderId)
+            return null
+        },
         listIdps: async () => Promise.resolve({ idps: await store.listIdps() }),
         createWallet: async (params: {
             primary?: boolean

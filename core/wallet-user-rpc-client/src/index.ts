@@ -81,6 +81,51 @@ export interface Network {
 export type NetworkName = string
 /**
  *
+ * ID of the identity provider
+ *
+ */
+export type Id = string
+/**
+ *
+ * Type of identity provider (oauth)
+ *
+ */
+export type Type = string
+/**
+ *
+ * A self-signed identity provider
+ *
+ */
+export interface IdpSelfSigned {
+    id: Id
+    type: Type
+    issuer: Issuer
+}
+/**
+ *
+ * URL to fetch the identity provider configuration
+ *
+ */
+export type ConfigUrl = string
+/**
+ *
+ * A OAuth2 identity provider
+ *
+ */
+export interface IdpOAuth2 {
+    id: Id
+    type: Type
+    issuer: Issuer
+    configUrl?: ConfigUrl
+}
+/**
+ *
+ * Structure representing the Identity Providers
+ *
+ */
+export type Idp = IdpSelfSigned | IdpOAuth2
+/**
+ *
  * Set as primary wallet for dApp usage.
  *
  */
@@ -131,35 +176,6 @@ export type CommandId = string
 export type Signature = string
 export type SignedBy = string
 export type Networks = Network[]
-/**
- *
- * ID of the identity provider
- *
- */
-export type Id = string
-/**
- *
- * Type of identity provider (OAuth2 or Self-Signed)
- *
- */
-export type Type = string
-/**
- *
- * URL to fetch the identity provider configuration
- *
- */
-export type ConfigUrl = string
-/**
- *
- * Structure representing the Identity Providers
- *
- */
-export interface Idp {
-    id: Id
-    type: Type
-    issuer: Issuer
-    configUrl?: ConfigUrl
-}
 export type Idps = Idp[]
 /**
  *
@@ -222,6 +238,14 @@ export interface RemoveNetworkParams {
     networkName: NetworkName
     [k: string]: any
 }
+export interface AddIdpParams {
+    idp: Idp
+    [k: string]: any
+}
+export interface RemoveIdpParams {
+    identityProviderId: IdentityProviderId
+    [k: string]: any
+}
 export interface CreateWalletParams {
     primary?: Primary
     partyHint: PartyHint
@@ -271,7 +295,6 @@ export interface ListNetworksResult {
 }
 export interface ListIdpsResult {
     idps: Idps
-    [k: string]: any
 }
 export interface CreateWalletResult {
     wallet: Wallet
@@ -328,6 +351,8 @@ export interface ListSessionsResult {
 export type AddNetwork = (params: AddNetworkParams) => Promise<Null>
 export type RemoveNetwork = (params: RemoveNetworkParams) => Promise<Null>
 export type ListNetworks = () => Promise<ListNetworksResult>
+export type AddIdp = (params: AddIdpParams) => Promise<Null>
+export type RemoveIdp = (params: RemoveIdpParams) => Promise<Null>
 export type ListIdps = () => Promise<ListIdpsResult>
 export type CreateWallet = (
     params: CreateWalletParams
@@ -378,6 +403,24 @@ export class SpliceWalletJSONRPCUserAPI {
         method: 'listNetworks',
         ...params: Parameters<ListNetworks>
     ): ReturnType<ListNetworks>
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public async request(
+        method: 'addIdp',
+        ...params: Parameters<AddIdp>
+    ): ReturnType<AddIdp>
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public async request(
+        method: 'removeIdp',
+        ...params: Parameters<RemoveIdp>
+    ): ReturnType<RemoveIdp>
 
     /**
      *

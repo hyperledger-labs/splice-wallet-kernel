@@ -6,7 +6,11 @@ import { customElement, state } from 'lit/decorators.js'
 
 import '@canton-network/core-wallet-ui-components'
 import { createUserClient } from '../rpc-client'
-import { Idp, Network } from '@canton-network/core-wallet-user-rpc-client'
+import {
+    Idp,
+    IdpOAuth2,
+    Network,
+} from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
 import { WalletEvent } from '@canton-network/core-types'
@@ -204,49 +208,17 @@ export class LoginUI extends LitElement {
         }
 
         stateManager.networkId.set(this.selectedNetwork.id)
-        const redirectUri = `${window.origin}/callback/`
+        const idp = this.idps.find(
+            (idp) => idp.id === this.selectedNetwork?.identityProviderId
+        )
 
-        if (this.selectedNetwork.auth.method === 'authorization_code') {
-            const idp = this.idps.find(
-                (idp) => idp.id === this.selectedNetwork?.identityProviderId
-            )
+        if (!idp) {
+            this.messageType = 'error'
+            this.message = 'Identity provider misconfigured for this network.'
+            return
+        }
 
-            console.log('Found IDP:', idp)
-
-            if (!idp || !idp.configUrl) {
-                this.messageType = 'error'
-                this.message =
-                    'Identity provider misconfigured for this network.'
-                return
-            }
-
-            this.messageType = 'info'
-            this.message = `Redirecting to ${this.selectedNetwork.name}...`
-
-            const auth = this.selectedNetwork.auth
-            const config = await fetch(idp.configUrl).then((res) => res.json())
-
-            const statePayload = {
-                configUrl: idp.configUrl,
-                clientId: auth.clientId,
-                audience: auth.audience,
-            }
-
-            const params = new URLSearchParams({
-                response_type: 'code',
-                client_id: this.selectedNetwork.auth.clientId || '',
-                redirect_uri: redirectUri || '',
-                nonce: crypto.randomUUID(),
-                scope: auth.scope || '',
-                audience: auth.audience || '',
-                state: btoa(JSON.stringify(statePayload)),
-            })
-
-            // small delay to allow message to appear
-            setTimeout(() => {
-                window.location.href = `${config.authorization_endpoint}?${params.toString()}`
-            }, 400)
-        } else if (this.selectedNetwork.auth.method === 'self_signed') {
+        if (idp.type === 'self_signed') {
             await this.selfSign({
                 clientId: this.selectedNetwork.auth.clientId || '',
                 clientSecret: this.selectedNetwork.auth.clientSecret || '',
@@ -256,6 +228,43 @@ export class LoginUI extends LitElement {
             setTimeout(() => {
                 window.location.replace('/')
             }, 400)
+        } else if (idp.type === 'oauth2') {
+            const oauthIdp = idp as IdpOAuth2
+            if (this.selectedNetwork.auth.method === 'authorization_code') {
+                const redirectUri = `${window.origin}/callback/`
+                this.messageType = 'info'
+                this.message = `Redirecting to ${this.selectedNetwork.name}...`
+
+                const auth = this.selectedNetwork.auth
+                const config = await fetch(oauthIdp.configUrl || '').then(
+                    (res) => res.json()
+                )
+
+                const statePayload = {
+                    configUrl: oauthIdp.configUrl,
+                    clientId: auth.clientId,
+                    audience: auth.audience,
+                }
+
+                const params = new URLSearchParams({
+                    response_type: 'code',
+                    client_id: this.selectedNetwork.auth.clientId || '',
+                    redirect_uri: redirectUri || '',
+                    nonce: crypto.randomUUID(),
+                    scope: auth.scope || '',
+                    audience: auth.audience || '',
+                    state: btoa(JSON.stringify(statePayload)),
+                })
+
+                // small delay to allow message to appear
+                setTimeout(() => {
+                    window.location.href = `${config.authorization_endpoint}?${params.toString()}`
+                }, 400)
+            } else {
+                this.messageType = 'error'
+                this.message = 'This authentication type is not supported yet.'
+                return
+            }
         } else {
             this.messageType = 'error'
             this.message = 'This authentication type is not supported yet.'

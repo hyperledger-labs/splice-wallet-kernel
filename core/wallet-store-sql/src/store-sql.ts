@@ -235,6 +235,13 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     }
 
     async removeIdp(idpId: string): Promise<void> {
+        const networks = await this.listNetworks()
+        if (networks.some((n) => n.identityProviderId === idpId)) {
+            throw new Error(
+                `Cannot delete IDP ${idpId} as it is in use by existing networks`
+            )
+        }
+
         await this.db.transaction().execute(async (trx) => {
             const idp = await trx
                 .selectFrom('idps')
