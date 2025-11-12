@@ -13,7 +13,6 @@ export default async function () {
         logger: console,
         authFactory: localNetAuthDefault, // or use your specific configuration
         ledgerFactory: localNetLedgerDefault, // or use your specific configuration
-        topologyFactory: localNetTopologyDefault, // or use your specific configuration
     })
     await sdk.connect()
     await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
@@ -27,6 +26,4 @@ export default async function () {
         key.privateKey,
         partyHint
     )
-
-    return party?.partyId
 }

@@ -1268,12 +1268,26 @@ export class TokenStandardService {
         return [exercise, disclosed]
     }
 
-    async getInstrumentAdmin(registryUrl: string): Promise<string | undefined> {
+    async getInstrumentAdmin(registryUrl: string): Promise<string> {
         const client = this.core.getTokenStandardClient(registryUrl)
 
         const info = await client.get('/registry/metadata/v1/info')
 
         return info.adminId
+    }
+
+    async listInstruments(
+        registryUrl: string,
+        pageSize?: number,
+        pageToken?: string
+    ) {
+        const client = this.core.getTokenStandardClient(registryUrl)
+        return client.get('/registry/metadata/v1/instruments', {
+            query: {
+                ...(pageSize && { pageSize }),
+                ...(pageToken && { pageToken }),
+            },
+        })
     }
 
     // <T> is shape of viewValue related to queried interface.
@@ -1292,8 +1306,8 @@ export class TokenStandardService {
 
     async listHoldingTransactions(
         partyId: PartyId,
-        afterOffset?: string,
-        beforeOffset?: string
+        afterOffset?: string | number,
+        beforeOffset?: string | number
     ): Promise<PrettyTransactions> {
         try {
             this.logger.debug('Set or query offset')

@@ -49,6 +49,7 @@ export const CANTON_ARCHIVE_HASH =
     '43c89d9833886fc68cac4951ba1959b7f6cc5269abfff1ba5129859203aa8cd3'
 export const SPLICE_VERSION = '0.5.1'
 
+
 export const SUPPORTED_VERSIONS = {
     devnet: {
         canton: {

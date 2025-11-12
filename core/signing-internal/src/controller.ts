@@ -10,6 +10,9 @@ import {
     SigningProvider,
     signTransactionHash,
     createKeyPair,
+    SigningDriverStore,
+    SigningTransaction,
+    SigningKey,
 } from '@canton-network/core-signing-lib'
 
 import {
@@ -56,12 +59,14 @@ const convertInternalTransaction = (tx: InternalTransaction): Transaction => {
 }
 
 export class InternalSigningDriver implements SigningDriverInterface {
-    private signer: Map<string, InternalKey> = new Map()
-    private signerByPublicKey: Map<string, InternalKey> = new Map()
-    private transactions: Map<string, InternalTransaction> = new Map()
+    private store: SigningDriverStore
 
     public partyMode = PartyMode.EXTERNAL
     public signingProvider = SigningProvider.WALLET_KERNEL
+
+    constructor(store: SigningDriverStore) {
+        this.store = store
+    }
 
     public controller = (_userId: AuthContext['userId'] | undefined) =>
         buildController({
@@ -70,23 +75,30 @@ export class InternalSigningDriver implements SigningDriverInterface {
             ): Promise<SignTransactionResult> => {
                 // TODO: validate transaction here
 
-                const key = this.signerByPublicKey.get(params.publicKey)
-                if (key) {
+                const key = await this.store.getSigningKeyByPublicKey(
+                    params.publicKey
+                )
+                if (key?.privateKey && _userId) {
                     const txId = randomUUID()
                     const signature = signTransactionHash(
                         params.txHash,
                         key.privateKey
                     )
 
-                    const internalTransaction: InternalTransaction = {
+                    const internalTransaction: SigningTransaction = {
                         id: txId,
                         hash: params.txHash,
                         signature,
                         publicKey: params.publicKey,
                         createdAt: new Date(),
+                        status: 'signed',
+                        updatedAt: new Date(),
                     }
 
-                    this.transactions.set(txId, internalTransaction)
+                    this.store.setSigningTransaction(
+                        _userId,
+                        internalTransaction
+                    )
 
                     return Promise.resolve({
                         txId,
@@ -94,6 +106,13 @@ export class InternalSigningDriver implements SigningDriverInterface {
                         signature,
                     } as SignTransactionResult)
                 } else {
+                    if (!_userId) {
+                        return Promise.resolve({
+                            error: 'userId_not_found',
+                            error_description:
+                                'User ID is required for all signing operations.',
+                        })
+                    }
                     return Promise.resolve({
                         error: 'key_not_found',
                         error_description:
@@ -105,36 +124,58 @@ export class InternalSigningDriver implements SigningDriverInterface {
             getTransaction: async (
                 params: GetTransactionParams
             ): Promise<GetTransactionResult> => {
-                const tx = this.transactions.get(params.txId)
-                if (tx) {
+                if (!_userId) {
                     return Promise.resolve({
-                        txId: tx.id,
-                        status: 'signed',
-                        signature: tx.signature,
-                    })
-                } else {
-                    return Promise.resolve({
-                        error: 'transaction_not_found',
+                        error: 'userId_not_found',
                         error_description:
-                            'The requested transaction does not exist.',
+                            'User ID is required for all signing operations.',
                     })
                 }
+
+                const storedTx = await this.store.getSigningTransaction(
+                    _userId,
+                    params.txId
+                )
+                if (storedTx) {
+                    return {
+                        txId: storedTx.id,
+                        status: storedTx.status,
+                        signature: storedTx.signature || '',
+                        publicKey: storedTx.publicKey,
+                    }
+                }
+                return Promise.resolve({
+                    error: 'transaction_not_found',
+                    error_description:
+                        'The requested transaction does not exist.',
+                })
             },
 
             getTransactions: async (
                 params: GetTransactionsParams
             ): Promise<GetTransactionsResult> => {
+                if (!_userId) {
+                    return Promise.resolve({
+                        error: 'userId_not_found',
+                        error_description:
+                            'User ID is required for all signing operations.',
+                    })
+                }
+
                 if (params.publicKeys || params.txIds) {
-                    const transactions = Array.from(
-                        this.transactions.values()
-                    ).filter(
-                        (tx) =>
-                            params.txIds?.includes(tx.id) ||
-                            params.publicKeys?.includes(tx.publicKey)
-                    )
+                    const transactions =
+                        await this.store.listSigningTransactionsByTxIdsAndPublicKeys(
+                            params.txIds || [],
+                            params.publicKeys || []
+                        )
+
                     return Promise.resolve({
                         transactions: transactions.map(
-                            convertInternalTransaction
+                            (tx: SigningTransaction) =>
+                                convertInternalTransaction({
+                                    ...tx,
+                                    signature: tx.signature || 'signed',
+                                })
                         ),
                     })
                 } else {
@@ -146,30 +187,54 @@ export class InternalSigningDriver implements SigningDriverInterface {
                 }
             },
 
-            getKeys: async (): Promise<GetKeysResult> =>
-                Promise.resolve({
-                    keys: Array.from(this.signer.values()).map((key) => ({
-                        id: key.id,
-                        name: key.name,
-                        publicKey: key.publicKey,
-                    })),
-                } as GetKeysResult),
+            getKeys: async (): Promise<GetKeysResult> => {
+                if (!_userId) {
+                    return Promise.resolve({
+                        error: 'userId_not_found',
+                        error_description:
+                            'User ID is required for all signing operations.',
+                    })
+                }
 
+                const keys = await this.store.listSigningKeys(_userId)
+                if (keys.length > 0) {
+                    return Promise.resolve({
+                        keys: Array.from(keys).map((key) => ({
+                            id: key.id,
+                            name: key.name,
+                            publicKey: key.publicKey,
+                        })),
+                    } as GetKeysResult)
+                }
+
+                return Promise.resolve({
+                    keys: [],
+                })
+            },
             createKey: async (
                 params: CreateKeyParams
             ): Promise<CreateKeyResult> => {
+                if (!_userId) {
+                    return Promise.resolve({
+                        error: 'userId_not_found',
+                        error_description:
+                            'User ID is required for all signing operations.',
+                    })
+                }
+
                 const { publicKey, privateKey } = createKeyPair()
                 const id = randomUUID()
 
-                const internalKey: InternalKey = {
+                const internalKey: SigningKey = {
                     id,
                     name: params.name,
                     publicKey,
                     privateKey,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
                 }
 
-                this.signer.set(id, internalKey)
-                this.signerByPublicKey.set(publicKey, internalKey)
+                await this.store.setSigningKey(_userId, internalKey)
 
                 return {
                     id,

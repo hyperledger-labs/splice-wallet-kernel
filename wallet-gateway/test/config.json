@@ -127,5 +127,11 @@
                 }
             }
         ]
+    },
+    "signingStore": {
+        "connection": {
+            "type": "sqlite",
+            "database": "signingStore.sqlite"
+        }
     }
 }

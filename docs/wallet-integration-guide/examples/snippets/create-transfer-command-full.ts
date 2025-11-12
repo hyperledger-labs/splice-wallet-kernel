@@ -2,10 +2,10 @@ import {
     WalletSDKImpl,
     localNetAuthDefault,
     localNetLedgerDefault,
+    localNetStaticConfig,
     localNetTokenStandardDefault,
 } from '@canton-network/wallet-sdk'
 
-// @disable-snapshot-test
 export default async function () {
     const sdk = new WalletSDKImpl().configure({
         logger: console,
@@ -15,11 +15,15 @@ export default async function () {
     })
 
     await sdk.connect()
+    await sdk.tokenStandard!.setTransferFactoryRegistryUrl(
+        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+    )
 
-    const sender = 'sender-party'
-    const receiver = 'receiver-party'
-    const instrumentAdminPartyId = 'admin-of-the-instrument'
+    const sender = global.EXISTING_PARTY_1
+    const receiver = global.EXISTING_PARTY_2
+    const instrumentAdminPartyId = global.INSTRUMENT_ADMIN_PARTY
 
+    await sdk.setPartyId(sender)
     const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
 
     //let's assume we have 3 utxos of 100,50,25

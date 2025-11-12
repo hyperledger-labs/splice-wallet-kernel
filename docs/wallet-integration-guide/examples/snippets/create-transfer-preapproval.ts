@@ -2,12 +2,12 @@ import {
     WalletSDKImpl,
     localNetAuthDefault,
     localNetLedgerDefault,
+    localNetStaticConfig,
     localNetTokenStandardDefault,
     localValidatorDefault,
 } from '@canton-network/wallet-sdk'
 import { v4 } from 'uuid'
 
-// @disable-snapshot-test
 export default async function () {
     const sdk = new WalletSDKImpl().configure({
         logger: console,
@@ -17,11 +17,15 @@ export default async function () {
         validatorFactory: localValidatorDefault,
     })
 
-    const myParty = 'my-party'
-    const myPrivateKey = 'private-key-for-my-party'
+    const myParty = global.EXISTING_PARTY_1
+    const myPrivateKey = global.EXISTING_PARTY_1_KEYS.privateKey
 
     await sdk.connect()
     await sdk.setPartyId(myParty)
+    await sdk.tokenStandard!.setTransferFactoryRegistryUrl(
+        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+    )
+
     const validatorOperatorParty = await sdk.validator?.getValidatorUser()
 
     const instrumentAdminPartyId =
