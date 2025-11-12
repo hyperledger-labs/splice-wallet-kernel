@@ -203,7 +203,7 @@ export class CoreService {
 
         if (currentSum < amount) {
             throw new Error(
-                `Sender doesn't have enough accumulated holdings for this transfer.`
+                `Sender doesn't have sufficient funds for this transfer. Missing amount: ${amount - currentSum}`
             )
         }
 
@@ -214,10 +214,6 @@ export class CoreService {
         }
 
         return cIds
-
-        /* TODO: optimize input holding selection, currently if you transfer 10 CC and have 10 inputs of 1000 CC,
-                then all 10 of those are chose as input.
-             */
     }
 
     async listContractsByInterface<T = ViewValue>(

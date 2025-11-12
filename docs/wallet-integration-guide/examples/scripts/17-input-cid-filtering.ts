@@ -152,7 +152,7 @@ try {
         e !== null &&
         'message' in e &&
         (e.message as string).includes(
-            "Sender doesn't have enough accumulated holdings for this transfer"
+            "Sender doesn't have sufficient funds for this transfer. Missing amount: 1000"
         )
     ) {
         logger.info(e, 'Received correct error for not having enough funds.')
