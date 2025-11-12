@@ -37,17 +37,17 @@ export type CantonVersionAndHash = {
     hash: string
 }
 // Canton versions
-export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20251030.16140.0.v09184aa1'
+export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20251108.16145.0.v21f4ad7f'
 
 export const LOCALNET_ARCHIVE_HASH =
-    'eeee9a932246fb0538cae4ea740a4f65684e092a6bdc748dabed2d397d8492d0'
+    '706c4412d1cb29285fe8a591e74f44458d2afcbb04603c32cdb6c6260538145f'
 export const SPLICE_ARCHIVE_HASH =
-    '8e299c75fddc9a6c680b3daef860d082a8ba6c5d554c6e749ab0a44c6709cf0c'
+    'dbe943a466f06624c2f55e2e4ad66180e81804bbcb0288b6a4882df49702a4b1'
 export const SPLICE_SPEC_ARCHIVE_HASH =
-    '5ceb15e8666faafa5c4686b87891310842aa4d204d13b40071e51e81ae7a91f3'
+    '102dba4a7224a0acc2544111ecdf2e6538de2b29bcc3bd7348edf4b445e07329'
 export const CANTON_ARCHIVE_HASH =
     '43c89d9833886fc68cac4951ba1959b7f6cc5269abfff1ba5129859203aa8cd3'
-export const SPLICE_VERSION = '0.4.23'
+export const SPLICE_VERSION = '0.4.25'
 
 export const SUPPORTED_VERSIONS = {
     devnet: {
