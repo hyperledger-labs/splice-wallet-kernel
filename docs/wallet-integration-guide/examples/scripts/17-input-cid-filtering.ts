@@ -110,24 +110,16 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 const utxos = await sdk.tokenStandard?.listHoldingUtxos()
 logger.info(utxos, 'List Token Standard Holding UTXOs')
 
-await sdk.tokenStandard
-    ?.listHoldingTransactions()
-    .then((transactions) => {
-        logger.info(transactions, 'Token Standard Holding Transactions:')
-    })
-    .catch((error) => {
-        logger.error(
-            { error },
-            'Error listing token standard holding transactions:'
-        )
-    })
+const cId2000 = utxos?.find(
+    (e) => parseFloat(e.interfaceViewValue.amount) === 2000
+)?.contractId!
 
 try {
     logger.info(
         'Creating transfer transaction with not enough holdings from the sender'
     )
 
-    const [transferCommand, disclosedContracts2] =
+    const [transferCommand, disclosedContracts] =
         await sdk.tokenStandard!.createTransfer(
             sender!.partyId,
             receiver!.partyId,
@@ -144,7 +136,7 @@ try {
         transferCommand,
         keyPairSender.privateKey,
         v4(),
-        disclosedContracts2
+        disclosedContracts
     )
 } catch (e: unknown) {
     if (
@@ -174,7 +166,50 @@ for (let i = 0; i < 10; i++) {
     )
 }
 
-const [transferCommand, disclosedContracts2] =
+// check that if you transfer the exact amount, there is only 1 inputCid of that amount
+
+const [transferCommand2, disclosedContracts2] =
+    await sdk.tokenStandard!.createTransfer(
+        sender!.partyId,
+        receiver!.partyId,
+        '200',
+        {
+            instrumentId: 'Amulet',
+            instrumentAdmin: instrumentAdminPartyId,
+        },
+        [],
+        'memo-ref'
+    )
+
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    transferCommand2,
+    keyPairSender.privateKey,
+    v4(),
+    disclosedContracts2
+)
+
+const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
+
+const transferOutAlice = aliceHoldings?.transactions.find((txs) =>
+    txs.events.find(
+        (e) =>
+            e.label.type === 'TransferOut' &&
+            e.label.tokenStandardChoice?.choiceArgument.transfer
+                .inputHoldingCids.length === 1
+    )
+)
+
+if (transferOutAlice === undefined) {
+    throw new Error(
+        'There were too many inputholding Cids when transferring the exact amount of a utxo'
+    )
+} else {
+    logger.info(`Transfer succeeded with 1 inputHoldingCid with exact amount`)
+}
+
+//Test that there are only 6 inputHoldingCids and that the largest utxo is included
+
+const [transferCommand3, disclosedContracts3] =
     await sdk.tokenStandard!.createTransfer(
         sender!.partyId,
         receiver!.partyId,
@@ -188,16 +223,30 @@ const [transferCommand, disclosedContracts2] =
     )
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-    transferCommand,
+    transferCommand3,
     keyPairSender.privateKey,
     v4(),
-    disclosedContracts2
+    disclosedContracts3
 )
 
-const aliceHoldings = await sdk.tokenStandard?.listHoldingTransactions()
+const aliceHoldings3 = await sdk.tokenStandard?.listHoldingTransactions()
 
-logger.info(aliceHoldings, '[ALICE] holding transactions')
+const transferOutAlice3 = aliceHoldings3?.transactions.find((txs) =>
+    txs.events.find(
+        (e) =>
+            e.label.type === 'TransferOut' &&
+            e.label.tokenStandardChoice?.choiceArgument.transfer
+                .inputHoldingCids.length === 6 &&
+            e.label.tokenStandardChoice?.choiceArgument.transfer.inputHoldingCids.includes(
+                cId2000
+            )
+    )
+)
 
-await sdk.setPartyId(receiver!.partyId)
-const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
-logger.info(bobHoldings, '[BOB] holding transactions')
+if (transferOutAlice3 === undefined) {
+    throw new Error('The input holding cids were not filtered correctly')
+} else {
+    logger.info(
+        `Transfer succeeded with 6 inputHoldingCids with 1 large amount and several small utxos`
+    )
+}
