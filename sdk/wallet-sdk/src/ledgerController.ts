@@ -57,6 +57,7 @@ export class LedgerController {
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
     private logger = pino({ name: 'LedgerController', level: 'info' })
+    private initPromise: Promise<void>
 
     /** Creates a new instance of the LedgerController.
      *
@@ -80,12 +81,15 @@ export class LedgerController {
             token,
             accessTokenProvider
         )
-        this.client.init()
+        this.initPromise = this.client.init()
         this.userId = userId
         this.isAdmin = isAdmin
         return this
     }
 
+    async awaitInit() {
+        return this.initPromise
+    }
     /**
      * Sets the party that the ledgerController will use for requests.
      * @param partyId
@@ -726,18 +730,35 @@ export class LedgerController {
      * @param partyId the party to receive the ping
      */
     createPingCommand(partyId: PartyId) {
-        return [
-            {
-                CreateCommand: {
-                    templateId: '#AdminWorkflows:Canton.Internal.Ping:Ping',
-                    createArguments: {
-                        id: v4(),
-                        initiator: this.getPartyId(),
-                        responder: partyId,
+        const version = this.client.getCurrentClientVersion()
+        if (version == '3.4') {
+            return [
+                {
+                    CreateCommand: {
+                        templateId:
+                            '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
+                        createArguments: {
+                            id: v4(),
+                            initiator: this.getPartyId(),
+                            responder: partyId,
+                        },
                     },
                 },
-            },
-        ]
+            ]
+        } else {
+            return [
+                {
+                    CreateCommand: {
+                        templateId: '#AdminWorkflows:Canton.Internal.Ping:Ping',
+                        createArguments: {
+                            id: v4(),
+                            initiator: this.getPartyId(),
+                            responder: partyId,
+                        },
+                    },
+                },
+            ]
+        }
     }
 
     /**
