@@ -1,15 +1,7 @@
 import { TopologyController } from '@canton-network/wallet-sdk'
 
-// @disable-snapshot-test
 export default async function () {
-    const transaction = {
-        preparedTransaction: 'encoded-transaction-bytes-base64',
-        preparedTransactionHash:
-            'hash-of-the-encoded-transaction-that-needs-to-be-signed',
-        hashingSchemeVersion: 'hashing-scheme-version',
-    }
+    const transaction = global.PREPARED_TRANSACTION
 
-    return TopologyController.createTransactionHash(
-        transaction.preparedTransaction
-    )
+    TopologyController.createTransactionHash(transaction.preparedTransaction!)
 }

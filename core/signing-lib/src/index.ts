@@ -6,9 +6,15 @@ import { Methods } from './rpc-gen/index.js'
 import { Error as RpcError } from './rpc-gen/typings.js'
 import nacl from 'tweetnacl'
 import naclUtil from 'tweetnacl-util'
+import { SigningProvider } from './config/schema.js'
+
+// Re-export SigningProvider from config schema
+export { SigningProvider }
 
 export { default as buildController, Methods } from './rpc-gen/index.js'
 export * from './rpc-gen/typings.js'
+export * from './SigningDriverStore.js'
+export * from './config/schema.js'
 
 export const CC_COIN_TYPE = 6767
 
@@ -27,12 +33,6 @@ export type PrivateKey = string
 export interface KeyPair {
     publicKey: PublicKey
     privateKey: PrivateKey
-}
-
-export enum SigningProvider {
-    WALLET_KERNEL = 'wallet-kernel',
-    PARTICIPANT = 'participant',
-    FIREBLOCKS = 'fireblocks',
 }
 
 export interface SigningDriverInterface {

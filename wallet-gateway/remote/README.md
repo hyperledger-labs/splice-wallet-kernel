@@ -33,3 +33,11 @@ A configuration file is required to start up the Gateway. See [config.json](http
 ## Codegen
 
 The JSON-RPC API specs from `api-specs/` are generated into strongly-typed method builders for the remote RPC server. To update the codegen, run `yarn generate:dapp`.
+
+## Fireblocks
+
+1. Complete steps 1–3 from the instructions at https://github.com/hyperledger-labs/splice-wallet-kernel/tree/main/core/signing-fireblocks
+
+2. Place the `fireblocks_secret.key` file at the path `/splice-wallet-kernel/wallet-gateway/remote`
+
+3. Create a file named `fireblocks_api.key` at the path `/splice-wallet-kernel/wallet-gateway/remote` and insert your Fireblocks API key into it

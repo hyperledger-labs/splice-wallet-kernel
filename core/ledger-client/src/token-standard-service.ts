@@ -28,9 +28,7 @@ import { LedgerClient } from './ledger-client.js'
 import { TokenStandardTransactionInterfaces } from './constants.js'
 import {
     ensureInterfaceViewIsPresent,
-    TransactionFilterBySetup,
     EventFilterBySetup,
-    defaultRetryableOptions,
 } from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
 import {
@@ -142,22 +140,17 @@ export class CoreService {
             const ledgerEnd = await this.ledgerClient.getWithRetry(
                 '/v2/state/ledger-end'
             )
+
+            const options = {
+                offset: ledgerEnd.offset,
+                interfaceIds: [interfaceId],
+                parties: [partyId!],
+                filterByParty: true,
+                limit: limit ?? 100,
+            }
+
             const acsResponses: JsGetActiveContractsResponse[] =
-                await this.ledgerClient.postWithRetry(
-                    '/v2/state/active-contracts',
-                    {
-                        filter: TransactionFilterBySetup(interfaceId, {
-                            isMasterUser: this.isMasterUser,
-                            partyId: partyId,
-                        }),
-                        verbose: false,
-                        activeAtOffset: ledgerEnd.offset,
-                    },
-                    defaultRetryableOptions,
-                    {
-                        query: limit ? { limit: limit.toString() } : {},
-                    }
-                )
+                await this.ledgerClient.activeContracts(options)
 
             /*  This filters out responses with entries of:
                 - JsEmpty
@@ -1195,12 +1188,99 @@ export class TokenStandardService {
         }
     }
 
-    async getInstrumentAdmin(registryUrl: string): Promise<string | undefined> {
+    async buyMemberTraffic(
+        dso: PartyId,
+        provider: PartyId,
+        trafficAmount: number,
+        synchronizerId: string,
+        memberId: string,
+        migrationId: number,
+        inputUtxos?: string[]
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const amuletRules = await this.scanProxyClient.getAmuletRules()
+        const activeRound =
+            await this.scanProxyClient.getActiveOpenMiningRound()
+
+        const inputHoldings = await this.core.getInputHoldingsCids(
+            provider,
+            inputUtxos
+        )
+
+        if (!amuletRules) {
+            throw new Error('AmuletRules contract not found')
+        }
+        if (!activeRound) {
+            throw new Error(
+                'OpenMiningRound active at current moment not found'
+            )
+        }
+
+        const disclosed: DisclosedContract[] = [
+            {
+                templateId: amuletRules.template_id,
+                contractId: amuletRules.contract_id,
+                createdEventBlob: amuletRules.created_event_blob,
+                synchronizerId,
+            },
+            {
+                templateId: activeRound.template_id!,
+                contractId: activeRound.contract_id,
+                createdEventBlob: activeRound.created_event_blob,
+                synchronizerId,
+            },
+        ]
+
+        const context = {
+            openMiningRound: activeRound.contract_id,
+            issuingMiningRounds: [],
+            validatorRights: [],
+            featuredAppRight: null,
+        }
+
+        const choiceArgs = {
+            context,
+            inputs: inputHoldings.map((cid) => ({
+                tag: 'InputAmulet',
+                value: cid,
+            })),
+            provider,
+            memberId,
+            synchronizerId,
+            migrationId,
+            trafficAmount,
+            expectedDso: dso,
+        }
+
+        const exercise: ExerciseCommand = {
+            templateId: '#splice-amulet:Splice.AmuletRules:AmuletRules',
+            contractId: amuletRules.contract_id,
+            choice: 'AmuletRules_BuyMemberTraffic',
+            choiceArgument: choiceArgs,
+        }
+
+        return [exercise, disclosed]
+    }
+
+    async getInstrumentAdmin(registryUrl: string): Promise<string> {
         const client = this.core.getTokenStandardClient(registryUrl)
 
         const info = await client.get('/registry/metadata/v1/info')
 
         return info.adminId
+    }
+
+    async listInstruments(
+        registryUrl: string,
+        pageSize?: number,
+        pageToken?: string
+    ) {
+        const client = this.core.getTokenStandardClient(registryUrl)
+        return client.get('/registry/metadata/v1/instruments', {
+            query: {
+                ...(pageSize && { pageSize }),
+                ...(pageToken && { pageToken }),
+            },
+        })
     }
 
     // <T> is shape of viewValue related to queried interface.
@@ -1219,8 +1299,8 @@ export class TokenStandardService {
 
     async listHoldingTransactions(
         partyId: PartyId,
-        afterOffset?: string,
-        beforeOffset?: string
+        afterOffset?: string | number,
+        beforeOffset?: string | number
     ): Promise<PrettyTransactions> {
         try {
             this.logger.debug('Set or query offset')

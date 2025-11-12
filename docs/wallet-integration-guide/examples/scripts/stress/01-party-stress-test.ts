@@ -189,6 +189,8 @@ setInterval(async () => {
 }, intervalLengthMs)
 
 process.on('SIGINT', () => {
+    const cacheStats = sdk.userLedger?.getACSCacheStats()
+    logger.info(cacheStats, `cache stats`)
     logger.info('Caught interrupt signal, exiting...')
     process.exit()
 })

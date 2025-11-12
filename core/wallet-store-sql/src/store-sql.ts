@@ -18,6 +18,7 @@ import {
     Transaction,
     Network,
     StoreConfig,
+    UpdateWallet,
 } from '@canton-network/core-wallet-store'
 import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely'
 import Database from 'better-sqlite3'
@@ -81,7 +82,14 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                     : true
                 return matchedNetworkIds && matchedSigningProviderIds
             })
-            .map((table) => toWallet(table))
+            .map((table) =>
+                toWallet({
+                    ...table,
+                    externalTxId: table.externalTxId ?? '',
+                    topologyTransactions: table.topologyTransactions ?? '',
+                    status: table.status ?? '',
+                })
+            )
     }
 
     async getPrimaryWallet(): Promise<Wallet | undefined> {
@@ -146,6 +154,29 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             await trx
                 .insertInto('wallets')
                 .values(fromWallet(wallet, userId))
+                .execute()
+        })
+    }
+
+    async updateWallet({ status, partyId }: UpdateWallet): Promise<void> {
+        this.logger.info('Updating wallet')
+
+        await this.db.transaction().execute(async (trx) => {
+            await trx
+                .updateTable('wallets')
+                .set({ status })
+                .where('partyId', '=', partyId)
+                .execute()
+        })
+    }
+
+    async removeWallet(partyId: PartyId): Promise<void> {
+        this.logger.info('Removing wallet')
+
+        await this.db.transaction().execute(async (trx) => {
+            await trx
+                .deleteFrom('wallets')
+                .where('partyId', '=', partyId)
                 .execute()
         })
     }

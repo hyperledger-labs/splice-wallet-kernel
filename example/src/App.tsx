@@ -19,6 +19,7 @@ function App() {
     const [infoMsg, setInfoMsg] = useState('')
     const [error, setError] = useState('')
     const [messages, setMessages] = useState<string[]>([])
+    const [queryResponse, setQueryResponse] = useState<object | undefined>()
     const [primaryParty, setPrimaryParty] = useState<string>()
     const [accounts, setAccounts] = useState<sdk.dappAPI.RequestAccountsResult>(
         []
@@ -192,6 +193,25 @@ function App() {
                     >
                         create Ping contract
                     </button>
+                    <button
+                        disabled={loading}
+                        onClick={() => {
+                            setLoading(true)
+                            const queryString = new URLSearchParams([
+                                ['package-name', 'AdminWorkflows'],
+                                ['parties', primaryParty!],
+                            ]).toString()
+                            sdk.ledgerApi({
+                                requestMethod: 'GET',
+                                resource: `/v2/interactive-submission/preferred-package-version?${queryString}`,
+                            }).then((r) => {
+                                setQueryResponse(JSON.parse(r.response))
+                                setLoading(false)
+                            })
+                        }}
+                    >
+                        query preferred package version
+                    </button>
                 </div>
                 {loading && <p>Loading...</p>}
                 <p>{infoMsg}</p>
@@ -199,6 +219,13 @@ function App() {
                 {error && (
                     <p className="error">Error: {JSON.stringify(error)}</p>
                 )}
+            </div>
+
+            <div className="card">
+                <h2>Latest Query Response</h2>
+                <pre>
+                    <p>{JSON.stringify(queryResponse, null, 2)}</p>
+                </pre>
             </div>
 
             <div className="card">

@@ -248,6 +248,8 @@ export interface components {
             domain_id: string
             created_at: string
             synchronizer_was_paused?: boolean
+            /** @description If set to true, acs_snapshot is a filename */
+            separate_payload_files?: boolean
         }
         GetValidatorDomainDataSnapshotResponse: {
             data_snapshot: components['schemas']['DomainMigrationDump']

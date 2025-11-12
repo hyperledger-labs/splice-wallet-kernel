@@ -18,6 +18,7 @@ import {
     WalletFilter,
     Transaction,
     Network,
+    UpdateWallet,
 } from '@canton-network/core-wallet-store'
 import {
     LedgerClient,
@@ -231,6 +232,26 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             storage.wallets.map((w) => (w.primary = false))
         }
         wallets.push(wallet)
+        storage.wallets = wallets
+        this.updateStorage(storage)
+    }
+
+    async updateWallet({ status, partyId }: UpdateWallet): Promise<void> {
+        const storage = this.getStorage()
+        const wallets = (await this.getWallets()).map((wallet) =>
+            wallet.partyId === partyId ? { ...wallet, status } : wallet
+        )
+
+        storage.wallets = wallets
+        this.updateStorage(storage)
+    }
+
+    async removeWallet(partyId: PartyId): Promise<void> {
+        const storage = this.getStorage()
+        const wallets = (await this.getWallets()).filter(
+            (w) => w.partyId !== partyId
+        )
+
         storage.wallets = wallets
         this.updateStorage(storage)
     }

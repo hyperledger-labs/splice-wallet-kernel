@@ -109,7 +109,7 @@ Creating a transfer
 -------------------
 
 In order to create a simple transfer you can use the `createTransfer` on the token standard. Then like any other operation
-you can the `prepareSubmission` endpoint, sign the returned hash and finally `executeSubmission`.
+you can use the `prepareSubmission` endpoint, sign the returned hash and finally `executeSubmission`.
 
 
 .. literalinclude:: ../../examples/snippets/create-transfer-command.ts
@@ -120,7 +120,7 @@ UTXO management and locked funds
 --------------------------------
 
 The default script for creating a transfer above uses automated utxo selection, the automatic being to simply select all utxo's.
-In a more professional you would want to carefully pick which utxo's you would like to use as input for your transfers, alongside
+In a more professional way, you would want to carefully pick which utxo's you would like to use as input for your transfers, alongside
 you might also want to define a custom expiration time for when the transaction should automatically expire.
 
 
@@ -146,7 +146,7 @@ that he wants to auto-accept all incoming transfer, giving a similar behavior of
 Accepting or rejecting a 2-step transfer
 ----------------------------------------
 
-If no Transfer pre-approval have been set up, then it is required to main incoming transfer instructions and consume either the `Accept`
+If no Transfer pre-approval have been set up, then it is required to fetch incoming transfer instructions and consume either the `Accept`
 or `Reject` choice, this can be done easily using the Wallet SDK.
 
 .. literalinclude:: ../../examples/snippets/read-pending-transfer-instructions.ts
@@ -193,7 +193,7 @@ If you have used the validator operator party as the provider, then it will auto
 You can also deploy a secondary transfer preapproval, however this means that there are simply two preapprovals instead of it replacing
 the existing.
 
-If you have accidentally create a transfer preapproval that you dont want to keep you can perform a cancel instead:
+If you have accidentally created a transfer preapproval that you dont want to keep you can perform a cancel instead:
 
 .. literalinclude:: ../../examples/snippets/cancel-preapproval.ts
     :language: typescript
