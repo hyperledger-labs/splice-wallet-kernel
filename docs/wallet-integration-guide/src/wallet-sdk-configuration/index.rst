@@ -21,7 +21,7 @@ when setting up your own custom connectivity configuration:
 
 
 How do I validate my configurations?
-----------------------------------
+------------------------------------
 
 Knowing if you are using the correct url and port can be daunting, here is a few curl and gcurl commands you can use to validate against
 an expected output
