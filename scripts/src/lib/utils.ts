@@ -22,7 +22,7 @@ export const success = (message: string): string => green(message)
 export const trimNewline = (message: string): string =>
     message.replace(/\n$/, '')
 
-const repoRoot = getRepoRoot()
+export const repoRoot = getRepoRoot()
 export const CANTON_PATH = path.join(repoRoot, '.canton')
 export const SPLICE_PATH = path.join(repoRoot, '.splice')
 export const SPLICE_SPEC_PATH = path.join(repoRoot, '.splice-spec')
@@ -48,7 +48,6 @@ export const SPLICE_SPEC_ARCHIVE_HASH =
 export const CANTON_ARCHIVE_HASH =
     '43c89d9833886fc68cac4951ba1959b7f6cc5269abfff1ba5129859203aa8cd3'
 export const SPLICE_VERSION = '0.5.1'
-
 
 export const SUPPORTED_VERSIONS = {
     devnet: {
