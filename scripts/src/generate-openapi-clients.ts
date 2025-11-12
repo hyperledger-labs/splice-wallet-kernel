@@ -47,7 +47,7 @@ const root = getRepoRoot()
 async function fetchSpliceSpecs(
     updateHash: boolean,
     spliceVersion: string,
-    spliceSpecHash
+    spliceSpecHash: string
 ): Promise<void> {
     const archiveUrl = `https://github.com/digital-asset/decentralized-canton-sync/releases/download/v${spliceVersion}/${spliceVersion}_openapi.tar.gz`
     const tarfile = path.join(SPLICE_SPEC_PATH, `${spliceVersion}.tar.gz`)
