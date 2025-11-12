@@ -7,27 +7,29 @@
  */
 
 import {
-    SPLICE_VERSION,
     error,
     SPLICE_PATH,
-    SPLICE_ARCHIVE_HASH,
     downloadAndUnpackTarball,
+    Network,
+    getNetworkArg,
+    SUPPORTED_VERSIONS,
 } from './lib/utils.js'
 import path from 'path'
 
-async function main() {
+async function main(network: Network = 'devnet') {
+    const spliceVersion = SUPPORTED_VERSIONS[network].splice.version
     const updateHash = process.argv.includes('--updateHash')
-    const archiveUrl = `https://github.com/hyperledger-labs/splice/archive/refs/tags/${SPLICE_VERSION}.tar.gz`
-    const tarfile = path.join(SPLICE_PATH, `${SPLICE_VERSION}.tar.gz`)
+    const archiveUrl = `https://github.com/hyperledger-labs/splice/archive/refs/tags/${spliceVersion}.tar.gz`
+    const tarfile = path.join(SPLICE_PATH, `${spliceVersion}.tar.gz`)
 
     await downloadAndUnpackTarball(archiveUrl, tarfile, SPLICE_PATH, {
-        hash: SPLICE_ARCHIVE_HASH,
+        hash: SUPPORTED_VERSIONS[network].splice.hashes.splice,
         strip: 1,
         updateHash,
     })
 }
 
-main().catch((e) => {
+main(getNetworkArg()).catch((e) => {
     console.error(error(e.message || e))
     process.exit(1)
 })
