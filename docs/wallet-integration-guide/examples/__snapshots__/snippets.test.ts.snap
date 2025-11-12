@@ -1,14 +1,278 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`testing doc snippets allocate-party.ts 1`] = `"my-wallet-1::122078180903ec6fe58fe30bec7380b351fde137d86eeaea837f6d379a86a8039885"`;
+exports[`testing doc snippets accept-or-reject-transfer.ts 1`] = `undefined`;
 
-exports[`testing doc snippets create-key-pair.ts 1`] = `
-{
-  "privateKey": "oQ+sEiZeiBtPrhneCtlceaW6th6M6jyg1xQroaTiQP77kTpxzDN5irQITKNKghA00Wry/fXEJ9UKb4/FJfJTGw==",
-  "publicKey": "+5E6ccwzeYq0CEyjSoIQNNFq8v31xCfVCm+PxSXyUxs=",
+exports[`testing doc snippets allocate-party.ts 1`] = `undefined`;
+
+exports[`testing doc snippets allocate-party-without-rights.ts 1`] = `undefined`;
+
+exports[`testing doc snippets await-completion-and-fetch.ts 1`] = `undefined`;
+
+exports[`testing doc snippets can-execute-as-any-party.ts 1`] = `undefined`;
+
+exports[`testing doc snippets can-read-as-any-party.ts 1`] = `undefined`;
+
+exports[`testing doc snippets cancel-preapproval.ts 1`] = `undefined`;
+
+exports[`testing doc snippets change-party-and-synchronizer.ts 1`] = `undefined`;
+
+exports[`testing doc snippets compute-transaction-hash.ts 1`] = `undefined`;
+
+exports[`testing doc snippets convert-transaction-to-json.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-key-pair.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-new-user.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-topology-transactions.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-transfer.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-transfer-command.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-transfer-command-full.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-transfer-preapproval.ts 1`] = `undefined`;
+
+exports[`testing doc snippets decode-topology-tx.ts 1`] = `
+[
+  undefined,
+  undefined,
+  undefined,
+]
+`;
+
+exports[`testing doc snippets default-config.ts 1`] = `
+WalletSDKImpl {
+  "_authTokenProvider": AuthTokenProvider {
+    "authController": UnsafeAuthController {
+      "_accessTokens": {},
+      "_logger": undefined,
+      "adminId": "ledger-api-user",
+      "audience": "https://canton.network.global",
+      "unsafeSecret": "unsafe",
+      "userId": "ledger-api-user",
+    },
+  },
+  "adminLedger": undefined,
+  "auth": UnsafeAuthController {
+    "_accessTokens": {},
+    "_logger": undefined,
+    "adminId": "ledger-api-user",
+    "audience": "https://canton.network.global",
+    "unsafeSecret": "unsafe",
+    "userId": "ledger-api-user",
+  },
+  "authFactory": [Function],
+  "ledgerFactory": [Function],
+  "logger": CustomConsole {
+    "Console": [Function],
+    "_counters": {},
+    "_formatBuffer": [Function],
+    "_groupDepth": 0,
+    "_stderr": WriteStream {
+      "_closeAfterHandlingError": false,
+      "_destroy": [Function],
+      "_events": {
+        "close": [Function],
+        "data": undefined,
+        "drain": undefined,
+        "end": [Function],
+        "error": [Function],
+        "finish": [Function],
+        "prefinish": undefined,
+        "readable": undefined,
+        "unpipe": [Function],
+      },
+      "_eventsCount": 5,
+      "_hadError": false,
+      "_host": null,
+      "_isStdio": true,
+      "_maxListeners": undefined,
+      "_parent": null,
+      "_pendingData": null,
+      "_pendingEncoding": "",
+      "_readableState": ReadableState {
+        "awaitDrainWriters": null,
+        "buffer": [],
+        "bufferIndex": 0,
+        "highWaterMark": 0,
+        "length": 0,
+        "pipes": [],
+        Symbol(kState): 1052932,
+      },
+      "_server": null,
+      "_sockname": null,
+      "_type": "tty",
+      "_writableState": WritableState {
+        "bufferedIndex": 0,
+        "corked": 0,
+        "highWaterMark": 65536,
+        "length": 0,
+        "onwrite": [Function],
+        "pendingcb": 0,
+        "writelen": 0,
+        Symbol(kState): 17563908,
+        Symbol(kBufferedValue): null,
+        Symbol(kWriteCbValue): null,
+      },
+      "allowHalfOpen": false,
+      "columns": 184,
+      "connecting": false,
+      "destroySoon": [Function],
+      "fd": 1,
+      "rows": 49,
+      "server": null,
+      "write": [Function],
+      Symbol(async_id_symbol): 8,
+      Symbol(kHandle): TTY {
+        Symbol(owner_symbol): [Circular],
+      },
+      Symbol(lastWriteQueueSize): 0,
+      Symbol(timeout): null,
+      Symbol(kBuffer): null,
+      Symbol(kBufferCb): null,
+      Symbol(kBufferGen): null,
+      Symbol(shapeMode): true,
+      Symbol(kCapture): false,
+      Symbol(kSetNoDelay): false,
+      Symbol(kSetKeepAlive): false,
+      Symbol(kSetKeepAliveInitialDelay): 0,
+      Symbol(kBytesRead): 0,
+      Symbol(kBytesWritten): 0,
+    },
+    "_stdout": WriteStream {
+      "_closeAfterHandlingError": false,
+      "_destroy": [Function],
+      "_events": {
+        "close": [Function],
+        "data": undefined,
+        "drain": undefined,
+        "end": [Function],
+        "error": [Function],
+        "finish": [Function],
+        "prefinish": undefined,
+        "readable": undefined,
+        "unpipe": [Function],
+      },
+      "_eventsCount": 5,
+      "_hadError": false,
+      "_host": null,
+      "_isStdio": true,
+      "_maxListeners": undefined,
+      "_parent": null,
+      "_pendingData": null,
+      "_pendingEncoding": "",
+      "_readableState": ReadableState {
+        "awaitDrainWriters": null,
+        "buffer": [],
+        "bufferIndex": 0,
+        "highWaterMark": 0,
+        "length": 0,
+        "pipes": [],
+        Symbol(kState): 1052932,
+      },
+      "_server": null,
+      "_sockname": null,
+      "_type": "tty",
+      "_writableState": WritableState {
+        "bufferedIndex": 0,
+        "corked": 0,
+        "highWaterMark": 65536,
+        "length": 0,
+        "onwrite": [Function],
+        "pendingcb": 0,
+        "writelen": 0,
+        Symbol(kState): 17563908,
+        Symbol(kBufferedValue): null,
+        Symbol(kWriteCbValue): null,
+      },
+      "allowHalfOpen": false,
+      "columns": 184,
+      "connecting": false,
+      "destroySoon": [Function],
+      "fd": 1,
+      "rows": 49,
+      "server": null,
+      "write": [Function],
+      Symbol(async_id_symbol): 8,
+      Symbol(kHandle): TTY {
+        Symbol(owner_symbol): [Circular],
+      },
+      Symbol(lastWriteQueueSize): 0,
+      Symbol(timeout): null,
+      Symbol(kBuffer): null,
+      Symbol(kBufferCb): null,
+      Symbol(kBufferGen): null,
+      Symbol(shapeMode): true,
+      Symbol(kCapture): false,
+      Symbol(kSetNoDelay): false,
+      Symbol(kSetKeepAlive): false,
+      Symbol(kSetKeepAliveInitialDelay): 0,
+      Symbol(kBytesRead): 0,
+      Symbol(kBytesWritten): 0,
+    },
+    "_timers": {},
+    "assert": [Function],
+    "clear": [Function],
+    "count": [Function],
+    "countReset": [Function],
+    "debug": [Function],
+    "dir": [Function],
+    "dirxml": [Function],
+    "error": [Function],
+    "group": [Function],
+    "groupCollapsed": [Function],
+    "groupEnd": [Function],
+    "info": [Function],
+    "log": [Function],
+    "table": [Function],
+    "time": [Function],
+    "timeEnd": [Function],
+    "timeLog": [Function],
+    "trace": [Function],
+    "warn": [Function],
+  },
+  "tokenStandard": undefined,
+  "tokenStandardFactory": [Function],
+  "topology": undefined,
+  "topologyFactory": [Function],
+  "userLedger": undefined,
+  "validator": undefined,
+  "validatorFactory": [Function],
 }
 `;
 
+exports[`testing doc snippets execute-transaction.ts 1`] = `undefined`;
+
 exports[`testing doc snippets generate-fingerprint.ts 1`] = `"1220dd3caa6464d2ba93b1fb195ede9344d54a0e17405d9331e91ceea27f07d414f7"`;
 
+exports[`testing doc snippets list-holdings.ts 1`] = `undefined`;
+
+exports[`testing doc snippets list-wallets.ts 1`] = `undefined`;
+
+exports[`testing doc snippets monitor-transaction-holdings.ts 1`] = `undefined`;
+
 exports[`testing doc snippets oauth-controller.ts 1`] = `undefined`;
+
+exports[`testing doc snippets prepare-incoming-command.ts 1`] = `undefined`;
+
+exports[`testing doc snippets prepare-transfer-transaction.ts 1`] = `undefined`;
+
+exports[`testing doc snippets read-active-contracts.ts 1`] = `[]`;
+
+exports[`testing doc snippets read-ledger-end.ts 1`] = `undefined`;
+
+exports[`testing doc snippets read-pending-transfer-instructions.ts 1`] = `undefined`;
+
+exports[`testing doc snippets renew-preapproval.ts 1`] = `undefined`;
+
+exports[`testing doc snippets sign-party-transaction-hash.ts 1`] = `undefined`;
+
+exports[`testing doc snippets sign-transaction-hash.ts 1`] = `undefined`;
+
+exports[`testing doc snippets submit-signed-topology-transaction.ts 1`] = `undefined`;
+
+exports[`testing doc snippets tap-coins.ts 1`] = `undefined`;
+
+exports[`testing doc snippets withdraw-transfer-instruction.ts 1`] = `undefined`;

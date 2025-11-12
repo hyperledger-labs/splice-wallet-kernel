@@ -2,11 +2,10 @@ import {
     WalletSDKImpl,
     localNetAuthDefault,
     localNetLedgerDefault,
+    localNetStaticConfig,
     localNetTokenStandardDefault,
 } from '@canton-network/wallet-sdk'
-import { v4 } from 'uuid'
 
-// @disable-snapshot-test
 export default async function () {
     const sdk = new WalletSDKImpl().configure({
         logger: console,
@@ -15,9 +14,13 @@ export default async function () {
         tokenStandardFactory: localNetTokenStandardDefault,
     })
 
-    await sdk.connect()
+    const myParty = global.EXISTING_PARTY_1
 
-    const myParty = 'my-party::22200...'
+    await sdk.connect()
+    await sdk.tokenStandard!.setTransferFactoryRegistryUrl(
+        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+    )
+    await sdk.setPartyId(myParty)
 
     // takes an option boolean whether to include locked holdings
     // default is 'true' and in this case utxos locked in a 2-step transfer (awaiting accept or reject)

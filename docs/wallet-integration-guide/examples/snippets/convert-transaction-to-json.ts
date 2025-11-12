@@ -7,20 +7,20 @@ import {
 } from '@canton-network/wallet-sdk'
 import { v4 } from 'uuid'
 
-// @disable-snapshot-test
 export default async function () {
     const sdk = new WalletSDKImpl().configure({
         logger: console,
         authFactory: localNetAuthDefault,
         ledgerFactory: localNetLedgerDefault,
     })
+    await sdk.connect()
 
-    const prepareExecuteParams = {
-        commands: {}, // this is of type JsCommand
-    }
+    const myParty = global.EXISTING_PARTY_1
+    const preparedCommand = global.PREPARED_COMMAND
 
-    const preparedTransaction = await sdk.userLedger?.prepareSubmission(
-        prepareExecuteParams.commands, //the incoming command
+    await sdk.setPartyId(myParty)
+    const preparedTransaction = await sdk.userLedger!.prepareSubmission(
+        preparedCommand, //the incoming command
         v4() //a unique deduplication id for this transaction
     )
 
@@ -28,7 +28,7 @@ export default async function () {
         preparedTransaction!.preparedTransaction!
     )
 
-    return PreparedTransaction.toJson(decodedTransaction)
+    PreparedTransaction.toJson(decodedTransaction)
 
     // Here you can use your choice of JSON visualizer
 }

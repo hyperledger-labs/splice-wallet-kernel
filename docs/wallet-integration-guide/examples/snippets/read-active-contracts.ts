@@ -4,7 +4,6 @@ import {
     localNetLedgerDefault,
 } from '@canton-network/wallet-sdk'
 
-// @disable-snapshot-test
 export default async function () {
     const sdk = new WalletSDKImpl().configure({
         logger: console,
@@ -13,14 +12,15 @@ export default async function () {
     })
     await sdk.connect()
 
-    const offset = 100 // you can use the sdk.userLedger.ledgerEnd() to get the latest offset
+    const myParty = global.EXISTING_PARTY_1
+    const offset = (await sdk.userLedger!.ledgerEnd()!).offset
+    //we use holdings as an example here
+    const myTemplateId = '#AdminWorkflows:Canton.Internal.Ping:Ping'
 
-    const allActiveContracts = await sdk.userLedger?.activeContracts({ offset })
-
-    const myTemplateId = 'your-template-id-here'
-
-    return await sdk.userLedger?.activeContracts({
+    return await sdk.userLedger!.activeContracts({
         offset,
+        parties: [myParty],
         templateIds: [myTemplateId], //this is optional for if you want to filter by template id
+        filterByParty: true,
     })
 }
