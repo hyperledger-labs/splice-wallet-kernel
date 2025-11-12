@@ -180,7 +180,7 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const drivers = {
         [SigningProvider.PARTICIPANT]: new ParticipantSigningDriver(),
         [SigningProvider.WALLET_KERNEL]: new InternalSigningDriver(
-            signingStore,
+            signingStore
         ),
         [SigningProvider.FIREBLOCKS]: new FireblocksSigningProvider({
             defaultKeyInfo: keyInfo,

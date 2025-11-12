@@ -7,7 +7,6 @@ import {
     buildController,
     PartyMode,
     SigningDriverInterface,
-    SigningDriverStore,
     SigningProvider,
 } from '@canton-network/core-signing-lib'
 
@@ -36,7 +35,6 @@ import { AuthContext } from '@canton-network/core-wallet-auth'
 export interface FireblocksConfig {
     defaultKeyInfo?: FireblocksApiKeyInfo
     userApiKeys: Map<string, FireblocksApiKeyInfo>
-    store: SigningDriverStore
     apiPath?: string
 }
 
@@ -62,7 +60,6 @@ const createFireblocksHandler = (
               }
             : undefined,
         config.userApiKeys,
-        config.store,
         config.apiPath || 'https://api.fireblocks.io/v1'
     )
 }
@@ -234,16 +231,8 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
                         error_description: validated.error.message,
                     }
                 }
-                if (
-                    !_.isEqual(
-                        { ...validated.data, store: this.config.store },
-                        this.config
-                    )
-                ) {
-                    this.config = {
-                        ...validated.data,
-                        store: this.config.store,
-                    }
+                if (!_.isEqual(validated.data, this.config)) {
+                    this.config = validated.data
                     this.fireblocks = createFireblocksHandler(this.config)
                 }
                 return params

@@ -61,35 +61,6 @@ interface SessionTable extends Session {
     userId: UserId
 }
 
-export interface SigningKeyTable {
-    id: string
-    userId: UserId
-    name: string
-    publicKey: string
-    privateKey: string | null
-    metadata: string | null
-    createdAt: string
-    updatedAt: string
-}
-
-export interface SigningTransactionTable {
-    id: string
-    userId: UserId
-    hash: string
-    signature: string | null
-    publicKey: string
-    status: string
-    metadata: string | null
-    createdAt: string
-    updatedAt: string
-}
-
-export interface SigningDriverConfigTable {
-    userId: UserId
-    driverId: string
-    config: string
-}
-
 export interface DB {
     migrations: MigrationTable
     idps: IdpTable

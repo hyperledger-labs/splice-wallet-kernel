@@ -43,7 +43,7 @@ async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     const db = connection({
         connection: {
             type: 'sqlite',
-            database: 'store.sqlite',
+            database: 'testInternalStore.sqlite',
         },
     })
     const umzug = migrator(db)
