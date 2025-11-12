@@ -135,7 +135,7 @@ export class CoreService {
         sender: PartyId,
         amount: number,
         inputUtxos?: string[]
-    ) {
+    ): Promise<string[]> {
         const now = new Date()
         if (inputUtxos && inputUtxos.length > 0) {
             return inputUtxos
@@ -174,7 +174,7 @@ export class CoreService {
         )
 
         if (exactAmount !== undefined) {
-            return exactAmount.contractId
+            return [exactAmount.contractId]
         }
 
         //sort holdings from smallest to largest
@@ -186,8 +186,9 @@ export class CoreService {
 
         const largestHoldingAmount = sortedUnlockedSenderHoldings.pop()!
 
-        let currentSum =
-            0 + parseFloat(largestHoldingAmount.interfaceViewValue.amount)
+        let currentSum = parseFloat(
+            largestHoldingAmount.interfaceViewValue.amount
+        )
         const cIds = [largestHoldingAmount.contractId]
 
         for (const h of sortedUnlockedSenderHoldings) {
@@ -743,10 +744,12 @@ class TransferService {
         expiryDate?: Date,
         meta?: Metadata
     ): Promise<CreateTransferChoiceArgs> {
-        const inputHoldingCids: string[] = await this.core.getInputHoldingsCids(
-            sender,
-            inputUtxos
-        )
+        const inputHoldingCids: string[] =
+            await this.core.getInputHoldingsCidsWithAmount(
+                sender,
+                parseFloat(amount),
+                inputUtxos
+            )
 
         return {
             expectedAdmin: instrumentAdmin,
@@ -1289,8 +1292,9 @@ export class TokenStandardService {
         const activeRound =
             await this.scanProxyClient.getActiveOpenMiningRound()
 
-        const inputHoldings = await this.core.getInputHoldingsCids(
+        const inputHoldings = await this.core.getInputHoldingsCidsWithAmount(
             provider,
+            trafficAmount,
             inputUtxos
         )
 
