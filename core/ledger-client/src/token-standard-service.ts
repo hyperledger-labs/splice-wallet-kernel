@@ -131,6 +131,94 @@ export class CoreService {
              */
     }
 
+    async getInputHoldingsCidsWithAmount(
+        sender: PartyId,
+        amount: number,
+        inputUtxos?: string[]
+    ) {
+        const now = new Date()
+        if (inputUtxos && inputUtxos.length > 0) {
+            return inputUtxos
+        }
+        const senderHoldings = await this.listContractsByInterface<HoldingView>(
+            HOLDING_INTERFACE_ID,
+            sender
+        )
+        if (senderHoldings.length === 0) {
+            throw new Error(
+                "Sender has no holdings, so transfer can't be executed."
+            )
+        }
+
+        const unlockedSenderHoldings = senderHoldings.filter((utxo) => {
+            //filter out locked holdings
+            const lock = utxo.interfaceViewValue.lock
+            if (!lock) return true
+
+            const expiresAt = lock.expiresAt
+            if (!expiresAt) return false
+
+            const expiresAtDate = new Date(expiresAt)
+            return expiresAtDate <= now
+        })
+
+        if (unlockedSenderHoldings.length > 100) {
+            this.logger.warn(`Sender has more than 100 unlocked utxos.`)
+        }
+
+        //find holding that is the exact amount if possible
+
+        const exactAmount = unlockedSenderHoldings.find(
+            (holding) =>
+                parseFloat(holding.interfaceViewValue.amount) === amount
+        )
+
+        if (exactAmount !== undefined) {
+            return exactAmount.contractId
+        }
+
+        //sort holdings from smallest to largest
+        const sortedUnlockedSenderHoldings = unlockedSenderHoldings.toSorted(
+            (a, b) =>
+                parseFloat(a.interfaceViewValue.amount) -
+                parseFloat(b.interfaceViewValue.amount)
+        )!
+
+        const largestHoldingAmount = sortedUnlockedSenderHoldings.pop()!
+
+        let currentSum =
+            0 + parseFloat(largestHoldingAmount.interfaceViewValue.amount)
+        const cIds = [largestHoldingAmount.contractId]
+
+        for (const h of sortedUnlockedSenderHoldings) {
+            const currentHoldingAmount = parseFloat(h.interfaceViewValue.amount)
+            if (currentSum + currentHoldingAmount > amount) {
+                break
+            }
+
+            currentSum += currentHoldingAmount
+            cIds.push(h.contractId)
+        }
+
+        if (currentSum < amount) {
+            throw new Error(
+                `Sender doesn't have enough accumulated holdings for this transfer.`
+            )
+        }
+
+        if (cIds.length > 100) {
+            throw new Error(
+                `Exceeded the maximum of 100 utxos in 1 transaction`
+            )
+        }
+
+        return cIds
+
+        /* TODO: optimize input holding selection, currently if you transfer 10 CC and have 10 inputs of 1000 CC,
+                then all 10 of those are chose as input.
+             */
+    }
+
     async listContractsByInterface<T = ViewValue>(
         interfaceId: string,
         partyId?: PartyId,
