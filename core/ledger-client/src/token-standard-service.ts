@@ -134,15 +134,17 @@ export class CoreService {
     async listContractsByInterface<T = ViewValue>(
         interfaceId: string,
         partyId?: PartyId,
-        limit?: number
+        limit?: number,
+        offset?: number
     ): Promise<PrettyContract<T>[]> {
         try {
-            const ledgerEnd = await this.ledgerClient.getWithRetry(
-                '/v2/state/ledger-end'
-            )
+            const ledgerEnd =
+                offset ??
+                (await this.ledgerClient.getWithRetry('/v2/state/ledger-end'))
+                    .offset
 
             const options = {
-                offset: ledgerEnd.offset,
+                offset: ledgerEnd,
                 interfaceIds: [interfaceId],
                 parties: [partyId!],
                 filterByParty: true,
@@ -170,7 +172,7 @@ export class CoreService {
             )
             return activeContractEntries.map(
                 (response: JsActiveContractEntryResponse) =>
-                    this.toPrettyContract<T>(interfaceId, response)
+                    this.toPrettyContract<T>(interfaceId, response, ledgerEnd)
             )
         } catch (err) {
             this.logger.error(
@@ -270,7 +272,8 @@ export class CoreService {
     // and contractId and interface view value extracted from it as separate fields for convenience
     private toPrettyContract<T>(
         interfaceId: string,
-        response: JsActiveContractEntryResponse
+        response: JsActiveContractEntryResponse,
+        offset?: number
     ): PrettyContract<T> {
         const activeContract = response.contractEntry.JsActiveContract
         const { createdEvent } = activeContract
@@ -281,6 +284,7 @@ export class CoreService {
                 createdEvent,
                 interfaceId
             ).viewValue as T,
+            fetchedAtOffset: offset,
         }
     }
 }
@@ -1288,12 +1292,14 @@ export class TokenStandardService {
     async listContractsByInterface<T = ViewValue>(
         interfaceId: string,
         partyId?: PartyId,
-        limit?: number
+        limit?: number,
+        offset?: number
     ): Promise<PrettyContract<T>[]> {
         return this.core.listContractsByInterface<T>(
             interfaceId,
             partyId,
-            limit
+            limit,
+            offset
         )
     }
 

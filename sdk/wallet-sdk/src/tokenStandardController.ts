@@ -251,17 +251,20 @@ export class TokenStandardController {
      * Lists all holding UTXOs for the current party.
      * @param includeLocked defaulted to true, this will include locked UTXOs.
      * @param limit optional limit for number of UTXOs to return.
+     * @param offset optional offset to list utxos from, default is latest.
      * @returns A promise that resolves to an array of holding UTXOs.
      */
 
     async listHoldingUtxos(
         includeLocked: boolean = true,
-        limit?: number
+        limit?: number,
+        offset?: number
     ): Promise<PrettyContract<Holding>[]> {
         const utxos = await this.service.listContractsByInterface<Holding>(
             HOLDING_INTERFACE_ID,
             this.getPartyId(),
-            limit
+            limit,
+            offset
         )
         const currentTime = new Date()
 
