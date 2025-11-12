@@ -87,43 +87,27 @@ export type NetworkName = string
 export type Id = string
 /**
  *
- * Type of identity provider (oauth)
+ * Type of identity provider (oauth / self_signed)
  *
  */
-export type Type = string
+export type Type = any
 /**
  *
- * A self-signed identity provider
- *
- */
-export interface IdpSelfSigned {
-    id: Id
-    type: Type
-    issuer: Issuer
-}
-/**
- *
- * URL to fetch the identity provider configuration
+ * The configuration URL for the identity provider.
  *
  */
 export type ConfigUrl = string
 /**
  *
- * A OAuth2 identity provider
+ * An identity provider for a network
  *
  */
-export interface IdpOAuth2 {
+export interface Idp {
     id: Id
     type: Type
     issuer: Issuer
     configUrl?: ConfigUrl
 }
-/**
- *
- * Structure representing the Identity Providers
- *
- */
-export type Idp = IdpSelfSigned | IdpOAuth2
 /**
  *
  * Set as primary wallet for dApp usage.

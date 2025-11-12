@@ -547,62 +547,32 @@
             },
             "Idp": {
                 "title": "Idp",
-                "description": "Structure representing the Identity Providers",
-                "oneOf": [
-                    {
-                        "title": "IdpSelfSigned",
-                        "type": "object",
-                        "description": "A self-signed identity provider",
-                        "properties": {
-                            "id": {
-                                "title": "id",
-                                "type": "string",
-                                "description": "ID of the identity provider"
-                            },
-                            "type": {
-                                "title": "type",
-                                "type": "string",
-                                "description": "Type of identity provider (self_signed)"
-                            },
-                            "issuer": {
-                                "title": "issuer",
-                                "type": "string",
-                                "description": "Issuer of identity provider"
-                            }
-                        },
-                        "required": ["id", "type", "issuer"],
-                        "additionalProperties": false
+                "description": "An identity provider for a network",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "title": "id",
+                        "type": "string",
+                        "description": "ID of the identity provider"
                     },
-                    {
-                        "title": "IdpOAuth2",
-                        "type": "object",
-                        "description": "A OAuth2 identity provider",
-                        "properties": {
-                            "id": {
-                                "title": "id",
-                                "type": "string",
-                                "description": "ID of the identity provider"
-                            },
-                            "type": {
-                                "title": "type",
-                                "type": "string",
-                                "description": "Type of identity provider (oauth)"
-                            },
-                            "issuer": {
-                                "title": "issuer",
-                                "type": "string",
-                                "description": "Issuer of identity provider"
-                            },
-                            "configUrl": {
-                                "title": "configUrl",
-                                "type": "string",
-                                "description": "URL to fetch the identity provider configuration"
-                            }
-                        },
-                        "required": ["id", "type", "issuer"],
-                        "additionalProperties": false
+                    "type": {
+                        "title": "type",
+                        "enum": ["oauth", "self_signed"],
+                        "description": "Type of identity provider (oauth / self_signed)"
+                    },
+                    "issuer": {
+                        "title": "issuer",
+                        "type": "string",
+                        "description": "Issuer of identity provider"
+                    },
+                    "configUrl": {
+                        "title": "configUrl",
+                        "type": "string",
+                        "description": "The configuration URL for the identity provider."
                     }
-                ]
+                },
+                "required": ["id", "type", "issuer"],
+                "additionalProperties": false
             },
             "Auth": {
                 "title": "auth",

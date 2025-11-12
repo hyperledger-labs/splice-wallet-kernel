@@ -97,7 +97,15 @@ export const userController = (
             Promise.resolve({ networks: await store.listNetworks() }),
         addIdp: async (params: AddIdpParams) => {
             const validatedIdp = idpSchema.parse(params.idp)
-            await store.addIdp(validatedIdp)
+
+            // TODO: Add an explicit updateIdp method to the User API spec and controller
+            const existingIdps = await store.listIdps()
+            if (existingIdps.find((n) => n.id === validatedIdp.id)) {
+                await store.updateIdp(validatedIdp)
+            } else {
+                await store.addIdp(validatedIdp)
+            }
+
             return null
         },
         removeIdp: async (params: RemoveIdpParams) => {

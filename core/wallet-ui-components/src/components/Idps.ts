@@ -7,6 +7,14 @@ import { Idp } from '@canton-network/core-wallet-user-rpc-client'
 
 import { BaseElement } from '../internal/BaseElement'
 import { modalStyles } from '../styles/modal'
+import { FormInputChangedEvent } from './FormInput'
+
+/** Emitted when the user Saves a Identity Provider */
+export class IdpAddEvent extends Event {
+    constructor(public idp: Idp) {
+        super('idp-add', { bubbles: true, composed: true })
+    }
+}
 
 @customElement('wg-idps')
 export class WgIdps extends BaseElement {
@@ -14,7 +22,12 @@ export class WgIdps extends BaseElement {
 
     @property({ type: Array }) accessor idps: Idp[] = []
     @state() accessor isModalOpen = false
-    @state() accessor editingIdp: Idp | null = null
+    @state() accessor modalIdp: Idp = {
+        id: '',
+        type: 'oauth',
+        issuer: '',
+        configUrl: '',
+    }
 
     connectedCallback(): void {
         super.connectedCallback()
@@ -22,7 +35,12 @@ export class WgIdps extends BaseElement {
 
     private openAddModal = () => {
         this.isModalOpen = true
-        this.editingIdp = null
+        this.modalIdp = {
+            id: '',
+            type: 'oauth',
+            issuer: '',
+            configUrl: '',
+        }
     }
 
     private closeModal = () => {
@@ -43,7 +61,14 @@ export class WgIdps extends BaseElement {
                 <div class="mt-4">
                     ${this.idps.map((idp) => {
                         return html`<div class="mb-2">
-                            <idp-card .idp=${idp}></idp-card>
+                            <idp-card
+                                .idp=${idp}
+                                @update=${(e: Event) => {
+                                    this.modalIdp = idp
+                                    this.isModalOpen = true
+                                    e.stopPropagation()
+                                }}
+                            ></idp-card>
                         </div>`
                     })}
                 </div>
@@ -56,10 +81,98 @@ export class WgIdps extends BaseElement {
                                   @click=${(e: Event) => e.stopPropagation()}
                               >
                                   <h3>
-                                      ${this.editingIdp
+                                      ${this.modalIdp
                                           ? 'Edit Identity Provider'
                                           : 'Add Identity Provider'}
                                   </h3>
+
+                                  <form
+                                      @submit=${(e: Event) => {
+                                          e.preventDefault()
+                                          this.dispatchEvent(
+                                              new IdpAddEvent(this.modalIdp)
+                                          )
+                                          this.closeModal()
+                                      }}
+                                  >
+                                      <form-input
+                                          label="ID"
+                                          @form-input-change=${(
+                                              e: FormInputChangedEvent
+                                          ) => {
+                                              this.modalIdp.id = e.value
+                                          }}
+                                          .value=${this.modalIdp.id}
+                                          required
+                                      ></form-input>
+
+                                      <label for="idp-type">Type</label>
+                                      <select
+                                          id="idp-type"
+                                          class="form-select mb-3"
+                                          @change=${(e: Event) => {
+                                              const select =
+                                                  e.target as HTMLSelectElement
+
+                                              this.modalIdp.type = select.value
+
+                                              if (
+                                                  this.modalIdp.type !== 'oauth'
+                                              ) {
+                                                  delete this.modalIdp.configUrl
+                                              }
+
+                                              this.requestUpdate()
+                                          }}
+                                          .value=${this.modalIdp.type}
+                                      >
+                                          <option value="oauth">oauth</option>
+                                          <option value="self_signed">
+                                              self_signed
+                                          </option>
+                                      </select>
+
+                                      <form-input
+                                          label="Issuer"
+                                          @form-input-change=${(
+                                              e: FormInputChangedEvent
+                                          ) => {
+                                              this.modalIdp.issuer = e.value
+                                          }}
+                                          .value=${this.modalIdp.issuer}
+                                          required
+                                      ></form-input>
+
+                                      ${this.modalIdp.type === 'oauth'
+                                          ? html`<form-input
+                                                label="Config URL"
+                                                @form-input-change=${(
+                                                    e: FormInputChangedEvent
+                                                ) => {
+                                                    this.modalIdp.configUrl =
+                                                        e.value
+                                                }}
+                                                .value=${this.modalIdp
+                                                    .configUrl || ''}
+                                            ></form-input>`
+                                          : ''}
+
+                                      <div>
+                                          <button
+                                              class="btn btn-primary btn-sm"
+                                              type="submit"
+                                          >
+                                              Save
+                                          </button>
+
+                                          <button
+                                              class="btn btn-secondary btn-sm"
+                                              @click=${() => this.closeModal()}
+                                          >
+                                              Cancel
+                                          </button>
+                                      </div>
+                                  </form>
                               </div>
                           </div>
                       `

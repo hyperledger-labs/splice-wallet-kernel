@@ -4,8 +4,8 @@
 import '@canton-network/core-wallet-ui-components'
 import {
     handleErrorToast,
+    IdpAddEvent,
     IdpCardDeleteEvent,
-    IdpCardUpdateEvent,
     NetworkCardDeleteEvent,
     NetworkEditSaveEvent,
 } from '@canton-network/core-wallet-ui-components'
@@ -124,11 +124,11 @@ export class UserUiSettings extends LitElement {
         }
     }
 
-    private handleIdpSubmit = async (ev: IdpCardUpdateEvent) => {
+    private handleIdpSubmit = async (ev: IdpAddEvent) => {
         console.log(ev)
         try {
-            // const userClient = createUserClient(stateManager.accessToken.get())
-            // await userClient.request('addIdp', { idp: ev.idp })
+            const userClient = createUserClient(stateManager.accessToken.get())
+            await userClient.request('addIdp', { idp: ev.idp })
             await this.listIdps()
         } catch (e) {
             handleErrorToast(e)
@@ -138,8 +138,10 @@ export class UserUiSettings extends LitElement {
     private handleIdpDelete = async (ev: IdpCardDeleteEvent) => {
         console.log(ev)
         try {
-            // const userClient = createUserClient(stateManager.accessToken.get())
-            // await userClient.request('removeIdp', { idp: ev.idp })
+            const userClient = createUserClient(stateManager.accessToken.get())
+            await userClient.request('removeIdp', {
+                identityProviderId: ev.idp.id,
+            })
             await this.listIdps()
         } catch (e) {
             handleErrorToast(e)
@@ -163,7 +165,7 @@ export class UserUiSettings extends LitElement {
             <wg-idps
                 .idps=${this.idps}
                 @delete=${this.handleIdpDelete}
-                @idp-edit-save=${this.handleIdpSubmit}
+                @idp-add=${this.handleIdpSubmit}
             ></wg-idps>
         `
     }

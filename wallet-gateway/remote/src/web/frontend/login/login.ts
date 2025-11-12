@@ -6,11 +6,7 @@ import { customElement, state } from 'lit/decorators.js'
 
 import '@canton-network/core-wallet-ui-components'
 import { createUserClient } from '../rpc-client'
-import {
-    Idp,
-    IdpOAuth2,
-    Network,
-} from '@canton-network/core-wallet-user-rpc-client'
+import { Idp, Network } from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
 import { WalletEvent } from '@canton-network/core-types'
@@ -228,20 +224,19 @@ export class LoginUI extends LitElement {
             setTimeout(() => {
                 window.location.replace('/')
             }, 400)
-        } else if (idp.type === 'oauth2') {
-            const oauthIdp = idp as IdpOAuth2
+        } else if (idp.type === 'oauth') {
             if (this.selectedNetwork.auth.method === 'authorization_code') {
                 const redirectUri = `${window.origin}/callback/`
                 this.messageType = 'info'
                 this.message = `Redirecting to ${this.selectedNetwork.name}...`
 
                 const auth = this.selectedNetwork.auth
-                const config = await fetch(oauthIdp.configUrl || '').then(
-                    (res) => res.json()
+                const config = await fetch(idp.configUrl || '').then((res) =>
+                    res.json()
                 )
 
                 const statePayload = {
-                    configUrl: oauthIdp.configUrl,
+                    configUrl: idp.configUrl,
                     clientId: auth.clientId,
                     audience: auth.audience,
                 }
@@ -262,7 +257,7 @@ export class LoginUI extends LitElement {
                 }, 400)
             } else {
                 this.messageType = 'error'
-                this.message = 'This authentication type is not supported yet.'
+                this.message = 'This authentication method is not valid.'
                 return
             }
         } else {
