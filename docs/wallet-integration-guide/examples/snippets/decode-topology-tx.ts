@@ -8,7 +8,6 @@ import {
     LedgerController,
 } from '@canton-network/wallet-sdk'
 
-// @disable-snapshot-test
 export default async function () {
     // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
     const sdk = new WalletSDKImpl().configure({
@@ -26,10 +25,9 @@ export default async function () {
     const partyHint = 'my-wallet-1'
 
     const generateExternalPartyResponse =
-        await sdk.userLedger?.generateExternalParty(publicKey, partyHint)
+        await sdk.userLedger!.generateExternalParty(publicKey, partyHint)
 
-    return generateExternalPartyResponse!.topologyTransactions!.map(
-        (topologyTx) =>
-            LedgerController.toDecodedTopologyTransaction(topologyTx)
+    generateExternalPartyResponse!.topologyTransactions!.map((topologyTx) =>
+        LedgerController.toDecodedTopologyTransaction(topologyTx)
     )
 }
