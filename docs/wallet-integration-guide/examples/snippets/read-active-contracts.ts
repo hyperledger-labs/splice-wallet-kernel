@@ -17,7 +17,7 @@ export default async function () {
     //we use holdings as an example here
     const myTemplateId = '#AdminWorkflows:Canton.Internal.Ping:Ping'
 
-    return await sdk.userLedger!.activeContracts({
+    await sdk.userLedger!.activeContracts({
         offset,
         parties: [myParty],
         templateIds: [myTemplateId], //this is optional for if you want to filter by template id
