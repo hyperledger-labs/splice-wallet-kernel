@@ -34,13 +34,7 @@ exports[`testing doc snippets create-transfer-command-full.ts 1`] = `undefined`;
 
 exports[`testing doc snippets create-transfer-preapproval.ts 1`] = `undefined`;
 
-exports[`testing doc snippets decode-topology-tx.ts 1`] = `
-[
-  undefined,
-  undefined,
-  undefined,
-]
-`;
+exports[`testing doc snippets decode-topology-tx.ts 1`] = `undefined`;
 
 exports[`testing doc snippets default-config.ts 1`] = `
 WalletSDKImpl {

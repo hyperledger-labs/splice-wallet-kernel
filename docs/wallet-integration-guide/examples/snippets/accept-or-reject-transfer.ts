@@ -16,8 +16,8 @@ export default async function () {
         tokenStandardFactory: localNetTokenStandardDefault,
     })
 
-    const myParty = global.EXISTING_PARTY_1
-    const myPrivateKey = global.EXISTING_PARTY_1_KEYS.privateKey
+    const myParty = global.EXISTING_PARTY_2
+    const myPrivateKey = global.EXISTING_PARTY_2_KEYS.privateKey
     const Reject = true
 
     await sdk.connect()

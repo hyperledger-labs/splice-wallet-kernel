@@ -27,8 +27,7 @@ export default async function () {
     const generateExternalPartyResponse =
         await sdk.userLedger!.generateExternalParty(publicKey, partyHint)
 
-    return generateExternalPartyResponse!.topologyTransactions!.map(
-        (topologyTx) =>
-            LedgerController.toDecodedTopologyTransaction(topologyTx)
+    generateExternalPartyResponse!.topologyTransactions!.map((topologyTx) =>
+        LedgerController.toDecodedTopologyTransaction(topologyTx)
     )
 }
