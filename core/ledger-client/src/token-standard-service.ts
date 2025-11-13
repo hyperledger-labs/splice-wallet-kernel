@@ -134,6 +134,11 @@ export class CoreService {
         }
 
         if (amount) {
+            //fail fast if sender doesn't have any unlocked holdings
+            if (!unlockedSenderHoldings?.length) {
+                throw new Error(`Sender doesn't have any unlocked holdings`)
+            }
+
             //find holding that is the exact amount if possible
 
             const exactAmount = unlockedSenderHoldings.find(
@@ -143,10 +148,6 @@ export class CoreService {
 
             if (exactAmount) {
                 return [exactAmount.contractId]
-            }
-
-            if (!unlockedSenderHoldings?.length) {
-                throw new Error(`Sender doesn't have any unlocked holdings`)
             }
 
             //sort holdings from smallest to largest
