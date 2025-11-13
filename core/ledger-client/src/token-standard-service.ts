@@ -163,12 +163,8 @@ export class CoreService {
             )
             const cIds = [largestHoldingAmount.contractId]
 
-            if (currentSum >= amount) {
-                return cIds
-            }
-
             for (const h of sortedUnlockedSenderHoldings) {
-                if (currentSum > amount) {
+                if (currentSum >= amount) {
                     break
                 }
 
