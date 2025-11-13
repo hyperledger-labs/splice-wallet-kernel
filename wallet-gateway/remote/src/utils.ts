@@ -7,15 +7,17 @@ import { LedgerClient } from '@canton-network/core-ledger-client'
 type NetworkStatus = {
     isConnected: boolean
     reason?: string
+    cantonVersion?: string
 }
 
 export async function networkStatus(
     ledgerClient: LedgerClient
 ): Promise<NetworkStatus> {
     try {
-        await ledgerClient.get('/v2/version')
+        const response = await ledgerClient.get('/v2/version')
         return {
             isConnected: true,
+            cantonVersion: response.version,
         }
     } catch (e) {
         return {
