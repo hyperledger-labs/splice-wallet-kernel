@@ -181,9 +181,6 @@
                     "title": "OnConnectedEvent",
                     "type": "object",
                     "properties": {
-                        "kernel": {
-                            "$ref": "#/components/schemas/KernelInfo"
-                        },
                         "status": {
                             "$ref": "#/components/schemas/StatusEvent"
                         },

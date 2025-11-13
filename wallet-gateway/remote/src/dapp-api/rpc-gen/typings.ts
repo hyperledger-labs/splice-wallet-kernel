@@ -333,7 +333,6 @@ export interface LedgerApiResult {
     [k: string]: any
 }
 export interface OnConnectedEvent {
-    kernel: KernelInfo
     status: StatusEvent
     sessionToken?: SessionToken
     [k: string]: any
