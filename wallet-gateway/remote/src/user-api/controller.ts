@@ -307,7 +307,7 @@ export const userController = (
             return { wallet }
         },
         setPrimaryWallet: async (params: SetPrimaryWalletParams) => {
-            store.setPrimaryWallet(params.partyId)
+            await store.setPrimaryWallet(params.partyId)
             const notifier = authContext?.userId
                 ? notificationService.getNotifier(authContext.userId)
                 : undefined
