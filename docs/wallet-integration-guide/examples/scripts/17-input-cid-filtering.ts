@@ -19,9 +19,7 @@ const sdk = new WalletSDKImpl().configure({
     logger,
     authFactory: localNetAuthDefault,
     ledgerFactory: localNetLedgerDefault,
-    topologyFactory: localNetTopologyDefault,
     tokenStandardFactory: localNetTokenStandardDefault,
-    validatorFactory: localValidatorDefault,
 })
 
 logger.info('SDK initialized')
@@ -32,7 +30,6 @@ logger.info('Connected to ledger')
 const keyPairSender = createKeyPair()
 const keyPairReceiver = createKeyPair()
 
-await sdk.connectAdmin()
 await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
 const sender = await sdk.userLedger?.signAndAllocateExternalParty(
@@ -57,8 +54,6 @@ const validatorOperatorParty = await sdk.validator?.getValidatorUser()
 
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
-
-await new Promise((res) => setTimeout(res, 5000))
 
 logger.info('creating transfer preapproval proposal')
 

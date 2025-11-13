@@ -141,8 +141,12 @@ export class CoreService {
                     parseFloat(holding.interfaceViewValue.amount) === amount
             )
 
-            if (exactAmount !== undefined) {
+            if (exactAmount) {
                 return [exactAmount.contractId]
+            }
+
+            if (!unlockedSenderHoldings?.length) {
+                throw new Error(`Sender doesn't have any unlocked holdings`)
             }
 
             //sort holdings from smallest to largest
@@ -151,25 +155,33 @@ export class CoreService {
                     (a, b) =>
                         parseFloat(a.interfaceViewValue.amount) -
                         parseFloat(b.interfaceViewValue.amount)
-                )!
+                )
 
-            const largestHoldingAmount = sortedUnlockedSenderHoldings.pop()!
+            const largestHoldingAmount = sortedUnlockedSenderHoldings.pop()
+
+            if (!largestHoldingAmount) {
+                throw new Error(`Sender doesn't have any unlocked holdings`)
+            }
 
             let currentSum = parseFloat(
                 largestHoldingAmount.interfaceViewValue.amount
             )
             const cIds = [largestHoldingAmount.contractId]
 
+            if (currentSum >= amount) {
+                return cIds
+            }
+
             for (const h of sortedUnlockedSenderHoldings) {
                 const currentHoldingAmount = parseFloat(
                     h.interfaceViewValue.amount
                 )
-                if (currentSum + currentHoldingAmount > amount) {
-                    break
-                }
 
                 currentSum += currentHoldingAmount
                 cIds.push(h.contractId)
+                if (currentSum > amount) {
+                    break
+                }
             }
 
             if (currentSum < amount) {
