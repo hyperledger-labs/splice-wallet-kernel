@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+// TODO make it works with dual version
 import fs from 'fs'
 import path from 'path'
 import { spawnSync } from 'child_process'
