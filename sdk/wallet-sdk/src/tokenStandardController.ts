@@ -287,12 +287,14 @@ export class TokenStandardController {
     async mergeHoldingUtxos(instrument: {
         instrumentId: string
         instrumentAdmin?: PartyId
-    }) {
+    }): Promise<
+        [WrappedCommand<'ExerciseCommand'>[], Types['DisclosedContract'][]]
+    > {
         const utxos = await this.listHoldingUtxos(false)
         const transferInputUtxoLimit = 100
         const transfers = Math.ceil(utxos.length / transferInputUtxoLimit)
 
-        for (let i = 0; i < transfers; i++) {
+        const transferPromises = Array.from({ length: transfers }, (_, i) => {
             const start = i * transferInputUtxoLimit
             const end = Math.min(start + transferInputUtxoLimit, utxos.length)
 
@@ -302,7 +304,7 @@ export class TokenStandardController {
                 return a + parseFloat(b.interfaceViewValue.amount)
             }, 0)
 
-            await this.createTransfer(
+            return this.createTransfer(
                 this.getPartyId(),
                 this.getPartyId(),
                 accumulatedAmount.toString(),
@@ -310,7 +312,13 @@ export class TokenStandardController {
                 inputUtxos.map((h) => h.contractId),
                 'merge-utxos'
             )
-        }
+        })
+
+        const transferResults = await Promise.all(transferPromises)
+        const commands = transferResults.map(([cmd]) => cmd)
+        const disclosedContracts = transferResults.flatMap(([, dc]) => dc)
+
+        return [commands, disclosedContracts]
     }
 
     /**
