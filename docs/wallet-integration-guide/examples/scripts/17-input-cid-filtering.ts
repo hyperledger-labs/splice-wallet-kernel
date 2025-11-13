@@ -245,3 +245,42 @@ if (transferOutAlice3 === undefined) {
         `Transfer succeeded with 6 inputHoldingCids with 1 large amount and several small utxos`
     )
 }
+
+//merge utxos test
+for (let i = 0; i < 10; i++) {
+    const [tapCommand2, disclosedContracts2] =
+        await sdk.tokenStandard!.createTap(sender!.partyId, '200', {
+            instrumentId: 'Amulet',
+            instrumentAdmin: instrumentAdminPartyId,
+        })
+
+    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+        tapCommand2,
+        keyPairSender.privateKey,
+        v4(),
+        disclosedContracts2
+    )
+}
+
+const utxosAlice = await sdk.tokenStandard?.listHoldingUtxos(false)
+logger.info(`number of unlocked utxos for alice ${utxosAlice?.length}`)
+
+const [commands, mergedDisclosedContracts] =
+    await sdk.tokenStandard?.mergeHoldingUtxos({
+        instrumentId: 'Amulet',
+        instrumentAdmin: instrumentAdminPartyId,
+    })!
+
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    commands,
+    keyPairSender.privateKey,
+    v4(),
+    mergedDisclosedContracts
+)
+
+const utxosAliceMerged = await sdk.tokenStandard?.listHoldingUtxos(false)!
+if (utxosAliceMerged?.length === 1) {
+    logger.info(`utxos successfuly merged from ${utxosAlice?.length} to 1`)
+} else {
+    throw new Error(`utxos not successfully merged`)
+}
