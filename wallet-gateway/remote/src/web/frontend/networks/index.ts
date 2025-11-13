@@ -274,6 +274,7 @@ export class UserUiNetworks extends LitElement {
                         <tr>
                             <th>Network ID</th>
                             <th>Status</th>
+                            <th>Reason</th>
                             <th>AccessToken</th>
                         </tr>
                     </thead>
@@ -282,7 +283,12 @@ export class UserUiNetworks extends LitElement {
                             (session) => html`
                                 <tr>
                                     <td>${session.network.id}</td>
-                                    <td>${session.status}</td>
+                                    <td>
+                                        ${session.status === 'connected'
+                                            ? '🟢'
+                                            : '🔴'}
+                                    </td>
+                                    <td>${session.reason}</td>
                                     <td>
                                         <button
                                             type="button"

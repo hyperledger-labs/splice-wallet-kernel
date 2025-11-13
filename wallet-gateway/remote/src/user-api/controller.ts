@@ -555,7 +555,8 @@ export const userController = (
                 return Promise.resolve({
                     accessToken,
                     network,
-                    status: 'connected',
+                    status: status.isConnected ? 'connected' : 'disconnected',
+                    reason: status.reason ? status.reason : 'OK',
                 })
             } catch (error) {
                 logger.error(`Failed to add session: ${error}`)
@@ -567,13 +568,24 @@ export const userController = (
             if (!session) {
                 return { sessions: [] }
             }
+
             const network = await store.getNetwork(session.network)
+            const ledgerClient = new LedgerClient(
+                new URL(network.ledgerApi.baseUrl),
+                logger,
+                false,
+                authContext!.accessToken
+            )
+            const status = await networkStatus(ledgerClient)
             return {
                 sessions: [
                     {
                         network,
                         accessToken: authContext!.accessToken,
-                        status: 'connected',
+                        status: status.isConnected
+                            ? 'connected'
+                            : 'disconnected',
+                        reason: status.reason ? status.reason : 'OK',
                     },
                 ],
             }

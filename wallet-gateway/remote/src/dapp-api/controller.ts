@@ -54,7 +54,7 @@ export const dappController = (
             )
             const status = await networkStatus(ledgerClient)
             return {
-                sessionToken: '',
+                sessionToken: context.accessToken,
                 status: {
                     kernel: kernelInfo,
                     isConnected: true,
