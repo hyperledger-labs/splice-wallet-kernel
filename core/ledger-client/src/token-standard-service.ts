@@ -134,64 +134,71 @@ export class CoreService {
         }
 
         if (amount) {
-            //find holding that is the exact amount if possible
-            const exactAmount = unlockedSenderHoldings.find(
-                (holding) =>
-                    parseFloat(holding.interfaceViewValue.amount) === amount
+            return CoreService.getInputHoldingsCidsForAmount(
+                amount,
+                unlockedSenderHoldings
             )
-
-            if (exactAmount) {
-                return [exactAmount.contractId]
-            }
-
-            //sort holdings from smallest to largest
-            const sortedUnlockedSenderHoldings =
-                unlockedSenderHoldings.toSorted(
-                    (a, b) =>
-                        parseFloat(a.interfaceViewValue.amount) -
-                        parseFloat(b.interfaceViewValue.amount)
-                )
-
-            const largestHoldingAmount = sortedUnlockedSenderHoldings.pop()
-
-            if (!largestHoldingAmount) {
-                throw new Error(`Sender doesn't have any unlocked holdings`)
-            }
-
-            let currentSum = parseFloat(
-                largestHoldingAmount.interfaceViewValue.amount
-            )
-            const cIds = [largestHoldingAmount.contractId]
-
-            for (const h of sortedUnlockedSenderHoldings) {
-                if (currentSum >= amount) {
-                    break
-                }
-
-                const currentHoldingAmount = parseFloat(
-                    h.interfaceViewValue.amount
-                )
-
-                currentSum += currentHoldingAmount
-                cIds.push(h.contractId)
-            }
-
-            if (currentSum < amount) {
-                throw new Error(
-                    `Sender doesn't have sufficient funds for this transfer. Missing amount: ${amount - currentSum}`
-                )
-            }
-
-            if (cIds.length > 100) {
-                throw new Error(
-                    `Exceeded the maximum of 100 utxos in 1 transaction`
-                )
-            }
-
-            return cIds
         } else {
             return unlockedSenderHoldings.map((h) => h.contractId)
         }
+    }
+
+    static async getInputHoldingsCidsForAmount(
+        amount: number,
+        unlockedSenderHoldings: PrettyContract<HoldingView>[]
+    ) {
+        //find holding that is the exact amount if possible
+        const exactAmount = unlockedSenderHoldings.find(
+            (holding) =>
+                parseFloat(holding.interfaceViewValue.amount) === amount
+        )
+
+        if (exactAmount) {
+            return [exactAmount.contractId]
+        }
+
+        //sort holdings from smallest to largest
+        const sortedUnlockedSenderHoldings = unlockedSenderHoldings.toSorted(
+            (a, b) =>
+                parseFloat(a.interfaceViewValue.amount) -
+                parseFloat(b.interfaceViewValue.amount)
+        )
+
+        const largestHoldingAmount = sortedUnlockedSenderHoldings.pop()
+
+        if (!largestHoldingAmount) {
+            throw new Error(`Sender doesn't have any unlocked holdings`)
+        }
+
+        let currentSum = parseFloat(
+            largestHoldingAmount.interfaceViewValue.amount
+        )
+        const cIds = [largestHoldingAmount.contractId]
+
+        for (const h of sortedUnlockedSenderHoldings) {
+            if (currentSum >= amount) {
+                break
+            }
+
+            const currentHoldingAmount = parseFloat(h.interfaceViewValue.amount)
+
+            currentSum += currentHoldingAmount
+            cIds.push(h.contractId)
+        }
+
+        if (currentSum < amount) {
+            throw new Error(
+                `Sender doesn't have sufficient funds for this transfer. Missing amount: ${amount - currentSum}`
+            )
+        }
+
+        if (cIds.length > 100) {
+            throw new Error(
+                `Exceeded the maximum of 100 utxos in 1 transaction`
+            )
+        }
+
+        return cIds
     }
 
     async listContractsByInterface<T = ViewValue>(
