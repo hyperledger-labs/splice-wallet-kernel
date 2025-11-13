@@ -71,6 +71,8 @@ test('call connect rpc', async () => {
                     userUrl: 'http://localhost:3030',
                 },
                 isConnected: false,
+                isNetworkConnected: false,
+                networkReason: 'Unauthenticated',
                 userUrl: 'http://localhost:3030/login/',
             },
         },
