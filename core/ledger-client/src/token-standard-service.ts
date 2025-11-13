@@ -168,15 +168,16 @@ export class CoreService {
             }
 
             for (const h of sortedUnlockedSenderHoldings) {
+                if (currentSum > amount) {
+                    break
+                }
+
                 const currentHoldingAmount = parseFloat(
                     h.interfaceViewValue.amount
                 )
 
                 currentSum += currentHoldingAmount
                 cIds.push(h.contractId)
-                if (currentSum > amount) {
-                    break
-                }
             }
 
             if (currentSum < amount) {
