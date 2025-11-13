@@ -31,15 +31,39 @@ export const dappController = (
 ) => {
     const logger = _logger.child({ component: 'dapp-controller' })
     return buildController({
-        connect: async () => ({
-            sessionToken: '',
-            status: {
-                kernel: kernelInfo,
-                isAuthenticated: false, // todo: return correct value
-                isConnected: false, // ^^^
-                userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
-            },
-        }),
+        connect: async () => {
+            if (!context) {
+                return {
+                    sessionToken: '',
+                    status: {
+                        kernel: kernelInfo,
+                        isConnected: false,
+                        isNetworkConnected: false,
+                        networkReason: 'Unauthenticated',
+                        userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
+                    },
+                }
+            }
+
+            const network = await store.getCurrentNetwork()
+            const ledgerClient = new LedgerClient(
+                new URL(network.ledgerApi.baseUrl),
+                logger,
+                false,
+                context.accessToken
+            )
+            const status = await networkStatus(ledgerClient)
+            return {
+                sessionToken: '',
+                status: {
+                    kernel: kernelInfo,
+                    isConnected: true,
+                    isNetworkConnected: status.isConnected,
+                    networkReason: status.reason ? status.reason : 'OK',
+                    userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
+                },
+            }
+        },
         disconnect: async () => {
             if (!context) {
                 return null
@@ -168,9 +192,9 @@ export const dappController = (
             if (!context) {
                 return {
                     kernel: kernelInfo,
-                    isAuthenticated: false,
                     isConnected: false,
-                    connectReason: 'Unauthenticated',
+                    isNetworkConnected: false,
+                    networkReason: 'Unauthenticated',
                 }
             }
 
@@ -184,9 +208,9 @@ export const dappController = (
             const status = await networkStatus(ledgerClient)
             return {
                 kernel: kernelInfo,
-                isAuthenticated: true,
-                isConnected: status.isConnected,
-                connectReason: status.reason ? status.reason : 'OK',
+                isConnected: true,
+                isNetworkConnected: status.isConnected,
+                networkReason: status.reason ? status.reason : 'OK',
                 networkId: (await store.getCurrentNetwork()).id,
             }
         },

@@ -544,9 +544,9 @@ export const userController = (
                 notifier.emit('onConnected', {
                     kernel: kernelInfo,
                     status: {
-                        isAuthenticated: true,
-                        isConnected: status.isConnected,
-                        connectReason: status.reason ? status.reason : 'OK',
+                        isConnected: true,
+                        isNetworkConnected: status.isConnected,
+                        networkReason: status.reason ? status.reason : 'OK',
                         networkId: network.id,
                     },
                     sessionToken: accessToken,
