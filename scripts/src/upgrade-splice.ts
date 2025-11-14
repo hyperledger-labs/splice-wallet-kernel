@@ -1,8 +1,6 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-// TODO make it works with dual version
-// TODO should DAML_RELEASE_VERSION be dual as well?
 import fs from 'fs'
 import path from 'path'
 import { spawnSync } from 'child_process'
@@ -78,8 +76,10 @@ try {
     const versionConfigRaw = fs.readFileSync(VERSIONS_CONFIG_PATH, 'utf8')
     const versionConfig = JSON.parse(versionConfigRaw)
 
-    // Update DAML_RELEASE_VERSION
-    versionConfig.DAML_RELEASE_VERSION = damlRelease
+    // Update DAML_RELEASE_VERSION, but only when upgrading for devnet
+    if (network === 'devnet') {
+        versionConfig.DAML_RELEASE_VERSION = damlRelease
+    }
 
     // Update SUPPORTED_VERSIONS.*.canton.version (match on major.minor)
     const majorMinor = damlRelease
@@ -91,7 +91,8 @@ try {
     for (const env of Object.keys(versionConfig.SUPPORTED_VERSIONS) as Array<
         keyof typeof versionConfig.SUPPORTED_VERSIONS
     >) {
-        const canton = versionConfig.SUPPORTED_VERSIONS[env].canton
+        const envConfig = versionConfig.SUPPORTED_VERSIONS[env]
+        const canton = envConfig.canton
         const currentMajorMinor = canton.version
             .split('-')[0]
             .split('.')
@@ -100,6 +101,7 @@ try {
 
         if (currentMajorMinor === majorMinor) {
             canton.version = cantonSources['version']
+            envConfig.DAML_RELEASE_VERSION = damlRelease
         }
     }
 

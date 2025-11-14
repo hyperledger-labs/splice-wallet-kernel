@@ -106,16 +106,15 @@ export async function verifyFileIntegrity(
                 `${algo.toUpperCase()} checksum verification of ${filePath} successful.`
             )
         )
-    } else {
-        console.log(
-            error(
-                `File hashes did not match.\n\tExpected: ${expectedHash}\n\tReceived: ${computedHash}\nDeleting ${filePath}...`
-            )
-        )
-        //process.exit(1)
+        return true
     }
 
-    return true
+    console.log(
+        error(
+            `File hashes did not match.\n\tExpected: ${expectedHash}\n\tReceived: ${computedHash}`
+        )
+    )
+    return false
 }
 
 async function computeFileHash(
@@ -460,7 +459,7 @@ export function hasFlag(name: string): boolean {
 }
 
 export function getNetworkArg(): Network {
-    const arg = getArgValue('--network=')
+    const arg = getArgValue('network')
     if (!arg) return 'devnet'
     if (arg === 'mainnet' || arg === 'devnet') return arg as Network
     throw new Error(
