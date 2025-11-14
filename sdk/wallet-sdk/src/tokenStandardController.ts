@@ -316,7 +316,13 @@ export class TokenStandardController {
 
         const transferResults = await Promise.all(transferPromises)
         const commands = transferResults.map(([cmd]) => cmd)
-        const disclosedContracts = transferResults.flatMap(([, dc]) => dc)
+        const disclosedContracts = Array.from(
+            new Map(
+                transferResults
+                    .flatMap(([, dc]) => dc)
+                    .map((dc) => [dc.contractId, dc])
+            ).values()
+        )
 
         return [commands, disclosedContracts]
     }
