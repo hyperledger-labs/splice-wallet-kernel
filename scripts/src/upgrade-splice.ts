@@ -41,7 +41,7 @@ const versionConfig = JSON.parse(versionConfigRaw) as {
 versionConfig.SUPPORTED_VERSIONS[network].splice.version = spliceVersion
 fs.writeFileSync(
     VERSIONS_CONFIG_PATH,
-    JSON.stringify(versionConfig, null, 2) + '\n',
+    JSON.stringify(versionConfig, null, 4) + '\n',
     'utf8'
 )
 
@@ -77,6 +77,7 @@ try {
     const versionConfig = JSON.parse(versionConfigRaw)
 
     // Update DAML_RELEASE_VERSION, but only when upgrading for devnet
+    console.log('NETWROK IS', network)
     if (network === 'devnet') {
         versionConfig.DAML_RELEASE_VERSION = damlRelease
     }
@@ -101,13 +102,12 @@ try {
 
         if (currentMajorMinor === majorMinor) {
             canton.version = cantonSources['version']
-            envConfig.DAML_RELEASE_VERSION = damlRelease
         }
     }
 
     fs.writeFileSync(
         VERSIONS_CONFIG_PATH,
-        JSON.stringify(versionConfig, null, 2) + '\n',
+        JSON.stringify(versionConfig, null, 4) + '\n',
         'utf8'
     )
 } catch {

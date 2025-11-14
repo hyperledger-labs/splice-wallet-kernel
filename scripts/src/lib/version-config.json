@@ -27,8 +27,7 @@
                     "splice": "368e0ea676b7bf2490d3f0003ce7ff58caddab78756057100977695a57170f50",
                     "spliceSpec": "f17b553a29ea58f184a67998e08bd9062cdaff7faa2ed11609adc71934566c2e"
                 }
-            },
-            "DAML_RELEASE_VERSION": "3.3.0-snapshot.20251015.16130.0.v0ac138a0"
+            }
         }
     }
 }
