@@ -18,7 +18,7 @@
     },
     "dependencies": {
         "@canton-network/core-wallet-auth": "workspace:^",
-        "zod": "^3.25.64"
+        "zod": "^4.1.12"
     },
     "devDependencies": {
         "@jest/globals": "^29.0.0",

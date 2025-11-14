@@ -28,7 +28,7 @@
         "@canton-network/core-wallet-auth": "workspace:^",
         "openapi-fetch": "^0.14.0",
         "uuid": "^11.1.0",
-        "zod": "^3.25.67"
+        "zod": "^4.1.12"
     },
     "devDependencies": {
         "tsup": "^8.5.0",

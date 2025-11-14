@@ -40,7 +40,7 @@
         "@canton-network/core-rpc-errors": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "jose": "^5.10.0",
-        "zod": "^3.25.64"
+        "zod": "^4.1.12"
     },
     "files": [
         "dist/**"
