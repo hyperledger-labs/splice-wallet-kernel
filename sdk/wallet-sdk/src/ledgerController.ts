@@ -259,6 +259,46 @@ export class LedgerController {
     }
 
     /**
+     * Prepares, signs and executes a transaction on the ledger (using interactive submission).
+     * This is specifically for when merging utxos because each command will have 100 transfers
+     * So we need to batch the execution
+     * @param commands the commands to be executed.
+     * @param privateKey the private key to sign the transaction with.
+     * @param commandId an unique identifier used to track the transaction, if not provided a random UUID will be used.
+     * @param disclosedContracts off-ledger sourced contractIds needed to perform the transaction.
+     * @param timeoutMs The maximum time to wait in milliseconds.
+     * @returns the commandId used to track the transaction.
+     */
+    async prepareSignExecuteAndWaitForSequentialCommandSubmission(
+        commands: WrappedCommand[],
+        privateKey: PrivateKey,
+        commandId: string,
+        disclosedContracts?: Types['DisclosedContract'][],
+        timeoutMs: number = 15000
+    ): Promise<Types['Completion']['value'][]> {
+        const completions: Types['Completion']['value'][] = []
+
+        for (let i = 0; i < commands.length; i++) {
+            const ledgerEnd = await this.ledgerEnd()
+            await this.prepareSignExecuteAndWaitFor(
+                commands[i],
+                privateKey,
+                `${commandId}${i}`,
+                disclosedContracts
+            )
+
+            const completetionValue = await this.waitForCompletion(
+                ledgerEnd,
+                timeoutMs,
+                `${commandId}${i}`
+            )
+            completions.push(completetionValue)
+        }
+
+        return completions
+    }
+
+    /**
      * Waits for a command to be completed by polling the completions endpoint.
      * @param ledgerEnd The offset to start polling from.
      * @param timeoutMs The maximum time to wait in milliseconds.

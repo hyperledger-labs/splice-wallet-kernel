@@ -281,6 +281,51 @@ export class TokenStandardController {
         }
     }
 
+    async mergeHoldingUtxos(instrument: {
+        instrumentId: string
+        instrumentAdmin?: PartyId
+    }): Promise<
+        [WrappedCommand<'ExerciseCommand'>[], Types['DisclosedContract'][]]
+    > {
+        //node limit is 200
+        const utxos = await this.listHoldingUtxos(false, 200)
+        //can only transfer 100 utxos per transaction
+        const transferInputUtxoLimit = 100
+        const transfers = Math.ceil(utxos.length / transferInputUtxoLimit)
+
+        const transferPromises = Array.from({ length: transfers }, (_, i) => {
+            const start = i * transferInputUtxoLimit
+            const end = Math.min(start + transferInputUtxoLimit, utxos.length)
+
+            const inputUtxos = utxos.slice(start, end)
+
+            const accumulatedAmount = inputUtxos.reduce((a, b) => {
+                return a + parseFloat(b.interfaceViewValue.amount)
+            }, 0)
+
+            return this.createTransfer(
+                this.getPartyId(),
+                this.getPartyId(),
+                accumulatedAmount.toString(),
+                instrument,
+                inputUtxos.map((h) => h.contractId),
+                'merge-utxos'
+            )
+        })
+
+        const transferResults = await Promise.all(transferPromises)
+        const commands = transferResults.map(([cmd]) => cmd)
+        const disclosedContracts = Array.from(
+            new Map(
+                transferResults
+                    .flatMap(([, dc]) => dc)
+                    .map((dc) => [dc.contractId, dc])
+            ).values()
+        )
+
+        return [commands, disclosedContracts]
+    }
+
     /**
      * List specific holding utxo
      * @param contractId id of the holding UTXO
