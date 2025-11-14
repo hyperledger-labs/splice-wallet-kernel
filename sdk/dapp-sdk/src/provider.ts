@@ -35,7 +35,11 @@ export class Provider implements SpliceProvider {
     private httpProvider?: SpliceProvider
     private windowProvider?: SpliceProvider
 
-    constructor({ walletType, url }: DiscoverResult, sessionToken?: string) {
+    constructor(
+        { walletType, url }: DiscoverResult,
+        sessionToken?: string,
+        userId?: string
+    ) {
         if (walletType == 'extension') {
             this.providerType = ProviderType.WINDOW
             this.windowProvider = new SpliceProviderWindow()
@@ -43,7 +47,8 @@ export class Provider implements SpliceProvider {
             this.providerType = ProviderType.HTTP
             this.httpProvider = new SpliceProviderHttp(
                 new URL(url),
-                sessionToken
+                sessionToken,
+                userId
             )
         } else {
             throw new Error(`Unsupported wallet type ${walletType}`)
@@ -170,6 +175,7 @@ export const dappController = (provider: SpliceProvider) =>
                         (event) => {
                             clearTimeout(timeout)
                             const result: dappAPI.ConnectResult = {
+                                userId: event.userId ?? '',
                                 sessionToken: event.sessionToken ?? '',
                                 status: {
                                     ...event,

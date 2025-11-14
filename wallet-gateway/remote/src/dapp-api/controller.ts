@@ -58,6 +58,7 @@ export const dappController = (
     const logger = _logger.child({ component: 'dapp-controller' })
     return buildController({
         connect: async () => ({
+            userId: '',
             sessionToken: '',
             status: {
                 kernel: kernelInfo,

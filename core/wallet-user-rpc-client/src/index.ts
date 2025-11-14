@@ -224,6 +224,12 @@ export type Added = Wallet[]
 export type Removed = Wallet[]
 /**
  *
+ * The user ID associated with the session.
+ *
+ */
+export type UserId = string
+/**
+ *
  * The access token for the session.
  *
  */
@@ -236,6 +242,7 @@ export type Status = 'connected' | 'disconnected'
  */
 export interface Session {
     network: Network
+    userId?: UserId
     accessToken: AccessToken
     status: Status
 }
@@ -339,6 +346,7 @@ export interface ExecuteResult {
  */
 export interface AddSessionResult {
     network: Network
+    userId?: UserId
     accessToken: AccessToken
     status: Status
 }

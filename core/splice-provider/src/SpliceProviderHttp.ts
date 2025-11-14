@@ -13,6 +13,7 @@ import { popupHref } from '@canton-network/core-wallet-ui-components'
 
 export class SpliceProviderHttp extends SpliceProviderBase {
     private sessionToken?: string
+    private userId?: string
     private socket: Socket
     private transport: HttpTransport
 
@@ -42,11 +43,13 @@ export class SpliceProviderHttp extends SpliceProviderBase {
 
     constructor(
         private url: URL,
-        sessionToken?: string
+        sessionToken?: string,
+        userId?: string
     ) {
         super()
 
         if (sessionToken) this.sessionToken = sessionToken
+        if (userId) this.userId = userId
         this.transport = new HttpTransport(url, sessionToken)
 
         this.socket = this.openSocket(url)
@@ -78,6 +81,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                             kernel: statusResult.kernel,
                             networkId: statusResult.networkId,
                             sessionToken: this.sessionToken,
+                            userId: this.userId,
                         })
                     })
                     .catch((err) => {

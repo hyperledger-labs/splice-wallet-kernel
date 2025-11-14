@@ -189,6 +189,11 @@
                             "type": "string",
                             "description": "A CAIP-2 compliant network ID, e.g. 'canton:da-mainnet'."
                         },
+                        "userId": {
+                            "title": "userId",
+                            "type": "string",
+                            "description": "The user ID associated with the session."
+                        },
                         "sessionToken": {
                             "title": "sessionToken",
                             "type": "string",

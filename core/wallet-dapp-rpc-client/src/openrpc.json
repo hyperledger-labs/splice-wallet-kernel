@@ -29,13 +29,18 @@
                         "status": {
                             "$ref": "#/components/schemas/StatusEvent"
                         },
+                        "userId": {
+                            "title": "userId",
+                            "type": "string",
+                            "description": "The user ID associated with the session."
+                        },
                         "sessionToken": {
                             "title": "sessionToken",
                             "type": "string",
                             "description": "JWT authentication token (if applicable)."
                         }
                     },
-                    "required": ["status", "sessionToken"]
+                    "required": ["status", "userId", "sessionToken"]
                 }
             },
             "description": "Ensures ledger connectivity and returns the connected network information along with the user access token. Network ID should follow CAIP-2 and represent the synchronizerId."
