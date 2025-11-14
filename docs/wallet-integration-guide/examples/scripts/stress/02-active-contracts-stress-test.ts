@@ -93,7 +93,9 @@ for (let i = 0; i < acsQueries; i++) {
             offset: legerEnd?.offset!,
             filterByParty: true,
             parties: [party?.partyId!],
-            templateIds: ['#AdminWorkflows:Canton.Internal.Ping:Ping'],
+            templateIds: [
+                '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
+            ],
         })
     } catch (e) {
         logger.error(e)
