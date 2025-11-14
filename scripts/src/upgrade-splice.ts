@@ -77,7 +77,6 @@ try {
     const versionConfig = JSON.parse(versionConfigRaw)
 
     // Update DAML_RELEASE_VERSION, but only when upgrading for devnet
-    console.log('NETWROK IS', network)
     if (network === 'devnet') {
         versionConfig.DAML_RELEASE_VERSION = damlRelease
     }
@@ -89,21 +88,21 @@ try {
         .slice(0, 2)
         .join('.')
 
-    for (const env of Object.keys(versionConfig.SUPPORTED_VERSIONS) as Array<
-        keyof typeof versionConfig.SUPPORTED_VERSIONS
-    >) {
-        const envConfig = versionConfig.SUPPORTED_VERSIONS[env]
-        const canton = envConfig.canton
-        const currentMajorMinor = canton.version
-            .split('-')[0]
-            .split('.')
-            .slice(0, 2)
-            .join('.')
+    // for (const env of Object.keys(versionConfig.SUPPORTED_VERSIONS) as Array<
+    //     keyof typeof versionConfig.SUPPORTED_VERSIONS
+    // >) {
+    const envConfig = versionConfig.SUPPORTED_VERSIONS[network]
+    const canton = envConfig.canton
+    const currentMajorMinor = canton.version
+        .split('-')[0]
+        .split('.')
+        .slice(0, 2)
+        .join('.')
 
-        if (currentMajorMinor === majorMinor) {
-            canton.version = cantonSources['version']
-        }
+    if (currentMajorMinor === majorMinor) {
+        canton.version = cantonSources['version']
     }
+    // }
 
     fs.writeFileSync(
         VERSIONS_CONFIG_PATH,

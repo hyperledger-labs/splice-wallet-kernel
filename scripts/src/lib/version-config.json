@@ -9,9 +9,9 @@
             "splice": {
                 "version": "0.4.25",
                 "hashes": {
-                    "localnet": "706c4412d1cb29285fe8a591e74f44458d2afcbb04603c32cdb6c6260538145f",
+                    "localnet": "49c40f4caaeb46e03839a9da93343e6e3e13f7611705066e77ce8d02ffb62665",
                     "splice": "dbe943a466f06624c2f55e2e4ad66180e81804bbcb0288b6a4882df49702a4b1",
-                    "spliceSpec": "102dba4a7224a0acc2544111ecdf2e6538de2b29bcc3bd7348edf4b445e07329"
+                    "spliceSpec": "f17b553a29ea58f184a67998e08bd9062cdaff7faa2ed11609adc71934566c2e"
                 }
             }
         },
@@ -23,9 +23,9 @@
             "splice": {
                 "version": "0.4.22",
                 "hashes": {
-                    "localnet": "49c40f4caaeb46e03839a9da93343e6e3e13f7611705066e77ce8d02ffb62665",
-                    "splice": "368e0ea676b7bf2490d3f0003ce7ff58caddab78756057100977695a57170f50",
-                    "spliceSpec": "f17b553a29ea58f184a67998e08bd9062cdaff7faa2ed11609adc71934566c2e"
+                    "localnet": "706c4412d1cb29285fe8a591e74f44458d2afcbb04603c32cdb6c6260538145f",
+                    "splice": "dbe943a466f06624c2f55e2e4ad66180e81804bbcb0288b6a4882df49702a4b1",
+                    "spliceSpec": "102dba4a7224a0acc2544111ecdf2e6538de2b29bcc3bd7348edf4b445e07329"
                 }
             }
         }
