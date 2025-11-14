@@ -32,6 +32,7 @@ export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton/bootstrap.canton')
 export const API_SPECS_PATH = path.join(repoRoot, 'api-specs')
 
 export type Network = 'mainnet' | 'devnet'
+export type ArtifactKind = 'localnet' | 'splice' | 'spliceSpec'
 export type ArchiveVersionAndHash = {
     version: string
     hash: string
@@ -141,7 +142,7 @@ export async function downloadAndUnpackTarball(
     options?: { hash?: string; strip?: number; updateHash?: boolean }
 ) {
     let shouldDownload = true
-    let currentHash = options?.hash
+    const currentHash = options?.hash
     const algo = 'sha256'
 
     ensureDir(path.dirname(tarfile))
@@ -188,30 +189,30 @@ export async function downloadAndUnpackTarball(
     )
     console.log(success(`Unpacked tarball into ${unpackDir}`))
 
-    if (options?.updateHash) {
-        const newHash = await computeFileHash(tarfile, algo)
-
-        // Update the hash in version-config.json if present
-        const fileContent = fs.readFileSync(VERSIONS_CONFIG_PATH, 'utf8')
-        // Find the old hash in the file (matching the old value)
-        if (options?.hash && fileContent.includes(options.hash)) {
-            const updatedContent = fileContent.replace(options.hash, newHash)
-            if (updatedContent !== fileContent) {
-                fs.writeFileSync(VERSIONS_CONFIG_PATH, updatedContent, 'utf8')
-                console.log(
-                    success(`Updated hash in version-config.json to ${newHash}`)
-                )
-            }
-        } else {
-            console.log(
-                warn(
-                    'Old hash not found in version-config.json, no update performed.'
-                )
-            )
-        }
-
-        currentHash = newHash
-    }
+    // if (options?.updateHash) {
+    //     const newHash = await computeFileHash(tarfile, algo)
+    //
+    //     // Update the hash in version-config.json if present
+    //     const fileContent = fs.readFileSync(VERSIONS_CONFIG_PATH, 'utf8')
+    //     // Find the old hash in the file (matching the old value)
+    //     if (options?.hash && fileContent.includes(options.hash)) {
+    //         const updatedContent = fileContent.replace(options.hash, newHash)
+    //         if (updatedContent !== fileContent) {
+    //             fs.writeFileSync(VERSIONS_CONFIG_PATH, updatedContent, 'utf8')
+    //             console.log(
+    //                 success(`Updated hash in version-config.json to ${newHash}`)
+    //             )
+    //         }
+    //     } else {
+    //         console.log(
+    //             warn(
+    //                 'Old hash not found in version-config.json, no update performed.'
+    //             )
+    //         )
+    //     }
+    //
+    //     currentHash = newHash
+    // }
 }
 // Get the root of the current repository
 // Assumption: the root of the repository is the closest
@@ -464,5 +465,31 @@ export function getNetworkArg(): Network {
     if (arg === 'mainnet' || arg === 'devnet') return arg as Network
     throw new Error(
         `Invalid --network value: "${arg}". Use "mainnet" or "devnet".`
+    )
+}
+
+export function setSpliceHash(
+    network: Network,
+    kind: ArtifactKind,
+    newHash: string
+) {
+    const raw = fs.readFileSync(VERSIONS_CONFIG_PATH, 'utf8')
+    const config = JSON.parse(raw)
+    config.SUPPORTED_VERSIONS[network].splice.hashes[kind] = newHash
+    fs.writeFileSync(
+        VERSIONS_CONFIG_PATH,
+        JSON.stringify(config, null, 4) + '\n',
+        'utf8'
+    )
+}
+
+export function setCantonHash(network: Network, newHash: string) {
+    const raw = fs.readFileSync(VERSIONS_CONFIG_PATH, 'utf8')
+    const config = JSON.parse(raw)
+    config.SUPPORTED_VERSIONS[network].canton.hash = newHash
+    fs.writeFileSync(
+        VERSIONS_CONFIG_PATH,
+        JSON.stringify(config, null, 4) + '\n',
+        'utf8'
     )
 }

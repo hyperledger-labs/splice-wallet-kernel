@@ -12,10 +12,13 @@ import {
     SPLICE_SPEC_PATH, // TODO should we move that?
     success,
     SUPPORTED_VERSIONS,
+    setSpliceHash,
+    hasFlag,
 } from './lib/utils.js'
 import * as fs from 'fs'
 import generateSchema from 'openapi-typescript'
 import * as path from 'path'
+import crypto from 'crypto'
 
 /**
  * OpenAPI specification details.
@@ -46,9 +49,10 @@ const root = getRepoRoot()
 
 async function fetchSpliceSpecs(
     updateHash: boolean,
-    spliceVersion: string,
-    spliceSpecHash: string
+    network: Network
 ): Promise<void> {
+    const spliceVersion = SUPPORTED_VERSIONS[network].splice.version
+    const spliceSpecHash = SUPPORTED_VERSIONS[network].splice.hashes.spliceSpec
     const archiveUrl = `https://github.com/digital-asset/decentralized-canton-sync/releases/download/v${spliceVersion}/${spliceVersion}_openapi.tar.gz`
     const tarfile = path.join(SPLICE_SPEC_PATH, `${spliceVersion}.tar.gz`)
     const unpackDir = path.join(root, 'api-specs/splice', spliceVersion)
@@ -58,6 +62,14 @@ async function fetchSpliceSpecs(
         strip: 0,
         updateHash,
     })
+
+    if (updateHash || !SUPPORTED_VERSIONS[network].splice.hashes.localnet) {
+        const newHash = crypto
+            .createHash('sha256')
+            .update(fs.readFileSync(tarfile))
+            .digest('hex')
+        setSpliceHash(network, 'spliceSpec', newHash)
+    }
 }
 
 /**
@@ -132,12 +144,14 @@ const getSpecs = (spliceVersion: string): OpenApiSpec[] => [
 ]
 
 async function main(network: Network = 'devnet') {
-    const spliceVersion = SUPPORTED_VERSIONS[network].splice.version
-    const spliceSpecHash = SUPPORTED_VERSIONS[network].splice.hashes.spliceSpec
-    const updateHash = process.argv.includes('--updateHash')
+    const updateHash = hasFlag('updateHash')
 
-    await fetchSpliceSpecs(updateHash, spliceVersion, spliceSpecHash)
-    Promise.all(getSpecs(spliceVersion).map(generateOpenApiClient)).then(() => {
+    await fetchSpliceSpecs(updateHash, network)
+    Promise.all(
+        getSpecs(SUPPORTED_VERSIONS[network].splice.version).map(
+            generateOpenApiClient
+        )
+    ).then(() => {
         console.log(
             success('Generated fresh TypeScript clients for all OpenAPI specs')
         )

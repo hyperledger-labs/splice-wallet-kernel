@@ -13,12 +13,16 @@ import {
     Network,
     getNetworkArg,
     SUPPORTED_VERSIONS,
+    setSpliceHash,
+    hasFlag,
 } from './lib/utils.js'
 import path from 'path'
+import fs from 'fs'
+import crypto from 'crypto'
 
 async function main(network: Network = 'devnet') {
     const spliceVersion = SUPPORTED_VERSIONS[network].splice.version
-    const updateHash = process.argv.includes('--updateHash')
+    const updateHash = hasFlag('updateHash')
     const archiveUrl = `https://github.com/hyperledger-labs/splice/archive/refs/tags/${spliceVersion}.tar.gz`
     const tarfile = path.join(SPLICE_PATH, `${spliceVersion}.tar.gz`)
 
@@ -27,6 +31,14 @@ async function main(network: Network = 'devnet') {
         strip: 1,
         updateHash,
     })
+
+    if (updateHash || !SUPPORTED_VERSIONS[network].splice.hashes.splice) {
+        const newHash = crypto
+            .createHash('sha256')
+            .update(fs.readFileSync(tarfile))
+            .digest('hex')
+        setSpliceHash(network, 'splice', newHash)
+    }
 }
 
 main(getNetworkArg()).catch((e) => {

@@ -9,8 +9,11 @@ import {
     SUPPORTED_VERSIONS,
     getNetworkArg,
     hasFlag,
+    setSpliceHash,
 } from './lib/utils.js'
 import path from 'path'
+import fs from 'fs'
+import crypto from 'crypto'
 
 const LOCALNET_PATH = path.join(process.cwd(), '.localnet')
 
@@ -28,6 +31,14 @@ async function main(network: Network = 'devnet') {
         strip: 1,
         updateHash,
     })
+
+    if (updateHash || !SUPPORTED_VERSIONS[network].splice.hashes.localnet) {
+        const newHash = crypto
+            .createHash('sha256')
+            .update(fs.readFileSync(TAR_PATH))
+            .digest('hex')
+        setSpliceHash(network, 'localnet', newHash)
+    }
 }
 
 main(getNetworkArg()).catch((e) => {
