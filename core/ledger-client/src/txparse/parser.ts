@@ -30,6 +30,7 @@ import {
     EmptyHoldingsChangeSummary,
     TokenStandardChoice,
     TransferInstructionView,
+    TransferInstructionCurrentTag,
 } from './types.js'
 
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
@@ -48,6 +49,55 @@ type Event = components['schemas']['Event']
 type JsTransaction = components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =
     components['schemas']['JsGetEventsByContractIdResponse']
+
+function currentStatusFromChoiceOrResult(
+    choice?: string | undefined,
+    resultTag?: string | undefined
+): TransferInstructionCurrentTag {
+    // If the result explicitly says Failed/Completed, prefer it.
+    if (resultTag === 'TransferInstructionResult_Failed') return 'Failed'
+    if (resultTag === 'TransferInstructionResult_Completed') return 'Completed'
+
+    switch (choice) {
+        case 'TransferInstruction_Reject':
+            return 'Rejected'
+        case 'TransferInstruction_Withdraw':
+            return 'Withdrawn'
+        case 'TransferInstruction_Accept':
+        case 'TransferInstruction_Update':
+            // When result tag wasn't Completed/Failed above, fall back to Pending
+            return 'Pending'
+        default:
+            // When resultTag is Pending or unknown
+            return 'Pending'
+    }
+}
+
+// -For TransferInstruction Create use originalInstructionCid if present, otherwise this TransferInstruction's cid
+// -For TransferInstruction Exercise:  use the exercised TransferInstruction cid, which equals the earlier Pending transferInstruction's cid.
+// This lets us correlate Pending to Accept/Reject/Withdraw across updates.
+function getCorrelationIdFromTransferInstruction(
+    currentInstructionCid: string,
+    originalInstructionCid?: string | null
+): string {
+    return originalInstructionCid ?? currentInstructionCid
+}
+
+// If the exercise produced a Pending TI, return its newly created transferInstructionCid
+// Otherwise (Completed/Failed/Rejected/Withdrawn), there is no pending TransferInstruction to correlate
+function getPendingTransferInstructionCid(
+    exercisedEvent: ExercisedEvent
+): string | undefined {
+    const output = (
+        exercisedEvent.exerciseResult as
+            | { output?: { tag?: string; value?: any } }
+            | undefined
+    )?.output
+    if (output?.tag !== 'TransferInstructionResult_Pending') return undefined
+
+    const cid = output.value?.transferInstructionCid
+    return cid ?? undefined
+}
 
 export class TransactionParser {
     private readonly ledgerClient: LedgerClient
@@ -247,9 +297,25 @@ export class TransactionParser {
                 ) {
                     result = null
                 } else {
+                    const multiStepCorrelationId =
+                        getCorrelationIdFromTransferInstruction(
+                            originalCreate.contractId,
+                            transferInstructionView.originalInstructionCid ??
+                                null
+                        )
                     result = {
                         payload: transferInstructionView,
-                        transferInstruction: transferInstructionView,
+                        transferInstruction: {
+                            originalInstructionCid:
+                                transferInstructionView.originalInstructionCid,
+                            transfer: transferInstructionView.transfer,
+                            meta: transferInstructionView.meta,
+                            status: {
+                                before: transferInstructionView.status, // raw DAML pending sub-state
+                                current: { tag: 'Pending', value: {} }, // normalized
+                            },
+                            multiStepCorrelationId,
+                        },
                         unlockedHoldingsChange: { creates: [], archives: [] },
                         lockedHoldingsChange: { creates: [], archives: [] },
                         unlockedHoldingsChangeSummary:
@@ -395,7 +461,7 @@ export class TransactionParser {
         const reason = getMetaKeyValue(ReasonMetaKey, meta)
         const choiceArgumentTransfer = (
             exercisedEvent.choiceArgument as {
-                transfer: any
+                transfer?: any
             }
         ).transfer
 
@@ -410,6 +476,18 @@ export class TransactionParser {
             )
             return null
         }
+
+        const resultTag =
+            (
+                exercisedEvent.exerciseResult as
+                    | { output?: { tag?: string } }
+                    | undefined
+            )?.output?.tag || undefined
+        const pendingCid = getPendingTransferInstructionCid(exercisedEvent)
+        const currentTag = currentStatusFromChoiceOrResult(
+            exercisedEvent.choice,
+            resultTag
+        )
 
         const children = await this.getChildren(exercisedEvent)
         const receiverAmounts = new Map<string, BigNumber>()
@@ -457,13 +535,28 @@ export class TransactionParser {
                 meta,
             }
         }
+
+        if (transferInstructions) {
+            transferInstructions.status.current = transferInstructions.status
+                .current || { tag: currentTag, value: {} }
+            return {
+                label,
+                children,
+                transferInstruction: transferInstructions,
+            }
+        }
+
         const transferInstruction: TransferInstructionView = {
             originalInstructionCid: null,
-            transfer: choiceArgumentTransfer,
+            ...(choiceArgumentTransfer !== undefined && {
+                transfer: choiceArgumentTransfer,
+            }),
             status: {
                 before: null,
+                current: { tag: currentTag, value: {} },
             },
             meta: null,
+            ...(pendingCid ? { multiStepCorrelationId: pendingCid } : {}),
         }
 
         return {
@@ -512,6 +605,7 @@ export class TransactionParser {
         exercisedEvent: ExercisedEvent,
         tokenStandardChoice: TokenStandardChoice
     ): Promise<ParsedKnownExercisedEvent | null> {
+        const instructionCid = exercisedEvent.contractId
         const transferInstructionEvents =
             await this.getEventsForArchive(exercisedEvent)
         if (!transferInstructionEvents) {
@@ -524,20 +618,37 @@ export class TransactionParser {
             transferInstructionEvents.created.createdEvent,
             TRANSFER_INSTRUCTION_INTERFACE_ID
         ).viewValue as TransferInstructionView
+
+        const multiStepCorrelationId = getCorrelationIdFromTransferInstruction(
+            instructionCid,
+            transferInstructionView.originalInstructionCid ?? null
+        )
+
+        const resultTag =
+            (
+                exercisedEvent.exerciseResult as
+                    | { output?: { tag?: string } }
+                    | undefined
+            )?.output?.tag || undefined
+
+        const currentTag = currentStatusFromChoiceOrResult(
+            exercisedEvent.choice,
+            resultTag
+        )
+
         const transferInstruction: TransferInstructionView = {
             originalInstructionCid:
                 transferInstructionView.originalInstructionCid,
+            multiStepCorrelationId,
             transfer: transferInstructionView.transfer,
             meta: transferInstructionView.meta,
             status: {
                 before: transferInstructionView.status,
+                current: { tag: currentTag, value: {} },
             },
         }
-        const exerciseResultOutputTag = (
-            exercisedEvent.exerciseResult as {
-                output: any
-            }
-        ).output.tag
+
+        const exerciseResultOutputTag = resultTag
         let result: ParsedKnownExercisedEvent | null = null
 
         switch (exerciseResultOutputTag) {

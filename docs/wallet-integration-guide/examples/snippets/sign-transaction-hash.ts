@@ -1,15 +1,15 @@
-import { signTransactionHash } from '@canton-network/wallet-sdk'
+import {
+    createKeyPair,
+    localNetAuthDefault,
+    localNetLedgerDefault,
+    localNetStaticConfig,
+    signTransactionHash,
+    WalletSDKImpl,
+} from '@canton-network/wallet-sdk'
 
-// @disable-snapshot-test
 export default async function () {
-    const transaction = {
-        preparedTransaction: 'encoded-transaction-bytes-base64',
-        preparedTransactionHash:
-            'hash-of-the-encoded-transaction-that-needs-to-be-signed',
-        hashingSchemeVersion: 'hashing-scheme-version',
-    }
+    const keys = createKeyPair()
+    const transaction = EXISTING_TOPOLOGY
 
-    const privateKey = 'your-private-key-here'
-
-    return signTransactionHash(transaction.preparedTransactionHash, privateKey)
+    signTransactionHash(transaction.multiHash, keys.privateKey)
 }

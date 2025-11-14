@@ -183,7 +183,9 @@ export class FireblocksHandler {
             )
 
             const status =
-                tx.status === 'REJECTED' || tx.status === 'BLOCKED'
+                tx.status === 'REJECTED' ||
+                tx.status === 'BLOCKED' ||
+                tx.status === 'CANCELLED'
                     ? 'rejected'
                     : tx.status === 'FAILED'
                       ? 'failed'

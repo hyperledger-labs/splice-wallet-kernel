@@ -4,7 +4,6 @@ import {
     localNetLedgerDefault,
 } from '@canton-network/wallet-sdk'
 
-// @disable-snapshot-test
 export default async function () {
     const sdk = new WalletSDKImpl().configure({
         logger: console,
@@ -13,5 +12,9 @@ export default async function () {
     })
     await sdk.connect()
 
-    await sdk.setPartyId('my-wallet-1')
+    const myParty = global.EXISTING_PARTY_1
+    await sdk.setPartyId(myParty)
+
+    const myOtherParty = global.EXISTING_PARTY_2
+    await sdk.setPartyId(myOtherParty)
 }

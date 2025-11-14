@@ -170,13 +170,40 @@ export class TokenStandardController {
         else return this.transferFactoryRegistryUrl
     }
 
-    async getInstrumentAdmin(): Promise<PartyId | undefined> {
-        const instrumentAdmin: string | undefined =
-            await this.service.getInstrumentAdmin(
-                this.getTransferFactoryRegistryUrl().href
-            )
-        if (instrumentAdmin) return instrumentAdmin as PartyId
-        else return undefined
+    /**
+     * Gets partyId of instrument admin from currently set registry URL
+     * @returns partyId of instrumentAdmin
+     */
+    async getInstrumentAdmin(): Promise<PartyId> {
+        return this.service.getInstrumentAdmin(
+            this.getTransferFactoryRegistryUrl().href
+        )
+    }
+
+    /**
+     * Gets metadata of an instrument
+     * @param instrumentId ID of the instrument
+     * @returns metadata of the instrument
+     */
+    async getInstrumentById(instrumentId: string) {
+        return this.service.getInstrumentById(
+            this.getTransferFactoryRegistryUrl().href,
+            instrumentId
+        )
+    }
+
+    /**
+     * Lists instruments and metadata available on the registry
+     * @param pageSize Optional Number of instruments per page
+     * @param pageToken Optional The `nextPageToken` received from the response for the previous page
+     * @returns metadata of the instrument
+     */
+    async listInstruments(pageSize?: number, pageToken?: string) {
+        return this.service.listInstruments(
+            this.getTransferFactoryRegistryUrl().href,
+            pageSize,
+            pageToken
+        )
     }
 
     /** Lists all holdings for the current party.
@@ -185,8 +212,8 @@ export class TokenStandardController {
      * @returns A promise that resolves to an array of holdings.
      */
     async listHoldingTransactions(
-        afterOffset?: string,
-        beforeOffset?: string
+        afterOffset?: string | number,
+        beforeOffset?: string | number
     ): Promise<PrettyTransactions> {
         return await this.service.listHoldingTransactions(
             this.getPartyId(),
@@ -327,6 +354,41 @@ export class TokenStandardController {
         )
     }
 
+    /**
+     * Build an Exercise command to Buy Member Traffic.
+     * @param buyer Provider party whose inputs will fund the traffic purchase
+     * @param ccAmount Amount of traffic to purchase
+     * @param memberId The id of the sequencer member (participant or mediator) for which traffic has been purchased
+     * @param inputUtxos list of specific holding CIDs to use as inputs.
+     * @param migrationId The migration id of the synchronizer for which this contract tracks purchased extra traffic
+     * @returns  AmuletRules_BuyMemberTraffic exercise command and disclosed contracts
+     */
+    async buyMemberTraffic(
+        buyer: PartyId,
+        ccAmount: number,
+        memberId: string,
+        inputUtxos: string[],
+        migrationId: number = 0
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const expectedDso = await this.getInstrumentAdmin()
+        if (expectedDso === undefined) {
+            throw new Error('no expected dso found')
+        }
+        const [command, disclosed] = await this.service.buyMemberTraffic(
+            expectedDso,
+            buyer,
+            ccAmount,
+            this.getSynchronizerId(),
+            memberId,
+            migrationId,
+            inputUtxos
+        )
+
+        return [{ ExerciseCommand: command }, disclosed]
+    }
+
     // TODO(#583) TransferPreapproval methods could be moved to SpliceController
     /**  Lookup a TransferPreapproval by the receiver party
      * @param receiverId receiver party id
@@ -347,10 +409,7 @@ export class TokenStandardController {
         | undefined
     > {
         try {
-            await this.service.getInstrumentById(
-                this.getTransferFactoryRegistryUrl().href,
-                instrumentId
-            )
+            await this.getInstrumentById(instrumentId)
 
             const transfer_preapproval =
                 await this.service.getTransferPreApprovalByParty(receiverId)
@@ -542,15 +601,17 @@ export class TokenStandardController {
         amount: string,
         instrument: {
             instrumentId: string
-            instrumentAdmin: PartyId
+            instrumentAdmin?: PartyId
         }
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
+        const instrumentAdmin =
+            instrument.instrumentAdmin ?? (await this.getInstrumentAdmin())
         const [tapCommand, disclosedContracts] = await this.service.createTap(
             receiver,
             amount,
-            instrument.instrumentAdmin,
+            instrumentAdmin,
             instrument.instrumentId,
             this.getTransferFactoryRegistryUrl().href
         )
@@ -571,13 +632,15 @@ export class TokenStandardController {
         amount: string,
         instrument: {
             instrumentId: string
-            instrumentAdmin: PartyId
+            instrumentAdmin?: PartyId
         }
     ) {
+        const instrumentAdmin =
+            instrument.instrumentAdmin ?? (await this.getInstrumentAdmin())
         const [tapCommand, disclosedContracts] = await this.service.createTap(
             receiver,
             amount,
-            instrument.instrumentAdmin,
+            instrumentAdmin,
             instrument.instrumentId,
             this.getTransferFactoryRegistryUrl().href
         )
@@ -700,7 +763,7 @@ export class TokenStandardController {
         amount: string,
         instrument: {
             instrumentId: string
-            instrumentAdmin: PartyId
+            instrumentAdmin?: PartyId
         },
         inputUtxos?: string[],
         memo?: string,
@@ -714,12 +777,14 @@ export class TokenStandardController {
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         try {
+            const instrumentAdmin =
+                instrument.instrumentAdmin ?? (await this.getInstrumentAdmin())
             const [transferCommand, disclosedContracts] =
                 await this.service.transfer.createTransfer(
                     sender,
                     receiver,
                     amount,
-                    instrument.instrumentAdmin,
+                    instrumentAdmin,
                     instrument.instrumentId,
                     this.getTransferFactoryRegistryUrl().href,
                     inputUtxos,
@@ -829,7 +894,7 @@ export class TokenStandardController {
         amount: string,
         instrument: {
             instrumentId: string
-            instrumentAdmin: PartyId
+            instrumentAdmin?: PartyId
         },
         inputUtxos?: string[],
         memo?: string,
@@ -839,12 +904,14 @@ export class TokenStandardController {
         transferInstructionRegistryTypes['schemas']['TransferFactoryWithChoiceContext']
     > {
         try {
+            const instrumentAdmin =
+                instrument.instrumentAdmin ?? (await this.getInstrumentAdmin())
             const choiceArgs =
                 await this.service.transfer.buildTransferChoiceArgs(
                     sender,
                     receiver,
                     amount,
-                    instrument.instrumentAdmin,
+                    instrumentAdmin,
                     instrument.instrumentId,
                     inputUtxos,
                     memo,
@@ -863,13 +930,13 @@ export class TokenStandardController {
 
     /**
      * Creates a new transfer for the specified sender, receiver, amount, and instrument using a delegate proxy.
-     * @param exchangeParty delegate interacting with token standard workflow
      * @param proxyCid contract id for the DelegateProxy contract created for the exchange party
      * @param featuredAppRightCid The featured app right contract of the provider
      * @param sender The party of the sender.
      * @param receiver The party of the receiver.
      * @param amount The amount to be transferred.
-     * @param instrument The instrument to be used for the transfer.
+     * @param instrumentId The instrument to be used for the transfer.
+     * @param instrumentAdmin Instrument admin's party ID, if omitted it will be fetched from registry.
      * @param inputUtxos The utxos to use for this transfer, if not defined it will auto-select.
      * @param memo The message for the receiver to identify the transaction.
      * @param expiryDate Optional Expiry Date, default is 24 hours.
@@ -883,7 +950,7 @@ export class TokenStandardController {
         receiver: PartyId,
         amount: string,
         instrumentId: string,
-        instrumentAdmin: PartyId,
+        instrumentAdmin: PartyId | undefined,
         beneficiaries: Beneficiaries[],
         inputUtxos?: string[],
         memo?: string,
@@ -892,12 +959,14 @@ export class TokenStandardController {
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
+        const _instrumentAdmin =
+            instrumentAdmin ?? (await this.getInstrumentAdmin())
         const [exercise, disclosedContracts] =
             await this.service.createDelegateProxyTranfser(
                 sender,
                 receiver,
                 amount,
-                instrumentAdmin,
+                _instrumentAdmin,
                 instrumentId,
                 this.getTransferFactoryRegistryUrl().href,
                 featuredAppRightCid,
@@ -914,7 +983,7 @@ export class TokenStandardController {
     /**
      * Creates an allocation instruction (optionally using pre-fetched registry choice context)
      * @param allocationSpecification Allocation specification to request
-     * @param expectedAdmin Expected registry admin
+     * @param expectedAdmin Optional Expected registry admin, if not provided it will be fetched from registry
      * @param inputUtxos Optional specific UTXOs to consume; auto-selected if omitted
      * @param requestedAt Optional request timestamp (ISO string)
      * @param prefetchedRegistryChoiceContext Optional factory id + choice context to avoid a registry call
@@ -922,7 +991,7 @@ export class TokenStandardController {
      */
     async createAllocationInstruction(
         allocationSpecification: AllocationSpecification,
-        expectedAdmin: PartyId,
+        expectedAdmin?: PartyId,
         inputUtxos?: string[],
         requestedAt?: string,
         prefetchedRegistryChoiceContext?: {
@@ -933,10 +1002,12 @@ export class TokenStandardController {
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         try {
+            const _expectedAdmin =
+                expectedAdmin ?? (await this.getInstrumentAdmin())
             const [exercise, disclosed] =
                 await this.service.allocation.createAllocationInstruction(
                     allocationSpecification,
-                    expectedAdmin,
+                    _expectedAdmin,
                     this.getTransferFactoryRegistryUrl().href,
                     inputUtxos,
                     requestedAt,
@@ -957,24 +1028,26 @@ export class TokenStandardController {
      * Builds and fetches the registry context for an allocation factory call
      * Use this to prefetch context for offline signing
      * @param allocationSpecification Allocation specification to request
-     * @param expectedAdmin Expected registry admin
+     * @param expectedAdmin Optional Expected registry admin, if not provided it will be fetched from registry
      * @param inputUtxos Optional specific UTXOs to consume; auto-selected if omitted
      * @param requestedAt Optional request timestamp (ISO string)
      * @returns Allocation factory id + choice context from the registry
      */
     async getCreateAllocationInstructionContext(
         allocationSpecification: AllocationSpecification,
-        expectedAdmin: PartyId,
+        expectedAdmin?: PartyId,
         inputUtxos?: string[],
         requestedAt?: string
     ): Promise<
         allocationInstructionRegistryTypes['schemas']['FactoryWithChoiceContext']
     > {
         try {
+            const _expectedAdmin =
+                expectedAdmin ?? (await this.getInstrumentAdmin())
             const choiceArgs =
                 await this.service.allocation.buildAllocationFactoryChoiceArgs(
                     allocationSpecification,
-                    expectedAdmin,
+                    _expectedAdmin,
                     inputUtxos,
                     requestedAt
                 )

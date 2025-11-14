@@ -35,7 +35,7 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
     ])
 
     try {
-        await wkPage.locator('#network').selectOption('1')
+        await wkPage.locator('#network').selectOption('0')
         await wkPage.getByRole('button', { name: 'Connect' }).click()
 
         await expect(dappPage.getByText('Loading...')).toHaveCount(0)

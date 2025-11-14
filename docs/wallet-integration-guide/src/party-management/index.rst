@@ -81,6 +81,14 @@ The wallet SDK has helper functions to generate these transactions:
    :language: typescript
    :dedent:
 
+Decoding the topology transactions
+----------------------------------
+Sometimes converting the topology transactions to human readable json might be needed, for this you can use the decodeTopologyTx function:
+
+.. literalinclude:: ../../examples/snippets/decode-topology-tx.ts
+   :language: typescript
+   :dedent:
+
 Sign multi-hash
 ---------------
 Since the topology transactions need to be submitted together the combined hash needs to be signed.

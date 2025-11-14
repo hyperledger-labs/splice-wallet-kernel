@@ -13,6 +13,11 @@ export async function bootstrap(
     logger: Logger
 ): Promise<void> {
     const store = new StoreSql(db, logger)
+
+    // Load all IDPs from config into the store
+    await Promise.all(config.idps.map((idp) => store.addIdp(idp)))
+
+    // Load all networks from config into the store
     await Promise.all(
         config.networks.map((network) => store.addNetwork(network))
     )

@@ -6,7 +6,6 @@ import {
     localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
 
-// @disable-snapshot-test
 export default async function () {
     // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
     const sdk = new WalletSDKImpl().configure({

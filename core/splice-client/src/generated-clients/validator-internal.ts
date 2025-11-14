@@ -44,7 +44,8 @@ export interface paths {
         /**
          * @description As the validator operator, offboard the user specified in the request.
          * Offboarding archives the daml contracts required for the user to use a wallet on this validator.
-         * Offboarding does not delete the ledger API user, and does not archive any other daml contracts owned by the user.
+         * Offboarding deletes the ledger API user.
+         * Offboarding does not archive any other daml contracts owned by the user.
          */
         post: operations['offboardUser']
     }
@@ -248,6 +249,8 @@ export interface components {
             domain_id: string
             created_at: string
             synchronizer_was_paused?: boolean
+            /** @description If set to true, acs_snapshot is a filename */
+            separate_payload_files?: boolean
         }
         GetValidatorDomainDataSnapshotResponse: {
             data_snapshot: components['schemas']['DomainMigrationDump']
@@ -604,7 +607,8 @@ export interface operations {
     /**
      * @description As the validator operator, offboard the user specified in the request.
      * Offboarding archives the daml contracts required for the user to use a wallet on this validator.
-     * Offboarding does not delete the ledger API user, and does not archive any other daml contracts owned by the user.
+     * Offboarding deletes the ledger API user.
+     * Offboarding does not archive any other daml contracts owned by the user.
      */
     offboardUser: {
         parameters: {

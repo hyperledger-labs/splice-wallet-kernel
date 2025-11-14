@@ -28,7 +28,10 @@ export interface paths {
         post: operations['postV2CommandsSubmit-and-wait-for-reassignment']
     }
     '/v2/commands/submit-and-wait-for-transaction-tree': {
-        /** @description Submit a batch of commands and wait for the transaction trees response (deprecated: use submit-and-wait-for-transaction instead) */
+        /**
+         * @deprecated
+         * @description Submit a batch of commands and wait for the transaction trees response. Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use submit-and-wait-for-transaction instead.
+         */
         post: operations['postV2CommandsSubmit-and-wait-for-transaction-tree']
     }
     '/v2/commands/async/submit': {
@@ -58,10 +61,18 @@ export interface paths {
         /** @description Get the version details of the participant node */
         get: operations['getV2Version']
     }
+    '/v2/dars/validate': {
+        /** @description Validates a DAR for upgrade-compatibility against the current vetting state on the target synchronizer */
+        post: operations['postV2DarsValidate']
+    }
+    '/v2/dars': {
+        /** @description Upload a DAR to the participant node */
+        post: operations['postV2Dars']
+    }
     '/v2/packages': {
         /** @description List all packages uploaded on the participant node */
         get: operations['getV2Packages']
-        /** @description Upload a DAR to the participant node */
+        /** @description Upload a DAR to the participant node. Behaves the same as /dars. This endpoint will be deprecated and removed in a future release. */
         post: operations['postV2Packages']
     }
     '/v2/packages/{package-id}': {
@@ -84,6 +95,10 @@ export interface paths {
         /** @description Allocate a new party to the participant node */
         post: operations['postV2Parties']
     }
+    '/v2/parties/external/allocate': {
+        /** @description Allocate a new external party */
+        post: operations['postV2PartiesExternalAllocate']
+    }
     '/v2/parties/participant-id': {
         /** @description Get participant id */
         get: operations['getV2PartiesParticipant-id']
@@ -93,6 +108,10 @@ export interface paths {
         get: operations['getV2PartiesParty']
         /** @description Allocate a new party to the participant node */
         patch: operations['patchV2PartiesParty']
+    }
+    '/v2/parties/external/generate-topology': {
+        /** @description Generate a topology for an external party */
+        post: operations['postV2PartiesExternalGenerate-topology']
     }
     '/v2/state/active-contracts': {
         /**
@@ -135,7 +154,8 @@ export interface paths {
     }
     '/v2/updates/flats': {
         /**
-         * @description Query flat transactions update list (blocking call, deprecated: use v2/updates instead)
+         * @deprecated
+         * @description Query flat transactions update list (blocking call). Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use v2/updates instead.
          * Notice: This endpoint should be used for small results set.
          * When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
          * there will be an error (`413 Content Too Large`) returned.
@@ -146,7 +166,8 @@ export interface paths {
     }
     '/v2/updates/trees': {
         /**
-         * @description Query update transactions tree list (blocking call, deprecated: use v2/updates instead)
+         * @deprecated
+         * @description Query update transactions tree list (blocking call). Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use v2/updates instead.
          * Notice: This endpoint should be used for small results set.
          * When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
          * there will be an error (`413 Content Too Large`) returned.
@@ -156,11 +177,17 @@ export interface paths {
         post: operations['postV2UpdatesTrees']
     }
     '/v2/updates/transaction-tree-by-offset/{offset}': {
-        /** @description Get transaction tree by offset (deprecated: use v2/updates/update-by-offset instead) */
+        /**
+         * @deprecated
+         * @description Get transaction tree by offset. Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use v2/updates/update-by-offset instead.
+         */
         get: operations['getV2UpdatesTransaction-tree-by-offsetOffset']
     }
     '/v2/updates/transaction-by-offset': {
-        /** @description Get transaction by offset (deprecated: use v2/updates/update-by-offset instead) */
+        /**
+         * @deprecated
+         * @description Get transaction by offset. Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use v2/updates/update-by-offset instead.
+         */
         post: operations['postV2UpdatesTransaction-by-offset']
     }
     '/v2/updates/update-by-offset': {
@@ -168,7 +195,10 @@ export interface paths {
         post: operations['postV2UpdatesUpdate-by-offset']
     }
     '/v2/updates/transaction-by-id': {
-        /** @description Get transaction by id (deprecated: use v2/updates/update-by-id instead) */
+        /**
+         * @deprecated
+         * @description Get transaction by id. Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use v2/updates/update-by-id instead.
+         */
         post: operations['postV2UpdatesTransaction-by-id']
     }
     '/v2/updates/update-by-id': {
@@ -176,7 +206,10 @@ export interface paths {
         post: operations['postV2UpdatesUpdate-by-id']
     }
     '/v2/updates/transaction-tree-by-id/{update-id}': {
-        /** @description Get transaction tree by id (deprecated: use v2/updates/update-by-id instead) */
+        /**
+         * @deprecated
+         * @description Get transaction tree by id. Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use v2/updates/update-by-id instead.
+         */
         get: operations['getV2UpdatesTransaction-tree-by-idUpdate-id']
     }
     '/v2/users': {
@@ -253,6 +286,47 @@ export type webhooks = Record<string, never>
 
 export interface components {
     schemas: {
+        /**
+         * AllocateExternalPartyRequest
+         * @description Required authorization: ``HasRight(ParticipantAdmin) OR IsAuthenticatedIdentityProviderAdmin(identity_provider_id)``
+         */
+        AllocateExternalPartyRequest: {
+            /**
+             * @description TODO(#27670) support synchronizer aliases
+             * Synchronizer ID on which to onboard the party
+             * Required
+             */
+            synchronizer: string
+            /**
+             * @description TopologyTransactions to onboard the external party
+             * Can contain:
+             * - A namespace for the party.
+             * This can be either a single NamespaceDelegation,
+             * or DecentralizedNamespaceDefinition along with its authorized namespace owners in the form of NamespaceDelegations.
+             * May be provided, if so it must be fully authorized by the signatures in this request combined with the existing topology state.
+             * - A PartyToKeyMapping to register the party's signing keys.
+             * May be provided, if so it must be fully authorized by the signatures in this request combined with the existing topology state.
+             * - A PartyToParticipant to register the hosting relationship of the party.
+             * Must be provided.
+             * Required
+             */
+            onboardingTransactions?: components['schemas']['SignedTransaction'][]
+            /**
+             * @description Optional signatures of the combined hash of all onboarding_transactions
+             * This may be used instead of providing signatures on each individual transaction
+             */
+            multiHashSignatures?: components['schemas']['Signature'][]
+            /**
+             * @description The id of the ``Identity Provider``
+             * If not set, assume the party is managed by the default identity provider.
+             * Optional
+             */
+            identityProviderId: string
+        }
+        /** AllocateExternalPartyResponse */
+        AllocateExternalPartyResponse: {
+            partyId: string
+        }
         /**
          * AllocatePartyRequest
          * @description Required authorization: ``HasRight(ParticipantAdmin) OR IsAuthenticatedIdentityProviderAdmin(identity_provider_id)``
@@ -599,6 +673,58 @@ export interface components {
                 | 'PARTICIPANT_PERMISSION_OBSERVATION'
         }
         /**
+         * CostEstimation
+         * @description Estimation of the cost of submitting the prepared transaction
+         * The estimation is done against the synchronizer chosen during preparation of the transaction
+         * (or the one explicitly requested).
+         * The cost of re-assigning contracts to another synchronizer when necessary is not included in the estimation.
+         */
+        CostEstimation: {
+            /** @description Timestamp at which the estimation was made */
+            estimationTimestamp?: string
+            /**
+             * Format: int64
+             * @description Estimated traffic cost of the confirmation request associated with the transaction
+             */
+            confirmationRequestTrafficCostEstimation: number
+            /**
+             * Format: int64
+             * @description Estimated traffic cost of the confirmation response associated with the transaction
+             * This field can also be used as an indication of the cost that other potential confirming nodes
+             * of the party will incur to approve or reject the transaction
+             */
+            confirmationResponseTrafficCostEstimation: number
+            /**
+             * Format: int64
+             * @description Sum of the fields above
+             */
+            totalTrafficCostEstimation: number
+        }
+        /**
+         * CostEstimationHints
+         * @description Hints to improve cost estimation precision of a prepared transaction
+         */
+        CostEstimationHints: {
+            /**
+             * @description Disable cost estimation
+             * Default (not set) is false
+             */
+            disabled: boolean
+            /**
+             * @description Details on the keys that will be used to sign the transaction (how many and of which type).
+             * Signature size impacts the cost of the transaction.
+             * If empty, the signature sizes will be approximated with threshold-many signatures (where threshold is defined
+             * in the PartyToKeyMapping of the external party), using keys in the order they are registered.
+             * Optional (empty list is equivalent to not providing this field)
+             */
+            expectedSignatures?: (
+                | 'SIGNING_ALGORITHM_SPEC_UNSPECIFIED'
+                | 'SIGNING_ALGORITHM_SPEC_ED25519'
+                | 'SIGNING_ALGORITHM_SPEC_EC_DSA_SHA_256'
+                | 'SIGNING_ALGORITHM_SPEC_EC_DSA_SHA_384'
+            )[]
+        }
+        /**
          * CreateAndExerciseCommand
          * @description Create a contract and exercise a choice on it in the same transaction.
          */
@@ -898,7 +1024,7 @@ export interface components {
                     DeduplicationOffset: components['schemas']['DeduplicationOffset2']
                 },
                 {
-                    Empty: components['schemas']['Empty9']
+                    Empty: components['schemas']['Empty10']
                 },
             ]
         >
@@ -917,12 +1043,15 @@ export interface components {
              * @description The template id of the contract.
              * The identifier uses the package-id reference format.
              *
-             * Required
+             * If provided, used to validate the template id of the contract serialized in the created_event_blob.
+             * Optional
              */
             templateId?: string
             /**
              * @description The contract id
-             * Required
+             *
+             * If provided, used to validate the contract id of the contract serialized in the created_event_blob.
+             * Optional
              */
             contractId: string
             /**
@@ -950,6 +1079,8 @@ export interface components {
         Empty: Record<string, never>
         /** Empty */
         Empty1: Record<string, never>
+        /** Empty */
+        Empty10: Record<string, never>
         /** Empty */
         Empty2: Record<string, never>
         /** Empty */
@@ -1311,6 +1442,48 @@ export interface components {
              * include_created_event_blob unset is used.
              */
             cumulative?: components['schemas']['CumulativeFilter'][]
+        }
+        /** GenerateExternalPartyTopologyRequest */
+        GenerateExternalPartyTopologyRequest: {
+            /**
+             * @description TODO(#27670) support synchronizer aliases
+             * Required: synchronizer-id for which we are building this request.
+             */
+            synchronizer: string
+            /** @description Required: the actual party id will be constructed from this hint and a fingerprint of the public key */
+            partyHint: string
+            /** @description Required: public key */
+            publicKey?: components['schemas']['SigningPublicKey']
+            /** @description Optional: if true, then the local participant will only be observing, not confirming. Default false. */
+            localParticipantObservationOnly: boolean
+            /** @description Optional: other participant ids which should be confirming for this party */
+            otherConfirmingParticipantUids?: string[]
+            /**
+             * Format: int32
+             * @description Optional: Confirmation threshold >= 1 for the party. Defaults to all available confirmers (or if set to 0).
+             */
+            confirmationThreshold: number
+            /** @description Optional: other observing participant ids for this party */
+            observingParticipantUids?: string[]
+        }
+        /**
+         * GenerateExternalPartyTopologyResponse
+         * @description Response message with topology transactions and the multi-hash to be signed.
+         */
+        GenerateExternalPartyTopologyResponse: {
+            /** @description the generated party id */
+            partyId: string
+            /** @description the fingerprint of the supplied public key */
+            publicKeyFingerprint: string
+            /**
+             * @description The serialized topology transactions which need to be signed and submitted as part of the allocate party process
+             * Note that the serialization includes the versioning information. Therefore, the transaction here is serialized
+             * as an `UntypedVersionedMessage` which in turn contains the serialized `TopologyTransaction` in the version
+             * supported by the synchronizer.
+             */
+            topologyTransactions?: string[]
+            /** @description the multi-hash which may be signed instead of each individual transaction */
+            multiHash: string
         }
         /**
          * GetActiveContractsRequest
@@ -2350,7 +2523,8 @@ export interface components {
             disclosedContracts?: components['schemas']['DisclosedContract'][]
             /**
              * @description Must be a valid synchronizer id
-             * Required
+             * If not set, a suitable synchronizer that this node is connected to will be chosen
+             * Optional
              */
             synchronizerId: string
             /**
@@ -2373,6 +2547,28 @@ export interface components {
              * Optional
              */
             prefetchContractKeys?: components['schemas']['PrefetchContractKey'][]
+            /**
+             * @description Maximum timestamp at which the transaction can be recorded onto the ledger via the synchronizer specified in the `PrepareSubmissionResponse`.
+             * If submitted after it will be rejected even if otherwise valid, in which case it needs to be prepared and signed again
+             * with a new valid max_record_time.
+             * Use this to limit the time-to-life of a prepared transaction,
+             * which is useful to know when it can definitely not be accepted
+             * anymore and resorting to preparing another transaction for the same
+             * intent is safe again.
+             * Optional
+             */
+            maxRecordTime?: string
+            /**
+             * @description Hints to improve the accuracy of traffic cost estimation.
+             * The estimation logic assumes that this node will be used for the execution of the transaction
+             * If another node is used instead, the estimation may be less precise.
+             * Request amplification is not accounted for in the estimation: each amplified request will
+             * result in the cost of the confirmation request to be charged additionally.
+             *
+             * Optional - Traffic cost estimation is enabled by default if this field is not set
+             * To turn off cost estimation, set the CostEstimationHints#disabled field to true
+             */
+            estimateTrafficCost?: components['schemas']['CostEstimationHints']
         }
         /**
          * JsPrepareSubmissionResponse
@@ -2403,6 +2599,11 @@ export interface components {
              * Its content should NOT be parsed and should only be used for troubleshooting purposes.
              */
             hashingDetails?: string
+            /**
+             * @description Traffic cost estimation of the prepared transaction
+             * Optional
+             */
+            costEstimation?: components['schemas']['CostEstimation']
         }
         /**
          * JsReassignment
@@ -2735,7 +2936,7 @@ export interface components {
                   CanReadAsAnyParty: components['schemas']['CanReadAsAnyParty']
               }
             | {
-                  Empty: components['schemas']['Empty7']
+                  Empty: components['schemas']['Empty8']
               }
             | {
                   IdentityProviderAdmin: components['schemas']['IdentityProviderAdmin']
@@ -2788,12 +2989,12 @@ export interface components {
         ListVettedPackagesRequest: {
             /**
              * @description The package metadata filter the returned vetted packages set must satisfy.
-             * Optional.
+             * Optional
              */
             packageMetadataFilter?: components['schemas']['PackageMetadataFilter']
             /**
              * @description The topology filter the returned vetted packages set must satisfy.
-             * Optional.
+             * Optional
              */
             topologyStateFilter?: components['schemas']['TopologyStateFilter']
             /**
@@ -2807,17 +3008,17 @@ export interface components {
              * added and a page is requested twice using the same token, more packages can
              * be returned on the second call.
              *
-             * Leave empty to fetch the first page.
+             * Leave unspecified (i.e. as empty string) to fetch the first page.
              *
              * Optional
              */
-            pageToken?: string
+            pageToken: string
             /**
              * Format: int32
              * @description Maximum number of ``VettedPackages`` results to return in a single page.
              *
-             * If the page_size is unspecified, the server will decide the number of
-             * results to be returned.
+             * If the page_size is unspecified (i.e. left as 0), the server will decide
+             * the number of results to be returned.
              *
              * If the page_size exceeds the maximum supported by the server, an
              * error will be returned.
@@ -2827,7 +3028,7 @@ export interface components {
              *
              * Optional
              */
-            pageSize?: number
+            pageSize: number
         }
         /** ListVettedPackagesResponse */
         ListVettedPackagesResponse: {
@@ -2839,9 +3040,9 @@ export interface components {
             vettedPackages?: components['schemas']['VettedPackages'][]
             /**
              * @description Pagination token to retrieve the next page.
-             * Empty, if there are no further results.
+             * Empty string if there are no further results.
              */
-            nextPageToken?: string
+            nextPageToken: string
         }
         /** Map_Filters */
         Map_Filters: {
@@ -2871,6 +3072,8 @@ export interface components {
         MinLedgerTimeRel: {
             value: components['schemas']['Duration']
         }
+        /** NoPrior */
+        NoPrior: Record<string, never>
         /**
          * ObjectMeta
          * @description Represents metadata corresponding to a participant resource (e.g. a participant user or participant local information about a party).
@@ -3191,11 +3394,25 @@ export interface components {
              */
             contractKey: unknown
         }
+        /** Prior */
+        Prior: {
+            /** Format: int32 */
+            value: number
+        }
+        /**
+         * PriorTopologySerial
+         * @description The serial of last ``VettedPackages`` topology transaction on a given
+         * participant and synchronizer.
+         */
+        PriorTopologySerial: {
+            serial: components['schemas']['Serial']
+        }
         /** ProtoAny */
         ProtoAny: {
             typeUrl: string
             value: string
             unknownFields: components['schemas']['UnknownFieldSet']
+            valueDecoded?: string
         }
         /**
          * Reassignment
@@ -3294,27 +3511,48 @@ export interface components {
         Right: {
             kind: components['schemas']['Kind']
         }
+        /** Serial */
+        Serial: OneOf<
+            [
+                {
+                    Empty: components['schemas']['Empty6']
+                },
+                {
+                    NoPrior: components['schemas']['NoPrior']
+                },
+                {
+                    Prior: components['schemas']['Prior']
+                },
+            ]
+        >
         /** Signature */
         Signature: {
-            /** @enum {string} */
-            format:
-                | 'SIGNATURE_FORMAT_UNSPECIFIED'
-                | 'SIGNATURE_FORMAT_RAW'
-                | 'SIGNATURE_FORMAT_DER'
-                | 'SIGNATURE_FORMAT_CONCAT'
-                | 'SIGNATURE_FORMAT_SYMBOLIC'
+            format: string
             signature: string
             /** @description The fingerprint/id of the keypair used to create this signature and needed to verify. */
             signedBy: string
+            /** @description The signing algorithm specification used to produce this signature */
+            signingAlgorithmSpec: string
+        }
+        /** SignedTransaction */
+        SignedTransaction: {
+            transaction: string
+            signatures?: components['schemas']['Signature'][]
+        }
+        /** SigningPublicKey */
+        SigningPublicKey: {
             /**
-             * @description The signing algorithm specification used to produce this signature
-             * @enum {string}
+             * @description The serialization format of the public key
+             * @example CRYPTO_KEY_FORMAT_DER_X509_SUBJECT_PUBLIC_KEY_INFO
              */
-            signingAlgorithmSpec:
-                | 'SIGNING_ALGORITHM_SPEC_UNSPECIFIED'
-                | 'SIGNING_ALGORITHM_SPEC_ED25519'
-                | 'SIGNING_ALGORITHM_SPEC_EC_DSA_SHA_256'
-                | 'SIGNING_ALGORITHM_SPEC_EC_DSA_SHA_384'
+            format: string
+            /** @description Serialized public key in the format specified above */
+            keyData: string
+            /**
+             * @description The key specification
+             * @example SIGNING_KEY_SPEC_EC_CURVE25519
+             */
+            keySpec: string
         }
         /**
          * SinglePartySignatures
@@ -3423,7 +3661,7 @@ export interface components {
         Time: OneOf<
             [
                 {
-                    Empty: components['schemas']['Empty8']
+                    Empty: components['schemas']['Empty9']
                 },
                 {
                     MinLedgerTimeAbs: components['schemas']['MinLedgerTimeAbs']
@@ -3441,7 +3679,7 @@ export interface components {
         TopologyEventEvent: OneOf<
             [
                 {
-                    Empty: components['schemas']['Empty6']
+                    Empty: components['schemas']['Empty7']
                 },
                 {
                     ParticipantAuthorizationAdded: components['schemas']['ParticipantAuthorizationAdded']
@@ -3729,10 +3967,7 @@ export interface components {
                 },
             ]
         >
-        /**
-         * Update
-         * @description The update that matches the filter in the request.
-         */
+        /** Update */
         Update1: OneOf<
             [
                 {
@@ -3907,21 +4142,39 @@ export interface components {
              */
             dryRun: boolean
             /**
-             * @description The sychronizer on which the ``VettedPackages`` of this participant node
-             * should be changed.
+             * @description If set, the requested changes will take place on the specified
+             * synchronizer. If synchronizer_id is unset and the participant is only
+             * connected to a single synchronizer, that synchronizer will be used by
+             * default. If synchronizer_id is unset and the participant is connected to
+             * multiple synchronizers, the request will error out with
+             * PACKAGE_SERVICE_CANNOT_AUTODETECT_SYNCHRONIZER.
+             *
+             * Optional
              */
             synchronizerId: string
             /**
-             * Format: int32
              * @description The serial of the last ``VettedPackages`` topology transaction of this
              * participant and on this synchronizer.
              *
-             * Execution of the request fails if this is not correct. If the serial is
-             * left unspecified, the request always succeeds.
+             * Execution of the request fails if this is not correct. Use this to guard
+             * against concurrent changes.
              *
-             * Use this to guard against concurrent changes.
+             * If left unspecified, no validation is done against the last transaction's
+             * serial.
+             *
+             * Optional
              */
-            expectedTopologySerial?: number
+            expectedTopologySerial?: components['schemas']['PriorTopologySerial']
+            /**
+             * @description Controls whether potentially unsafe vetting updates are allowed.
+             *
+             * Optional, defaults to FORCE_FLAG_UNSPECIFIED.
+             */
+            updateVettedPackagesForceFlags?: (
+                | 'UPDATE_VETTED_PACKAGES_FORCE_FLAG_UNSPECIFIED'
+                | 'UPDATE_VETTED_PACKAGES_FORCE_FLAG_ALLOW_VET_INCOMPATIBLE_UPGRADES'
+                | 'UPDATE_VETTED_PACKAGES_FORCE_FLAG_ALLOW_UNVETTED_DEPENDENCIES'
+            )[]
         }
         /** UpdateVettedPackagesResponse */
         UpdateVettedPackagesResponse: {
@@ -4034,13 +4287,15 @@ export interface components {
             /**
              * @description Name of this package.
              * Only available if the package has been uploaded to the current participant.
+             * If unavailable, is empty string.
              */
-            packageName?: string
+            packageName: string
             /**
              * @description Version of this package.
              * Only available if the package has been uploaded to the current participant.
+             * If unavailable, is empty string.
              */
-            packageVersion?: string
+            packageVersion: string
         }
         /**
          * VettedPackages
@@ -4062,7 +4317,7 @@ export interface components {
             /**
              * Format: int32
              * @description Serial of last ``VettedPackages`` topology transaction of this participant
-             * and on this synchronizer.
+             * and on this synchronizer. Always present.
              */
             topologySerial: number
         }
@@ -4079,20 +4334,30 @@ export interface components {
          *
          * A reference matches a package if its ``package_id`` matches the package's ID,
          * its ``package_name`` matches the package's name, and its ``package_version``
-         * matches the package's version. If any attribute is left unspecified in the
-         * reference, it is treated as a wildcard. At a minimum, ``package_id`` or the
-         * ``package_name`` must be specified.
+         * matches the package's version. If an attribute in the reference is left
+         * unspecified (i.e. as an empty string), that attribute is treated as a
+         * wildcard. At a minimum, ``package_id`` or the ``package_name`` must be
+         * specified.
          *
          * If a reference does not match any package, the reference is considered
          * unresolved and the entire update request is rejected.
          */
         VettedPackagesRef: {
-            /** @description Package's package id must be the same as this field. */
-            packageId?: string
-            /** @description Package's name must be the same as this field. */
-            packageName?: string
-            /** @description Package's version must be the same as this field. */
-            packageVersion?: string
+            /**
+             * @description Package's package id must be the same as this field.
+             * Optional
+             */
+            packageId: string
+            /**
+             * @description Package's name must be the same as this field.
+             * Optional
+             */
+            packageName: string
+            /**
+             * @description Package's version must be the same as this field.
+             * Optional
+             */
+            packageVersion: string
         }
         /**
          * WildcardFilter
@@ -4205,7 +4470,10 @@ export interface operations {
             }
         }
     }
-    /** @description Submit a batch of commands and wait for the transaction trees response (deprecated: use submit-and-wait-for-transaction instead) */
+    /**
+     * @deprecated
+     * @description Submit a batch of commands and wait for the transaction trees response. Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use submit-and-wait-for-transaction instead.
+     */
     'postV2CommandsSubmit-and-wait-for-transaction-tree': {
         requestBody: {
             content: {
@@ -4371,6 +4639,67 @@ export interface operations {
             }
         }
     }
+    /** @description Validates a DAR for upgrade-compatibility against the current vetting state on the target synchronizer */
+    postV2DarsValidate: {
+        parameters: {
+            query?: {
+                synchronizerId?: string
+            }
+        }
+        requestBody: {
+            content: {
+                'application/octet-stream': string
+            }
+        }
+        responses: {
+            200: {
+                content: never
+            }
+            /** @description Invalid value for: body, Invalid value for: query parameter synchronizerId, Invalid value for: headers */
+            400: {
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    /** @description Upload a DAR to the participant node */
+    postV2Dars: {
+        parameters: {
+            query?: {
+                vetAllPackages?: boolean
+                synchronizerId?: string
+            }
+        }
+        requestBody: {
+            content: {
+                'application/octet-stream': string
+            }
+        }
+        responses: {
+            200: {
+                content: {
+                    'application/json': components['schemas']['UploadDarFileResponse']
+                }
+            }
+            /** @description Invalid value for: body, Invalid value for: query parameter vetAllPackages, Invalid value for: query parameter synchronizerId, Invalid value for: headers */
+            400: {
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
     /** @description List all packages uploaded on the participant node */
     getV2Packages: {
         responses: {
@@ -4392,11 +4721,12 @@ export interface operations {
             }
         }
     }
-    /** @description Upload a DAR to the participant node */
+    /** @description Upload a DAR to the participant node. Behaves the same as /dars. This endpoint will be deprecated and removed in a future release. */
     postV2Packages: {
         parameters: {
             query?: {
                 vetAllPackages?: boolean
+                synchronizerId?: string
             }
         }
         requestBody: {
@@ -4410,7 +4740,7 @@ export interface operations {
                     'application/json': components['schemas']['UploadDarFileResponse']
                 }
             }
-            /** @description Invalid value for: body, Invalid value for: query parameter vetAllPackages, Invalid value for: headers */
+            /** @description Invalid value for: body, Invalid value for: query parameter vetAllPackages, Invalid value for: query parameter synchronizerId, Invalid value for: headers */
             400: {
                 content: {
                     'text/plain': string
@@ -4585,6 +4915,32 @@ export interface operations {
             }
         }
     }
+    /** @description Allocate a new external party */
+    postV2PartiesExternalAllocate: {
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['AllocateExternalPartyRequest']
+            }
+        }
+        responses: {
+            200: {
+                content: {
+                    'application/json': components['schemas']['AllocateExternalPartyResponse']
+                }
+            }
+            /** @description Invalid value for: body, Invalid value for: headers */
+            400: {
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
     /** @description Get participant id */
     'getV2PartiesParticipant-id': {
         responses: {
@@ -4667,6 +5023,32 @@ export interface operations {
             }
         }
     }
+    /** @description Generate a topology for an external party */
+    'postV2PartiesExternalGenerate-topology': {
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['GenerateExternalPartyTopologyRequest']
+            }
+        }
+        responses: {
+            200: {
+                content: {
+                    'application/json': components['schemas']['GenerateExternalPartyTopologyResponse']
+                }
+            }
+            /** @description Invalid value for: body, Invalid value for: headers */
+            400: {
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
     /**
      * @description Query active contracts list (blocking call).
      * Querying active contracts is an expensive operation and if possible should not be repeated often.
@@ -4716,8 +5098,8 @@ export interface operations {
     /** @description Get connected synchronizers */
     'getV2StateConnected-synchronizers': {
         parameters: {
-            query: {
-                party: string
+            query?: {
+                party?: string
                 participantId?: string
                 identityProviderId?: string
             }
@@ -4825,7 +5207,8 @@ export interface operations {
         }
     }
     /**
-     * @description Query flat transactions update list (blocking call, deprecated: use v2/updates instead)
+     * @deprecated
+     * @description Query flat transactions update list (blocking call). Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use v2/updates instead.
      * Notice: This endpoint should be used for small results set.
      * When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
      * there will be an error (`413 Content Too Large`) returned.
@@ -4866,7 +5249,8 @@ export interface operations {
         }
     }
     /**
-     * @description Query update transactions tree list (blocking call, deprecated: use v2/updates instead)
+     * @deprecated
+     * @description Query update transactions tree list (blocking call). Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use v2/updates instead.
      * Notice: This endpoint should be used for small results set.
      * When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
      * there will be an error (`413 Content Too Large`) returned.
@@ -4906,7 +5290,10 @@ export interface operations {
             }
         }
     }
-    /** @description Get transaction tree by offset (deprecated: use v2/updates/update-by-offset instead) */
+    /**
+     * @deprecated
+     * @description Get transaction tree by offset. Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use v2/updates/update-by-offset instead.
+     */
     'getV2UpdatesTransaction-tree-by-offsetOffset': {
         parameters: {
             query?: {
@@ -4935,7 +5322,10 @@ export interface operations {
             }
         }
     }
-    /** @description Get transaction by offset (deprecated: use v2/updates/update-by-offset instead) */
+    /**
+     * @deprecated
+     * @description Get transaction by offset. Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use v2/updates/update-by-offset instead.
+     */
     'postV2UpdatesTransaction-by-offset': {
         requestBody: {
             content: {
@@ -4987,7 +5377,10 @@ export interface operations {
             }
         }
     }
-    /** @description Get transaction by id (deprecated: use v2/updates/update-by-id instead) */
+    /**
+     * @deprecated
+     * @description Get transaction by id. Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use v2/updates/update-by-id instead.
+     */
     'postV2UpdatesTransaction-by-id': {
         requestBody: {
             content: {
@@ -5039,7 +5432,10 @@ export interface operations {
             }
         }
     }
-    /** @description Get transaction tree by id (deprecated: use v2/updates/update-by-id instead) */
+    /**
+     * @deprecated
+     * @description Get transaction tree by id. Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use v2/updates/update-by-id instead.
+     */
     'getV2UpdatesTransaction-tree-by-idUpdate-id': {
         parameters: {
             query?: {

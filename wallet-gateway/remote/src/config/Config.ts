@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { storeConfigSchema } from '@canton-network/core-wallet-store'
+import { storeConfigSchema as signingStoreConfigSchema } from '@canton-network/core-signing-store-sql'
 import { z } from 'zod'
 
 export const kernelInfoSchema = z.object({
@@ -19,6 +20,7 @@ export const kernelInfoSchema = z.object({
 export const configSchema = z.object({
     kernel: kernelInfoSchema,
     store: storeConfigSchema,
+    signingStore: signingStoreConfigSchema,
 })
 
 export type KernelInfo = z.infer<typeof kernelInfoSchema>

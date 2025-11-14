@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Account
 
+import { Idp } from '@canton-network/core-wallet-auth'
 import { Network } from './config/schema'
 
 export enum AddressType {
@@ -26,6 +27,11 @@ export interface WalletFilter {
     signingProviderIds?: string[]
 }
 
+export interface UpdateWallet {
+    status: string
+    partyId: string
+}
+
 export interface Wallet {
     primary: boolean
     partyId: PartyId
@@ -34,6 +40,9 @@ export interface Wallet {
     namespace: string
     networkId: string
     signingProviderId: string
+    externalTxId?: string
+    topologyTransactions?: string
+    status?: string
     // hosted: [network]
 }
 
@@ -60,12 +69,20 @@ export interface Store {
     getPrimaryWallet(): Promise<Wallet | undefined>
     setPrimaryWallet(partyId: PartyId): Promise<void>
     addWallet(wallet: Wallet): Promise<void>
-    // removeWallet(partyId: Wallet): Promise<void>
+    updateWallet(params: UpdateWallet): Promise<void>
+    removeWallet(partyId: PartyId): Promise<void>
 
     // Session methods
     getSession(): Promise<Session | undefined>
     setSession(session: Session): Promise<void>
     removeSession(): Promise<void>
+
+    // IDP methods
+    getIdp(idpId: string): Promise<Idp>
+    listIdps(): Promise<Array<Idp>>
+    updateIdp(idp: Idp): Promise<void>
+    addIdp(idp: Idp): Promise<void>
+    removeIdp(idpId: string): Promise<void>
 
     // Network methods
     getNetwork(networkId: string): Promise<Network>

@@ -1,0 +1,180 @@
+Import successful.class {
+  constructor() {
+    __publicField(this, "auth");
+    __publicField(this, "_authTokenProvider");
+    __publicField(this, "authFactory", localNetAuthDefault);
+    __publicField(this, "ledgerFactory", localNetLedgerDefault);
+    __publicField(this, "topologyFactory", localNetTopologyDefault);
+    __publicField(this, "tokenStandardFactory", localNetTokenStandardDefault);
+    __publicField(this, "validatorFactory", localValidatorDefault);
+    __publicField(this, "logger");
+    __publicField(this, "userLedger");
+    __publicField(this, "adminLedger");
+    __publicField(this, "topology");
+    __publicField(this, "tokenStandard");
+    __publicField(this, "validator");
+    this.auth = this.authFactory();
+    this._authTokenProvider = new AuthTokenProvider(this.auth);
+  }
+  get authTokenProvider() {
+    return this._authTokenProvider;
+  }
+  /**
+   * Configures the SDK with the provided configuration.
+   * @param config
+   * @returns The configured WalletSDK instance.
+   */
+  configure(config) {
+    if (config.logger) this.logger = config.logger;
+    if (config.authFactory) {
+      if (!this.auth || this.authFactory !== config.authFactory) {
+        this.authFactory = config.authFactory;
+        this.auth = this.authFactory();
+        this._authTokenProvider = new AuthTokenProvider(this.auth);
+      }
+    }
+    if (config.ledgerFactory) this.ledgerFactory = config.ledgerFactory;
+    if (config.topologyFactory)
+      this.topologyFactory = config.topologyFactory;
+    if (config.tokenStandardFactory)
+      this.tokenStandardFactory = config.tokenStandardFactory;
+    if (config.validatorFactory)
+      this.validatorFactory = config.validatorFactory;
+    return this;
+  }
+  /**
+   * Connects to the ledger using user credentials.
+   * Initializes the userLedger property.
+   * @returns A promise that resolves to the WalletSDK instance.
+   */
+  async connect() {
+    const { userId } = await this.auth.getUserToken();
+    this.userLedger = this.ledgerFactory(
+      userId,
+      this._authTokenProvider,
+      false
+    );
+    await this.userLedger.awaitInit();
+    this.tokenStandard = this.tokenStandardFactory(
+      userId,
+      this._authTokenProvider,
+      false
+    );
+    this.validator = this.validatorFactory(userId, this._authTokenProvider);
+    return this;
+  }
+  /** Connects to the ledger using admin credentials.
+   * @returns A promise that resolves to the WalletSDK instance.
+   */
+  async connectAdmin() {
+    const { userId } = await this.auth.getAdminToken();
+    this.adminLedger = this.ledgerFactory(
+      userId,
+      this._authTokenProvider,
+      true
+    );
+    return this;
+  }
+  /** Connects to the topology service using admin credentials.
+   * @param synchronizer either the synchronizerId or the base url of the scanProxyClient.
+   * @returns A promise that resolves to the WalletSDK instance.
+   */
+  async connectTopology(synchronizer) {
+    if (this.auth.userId === void 0)
+      throw new Error("UserId is not defined in AuthController.");
+    if (synchronizer === void 0)
+      throw new Error(
+        "Synchronizer is not defined in connectTopology. Provide a synchronizerId"
+      );
+    const { userId, accessToken } = await this.auth.getAdminToken();
+    let synchronizerId;
+    if (typeof synchronizer === "string") {
+      synchronizerId = synchronizer;
+    } else if (synchronizer instanceof URL) {
+      const scanProxyClient = new coreSpliceClient.ScanProxyClient(
+        synchronizer,
+        this.logger,
+        true,
+        accessToken,
+        this._authTokenProvider
+      );
+      const amuletSynchronizerId = await scanProxyClient.getAmuletSynchronizerId();
+      if (amuletSynchronizerId === void 0) {
+        throw new Error(
+          "SynchronizerId is not defined in ScanProxyClient."
+        );
+      } else {
+        synchronizerId = amuletSynchronizerId;
+      }
+    } else
+      throw new Error(
+        "invalid Synchronizer format. Either provide a synchronizerId or a scanProxyClient base url."
+      );
+    this.topology = this.topologyFactory(
+      userId,
+      this._authTokenProvider,
+      synchronizerId
+    );
+    if (!this.userLedger) {
+      this.logger?.warn(
+        "userLedger is not defined, synchronizerId will not be set automatically. Consider calling sdk.connect() first"
+      );
+    }
+    this.userLedger?.setSynchronizerId(synchronizerId);
+    return this;
+  }
+  /**
+   * Sets the partyId (and synchronizerId) for all controllers except for adminLedger.
+   * @param partyId the partyId to set.
+   * @param synchronizerId optional synchronizerId, if the party is hosted on multiple synchronizers.
+   */
+  async setPartyId(partyId, synchronizerId) {
+    let _synchronizerId = synchronizerId ?? "empty::empty";
+    if (synchronizerId === void 0) {
+      let synchronizer = await this.userLedger.listSynchronizers(partyId);
+      let retry = 0;
+      const maxRetries = 10;
+      while (true) {
+        synchronizer = await this.userLedger.listSynchronizers(partyId);
+        if (!synchronizer.connectedSynchronizers || synchronizer.connectedSynchronizers.length !== 0) {
+          _synchronizerId = synchronizer.connectedSynchronizers[0].synchronizerId;
+          break;
+        } else {
+          retry++;
+        }
+        if (retry > maxRetries)
+          throw new Error(
+            `Could not find any synchronizer id for ${partyId}`
+          );
+        await new Promise((resolve) => setTimeout(resolve, 1e3));
+      }
+    }
+    this.logger?.info(`synchronizer id will be set to ${_synchronizerId}`);
+    if (this.userLedger === void 0)
+      this.logger?.warn(
+        "User ledger controller is not defined, consider calling sdk.connect() first!"
+      );
+    else {
+      this.logger?.info(
+        `setting user ledger controller to use ${partyId}`
+      );
+      this.userLedger.setPartyId(partyId);
+      this.userLedger.setSynchronizerId(_synchronizerId);
+    }
+    if (this.tokenStandard === void 0)
+      this.logger?.warn(
+        "token standard controller is not defined, consider calling sdk.connect() first!"
+      );
+    else {
+      this.logger?.info(
+        `setting token standard controller to use ${partyId}`
+      );
+      this.tokenStandard?.setPartyId(partyId);
+      this.tokenStandard?.setSynchronizerId(_synchronizerId);
+    }
+    if (this.validator === void 0)
+      this.logger?.warn("validator controller is not defined");
+    this.validator?.setPartyId(partyId);
+    this.validator?.setSynchronizerId(_synchronizerId);
+  }
+}

@@ -1,11 +1,11 @@
 import {
     localNetAuthDefault,
     localNetLedgerDefault,
+    signTransactionHash,
     WalletSDKImpl,
 } from '@canton-network/wallet-sdk'
 import { v4 } from 'uuid'
 
-// @disable-snapshot-test
 export default async function () {
     const sdk = new WalletSDKImpl().configure({
         logger: console,
@@ -13,21 +13,22 @@ export default async function () {
         ledgerFactory: localNetLedgerDefault,
     })
 
+    const myParty = global.EXISTING_PARTY_1
+    const transaction = global.PREPARED_TRANSACTION
+    const keys = global.EXISTING_PARTY_1_KEYS
+
     await sdk.connect()
+    await sdk.setPartyId(myParty)
 
-    const transaction = {
-        preparedTransaction: 'encoded-transaction-bytes-base64',
-        preparedTransactionHash:
-            'hash-of-the-encoded-transaction-that-needs-to-be-signed',
-        hashingSchemeVersion: 'hashing-scheme-version',
-    }
-    const publicKey = 'your-public-key-here'
-    const signature = 'your-signed-transaction-hash-here'
+    const signature = signTransactionHash(
+        transaction.preparedTransactionHash,
+        keys.privateKey
+    )
 
-    return sdk.userLedger?.executeSubmission(
+    await sdk.userLedger!.executeSubmission(
         transaction,
         signature,
-        publicKey,
+        keys.publicKey,
         v4()
     )
 }

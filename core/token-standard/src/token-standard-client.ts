@@ -101,7 +101,7 @@ export class TokenStandardClient {
         body: PostRequest<Path>,
         params?: {
             path?: Record<string, string>
-            query?: Record<string, string>
+            query?: Record<string, string | number>
         }
     ): Promise<PostResponse<Path>> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
@@ -116,7 +116,7 @@ export class TokenStandardClient {
         path: Path,
         params?: {
             path?: Record<string, string>
-            query?: Record<string, string>
+            query?: Record<string, string | number>
         }
     ): Promise<GetResponse<Path>> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)

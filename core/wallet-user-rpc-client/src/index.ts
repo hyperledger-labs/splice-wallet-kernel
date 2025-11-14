@@ -27,39 +27,30 @@ export type Description = string
  *
  */
 export type SynchronizerId = string
-export type Type = string
+/**
+ *
+ * Identity Provider ID
+ *
+ */
 export type IdentityProviderId = string
-export type TokenUrl = string
-export type GrantType = string
+export type Method = string
 export type Scope = string
 export type ClientId = string
 export type ClientSecret = string
 export type Issuer = string
-export type ConfigUrl = string
 export type Audience = string
-export interface Admin {
-    clientId: ClientId
-    clientSecret: ClientSecret
-    [k: string]: any
-}
 /**
  *
- * Represents the type of auth (implicit or password) for a specified network
+ * Represents the type of auth for a specified network
  *
  */
 export interface Auth {
-    authType?: Type
-    identityProviderId: IdentityProviderId
-    tokenUrl?: TokenUrl
-    grantType?: GrantType
-    scope?: Scope
-    clientId?: ClientId
+    method: Method
+    scope: Scope
+    clientId: ClientId
     clientSecret?: ClientSecret
-    issuer: Issuer
-    configUrl: ConfigUrl
-    audience?: Audience
-    admin?: Admin
-    [k: string]: any
+    issuer?: Issuer
+    audience: Audience
 }
 /**
  *
@@ -77,7 +68,9 @@ export interface Network {
     name: Name
     description: Description
     synchronizerId: SynchronizerId
+    identityProviderId: IdentityProviderId
     auth: Auth
+    adminAuth?: Auth
     ledgerApi: LedgerApi
 }
 /**
@@ -105,6 +98,36 @@ export type PartyHint = string
  */
 export type SigningProviderId = string
 export type PartyId = string
+/**
+ *
+ * Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway.
+ *
+ */
+export type ExternalTxId = string
+/**
+ *
+ * The topology transactions
+ *
+ */
+export type TopologyTransactions = string
+/**
+ *
+ * The namespace of the party.
+ *
+ */
+export type Namespace = string
+/**
+ *
+ * Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.
+ *
+ */
+export interface SigningProviderContext {
+    partyId: PartyId
+    externalTxId: ExternalTxId
+    topologyTransactions: TopologyTransactions
+    namespace: Namespace
+    [k: string]: any
+}
 /**
  *
  * Filter wallets by network IDs.
@@ -137,6 +160,37 @@ export type PreparedTransactionHash = string
 export type CommandId = string
 export type Signature = string
 export type SignedBy = string
+export type Networks = Network[]
+/**
+ *
+ * ID of the identity provider
+ *
+ */
+export type Id = string
+/**
+ *
+ * Type of identity provider (OAuth2 or Self-Signed)
+ *
+ */
+export type Type = string
+/**
+ *
+ * URL to fetch the identity provider configuration
+ *
+ */
+export type ConfigUrl = string
+/**
+ *
+ * Structure representing the Identity Providers
+ *
+ */
+export interface Idp {
+    id: Id
+    type: Type
+    issuer: Issuer
+    configUrl?: ConfigUrl
+}
+export type Idps = Idp[]
 /**
  *
  * The party hint and name of the wallet.
@@ -151,12 +205,6 @@ export type Hint = string
 export type PublicKey = string
 /**
  *
- * The namespace of the party.
- *
- */
-export type Namespace = string
-/**
- *
  * Structure representing a wallet
  *
  */
@@ -168,11 +216,12 @@ export interface Wallet {
     namespace: Namespace
     networkId: NetworkId
     signingProviderId: SigningProviderId
+    externalTxId?: ExternalTxId
+    topologyTransactions?: TopologyTransactions
     [k: string]: any
 }
 export type Added = Wallet[]
 export type Removed = Wallet[]
-export type Networks = Network[]
 /**
  *
  * The access token for the session.
@@ -204,6 +253,7 @@ export interface CreateWalletParams {
     partyHint: PartyHint
     networkId: NetworkId
     signingProviderId: SigningProviderId
+    signingProviderContext?: SigningProviderContext
     [k: string]: any
 }
 export interface SetPrimaryWalletParams {
@@ -242,6 +292,14 @@ export interface AddSessionParams {
  *
  */
 export type Null = null
+export interface ListNetworksResult {
+    networks: Networks
+    [k: string]: any
+}
+export interface ListIdpsResult {
+    idps: Idps
+    [k: string]: any
+}
 export interface CreateWalletResult {
     wallet: Wallet
     [k: string]: any
@@ -274,10 +332,6 @@ export interface SignResult {
 export interface ExecuteResult {
     [key: string]: any
 }
-export interface ListNetworksResult {
-    networks: Networks
-    [k: string]: any
-}
 /**
  *
  * Structure representing the connected network session
@@ -300,6 +354,8 @@ export interface ListSessionsResult {
 
 export type AddNetwork = (params: AddNetworkParams) => Promise<Null>
 export type RemoveNetwork = (params: RemoveNetworkParams) => Promise<Null>
+export type ListNetworks = () => Promise<ListNetworksResult>
+export type ListIdps = () => Promise<ListIdpsResult>
 export type CreateWallet = (
     params: CreateWalletParams
 ) => Promise<CreateWalletResult>
@@ -313,7 +369,6 @@ export type ListWallets = (
 export type SyncWallets = () => Promise<SyncWalletsResult>
 export type Sign = (params: SignParams) => Promise<SignResult>
 export type Execute = (params: ExecuteParams) => Promise<ExecuteResult>
-export type ListNetworks = () => Promise<ListNetworksResult>
 export type AddSession = (params: AddSessionParams) => Promise<AddSessionResult>
 export type ListSessions = () => Promise<ListSessionsResult>
 
@@ -341,6 +396,24 @@ export class SpliceWalletJSONRPCUserAPI {
         method: 'removeNetwork',
         ...params: Parameters<RemoveNetwork>
     ): ReturnType<RemoveNetwork>
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public async request(
+        method: 'listNetworks',
+        ...params: Parameters<ListNetworks>
+    ): ReturnType<ListNetworks>
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public async request(
+        method: 'listIdps',
+        ...params: Parameters<ListIdps>
+    ): ReturnType<ListIdps>
 
     /**
      *
@@ -404,15 +477,6 @@ export class SpliceWalletJSONRPCUserAPI {
         method: 'execute',
         ...params: Parameters<Execute>
     ): ReturnType<Execute>
-
-    /**
-     *
-     */
-    // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'listNetworks',
-        ...params: Parameters<ListNetworks>
-    ): ReturnType<ListNetworks>
 
     /**
      *

@@ -9,6 +9,7 @@ import { SignJWT } from 'jose'
 export class AuthTokenProviderSelfSigned implements AccessTokenProvider {
     constructor(
         private auth: SelfSignedAuth,
+        private authAdmin: SelfSignedAuth,
         private logger: Logger,
         private expirySeconds: number = 3600
     ) {}
@@ -30,18 +31,18 @@ export class AuthTokenProviderSelfSigned implements AccessTokenProvider {
 
     async getAdminAccessToken(): Promise<string> {
         this.logger.debug('Fetching self-signed admin auth token')
-        if (!this.auth.admin) {
+        if (!this.authAdmin) {
             throw new Error('Admin credentials are not configured')
         }
         return AuthTokenProviderSelfSigned.fetchToken(
             this.logger,
             {
-                clientId: this.auth.admin.clientId,
-                clientSecret: this.auth.admin.clientSecret,
-                scope: this.auth.scope,
-                audience: this.auth.audience,
+                clientId: this.authAdmin.clientId,
+                clientSecret: this.authAdmin.clientSecret,
+                scope: this.authAdmin.scope,
+                audience: this.authAdmin.audience,
             },
-            this.auth.issuer,
+            this.authAdmin.issuer,
             this.expirySeconds
         )
     }

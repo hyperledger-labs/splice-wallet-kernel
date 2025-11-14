@@ -8,6 +8,7 @@ import {
     AuthAware,
     assertConnected,
     AccessTokenProvider,
+    Idp,
 } from '@canton-network/core-wallet-auth'
 import {
     Store,
@@ -17,6 +18,7 @@ import {
     WalletFilter,
     Transaction,
     Network,
+    UpdateWallet,
 } from '@canton-network/core-wallet-store'
 import {
     LedgerClient,
@@ -30,6 +32,7 @@ interface UserStorage {
 }
 
 export interface StoreInternalConfig {
+    idps: Array<Idp>
     networks: Array<Network>
 }
 
@@ -233,6 +236,26 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         this.updateStorage(storage)
     }
 
+    async updateWallet({ status, partyId }: UpdateWallet): Promise<void> {
+        const storage = this.getStorage()
+        const wallets = (await this.getWallets()).map((wallet) =>
+            wallet.partyId === partyId ? { ...wallet, status } : wallet
+        )
+
+        storage.wallets = wallets
+        this.updateStorage(storage)
+    }
+
+    async removeWallet(partyId: PartyId): Promise<void> {
+        const storage = this.getStorage()
+        const wallets = (await this.getWallets()).filter(
+            (w) => w.partyId !== partyId
+        )
+
+        storage.wallets = wallets
+        this.updateStorage(storage)
+    }
+
     // Session methods
     async getSession(): Promise<Session | undefined> {
         return this.getStorage().session
@@ -248,6 +271,50 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         const storage = this.getStorage()
         storage.session = undefined
         this.updateStorage(storage)
+    }
+
+    // IDP methods
+    async getIdp(idpId: string): Promise<Idp> {
+        this.assertConnected()
+        const idps = await this.listIdps()
+        const idp = idps.find((i) => i.id === idpId)
+        if (!idp) {
+            throw new Error(`IdP "${idpId}" not found`)
+        }
+        return idp
+    }
+
+    async listIdps(): Promise<Array<Idp>> {
+        this.assertConnected()
+        return this.systemStorage.idps
+    }
+
+    async addIdp(idp: Idp): Promise<void> {
+        this.assertConnected()
+        const existingIdp = await this.listIdps()
+
+        if (existingIdp.find((i) => i.id === idp.id)) {
+            throw new Error(`IdP "${idp.id}" already exists`)
+        }
+
+        this.systemStorage.idps.push(idp)
+    }
+
+    async updateIdp(idp: Idp): Promise<void> {
+        this.assertConnected()
+        const existingIdps = await this.listIdps()
+        const index = existingIdps.findIndex((i) => i.id === idp.id)
+        if (index === -1) {
+            throw new Error(`IdP "${idp.id}" not found`)
+        }
+        this.systemStorage.idps[index] = idp
+    }
+
+    async removeIdp(idpId: string): Promise<void> {
+        this.assertConnected()
+        this.systemStorage.idps = this.systemStorage.idps.filter(
+            (i) => i.id !== idpId
+        )
     }
 
     // Network methods

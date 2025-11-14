@@ -6,7 +6,6 @@ import {
 } from '@canton-network/wallet-sdk'
 import { v4 } from 'uuid'
 
-// @disable-snapshot-test
 export default async function () {
     const sdk = new WalletSDKImpl().configure({
         logger: console,
@@ -14,28 +13,28 @@ export default async function () {
         ledgerFactory: localNetLedgerDefault,
     })
 
-    const prepareExecuteParams = {
-        commands: {}, // this is of type JsCommand
-    }
+    const preparedCommand = global.PREPARED_COMMAND
+    const keys = global.EXISTING_PARTY_1_KEYS
+    const myParty = global.EXISTING_PARTY_1
 
-    const preparedTransaction = await sdk.userLedger?.prepareSubmission(
-        prepareExecuteParams.commands, //the incoming command
+    await sdk.connect()
+    await sdk.setPartyId(myParty)
+
+    const preparedTransaction = await sdk.userLedger!.prepareSubmission(
+        preparedCommand, //the incoming command
         v4() //a unique deduplication id for this transaction
     )
 
-    const clientsPublicKey = 'clients-public-key-here'
-    const clientsPrivateKey = 'client-private-key-here'
-
     const signature = signTransactionHash(
-        preparedTransaction?.preparedTransactionHash ?? '',
-        clientsPrivateKey
+        preparedTransaction!.preparedTransactionHash ?? '',
+        keys.privateKey
     )
 
     //if client calls ``prepareExecute`` then this is how they would call ``execute``
-    return await sdk.userLedger?.executeSubmission(
+    await sdk.userLedger!.executeSubmission(
         preparedTransaction!,
         signature,
-        clientsPublicKey,
+        keys.publicKey,
         v4()
     )
 }

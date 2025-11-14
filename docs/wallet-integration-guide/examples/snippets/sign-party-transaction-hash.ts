@@ -1,9 +1,8 @@
-import { signTransactionHash } from '@canton-network/wallet-sdk'
+import { createKeyPair, signTransactionHash } from '@canton-network/wallet-sdk'
 
-// @disable-snapshot-test
 export default async function () {
-    const preparedParty = { combinedHash: 'combined-hash-here' }
-    const privateKey = 'your-private-key-here'
+    const preparedParty = EXISTING_TOPOLOGY
+    const keys = createKeyPair()
 
-    return signTransactionHash(preparedParty.combinedHash, privateKey)
+    signTransactionHash(preparedParty.multiHash, keys.privateKey)
 }

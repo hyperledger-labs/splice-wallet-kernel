@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Auth, AuthService } from '@canton-network/core-wallet-auth'
+import { AuthService } from '@canton-network/core-wallet-auth'
 import { Store } from '@canton-network/core-wallet-store'
 import { createRemoteJWKSet, decodeJwt, jwtVerify } from 'jose'
 import { Logger } from 'pino'
@@ -29,11 +29,9 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 return undefined
             }
 
-            // TODO: change once IDP is decoupled from networks
-            const networks = await store.listNetworks()
-            const idp: Auth | undefined = networks.find(
-                (n) => n.auth.issuer === iss
-            )?.auth
+            const idps = await store.listIdps()
+            const idp = idps.find((i) => i.issuer === iss)
+
             if (!idp) {
                 logger.warn(`No identity provider found for issuer: ${iss}`)
                 return undefined

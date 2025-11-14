@@ -2,10 +2,10 @@ import {
     WalletSDKImpl,
     localNetAuthDefault,
     localNetLedgerDefault,
+    localNetStaticConfig,
     localNetTokenStandardDefault,
 } from '@canton-network/wallet-sdk'
 
-// @disable-snapshot-test
 export default async function () {
     const sdk = new WalletSDKImpl().configure({
         logger: console,
@@ -15,10 +15,13 @@ export default async function () {
     })
 
     await sdk.connect()
+    await sdk.tokenStandard!.setTransferFactoryRegistryUrl(
+        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+    )
 
-    const sender = 'sender-party'
-    const receiver = 'receiver-party'
-    const instrumentAdminPartyId = 'admin-of-the-instrument'
+    const sender = global.EXISTING_PARTY_1
+    const receiver = global.EXISTING_PARTY_2
+    const instrumentAdminPartyId = global.INSTRUMENT_ADMIN_PARTY
 
     const [transferCommand, disclosedContracts] =
         await sdk.tokenStandard!.createTransfer(

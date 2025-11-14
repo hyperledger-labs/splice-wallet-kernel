@@ -7,9 +7,8 @@ import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/BaseElement.js'
 import { NetworkInputChangedEvent } from './NetworkFormInput.js'
 import {
-    Credentials,
-    ImplicitAuth,
-    PasswordAuth,
+    AuthorizationCodeAuth,
+    ClientCredentialsAuth,
     SelfSignedAuth,
 } from '@canton-network/core-wallet-auth'
 
@@ -34,20 +33,13 @@ export class NetworkEditSaveEvent extends Event {
     }
 }
 
-type NetworkKeys = Exclude<keyof Network, 'auth' | 'ledgerApi'>
-type LedgerApiKeys = keyof Network['ledgerApi']
-
-type CommonAuth = Exclude<keyof Network['auth'], 'type' | 'admin'>
-type AdminAuth = keyof Credentials
-type PasswordAuthKeys = Exclude<keyof PasswordAuth, 'type' | 'admin'>
-
 @customElement('network-form')
 export class NetworkForm extends BaseElement {
-    @property({ type: Object }) network: Network = {
+    @property({ type: Object })
+    accessor network: Network = {
         ledgerApi: {},
         auth: {},
     } as Network
-    @property({ type: String }) authType: string = 'implicit'
 
     @state() private _error = ''
 
@@ -55,62 +47,6 @@ export class NetworkForm extends BaseElement {
 
     connectedCallback(): void {
         super.connectedCallback()
-        if (this.network.auth.type) {
-            this.authType = this.network.auth.type
-        }
-    }
-
-    onAuthTypeChange(e: Event) {
-        const select = e.target as HTMLSelectElement
-        this.authType = select.value
-
-        this.updateAuthStructure()
-    }
-
-    updateAuthStructure() {
-        const network = { ...this.network }
-
-        if (this.authType === 'implicit') {
-            const auth = network.auth as ImplicitAuth
-            network.auth = {
-                type: 'implicit',
-                identityProviderId: auth.identityProviderId || '',
-                configUrl: auth.configUrl || '',
-                clientId: auth.clientId || '',
-                issuer: auth.issuer || '',
-                audience: auth.audience || '',
-                scope: auth.scope || '',
-                admin: auth.admin,
-            }
-        } else if (this.authType === 'password') {
-            const auth = network.auth as PasswordAuth
-            network.auth = {
-                type: 'password',
-                identityProviderId: auth.identityProviderId || '',
-                configUrl: auth.configUrl || '',
-                clientId: auth.clientId || '',
-                issuer: auth.issuer || '',
-                audience: auth.audience || '',
-                scope: auth.scope || '',
-                tokenUrl: auth.tokenUrl || '',
-                grantType: auth.grantType || '',
-                admin: network.auth?.admin,
-            }
-        } else if (this.authType === 'self_signed') {
-            const auth = network.auth as SelfSignedAuth
-            network.auth = {
-                type: 'self_signed',
-                identityProviderId: auth.identityProviderId || '',
-                issuer: auth.issuer || '',
-                audience: auth.audience || '',
-                scope: auth.scope || '',
-                clientId: auth.clientId || '',
-                clientSecret: auth.clientSecret || '',
-                admin: auth.admin,
-            }
-        }
-
-        this.network = network
     }
 
     handleSubmit(e: Event) {
@@ -128,200 +64,150 @@ export class NetworkForm extends BaseElement {
         }
     }
 
-    setNetwork(field: NetworkKeys) {
-        return (ev: NetworkInputChangedEvent) => {
-            this.network[field] = ev.value
+    renderAuthForm(authObj: Network['auth']) {
+        if (typeof authObj.method === 'undefined') {
+            // Use Object.assign to ensure that we are modifying the same object reference in memory,
+            // so that changes are reflected in the parent `this.network.auth` (or `this.network.adminAuth`)
+            Object.assign(authObj, {
+                method: 'authorization_code',
+                clientId: '',
+                audience: '',
+                scope: '',
+            } satisfies AuthorizationCodeAuth)
         }
-    }
 
-    setLedgerApi(field: LedgerApiKeys) {
-        return (ev: NetworkInputChangedEvent) => {
-            if (!this.network.ledgerApi) {
-                this.network.ledgerApi = {
-                    baseUrl: '',
-                }
-            }
-            this.network.ledgerApi[field] = ev.value
-        }
-    }
-
-    setAuth(field: CommonAuth) {
-        return (ev: NetworkInputChangedEvent) => {
-            this.network.auth[field] = ev.value
-        }
-    }
-
-    setAuthConfigUrl() {
-        return (ev: NetworkInputChangedEvent) => {
-            if (this.network.auth.type === 'self_signed') {
-                return
-            }
-            this.network.auth['configUrl'] = ev.value
-        }
-    }
-
-    setAdminAuth(field: AdminAuth) {
-        return (ev: NetworkInputChangedEvent) => {
-            if (this.network.auth.admin) {
-                this.network.auth.admin[field] = ev.value
-            }
-        }
-    }
-
-    setPasswordAuth(field: PasswordAuthKeys) {
-        return (ev: NetworkInputChangedEvent) => {
-            if (this.network.auth.type !== 'password') {
-                return
-            }
-
-            if (!this.network.auth) {
-                this.network.auth = {
-                    type: 'password',
-                    clientId: '',
-                    identityProviderId: '',
-                    issuer: '',
-                    configUrl: '',
-                    audience: '',
-                    tokenUrl: '',
-                    grantType: '',
-                    scope: '',
-                }
-            }
-            this.network.auth[field] = ev.value
-        }
-    }
-
-    renderAuthForm() {
         const commonFields = html`
-            <network-form-input
-                required
-                label="Identity Provider ID"
-                .value=${this.network.auth.identityProviderId}
-                @network-input-change=${this.setAuth('identityProviderId')}
-            ></network-form-input>
-            <network-form-input
-                required
-                label="Config URL"
-                text="URL to the OpenID Connect configuration (e.g. https://<your-domain>/.well-known/openid-configuration)"
-                .value=${this.network.auth.type !== 'self_signed'
-                    ? this.network.auth.configUrl
-                    : ''}
-                @network-input-change=${this.setAuthConfigUrl()}
-            ></network-form-input>
+            <div>
+                <label for="authMethod">Method</label>
+                <select
+                    class="form-select mb-3"
+                    name="authMethod"
+                    @change=${(e: Event) => {
+                        const select = e.target as HTMLSelectElement
+
+                        if (authObj.method === select.value) {
+                            return
+                        }
+
+                        if (select.value === 'authorization_code') {
+                            Object.assign(authObj, {
+                                method: 'authorization_code',
+                                clientId: authObj.clientId ?? '',
+                                audience: authObj.audience ?? '',
+                                scope: authObj.scope ?? '',
+                            } satisfies AuthorizationCodeAuth)
+                        } else if (select.value === 'self_signed') {
+                            Object.assign(authObj, {
+                                method: 'self_signed',
+                                clientId: authObj.clientId ?? '',
+                                audience: authObj.audience ?? '',
+                                scope: authObj.scope ?? '',
+                                issuer:
+                                    (authObj as SelfSignedAuth).issuer ?? '',
+                                clientSecret:
+                                    (authObj as SelfSignedAuth).clientSecret ??
+                                    '',
+                            } satisfies SelfSignedAuth)
+                        } else if (select.value === 'client_credentials') {
+                            Object.assign(authObj, {
+                                method: 'client_credentials',
+                                clientId: authObj.clientId ?? '',
+                                audience: authObj.audience ?? '',
+                                scope: authObj.scope ?? '',
+                                clientSecret:
+                                    (authObj as ClientCredentialsAuth)
+                                        .clientSecret ?? '',
+                            } satisfies ClientCredentialsAuth)
+                        } else {
+                            throw new Error(
+                                `Unsupported auth method: ${select.value}`
+                            )
+                        }
+
+                        this.requestUpdate()
+                    }}
+                    .value=${authObj.method}
+                >
+                    <option value="authorization_code">
+                        authorization_code
+                    </option>
+                    <option value="client_credentials">
+                        client_credentials
+                    </option>
+                    <option value="self_signed">self_signed</option>
+                </select>
+            </div>
+
             <network-form-input
                 required
                 label="Client Id"
-                .value=${this.network.auth.clientId}
-                @network-input-change=${this.setAuth('clientId')}
-            ></network-form-input>
-            <network-form-input
-                required
-                label="Issuer"
-                .value=${this.network.auth.issuer}
-                @network-input-change=${this.setAuth('issuer')}
+                .value=${authObj.clientId}
+                @network-input-change=${(e: NetworkInputChangedEvent) => {
+                    authObj.clientId = e.value
+                }}
             ></network-form-input>
             <network-form-input
                 required
                 label="Audience"
-                .value=${this.network.auth.audience}
-                @network-input-change=${this.setAuth('audience')}
+                .value=${authObj.audience}
+                @network-input-change=${(e: NetworkInputChangedEvent) => {
+                    authObj.audience = e.value
+                }}
             >
             </network-form-input>
             <network-form-input
                 required
                 label="Scope"
-                .value=${this.network.auth.scope}
-                @network-input-change=${this.setAuth('scope')}
+                .value=${authObj.scope}
+                @network-input-change=${(e: NetworkInputChangedEvent) => {
+                    authObj.scope = e.value
+                }}
             ></network-form-input>
         `
 
-        const adminFields = html`
-            <div class="form-control">
-                <div class="form-text mb-4 fw-bold">
-                    Admin auth fields (optional)
-                </div>
-                <network-form-input
-                    label="Admin Client Id"
-                    .value=${this.network.auth.admin?.clientId ?? ''}
-                    @network-input-change=${this.setAdminAuth('clientId')}
-                ></network-form-input>
-                <network-form-input
-                    hideable
-                    label="Admin Client Secret"
-                    .value=${this.network.auth.admin?.clientSecret ?? ''}
-                    @network-input-change=${this.setAdminAuth('clientSecret')}
-                ></network-form-input>
-            </div>
-        `
-
-        if (this.authType === 'implicit') {
-            let auth = this.network.auth
-            if (auth.type !== 'implicit') {
-                auth = {
-                    type: 'implicit',
-                    identityProviderId: '',
-                    configUrl: '',
-                    clientId: '',
-                    issuer: '',
-                    audience: '',
-                    scope: '',
-                }
-                this.network.auth = auth
-            }
-
-            return html`${commonFields}${adminFields}`
-        } else if (this.authType === 'password') {
-            let auth = this.network.auth
-            if (auth.type !== 'password') {
-                auth = {
-                    type: 'password',
-                    identityProviderId: '',
-                    configUrl: '',
-                    clientId: '',
-                    issuer: '',
-                    audience: '',
-                    scope: '',
-                    tokenUrl: '',
-                    grantType: '',
-                }
-                this.network.auth = auth
-            }
-
-            const netauth = this.network.auth as PasswordAuth
-
-            return html`
-                ${commonFields}
+        if (authObj.method === 'authorization_code') {
+            return html`${commonFields}`
+        } else if (authObj.method === 'client_credentials') {
+            return html`${commonFields}
                 <network-form-input
                     required
-                    label="Token Url"
-                    .value=${netauth.tokenUrl}
-                    @network-input-change=${this.setPasswordAuth('tokenUrl')}
+                    label="Client Secret"
+                    .value=${(authObj as ClientCredentialsAuth).clientSecret}
+                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                        ;(authObj as ClientCredentialsAuth).clientSecret =
+                            e.value
+                    }}
+                ></network-form-input>`
+        } else if (authObj.method === 'self_signed') {
+            return html`${commonFields}
+                <network-form-input
+                    required
+                    label="Issuer"
+                    .value=${(authObj as SelfSignedAuth).issuer}
+                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                        ;(authObj as SelfSignedAuth).issuer = e.value
+                    }}
                 ></network-form-input>
                 <network-form-input
                     required
-                    label="Grant Type"
-                    .value=${netauth.grantType}
-                    @network-input-change=${this.setPasswordAuth('grantType')}
+                    label="Audience"
+                    .value=${(authObj as SelfSignedAuth).audience}
+                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                        ;(authObj as SelfSignedAuth).audience = e.value
+                    }}
                 ></network-form-input>
-                ${adminFields}
-            `
-        } else if (this.authType === 'self_signed') {
-            let auth = this.network.auth
-            if (auth.type !== 'self_signed') {
-                auth = {
-                    type: 'self_signed',
-                    identityProviderId: '',
-                    issuer: '',
-                    audience: '',
-                    scope: '',
-                    clientId: '',
-                    clientSecret: '',
-                }
-                this.network.auth = auth
-            }
-            return html`${commonFields}${adminFields}`
+                <network-form-input
+                    required
+                    label="Client Secret"
+                    .value=${(authObj as SelfSignedAuth).clientSecret}
+                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                        ;(authObj as SelfSignedAuth).clientSecret = e.value
+                    }}
+                ></network-form-input>`
         } else {
-            throw new Error(`Unsupported auth type: ${this.authType}`)
+            throw new Error(
+                `Unsupported auth method: ${JSON.stringify(authObj)}`
+            )
         }
     }
 
@@ -330,60 +216,102 @@ export class NetworkForm extends BaseElement {
             <form @submit=${this.handleSubmit}>
                 <network-form-input
                     required
+                    label="Network Id"
+                    text="A unique identifier for the network"
+                    .value=${this.network.id ?? ''}
+                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                        this.network.id = e.value
+                    }}
+                ></network-form-input>
+
+                <network-form-input
+                    required
                     label="Name"
                     .value=${this.network.name ?? ''}
-                    @network-input-change=${this.setNetwork('name')}
-                ></network-form-input>
-
-                <network-form-input
-                    required
-                    label="Network Id"
-                    .value=${this.network.id ?? ''}
-                    @network-input-change=${this.setNetwork('id')}
-                ></network-form-input>
-
-                <network-form-input
-                    required
-                    label="Synchronizer Id"
-                    .value=${this.network.synchronizerId ?? ''}
-                    @network-input-change=${this.setNetwork('synchronizerId')}
+                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                        this.network.name = e.value
+                    }}
                 ></network-form-input>
 
                 <network-form-input
                     required
                     label="Description"
                     .value=${this.network.description ?? ''}
-                    @network-input-change=${this.setNetwork('description')}
+                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                        this.network.description = e.value
+                    }}
+                ></network-form-input>
+
+                <network-form-input
+                    required
+                    label="Synchronizer Id"
+                    .value=${this.network.synchronizerId ?? ''}
+                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                        this.network.synchronizerId = e.value
+                    }}
+                ></network-form-input>
+
+                <network-form-input
+                    required
+                    label="Identity Provider Id"
+                    .value=${this.network.identityProviderId ?? ''}
+                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                        this.network.identityProviderId = e.value
+                    }}
                 ></network-form-input>
 
                 <network-form-input
                     required
                     label="Ledger API Base Url"
                     .value=${this.network.ledgerApi.baseUrl ?? ''}
-                    @network-input-change=${this.setLedgerApi('baseUrl')}
+                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                        this.network.ledgerApi.baseUrl = e.value
+                    }}
                 ></network-form-input>
 
-                <div class="row mb-3">
-                    <div>
-                        <label for="authType">Auth Type</label>
-                        <select
-                            class="form-select mb-3"
-                            name="authType"
-                            @change=${this.onAuthTypeChange}
-                            .value=${this.authType}
-                        >
-                            <option value="password">password</option>
-                            <option value="implicit">implicit</option>
-                            <option value="self_signed">self_signed</option>
-                        </select>
+                <div>
+                    <h2 class="form-text mb-4 fw-bold">
+                        🔐 Configure User Auth
+                    </h2>
+                    <div class="form-control mb-3">
+                        ${this.renderAuthForm(this.network.auth)}
                     </div>
                 </div>
 
-                <div class="form-control mb-3">
-                    <h6 class="form-text mb-4 fw-bold">
-                        Configuring ${this.authType} auth
-                    </h6>
-                    ${this.renderAuthForm()}
+                <div>
+                    <h2 class="form-text mb-4 fw-bold">
+                        🔐 Configure Admin Auth (optional)
+                    </h2>
+                    <div class="form-control mb-3">
+                        ${typeof this.network.adminAuth === 'undefined'
+                            ? html`<button
+                                  class="btn btn-sm btn-primary mb-2"
+                                  type="button"
+                                  @click=${() => {
+                                      this.network.adminAuth = {
+                                          method: 'client_credentials',
+                                          clientId: '',
+                                          audience: '',
+                                          scope: '',
+                                          clientSecret: '',
+                                      }
+                                      this.requestUpdate()
+                                  }}
+                              >
+                                  +
+                              </button>`
+                            : html`<button
+                                      class="btn btn-sm btn-secondary mb-2"
+                                      type="button"
+                                      @click=${() => {
+                                          this.network.adminAuth = undefined
+                                          this.requestUpdate()
+                                      }}
+                                  >
+                                      clear
+                                  </button>
+                                  ${this.renderAuthForm(this.network.adminAuth)}`}
+                    </div>
                 </div>
 
                 <div class="mt-1 mb-1 text-danger">${this._error}</div>

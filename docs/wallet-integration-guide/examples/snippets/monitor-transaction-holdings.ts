@@ -2,11 +2,11 @@ import {
     WalletSDKImpl,
     localNetAuthDefault,
     localNetLedgerDefault,
+    localNetStaticConfig,
     localNetTokenStandardDefault,
 } from '@canton-network/wallet-sdk'
 import { v4 } from 'uuid'
 
-// @disable-snapshot-test
 export default async function () {
     const sdk = new WalletSDKImpl().configure({
         logger: console,
@@ -15,22 +15,21 @@ export default async function () {
         tokenStandardFactory: localNetTokenStandardDefault,
     })
 
-    let startLedger = '0'
-    let step = '100'
+    const myParty = global.EXISTING_PARTY_1
 
-    while (true) {
-        const holdings = await sdk.tokenStandard?.listHoldingTransactions(
-            startLedger,
-            step
-        )
+    await sdk.connect()
+    await sdk.tokenStandard!.setTransferFactoryRegistryUrl(
+        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+    )
+    await sdk.setPartyId(myParty)
 
-        //we update our offsets so we fetch for the next 100 ledger transactions
-        startLedger = holdings!.nextOffset.toString()
-        step = (Number(startLedger) + 100).toString()
+    let startLedger = 0
+    let step = 100
 
-        console.log(!holdings!.transactions)
+    const holdings = await sdk.tokenStandard!.listHoldingTransactions(
+        startLedger,
+        step
+    )
 
-        //sleep for 5 seconds
-        await new Promise((res) => setTimeout(res, 5000))
-    }
+    //increment steps to get more holdings if there are more
 }

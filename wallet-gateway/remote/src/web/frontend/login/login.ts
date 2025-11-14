@@ -6,7 +6,7 @@ import { customElement, state } from 'lit/decorators.js'
 
 import '@canton-network/core-wallet-ui-components'
 import { createUserClient } from '../rpc-client'
-import { Network } from '@canton-network/core-wallet-user-rpc-client'
+import { Idp, Network } from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
 import { WalletEvent } from '@canton-network/core-types'
@@ -18,7 +18,10 @@ import {
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
     @state()
-    accessor idps: Network[] = []
+    accessor networks: Network[] = []
+
+    @state()
+    accessor idps: Idp[] = []
 
     @state()
     accessor selectedNetwork: Network | null = null
@@ -169,7 +172,7 @@ export class LoginUI extends LitElement {
 
     private handleChange(e: Event) {
         const index = parseInt((e.target as HTMLSelectElement).value)
-        this.selectedNetwork = this.idps[index] ?? null
+        this.selectedNetwork = this.networks[index] ?? null
         this.message = null
     }
 
@@ -179,9 +182,16 @@ export class LoginUI extends LitElement {
         return response.networks
     }
 
+    private async loadIdps() {
+        const userClient = createUserClient(stateManager.accessToken.get())
+        const response = await userClient.request('listIdps')
+        return response.idps
+    }
+
     async connectedCallback() {
         super.connectedCallback()
-        this.idps = await this.loadNetworks()
+        this.networks = await this.loadNetworks()
+        this.idps = await this.loadIdps()
     }
 
     private async handleConnectToIDP() {
@@ -196,15 +206,28 @@ export class LoginUI extends LitElement {
         stateManager.networkId.set(this.selectedNetwork.id)
         const redirectUri = `${window.origin}/callback/`
 
-        if (this.selectedNetwork.auth.type === 'implicit') {
+        if (this.selectedNetwork.auth.method === 'authorization_code') {
+            const idp = this.idps.find(
+                (idp) => idp.id === this.selectedNetwork?.identityProviderId
+            )
+
+            console.log('Found IDP:', idp)
+
+            if (!idp || !idp.configUrl) {
+                this.messageType = 'error'
+                this.message =
+                    'Identity provider misconfigured for this network.'
+                return
+            }
+
             this.messageType = 'info'
             this.message = `Redirecting to ${this.selectedNetwork.name}...`
 
             const auth = this.selectedNetwork.auth
-            const config = await fetch(auth.configUrl).then((res) => res.json())
+            const config = await fetch(idp.configUrl).then((res) => res.json())
 
             const statePayload = {
-                configUrl: auth.configUrl,
+                configUrl: idp.configUrl,
                 clientId: auth.clientId,
                 audience: auth.audience,
             }
@@ -223,7 +246,7 @@ export class LoginUI extends LitElement {
             setTimeout(() => {
                 window.location.href = `${config.authorization_endpoint}?${params.toString()}`
             }, 400)
-        } else if (this.selectedNetwork.auth.type === 'self_signed') {
+        } else if (this.selectedNetwork.auth.method === 'self_signed') {
             await this.selfSign({
                 clientId: this.selectedNetwork.auth.clientId || '',
                 clientSecret: this.selectedNetwork.auth.clientSecret || '',
@@ -276,13 +299,12 @@ export class LoginUI extends LitElement {
 
                 <select id="network" @change=${this.handleChange}>
                     <option value="">Select Network</option>
-                    ${this.idps.map(
+                    ${this.networks.map(
                         (net, index) =>
                             html`<option
                                 value=${index}
-                                ?disabled=${net.auth.type ==
-                                    'client_credentials' ||
-                                net.auth.type == 'password'}
+                                ?disabled=${net.auth.method ==
+                                'client_credentials'}
                             >
                                 ${net.name}
                             </option>`

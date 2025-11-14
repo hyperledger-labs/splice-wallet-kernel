@@ -57,6 +57,7 @@ export class LedgerController {
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
     private logger = pino({ name: 'LedgerController', level: 'info' })
+    private initPromise: Promise<void>
 
     /** Creates a new instance of the LedgerController.
      *
@@ -80,12 +81,15 @@ export class LedgerController {
             token,
             accessTokenProvider
         )
-        this.client.init()
+        this.initPromise = this.client.init()
         this.userId = userId
         this.isAdmin = isAdmin
         return this
     }
 
+    async awaitInit() {
+        return this.initPromise
+    }
     /**
      * Sets the party that the ledgerController will use for requests.
      * @param partyId
@@ -176,8 +180,17 @@ export class LedgerController {
      * @param preparedTopologyTransaction base64 encoded string
      * @returns A TopologyTransaction
      */
-    toDecodedTopologyTransaction(preparedTopologyTransaction: string) {
+    static toDecodedTopologyTransaction(preparedTopologyTransaction: string) {
         return decodeTopologyTransaction(preparedTopologyTransaction)
+    }
+
+    /**
+     * @deprecated use static method LedgerController.decodeTopologyTransaction instead
+     */
+    toDecodedTopologyTransaction(preparedTopologyTransaction: string) {
+        return LedgerController.toDecodedTopologyTransaction(
+            preparedTopologyTransaction
+        )
     }
 
     /**
@@ -235,6 +248,7 @@ export class LedgerController {
         timeoutMs: number = 15000
     ): Promise<Types['Completion']['value']> {
         const ledgerEnd = await this.ledgerEnd()
+
         await this.prepareSignAndExecuteTransaction(
             commands,
             privateKey,
@@ -716,18 +730,35 @@ export class LedgerController {
      * @param partyId the party to receive the ping
      */
     createPingCommand(partyId: PartyId) {
-        return [
-            {
-                CreateCommand: {
-                    templateId: '#AdminWorkflows:Canton.Internal.Ping:Ping',
-                    createArguments: {
-                        id: v4(),
-                        initiator: this.getPartyId(),
-                        responder: partyId,
+        const version = this.client.getCurrentClientVersion()
+        if (version === '3.4') {
+            return [
+                {
+                    CreateCommand: {
+                        templateId:
+                            '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
+                        createArguments: {
+                            id: v4(),
+                            initiator: this.getPartyId(),
+                            responder: partyId,
+                        },
                     },
                 },
-            },
-        ]
+            ]
+        } else {
+            return [
+                {
+                    CreateCommand: {
+                        templateId: '#AdminWorkflows:Canton.Internal.Ping:Ping',
+                        createArguments: {
+                            id: v4(),
+                            initiator: this.getPartyId(),
+                            responder: partyId,
+                        },
+                    },
+                },
+            ]
+        }
     }
 
     /**
@@ -809,7 +840,24 @@ export class LedgerController {
                 (r) => r.kind.CanActAs?.value?.party
             )
 
-            const allWallets = [...actAsParties, ...readAsParties]
+            const canExecuteAsPartyRights =
+                rights.rights?.filter(
+                    (
+                        r
+                    ): r is {
+                        kind: { CanExecuteAs: { value: { party: string } } }
+                    } => 'CanExecuteAs' in r.kind
+                ) ?? []
+
+            const executeAsParties = canExecuteAsPartyRights.map(
+                (r) => r.kind.CanExecuteAs?.value?.party
+            )
+
+            const allWallets = [
+                ...actAsParties,
+                ...readAsParties,
+                ...executeAsParties,
+            ]
 
             return Array.from(new Set(allWallets))
         }
@@ -973,6 +1021,11 @@ export class LedgerController {
      */
     getACSCacheStats() {
         return this.client.getCacheStats()
+    }
+
+    async getParticipantId(): Promise<PartyId> {
+        return (await this.client.getWithRetry('/v2/parties/participant-id'))
+            .participantId
     }
 
     /**

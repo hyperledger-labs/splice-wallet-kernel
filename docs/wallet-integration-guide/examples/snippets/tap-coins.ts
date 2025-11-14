@@ -2,11 +2,11 @@ import {
     WalletSDKImpl,
     localNetAuthDefault,
     localNetLedgerDefault,
+    localNetStaticConfig,
     localNetTokenStandardDefault,
 } from '@canton-network/wallet-sdk'
 import { v4 } from 'uuid'
 
-// @disable-snapshot-test
 export default async function () {
     const sdk = new WalletSDKImpl().configure({
         logger: console,
@@ -15,24 +15,27 @@ export default async function () {
         tokenStandardFactory: localNetTokenStandardDefault,
     })
 
-    const myParty = 'my-party'
-    const myPrivateKey = 'private-key-for-my-party'
-    const instrumentAdminPartyId = 'Admin of the instrument'
+    const myParty = global.EXISTING_PARTY_1
+    const myPrivateKey = global.EXISTING_PARTY_1_KEYS.privateKey
+    const instrumentAdminPartyId = global.INSTRUMENT_ADMIN_PARTY
 
     await sdk.connect()
     await sdk.setPartyId(myParty)
+    sdk.tokenStandard!.setTransferFactoryRegistryUrl(
+        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+    )
 
     const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
         myParty,
-        '2000000', // how much coins you want
+        '2000000',
         {
-            instrumentId: 'Amulet', //Canton Coin is called Amulet in localNet
+            instrumentId: 'Amulet',
             instrumentAdmin: instrumentAdminPartyId,
         }
     )
 
-    await sdk.userLedger?.prepareSignAndExecuteTransaction(
-        [{ ExerciseCommand: tapCommand }],
+    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+        tapCommand,
         myPrivateKey,
         v4(),
         disclosedContracts

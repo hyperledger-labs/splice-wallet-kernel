@@ -3,6 +3,50 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+
+0.16.0
+------
+
+**Released on November 4th, 2025**
+
+* caching for amulet rules and open mining round
+
+*Amulet rules are mostly static and open mining round persists for 10 min, so we can cache this response*
+
+* observing participants for multi-hosting
+
+.. code-block:: javascript
+
+    /**
+         * Generate topology transactions for an external party that can be signed and submitted in order to create a new external party.
+         *
+         * @param publicKey
+         * @param partyHint (optional) hint to use for the partyId, if not provided the publicKey will be used.
+         * @param confirmingThreshold (optional) parameter for multi-hosted parties (default is 1).
+         * @param confirmingParticipantUids (optional) list of participant UIDs that will host the party with confirming permissions.
+         * @param observingParticipantUids (optional) list of participant UIDs that will have Observation (read-only) permissions.
+         * @returns
+         */
+        async generateExternalParty(
+            publicKey: PublicKey,
+            partyHint?: string,
+            confirmingThreshold?: number,
+            confirmingParticipantUids?: string[],
+            //new field for observing participants
+            observingParticipantUids?: string[]
+        ): Promise<GenerateTransactionResponse> {
+
+* decode topology transactions
+
+.. code-block:: javascript
+
+    generateExternalPartyResponse!.topologyTransactions!.map((topologyTx) => {
+
+        const decodedTx = sdk.userLedger!.toDecodedTopologyTransaction(topologyTx)
+
+        logger.info(decodedTx)
+    })
+
 0.15.0
 ------
 

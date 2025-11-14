@@ -5,7 +5,8 @@ import type { Config } from 'jest'
 
 export default {
     rootDir: '.',
-    injectGlobals: false,
+    injectGlobals: true,
+    setupFilesAfterEnv: ['./snippets/setupTests.ts'],
     transformIgnorePatterns: ['/node_modules/(?!jose/)'],
     transform: {
         '^.+\\.(t|j)sx?$': '@swc/jest',

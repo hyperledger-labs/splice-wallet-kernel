@@ -18,6 +18,8 @@
                             "values": {}
                         }
                     },
+                    "lockedHoldingsChange": null,
+                    "lockedHoldingsChangeSummary": null,
                     "unlockedHoldingsChange": {
                         "creates": [
                             {
@@ -197,6 +199,7 @@
                     },
                     "transferInstruction": {
                         "originalInstructionCid": null,
+                        "multiStepCorrelationId": "00b3396b61979e3e6137af0f425898578dbe31eeb09750a7d6df844e2243900d5dca111220a9f9f7b9cc3a75095900463ee57f735177bd6e7d344997c63eec11d5f888cd02",
                         "transfer": {
                             "sender": "test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad",
                             "receiver": "test-receiver::122054ada01e6117c91bc34048fdd10e329782e24f8b19e839bbd8a0e6e290d1a3b7",
@@ -221,7 +224,11 @@
                             }
                         },
                         "status": {
-                            "before": null
+                            "before": null,
+                            "current": {
+                                "tag": "Pending",
+                                "value": {}
+                            }
                         },
                         "meta": null
                     }
@@ -280,6 +287,8 @@
                             "values": {}
                         }
                     },
+                    "lockedHoldingsChange": null,
+                    "lockedHoldingsChangeSummary": null,
                     "unlockedHoldingsChange": {
                         "creates": [
                             {
@@ -326,7 +335,11 @@
                             }
                         },
                         "status": {
-                            "before": null
+                            "before": null,
+                            "current": {
+                                "tag": "Pending",
+                                "value": {}
+                            }
                         },
                         "meta": null
                     }
@@ -402,6 +415,8 @@
                         "outputAmount": "1016.0000000000",
                         "amountChange": "1016.0000000000"
                     },
+                    "unlockedHoldingsChange": null,
+                    "unlockedHoldingsChangeSummary": null,
                     "transferInstruction": null
                 }
             ]
@@ -454,6 +469,8 @@
                         "inputAmount": "1016",
                         "amountChange": "-1016"
                     },
+                    "unlockedHoldingsChange": null,
+                    "unlockedHoldingsChangeSummary": null,
                     "transferInstruction": null
                 }
             ]

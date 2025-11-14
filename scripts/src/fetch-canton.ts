@@ -41,15 +41,19 @@ async function fetchCanton(
         fs.mkdirSync(cantonDownloadPath, { recursive: true })
     }
 
+    const targetDir = path.join(
+        API_SPECS_PATH,
+        `ledger-api/${CANTON_MAJOR_VERSION}`
+    )
+    if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true })
+    }
     fs.copyFileSync(
         path.join(
             cantonDownloadPath,
             '/examples/09-json-api/typescript/openapi.yaml'
         ),
-        path.join(
-            API_SPECS_PATH,
-            `ledger-api/${CANTON_MAJOR_VERSION}/openapi.yaml`
-        )
+        path.join(targetDir, 'openapi.yaml')
     )
 }
 
