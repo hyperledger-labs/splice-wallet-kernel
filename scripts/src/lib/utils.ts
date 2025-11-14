@@ -37,44 +37,34 @@ export type ArchiveVersionAndHash = {
     version: string
     hash: string
 }
-
-export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20251108.16145.0.v21f4ad7f'
-
-// Canton and Splice related archives versions and hashes
-export const SUPPORTED_VERSIONS = {
-    devnet: {
-        canton: {
-            version: '3.4.0-snapshot.20250922.16951.0.v1eb3f268',
-            hash: 'e0f59a7b5015b56479ef4786662c5935a0fee9ac803465bb0f70bdc6c3bf4dff',
-        },
-        splice: {
-            version: '0.4.25',
-            hashes: {
-                localnet:
-                    '706c4412d1cb29285fe8a591e74f44458d2afcbb04603c32cdb6c6260538145f',
-                splice: 'dbe943a466f06624c2f55e2e4ad66180e81804bbcb0288b6a4882df49702a4b1',
-                spliceSpec:
-                    '102dba4a7224a0acc2544111ecdf2e6538de2b29bcc3bd7348edf4b445e07329',
-            },
-        },
-    },
-    mainnet: {
-        canton: {
-            version: '3.3.0-snapshot.20250910.16087.0.v82d35a4d',
-            hash: '43c89d9833886fc68cac4951ba1959b7f6cc5269abfff1ba5129859203aa8cd3',
-        },
-        splice: {
-            version: '0.4.22',
-            hashes: {
-                localnet:
-                    '49c40f4caaeb46e03839a9da93343e6e3e13f7611705066e77ce8d02ffb62665',
-                splice: '368e0ea676b7bf2490d3f0003ce7ff58caddab78756057100977695a57170f50',
-                spliceSpec:
-                    'f17b553a29ea58f184a67998e08bd9062cdaff7faa2ed11609adc71934566c2e',
-            },
-        },
-    },
+export type ArchiveVersionAndHashes = {
+    version: string
+    hashes: Record<string, string>
 }
+export type EnvConfig = {
+    canton: ArchiveVersionAndHash
+    splice: ArchiveVersionAndHashes
+}
+
+export type SupportedVersions = Record<Network, EnvConfig>
+
+export const VERSIONS_CONFIG_PATH = path.join(
+    repoRoot,
+    'scripts',
+    'src',
+    'lib',
+    'version-config.json'
+)
+
+const versionConfigRaw = fs.readFileSync(VERSIONS_CONFIG_PATH, 'utf8')
+const versionConfig = JSON.parse(versionConfigRaw) as {
+    DAML_RELEASE_VERSION: string
+    SUPPORTED_VERSIONS: SupportedVersions
+}
+
+export const DAML_RELEASE_VERSION = versionConfig.DAML_RELEASE_VERSION
+export const SUPPORTED_VERSIONS: SupportedVersions =
+    versionConfig.SUPPORTED_VERSIONS
 
 export async function downloadToFile(
     url: string | URL,
@@ -178,18 +168,22 @@ export async function downloadAndUnpackTarball(
     if (options?.updateHash) {
         const newHash = await computeFileHash(tarfile, algo)
 
-        // Update the hash in utils.ts if present
-        const fileContent = fs.readFileSync(UTILS_FILE_PATH, 'utf8')
+        // Update the hash in version-config.json if present
+        const fileContent = fs.readFileSync(VERSIONS_CONFIG_PATH, 'utf8')
         // Find the old hash in the file (matching the old value)
         if (options?.hash && fileContent.includes(options.hash)) {
             const updatedContent = fileContent.replace(options.hash, newHash)
             if (updatedContent !== fileContent) {
-                fs.writeFileSync(UTILS_FILE_PATH, updatedContent, 'utf8')
-                console.log(success(`Updated hash in utils.ts to ${newHash}`))
+                fs.writeFileSync(VERSIONS_CONFIG_PATH, updatedContent, 'utf8')
+                console.log(
+                    success(`Updated hash in version-config.json to ${newHash}`)
+                )
             }
         } else {
             console.log(
-                warn('Old hash not found in utils.ts, no update performed.')
+                warn(
+                    'Old hash not found in version-config.json, no update performed.'
+                )
             )
         }
 
@@ -456,12 +450,21 @@ export async function getAllNxDependencies(
     return publicDependencies
 }
 
+export function getArgValue(name: string): string | undefined {
+    const prefix = `--${name}=`
+    const arg = process.argv.slice(2).find((a) => a.startsWith(prefix))
+    return arg?.slice(prefix.length)
+}
+
+export function hasFlag(name: string): boolean {
+    return process.argv.slice(2).includes(`--${name}`)
+}
+
 export function getNetworkArg(): Network {
-    const arg = process.argv.slice(2).find((a) => a.startsWith('--network='))
+    const arg = getArgValue('--network=')
     if (!arg) return 'devnet'
-    const value = arg.split('=')[1]?.trim().toLowerCase()
-    if (value === 'mainnet' || value === 'devnet') return value as Network
+    if (arg === 'mainnet' || arg === 'devnet') return arg as Network
     throw new Error(
-        `Invalid --network value: "${value}". Use "mainnet" or "devnet".`
+        `Invalid --network value: "${arg}". Use "mainnet" or "devnet".`
     )
 }

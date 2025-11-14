@@ -8,6 +8,7 @@ import {
     Network,
     SUPPORTED_VERSIONS,
     getNetworkArg,
+    hasFlag,
 } from './lib/utils.js'
 import path from 'path'
 
@@ -19,7 +20,7 @@ async function main(network: Network = 'devnet') {
     const TAR_PATH = path.join(LOCALNET_PATH, TAR_FILENAME)
     const DOWNLOAD_URL = `https://github.com/digital-asset/decentralized-canton-sync/releases/download/v${spliceVersion}/${spliceVersion}_splice-node.tar.gz`
 
-    const updateHash = process.argv.includes('--updateHash')
+    const updateHash = hasFlag('updateHash')
     await ensureDir(LOCALNET_PATH)
 
     await downloadAndUnpackTarball(DOWNLOAD_URL, TAR_PATH, LOCALNET_PATH, {
