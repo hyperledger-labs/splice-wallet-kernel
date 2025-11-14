@@ -52,10 +52,22 @@ export interface KernelInfo {
 }
 /**
  *
- * Whether or not a connection to a network is established.
+ * Whether or not the user is authenticated with the Wallet.
  *
  */
 export type IsConnected = boolean
+/**
+ *
+ * Whether or not a connection to a network is established.
+ *
+ */
+export type IsNetworkConnected = boolean
+/**
+ *
+ * If not connected to a network, the reason why.
+ *
+ */
+export type NetworkReason = string
 /**
  *
  * The network ID the wallet corresponds to.
@@ -65,6 +77,8 @@ export type NetworkId = string
 export interface StatusEvent {
     kernel: KernelInfo
     isConnected: IsConnected
+    isNetworkConnected: IsNetworkConnected
+    networkReason?: NetworkReason
     networkId?: NetworkId
     [k: string]: any
 }

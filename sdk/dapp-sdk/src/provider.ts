@@ -171,10 +171,7 @@ export const dappController = (provider: SpliceProvider) =>
                             clearTimeout(timeout)
                             const result: dappAPI.ConnectResult = {
                                 sessionToken: event.sessionToken ?? '',
-                                status: {
-                                    ...event,
-                                    isConnected: true,
-                                },
+                                status: event.status,
                             }
                             resolve(result)
                         }

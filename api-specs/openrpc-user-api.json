@@ -659,6 +659,11 @@
                         "title": "status",
                         "type": "string",
                         "enum": ["connected", "disconnected"]
+                    },
+                    "reason": {
+                        "title": "reason",
+                        "type": "string",
+                        "description": "The reason for the current status."
                     }
                 },
                 "required": ["network", "status", "accessToken"],
