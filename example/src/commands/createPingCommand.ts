@@ -7,7 +7,7 @@ export const createPingCommand = (party: string) => ({
         {
             CreateCommand: {
                 templateId:
-                    '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
+                    '#AdminWorkflows:Canton.Internal.Ping:Ping',
                 createArguments: {
                     id: `my-test-${new Date().getTime()}`,
                     initiator: party,
