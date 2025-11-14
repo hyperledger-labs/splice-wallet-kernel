@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { html, css } from 'lit'
-import { customElement } from 'lit/decorators.js'
+import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/BaseElement.js'
 
 @customElement('not-found')
@@ -32,6 +32,8 @@ export class NotFound extends BaseElement {
         `,
     ]
 
+    @property({ type: String }) href: string = '/'
+
     render() {
         return html`
             <div>
@@ -40,7 +42,11 @@ export class NotFound extends BaseElement {
                     We are sorry, the page you are trying to view cannot be
                     found. It may have been moved or deleted.
                 </h3>
-                <button type="button" class="btn btn-secondary btn-lg">
+                <button
+                    type="button"
+                    class="btn btn-secondary btn-lg"
+                    @click=${() => (window.location.href = this.href)}
+                >
                     Go to home page
                 </button>
             </div>

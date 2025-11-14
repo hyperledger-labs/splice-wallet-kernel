@@ -25,9 +25,9 @@ export default defineConfig({
                     'src/web/frontend/callback/index.html'
                 ),
                 login: resolve(__dirname, 'src/web/frontend/login/index.html'),
-                networks: resolve(
+                settings: resolve(
                     __dirname,
-                    'src/web/frontend/networks/index.html'
+                    'src/web/frontend/settings/index.html'
                 ),
                 wallets: resolve(
                     __dirname,

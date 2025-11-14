@@ -43,6 +43,7 @@
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
         "@canton-network/core-wallet-store": "workspace:^",
+        "@canton-network/core-wallet-user-rpc-client": "workspace:^",
         "@popperjs/core": "^2.11.8",
         "bootstrap": "^5.3.7",
         "lit": "^3.3.0"

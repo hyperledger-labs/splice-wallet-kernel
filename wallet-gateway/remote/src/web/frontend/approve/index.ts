@@ -4,6 +4,7 @@
 import { html, css, LitElement } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import '@canton-network/core-wallet-ui-components'
+import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
 import { createUserClient } from '../rpc-client'
 import {
     ExecuteParams,
@@ -11,7 +12,6 @@ import {
 } from '@canton-network/core-wallet-user-rpc-client'
 import { decodePreparedTransaction } from '@canton-network/core-tx-visualizer'
 import { stateManager } from '../state-manager'
-import { handleErrorToast } from '../handle-errors'
 import '../index'
 
 @customElement('user-ui-approve')

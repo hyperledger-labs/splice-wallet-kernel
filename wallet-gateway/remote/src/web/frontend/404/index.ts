@@ -29,7 +29,7 @@ export class ApproveUi extends LitElement {
     protected render() {
         return html`
             <div class="wrapper">
-                <not-found />
+                <not-found href="/"></not-found>
             </div>
         `
     }

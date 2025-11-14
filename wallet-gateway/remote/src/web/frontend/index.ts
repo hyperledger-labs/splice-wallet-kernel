@@ -14,7 +14,7 @@ import { WalletEvent } from '@canton-network/core-types'
 const DEFAULT_PAGE_REDIRECT = '/wallets'
 const NOT_FOUND_PAGE_REDIRECT = '/404'
 const LOGIN_PAGE_REDIRECT = '/login'
-const ALLOWED_ROUTES = ['/wallets', '/networks', '/approve', '/']
+const ALLOWED_ROUTES = ['/wallets', '/settings', '/approve', '/']
 
 @customElement('user-ui')
 export class UserUI extends LitElement {
