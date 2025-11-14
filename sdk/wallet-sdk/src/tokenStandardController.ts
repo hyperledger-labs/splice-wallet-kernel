@@ -290,7 +290,9 @@ export class TokenStandardController {
     }): Promise<
         [WrappedCommand<'ExerciseCommand'>[], Types['DisclosedContract'][]]
     > {
-        const utxos = await this.listHoldingUtxos(false)
+        //node limit is 200
+        const utxos = await this.listHoldingUtxos(false, 200)
+        //can only transfer 100 utxos per transaction
         const transferInputUtxoLimit = 100
         const transfers = Math.ceil(utxos.length / transferInputUtxoLimit)
 
