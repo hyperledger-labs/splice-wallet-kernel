@@ -32,34 +32,46 @@ export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton/bootstrap.canton')
 export const API_SPECS_PATH = path.join(repoRoot, 'api-specs')
 export const UTILS_FILE_PATH = path.join(repoRoot, 'scripts/src/lib/utils.ts')
 
-export type CantonVersionAndHash = {
+export type Network = 'mainnet' | 'devnet'
+export type ArchiveVersionAndHash = {
     version: string
     hash: string
 }
-// Canton versions
+
 export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20251108.16145.0.v21f4ad7f'
 
-export const LOCALNET_ARCHIVE_HASH =
-    '706c4412d1cb29285fe8a591e74f44458d2afcbb04603c32cdb6c6260538145f'
-export const SPLICE_ARCHIVE_HASH =
-    'dbe943a466f06624c2f55e2e4ad66180e81804bbcb0288b6a4882df49702a4b1'
-export const SPLICE_SPEC_ARCHIVE_HASH =
-    '102dba4a7224a0acc2544111ecdf2e6538de2b29bcc3bd7348edf4b445e07329'
-export const CANTON_ARCHIVE_HASH =
-    '43c89d9833886fc68cac4951ba1959b7f6cc5269abfff1ba5129859203aa8cd3'
-export const SPLICE_VERSION = '0.4.25'
-
+// Canton and Splice related archives versions and hashes
 export const SUPPORTED_VERSIONS = {
     devnet: {
         canton: {
             version: '3.4.0-snapshot.20250922.16951.0.v1eb3f268',
             hash: 'e0f59a7b5015b56479ef4786662c5935a0fee9ac803465bb0f70bdc6c3bf4dff',
         },
+        splice: {
+            version: '0.4.25',
+            hashes: {
+                localnet:
+                    '706c4412d1cb29285fe8a591e74f44458d2afcbb04603c32cdb6c6260538145f',
+                splice: 'dbe943a466f06624c2f55e2e4ad66180e81804bbcb0288b6a4882df49702a4b1',
+                spliceSpec:
+                    '102dba4a7224a0acc2544111ecdf2e6538de2b29bcc3bd7348edf4b445e07329',
+            },
+        },
     },
     mainnet: {
         canton: {
             version: '3.3.0-snapshot.20250910.16087.0.v82d35a4d',
             hash: '43c89d9833886fc68cac4951ba1959b7f6cc5269abfff1ba5129859203aa8cd3',
+        },
+        splice: {
+            version: '0.4.22',
+            hashes: {
+                localnet:
+                    '49c40f4caaeb46e03839a9da93343e6e3e13f7611705066e77ce8d02ffb62665',
+                splice: '368e0ea676b7bf2490d3f0003ce7ff58caddab78756057100977695a57170f50',
+                spliceSpec:
+                    'f17b553a29ea58f184a67998e08bd9062cdaff7faa2ed11609adc71934566c2e',
+            },
         },
     },
 }
@@ -442,4 +454,14 @@ export async function getAllNxDependencies(
     })
 
     return publicDependencies
+}
+
+export function getNetworkArg(): Network {
+    const arg = process.argv.slice(2).find((a) => a.startsWith('--network='))
+    if (!arg) return 'devnet'
+    const value = arg.split('=')[1]?.trim().toLowerCase()
+    if (value === 'mainnet' || value === 'devnet') return value as Network
+    throw new Error(
+        `Invalid --network value: "${value}". Use "mainnet" or "devnet".`
+    )
 }

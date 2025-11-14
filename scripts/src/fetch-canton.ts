@@ -12,13 +12,13 @@ import {
     SUPPORTED_VERSIONS,
     CANTON_PATH,
     downloadAndUnpackTarball,
-    CantonVersionAndHash,
+    ArchiveVersionAndHash,
     error,
 } from './lib/utils.js'
 import * as fs from 'fs'
 
 async function fetchCanton(
-    cantonVersions: CantonVersionAndHash,
+    cantonVersions: ArchiveVersionAndHash,
     updateHash: boolean
 ) {
     const tarfile = path.join(

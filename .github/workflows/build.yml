@@ -203,28 +203,38 @@ jobs:
     test-wallet-sdk-e2e:
         runs-on: ubuntu-latest
         needs: build
+        strategy:
+            fail-fast: false
+            matrix:
+                network: [devnet, mainnet]
+
         steps:
             - name: Checkout
               uses: actions/checkout@v4
+
             - uses: ./.github/actions/setup_yarn
 
-            - name: Download localnet
-              run: yarn script:fetch:localnet
+            - name: Download localnet (${{ matrix.network }})
+              run: yarn script:fetch:localnet -- --network=${{ matrix.network }}
 
-            - name: Start Localnet
-              run: yarn start:localnet
+            - name: Start Localnet (${{ matrix.network }})
+              run: yarn start:localnet -- --network=${{ matrix.network }}
 
             - uses: ./.github/actions/check_resources
 
-            - name: Test example snippets
+            - name: Test example snippets (${{ matrix.network }})
               run: yarn nx snippets docs-wallet-integration-guide-examples
 
             - uses: ./.github/actions/check_resources
 
-            - name: Test example scripts
+            - name: Test example scripts (${{ matrix.network }})
               run: yarn script:test:examples
 
             - uses: ./.github/actions/check_resources
+
+            - name: Stop Localnet (${{ matrix.network }})
+              if: always()
+              run: yarn stop:localnet -- --network=${{ matrix.network }}
 
             - name: Save container logs
               if: failure()
