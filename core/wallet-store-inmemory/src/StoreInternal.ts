@@ -240,7 +240,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     async updateWallet({ status, partyId }: UpdateWallet): Promise<void> {
         const storage = this.getStorage()
         const wallets = (await this.getWallets()).map((wallet) =>
-            wallet.partyId === partyId ? { ...wallet, status: status } : wallet
+            wallet.partyId === partyId ? { ...wallet, status } : wallet
         )
 
         storage.wallets = wallets
