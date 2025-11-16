@@ -60,7 +60,7 @@
         "uuid": "^11.1.0",
         "vite": "^6.4.1",
         "vite-express": "^0.21.1",
-        "zod": "^3.25.64"
+        "zod": "^4.1.12"
     },
     "devDependencies": {
         "@canton-network/core-wallet-store-inmemory": "workspace:^",
