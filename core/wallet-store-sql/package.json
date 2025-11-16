@@ -33,6 +33,7 @@
         "better-sqlite3": "^12.2.0",
         "commander": "^14.0.0",
         "kysely": "^0.28.5",
+        "pg": "^8.16.3",
         "pino": "^10.0.0",
         "umzug": "^3.8.2",
         "zod": "^3.25.64"
@@ -43,6 +44,7 @@
         "@swc/jest": "^0.2.38",
         "@types/better-sqlite3": "^7.6.13",
         "@types/jest": "^30.0.0",
+        "@types/pg": "^8",
         "jest": "^30.0.0",
         "pino-test": "^1.1.0",
         "ts-jest": "^29.4.0",

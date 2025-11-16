@@ -15,7 +15,8 @@ import {
     SigningDriverStatus,
     SigningDriverConfig,
 } from '@canton-network/core-signing-lib'
-import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely'
+import { CamelCasePlugin, Kysely, SqliteDialect, PostgresDialect } from 'kysely'
+import { Pool } from 'pg'
 import Database from 'better-sqlite3'
 import {
     DB,
@@ -191,11 +192,7 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
         if (before) {
             const beforeTx = await this.getSigningTransaction(userId, before)
             if (beforeTx) {
-                query = query.where(
-                    'createdAt',
-                    '<',
-                    beforeTx.createdAt.toISOString()
-                )
+                query = query.where('createdAt', '<', beforeTx.createdAt)
             }
         }
 
@@ -308,6 +305,19 @@ export const connection = (config: StoreConfig) => {
                 }),
                 plugins: [new CamelCasePlugin()],
             })
+        case 'postgres':
+            return new Kysely<DB>({
+                dialect: new PostgresDialect({
+                    pool: new Pool({
+                        database: config.connection.database,
+                        user: config.connection.user,
+                        password: config.connection.password,
+                        port: config.connection.port,
+                        host: config.connection.host,
+                    }),
+                }),
+                plugins: [new CamelCasePlugin()],
+            })
         case 'memory':
             return new Kysely<DB>({
                 dialect: new SqliteDialect({
@@ -315,9 +325,5 @@ export const connection = (config: StoreConfig) => {
                 }),
                 plugins: [new CamelCasePlugin()],
             })
-        default:
-            throw new Error(
-                `Unsupported database type: ${config.connection.type}`
-            )
     }
 }

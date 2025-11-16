@@ -17,8 +17,8 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .addColumn('public_key', 'text', (col) => col.notNull())
         .addColumn('private_key', 'text') // Encrypted for internal driver
         .addColumn('metadata', 'text') // JSON string for driver-specific data
-        .addColumn('created_at', 'integer', (col) => col.notNull())
-        .addColumn('updated_at', 'integer', (col) => col.notNull())
+        .addColumn('created_at', 'text', (col) => col.notNull())
+        .addColumn('updated_at', 'text', (col) => col.notNull())
         .addUniqueConstraint('signing_keys_user_id_id_unique', [
             'user_id',
             'id',
@@ -36,8 +36,8 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .addColumn('public_key', 'text', (col) => col.notNull())
         .addColumn('status', 'text', (col) => col.notNull())
         .addColumn('metadata', 'text') // JSON string for driver-specific data
-        .addColumn('created_at', 'integer', (col) => col.notNull())
-        .addColumn('updated_at', 'integer', (col) => col.notNull())
+        .addColumn('created_at', 'text', (col) => col.notNull())
+        .addColumn('updated_at', 'text', (col) => col.notNull())
         .addUniqueConstraint('signing_transactions_user_id_id_unique', [
             'user_id',
             'id',
