@@ -286,14 +286,17 @@ export class TokenStandardController {
 
     /**
      * Merges utxos by instrument
+     * @param nodeLimit json api maximum elements limit per node, default is 200
      * @returns an array of exercise commands, where each command can have up to 100 self-transfers
      * these need to be submitted separately as there is a limit of 100 transfers per execution
      */
-    async mergeHoldingUtxos(): Promise<
+    async mergeHoldingUtxos(
+        nodeLimit = 200
+    ): Promise<
         [WrappedCommand<'ExerciseCommand'>[], Types['DisclosedContract'][]]
     > {
         //node limit is 200
-        const utxos = await this.listHoldingUtxos(false, 200)
+        const utxos = await this.listHoldingUtxos(false, nodeLimit)
 
         const utxoGroupedByInstrument: Record<
             string,
