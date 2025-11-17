@@ -295,7 +295,6 @@ export class TokenStandardController {
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>[], Types['DisclosedContract'][]]
     > {
-        //node limit is 200
         const utxos = await this.listHoldingUtxos(false, nodeLimit)
 
         const utxoGroupedByInstrument: Record<
