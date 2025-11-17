@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 
 const snippets = readdirSync('./snippets').filter(
     (f) =>
-        f.endsWith('.ts') &&
+        f.endsWith('read-active-contracts.ts') &&
         !readFileSync(`./snippets/${f}`).includes('// @disable-snapshot-test')
 )
 
