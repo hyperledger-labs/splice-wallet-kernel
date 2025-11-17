@@ -210,7 +210,7 @@ export const dappController = (provider: SpliceProvider) =>
                 (resolve, reject) => {
                     const timeout = withTimeout(reject)
                     provider.on<dappRemoteAPI.TxChangedEvent>(
-                        'onTxChanged',
+                        'txChanged',
                         (event) => {
                             console.log('SDK: TxChangedEvent', event)
                             clearTimeout(timeout)
