@@ -284,23 +284,30 @@ export class TokenStandardController {
         }
     }
 
+    /**
+     * Merges utxos by instrument
+     * @returns an array of exercise commands, where each command can have up to 100 self-transfers
+     * these need to be submitted separately as there is a limit of 100 transfers per execution
+     */
     async mergeHoldingUtxos(): Promise<
         [WrappedCommand<'ExerciseCommand'>[], Types['DisclosedContract'][]]
     > {
         //node limit is 200
         const utxos = await this.listHoldingUtxos(false, 200)
 
-        const groups: Record<string, PrettyContract<Holding>[] | undefined> =
-            Object.groupBy(
-                utxos,
-                (utxo) =>
-                    `${utxo.interfaceViewValue.instrumentId.id}::${utxo.interfaceViewValue.instrumentId.admin}` as string
-            )
+        const utxoGroupedByInstrument: Record<
+            string,
+            PrettyContract<Holding>[] | undefined
+        > = Object.groupBy(
+            utxos,
+            (utxo) =>
+                `${utxo.interfaceViewValue.instrumentId.id}::${utxo.interfaceViewValue.instrumentId.admin}` as string
+        )
 
         const transferInputUtxoLimit = 100
         const allTransferResults = []
 
-        for (const group of Object.values(groups)) {
+        for (const group of Object.values(utxoGroupedByInstrument)) {
             if (!group) continue
             const { id: instrumentId, admin: instrumentAdmin } =
                 group[0].interfaceViewValue.instrumentId

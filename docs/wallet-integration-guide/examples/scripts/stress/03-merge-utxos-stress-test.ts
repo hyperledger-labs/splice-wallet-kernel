@@ -68,10 +68,10 @@ const retryPromise = async (
             console.log(
                 `Retrying... (${MAX_RETRIES - retries + 1}/${MAX_RETRIES})`
             )
-            await delay(RETRY_DELAY) // Wait before retrying
+            await delay(RETRY_DELAY)
             return retryPromise(fn, retries - 1)
         } else {
-            throw error // If no retries left, throw the error
+            throw error
         }
     }
 }
@@ -95,20 +95,17 @@ const processCreateTap = async () => {
 const processTapInBatches = async (totalIterations: number) => {
     let results: any[] = []
 
-    // Split the total iterations into batches
     for (let i = 0; i < totalIterations; i += BATCH_SIZE) {
         const batchPromises = []
 
-        // Prepare the promises for this batch
         for (let j = i; j < i + BATCH_SIZE && j < totalIterations; j++) {
-            batchPromises.push(retryPromise(processCreateTap)) // Wrap each iteration with retry logic
+            batchPromises.push(retryPromise(processCreateTap))
         }
 
-        // Wait for all promises in this batch to resolve
         const batchResults = await Promise.all(batchPromises)
         results = results.concat(batchResults)
 
-        console.log(`Batch ${Math.floor(i / BATCH_SIZE) + 1} processed.`)
+        console.log(`batch ${Math.floor(i / BATCH_SIZE) + 1} processed.`)
     }
 
     return results

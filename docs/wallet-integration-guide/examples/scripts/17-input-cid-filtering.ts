@@ -265,15 +265,17 @@ for (let i = 0; i < 10; i++) {
 const utxosAlice = await sdk.tokenStandard?.listHoldingUtxos(false)
 logger.info(`number of unlocked utxos for alice ${utxosAlice?.length}`)
 
-const [commands, mergedDisclosedContracts] =
+const [mergeUtxoCommands, mergedDisclosedContracts] =
     await sdk.tokenStandard?.mergeHoldingUtxos()!
 
-await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-    commands,
-    keyPairSender.privateKey,
-    v4(),
-    mergedDisclosedContracts
-)
+for (let i = 0; i < mergeUtxoCommands.length; i++) {
+    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+        mergeUtxoCommands[i],
+        keyPairSender.privateKey,
+        v4(),
+        mergedDisclosedContracts
+    )
+}
 
 const utxosAliceMerged = await sdk.tokenStandard?.listHoldingUtxos(false)!
 if (utxosAliceMerged?.length === 1) {
