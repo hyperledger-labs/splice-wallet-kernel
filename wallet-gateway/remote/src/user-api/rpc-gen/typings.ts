@@ -231,6 +231,12 @@ export type AccessToken = string
 export type Status = 'connected' | 'disconnected'
 /**
  *
+ * The reason for the current status.
+ *
+ */
+export type Reason = string
+/**
+ *
  * Structure representing the connected network session
  *
  */
@@ -238,6 +244,7 @@ export interface Session {
     network: Network
     accessToken: AccessToken
     status: Status
+    reason?: Reason
 }
 export type Sessions = Session[]
 export interface AddNetworkParams {
@@ -341,6 +348,7 @@ export interface AddSessionResult {
     network: Network
     accessToken: AccessToken
     status: Status
+    reason?: Reason
 }
 export interface ListSessionsResult {
     sessions: Sessions

@@ -709,10 +709,7 @@ export class LedgerClient {
         return this.acsHelper.getCacheStats()
     }
 
-    /**
-     * @deprecated use postWithRetry instead, should be made private
-     */
-    private async post<Path extends PostEndpoint>(
+    public async post<Path extends PostEndpoint>(
         path: Path,
         body: PostRequest<Path>,
         params?: {
@@ -729,10 +726,7 @@ export class LedgerClient {
         return this.valueOrError(resp)
     }
 
-    /**
-     * @deprecated use getWithRetry instead, should be made private
-     */
-    private async get<Path extends GetEndpoint>(
+    public async get<Path extends GetEndpoint>(
         path: Path,
         params?: {
             path?: Record<string, string>

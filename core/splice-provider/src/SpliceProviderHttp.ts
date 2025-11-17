@@ -70,13 +70,8 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 // dappApi.OnConnectedEvent are mapped manually to avoid dependency.
                 this.request({ method: 'status' })
                     .then((status) => {
-                        const statusResult = status as {
-                            kernel: unknown
-                            networkId?: unknown
-                        }
                         this.emit('onConnected', {
-                            kernel: statusResult.kernel,
-                            networkId: statusResult.networkId,
+                            status: status,
                             sessionToken: this.sessionToken,
                         })
                     })

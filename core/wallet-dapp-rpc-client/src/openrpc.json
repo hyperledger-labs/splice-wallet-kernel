@@ -447,7 +447,17 @@
                     "isConnected": {
                         "title": "isConnected",
                         "type": "boolean",
+                        "description": "Whether or not the user is authenticated with the Wallet."
+                    },
+                    "isNetworkConnected": {
+                        "title": "isNetworkConnected",
+                        "type": "boolean",
                         "description": "Whether or not a connection to a network is established."
+                    },
+                    "networkReason": {
+                        "title": "networkReason",
+                        "type": "string",
+                        "description": "If not connected to a network, the reason why."
                     },
                     "networkId": {
                         "title": "networkId",
@@ -455,7 +465,7 @@
                         "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
                     }
                 },
-                "required": ["kernel", "isConnected"]
+                "required": ["kernel", "isConnected", "isNetworkConnected"]
             }
         }
     }
