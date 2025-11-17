@@ -122,9 +122,15 @@ export const toNetwork = (table: NetworkTable): Network => {
         ledgerApi: {
             baseUrl: table.ledgerApiBaseUrl,
         },
-        auth: authSchema.parse(JSON.parse(table.auth)),
+        auth: authSchema.parse(
+            typeof table.auth === 'string' ? JSON.parse(table.auth) : table.auth
+        ),
         adminAuth: table.adminAuth
-            ? authSchema.parse(JSON.parse(table.adminAuth))
+            ? authSchema.parse(
+                  typeof table.adminAuth === 'string'
+                      ? JSON.parse(table.adminAuth)
+                      : table.adminAuth
+              )
             : undefined,
     }
 }
@@ -159,7 +165,7 @@ export const fromWallet = (wallet: Wallet, userId: UserId): WalletTable => {
 export const toWallet = (table: WalletTable): Wallet => {
     return {
         ...table,
-        primary: table.primary === 1,
+        primary: Boolean(table.primary),
     }
 }
 

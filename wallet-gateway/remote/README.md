@@ -41,3 +41,40 @@ The JSON-RPC API specs from `api-specs/` are generated into strongly-typed metho
 2. Place the `fireblocks_secret.key` file at the path `/splice-wallet-kernel/wallet-gateway/remote`
 
 3. Create a file named `fireblocks_api.key` at the path `/splice-wallet-kernel/wallet-gateway/remote` and insert your Fireblocks API key into it
+
+## Postgres connection
+
+To create a Postgres database you need to:
+
+1. Start Postgres in Docker using:
+
+```shell
+$ docker run --network=host --name some-postgres -e POSTGRES_PASSWORD=postgres -d postgres
+```
+
+2. In the file `splice-wallet-kernel/wallet-gateway/test/config.json`, specify the connection settings for both databases (store and signingStore). The connection should look like this (it is important that `store.connection.database !== signingStore.connection.database !== 'postgres'`):
+
+```json
+{
+    "store": {
+        "connection": {
+            "type": "postgres",
+            "password": "postgres",
+            "port": 5432,
+            "user": "postgres",
+            "host": "0.0.0.0",
+            "database": "wallet_store"
+        }
+    },
+    "signingStore": {
+        "connection": {
+            "type": "postgres",
+            "password": "postgres",
+            "port": 5432,
+            "user": "postgres",
+            "host": "0.0.0.0",
+            "database": "signing_store"
+        }
+    }
+}
+```

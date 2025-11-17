@@ -90,9 +90,9 @@ export class InternalSigningDriver implements SigningDriverInterface {
                         hash: params.txHash,
                         signature,
                         publicKey: params.publicKey,
-                        createdAt: new Date(),
+                        createdAt: new Date().toISOString(),
                         status: 'signed',
-                        updatedAt: new Date(),
+                        updatedAt: new Date().toISOString(),
                     }
 
                     this.store.setSigningTransaction(
@@ -175,6 +175,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
                                 convertInternalTransaction({
                                     ...tx,
                                     signature: tx.signature || 'signed',
+                                    createdAt: new Date(tx.createdAt),
                                 })
                         ),
                     })
@@ -230,8 +231,8 @@ export class InternalSigningDriver implements SigningDriverInterface {
                     name: params.name,
                     publicKey,
                     privateKey,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
                 }
 
                 await this.store.setSigningKey(_userId, internalKey)

@@ -32,6 +32,7 @@ import { rpcRateLimit } from './middleware/rateLimit.js'
 import { Config } from './config/Config.js'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
+import { sql } from 'kysely'
 
 let isReady = false
 
@@ -73,6 +74,28 @@ async function initializeDatabase(
         exists = existsSync(config.store.connection.database)
     }
 
+    if (config.store.connection.type === 'postgres') {
+        const db = connection({
+            ...config.store,
+            connection: { ...config.store.connection, database: 'postgres' },
+        })
+        const result = await sql
+            .raw<{
+                '?column?': number
+            }>(`select 1 from pg_database where datname='${config.store.connection.database}';`)
+            .execute(db)
+        const databaseExist = result.rows.length > 0
+        if (!databaseExist) {
+            // Ignore error because postgres does not support `create database if nor exists` clause
+            await sql
+                .raw(`create database ${config.store.connection.database};`)
+                .execute(db)
+                .catch(() => {})
+            exists = false
+        }
+        await db.destroy()
+    }
+
     const db = connection(config.store)
     const umzug = migrator(db)
     const pending = await umzug.pending()
@@ -106,6 +129,33 @@ async function initializeSigningDatabase(
     let exists = true
     if (config.signingStore.connection.type === 'sqlite') {
         exists = existsSync(config.signingStore.connection.database)
+    }
+
+    if (config.signingStore.connection.type === 'postgres') {
+        const db = signingConnection({
+            ...config.signingStore,
+            connection: {
+                ...config.signingStore.connection,
+                database: 'postgres',
+            },
+        })
+        const result = await sql
+            .raw<{
+                '?column?': number
+            }>(`select 1 from pg_database where datname='${config.signingStore.connection.database}';`)
+            .execute(db)
+        const databaseExist = result.rows.length > 0
+        if (!databaseExist) {
+            // Ignore error because postgres does not support `create database if nor exists` clause
+            await sql
+                .raw(
+                    `create database ${config.signingStore.connection.database};`
+                )
+                .execute(db)
+                .catch(() => {})
+            exists = false
+        }
+        await db.destroy()
     }
 
     const db = signingConnection(config.signingStore)
