@@ -99,6 +99,13 @@ Import successful.class {
         this._authTokenProvider
       );
       const amuletSynchronizerId = await scanProxyClient.getAmuletSynchronizerId();
+      const scanClient = new coreSpliceClient.ScanClient(
+        synchronizer.href,
+        this.logger,
+        accessToken
+      );
+      const version = await scanClient.get("/version");
+      this.logger.info({ version }, "Splice version");
       if (amuletSynchronizerId === void 0) {
         throw new Error(
           "SynchronizerId is not defined in ScanProxyClient."

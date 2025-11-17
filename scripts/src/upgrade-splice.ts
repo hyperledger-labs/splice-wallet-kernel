@@ -88,9 +88,6 @@ try {
         .slice(0, 2)
         .join('.')
 
-    // for (const env of Object.keys(versionConfig.SUPPORTED_VERSIONS) as Array<
-    //     keyof typeof versionConfig.SUPPORTED_VERSIONS
-    // >) {
     const envConfig = versionConfig.SUPPORTED_VERSIONS[network]
     const canton = envConfig.canton
     const currentMajorMinor = canton.version
@@ -102,7 +99,6 @@ try {
     if (currentMajorMinor === majorMinor) {
         canton.version = cantonSources['version']
     }
-    // }
 
     fs.writeFileSync(
         VERSIONS_CONFIG_PATH,
