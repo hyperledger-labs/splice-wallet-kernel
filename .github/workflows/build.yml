@@ -200,7 +200,8 @@ jobs:
                   path: example/playwright-report/
                   retention-days: 30
 
-    test-wallet-sdk-e2e:
+    sdk-e2e:
+        name: sdk-e2e (${{ matrix.network }})
         runs-on: ubuntu-latest
         needs: build
         strategy:
@@ -241,10 +242,7 @@ jobs:
               run: |
                   #!/usr/bin/env bash
                   set -euo pipefail
-
                   mkdir -p logs
-
-                  # Dump logs of each running container once (not streaming)
                   for c in $(docker ps -a --format '{{.Names}}'); do
                     docker logs "$c" &> "logs/$c.log" || true
                   done
@@ -253,8 +251,15 @@ jobs:
               if: failure()
               uses: actions/upload-artifact@v4
               with:
-                  name: docker-logs
+                  name: docker-logs-${{ matrix.network }}
                   path: logs/
+
+    test-wallet-sdk-e2e:
+        name: test-wallet-sdk-e2e
+        runs-on: ubuntu-latest
+        needs: sdk-e2e
+        steps:
+            - run: echo "all e2e shards passed"
 
     test-wallet-sdk-pkg:
         runs-on: ubuntu-latest

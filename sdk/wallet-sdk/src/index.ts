@@ -7,7 +7,7 @@ import {
     localNetTokenStandardDefault,
     TokenStandardController,
 } from './tokenStandardController.js'
-import { ScanClient, ScanProxyClient } from '@canton-network/core-splice-client'
+import { ScanProxyClient } from '@canton-network/core-splice-client'
 import {
     localNetTopologyDefault,
     TopologyController,
@@ -248,14 +248,6 @@ export class WalletSDKImpl implements WalletSDK {
             const amuletSynchronizerId =
                 await scanProxyClient.getAmuletSynchronizerId()
 
-            // TODO sanity check for CI. Remove before merging.
-            const scanClient = new ScanClient(
-                synchronizer.href,
-                this.logger!,
-                accessToken
-            )
-            const version = await scanClient.get('/version')
-            this.logger!.info({ version }, 'Splice version')
             if (amuletSynchronizerId === undefined) {
                 throw new Error(
                     'SynchronizerId is not defined in ScanProxyClient.'
