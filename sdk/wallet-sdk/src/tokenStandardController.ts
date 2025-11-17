@@ -284,6 +284,76 @@ export class TokenStandardController {
         }
     }
 
+    async mergeHoldingUtxos2(): Promise<
+        [WrappedCommand<'ExerciseCommand'>[], Types['DisclosedContract'][]]
+    > {
+        //node limit is 200
+        const utxos = await this.listHoldingUtxos(false, 200)
+
+        const groups: Record<string, PrettyContract<Holding>[] | undefined> =
+            Object.groupBy(
+                utxos,
+                (utxo) =>
+                    `${utxo.interfaceViewValue.instrumentId.id}::${utxo.interfaceViewValue.instrumentId.admin}` as string
+            )
+
+        const transferInputUtxoLimit = 100
+        // const allTransferResults: Array<
+        //     [WrappedCommand<'ExerciseCommand'>[], Types['DisclosedContract'][]]
+        // > = []
+
+        const allTransferResults = []
+
+        for (const group of Object.values(groups)) {
+            if (!group) continue
+            const { id: instrumentId, admin: instrumentAdmin } =
+                group[0].interfaceViewValue.instrumentId
+
+            const instrument = { instrumentId, instrumentAdmin }
+
+            const transfers = Math.ceil(group.length / transferInputUtxoLimit)
+
+            const transferPromises = Array.from(
+                { length: transfers },
+                (_, i) => {
+                    const start = i * transferInputUtxoLimit
+                    const end = Math.min(
+                        start + transferInputUtxoLimit,
+                        group.length
+                    )
+
+                    const inputUtxos = group.slice(start, end)
+
+                    const accumulatedAmount = inputUtxos.reduce((a, b) => {
+                        return a + parseFloat(b.interfaceViewValue.amount)
+                    }, 0)
+
+                    return this.createTransfer(
+                        this.getPartyId(),
+                        this.getPartyId(),
+                        accumulatedAmount.toString(),
+                        instrument,
+                        inputUtxos.map((h) => h.contractId),
+                        'merge-utxos'
+                    )
+                }
+            )
+            const transferResults = await Promise.all(transferPromises)
+            allTransferResults.push(...transferResults)
+        }
+
+        const commands = allTransferResults.map(([cmd]) => cmd)
+        const disclosedContracts = Array.from(
+            new Map(
+                allTransferResults
+                    .flatMap(([, dc]) => dc)
+                    .map((dc) => [dc.contractId, dc])
+            ).values()
+        )
+
+        return [commands, disclosedContracts]
+    }
+
     async mergeHoldingUtxos(instrument: {
         instrumentId: string
         instrumentAdmin?: PartyId
