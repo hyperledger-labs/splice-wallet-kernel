@@ -15,18 +15,6 @@ import { v4 } from 'uuid'
 
 const logger = pino({ name: '03-stress test', level: 'info' })
 
-// type testConfig = {
-//     partiesToCreate: number
-//     queriesToAttempt: number
-// }
-
-// const partiesToCreate = process.env.PARTIES_PER_INTERVAL
-//     ? parseInt(process.env.PARTIES_PER_INTERVAL, 0)
-//     : 25
-// const acsQueries = process.env.ACS_QUERIES
-//     ? parseInt(process.env.ACS_QUERIES, 0)
-//     : partiesToCreate * 5
-
 let createdParties: partyDefinition[] = []
 
 const sdk = new WalletSDKImpl().configure({
