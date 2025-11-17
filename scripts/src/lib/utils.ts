@@ -22,7 +22,7 @@ export const success = (message: string): string => green(message)
 export const trimNewline = (message: string): string =>
     message.replace(/\n$/, '')
 
-const repoRoot = getRepoRoot()
+export const repoRoot = getRepoRoot()
 export const CANTON_PATH = path.join(repoRoot, '.canton')
 export const SPLICE_PATH = path.join(repoRoot, '.splice')
 export const SPLICE_SPEC_PATH = path.join(repoRoot, '.splice-spec')

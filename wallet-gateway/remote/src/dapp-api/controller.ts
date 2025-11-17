@@ -13,40 +13,14 @@ import { Store } from '@canton-network/core-wallet-store'
 import {
     LedgerClient,
     GetEndpoint,
-    PostResponse,
     PostEndpoint,
+    PostResponse,
 } from '@canton-network/core-ledger-client'
 import { v4 } from 'uuid'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo as KernelInfoConfig } from '../config/Config.js'
 import { Logger } from 'pino'
-
-async function prepareSubmission(
-    userId: string,
-    partyId: string,
-    synchronizerId: string,
-    commands: unknown,
-    ledgerClient: LedgerClient,
-    commandId?: string
-): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
-    const prepareParams = {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-        commands: commands as any,
-        commandId: commandId || v4(),
-        userId,
-        actAs: [partyId],
-        readAs: [],
-        disclosedContracts: [],
-        synchronizerId,
-        verboseHashing: false,
-        packageIdSelectionPreference: [],
-    }
-
-    return await ledgerClient.postWithRetry(
-        '/v2/interactive-submission/prepare',
-        prepareParams
-    )
-}
+import { networkStatus } from '../utils.js'
 
 export const dappController = (
     kernelInfo: KernelInfoConfig,
@@ -57,14 +31,39 @@ export const dappController = (
 ) => {
     const logger = _logger.child({ component: 'dapp-controller' })
     return buildController({
-        connect: async () => ({
-            sessionToken: '',
-            status: {
-                kernel: kernelInfo,
-                isConnected: false,
-                userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
-            },
-        }),
+        connect: async () => {
+            if (!context) {
+                return {
+                    sessionToken: '',
+                    status: {
+                        kernel: kernelInfo,
+                        isConnected: false,
+                        isNetworkConnected: false,
+                        networkReason: 'Unauthenticated',
+                        userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
+                    },
+                }
+            }
+
+            const network = await store.getCurrentNetwork()
+            const ledgerClient = new LedgerClient(
+                new URL(network.ledgerApi.baseUrl),
+                logger,
+                false,
+                context.accessToken
+            )
+            const status = await networkStatus(ledgerClient)
+            return {
+                sessionToken: context.accessToken,
+                status: {
+                    kernel: kernelInfo,
+                    isConnected: true,
+                    isNetworkConnected: status.isConnected,
+                    networkReason: status.reason ? status.reason : 'OK',
+                    userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
+                },
+            }
+        },
         disconnect: async () => {
             if (!context) {
                 return null
@@ -194,13 +193,25 @@ export const dappController = (
                 return {
                     kernel: kernelInfo,
                     isConnected: false,
+                    isNetworkConnected: false,
+                    networkReason: 'Unauthenticated',
                 }
-            } else {
-                return {
-                    kernel: kernelInfo,
-                    isConnected: true,
-                    networkId: (await store.getCurrentNetwork()).id,
-                }
+            }
+
+            const network = await store.getCurrentNetwork()
+            const ledgerClient = new LedgerClient(
+                new URL(network.ledgerApi.baseUrl),
+                logger,
+                false,
+                context.accessToken
+            )
+            const status = await networkStatus(ledgerClient)
+            return {
+                kernel: kernelInfo,
+                isConnected: true,
+                isNetworkConnected: status.isConnected,
+                networkReason: status.reason ? status.reason : 'OK',
+                networkId: (await store.getCurrentNetwork()).id,
             }
         },
         onConnected: async () => {
@@ -220,4 +231,31 @@ export const dappController = (
             throw new Error('Only for events.')
         },
     })
+}
+
+async function prepareSubmission(
+    userId: string,
+    partyId: string,
+    synchronizerId: string,
+    commands: unknown,
+    ledgerClient: LedgerClient,
+    commandId?: string
+): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
+    const prepareParams = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
+        commands: commands as any,
+        commandId: commandId || v4(),
+        userId,
+        actAs: [partyId],
+        readAs: [],
+        disclosedContracts: [],
+        synchronizerId,
+        verboseHashing: false,
+        packageIdSelectionPreference: [],
+    }
+
+    return await ledgerClient.postWithRetry(
+        '/v2/interactive-submission/prepare',
+        prepareParams
+    )
 }

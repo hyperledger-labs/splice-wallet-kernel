@@ -28,9 +28,7 @@ import { LedgerClient } from './ledger-client.js'
 import { TokenStandardTransactionInterfaces } from './constants.js'
 import {
     ensureInterfaceViewIsPresent,
-    TransactionFilterBySetup,
     EventFilterBySetup,
-    defaultRetryableOptions,
 } from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
 import {
@@ -100,7 +98,11 @@ export class CoreService {
         )
     }
 
-    async getInputHoldingsCids(sender: PartyId, inputUtxos?: string[]) {
+    async getInputHoldingsCids(
+        sender: PartyId,
+        inputUtxos?: string[],
+        amount?: number
+    ) {
         const now = new Date()
         if (inputUtxos && inputUtxos.length > 0) {
             return inputUtxos
@@ -115,22 +117,88 @@ export class CoreService {
             )
         }
 
-        return senderHoldings
-            .filter((utxo) => {
-                //filter out locked holdings
-                const lock = utxo.interfaceViewValue.lock
-                if (!lock) return true
+        const unlockedSenderHoldings = senderHoldings.filter((utxo) => {
+            //filter out locked holdings
+            const lock = utxo.interfaceViewValue.lock
+            if (!lock) return true
 
-                const expiresAt = lock.expiresAt
-                if (!expiresAt) return false
+            const expiresAt = lock.expiresAt
+            if (!expiresAt) return false
 
-                const expiresAtDate = new Date(expiresAt)
-                return expiresAtDate <= now
-            })
-            .map((h) => h.contractId)
-        /* TODO: optimize input holding selection, currently if you transfer 10 CC and have 10 inputs of 1000 CC,
-                then all 10 of those are chose as input.
-             */
+            const expiresAtDate = new Date(expiresAt)
+            return expiresAtDate <= now
+        })
+
+        if (unlockedSenderHoldings.length > 100) {
+            this.logger.warn(`Sender has more than 100 unlocked utxos.`)
+        }
+
+        if (amount) {
+            return CoreService.getInputHoldingsCidsForAmount(
+                amount,
+                unlockedSenderHoldings
+            )
+        } else {
+            return unlockedSenderHoldings.map((h) => h.contractId)
+        }
+    }
+
+    static async getInputHoldingsCidsForAmount(
+        amount: number,
+        unlockedSenderHoldings: PrettyContract<HoldingView>[]
+    ) {
+        //find holding that is the exact amount if possible
+        const exactAmount = unlockedSenderHoldings.find(
+            (holding) =>
+                parseFloat(holding.interfaceViewValue.amount) === amount
+        )
+
+        if (exactAmount) {
+            return [exactAmount.contractId]
+        }
+
+        //sort holdings from smallest to largest
+        const sortedUnlockedSenderHoldings = unlockedSenderHoldings.toSorted(
+            (a, b) =>
+                parseFloat(a.interfaceViewValue.amount) -
+                parseFloat(b.interfaceViewValue.amount)
+        )
+
+        const largestHoldingAmount = sortedUnlockedSenderHoldings.pop()
+
+        if (!largestHoldingAmount) {
+            throw new Error(`Sender doesn't have any unlocked holdings`)
+        }
+
+        let currentSum = parseFloat(
+            largestHoldingAmount.interfaceViewValue.amount
+        )
+        const cIds = [largestHoldingAmount.contractId]
+
+        for (const h of sortedUnlockedSenderHoldings) {
+            if (currentSum >= amount) {
+                break
+            }
+
+            const currentHoldingAmount = parseFloat(h.interfaceViewValue.amount)
+
+            currentSum += currentHoldingAmount
+            cIds.push(h.contractId)
+        }
+
+        if (currentSum < amount) {
+            throw new Error(
+                `Sender doesn't have sufficient funds for this transfer. Missing amount: ${amount - currentSum}`
+            )
+        }
+
+        if (cIds.length > 100) {
+            throw new Error(
+                `Exceeded the maximum of 100 utxos in 1 transaction`
+            )
+        }
+
+        return cIds
     }
 
     async listContractsByInterface<T = ViewValue>(
@@ -142,22 +210,17 @@ export class CoreService {
             const ledgerEnd = await this.ledgerClient.getWithRetry(
                 '/v2/state/ledger-end'
             )
+
+            const options = {
+                offset: ledgerEnd.offset,
+                interfaceIds: [interfaceId],
+                parties: [partyId!],
+                filterByParty: true,
+                limit: limit ?? 100,
+            }
+
             const acsResponses: JsGetActiveContractsResponse[] =
-                await this.ledgerClient.postWithRetry(
-                    '/v2/state/active-contracts',
-                    {
-                        filter: TransactionFilterBySetup(interfaceId, {
-                            isMasterUser: this.isMasterUser,
-                            partyId: partyId,
-                        }),
-                        verbose: false,
-                        activeAtOffset: ledgerEnd.offset,
-                    },
-                    defaultRetryableOptions,
-                    {
-                        query: limit ? { limit: limit.toString() } : {},
-                    }
-                )
+                await this.ledgerClient.activeContracts(options)
 
             /*  This filters out responses with entries of:
                 - JsEmpty
@@ -664,7 +727,8 @@ class TransferService {
     ): Promise<CreateTransferChoiceArgs> {
         const inputHoldingCids: string[] = await this.core.getInputHoldingsCids(
             sender,
-            inputUtxos
+            inputUtxos,
+            parseFloat(amount)
         )
 
         return {
@@ -1210,7 +1274,8 @@ export class TokenStandardService {
 
         const inputHoldings = await this.core.getInputHoldingsCids(
             provider,
-            inputUtxos
+            inputUtxos,
+            trafficAmount
         )
 
         if (!amuletRules) {

@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/wallet-gateway-remote",
-    "version": "0.5.1",
+    "version": "0.6.0",
     "description": "A server-side Wallet Gateway implementation over HTTP",
     "main": "dist/index.js",
     "bin": {
@@ -38,6 +38,7 @@
         "@canton-network/core-signing-internal": "workspace:^",
         "@canton-network/core-signing-lib": "workspace:^",
         "@canton-network/core-signing-participant": "workspace:^",
+        "@canton-network/core-signing-store-sql": "workspace:^",
         "@canton-network/core-tx-visualizer": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
@@ -59,7 +60,7 @@
         "uuid": "^11.1.0",
         "vite": "^6.4.1",
         "vite-express": "^0.21.1",
-        "zod": "^3.25.64"
+        "zod": "^4.1.12"
     },
     "devDependencies": {
         "@canton-network/core-wallet-store-inmemory": "workspace:^",

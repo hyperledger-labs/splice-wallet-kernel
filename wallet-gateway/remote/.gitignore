@@ -1,3 +1,4 @@
 store.sqlite
 fireblocks_api.key
 fireblocks_secret.key
+signingStore.sqlite

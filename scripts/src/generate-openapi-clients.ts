@@ -112,8 +112,8 @@ const getSpecs = (spliceVersion: string): OpenApiSpec[] => [
         output: 'core/ledger-client/src/generated-clients/openapi-3.3.0-SNAPSHOT.ts',
     },
     {
-        input: 'api-specs/ledger-api/3.4.0/openapi.yaml',
-        output: 'core/ledger-client/src/generated-clients/openapi-3.4.0-SNAPSHOT.ts',
+        input: 'api-specs/ledger-api/3.4.7/openapi.yaml',
+        output: 'core/ledger-client/src/generated-clients/openapi-3.4.7.ts',
     },
     // Splice Scan API
     {

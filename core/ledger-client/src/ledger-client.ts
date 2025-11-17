@@ -3,7 +3,7 @@
 
 import * as v3_3 from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 
-import * as v3_4 from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
+import * as v3_4 from './generated-clients/openapi-3.4.7.js'
 import createClient, { Client, FetchOptions } from 'openapi-fetch'
 import { Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
@@ -15,15 +15,14 @@ import {
 } from './ledger-api-utils.js'
 
 import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
+import { SharedACSCache } from './acs/acs-shared-cache.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 export const supportedVersions = ['3.3', '3.4'] as const
 
 export type SupportedVersions = (typeof supportedVersions)[number]
 
 export type Types = v3_3.components['schemas'] | v3_4.components['schemas']
-
 type paths = v3_3.paths | v3_4.paths
-
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional
 export type PostEndpoint = {
@@ -66,17 +65,20 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
 
 // Explicitly use the 3.3 schema here, as there has not been a 3.4 snapshot containing these yet
 export type GenerateTransactionResponse =
-    v3_3.components['schemas']['GenerateExternalPartyTopologyResponse']
+    | v3_3.components['schemas']['GenerateExternalPartyTopologyResponse']
+    | v3_4.components['schemas']['GenerateExternalPartyTopologyResponse']
 
 export type AllocateExternalPartyResponse =
-    v3_3.components['schemas']['AllocateExternalPartyResponse']
-
+    | v3_3.components['schemas']['AllocateExternalPartyResponse']
+    | v3_4.components['schemas']['AllocateExternalPartyResponse']
 export type OnboardingTransactions = NonNullable<
-    v3_3.components['schemas']['AllocateExternalPartyRequest']['onboardingTransactions']
+    | v3_3.components['schemas']['AllocateExternalPartyRequest']['onboardingTransactions']
+    | v3_4.components['schemas']['AllocateExternalPartyRequest']['onboardingTransactions']
 >
 
 export type MultiHashSignatures = NonNullable<
-    v3_3.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
+    | v3_3.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
+    | v3_4.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
 >
 // Any options the client accepts besides body/params
 type ExtraPostOpts = Omit<FetchOptions<paths>, 'body' | 'params'>
@@ -84,12 +86,13 @@ type ExtraPostOpts = Omit<FetchOptions<paths>, 'body' | 'params'>
 export class LedgerClient {
     // privately manage the active connected version and associated client codegen
     private readonly clients: Record<SupportedVersions, Client<paths>>
-    private clientVersion: SupportedVersions = '3.3' // default to 3.3 if not provided
+    private clientVersion: SupportedVersions = '3.4' // default to 3.4 if not provided
     private currentClient: Client<paths>
     private initialized: boolean = false
     private accessTokenProvider: AccessTokenProvider | undefined
     private acsHelper: ACSHelper
     private readonly logger: Logger
+    baseUrl: URL
 
     constructor(
         baseUrl: URL,
@@ -142,7 +145,13 @@ export class LedgerClient {
 
         this.clientVersion = version ?? this.clientVersion
         this.currentClient = this.clients[this.clientVersion]
-        this.acsHelper = new ACSHelper(this, _logger, acsHelperOptions)
+        this.baseUrl = baseUrl
+        this.acsHelper = new ACSHelper(
+            this,
+            _logger,
+            acsHelperOptions,
+            SharedACSCache
+        )
     }
 
     public async init() {
@@ -152,6 +161,7 @@ export class LedgerClient {
             this.clientVersion = this.parseSupportedVersions(
                 versionFromClient.data?.version
             )
+            this.currentClient = this.clients[this.clientVersion]
             this.initialized = true
         }
     }
@@ -411,24 +421,33 @@ export class LedgerClient {
     ): Promise<AllocateExternalPartyResponse> {
         await this.init()
 
-        if (this.clientVersion !== '3.3') {
-            throw new Error(
-                'allocateExternalParty is only supported on 3.3 clients'
-            )
+        if (this.clientVersion == '3.3') {
+            const client: Client<v3_3.paths> = this.clients['3.3']
+
+            const resp = await client.POST('/v2/parties/external/allocate', {
+                body: {
+                    synchronizer: synchronizerId,
+                    identityProviderId: '',
+                    onboardingTransactions,
+                    multiHashSignatures,
+                },
+            })
+
+            return this.valueOrError(resp)
+        } else {
+            const client: Client<v3_4.paths> = this.clients['3.4']
+
+            const resp = await client.POST('/v2/parties/external/allocate', {
+                body: {
+                    synchronizer: synchronizerId,
+                    identityProviderId: '',
+                    onboardingTransactions,
+                    multiHashSignatures,
+                },
+            })
+
+            return this.valueOrError(resp)
         }
-
-        const client: Client<v3_3.paths> = this.clients['3.3']
-
-        const resp = await client.POST('/v2/parties/external/allocate', {
-            body: {
-                synchronizer: synchronizerId,
-                identityProviderId: '',
-                onboardingTransactions,
-                multiHashSignatures,
-            },
-        })
-
-        return this.valueOrError(resp)
     }
 
     /** TODO: simplify once 3.4 snapshot contains this endpoint  */
@@ -443,36 +462,57 @@ export class LedgerClient {
     ): Promise<GenerateTransactionResponse> {
         await this.init()
 
-        if (this.clientVersion !== '3.3') {
-            throw new Error(
-                'allocateExternalParty is only supported on 3.3 clients'
+        if (this.clientVersion == '3.3') {
+            const client: Client<v3_3.paths> = this.clients['3.3']
+
+            const body = {
+                synchronizer: synchronizerId,
+                partyHint,
+                publicKey: {
+                    format: 'CRYPTO_KEY_FORMAT_RAW',
+                    keyData: publicKey,
+                    keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
+                },
+                localParticipantObservationOnly,
+                confirmationThreshold,
+                otherConfirmingParticipantUids,
+                observingParticipantUids,
+            }
+
+            this.logger.debug(body, 'generateTopology request body')
+
+            const resp = await client.POST(
+                '/v2/parties/external/generate-topology',
+                { body }
             )
+
+            return this.valueOrError(resp)
+        } else {
+            const client: Client<v3_4.paths> = this.clients['3.4']
+
+            const body = {
+                synchronizer: synchronizerId,
+                partyHint,
+                publicKey: {
+                    format: 'CRYPTO_KEY_FORMAT_RAW',
+                    keyData: publicKey,
+                    keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
+                },
+                localParticipantObservationOnly,
+                confirmationThreshold,
+                otherConfirmingParticipantUids,
+                observingParticipantUids,
+            }
+
+            this.logger.debug(body, 'generateTopology request body')
+
+            const resp = await client.POST(
+                '/v2/parties/external/generate-topology',
+                { body }
+            )
+
+            return this.valueOrError(resp)
         }
-
-        const client: Client<v3_3.paths> = this.clients['3.3']
-
-        const body = {
-            synchronizer: synchronizerId,
-            partyHint,
-            publicKey: {
-                format: 'CRYPTO_KEY_FORMAT_RAW',
-                keyData: publicKey,
-                keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
-            },
-            localParticipantObservationOnly,
-            confirmationThreshold,
-            otherConfirmingParticipantUids,
-            observingParticipantUids,
-        }
-
-        this.logger.debug(body, 'generateTopology request body')
-
-        const resp = await client.POST(
-            '/v2/parties/external/generate-topology',
-            { body }
-        )
-
-        return this.valueOrError(resp)
     }
 
     async activeContracts(options: {
@@ -480,8 +520,17 @@ export class LedgerClient {
         templateIds?: string[]
         parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
         filterByParty?: boolean
+        interfaceIds?: string[]
+        limit?: number
     }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
-        const { offset, templateIds, parties, filterByParty } = options
+        const {
+            offset,
+            templateIds,
+            parties,
+            filterByParty,
+            interfaceIds,
+            limit,
+        } = options
 
         this.logger.debug(options, 'options for active contracts')
 
@@ -495,29 +544,51 @@ export class LedgerClient {
             )
         }
 
-        if (filterByParty && !templateIds?.length && parties?.length === 1) {
+        if (interfaceIds?.length === 1 && parties?.length === 1) {
+            const party = parties[0]
+            const interfaceId = interfaceIds[0]
+            return this.acsHelper.activeContractsForInterface(
+                offset,
+                party,
+                interfaceId
+            )
+        }
+
+        if (
+            filterByParty &&
+            !templateIds?.length &&
+            !interfaceIds?.length &&
+            parties?.length === 1
+        ) {
             const party = parties[0]
             const r = this.acsHelper.activeContractsForInterface(
                 offset,
                 party,
                 ''
             )
-            this.logger.info(r)
             return r
         }
 
-        const filter = this.buildActiveContractsFilter(options)
-
+        const filter = this.buildActiveContractFilter(options)
         this.logger.debug('falling back to post request')
 
-        return await this.postWithRetry('/v2/state/active-contracts', filter)
+        return await this.postWithRetry(
+            '/v2/state/active-contracts',
+            filter,
+            defaultRetryableOptions,
+            {
+                query: limit ? { limit: limit.toString() } : {},
+            }
+        )
     }
 
-    private buildActiveContractsFilter(options: {
+    private buildActiveContractFilter(options: {
         offset: number
         templateIds?: string[]
-        parties?: string[]
+        parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
         filterByParty?: boolean
+        interfaceIds?: string[]
+        limit?: number
     }) {
         const filter: PostRequest<'/v2/state/active-contracts'> = {
             filter: {
@@ -544,17 +615,45 @@ export class LedgerClient {
             ]
         }
 
+        const buildInterfaceFilter = (interfaceIds?: string[]) => {
+            if (!interfaceIds) return []
+            return [
+                {
+                    identifierFilter: {
+                        InterfaceFilter: {
+                            value: {
+                                interfaceId: interfaceIds[0],
+                                includeCreatedEventBlob: true, //TODO: figure out if this should be configurable
+                                includeInterfaceView: true,
+                            },
+                        },
+                    },
+                },
+            ]
+        }
+
+        this.logger.info(options, 'active contract query options')
         if (
             options?.filterByParty &&
             options.parties &&
             options.parties.length > 0
         ) {
             // Filter by party: set filtersByParty for each party
-            for (const party of options.parties) {
-                filter.filter!.filtersByParty[party] = {
-                    cumulative: options.templateIds
-                        ? buildTemplateFilter(options.templateIds)
-                        : [],
+            if (options?.templateIds && !options?.interfaceIds) {
+                for (const party of options.parties) {
+                    filter.filter!.filtersByParty[party] = {
+                        cumulative: options.templateIds
+                            ? buildTemplateFilter(options.templateIds)
+                            : [],
+                    }
+                }
+            } else if (options?.interfaceIds && !options?.templateIds) {
+                for (const party of options.parties) {
+                    filter.filter!.filtersByParty[party] = {
+                        cumulative: options.interfaceIds
+                            ? buildInterfaceFilter(options.interfaceIds)
+                            : [],
+                    }
                 }
             }
         } else if (options?.templateIds) {
@@ -562,11 +661,14 @@ export class LedgerClient {
             filter.filter!.filtersForAnyParty = {
                 cumulative: buildTemplateFilter(options.templateIds),
             }
+        } else if (options?.interfaceIds) {
+            filter.filter!.filtersForAnyParty = {
+                cumulative: buildInterfaceFilter(options.templateIds),
+            }
         }
 
         return filter
     }
-
     public async postWithRetry<Path extends PostEndpoint>(
         path: Path,
         body: PostRequest<Path>,
@@ -607,10 +709,7 @@ export class LedgerClient {
         return this.acsHelper.getCacheStats()
     }
 
-    /**
-     * @deprecated use postWithRetry instead, should be made private
-     */
-    private async post<Path extends PostEndpoint>(
+    public async post<Path extends PostEndpoint>(
         path: Path,
         body: PostRequest<Path>,
         params?: {
@@ -627,10 +726,7 @@ export class LedgerClient {
         return this.valueOrError(resp)
     }
 
-    /**
-     * @deprecated use getWithRetry instead, should be made private
-     */
-    private async get<Path extends GetEndpoint>(
+    public async get<Path extends GetEndpoint>(
         path: Path,
         params?: {
             path?: Record<string, string>

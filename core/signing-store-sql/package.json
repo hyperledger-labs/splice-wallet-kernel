@@ -1,0 +1,53 @@
+{
+    "name": "@canton-network/core-signing-store-sql",
+    "version": "0.12.0",
+    "type": "module",
+    "repository": "github:hyperledger-labs/splice-wallet-kernel",
+    "description": "SQL implementation of the Store API",
+    "license": "Apache-2.0",
+    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
+    "packageManager": "yarn@4.9.4",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "default": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "tsup && tsc -p tsconfig.types.json && tsc -b tsconfig.migrations.json",
+        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json  && tsc -b tsconfig.migrations.json\"",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
+        "clean": "tsc -b --clean; rm -rf dist"
+    },
+    "dependencies": {
+        "@canton-network/core-ledger-client": "workspace:^",
+        "@canton-network/core-rpc-errors": "workspace:^",
+        "@canton-network/core-signing-lib": "workspace:^",
+        "@canton-network/core-wallet-auth": "workspace:^",
+        "@canton-network/core-wallet-store": "workspace:^",
+        "better-sqlite3": "^12.2.0",
+        "commander": "^14.0.0",
+        "kysely": "^0.28.5",
+        "pino": "^10.0.0",
+        "umzug": "^3.8.2",
+        "zod": "^4.1.12"
+    },
+    "devDependencies": {
+        "@swc/core": "^1.11.31",
+        "@types/better-sqlite3": "^7.6.13",
+        "tsup": "^8.5.0",
+        "tsx": "^4.20.4",
+        "typescript": "^5.8.3"
+    },
+    "files": [
+        "dist/**"
+    ],
+    "publishConfig": {
+        "access": "public"
+    }
+}

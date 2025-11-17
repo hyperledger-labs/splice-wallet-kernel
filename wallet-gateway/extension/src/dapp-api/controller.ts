@@ -28,6 +28,8 @@ export const dappController = (store?: Store) =>
                 status: {
                     kernel: kernelInfo,
                     isConnected: false,
+                    isNetworkConnected: false,
+                    networkReason: 'Unauthenticated',
                     networkId: 'default-network-id',
                     userUrl: Browser.runtime.getURL('pages/user.html'),
                 },
