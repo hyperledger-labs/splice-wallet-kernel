@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-types",
-    "version": "0.10.0",
+    "version": "0.11.1",
     "type": "module",
     "description": "Types and transport-agnostic parsers for data sent across Wallet components.",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -26,7 +26,7 @@
     },
     "dependencies": {
         "uuid": "^11.1.0",
-        "zod": "^3.25.67"
+        "zod": "^4.1.12"
     },
     "devDependencies": {
         "tsup": "^8.5.0",

@@ -197,6 +197,8 @@ export class WalletSDKImpl implements WalletSDK {
             this._authTokenProvider,
             false
         )
+        await this.userLedger.awaitInit()
+
         this.tokenStandard = this.tokenStandardFactory(
             userId,
             this._authTokenProvider,

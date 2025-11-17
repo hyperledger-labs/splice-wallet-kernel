@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-token-standard",
-    "version": "0.11.0",
+    "version": "0.12.1",
     "type": "module",
     "description": "daml codegen js for core token standard",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",
@@ -29,7 +29,7 @@
         "lodash": "^4.17.21",
         "openapi-fetch": "^0.14.0",
         "uuid": "^11.1.0",
-        "zod": "^3.25.67"
+        "zod": "^4.1.12"
     },
     "devDependencies": {
         "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "workspace:^",

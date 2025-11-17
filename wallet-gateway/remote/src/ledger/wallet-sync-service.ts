@@ -91,13 +91,14 @@ export class WalletSyncService {
                         const [hint, namespace] = party.split('::')
                         return {
                             primary: false,
+                            status: 'allocated',
                             partyId: party,
                             hint: hint,
                             publicKey: namespace,
                             namespace: namespace,
                             networkId: network.id,
                             signingProviderId: 'participant', // todo: determine based on partyDetails.isLocal
-                        }
+                        } as Wallet
                     }) || []
 
             await Promise.all(

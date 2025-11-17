@@ -22,7 +22,7 @@ export const success = (message: string): string => green(message)
 export const trimNewline = (message: string): string =>
     message.replace(/\n$/, '')
 
-const repoRoot = getRepoRoot()
+export const repoRoot = getRepoRoot()
 export const CANTON_PATH = path.join(repoRoot, '.canton')
 export const SPLICE_PATH = path.join(repoRoot, '.splice')
 export const SPLICE_SPEC_PATH = path.join(repoRoot, '.splice-spec')
@@ -37,23 +37,23 @@ export type CantonVersionAndHash = {
     hash: string
 }
 // Canton versions
-export const DAML_RELEASE_VERSION = '3.3.0-snapshot.20251108.16145.0.v21f4ad7f'
+export const DAML_RELEASE_VERSION = '3.4.7'
 
 export const LOCALNET_ARCHIVE_HASH =
-    '706c4412d1cb29285fe8a591e74f44458d2afcbb04603c32cdb6c6260538145f'
+    '20809a6f1ba01ca7da67b88962c29afb564bd11a119ebfd24376cff347ba1c33'
 export const SPLICE_ARCHIVE_HASH =
-    'dbe943a466f06624c2f55e2e4ad66180e81804bbcb0288b6a4882df49702a4b1'
+    '7412d98b9da4c196d86dbcd4185e2829939906604c2bb5271d0ccee353bafc87'
 export const SPLICE_SPEC_ARCHIVE_HASH =
-    '102dba4a7224a0acc2544111ecdf2e6538de2b29bcc3bd7348edf4b445e07329'
+    '8db50e2beab05f2ba6784f6732cad3758e100e39a721c5665fa566aaa43e2d2b'
 export const CANTON_ARCHIVE_HASH =
     '43c89d9833886fc68cac4951ba1959b7f6cc5269abfff1ba5129859203aa8cd3'
-export const SPLICE_VERSION = '0.4.25'
+export const SPLICE_VERSION = '0.5.1'
 
 export const SUPPORTED_VERSIONS = {
     devnet: {
         canton: {
-            version: '3.4.0-snapshot.20250922.16951.0.v1eb3f268',
-            hash: 'e0f59a7b5015b56479ef4786662c5935a0fee9ac803465bb0f70bdc6c3bf4dff',
+            version: '3.4.7',
+            hash: '520a582a3d390c8abf02c421e9bb5063e95c2fdc3c775f08e295986d8919b533',
         },
     },
     mainnet: {

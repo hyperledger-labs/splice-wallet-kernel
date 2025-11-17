@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 const LOCALNET_SCAN_PROXY_API_URL = new URL(
-    'http://wallet.localhost:2000/api/validator'
+    'http://localhost:2000/api/validator'
 )
 
 //scan proxy exposes the registry endpoints as well

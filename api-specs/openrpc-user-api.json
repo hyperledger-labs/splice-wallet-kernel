@@ -623,6 +623,13 @@
                         "type": "string",
                         "description": "The party ID corresponding to the wallet."
                     },
+                    "status": {
+                        "title": "walletStatus",
+                        "type": "string",
+                        "enum": ["initialized", "allocated"],
+                        "description": "The status of the wallet."
+                    },
+
                     "hint": {
                         "title": "hint",
                         "type": "string",
@@ -662,6 +669,7 @@
                 "required": [
                     "primary",
                     "partyId",
+                    "status",
                     "hint",
                     "publicKey",
                     "namespace",
@@ -712,6 +720,11 @@
                         "title": "status",
                         "type": "string",
                         "enum": ["connected", "disconnected"]
+                    },
+                    "reason": {
+                        "title": "reason",
+                        "type": "string",
+                        "description": "The reason for the current status."
                     }
                 },
                 "required": ["network", "status", "accessToken"],

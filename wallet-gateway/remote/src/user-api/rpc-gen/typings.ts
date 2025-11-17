@@ -193,6 +193,12 @@ export type Networks = Network[]
 export type Idps = Idp[]
 /**
  *
+ * The status of the wallet.
+ *
+ */
+export type WalletStatus = 'initialized' | 'allocated'
+/**
+ *
  * The party hint and name of the wallet.
  *
  */
@@ -211,6 +217,7 @@ export type PublicKey = string
 export interface Wallet {
     primary: Primary
     partyId: PartyId
+    status: WalletStatus
     hint: Hint
     publicKey: PublicKey
     namespace: Namespace
@@ -231,6 +238,12 @@ export type AccessToken = string
 export type Status = 'connected' | 'disconnected'
 /**
  *
+ * The reason for the current status.
+ *
+ */
+export type Reason = string
+/**
+ *
  * Structure representing the connected network session
  *
  */
@@ -238,6 +251,7 @@ export interface Session {
     network: Network
     accessToken: AccessToken
     status: Status
+    reason?: Reason
 }
 export type Sessions = Session[]
 export interface AddNetworkParams {
@@ -349,6 +363,7 @@ export interface AddSessionResult {
     network: Network
     accessToken: AccessToken
     status: Status
+    reason?: Reason
 }
 export interface ListSessionsResult {
     sessions: Sessions
