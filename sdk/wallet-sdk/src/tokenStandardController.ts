@@ -529,6 +529,25 @@ export class TokenStandardController {
         }
     }
 
+    async createMergeDelegationProposal(
+        operatorParty: PartyId,
+        metadata?: Metadata
+    ) {
+        return {
+            CreateCommand: {
+                templateId:
+                    '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
+                createArguments: {
+                    delegation: {
+                        operator: operatorParty,
+                        owner: this.getPartyId(),
+                        meta: metadata ? metadata : { values: {} },
+                    },
+                },
+            },
+        }
+    }
+
     /**
      * Build an Exercise command to cancel a TransferPreapproval.
      *
