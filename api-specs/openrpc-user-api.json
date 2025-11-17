@@ -80,6 +80,58 @@
             }
         },
         {
+            "name": "addIdp",
+            "description": "Adds a new identity provider.",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "AddIdpParams",
+                        "type": "object",
+                        "properties": {
+                            "idp": {
+                                "$ref": "#/components/schemas/Idp"
+                            }
+                        },
+                        "required": ["idp"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/Null"
+                }
+            }
+        },
+        {
+            "name": "removeIdp",
+            "description": "Removes an identity provider. Fails if an existing network is using the identity provider.",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "RemoveIdpParams",
+                        "type": "object",
+                        "properties": {
+                            "identityProviderId": {
+                                "title": "identityProviderId",
+                                "type": "string",
+                                "description": "Identity Provider ID"
+                            }
+                        },
+                        "required": ["identityProviderId"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/Null"
+                }
+            }
+        },
+        {
             "name": "listIdps",
             "params": [],
             "result": {
@@ -495,8 +547,9 @@
             },
             "Idp": {
                 "title": "Idp",
-                "type": "object",
                 "description": "Structure representing the Identity Providers",
+                "type": "object",
+                "description": "An identity provider for a network",
                 "properties": {
                     "id": {
                         "title": "id",
@@ -505,8 +558,8 @@
                     },
                     "type": {
                         "title": "type",
-                        "type": "string",
-                        "description": "Type of identity provider (OAuth2 or Self-Signed)"
+                        "enum": ["oauth", "self_signed"],
+                        "description": "Type of identity provider (oauth / self_signed)"
                     },
                     "issuer": {
                         "title": "issuer",
@@ -516,7 +569,7 @@
                     "configUrl": {
                         "title": "configUrl",
                         "type": "string",
-                        "description": "URL to fetch the identity provider configuration"
+                        "description": "The configuration URL for the identity provider."
                     }
                 },
                 "required": ["id", "type", "issuer"],
