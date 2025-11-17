@@ -412,6 +412,20 @@ export interface components {
         CanActAs1: {
             party: string
         }
+        /** CanExecuteAs */
+        CanExecuteAs: {
+            value: components['schemas']['CanExecuteAs1']
+        }
+        /** CanExecuteAs */
+        CanExecuteAs1: {
+            party: string
+        }
+        /** CanExecuteAsAnyParty */
+        CanExecuteAsAnyParty: {
+            value: components['schemas']['CanExecuteAsAnyParty1']
+        }
+        /** CanExecuteAsAnyParty */
+        CanExecuteAsAnyParty1: Record<string, never>
         /** CanReadAs */
         CanReadAs: {
             value: components['schemas']['CanReadAs1']
@@ -2488,6 +2502,12 @@ export interface components {
              * Required
              */
             recordTime: string
+            /**
+             * @description For transaction externally signed, contains the external transaction hash
+             * signed by the external party. Can be used to correlate an external submission with a committed transaction.
+             * Optional
+             */
+            externalTransactionHash?: string
         }
         /**
          * JsTransactionTree
@@ -2569,6 +2589,12 @@ export interface components {
         Kind:
             | {
                   CanActAs: components['schemas']['CanActAs']
+              }
+            | {
+                  CanExecuteAs: components['schemas']['CanExecuteAs']
+              }
+            | {
+                  CanExecuteAsAnyParty: components['schemas']['CanExecuteAsAnyParty']
               }
             | {
                   CanReadAs: components['schemas']['CanReadAs']

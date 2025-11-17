@@ -259,7 +259,7 @@ jobs:
         runs-on: ubuntu-latest
         needs: sdk-e2e
         steps:
-            - run: echo "all e2e shards passed"
+            - run: echo "all wallet-sdk-e2e envs passed"
 
     test-wallet-sdk-pkg:
         runs-on: ubuntu-latest
