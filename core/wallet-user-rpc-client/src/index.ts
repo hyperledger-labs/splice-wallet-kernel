@@ -193,6 +193,12 @@ export interface Idp {
 export type Idps = Idp[]
 /**
  *
+ * The status of the wallet.
+ *
+ */
+export type WalletStatus = 'initialized' | 'allocated'
+/**
+ *
  * The party hint and name of the wallet.
  *
  */
@@ -211,6 +217,7 @@ export type PublicKey = string
 export interface Wallet {
     primary: Primary
     partyId: PartyId
+    status: WalletStatus
     hint: Hint
     publicKey: PublicKey
     namespace: Namespace

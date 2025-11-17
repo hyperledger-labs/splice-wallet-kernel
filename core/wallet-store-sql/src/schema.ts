@@ -7,6 +7,7 @@ import {
     Transaction,
     Session,
     Network,
+    WalletStatus,
 } from '@canton-network/core-wallet-store'
 
 interface MigrationTable {
@@ -156,10 +157,16 @@ export const fromWallet = (wallet: Wallet, userId: UserId): WalletTable => {
     }
 }
 
+export const toWalletStatus = (status?: string): WalletStatus => {
+    if (status === 'allocated') return 'allocated'
+    return 'initialized'
+}
+
 export const toWallet = (table: WalletTable): Wallet => {
     return {
         ...table,
         primary: table.primary === 1,
+        status: toWalletStatus(table.status),
     }
 }
 

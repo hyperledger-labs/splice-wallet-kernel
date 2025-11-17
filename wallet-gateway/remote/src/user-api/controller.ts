@@ -17,7 +17,12 @@ import {
     SyncWalletsResult,
     CreateWalletParams,
 } from './rpc-gen/typings.js'
-import { Store, Transaction, Network } from '@canton-network/core-wallet-store'
+import {
+    Store,
+    Transaction,
+    Network,
+    Wallet,
+} from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'
 import { NotificationService } from '../notification/NotificationService.js'
 import {
@@ -184,7 +189,7 @@ export const userController = (
                     if (!key) throw new Error('Fireblocks key not found')
 
                     if (signingProviderContext) {
-                        walletStatus = 'created'
+                        walletStatus = 'initialized'
                         const { signature, status } =
                             await driver.getTransaction({
                                 userId,
@@ -258,7 +263,7 @@ export const userController = (
                                 )
                         } else {
                             txId = id
-                            walletStatus = 'created'
+                            walletStatus = 'initialized'
                         }
 
                         party = {
@@ -281,17 +286,17 @@ export const userController = (
             const wallet = {
                 signingProviderId,
                 networkId,
+                status: walletStatus,
                 primary: primary ?? false,
                 publicKey: publicKey || partyArgs.namespace,
                 externalTxId: txId,
                 topologyTransactions: topologyTransactions?.join(', ') ?? '',
-                status: walletStatus,
                 partyId:
                     partyId !== ''
                         ? partyId
                         : `${partyArgs.hint}::${partyArgs.namespace}`,
                 ...partyArgs,
-            }
+            } as Wallet
 
             if (signingProviderContext && walletStatus === 'allocated') {
                 await store.updateWallet({
@@ -321,7 +326,7 @@ export const userController = (
             filter?: { networkIds?: string[]; signingProviderIds?: string[] }
         }) => {
             // TODO: support filters
-            return store.getWallets()
+            return await store.getWallets()
         },
         sign: async ({
             preparedTransaction,
