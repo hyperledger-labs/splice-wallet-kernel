@@ -55,7 +55,8 @@ major version bumps are triggered by adding an exclamation after the scope (`fea
 
 ### building
 
-you can build each repo separately by going into the repo and running `yarn build`. Alternatively you can run `yarn build:all` to build all workspaces from root.
+We recommend starting by building all sub-packages by running `yarn build:all` from the root.
+After this, you can selectively build each package separately by navigating into the corresponding directory and running `yarn build`.
 
 ### API generation
 
