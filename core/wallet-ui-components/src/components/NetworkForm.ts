@@ -5,7 +5,7 @@ import { Network, networkSchema } from '@canton-network/core-wallet-store'
 import { html } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/BaseElement.js'
-import { NetworkInputChangedEvent } from './NetworkFormInput.js'
+import { FormInputChangedEvent } from './FormInput.js'
 import {
     AuthorizationCodeAuth,
     ClientCredentialsAuth,
@@ -138,72 +138,72 @@ export class NetworkForm extends BaseElement {
                 </select>
             </div>
 
-            <network-form-input
+            <form-input
                 required
                 label="Client Id"
                 .value=${authObj.clientId}
-                @network-input-change=${(e: NetworkInputChangedEvent) => {
+                @form-input-change=${(e: FormInputChangedEvent) => {
                     authObj.clientId = e.value
                 }}
-            ></network-form-input>
-            <network-form-input
+            ></form-input>
+            <form-input
                 required
                 label="Audience"
                 .value=${authObj.audience}
-                @network-input-change=${(e: NetworkInputChangedEvent) => {
+                @form-input-change=${(e: FormInputChangedEvent) => {
                     authObj.audience = e.value
                 }}
             >
-            </network-form-input>
-            <network-form-input
+            </form-input>
+            <form-input
                 required
                 label="Scope"
                 .value=${authObj.scope}
-                @network-input-change=${(e: NetworkInputChangedEvent) => {
+                @form-input-change=${(e: FormInputChangedEvent) => {
                     authObj.scope = e.value
                 }}
-            ></network-form-input>
+            ></form-input>
         `
 
         if (authObj.method === 'authorization_code') {
             return html`${commonFields}`
         } else if (authObj.method === 'client_credentials') {
             return html`${commonFields}
-                <network-form-input
+                <form-input
                     required
                     label="Client Secret"
                     .value=${(authObj as ClientCredentialsAuth).clientSecret}
-                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                    @form-input-change=${(e: FormInputChangedEvent) => {
                         ;(authObj as ClientCredentialsAuth).clientSecret =
                             e.value
                     }}
-                ></network-form-input>`
+                ></form-input>`
         } else if (authObj.method === 'self_signed') {
             return html`${commonFields}
-                <network-form-input
+                <form-input
                     required
                     label="Issuer"
                     .value=${(authObj as SelfSignedAuth).issuer}
-                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                    @form-input-change=${(e: FormInputChangedEvent) => {
                         ;(authObj as SelfSignedAuth).issuer = e.value
                     }}
-                ></network-form-input>
-                <network-form-input
+                ></form-input>
+                <form-input
                     required
                     label="Audience"
                     .value=${(authObj as SelfSignedAuth).audience}
-                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                    @form-input-change=${(e: FormInputChangedEvent) => {
                         ;(authObj as SelfSignedAuth).audience = e.value
                     }}
-                ></network-form-input>
-                <network-form-input
+                ></form-input>
+                <form-input
                     required
                     label="Client Secret"
                     .value=${(authObj as SelfSignedAuth).clientSecret}
-                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                    @form-input-change=${(e: FormInputChangedEvent) => {
                         ;(authObj as SelfSignedAuth).clientSecret = e.value
                     }}
-                ></network-form-input>`
+                ></form-input>`
         } else {
             throw new Error(
                 `Unsupported auth method: ${JSON.stringify(authObj)}`
@@ -214,60 +214,60 @@ export class NetworkForm extends BaseElement {
     render() {
         return html`
             <form @submit=${this.handleSubmit}>
-                <network-form-input
+                <form-input
                     required
                     label="Network Id"
                     text="A unique identifier for the network"
                     .value=${this.network.id ?? ''}
-                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                    @form-input-change=${(e: FormInputChangedEvent) => {
                         this.network.id = e.value
                     }}
-                ></network-form-input>
+                ></form-input>
 
-                <network-form-input
+                <form-input
                     required
                     label="Name"
                     .value=${this.network.name ?? ''}
-                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                    @form-input-change=${(e: FormInputChangedEvent) => {
                         this.network.name = e.value
                     }}
-                ></network-form-input>
+                ></form-input>
 
-                <network-form-input
+                <form-input
                     required
                     label="Description"
                     .value=${this.network.description ?? ''}
-                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                    @form-input-change=${(e: FormInputChangedEvent) => {
                         this.network.description = e.value
                     }}
-                ></network-form-input>
+                ></form-input>
 
-                <network-form-input
+                <form-input
                     required
                     label="Synchronizer Id"
                     .value=${this.network.synchronizerId ?? ''}
-                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                    @form-input-change=${(e: FormInputChangedEvent) => {
                         this.network.synchronizerId = e.value
                     }}
-                ></network-form-input>
+                ></form-input>
 
-                <network-form-input
+                <form-input
                     required
                     label="Identity Provider Id"
                     .value=${this.network.identityProviderId ?? ''}
-                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                    @form-input-change=${(e: FormInputChangedEvent) => {
                         this.network.identityProviderId = e.value
                     }}
-                ></network-form-input>
+                ></form-input>
 
-                <network-form-input
+                <form-input
                     required
                     label="Ledger API Base Url"
                     .value=${this.network.ledgerApi.baseUrl ?? ''}
-                    @network-input-change=${(e: NetworkInputChangedEvent) => {
+                    @form-input-change=${(e: FormInputChangedEvent) => {
                         this.network.ledgerApi.baseUrl = e.value
                     }}
-                ></network-form-input>
+                ></form-input>
 
                 <div>
                     <h2 class="form-text mb-4 fw-bold">
@@ -316,10 +316,12 @@ export class NetworkForm extends BaseElement {
 
                 <div class="mt-1 mb-1 text-danger">${this._error}</div>
 
-                <div class="buttons">
-                    <button class="btn btn-primary" type="submit">Save</button>
+                <div>
+                    <button class="btn btn-sm btn-primary" type="submit">
+                        Save
+                    </button>
                     <button
-                        class="btn btn-secondary"
+                        class="btn btn-sm btn-secondary"
                         type="button"
                         @click=${() =>
                             this.dispatchEvent(new NetworkEditCancelEvent())}

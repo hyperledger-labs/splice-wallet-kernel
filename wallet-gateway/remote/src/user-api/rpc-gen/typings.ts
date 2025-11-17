@@ -81,6 +81,35 @@ export interface Network {
 export type NetworkName = string
 /**
  *
+ * ID of the identity provider
+ *
+ */
+export type Id = string
+/**
+ *
+ * Type of identity provider (oauth / self_signed)
+ *
+ */
+export type Type = any
+/**
+ *
+ * The configuration URL for the identity provider.
+ *
+ */
+export type ConfigUrl = string
+/**
+ *
+ * An identity provider for a network
+ *
+ */
+export interface Idp {
+    id: Id
+    type: Type
+    issuer: Issuer
+    configUrl?: ConfigUrl
+}
+/**
+ *
  * Set as primary wallet for dApp usage.
  *
  */
@@ -161,35 +190,6 @@ export type CommandId = string
 export type Signature = string
 export type SignedBy = string
 export type Networks = Network[]
-/**
- *
- * ID of the identity provider
- *
- */
-export type Id = string
-/**
- *
- * Type of identity provider (OAuth2 or Self-Signed)
- *
- */
-export type Type = string
-/**
- *
- * URL to fetch the identity provider configuration
- *
- */
-export type ConfigUrl = string
-/**
- *
- * Structure representing the Identity Providers
- *
- */
-export interface Idp {
-    id: Id
-    type: Type
-    issuer: Issuer
-    configUrl?: ConfigUrl
-}
 export type Idps = Idp[]
 /**
  *
@@ -260,6 +260,14 @@ export interface AddNetworkParams {
 }
 export interface RemoveNetworkParams {
     networkName: NetworkName
+    [k: string]: any
+}
+export interface AddIdpParams {
+    idp: Idp
+    [k: string]: any
+}
+export interface RemoveIdpParams {
+    identityProviderId: IdentityProviderId
     [k: string]: any
 }
 export interface CreateWalletParams {
@@ -370,6 +378,8 @@ export interface ListSessionsResult {
 export type AddNetwork = (params: AddNetworkParams) => Promise<Null>
 export type RemoveNetwork = (params: RemoveNetworkParams) => Promise<Null>
 export type ListNetworks = () => Promise<ListNetworksResult>
+export type AddIdp = (params: AddIdpParams) => Promise<Null>
+export type RemoveIdp = (params: RemoveIdpParams) => Promise<Null>
 export type ListIdps = () => Promise<ListIdpsResult>
 export type CreateWallet = (
     params: CreateWalletParams

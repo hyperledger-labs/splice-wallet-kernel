@@ -21,6 +21,8 @@ export function handleErrorToast(e: unknown, fallback?: FallbackType) {
     let code: number = -1
     let message = ''
 
+    // TODO: if an API call fails in the frontend, it loses the structured error info and falls back to Unexpected.
+    // See line 242 in core/types/src/index.ts (class HttpTransport)
     if (ErrorResponse.safeParse(e).success) {
         const parsed: ErrorResponse = ErrorResponse.parse(e)
         code = parsed.error.code
