@@ -188,31 +188,6 @@ export async function downloadAndUnpackTarball(
         tar.extract(unpackDir, { strip: options?.strip ?? 1 })
     )
     console.log(success(`Unpacked tarball into ${unpackDir}`))
-
-    // if (options?.updateHash) {
-    //     const newHash = await computeFileHash(tarfile, algo)
-    //
-    //     // Update the hash in version-config.json if present
-    //     const fileContent = fs.readFileSync(VERSIONS_CONFIG_PATH, 'utf8')
-    //     // Find the old hash in the file (matching the old value)
-    //     if (options?.hash && fileContent.includes(options.hash)) {
-    //         const updatedContent = fileContent.replace(options.hash, newHash)
-    //         if (updatedContent !== fileContent) {
-    //             fs.writeFileSync(VERSIONS_CONFIG_PATH, updatedContent, 'utf8')
-    //             console.log(
-    //                 success(`Updated hash in version-config.json to ${newHash}`)
-    //             )
-    //         }
-    //     } else {
-    //         console.log(
-    //             warn(
-    //                 'Old hash not found in version-config.json, no update performed.'
-    //             )
-    //         )
-    //     }
-    //
-    //     currentHash = newHash
-    // }
 }
 // Get the root of the current repository
 // Assumption: the root of the repository is the closest

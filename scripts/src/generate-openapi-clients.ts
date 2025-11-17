@@ -9,7 +9,7 @@ import {
     info,
     Network,
     getNetworkArg,
-    SPLICE_SPEC_PATH, // TODO should we move that?
+    SPLICE_SPEC_PATH,
     success,
     SUPPORTED_VERSIONS,
     setSpliceHash,
