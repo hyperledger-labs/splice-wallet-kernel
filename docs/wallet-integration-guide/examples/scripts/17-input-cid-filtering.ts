@@ -266,7 +266,7 @@ const utxosAlice = await sdk.tokenStandard?.listHoldingUtxos(false)
 logger.info(`number of unlocked utxos for alice ${utxosAlice?.length}`)
 
 const [commands, mergedDisclosedContracts] =
-    await sdk.tokenStandard?.mergeHoldingUtxos2()!
+    await sdk.tokenStandard?.mergeHoldingUtxos()!
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     commands,

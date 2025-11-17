@@ -120,32 +120,16 @@ const utxosAlice = await sdk.tokenStandard?.listHoldingUtxos(false)
 logger.info(`number of unlocked utxos for alice ${utxosAlice?.length}`)
 
 const [commands, mergedDisclosedContracts] =
-    await sdk.tokenStandard?.mergeHoldingUtxos({
-        instrumentId: 'Amulet',
-        instrumentAdmin: instrumentAdminPartyId,
-    })!
+    await sdk.tokenStandard?.mergeHoldingUtxos()!
 
-/*
-can't have more than 100 transfers per execute, so we have to submit in batches
-each command contains up to 100 transfers
-*/
-
-// for (let i = 0; i < commands.length; i++) {
-//     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-//         commands[i],
-//         keyPairAlice.privateKey,
-//         v4(),
-//         mergedDisclosedContracts
-//     )
-// }
-
-await sdk.userLedger?.prepareSignExecuteAndWaitForSequentialCommandSubmission(
-    commands,
-    keyPairAlice.privateKey,
-    v4(),
-    mergedDisclosedContracts
-)
-
+for (let i = 0; i < commands.length; i++) {
+    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+        commands[i],
+        keyPairAlice.privateKey,
+        v4(),
+        mergedDisclosedContracts
+    )
+}
 const utxosAliceMerged = await sdk.tokenStandard?.listHoldingUtxos(false)!
 
 logger.info(
