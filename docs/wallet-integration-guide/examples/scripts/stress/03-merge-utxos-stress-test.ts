@@ -114,7 +114,7 @@ const processTapInBatches = async (totalIterations: number) => {
     return results
 }
 
-await processTapInBatches(101)
+await processTapInBatches(150)
 
 const utxosAlice = await sdk.tokenStandard?.listHoldingUtxos(false)
 logger.info(`number of unlocked utxos for alice ${utxosAlice?.length}`)
