@@ -41,7 +41,7 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
         await expect(dappPage.getByText('Loading...')).toHaveCount(0)
 
         await expect(
-            dappPage.getByText(/.*status: 🟢 connected.*/)
+            dappPage.getByText(/.*connected: 🟢*/)
         ).toBeVisible()
 
         const party1 = `test-${Date.now()}`
