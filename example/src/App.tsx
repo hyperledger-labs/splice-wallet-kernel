@@ -12,7 +12,7 @@ function App() {
     const [messages, setMessages] = useState<string[]>([])
     const [queryResponse, setQueryResponse] = useState<object | undefined>()
     const [primaryParty, setPrimaryParty] = useState<string>()
-    const [accounts, setAccounts] = useState<sdk.dappAPI.RequestAccountsResult>(
+    const [, setAccounts] = useState<sdk.dappAPI.RequestAccountsResult>(
         []
     )
 
@@ -75,7 +75,7 @@ function App() {
                 const requestedAccounts =
                     wallets as sdk.dappAPI.RequestAccountsResult
                 setAccounts(requestedAccounts)
-                console.log('accounts are ' + JSON.stringify(accounts))
+                console.log(requestedAccounts)
                 if (requestedAccounts?.length > 0) {
                     const primaryWallet = requestedAccounts.find(
                         (w) => w.primary
@@ -128,11 +128,12 @@ function App() {
                         <button
                             disabled={loading}
                             onClick={() => {
-                                console.log(
-                                    'Disconnecting from Wallet Gateway...'
-                                )
                                 setLoading(true)
-                                sdk.disconnect().then(() => setLoading(false))
+                                sdk.disconnect().then(() => {
+                                    setStatus({... status, isConnected: false})
+                                    setPrimaryParty(undefined)
+                                    setLoading(false)
+                            })
                             }}
                         >
                             disconnect
