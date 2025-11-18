@@ -548,6 +548,21 @@ export class TokenStandardController {
         }
     }
 
+    async approveMergeDelegationProposal(
+        contractId: string
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const exercise: ExerciseCommand = {
+            templateId:
+                '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
+            contractId,
+            choice: 'MergeDelegationProposal_Accept',
+            choiceArgument: {},
+        }
+        return [{ ExerciseCommand: exercise }, []]
+    }
+
     /**
      * Build an Exercise command to cancel a TransferPreapproval.
      *
