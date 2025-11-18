@@ -241,7 +241,9 @@ export class HttpTransport implements RpcTransport {
         })
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
+            throw new Error(
+                `HTTP error! status: ${response.status}, text: ${await response.text()} `
+            )
         }
 
         const json = await response.json()

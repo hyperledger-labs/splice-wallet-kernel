@@ -27,7 +27,7 @@ export class WgWalletsSync extends BaseElement {
         try {
             const result = await this.client?.request('syncWallets')
             alert(
-                `Wallet sync completed. Added ${result?.added.length} wallets.`
+                `Wallet sync completed:\n ➕ ${result?.added.length} new wallets. \n ➖ ${result?.removed.length} old wallets.`
             )
         } catch (e) {
             handleErrorToast(e)
