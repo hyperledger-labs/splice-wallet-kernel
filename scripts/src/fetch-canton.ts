@@ -12,15 +12,19 @@ import {
     SUPPORTED_VERSIONS,
     CANTON_PATH,
     downloadAndUnpackTarball,
-    CantonVersionAndHash,
     error,
+    setCantonHash,
+    Network,
+    getNetworkArg,
+    hasFlag,
 } from './lib/utils.js'
 import * as fs from 'fs'
+import crypto from 'crypto'
 
-async function fetchCanton(
-    cantonVersions: CantonVersionAndHash,
-    updateHash: boolean
-) {
+async function main(network: Network) {
+    const updateHash = hasFlag('updateHash')
+    const cantonVersions = SUPPORTED_VERSIONS[network].canton
+    console.debug(`fetching canton for ${network}`)
     const tarfile = path.join(
         CANTON_PATH,
         cantonVersions.version,
@@ -35,6 +39,14 @@ async function fetchCanton(
         strip: 1,
         updateHash,
     })
+
+    if (updateHash || !SUPPORTED_VERSIONS[network].canton.hash) {
+        const newHash = crypto
+            .createHash('sha256')
+            .update(fs.readFileSync(tarfile))
+            .digest('hex')
+        setCantonHash(network, newHash)
+    }
 
     const CANTON_MAJOR_VERSION = cantonVersions.version.split('-')[0]
     if (!fs.existsSync(cantonDownloadPath)) {
@@ -51,24 +63,13 @@ async function fetchCanton(
     fs.copyFileSync(
         path.join(
             cantonDownloadPath,
-            '/examples/09-json-api/typescript/openapi.yaml'
+            'examples/09-json-api/typescript/openapi.yaml'
         ),
         path.join(targetDir, 'openapi.yaml')
     )
 }
 
-async function main() {
-    const updateHash = process.argv.includes('--updateHash')
-    await Promise.all(
-        Object.entries(SUPPORTED_VERSIONS).map(async ([env, data]) => {
-            const { version, hash } = data.canton
-            console.debug(`fetching canton for ${env}`)
-            await fetchCanton({ version, hash }, updateHash)
-        })
-    )
-}
-
-main().catch((e) => {
+main(getNetworkArg()).catch((e) => {
     console.error(error(e.message || e))
     process.exit(1)
 })

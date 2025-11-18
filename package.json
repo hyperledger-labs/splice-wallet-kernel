@@ -4,7 +4,7 @@
     "scripts": {
         "start:all": "yarn pm2 start ecosystem.config.js --env development",
         "start:canton": "tsx ./scripts/src/start-canton.ts",
-        "start:canton:tls": "tsx ./scripts/src/start-canton.ts mainnet canton/canton-tls-enabled.conf",
+        "start:canton:tls": "tsx ./scripts/src/start-canton.ts network=mainnet config=canton/canton-tls-enabled.conf",
         "start:localnet": "tsx ./scripts/src/start-localnet.ts start",
         "start:canton:console": ".canton/bin/canton --config canton/canton.conf --bootstrap canton/bootstrap.canton",
         "stop:all": "yarn pm2 stop all",
@@ -33,7 +33,7 @@
         "script:release": "tsx ./scripts/src/release.ts",
         "script:retag": "tsx ./scripts/src/retag.ts",
         "script:flat-pack": "tsx ./scripts/src/flat-pack.ts",
-        "script:upgrade:splice": "tsx ./scripts/src/upgrade-splice.ts $@",
+        "script:upgrade:splice": "tsx ./scripts/src/upgrade-splice.ts",
         "full:rebuild": "NX_TUI=false && yarn clean:all && yarn generate:all && yarn install && yarn build:all --skip-nx-cache && NX_TUI=true"
     },
     "workspaces": [
