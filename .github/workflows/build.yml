@@ -114,9 +114,11 @@ jobs:
             - uses: ./.github/actions/setup_yarn
 
             - name: Download Canton
+              # TODO after bootstrap canton is adjusted for 3.4 remove --network arg, so it defaults to devnet
               run: yarn script:fetch:canton --network=mainnet
 
             - name: Start Canton
+              # TODO after bootstrap canton is adjusted for 3.4 remove --network arg in start:canton, so it defaults to devnet
               run: |
                   set -e
                   timeout 5m bash -c '
