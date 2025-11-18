@@ -2062,6 +2062,33 @@ components:
       properties:
         party:
           type: string
+    CanExecuteAs:
+      title: CanExecuteAs
+      type: object
+      required:
+      - value
+      properties:
+        value:
+          $ref: '#/components/schemas/CanExecuteAs1'
+    CanExecuteAs1:
+      title: CanExecuteAs
+      type: object
+      required:
+      - party
+      properties:
+        party:
+          type: string
+    CanExecuteAsAnyParty:
+      title: CanExecuteAsAnyParty
+      type: object
+      required:
+      - value
+      properties:
+        value:
+          $ref: '#/components/schemas/CanExecuteAsAnyParty1'
+    CanExecuteAsAnyParty1:
+      title: CanExecuteAsAnyParty
+      type: object
     CanReadAs:
       title: CanReadAs
       type: object
@@ -4695,6 +4722,12 @@ components:
             which synchronized the transaction.
             Required
           type: string
+        externalTransactionHash:
+          description: |-
+            For transaction externally signed, contains the external transaction hash
+            signed by the external party. Can be used to correlate an external submission with a committed transaction.
+            Optional
+          type: string
     JsTransactionTree:
       title: JsTransactionTree
       description: |-
@@ -4789,6 +4822,18 @@ components:
         properties:
           CanActAs:
             $ref: '#/components/schemas/CanActAs'
+      - type: object
+        required:
+        - CanExecuteAs
+        properties:
+          CanExecuteAs:
+            $ref: '#/components/schemas/CanExecuteAs'
+      - type: object
+        required:
+        - CanExecuteAsAnyParty
+        properties:
+          CanExecuteAsAnyParty:
+            $ref: '#/components/schemas/CanExecuteAsAnyParty'
       - type: object
         required:
         - CanReadAs

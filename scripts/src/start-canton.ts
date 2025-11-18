@@ -12,6 +12,9 @@ import {
     error,
     info,
     trimNewline,
+    getNetworkArg,
+    Network,
+    getArgValue,
 } from './lib/utils.js'
 import { existsSync } from 'fs'
 import pm2 from 'pm2'
@@ -20,16 +23,14 @@ import path from 'path'
 const processName = 'canton'
 
 async function main() {
-    const inputEnv =
-        (process.argv[2] as keyof typeof SUPPORTED_VERSIONS) ?? 'mainnet'
+    const network: Network = getNetworkArg()
+    const inputCantonConf = getArgValue('config') ?? CANTON_CONF
 
-    const inputCantonConf = process.argv[3] ?? CANTON_CONF
-
-    const envConfig = SUPPORTED_VERSIONS[inputEnv]?.canton
+    const envConfig = SUPPORTED_VERSIONS[network]?.canton
     if (!envConfig) {
         console.error(
             error(
-                `Unsupported canton version ${inputEnv}. Please use "mainnet" or "devnet. If no argument is supplied, will use mainnet as a default"`
+                `Unsupported canton version ${network}. Please use "mainnet" or "devnet. If no argument is supplied, will use mainnet as a default"`
             )
         )
         process.exit(1)
