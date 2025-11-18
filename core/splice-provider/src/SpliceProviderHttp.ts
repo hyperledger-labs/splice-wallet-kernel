@@ -53,7 +53,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
 
         // Prevent serialization of the socket
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(this.socket as any).toJson = () => ({})
+        ;(this.socket as any).toJSON = () => ({})
 
         // Listen for the auth success event sent from the WK UI popup to the SDK running in the parent window.
         window.addEventListener('message', async (event) => {
