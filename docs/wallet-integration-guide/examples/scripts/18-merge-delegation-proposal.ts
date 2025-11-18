@@ -3,6 +3,7 @@ import {
     localNetAuthDefault,
     localNetLedgerDefault,
     localNetTokenStandardDefault,
+    localValidatorDefault,
     createKeyPair,
     localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
@@ -11,6 +12,7 @@ import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
+import { DisclosedContract } from '@canton-network/core-ledger-client'
 
 const logger = pino({ name: '18-merge-delegation-porposal', level: 'info' })
 
@@ -29,6 +31,7 @@ const sdk = new WalletSDKImpl().configure({
     authFactory: localNetAuthDefault,
     ledgerFactory: localNetLedgerDefault,
     tokenStandardFactory: localNetTokenStandardDefault,
+    validatorFactory: localValidatorDefault,
 })
 
 logger.info('SDK initialized')
@@ -111,6 +114,50 @@ try {
         v4(),
         []
     )
+} catch (e) {
+    logger.error(e)
+}
+
+const ledgerEnd = await sdk.userLedger?.ledgerEnd()
+const activeContractsResult = await sdk.userLedger?.activeContracts({
+    offset: ledgerEnd?.offset!,
+    templateIds: [
+        '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
+    ],
+    parties: [treasuryParty?.partyId!],
+    filterByParty: true,
+})
+
+logger.info(activeContractsResult)
+
+if (activeContractsResult === undefined || activeContractsResult.length === 0) {
+    throw new Error('no merge delegation proposals')
+}
+const dc: DisclosedContract = {
+    templateId:
+        activeContractsResult[0].contractEntry.JsActiveContract?.createdEvent
+            .templateId!,
+    contractId:
+        activeContractsResult[0].contractEntry.JsActiveContract?.createdEvent
+            .contractId!,
+    createdEventBlob:
+        activeContractsResult[0].contractEntry.JsActiveContract?.createdEvent
+            .createdEventBlob!,
+    synchronizerId: synchonizerId,
+}
+
+const [command, blah] = await sdk.tokenStandard?.approveMergeDelegationProposal(
+    activeContractsResult[0].contractEntry.JsActiveContract?.createdEvent
+        .contractId!
+)!
+
+logger.info(command)
+
+try {
+    await sdk.setPartyId(validatorOperatorParty!)
+    const b = await sdk.userLedger?.submitCommand(command, v4(), [dc])
+
+    logger.info(b)
 } catch (e) {
     logger.error(e)
 }
