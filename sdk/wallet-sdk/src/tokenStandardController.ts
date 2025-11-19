@@ -260,17 +260,19 @@ export class TokenStandardController {
      * @param includeLocked defaulted to true, this will include locked UTXOs.
      * @param limit optional limit for number of UTXOs to return.
      * @param offset optional offset to list utxos from, default is latest.
+     * @param user optional party to list utxos
      * @returns A promise that resolves to an array of holding UTXOs.
      */
 
     async listHoldingUtxos(
         includeLocked: boolean = true,
         limit?: number,
-        offset?: number
+        offset?: number,
+        party?: PartyId
     ): Promise<PrettyContract<Holding>[]> {
         const utxos = await this.service.listContractsByInterface<Holding>(
             HOLDING_INTERFACE_ID,
-            this.getPartyId(),
+            party ?? this.getPartyId(),
             limit,
             offset
         )
@@ -529,20 +531,28 @@ export class TokenStandardController {
         }
     }
 
+    //TODO: figure out a nicer way to get the disclosed contracts
+
     async useMergeDelegations(
         walletParty: PartyId
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         //determine if user has more than 10 Holding UTXOS
-        const utxos = await this.listHoldingUtxos()
+
+        const ledgerEnd = await this.client.get('/v2/state/ledger-end')
+
+        const utxos = await this.listHoldingUtxos(
+            true,
+            100,
+            ledgerEnd.offset,
+            walletParty
+        )
 
         const allMergeDelegationChoices = []
 
         if (utxos.length > 10) {
             //look up merge delegation contract
-            const ledgerEnd = await this.client.get('/v2/state/ledger-end')
-
             const mergeDelegationContractForUser =
                 await this.client.activeContracts({
                     offset: ledgerEnd.offset,
@@ -553,13 +563,14 @@ export class TokenStandardController {
                     filterByParty: true,
                 })
 
+            //batch merge utility contract should be parties = delegate
             const batchMergeUtilityContract = await this.client.activeContracts(
                 {
                     offset: ledgerEnd.offset,
                     templateIds: [
-                        '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtilitys',
+                        '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
                     ],
-                    parties: [walletParty],
+                    parties: [this.getPartyId()],
                     filterByParty: true,
                 }
             )
@@ -570,24 +581,48 @@ export class TokenStandardController {
                 batchMergeUtilityContract[0].contractEntry.JsActiveContract
                     ?.createdEvent.contractId === undefined
             ) {
-                throw new Error()
+                throw new Error('both of these are undefined')
             }
+            this.logger.info(
+                mergeDelegationContractForUser[0],
+                'merge delegation contract'
+            )
 
-            const dc: DisclosedContract = {
-                templateId:
-                    mergeDelegationContractForUser[0].contractEntry
-                        .JsActiveContract?.createdEvent.templateId,
-                contractId:
-                    mergeDelegationContractForUser[0].contractEntry
-                        .JsActiveContract?.createdEvent.contractId,
-                createdEventBlob:
-                    mergeDelegationContractForUser[0].contractEntry
-                        .JsActiveContract?.createdEvent.createdEventBlob,
-                synchronizerId:
-                    mergeDelegationContractForUser[0].contractEntry
-                        .JsActiveContract?.synchronizerId,
-            }!
-            const dcs = [dc]
+            this.logger.info(
+                batchMergeUtilityContract[0],
+                'batchMergeUtilityContract'
+            )
+
+            const dc: DisclosedContract[] = [
+                {
+                    templateId:
+                        mergeDelegationContractForUser[0].contractEntry
+                            .JsActiveContract?.createdEvent.templateId,
+                    contractId:
+                        mergeDelegationContractForUser[0].contractEntry
+                            .JsActiveContract?.createdEvent.contractId,
+                    createdEventBlob:
+                        mergeDelegationContractForUser[0].contractEntry
+                            .JsActiveContract?.createdEvent.createdEventBlob,
+                    synchronizerId:
+                        mergeDelegationContractForUser[0].contractEntry
+                            .JsActiveContract?.synchronizerId,
+                }!,
+                {
+                    templateId:
+                        batchMergeUtilityContract[0].contractEntry
+                            .JsActiveContract?.createdEvent.templateId,
+                    contractId:
+                        batchMergeUtilityContract[0].contractEntry
+                            .JsActiveContract?.createdEvent.contractId,
+                    createdEventBlob:
+                        batchMergeUtilityContract[0].contractEntry
+                            .JsActiveContract?.createdEvent.createdEventBlob,
+                    synchronizerId:
+                        batchMergeUtilityContract[0].contractEntry
+                            .JsActiveContract?.synchronizerId,
+                }!,
+            ]
 
             //group by instruments
 
@@ -600,12 +635,12 @@ export class TokenStandardController {
                     `${utxo.interfaceViewValue.instrumentId.id}::${utxo.interfaceViewValue.instrumentId.admin}` as string
             )
 
+            this.logger.info(utxoGroupedByInstrument)
+
             for (const group of Object.values(utxoGroupedByInstrument)) {
                 if (!group) continue
                 const { id: instrumentId, admin: instrumentAdmin } =
                     group[0].interfaceViewValue.instrumentId
-
-                // const instrument = { instrumentId, instrumentAdmin }
 
                 const amount: number = group.reduce(
                     (totalSum, currentUtxo) =>
@@ -614,19 +649,35 @@ export class TokenStandardController {
                     0
                 )
 
-                const choiceArgs =
-                    await this.service.transfer.buildTransferChoiceArgs(
-                        this.getPartyId(),
-                        this.getPartyId(),
+                const [transferCommand, disclosedContractsTransfer] =
+                    await this.service.transfer.createTransfer(
+                        walletParty,
+                        walletParty,
                         amount.toString(),
                         instrumentAdmin,
-                        instrumentId
+                        instrumentId,
+                        this.getTransferFactoryRegistryUrl().href
                     )
-                const optMergeTransfer =
-                    this.service.transfer.fetchTransferFactoryChoiceContext(
-                        this.getTransferFactoryRegistryUrl().href,
-                        choiceArgs
-                    )
+                this.logger.info(transferCommand, 'TRANSFER COMMAND')
+
+                this.logger.info(
+                    disclosedContractsTransfer,
+                    'disclosed contracts'
+                )
+
+                dc.push(...disclosedContractsTransfer)
+
+                const moreDc: DisclosedContract[] = group.map((u) => {
+                    return {
+                        templateId: u.activeContract.createdEvent.templateId,
+                        contractId: u.activeContract.createdEvent.contractId,
+                        createdEventBlob:
+                            u.activeContract.createdEvent.createdEventBlob,
+                        synchronizerId: u.activeContract.synchronizerId,
+                    }
+                })
+
+                dc.push(...moreDc)
                 const exercise: ExerciseCommand = {
                     templateId:
                         '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
@@ -634,12 +685,24 @@ export class TokenStandardController {
                         mergeDelegationContractForUser[0].contractEntry
                             .JsActiveContract?.createdEvent.contractId,
                     choice: 'MergeDelegation_Merge',
-                    choiceArgument: optMergeTransfer,
+                    choiceArgument: {
+                        optMergeTransfer: {
+                            factoryCid: transferCommand.contractId,
+                            choiceArg: transferCommand.choiceArgument,
+                        },
+                    },
                 }
                 const mergeDelegationChoice = [{ ExerciseCommand: exercise }]
 
                 allMergeDelegationChoices.push(...mergeDelegationChoice)
             }
+
+            const mergeCallInput = allMergeDelegationChoices.map((c) => {
+                return {
+                    delegationCid: c.ExerciseCommand.contractId,
+                    choiceArg: c.ExerciseCommand.choiceArgument,
+                }
+            })
 
             const batchExerciseCommand: ExerciseCommand = {
                 templateId:
@@ -647,30 +710,32 @@ export class TokenStandardController {
                 contractId:
                     batchMergeUtilityContract[0].contractEntry.JsActiveContract
                         ?.createdEvent.contractId,
-                choice: 'BatchMergeUtility_MergeHoldings',
-                choiceArgument: allMergeDelegationChoices,
+                choice: 'BatchMergeUtility_BatchMerge',
+                choiceArgument: {
+                    mergeCalls: mergeCallInput,
+                },
             }
 
-            return [{ ExerciseCommand: batchExerciseCommand }, dcs]
+            return [{ ExerciseCommand: batchExerciseCommand }, dc]
         } else {
-            throw new Error('')
+            throw new Error(`Utxos are less than 10, found ${utxos.length} `)
         }
     }
 
-    async createBatchMergeUtility(operatorParty: PartyId) {
+    async createBatchMergeUtility() {
         return {
             CreateCommand: {
                 templateId:
                     '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
                 createArguments: {
-                    operator: operatorParty,
+                    operator: this.getPartyId(),
                 },
             },
         }
     }
 
     async createMergeDelegationProposal(
-        operatorParty: PartyId,
+        delegate: PartyId,
         metadata?: Metadata
     ) {
         return {
@@ -679,7 +744,7 @@ export class TokenStandardController {
                     '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
                 createArguments: {
                     delegation: {
-                        operator: operatorParty,
+                        operator: delegate,
                         owner: this.getPartyId(),
                         meta: metadata ? metadata : { values: {} },
                     },
