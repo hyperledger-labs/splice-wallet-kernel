@@ -7,14 +7,18 @@ import {
     ensureDir,
     getRepoRoot,
     info,
-    SPLICE_SPEC_ARCHIVE_HASH,
+    Network,
+    getNetworkArg,
     SPLICE_SPEC_PATH,
-    SPLICE_VERSION,
     success,
+    SUPPORTED_VERSIONS,
+    setSpliceHash,
+    hasFlag,
 } from './lib/utils.js'
 import * as fs from 'fs'
 import generateSchema from 'openapi-typescript'
 import * as path from 'path'
+import crypto from 'crypto'
 
 /**
  * OpenAPI specification details.
@@ -43,21 +47,34 @@ type OpenApiSpec = OpenApiFileSpec | OpenApiUrlSpec
 
 const root = getRepoRoot()
 
-async function fetchSpliceSpecs(updateHash: boolean) {
-    const archiveUrl = `https://github.com/digital-asset/decentralized-canton-sync/releases/download/v${SPLICE_VERSION}/${SPLICE_VERSION}_openapi.tar.gz`
-    const tarfile = path.join(SPLICE_SPEC_PATH, `${SPLICE_VERSION}.tar.gz`)
-    const unpackDir = path.join(root, 'api-specs/splice', SPLICE_VERSION)
+async function fetchSpliceSpecs(
+    updateHash: boolean,
+    network: Network
+): Promise<void> {
+    const spliceVersion = SUPPORTED_VERSIONS[network].splice.version
+    const spliceSpecHash = SUPPORTED_VERSIONS[network].splice.hashes.spliceSpec
+    const archiveUrl = `https://github.com/digital-asset/decentralized-canton-sync/releases/download/v${spliceVersion}/${spliceVersion}_openapi.tar.gz`
+    const tarfile = path.join(SPLICE_SPEC_PATH, `${spliceVersion}.tar.gz`)
+    const unpackDir = path.join(root, 'api-specs/splice', spliceVersion)
 
     await downloadAndUnpackTarball(archiveUrl, tarfile, unpackDir, {
-        hash: SPLICE_SPEC_ARCHIVE_HASH,
+        hash: spliceSpecHash,
         strip: 0,
         updateHash,
     })
+
+    if (updateHash || !SUPPORTED_VERSIONS[network].splice.hashes.localnet) {
+        const newHash = crypto
+            .createHash('sha256')
+            .update(fs.readFileSync(tarfile))
+            .digest('hex')
+        setSpliceHash(network, 'spliceSpec', newHash)
+    }
 }
 
 /**
  * Generate a TypeScript OpenAPI client from an input spec and place  .
- * @param param0 OpenApiSpec
+ * @param spec OpenApiSpec
  */
 async function generateOpenApiClient(spec: OpenApiSpec) {
     const { input, output } = spec
@@ -88,7 +105,7 @@ async function generateOpenApiClient(spec: OpenApiSpec) {
     }
 }
 
-const specs: OpenApiSpec[] = [
+const getSpecs = (spliceVersion: string): OpenApiSpec[] => [
     // Canton JSON Ledger API
     {
         input: 'api-specs/ledger-api/3.3.0/openapi.yaml',
@@ -100,40 +117,45 @@ const specs: OpenApiSpec[] = [
     },
     // Splice Scan API
     {
-        input: `api-specs/splice/${SPLICE_VERSION}/scan.yaml`,
+        input: `api-specs/splice/${spliceVersion}/scan.yaml`,
         output: 'core/splice-client/src/generated-clients/scan.ts',
     },
     {
-        input: `api-specs/splice/${SPLICE_VERSION}/validator-internal.yaml`,
+        input: `api-specs/splice/${spliceVersion}/validator-internal.yaml`,
         output: 'core/splice-client/src/generated-clients/validator-internal.ts',
     },
     // Token standards
     {
-        input: `api-specs/splice/${SPLICE_VERSION}/allocation-instruction-v1.yaml`,
+        input: `api-specs/splice/${spliceVersion}/allocation-instruction-v1.yaml`,
         output: 'core/token-standard/src/generated-clients/splice-api-token-allocation-instruction-v1/allocation-instruction-v1.ts',
     },
     {
-        input: `api-specs/splice/${SPLICE_VERSION}/allocation-v1.yaml`,
+        input: `api-specs/splice/${spliceVersion}/allocation-v1.yaml`,
         output: 'core/token-standard/src/generated-clients/splice-api-token-allocation-v1/allocation-v1.ts',
     },
     {
-        input: `api-specs/splice/${SPLICE_VERSION}/token-metadata-v1.yaml`,
+        input: `api-specs/splice/${spliceVersion}/token-metadata-v1.yaml`,
         output: 'core/token-standard/src/generated-clients/splice-api-token-metadata-v1/token-metadata-v1.ts',
     },
     {
-        input: `api-specs/splice/${SPLICE_VERSION}/transfer-instruction-v1.yaml`,
+        input: `api-specs/splice/${spliceVersion}/transfer-instruction-v1.yaml`,
         output: 'core/token-standard/src/generated-clients/splice-api-token-transfer-instruction-v1/transfer-instruction-v1.ts',
     },
 ]
 
-async function main() {
-    const updateHash = process.argv.includes('--updateHash')
-    await fetchSpliceSpecs(updateHash)
-    Promise.all(specs.map(generateOpenApiClient)).then(() => {
+async function main(network: Network = 'devnet') {
+    const updateHash = hasFlag('updateHash')
+
+    await fetchSpliceSpecs(updateHash, network)
+    Promise.all(
+        getSpecs(SUPPORTED_VERSIONS[network].splice.version).map(
+            generateOpenApiClient
+        )
+    ).then(() => {
         console.log(
             success('Generated fresh TypeScript clients for all OpenAPI specs')
         )
     })
 }
 
-main()
+main(getNetworkArg())

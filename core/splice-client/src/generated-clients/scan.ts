@@ -1032,20 +1032,10 @@ export interface components {
             migration_id: number
             /**
              * Format: date-time
-             * @description The timestamp at which the contract set was active.
-             * This needs to be an exact timestamp, i.e.,
-             * needs to correspond to a timestamp reported by `/v0/state/acs/snapshot-timestamp` if `record_time_match` is set to `exact` (which is the default).
-             * If `record_time_match` is set to `at_or_before`, this can be any timestamp, and the most recent snapshot at or before the given `record_time` will be returned.
+             * @description The timestamp at which the contract set was active. Currently, needs to be an exact timestamp, i.e.,
+             * needs to correspond to a timestamp reported by `/v0/state/acs/snapshot-timestamp`.
              */
             record_time: string
-            /**
-             * @description How to match the record_time. "exact" requires the record_time to match exactly.
-             * "at_or_before" finds the most recent snapshot at or before the given record_time.
-             *
-             * @default exact
-             * @enum {string}
-             */
-            record_time_match?: 'exact' | 'at_or_before'
             /**
              * Format: int64
              * @description Pagination token for the next page of results. For this to be valid,
@@ -1072,20 +1062,10 @@ export interface components {
             migration_id: number
             /**
              * Format: date-time
-             * @description The timestamp at which the contract set was active.
-             * This needs to be an exact timestamp, i.e.,
-             * needs to correspond to a timestamp reported by `/v0/state/acs/snapshot-timestamp` if `record_time_match` is set to `exact` (which is the default).
-             * If `record_time_match` is set to `at_or_before`, this can be any timestamp, and the most recent snapshot at or before the given `record_time` will be returned.
+             * @description The timestamp at which the contract set was active. Currently, needs to be an exact timestamp, i.e.,
+             * needs to correspond to a timestamp reported by `/v0/state/acs/snapshot-timestamp`.
              */
             record_time: string
-            /**
-             * @description How to match the record_time. "exact" requires the record_time to match exactly.
-             * "at_or_before" finds the most recent snapshot at or before the given record_time.
-             *
-             * @default exact
-             * @enum {string}
-             */
-            record_time_match?: 'exact' | 'at_or_before'
             /**
              * Format: int64
              * @description Pagination token for the next page of results.
@@ -1107,20 +1087,10 @@ export interface components {
             migration_id: number
             /**
              * Format: date-time
-             * @description The timestamp at which the contract set was active.
-             * This needs to be an exact timestamp, i.e.,
-             * needs to correspond to a timestamp reported by `/v0/state/acs/snapshot-timestamp` if `record_time_match` is set to `exact` (which is the default).
-             * If `record_time_match` is set to `at_or_before`, this can be any timestamp, and the most recent snapshot at or before the given `record_time` will be returned.
+             * @description The timestamp at which the contract set was active. Currently, needs to be an exact timestamp, i.e.,
+             * needs to correspond to a timestamp reported by `/v0/state/acs/snapshot-timestamp`.
              */
             record_time: string
-            /**
-             * @description How to match the record_time. "exact" requires the record_time to match exactly.
-             * "at_or_before" finds the most recent snapshot at or before the given record_time.
-             *
-             * @default exact
-             * @enum {string}
-             */
-            record_time_match?: 'exact' | 'at_or_before'
             /** @description The owners for which to compute the summary. */
             owner_party_ids: string[]
             /**
@@ -1733,10 +1703,7 @@ export interface components {
             domain_id: string
             /** @description The record_time of the transaction the verdict corresponds to. */
             record_time: string
-            /**
-             * @description The finalization_time of the transaction the verdict corresponds to.
-             * Note that this time might be different between different scans/mediators.
-             */
+            /** @description The finalization_time of the transaction the verdict corresponds to. */
             finalization_time: string
             /** @description Parties on whose behalf the transaction was submitted. */
             submitting_parties: string[]

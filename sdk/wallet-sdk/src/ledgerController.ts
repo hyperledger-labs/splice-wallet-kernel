@@ -725,6 +725,10 @@ export class LedgerController {
         )
     }
 
+    getCurrentClientVersion() {
+        return this.client.getCurrentClientVersion()
+    }
+
     /**
      * This creates a simple Ping command, useful for testing signing and onboarding
      * @param partyId the party to receive the ping
