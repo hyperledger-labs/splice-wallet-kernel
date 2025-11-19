@@ -29,10 +29,9 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
         .getByRole('textbox', { name: 'RPC URL' })
         .fill(`http://localhost:${dappApiPort}/api/v0/dapp`)
 
-    const [wkPage] = await Promise.all([
-        dappPage.waitForEvent('popup'),
-        discoverPopup.getByRole('button', { name: 'Connect' }).click(),
-    ])
+
+    await discoverPopup.getByRole('button', { name: 'Connect' }).click()
+    const wkPage = await dappPage.waitForEvent('popup')
 
     try {
         await wkPage.locator('#network').selectOption('0')
