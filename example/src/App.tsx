@@ -3,7 +3,6 @@ import './App.css'
 import * as sdk from '@canton-network/dapp-sdk'
 import { createPingCommand } from './commands/createPingCommand'
 
-
 function App() {
     const [loading, setLoading] = useState(false)
     const [status, setStatus] = useState<sdk.dappAPI.StatusEvent | undefined>()
@@ -12,9 +11,7 @@ function App() {
     const [messages, setMessages] = useState<string[]>([])
     const [queryResponse, setQueryResponse] = useState<object | undefined>()
     const [primaryParty, setPrimaryParty] = useState<string>()
-    const [, setAccounts] = useState<sdk.dappAPI.RequestAccountsResult>(
-        []
-    )
+    const [, setAccounts] = useState<sdk.dappAPI.RequestAccountsResult>([])
 
     // First effect: fetch status on mount
     useEffect(() => {
@@ -32,7 +29,7 @@ function App() {
 
         // Listen for connected events from the provider
         const messageListener = (event: sdk.dappAPI.TxChangedEvent) => {
-            setMessages((prev) => [JSON.stringify(event), ...prev ])
+            setMessages((prev) => [JSON.stringify(event), ...prev])
         }
         const onAccountsChanged = (
             wallets: sdk.dappAPI.AccountsChangedEvent
@@ -130,10 +127,10 @@ function App() {
                             onClick={() => {
                                 setLoading(true)
                                 sdk.disconnect().then(() => {
-                                    setStatus({... status, isConnected: false})
+                                    setStatus({ ...status, isConnected: false })
                                     setPrimaryParty(undefined)
                                     setLoading(false)
-                            })
+                                })
                             }}
                         >
                             disconnect
@@ -200,14 +197,35 @@ function App() {
                     </button>
                 </div>
                 {loading && <p>Loading...</p>}
-                {infoMsg && <p><b>Info:</b><i>{infoMsg}</i></p>}
-                {status && <p><b>Wallet Gateway:</b>
-                    <br/><b>gateway:</b> <i>{status!.kernel.id}</i>
-                    <br/><b>connected:</b> <i>{status.isConnected ? '🟢' : '🔴'}</i>
-                    {status.networkId && <span><br/><b>network:</b> <i>{status.networkId}</i></span>}
-                    </p>}
-                    <br/>
-                {status && <p><b>primary party:</b> <br/><i>{primaryParty}</i></p>}
+                {infoMsg && (
+                    <p>
+                        <b>Info:</b>
+                        <i>{infoMsg}</i>
+                    </p>
+                )}
+                {status && (
+                    <p>
+                        <b>Wallet Gateway:</b>
+                        <br />
+                        <b>gateway:</b> <i>{status!.kernel.id}</i>
+                        <br />
+                        <b>connected:</b>{' '}
+                        <i>{status.isConnected ? '🟢' : '🔴'}</i>
+                        {status.networkId && (
+                            <span>
+                                <br />
+                                <b>network:</b> <i>{status.networkId}</i>
+                            </span>
+                        )}
+                    </p>
+                )}
+                <br />
+                {status && (
+                    <p>
+                        <b>primary party:</b> <br />
+                        <i>{primaryParty}</i>
+                    </p>
+                )}
                 {error && (
                     <p className="error">Error: {JSON.stringify(error)}</p>
                 )}
