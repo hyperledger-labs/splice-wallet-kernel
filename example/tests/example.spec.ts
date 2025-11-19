@@ -29,10 +29,8 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
         .getByRole('textbox', { name: 'RPC URL' })
         .fill(`http://localhost:${dappApiPort}/api/v0/dapp`)
 
-    const [wkPage] = await Promise.all([
-        dappPage.waitForEvent('popup'),
-        discoverPopup.getByRole('button', { name: 'Connect' }).click(),
-    ])
+    await discoverPopup.getByRole('button', { name: 'Connect' }).click()
+    const wkPage = await dappPage.waitForEvent('popup')
 
     try {
         await wkPage.locator('#network').selectOption('0')
@@ -40,9 +38,7 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
 
         await expect(dappPage.getByText('Loading...')).toHaveCount(0)
 
-        await expect(
-            dappPage.getByText(/.*status: 🟢 connected.*/)
-        ).toBeVisible()
+        await expect(dappPage.getByText(/.*connected: 🟢*/)).toBeVisible()
 
         const party1 = `test-${Date.now()}`
         const party2 = `test-${Date.now() + 1}`
