@@ -14,11 +14,12 @@ import { WalletEvent } from '@canton-network/core-types'
 const DEFAULT_PAGE_REDIRECT = '/wallets'
 const NOT_FOUND_PAGE_REDIRECT = '/404'
 const LOGIN_PAGE_REDIRECT = '/login'
-const ALLOWED_ROUTES = ['/wallets', '/settings', '/approve', '/']
+const ALLOWED_ROUTES = ['/login/', '/wallets/', '/settings/', '/approve/', '/']
 
 @customElement('user-app')
 export class UserApp extends LitElement {
     private async handleLogout() {
+        console.log('Handling logout...')
         localStorage.clear()
 
         const userClient = createUserClient(stateManager.accessToken.get())
@@ -39,9 +40,15 @@ export class UserApp extends LitElement {
 
     protected render() {
         return html`
-            <app-layout iconSrc="/icon.png" @logout=${this.handleLogout}>
+            <app-layout
+                iconSrc="/icon.png"
+                @logout=${this.handleLogout}
+                @some=${() => {
+                    alert('Some event received')
+                }}
+            >
                 <user-ui-auth-redirect></user-ui-auth-redirect>
-                <user-ui></user-ui>
+                <slot></slot>
             </app-layout>
         `
     }
@@ -53,6 +60,7 @@ export class UserUI extends LitElement {
         super.connectedCallback()
 
         if (!ALLOWED_ROUTES.includes(window.location.pathname)) {
+            alert(`Redirecting to not found page: ${window.location.pathname}`)
             window.location.href = NOT_FOUND_PAGE_REDIRECT
         } else {
             window.location.href = DEFAULT_PAGE_REDIRECT

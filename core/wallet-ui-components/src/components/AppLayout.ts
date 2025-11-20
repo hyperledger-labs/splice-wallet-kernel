@@ -6,6 +6,12 @@ import { customElement, property } from 'lit/decorators.js'
 import defaultTheme from '../../themes/default.css?inline'
 import { BaseElement } from '../internal/BaseElement.js'
 
+export class SomeEvent extends Event {
+    constructor() {
+        super('Some', { bubbles: true, composed: true })
+    }
+}
+
 @customElement('app-layout')
 export class AppLayout extends BaseElement {
     @property({ type: String }) iconSrc: string = '/images/icon.png'
@@ -41,6 +47,7 @@ export class AppLayout extends BaseElement {
     }
 
     render() {
+        this.dispatchEvent(new SomeEvent())
         return html`
             <style>
                 ${unsafeCSS(this.effectiveThemeCss)}

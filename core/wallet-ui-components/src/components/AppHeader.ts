@@ -185,6 +185,7 @@ export class AppHeader extends BaseElement {
     /** TODO: abstract this -- the component library might be used in a desktop Electron app */
     private async logout() {
         try {
+            console.log('Logging out...')
             this.dispatchEvent(new LogoutEvent())
         } catch (e) {
             console.error('Error during logout:', e)
