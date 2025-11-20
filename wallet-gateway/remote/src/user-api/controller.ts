@@ -15,9 +15,16 @@ import {
     ListSessionsResult,
     SetPrimaryWalletParams,
     SyncWalletsResult,
+    AddIdpParams,
+    RemoveIdpParams,
     CreateWalletParams,
 } from './rpc-gen/typings.js'
-import { Store, Transaction, Network } from '@canton-network/core-wallet-store'
+import {
+    Store,
+    Transaction,
+    Network,
+    Wallet,
+} from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'
 import { NotificationService } from '../notification/NotificationService.js'
 import {
@@ -26,6 +33,7 @@ import {
     AuthContext,
     authSchema,
     AuthTokenProvider,
+    idpSchema,
 } from '@canton-network/core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
 import {
@@ -93,6 +101,23 @@ export const userController = (
         },
         listNetworks: async () =>
             Promise.resolve({ networks: await store.listNetworks() }),
+        addIdp: async (params: AddIdpParams) => {
+            const validatedIdp = idpSchema.parse(params.idp)
+
+            // TODO: Add an explicit updateIdp method to the User API spec and controller
+            const existingIdps = await store.listIdps()
+            if (existingIdps.find((n) => n.id === validatedIdp.id)) {
+                await store.updateIdp(validatedIdp)
+            } else {
+                await store.addIdp(validatedIdp)
+            }
+
+            return null
+        },
+        removeIdp: async (params: RemoveIdpParams) => {
+            await store.removeIdp(params.identityProviderId)
+            return null
+        },
         listIdps: async () => Promise.resolve({ idps: await store.listIdps() }),
         createWallet: async (params: CreateWalletParams) => {
             logger.info(
@@ -184,7 +209,7 @@ export const userController = (
                     if (!key) throw new Error('Fireblocks key not found')
 
                     if (signingProviderContext) {
-                        walletStatus = 'created'
+                        walletStatus = 'initialized'
                         const { signature, status } =
                             await driver.getTransaction({
                                 userId,
@@ -258,7 +283,7 @@ export const userController = (
                                 )
                         } else {
                             txId = id
-                            walletStatus = 'created'
+                            walletStatus = 'initialized'
                         }
 
                         party = {
@@ -281,17 +306,17 @@ export const userController = (
             const wallet = {
                 signingProviderId,
                 networkId,
+                status: walletStatus,
                 primary: primary ?? false,
                 publicKey: publicKey || partyArgs.namespace,
                 externalTxId: txId,
                 topologyTransactions: topologyTransactions?.join(', ') ?? '',
-                status: walletStatus,
                 partyId:
                     partyId !== ''
                         ? partyId
                         : `${partyArgs.hint}::${partyArgs.namespace}`,
                 ...partyArgs,
-            }
+            } as Wallet
 
             if (signingProviderContext && walletStatus === 'allocated') {
                 await store.updateWallet({
@@ -321,7 +346,7 @@ export const userController = (
             filter?: { networkIds?: string[]; signingProviderIds?: string[] }
         }) => {
             // TODO: support filters
-            return store.getWallets()
+            return await store.getWallets()
         },
         sign: async ({
             preparedTransaction,

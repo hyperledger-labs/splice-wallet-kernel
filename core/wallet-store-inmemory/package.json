@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-store-inmemory",
-    "version": "0.13.1",
+    "version": "0.14.0",
     "type": "module",
     "description": "In-memory implementation of the Store API",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",

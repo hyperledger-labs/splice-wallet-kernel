@@ -7,3 +7,6 @@ package-lock.json
 core/ledger-client/generated-clients/*
 api-specs/ledger-api/*
 .venv
+core/wallet-user-rpc-client/docs/*
+core/wallet-dapp-rpc-client/docs/*
+core/wallet-dapp-remote-rpc-client/docs/*

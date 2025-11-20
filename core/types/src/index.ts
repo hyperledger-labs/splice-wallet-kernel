@@ -80,9 +80,7 @@ export enum WalletEvent {
     SPLICE_WALLET_IDP_AUTH_SUCCESS = 'SPLICE_WALLET_IDP_AUTH_SUCCESS',
 }
 
-export interface SpliceMessageEvent extends MessageEvent {
-    data: SpliceMessage
-}
+export type SpliceMessageEvent = MessageEvent<SpliceMessage>
 
 export const SpliceMessage = z.discriminatedUnion('type', [
     z.object({
@@ -241,7 +239,9 @@ export class HttpTransport implements RpcTransport {
         })
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
+            throw new Error(
+                `HTTP error! status: ${response.status}, text: ${await response.text()} `
+            )
         }
 
         const json = await response.json()

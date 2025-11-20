@@ -28,12 +28,15 @@ export interface WalletFilter {
 }
 
 export interface UpdateWallet {
-    status: string
-    partyId: string
+    status: WalletStatus
+    partyId: PartyId
 }
+
+export type WalletStatus = 'initialized' | 'allocated'
 
 export interface Wallet {
     primary: boolean
+    status: WalletStatus
     partyId: PartyId
     hint: string
     publicKey: string
@@ -42,7 +45,6 @@ export interface Wallet {
     signingProviderId: string
     externalTxId?: string
     topologyTransactions?: string
-    status?: string
     // hosted: [network]
 }
 

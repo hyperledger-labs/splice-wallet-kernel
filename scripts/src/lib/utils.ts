@@ -30,39 +30,41 @@ export const CANTON_BIN = path.join(CANTON_PATH, 'bin/canton')
 export const CANTON_CONF = path.join(repoRoot, 'canton/canton.conf')
 export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton/bootstrap.canton')
 export const API_SPECS_PATH = path.join(repoRoot, 'api-specs')
-export const UTILS_FILE_PATH = path.join(repoRoot, 'scripts/src/lib/utils.ts')
 
-export type CantonVersionAndHash = {
+export type Network = 'mainnet' | 'devnet'
+export type ArtifactKind = 'localnet' | 'splice' | 'spliceSpec'
+export type ArchiveVersionAndHash = {
     version: string
     hash: string
 }
-// Canton versions
-export const DAML_RELEASE_VERSION = '3.4.7'
-
-export const LOCALNET_ARCHIVE_HASH =
-    '20809a6f1ba01ca7da67b88962c29afb564bd11a119ebfd24376cff347ba1c33'
-export const SPLICE_ARCHIVE_HASH =
-    '7412d98b9da4c196d86dbcd4185e2829939906604c2bb5271d0ccee353bafc87'
-export const SPLICE_SPEC_ARCHIVE_HASH =
-    '8db50e2beab05f2ba6784f6732cad3758e100e39a721c5665fa566aaa43e2d2b'
-export const CANTON_ARCHIVE_HASH =
-    '43c89d9833886fc68cac4951ba1959b7f6cc5269abfff1ba5129859203aa8cd3'
-export const SPLICE_VERSION = '0.5.1'
-
-export const SUPPORTED_VERSIONS = {
-    devnet: {
-        canton: {
-            version: '3.4.7',
-            hash: '520a582a3d390c8abf02c421e9bb5063e95c2fdc3c775f08e295986d8919b533',
-        },
-    },
-    mainnet: {
-        canton: {
-            version: '3.3.0-snapshot.20250910.16087.0.v82d35a4d',
-            hash: '43c89d9833886fc68cac4951ba1959b7f6cc5269abfff1ba5129859203aa8cd3',
-        },
-    },
+export type ArchiveVersionAndHashes = {
+    version: string
+    hashes: Record<string, string>
 }
+export type EnvConfig = {
+    canton: ArchiveVersionAndHash
+    splice: ArchiveVersionAndHashes
+}
+
+export type SupportedVersions = Record<Network, EnvConfig>
+
+export const VERSIONS_CONFIG_PATH = path.join(
+    repoRoot,
+    'scripts',
+    'src',
+    'lib',
+    'version-config.json'
+)
+
+const versionConfigRaw = fs.readFileSync(VERSIONS_CONFIG_PATH, 'utf8')
+const versionConfig = JSON.parse(versionConfigRaw) as {
+    DAML_RELEASE_VERSION: string
+    SUPPORTED_VERSIONS: SupportedVersions
+}
+
+export const DAML_RELEASE_VERSION = versionConfig.DAML_RELEASE_VERSION
+export const SUPPORTED_VERSIONS: SupportedVersions =
+    versionConfig.SUPPORTED_VERSIONS
 
 export async function downloadToFile(
     url: string | URL,
@@ -105,16 +107,15 @@ export async function verifyFileIntegrity(
                 `${algo.toUpperCase()} checksum verification of ${filePath} successful.`
             )
         )
-    } else {
-        console.log(
-            error(
-                `File hashes did not match.\n\tExpected: ${expectedHash}\n\tReceived: ${computedHash}\nDeleting ${filePath}...`
-            )
-        )
-        //process.exit(1)
+        return true
     }
 
-    return true
+    console.log(
+        error(
+            `File hashes did not match.\n\tExpected: ${expectedHash}\n\tReceived: ${computedHash}`
+        )
+    )
+    return false
 }
 
 async function computeFileHash(
@@ -141,7 +142,7 @@ export async function downloadAndUnpackTarball(
     options?: { hash?: string; strip?: number; updateHash?: boolean }
 ) {
     let shouldDownload = true
-    let currentHash = options?.hash
+    const currentHash = options?.hash
     const algo = 'sha256'
 
     ensureDir(path.dirname(tarfile))
@@ -161,27 +162,6 @@ export async function downloadAndUnpackTarball(
         }
         await pipeline(res.body, fs.createWriteStream(tarfile))
         console.log(success('Download complete.'))
-    }
-
-    if (options?.updateHash) {
-        const newHash = await computeFileHash(tarfile, algo)
-
-        // Update the hash in utils.ts if present
-        const fileContent = fs.readFileSync(UTILS_FILE_PATH, 'utf8')
-        // Find the old hash in the file (matching the old value)
-        if (options?.hash && fileContent.includes(options.hash)) {
-            const updatedContent = fileContent.replace(options.hash, newHash)
-            if (updatedContent !== fileContent) {
-                fs.writeFileSync(UTILS_FILE_PATH, updatedContent, 'utf8')
-                console.log(success(`Updated hash in utils.ts to ${newHash}`))
-            }
-        } else {
-            console.log(
-                warn('Old hash not found in utils.ts, no update performed.')
-            )
-        }
-
-        currentHash = newHash
     }
 
     if (!options?.updateHash && currentHash) {
@@ -442,4 +422,49 @@ export async function getAllNxDependencies(
     })
 
     return publicDependencies
+}
+
+export function getArgValue(name: string): string | undefined {
+    const prefix = `--${name}=`
+    const arg = process.argv.slice(2).find((a) => a.startsWith(prefix))
+    return arg?.slice(prefix.length)
+}
+
+export function hasFlag(name: string): boolean {
+    return process.argv.slice(2).includes(`--${name}`)
+}
+
+export function getNetworkArg(): Network {
+    const arg = getArgValue('network')
+    if (!arg) return 'devnet'
+    if (arg === 'mainnet' || arg === 'devnet') return arg as Network
+    throw new Error(
+        `Invalid --network value: "${arg}". Use "mainnet" or "devnet".`
+    )
+}
+
+export function setSpliceHash(
+    network: Network,
+    kind: ArtifactKind,
+    newHash: string
+) {
+    const raw = fs.readFileSync(VERSIONS_CONFIG_PATH, 'utf8')
+    const config = JSON.parse(raw)
+    config.SUPPORTED_VERSIONS[network].splice.hashes[kind] = newHash
+    fs.writeFileSync(
+        VERSIONS_CONFIG_PATH,
+        JSON.stringify(config, null, 4) + '\n',
+        'utf8'
+    )
+}
+
+export function setCantonHash(network: Network, newHash: string) {
+    const raw = fs.readFileSync(VERSIONS_CONFIG_PATH, 'utf8')
+    const config = JSON.parse(raw)
+    config.SUPPORTED_VERSIONS[network].canton.hash = newHash
+    fs.writeFileSync(
+        VERSIONS_CONFIG_PATH,
+        JSON.stringify(config, null, 4) + '\n',
+        'utf8'
+    )
 }

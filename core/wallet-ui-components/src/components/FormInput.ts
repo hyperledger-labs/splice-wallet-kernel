@@ -9,11 +9,11 @@ import { eyeFillIcon, eyeSlashIcon } from '../icons'
 /**
  * Emitted when the value of an individual form input changes
  */
-export class NetworkInputChangedEvent extends Event {
+export class FormInputChangedEvent extends Event {
     value: string
 
     constructor(value: string) {
-        super('network-input-change', { bubbles: true, composed: true })
+        super('form-input-change', { bubbles: true, composed: true })
         this.value = value
     }
 }
@@ -21,8 +21,8 @@ export class NetworkInputChangedEvent extends Event {
 /**
  * An individual input field in the network form
  */
-@customElement('network-form-input')
-export class NetworkFormInput extends BaseElement {
+@customElement('form-input')
+export class FormInput extends BaseElement {
     @property({ type: String }) label = ''
     @property({ type: String }) value = ''
     @property({ type: String }) text = ''
@@ -60,7 +60,7 @@ export class NetworkFormInput extends BaseElement {
                             this.value = input.value
 
                             this.dispatchEvent(
-                                new NetworkInputChangedEvent(this.value)
+                                new FormInputChangedEvent(this.value)
                             )
                         }}
                         type="text"

@@ -37,6 +37,12 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 return undefined
             }
 
+            const scope = decoded.scope
+            if (!scope) {
+                logger.warn('JWT does not contain a scope')
+                return undefined
+            }
+
             if (idp.type == 'self_signed') {
                 logger.debug(idp, 'Using self-signed IDP')
                 const sub = decoded.sub

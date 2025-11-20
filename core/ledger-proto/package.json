@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-ledger-proto",
-    "version": "0.12.0",
+    "version": "0.13.0",
     "type": "module",
     "description": "Provides TypeScript protobuf bindings for Canton",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",

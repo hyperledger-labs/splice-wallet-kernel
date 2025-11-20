@@ -3,16 +3,6 @@ import './App.css'
 import * as sdk from '@canton-network/dapp-sdk'
 import { createPingCommand } from './commands/createPingCommand'
 
-function statusInfo(status?: sdk.dappAPI.StatusEvent) {
-    if (!status) {
-        return 'status: 🔴 disconnected'
-    }
-
-    return `Wallet Gateway: ${status.kernel.id}, status: ${
-        status.isConnected ? '🟢 connected' : '🔴 disconnected'
-    }, network: ${status.networkId}`
-}
-
 function App() {
     const [loading, setLoading] = useState(false)
     const [status, setStatus] = useState<sdk.dappAPI.StatusEvent | undefined>()
@@ -21,29 +11,59 @@ function App() {
     const [messages, setMessages] = useState<string[]>([])
     const [queryResponse, setQueryResponse] = useState<object | undefined>()
     const [primaryParty, setPrimaryParty] = useState<string>()
-    const [accounts, setAccounts] = useState<sdk.dappAPI.RequestAccountsResult>(
-        []
-    )
+    const [, setAccounts] = useState<sdk.dappAPI.RequestAccountsResult>([])
 
-    useEffect(() => {
-        setInfoMsg(statusInfo(status))
-    }, [status])
-
+    // First effect: fetch status on mount
     useEffect(() => {
         const provider = window.canton // either postMsg provider or httpProvider
-
         if (!provider) {
             return
         }
-
-        // Attempt to get WK status on initial load
         provider
             .request<sdk.dappAPI.StatusEvent>({ method: 'status' })
             .then((result) => {
+                console.log(result)
                 setStatus(result)
             })
             .catch(() => setInfoMsg('failed to get status'))
 
+        // Listen for connected events from the provider
+        const messageListener = (event: sdk.dappAPI.TxChangedEvent) => {
+            setMessages((prev) => [JSON.stringify(event), ...prev])
+        }
+        const onAccountsChanged = (
+            wallets: sdk.dappAPI.AccountsChangedEvent
+        ) => {
+            if (wallets.length > 0) {
+                const primaryWallet = wallets.find((w) => w.primary)
+                setPrimaryParty(primaryWallet?.partyId)
+            } else {
+                setPrimaryParty(undefined)
+            }
+        }
+        const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
+            console.log('Status changed event: ', status)
+            setStatus(status)
+        }
+        provider.on<sdk.dappAPI.TxChangedEvent>('txChanged', messageListener)
+        provider.on<sdk.dappAPI.AccountsChangedEvent>(
+            'accountsChanged',
+            onAccountsChanged
+        )
+        provider.on<sdk.dappAPI.StatusEvent>('statusChanged', onStatusChanged)
+        return () => {
+            provider.removeListener('txChanged', messageListener)
+            provider.removeListener('accountsChanged', onAccountsChanged)
+            provider.removeListener('statusChanged', onStatusChanged)
+        }
+    }, [])
+
+    // Second effect: request accounts only when connected
+    useEffect(() => {
+        const provider = window.canton
+        if (!provider || !status?.isConnected) {
+            return
+        }
         provider
             .request({
                 method: 'requestAccounts',
@@ -52,8 +72,7 @@ function App() {
                 const requestedAccounts =
                     wallets as sdk.dappAPI.RequestAccountsResult
                 setAccounts(requestedAccounts)
-                console.log('accounts are ' + JSON.stringify(accounts))
-
+                console.log(requestedAccounts)
                 if (requestedAccounts?.length > 0) {
                     const primaryWallet = requestedAccounts.find(
                         (w) => w.primary
@@ -67,44 +86,7 @@ function App() {
                 console.error('Error requesting wallets:', err)
                 setError(err instanceof Error ? err.message : String(err))
             })
-
-        const messageListener = (event: sdk.dappAPI.TxChangedEvent) => {
-            setMessages((prev) => [...prev, JSON.stringify(event)])
-        }
-
-        const onAccountsChanged = (
-            wallets: sdk.dappAPI.AccountsChangedEvent
-        ) => {
-            // messageListener(wallets)
-            if (wallets.length > 0) {
-                const primaryWallet = wallets.find((w) => w.primary)
-                setPrimaryParty(primaryWallet?.partyId)
-            } else {
-                setPrimaryParty(undefined)
-            }
-        }
-
-        const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
-            console.log('Status changed event: ', status)
-            setStatus(status)
-        }
-
-        // Listen for connected events from the provider
-        // This will be triggered when the user connects to the Wallet Gateway
-        provider.on<sdk.dappAPI.TxChangedEvent>('txChanged', messageListener)
-        provider.on<sdk.dappAPI.AccountsChangedEvent>(
-            'accountsChanged',
-            onAccountsChanged
-        )
-        provider.on<sdk.dappAPI.StatusEvent>('statusChanged', onStatusChanged)
-
-        return () => {
-            provider.removeListener('txChanged', messageListener)
-            provider.removeListener('accountsChanged', onAccountsChanged)
-            provider.removeListener('statusChanged', onStatusChanged)
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [status?.isConnected])
 
     function createPingContract() {
         setError('')
@@ -143,11 +125,12 @@ function App() {
                         <button
                             disabled={loading}
                             onClick={() => {
-                                console.log(
-                                    'Disconnecting from Wallet Gateway...'
-                                )
                                 setLoading(true)
-                                sdk.disconnect().then(() => setLoading(false))
+                                sdk.disconnect().then(() => {
+                                    setStatus({ ...status, isConnected: false })
+                                    setPrimaryParty(undefined)
+                                    setLoading(false)
+                                })
                             }}
                         >
                             disconnect
@@ -194,7 +177,7 @@ function App() {
                         create Ping contract
                     </button>
                     <button
-                        disabled={loading}
+                        disabled={!primaryParty}
                         onClick={() => {
                             setLoading(true)
                             const queryString = new URLSearchParams([
@@ -214,8 +197,35 @@ function App() {
                     </button>
                 </div>
                 {loading && <p>Loading...</p>}
-                <p>{infoMsg}</p>
-                <p>primary party: {primaryParty}</p>
+                {infoMsg && (
+                    <p>
+                        <b>Info:</b>
+                        <i>{infoMsg}</i>
+                    </p>
+                )}
+                {status && (
+                    <p>
+                        <b>Wallet Gateway:</b>
+                        <br />
+                        <b>gateway:</b> <i>{status!.kernel.id}</i>
+                        <br />
+                        <b>connected:</b>{' '}
+                        <i>{status.isConnected ? '🟢' : '🔴'}</i>
+                        {status.networkId && (
+                            <span>
+                                <br />
+                                <b>network:</b> <i>{status.networkId}</i>
+                            </span>
+                        )}
+                    </p>
+                )}
+                <br />
+                {status && (
+                    <p>
+                        <b>primary party:</b> <br />
+                        <i>{primaryParty}</i>
+                    </p>
+                )}
                 {error && (
                     <p className="error">Error: {JSON.stringify(error)}</p>
                 )}

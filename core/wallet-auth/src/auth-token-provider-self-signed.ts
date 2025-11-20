@@ -58,6 +58,7 @@ export class AuthTokenProviderSelfSigned implements AccessTokenProvider {
         const jwt = await new SignJWT({
             sub: credentials.clientId,
             aud: credentials.audience || '',
+            scope: credentials.scope || '',
             iat: now,
             exp: now + expirySeconds,
             iss: issuer,

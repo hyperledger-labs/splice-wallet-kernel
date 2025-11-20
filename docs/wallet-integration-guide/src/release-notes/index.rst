@@ -3,6 +3,69 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+0.17.0
+------
+
+**Released on November 14th, 2025**
+
+* Wallet SDK has been updated to support 0.5.1 & Canton 3.4.7
+
+*previous versions are mostly compatible, however you might run into a previous safeguard against earlier versions of canton 3.4.X where
+external party onboarding was not supported.*
+
+* wallet.localhost changed to localhost
+
+*with newer versions of splice we can now remove the need for adding parameters for /etc/hosts and use localhost directly for the examples.*
+
+* Improved utxo selection when no utxos was provided
+
+*previously when perform a transfer and not providing utxos (as an empty array), then the sdk would automatically select all utxos to perform
+the transfer. This had various problems like adding more than 100 utxos or utxos not having enough funds, this has also been improved with better
+error messaging.*
+
+* Better automation around token metadata
+
+*the token standard controller have two new methods: `getInstrumentById` & `listInstruments`, these uses the transferRegistryUrl provided to fetch
+relevant data from the original source making non-CC token integration more seamless. Likewise in certain cases the instrumentAdmin has been made optional
+since we can use the above to fetch these.*
+
+* test improvements of snippets
+
+*test snippets used as part of the wallet integration guide was previously considered theoretical examples, the entire suite has been upgraded
+and now each snippets have been tested against a running validator to ensure it is correct in its completeness. This means we also had to change
+some of the values from using example naming the actual naming.*
+
+* buy member traffic
+
+*new method added that allows the purchase of traffic for a specific validator using an external party.*
+
+.. code-block:: javascript
+
+
+    const [buyTrafficCommand, buyTrafficDisclosedContracts] =
+        await sdk.tokenStandard!.buyMemberTraffic(
+            sender?.partyId!, // buying party
+            200000, // cc amount to purchase traffic for
+            participantId!, // receiving participants
+            [], // input utxos, if none is provided it will use smart utxo selection
+            0 // migrationID, beware that this will be 0 for localnet,devnet & testnet while mainnet will have 3
+        )
+
+    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+        buyTrafficCommand,
+        keyPairSender.privateKey,
+        v4(),
+        buyTrafficDisclosedContracts
+    )
+
+* made decodeTopologyTransaction static
+
+*toDecodedTopologyTransaction introduced in previous version has been moved as a static method on the ledgerController, this is primarily
+so it can be used in offline mode.*
+
+* supported executeAs individual rights for reading
+
+*executeAs also grants read access, however this was not including in the filtering (this has no impact with executeAsAnyParty).*
 
 0.16.0
 ------

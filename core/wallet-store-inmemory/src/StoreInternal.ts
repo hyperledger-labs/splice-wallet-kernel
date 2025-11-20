@@ -147,6 +147,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                         return {
                             primary: false,
                             partyId: party,
+                            status: 'allocated',
                             hint: hint,
                             publicKey: namespace,
                             namespace: namespace,

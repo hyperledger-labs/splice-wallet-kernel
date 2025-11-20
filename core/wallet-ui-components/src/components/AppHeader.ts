@@ -214,7 +214,7 @@ export class AppHeader extends BaseElement {
                     <button @click=${() => this.navigateTo('/wallets/')}>
                         💰 Wallets
                     </button>
-                    <button @click=${() => this.navigateTo('/networks/')}>
+                    <button @click=${() => this.navigateTo('/settings/')}>
                         ⚙️ Settings
                     </button>
                     <button @click=${this.logout}>🚪 Logout</button>

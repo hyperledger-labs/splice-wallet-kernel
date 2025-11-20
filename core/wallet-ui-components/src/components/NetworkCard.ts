@@ -3,8 +3,9 @@
 
 import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/BaseElement'
-import { css, html } from 'lit'
+import { html } from 'lit'
 import { Network } from '@canton-network/core-wallet-store'
+import { cardStyles } from '../styles/card'
 
 /** Emitted when the user clicks the "Delete" button on a network card */
 export class NetworkCardDeleteEvent extends Event {
@@ -26,31 +27,7 @@ export class NetworkCard extends BaseElement {
 
     @state() private _editing = false
 
-    static styles = [
-        BaseElement.styles,
-        css`
-            .network-card {
-                background: #fff;
-                border: none;
-                border-radius: 8px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-                display: flex;
-                flex-direction: column;
-                gap: 0.5rem;
-                min-width: 0;
-            }
-            .network-meta {
-                color: var(--bs-gray-600);
-                margin-bottom: 0.5rem;
-                word-break: break-all;
-            }
-            .network-desc {
-                color: var(--bs-gray-700);
-                margin-bottom: 0.5rem;
-                word-break: break-all;
-            }
-        `,
-    ]
+    static styles = [BaseElement.styles, cardStyles]
 
     render() {
         let body = html`<p>no network supplied</p>`
@@ -76,13 +53,13 @@ export class NetworkCard extends BaseElement {
                     <div class="network-desc">${this.network.description}</div>
                     <div>
                         <button
-                            class="btn btn-secondary"
+                            class="btn btn-sm btn-secondary"
                             @click=${() => (this._editing = true)}
                         >
                             Update
                         </button>
                         <button
-                            class="btn btn-danger"
+                            class="btn btn-sm btn-danger"
                             @click=${() =>
                                 this.dispatchEvent(
                                     new NetworkCardDeleteEvent(this.network!)

@@ -239,4 +239,5 @@ export interface PrettyContract<T = ViewValue> {
     contractId: string
     interfaceViewValue: T
     activeContract: JsActiveContract
+    fetchedAtOffset?: number | undefined
 }

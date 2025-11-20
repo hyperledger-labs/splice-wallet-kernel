@@ -251,17 +251,20 @@ export class TokenStandardController {
      * Lists all holding UTXOs for the current party.
      * @param includeLocked defaulted to true, this will include locked UTXOs.
      * @param limit optional limit for number of UTXOs to return.
+     * @param offset optional offset to list utxos from, default is latest.
      * @returns A promise that resolves to an array of holding UTXOs.
      */
 
     async listHoldingUtxos(
         includeLocked: boolean = true,
-        limit?: number
+        limit?: number,
+        offset?: number
     ): Promise<PrettyContract<Holding>[]> {
         const utxos = await this.service.listContractsByInterface<Holding>(
             HOLDING_INTERFACE_ID,
             this.getPartyId(),
-            limit
+            limit,
+            offset
         )
         const currentTime = new Date()
 
@@ -279,6 +282,81 @@ export class TokenStandardController {
                 return expiresAtDate <= currentTime
             })
         }
+    }
+
+    /**
+     * Merges utxos by instrument
+     * @param nodeLimit json api maximum elements limit per node, default is 200
+     * @returns an array of exercise commands, where each command can have up to 100 self-transfers
+     * these need to be submitted separately as there is a limit of 100 transfers per execution
+     */
+    async mergeHoldingUtxos(
+        nodeLimit = 200
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>[], Types['DisclosedContract'][]]
+    > {
+        const utxos = await this.listHoldingUtxos(false, nodeLimit)
+
+        const utxoGroupedByInstrument: Record<
+            string,
+            PrettyContract<Holding>[] | undefined
+        > = Object.groupBy(
+            utxos,
+            (utxo) =>
+                `${utxo.interfaceViewValue.instrumentId.id}::${utxo.interfaceViewValue.instrumentId.admin}` as string
+        )
+
+        const transferInputUtxoLimit = 100
+        const allTransferResults = []
+
+        for (const group of Object.values(utxoGroupedByInstrument)) {
+            if (!group) continue
+            const { id: instrumentId, admin: instrumentAdmin } =
+                group[0].interfaceViewValue.instrumentId
+
+            const instrument = { instrumentId, instrumentAdmin }
+
+            const transfers = Math.ceil(group.length / transferInputUtxoLimit)
+
+            const transferPromises = Array.from(
+                { length: transfers },
+                (_, i) => {
+                    const start = i * transferInputUtxoLimit
+                    const end = Math.min(
+                        start + transferInputUtxoLimit,
+                        group.length
+                    )
+
+                    const inputUtxos = group.slice(start, end)
+
+                    const accumulatedAmount = inputUtxos.reduce((a, b) => {
+                        return a + parseFloat(b.interfaceViewValue.amount)
+                    }, 0)
+
+                    return this.createTransfer(
+                        this.getPartyId(),
+                        this.getPartyId(),
+                        accumulatedAmount.toString(),
+                        instrument,
+                        inputUtxos.map((h) => h.contractId),
+                        'merge-utxos'
+                    )
+                }
+            )
+            const transferResults = await Promise.all(transferPromises)
+            allTransferResults.push(...transferResults)
+        }
+
+        const commands = allTransferResults.map(([cmd]) => cmd)
+        const disclosedContracts = Array.from(
+            new Map(
+                allTransferResults
+                    .flatMap(([, dc]) => dc)
+                    .map((dc) => [dc.contractId, dc])
+            ).values()
+        )
+
+        return [commands, disclosedContracts]
     }
 
     /**

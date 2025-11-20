@@ -13,7 +13,7 @@ import { SigningProvider } from '@canton-network/core-signing-lib'
 
 import '../index'
 import { stateManager } from '../state-manager'
-import { handleErrorToast } from '../handle-errors'
+import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
 
 export interface ToastElement extends HTMLElement {
     title: string

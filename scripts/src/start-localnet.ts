@@ -3,7 +3,7 @@
 
 import { execFileSync } from 'child_process'
 import path from 'path'
-import { getRepoRoot, SPLICE_VERSION } from './lib/utils.js'
+import { getRepoRoot, getNetworkArg, SUPPORTED_VERSIONS } from './lib/utils.js'
 
 const args = process.argv.slice(2)
 const command = args[0]
@@ -30,8 +30,11 @@ const composeBase = [
     'app-user',
 ]
 
+const network = getNetworkArg()
+const spliceVersion = SUPPORTED_VERSIONS[network].splice.version
+
 // Set IMAGE_TAG env variable to SPLICE_VERSION
-const env = { ...process.env, IMAGE_TAG: SPLICE_VERSION }
+const env = { ...process.env, IMAGE_TAG: spliceVersion }
 
 if (command === 'start') {
     execFileSync(composeBase[0], [...composeBase.slice(1), 'up', '-d'], {
