@@ -12,6 +12,9 @@ function App() {
     const [queryResponse, setQueryResponse] = useState<object | undefined>()
     const [primaryParty, setPrimaryParty] = useState<string>()
     const [, setAccounts] = useState<sdk.dappAPI.RequestAccountsResult>([])
+    const [ledgerApiVersion, setLedgerApiVersion] = useState<
+        string | undefined
+    >()
 
     // First effect: fetch status on mount
     useEffect(() => {
@@ -24,6 +27,15 @@ function App() {
             .then((result) => {
                 console.log(result)
                 setStatus(result)
+                if (result.isNetworkConnected) {
+                    sdk.ledgerApi({
+                        requestMethod: 'GET',
+                        resource: '/v2/version',
+                    }).then((result) => {
+                        const version = JSON.parse(result.response).version
+                        setLedgerApiVersion(version)
+                    })
+                }
             })
             .catch(() => setInfoMsg('failed to get status'))
 
@@ -97,7 +109,7 @@ function App() {
             provider
                 .request({
                     method: 'prepareExecute',
-                    params: createPingCommand(primaryParty!),
+                    params: createPingCommand(ledgerApiVersion, primaryParty!),
                 })
                 .then(() => {
                     setLoading(false)
@@ -180,8 +192,13 @@ function App() {
                         disabled={!primaryParty}
                         onClick={() => {
                             setLoading(true)
+                            const packageName = ledgerApiVersion?.startsWith(
+                                '3.3.'
+                            )
+                                ? 'AdminWorkflows'
+                                : 'canton-builtin-admin-workflow-ping'
                             const queryString = new URLSearchParams([
-                                ['package-name', 'AdminWorkflows'],
+                                ['package-name', packageName],
                                 ['parties', primaryParty!],
                             ]).toString()
                             sdk.ledgerApi({
@@ -215,6 +232,13 @@ function App() {
                             <span>
                                 <br />
                                 <b>network:</b> <i>{status.networkId}</i>
+                            </span>
+                        )}
+                        {ledgerApiVersion && (
+                            <span>
+                                <br />
+                                <b>Ledger API version:</b>{' '}
+                                <i>{ledgerApiVersion}</i>
                             </span>
                         )}
                     </p>

@@ -148,12 +148,12 @@ export const userController = (
                 network.adminAuth,
                 logger
             )
-            const partyAllocator = new PartyAllocationService(
-                network.synchronizerId,
-                tokenProvider,
-                network.ledgerApi.baseUrl,
-                logger
-            )
+            const partyAllocator = new PartyAllocationService({
+                synchronizerId: network.synchronizerId,
+                accessTokenProvider: tokenProvider,
+                httpLedgerUrl: network.ledgerApi.baseUrl,
+                logger,
+            })
             const driver =
                 drivers[signingProviderId as SigningProvider]?.controller(
                     userId
@@ -463,6 +463,9 @@ export const userController = (
 
             switch (wallet.signingProviderId) {
                 case SigningProvider.PARTICIPANT: {
+                    const synchronizerId =
+                        network.synchronizerId ??
+                        (await ledgerClient.getSynchronizerId())
                     // Participant signing provider specific logic can be added here
                     const request = {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
@@ -472,7 +475,7 @@ export const userController = (
                         actAs: [partyId],
                         readAs: [],
                         disclosedContracts: [],
-                        synchronizerId: network.synchronizerId,
+                        synchronizerId,
                         packageIdSelectionPreference: [],
                     }
                     try {

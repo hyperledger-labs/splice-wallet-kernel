@@ -67,7 +67,7 @@ export interface Network {
     id: NetworkId
     name: Name
     description: Description
-    synchronizerId: SynchronizerId
+    synchronizerId?: SynchronizerId
     identityProviderId: IdentityProviderId
     auth: Auth
     adminAuth?: Auth
@@ -99,7 +99,7 @@ export type Type = any
 export type ConfigUrl = string
 /**
  *
- * An identity provider for a network
+ * Structure representing the Identity Providers
  *
  */
 export interface Idp {
