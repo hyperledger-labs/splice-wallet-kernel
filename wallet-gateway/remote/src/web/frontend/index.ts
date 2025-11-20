@@ -39,13 +39,7 @@ export class UserApp extends LitElement {
 
     protected render() {
         return html`
-            <app-layout
-                iconSrc="/icon.png"
-                @logout=${this.handleLogout}
-                @some=${() => {
-                    alert('Some event received')
-                }}
-            >
+            <app-layout iconSrc="/icon.png" @logout=${this.handleLogout}>
                 <user-ui-auth-redirect></user-ui-auth-redirect>
                 <slot></slot>
             </app-layout>
