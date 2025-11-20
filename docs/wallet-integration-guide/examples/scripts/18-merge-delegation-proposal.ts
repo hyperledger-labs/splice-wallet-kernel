@@ -21,7 +21,7 @@ const logger = pino({ name: '18-merge-delegation-porposal', level: 'info' })
 const PATH_TO_LOCALNET = '../../../../.localnet'
 const PATH_TO_DAR_IN_LOCALNET =
     '/dars/splice-util-token-standard-wallet-1.0.0.dar'
-const SPLICE_UTIL_PROXY_PACKAGE_ID =
+const SPLICE_UTIL_TOKEN_STANDARD_WALLET_PACKAGE_ID =
     '1da198cb7968fa478cfa12aba9fdf128a63a8af6ab284ea6be238cf92a3733ac'
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
@@ -59,14 +59,14 @@ const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 
-const spliceUtilFeaturedAppProxyDarPath = path.join(
+const spliceUtilTokenStandardWalletDarPath = path.join(
     here,
     PATH_TO_LOCALNET,
     PATH_TO_DAR_IN_LOCALNET
 )
 
 const isDarUploaded = await sdk.userLedger?.isPackageUploaded(
-    SPLICE_UTIL_PROXY_PACKAGE_ID
+    SPLICE_UTIL_TOKEN_STANDARD_WALLET_PACKAGE_ID
 )
 logger.info(
     { isDarUploaded },
@@ -75,14 +75,14 @@ logger.info(
 
 if (!isDarUploaded) {
     try {
-        const darBytes = await fs.readFile(spliceUtilFeaturedAppProxyDarPath)
+        const darBytes = await fs.readFile(spliceUtilTokenStandardWalletDarPath)
         await sdk.adminLedger?.uploadDar(darBytes)
         logger.info(
             'splice-util-token-standard-wallet DAR ensured on participant (uploaded or already present)'
         )
     } catch (e) {
         logger.error(
-            { e, spliceUtilFeaturedAppProxyDarPath },
+            { e, spliceUtilTokenStandardWalletDarPath },
             'Failed to ensure splice-util-token-standard-wallet DAR uploaded'
         )
         throw e
