@@ -10,6 +10,7 @@ import path from 'path'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { fileURLToPath } from 'url'
+import { existsSync } from 'fs'
 import fs from 'fs/promises'
 
 const logger = pino({ name: '18-merge-delegation-porposal', level: 'info' })
@@ -22,6 +23,24 @@ const PATH_TO_DAR_IN_LOCALNET =
     '/dars/splice-util-token-standard-wallet-1.0.0.dar'
 const SPLICE_UTIL_TOKEN_STANDARD_WALLET_PACKAGE_ID =
     '1da198cb7968fa478cfa12aba9fdf128a63a8af6ab284ea6be238cf92a3733ac'
+
+const here = path.dirname(fileURLToPath(import.meta.url))
+
+const spliceUtilTokenStandardWalletDarPath = path.join(
+    here,
+    PATH_TO_LOCALNET,
+    PATH_TO_DAR_IN_LOCALNET
+)
+
+// TODO:remove once mainnet is upgraded
+// this will fail on CI for the sdk-e2e (mainnet) task because the dar is not in the localnet distribution for the current version.
+
+if (!existsSync(spliceUtilTokenStandardWalletDarPath)) {
+    logger.warn(
+        `DAR NOT FUND AT ${spliceUtilTokenStandardWalletDarPath}. Skipping test.`
+    )
+    process.exit(0)
+}
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
@@ -54,14 +73,6 @@ await sdk.setPartyId(alice!.partyId)
 const synchronizers = await sdk.userLedger?.listSynchronizers()
 
 const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
-
-const here = path.dirname(fileURLToPath(import.meta.url))
-
-const spliceUtilTokenStandardWalletDarPath = path.join(
-    here,
-    PATH_TO_LOCALNET,
-    PATH_TO_DAR_IN_LOCALNET
-)
 
 const isDarUploaded = await sdk.userLedger?.isPackageUploaded(
     SPLICE_UTIL_TOKEN_STANDARD_WALLET_PACKAGE_ID
