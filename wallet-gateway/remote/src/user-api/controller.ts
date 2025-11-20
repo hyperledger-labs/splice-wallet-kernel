@@ -617,7 +617,7 @@ export const userController = (
         },
         syncWallets: async function (): Promise<SyncWalletsResult> {
             const network = await store.getCurrentNetwork()
-            assertConnected(authContext)
+            const { userId } = assertConnected(authContext)
 
             const userAccessTokenProvider: AccessTokenProvider = {
                 getUserAccessToken: async () => authContext!.accessToken,
@@ -636,7 +636,14 @@ export const userController = (
                 authContext!,
                 logger
             )
-            return await service.syncWallets()
+            const result = await service.syncWallets()
+            if (result.added.length === 0 && result.removed.length === 0) {
+                return result
+            }
+            const notifier = notificationService.getNotifier(userId)
+            const wallets = await store.getWallets()
+            notifier?.emit('accountsChanged', wallets)
+            return result
         },
     })
 }
