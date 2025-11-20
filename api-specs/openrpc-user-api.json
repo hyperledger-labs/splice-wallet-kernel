@@ -549,7 +549,6 @@
                 "title": "Idp",
                 "description": "Structure representing the Identity Providers",
                 "type": "object",
-                "description": "An identity provider for a network",
                 "properties": {
                     "id": {
                         "title": "id",
