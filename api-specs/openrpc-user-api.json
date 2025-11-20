@@ -538,7 +538,6 @@
                     "id",
                     "name",
                     "description",
-                    "synchronizerId",
                     "identityProviderId",
                     "auth",
                     "ledgerApi"

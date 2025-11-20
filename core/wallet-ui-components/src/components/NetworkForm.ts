@@ -235,11 +235,11 @@ export class NetworkForm extends BaseElement {
                 ></form-input>
 
                 <form-input
-                    required
-                    label="Synchronizer Id"
+                    label="Synchronizer Id (Optional)"
                     .value=${this.network.synchronizerId ?? ''}
                     @form-input-change=${(e: FormInputChangedEvent) => {
-                        this.network.synchronizerId = e.value
+                        this.network.synchronizerId =
+                            e.value === '' ? undefined : e.value
                     }}
                 ></form-input>
 
