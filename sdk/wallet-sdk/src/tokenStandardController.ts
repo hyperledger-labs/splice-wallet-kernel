@@ -103,7 +103,7 @@ export class TokenStandardController {
         )
         // TODO remove as soon as ScanProxy gets endpoint for traffic-status
         const scanClient = new ScanClient(
-            'http://scan.localhost:4000/api/scan',
+            scanApiBaseUrl.href,
             this.logger,
             accessToken
         )
