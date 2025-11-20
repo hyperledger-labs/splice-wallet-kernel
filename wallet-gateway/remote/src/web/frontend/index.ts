@@ -19,7 +19,6 @@ const ALLOWED_ROUTES = ['/login/', '/wallets/', '/settings/', '/approve/', '/']
 @customElement('user-app')
 export class UserApp extends LitElement {
     private async handleLogout() {
-        console.log('Handling logout...')
         localStorage.clear()
 
         const userClient = createUserClient(stateManager.accessToken.get())
@@ -60,7 +59,6 @@ export class UserUI extends LitElement {
         super.connectedCallback()
 
         if (!ALLOWED_ROUTES.includes(window.location.pathname)) {
-            alert(`Redirecting to not found page: ${window.location.pathname}`)
             window.location.href = NOT_FOUND_PAGE_REDIRECT
         } else {
             window.location.href = DEFAULT_PAGE_REDIRECT
