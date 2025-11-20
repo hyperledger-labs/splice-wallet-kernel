@@ -551,7 +551,14 @@ export class TokenStandardController {
             throw new Error('Not an active contract')
         }
 
-        const js = ac.contractEntry.JsActiveContract
+        const contractEntry = ac.contractEntry
+
+        if (!('JsActiveContract' in contractEntry)) {
+            const key = Object.keys(contractEntry)[0] ?? 'UNKOWN'
+            throw new Error(`Expected JsActiveContract, received ${key}`)
+        }
+
+        const js = contractEntry.JsActiveContract
 
         return {
             templateId: js.createdEvent.templateId,
@@ -561,8 +568,10 @@ export class TokenStandardController {
         }
     }
 
-    private uniqueDisclosedContracts(dc: DisclosedContract[]) {
-        return Array.from(new Map(dc.map((dc) => [dc.contractId, dc])).values())
+    private uniqueDisclosedContracts(contracts: DisclosedContract[]) {
+        return Array.from(
+            new Map(contracts.map((c) => [c.contractId, c])).values()
+        )
     }
 
     async useMergeDelegations(
@@ -598,6 +607,10 @@ export class TokenStandardController {
                 filterByParty: true,
             })
 
+        const mergeDelegationDc = this.extractActiveContract(
+            mergeDelegationContractForUser[0]
+        )
+
         //batch merge utility contract should be parties = delegate
         const batchMergeUtilityContract = await this.client.activeContracts({
             offset: ledgerEnd.offset,
@@ -608,28 +621,11 @@ export class TokenStandardController {
             filterByParty: true,
         })
 
-        if (
-            mergeDelegationContractForUser[0].contractEntry.JsActiveContract
-                ?.createdEvent.contractId === undefined
-        ) {
-            throw new Error(
-                `No merge delegation contract found for ${walletParty}.`
-            )
-        }
+        const batchDelegationDc = this.extractActiveContract(
+            batchMergeUtilityContract[0]
+        )
 
-        if (
-            batchMergeUtilityContract[0].contractEntry.JsActiveContract
-                ?.createdEvent.contractId === undefined
-        ) {
-            throw new Error(
-                `No batch merge utility contract for ${this.getPartyId()}.`
-            )
-        }
-
-        const dc: DisclosedContract[] = [
-            this.extractActiveContract(batchMergeUtilityContract[0]),
-            this.extractActiveContract(mergeDelegationContractForUser[0]),
-        ]
+        const dc: DisclosedContract[] = [mergeDelegationDc, batchDelegationDc]
 
         //group by instruments
 
@@ -678,9 +674,7 @@ export class TokenStandardController {
             const exercise: ExerciseCommand = {
                 templateId:
                     '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
-                contractId:
-                    mergeDelegationContractForUser[0].contractEntry
-                        .JsActiveContract?.createdEvent.contractId,
+                contractId: mergeDelegationDc.contractId,
                 choice: 'MergeDelegation_Merge',
                 choiceArgument: {
                     optMergeTransfer: {
@@ -704,9 +698,7 @@ export class TokenStandardController {
         const batchExerciseCommand: ExerciseCommand = {
             templateId:
                 '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
-            contractId:
-                batchMergeUtilityContract[0].contractEntry.JsActiveContract
-                    ?.createdEvent.contractId,
+            contractId: batchDelegationDc.contractId,
             choice: 'BatchMergeUtility_BatchMerge',
             choiceArgument: {
                 mergeCalls: mergeCallInput,
