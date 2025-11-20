@@ -25,3 +25,30 @@ export async function onStatusChanged(
 ): Promise<void> {
     assertProvider().on<dappAPI.StatusEvent>('statusChanged', listener)
 }
+
+export async function removeOnAccountsChanged(
+    listener: EventListener<dappAPI.AccountsChangedEvent>
+): Promise<void> {
+    assertProvider().removeListener<dappAPI.AccountsChangedEvent>(
+        'accountsChanged',
+        listener
+    )
+}
+
+export async function removeOnTxChanged(
+    listener: EventListener<dappAPI.TxChangedEvent>
+): Promise<void> {
+    assertProvider().removeListener<dappAPI.TxChangedEvent>(
+        'txChanged',
+        listener
+    )
+}
+
+export async function removeOnStatusChanged(
+    listener: EventListener<dappAPI.StatusEvent>
+): Promise<void> {
+    assertProvider().removeListener<dappAPI.StatusEvent>(
+        'statusChanged',
+        listener
+    )
+}
