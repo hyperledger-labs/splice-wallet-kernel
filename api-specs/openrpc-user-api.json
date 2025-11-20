@@ -464,6 +464,17 @@
             }
         },
         {
+            "name": "removeSession",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/Null"
+                }
+            },
+            "description": "Removes the current network session."
+        },
+        {
             "name": "listSessions",
             "params": [],
             "result": {

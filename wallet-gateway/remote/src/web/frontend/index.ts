@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LitElement } from 'lit'
+import { html, LitElement } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { createUserClient } from './rpc-client'
 
@@ -14,7 +14,38 @@ import { WalletEvent } from '@canton-network/core-types'
 const DEFAULT_PAGE_REDIRECT = '/wallets'
 const NOT_FOUND_PAGE_REDIRECT = '/404'
 const LOGIN_PAGE_REDIRECT = '/login'
-const ALLOWED_ROUTES = ['/wallets', '/settings', '/approve', '/']
+const ALLOWED_ROUTES = ['/login/', '/wallets/', '/settings/', '/approve/', '/']
+
+@customElement('user-app')
+export class UserApp extends LitElement {
+    private async handleLogout() {
+        localStorage.clear()
+
+        const userClient = createUserClient(stateManager.accessToken.get())
+        await userClient.request('removeSession')
+
+        if (
+            window.name === 'wallet-popup' &&
+            window.opener &&
+            !window.opener.closed
+        ) {
+            // close the gateway UI automatically if we are within a popup
+            window.close()
+        } else {
+            // if the gateway UI is running in the main window, redirect to login
+            window.location.href = LOGIN_PAGE_REDIRECT
+        }
+    }
+
+    protected render() {
+        return html`
+            <app-layout iconSrc="/icon.png" @logout=${this.handleLogout}>
+                <user-ui-auth-redirect></user-ui-auth-redirect>
+                <slot></slot>
+            </app-layout>
+        `
+    }
+}
 
 @customElement('user-ui')
 export class UserUI extends LitElement {

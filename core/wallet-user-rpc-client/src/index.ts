@@ -99,7 +99,7 @@ export type Type = any
 export type ConfigUrl = string
 /**
  *
- * An identity provider for a network
+ * Structure representing the Identity Providers
  *
  */
 export interface Idp {
@@ -395,6 +395,7 @@ export type SyncWallets = () => Promise<SyncWalletsResult>
 export type Sign = (params: SignParams) => Promise<SignResult>
 export type Execute = (params: ExecuteParams) => Promise<ExecuteResult>
 export type AddSession = (params: AddSessionParams) => Promise<AddSessionResult>
+export type RemoveSession = () => Promise<Null>
 export type ListSessions = () => Promise<ListSessionsResult>
 
 export class SpliceWalletJSONRPCUserAPI {
@@ -529,6 +530,15 @@ export class SpliceWalletJSONRPCUserAPI {
         method: 'addSession',
         ...params: Parameters<AddSession>
     ): ReturnType<AddSession>
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public async request(
+        method: 'removeSession',
+        ...params: Parameters<RemoveSession>
+    ): ReturnType<RemoveSession>
 
     /**
      *

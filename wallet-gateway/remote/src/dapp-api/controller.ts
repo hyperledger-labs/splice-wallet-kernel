@@ -8,6 +8,7 @@ import {
     LedgerApiParams,
     PrepareExecuteParams,
     PrepareReturnParams,
+    StatusEvent,
 } from './rpc-gen/typings.js'
 import { Store } from '@canton-network/core-wallet-store'
 import {
@@ -70,12 +71,13 @@ export const dappController = (
             } else {
                 const notifier = notificationService.getNotifier(context.userId)
                 await store.removeSession()
-
                 notifier.emit('statusChanged', {
                     kernel: kernelInfo,
                     isConnected: false,
+                    isNetworkConnected: false,
+                    networkReason: 'Unauthenticated',
                     userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
-                })
+                } as StatusEvent)
             }
 
             return null
