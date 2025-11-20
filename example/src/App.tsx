@@ -6,8 +6,7 @@ import { createPingCommand } from './commands/createPingCommand'
 function App() {
     const [loading, setLoading] = useState(false)
     const [status, setStatus] = useState<sdk.dappAPI.StatusEvent | undefined>()
-    const [infoMsg, setInfoMsg] = useState('')
-    const [error, setError] = useState('')
+    const [errorMsg, setErrorMsg] = useState('')
     const [messages, setMessages] = useState<string[]>([])
     const [queryResponse, setQueryResponse] = useState<object | undefined>()
     const [primaryParty, setPrimaryParty] = useState<string>()
@@ -25,7 +24,7 @@ function App() {
                 console.log(result)
                 setStatus(result)
             })
-            .catch(() => setInfoMsg('failed to get status'))
+            .catch((reason) => setErrorMsg(`failed to get status: ${reason}`))
 
         // Listen for connected events from the provider
         const messageListener = (event: sdk.dappAPI.TxChangedEvent) => {
@@ -84,12 +83,12 @@ function App() {
             })
             .catch((err) => {
                 console.error('Error requesting wallets:', err)
-                setError(err instanceof Error ? err.message : String(err))
+                setErrorMsg(err instanceof Error ? err.message : String(err))
             })
     }, [status?.isConnected])
 
     function createPingContract() {
-        setError('')
+        setErrorMsg('')
         setLoading(true)
         const provider = window.canton
 
@@ -105,7 +104,9 @@ function App() {
                 .catch((err) => {
                     console.error('Error creating ping contract:', err)
                     setLoading(false)
-                    setError(err instanceof Error ? err.message : String(err))
+                    setErrorMsg(
+                        err instanceof Error ? err.message : String(err)
+                    )
                 })
         }
     }
@@ -145,16 +146,12 @@ function App() {
                                     .then(({ status }) => {
                                         setLoading(false)
                                         setStatus(status)
-                                        setError('')
+                                        setErrorMsg('')
                                     })
                                     .catch((err) => {
-                                        console.error(
-                                            'Error setting status:',
-                                            err
-                                        )
                                         setLoading(false)
-                                        setInfoMsg('error')
-                                        setError(err.details)
+                                        console.log(err)
+                                        setErrorMsg(err.details)
                                     })
                             }}
                         >
@@ -197,10 +194,9 @@ function App() {
                     </button>
                 </div>
                 {loading && <p>Loading...</p>}
-                {infoMsg && (
-                    <p>
-                        <b>Info:</b>
-                        <i>{infoMsg}</i>
+                {errorMsg && (
+                    <p className="error">
+                        <b>Error:</b> <i>{errorMsg}</i>
                     </p>
                 )}
                 {status && (
@@ -225,9 +221,6 @@ function App() {
                         <b>primary party:</b> <br />
                         <i>{primaryParty}</i>
                     </p>
-                )}
-                {error && (
-                    <p className="error">Error: {JSON.stringify(error)}</p>
                 )}
             </div>
 

@@ -36,16 +36,20 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
             return response
         })
         .catch((err) => {
-            let details = JSON.stringify(err)
+            let details = ''
+            if (typeof err === 'string') {
+                details = err
+            } else {
+                details = JSON.stringify(err)
 
-            if (err instanceof Error) {
-                details = err.message
+                if (err instanceof Error) {
+                    details = err.message
+                }
+
+                if ('message' in err) {
+                    details = err.message
+                }
             }
-
-            if ('message' in err) {
-                details = err.message
-            }
-
             throw {
                 status: 'error',
                 error: ErrorCode.Other,
