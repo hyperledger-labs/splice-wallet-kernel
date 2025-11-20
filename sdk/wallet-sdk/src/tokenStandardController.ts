@@ -70,21 +70,21 @@ export class TokenStandardController {
      * @param userId is the ID of the user making requests, this is usually defined in the canton config as ledger-api-user.
      * @param baseUrl the url for the ledger api, this is usually defined in the canton config as http-ledger-api.
      * @param validatorBaseUrl the url for the validator api. Needed for Scan Proxy API access.
-     * @param scanApiBaseUrl the url for the scan api. Needed for Scan API access
      * @param accessToken the access token from the user, usually provided by an auth controller. This parameter will be removed with version 1.0.0, please use AuthTokenProvider version instead)
      * @param accessTokenProvider provider for caching access tokens used to authenticate requests.
      * @param isAdmin flag to set true when creating adminLedger.
      * @param isMasterUser if true, the transaction parser will interperate as if it has ReadAsAnyParty.
+     * @param scanApiBaseUrl the url for the scan api. Needed for Scan API access
      */
     constructor(
         userId: string,
         baseUrl: URL,
         validatorBaseUrl: URL,
-        scanApiBaseUrl: URL,
         accessToken: string = '',
         accessTokenProvider: AccessTokenProvider,
         isAdmin: boolean = false,
-        isMasterUser: boolean = false
+        isMasterUser: boolean = false,
+        scanApiBaseUrl?: URL
     ) {
         this.accessTokenProvider = accessTokenProvider
         this.client = new LedgerClient(
@@ -102,11 +102,9 @@ export class TokenStandardController {
             this.accessTokenProvider
         )
         // TODO remove as soon as ScanProxy gets endpoint for traffic-status
-        const scanClient = new ScanClient(
-            scanApiBaseUrl.href,
-            this.logger,
-            accessToken
-        )
+        const scanClient = scanApiBaseUrl
+            ? new ScanClient(scanApiBaseUrl.href, this.logger, accessToken)
+            : undefined
         this.service = new TokenStandardService(
             this.client,
             scanProxyClient,
@@ -1458,10 +1456,11 @@ export const localTokenStandardDefault = (
         userId,
         new URL('http://127.0.0.1:5003'),
         new URL('http://wallet.localhost:2000/api/validator'),
-        localNetStaticConfig.LOCALNET_SCAN_API_URL,
         accessToken,
         accessTokenProvider,
-        isAdmin
+        isAdmin,
+        undefined,
+        localNetStaticConfig.LOCALNET_SCAN_API_URL
     )
 }
 
@@ -1493,10 +1492,11 @@ export const localNetTokenStandardAppUser = (
         userId,
         new URL('http://127.0.0.1:2975'),
         new URL('http://wallet.localhost:2000/api/validator'),
-        localNetStaticConfig.LOCALNET_SCAN_API_URL,
         accessToken,
         accessTokenProvider,
-        isAdmin
+        isAdmin,
+        undefined,
+        localNetStaticConfig.LOCALNET_SCAN_API_URL
     )
 }
 
@@ -1510,9 +1510,10 @@ export const localNetTokenStandardAppProvider = (
         userId,
         new URL('http://127.0.0.1:3975'),
         new URL('http://wallet.localhost:3000/api/validator'),
-        localNetStaticConfig.LOCALNET_SCAN_API_URL,
         accessToken,
         accessTokenProvider,
-        isAdmin
+        isAdmin,
+        undefined,
+        localNetStaticConfig.LOCALNET_SCAN_API_URL
     )
 }

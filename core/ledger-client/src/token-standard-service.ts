@@ -85,8 +85,7 @@ export class CoreService {
         private accessTokenProvider: AccessTokenProvider,
         private readonly isMasterUser: boolean,
         private isAdmin: boolean = false,
-        private accessToken: string = '',
-        private scanClient: ScanClient
+        private accessToken: string = ''
     ) {}
 
     getTokenStandardClient(registryUrl: string): TokenStandardClient {
@@ -1210,7 +1209,7 @@ export class TokenStandardService {
         private logger: Logger,
         private accessTokenProvider: AccessTokenProvider,
         private readonly isMasterUser: boolean,
-        private readonly scanClient: ScanClient
+        private readonly scanClient: ScanClient | undefined
     ) {
         this.core = new CoreService(
             ledgerClient,
@@ -1219,8 +1218,7 @@ export class TokenStandardService {
             accessTokenProvider,
             isMasterUser,
             undefined,
-            undefined,
-            scanClient
+            undefined
         )
         this.allocation = new AllocationService(this.core, this.logger)
         this.transfer = new TransferService(this.core, this.logger)
@@ -1349,6 +1347,9 @@ export class TokenStandardService {
     }
 
     async getMemberTrafficStatus(domainId: string, memberId: string) {
+        if (!this.scanClient) {
+            throw new Error('Scan API URL was not provided')
+        }
         return this.scanClient.get(
             '/v0/domains/{domain_id}/members/{member_id}/traffic-status',
             {
