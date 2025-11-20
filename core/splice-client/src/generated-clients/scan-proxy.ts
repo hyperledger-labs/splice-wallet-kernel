@@ -5,6 +5,9 @@ export interface paths {
     '/v0/scan-proxy/dso-party-id': {
         get: operations['getDsoPartyId']
     }
+    '/v0/scan-proxy/dso': {
+        get: operations['getDsoInfo']
+    }
     '/v0/scan-proxy/featured-apps/{provider_party_id}': {
         get: operations['lookupFeaturedAppRight']
     }
@@ -59,13 +62,59 @@ export interface components {
             created_event_blob: string
             created_at: string
         }
-        /** @description If defined, a contract of Daml template `Splice.Amulet.FeaturedAppRight`. */
-        LookupFeaturedAppRightResponse: {
-            featured_app_right?: components['schemas']['Contract']
-        }
         ContractWithState: {
             contract: components['schemas']['Contract']
             domain_id?: string
+        }
+        GetDsoInfoResponse: {
+            /** @description User ID representing the SV */
+            sv_user: string
+            /** @description Party representing the SV */
+            sv_party_id: string
+            /**
+             * @description Party representing the whole DSO; for Scan only, also returned by
+             * `/v0/dso-party-id`
+             */
+            dso_party_id: string
+            /**
+             * @description Threshold required to pass vote requests; also known as the
+             * "governance threshold", it is always derived from the number of
+             * `svs` in `dso_rules`
+             */
+            voting_threshold: number
+            /**
+             * @description Contract of the Daml template `Splice.Round.OpenMiningRound`, the
+             * one with the highest round number on the ledger that has been signed
+             * by `dso_party_id`. The round may not be usable as it may not be
+             * opened yet, in accordance with its `opensAt` template field
+             */
+            latest_mining_round: components['schemas']['ContractWithState']
+            /**
+             * @description Contract of the Daml template `Splice.AmuletRules.AmuletRules`,
+             * including the full schedule of `AmuletConfig` changes approved by
+             * the DSO. Callers should not assume that `initialValue` is up-to-date,
+             * and should instead search `futureValues` for the latest configuration
+             * valid as of now
+             */
+            amulet_rules: components['schemas']['ContractWithState']
+            /**
+             * @description Contract of the Daml template `Splice.DsoRules.DsoRules`, listing
+             * the governance rules approved by the DSO governing this Splice network.
+             */
+            dso_rules: components['schemas']['ContractWithState']
+            /**
+             * @description For every one of `svs` listed in `dso_rules`, a contract of the Daml
+             * template `Splice.DSO.SvState.SvNodeState`. This does not include
+             * states for offboarded SVs, though they may still have an on-ledger
+             * state contract
+             */
+            sv_node_states: components['schemas']['ContractWithState'][]
+            /** @description Initial round from which the network bootstraps */
+            initial_round?: string
+        }
+        /** @description If defined, a contract of Daml template `Splice.Amulet.FeaturedAppRight`. */
+        LookupFeaturedAppRightResponse: {
+            featured_app_right?: components['schemas']['Contract']
         }
         AnsEntry: {
             /**
@@ -200,6 +249,16 @@ export interface operations {
             200: {
                 content: {
                     'application/json': components['schemas']['GetDsoPartyIdResponse']
+                }
+            }
+        }
+    }
+    getDsoInfo: {
+        responses: {
+            /** @description ok */
+            200: {
+                content: {
+                    'application/json': components['schemas']['GetDsoInfoResponse']
                 }
             }
         }

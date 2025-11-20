@@ -58,6 +58,7 @@ export default async function () {
             userId,
             new URL('http://my-json-ledger-api'),
             new URL('http://my-validator-app-api'),
+            new URL('http://my-scan-api'),
             undefined, //previously used if you used access token
             authTokenProvider
         )
