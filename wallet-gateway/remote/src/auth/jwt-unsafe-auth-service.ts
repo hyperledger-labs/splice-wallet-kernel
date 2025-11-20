@@ -35,6 +35,12 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 return undefined
             }
 
+            const scope = decoded.scope
+            if (!scope) {
+                logger.warn('JWT does not contain a scope')
+                return undefined
+            }
+
             const idps = await store.listIdps()
             const idp = idps.find((i) => i.issuer === iss)
 

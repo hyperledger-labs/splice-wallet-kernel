@@ -190,14 +190,6 @@ export class NetworkForm extends BaseElement {
                 ></form-input>
                 <form-input
                     required
-                    label="Audience"
-                    .value=${(authObj as SelfSignedAuth).audience}
-                    @form-input-change=${(e: FormInputChangedEvent) => {
-                        ;(authObj as SelfSignedAuth).audience = e.value
-                    }}
-                ></form-input>
-                <form-input
-                    required
                     label="Client Secret"
                     .value=${(authObj as SelfSignedAuth).clientSecret}
                     @form-input-change=${(e: FormInputChangedEvent) => {
