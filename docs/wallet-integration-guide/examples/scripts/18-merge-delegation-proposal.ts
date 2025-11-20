@@ -3,7 +3,6 @@ import {
     localNetAuthDefault,
     localNetLedgerDefault,
     localNetTokenStandardDefault,
-    localValidatorDefault,
     createKeyPair,
     localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
@@ -30,7 +29,6 @@ const sdk = new WalletSDKImpl().configure({
     authFactory: localNetAuthDefault,
     ledgerFactory: localNetLedgerDefault,
     tokenStandardFactory: localNetTokenStandardDefault,
-    validatorFactory: localValidatorDefault,
 })
 
 logger.info('SDK initialized')
@@ -39,7 +37,7 @@ await sdk.connect()
 await sdk.connectAdmin()
 logger.info('Connected to ledger')
 
-const keyPairTreasury = createKeyPair()
+const keyPairAlice = createKeyPair()
 
 await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(
@@ -47,7 +45,7 @@ sdk.tokenStandard?.setTransferFactoryRegistryUrl(
 )
 
 const alice = await sdk.userLedger?.signAndAllocateExternalParty(
-    keyPairTreasury.privateKey,
+    keyPairAlice.privateKey,
     'alice'
 )
 logger.info(`Created party: ${alice!.partyId}`)
@@ -107,7 +105,7 @@ for (let i = 0; i < 13; i++) {
 
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         tapCommand2,
-        keyPairTreasury.privateKey,
+        keyPairAlice.privateKey,
         v4(),
         disclosedContracts2
     )
@@ -123,12 +121,12 @@ logger.info('creating batch merge utility -- setupWalletOperator')
 //following this test:https://github.com/hyperledger-labs/splice/blob/25e2d73c1c42fc55173813b489a63e0713c2d52f/daml/splice-util-token-standard-wallet-test/daml/Splice/Util/Token/Wallet/IntegrationTests/TestMergeDelegation.daml#L150
 
 await sdk.setPartyId(validatorOperatorParty)
-const createBatchMergeUtilityTreasury =
+const createBatchMergeUtility =
     await sdk.tokenStandard?.createBatchMergeUtility()
 
-logger.debug(createBatchMergeUtilityTreasury)
+logger.debug(createBatchMergeUtility)
 
-await sdk.userLedger?.submitCommand(createBatchMergeUtilityTreasury, v4())
+await sdk.userLedger?.submitCommand(createBatchMergeUtility, v4())
 
 logger.info('created batch merge utility contract')
 
@@ -142,7 +140,7 @@ const createMergeDelegationProposal =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     createMergeDelegationProposal,
-    keyPairTreasury.privateKey,
+    keyPairAlice.privateKey,
     v4(),
     []
 )
@@ -168,7 +166,7 @@ logger.debug(submitMergeDelegationApproval)
 
 logger.info('approved merge delegation proposal')
 
-logger.info('Creating batch merge utility treasury')
+logger.info('Creating batch merge utility')
 // using merge delegations
 
 const [mergeExerciseCommand, mergeDisclosedContracts] =
