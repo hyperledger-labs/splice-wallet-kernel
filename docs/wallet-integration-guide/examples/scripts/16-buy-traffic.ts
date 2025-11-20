@@ -112,6 +112,9 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 
 logger.info(`executed tap command for external party ${sender?.partyId}`)
 
+const trafficStatusBeforePurchase =
+    await sdk.tokenStandard!.getMemberTrafficStatus(participantId!)
+
 const [buyTrafficCommand, buyTrafficDisclosedContracts] =
     await sdk.tokenStandard!.buyMemberTraffic(
         sender?.partyId!,
@@ -129,10 +132,12 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     buyTrafficDisclosedContracts
 )
 
-//TODO: validate buy checking the traffic status of the validator operator party
 logger.info(
     `buy member traffic for sender (${sender?.partyId}) party completed ${sender?.partyId}`
 )
+
+const trafficStatusAfterPurchase =
+    await sdk.tokenStandard!.getMemberTrafficStatus(participantId!)
 
 const utxos3 = await sdk.tokenStandard?.listHoldingUtxos()
 logger.info(utxos3, 'List Token Standard Holding UTXOs')
@@ -170,6 +175,22 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     v4(),
     disclosedContracts2
 )
+
+// It can take a moment to process traffic purchase before it is fully reflected in status
+// During processing total_limit would have bought amount added, while total_purchased might be not increased yet
+await new Promise((resolve) => setTimeout(resolve, 61_000))
+const trafficStatusAfterPurchaseAndSomeTime =
+    await sdk.tokenStandard!.getMemberTrafficStatus(participantId!)
+
+logger.info(
+    {
+        trafficStatusBeforePurchase,
+        trafficStatusAfterPurchase,
+        trafficStatusAfterPurchaseAndSomeTime,
+    },
+    'MemberTraffic status'
+)
+
 logger.info('Submitted transfer transaction')
 {
     await sdk.setPartyId(sender!.partyId)

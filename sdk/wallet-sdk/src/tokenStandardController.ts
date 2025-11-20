@@ -14,7 +14,7 @@ import {
     ExerciseCommand,
     DisclosedContract,
 } from '@canton-network/core-ledger-client'
-import { ScanProxyClient } from '@canton-network/core-splice-client'
+import { ScanClient, ScanProxyClient } from '@canton-network/core-splice-client'
 
 import { pino } from 'pino'
 import { v4 } from 'uuid'
@@ -36,6 +36,7 @@ import {
 import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import { localNetStaticConfig } from './config'
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject' | 'Withdraw'
 export type AllocationInstructionChoice = 'Withdraw'
@@ -73,6 +74,7 @@ export class TokenStandardController {
      * @param accessTokenProvider provider for caching access tokens used to authenticate requests.
      * @param isAdmin flag to set true when creating adminLedger.
      * @param isMasterUser if true, the transaction parser will interperate as if it has ReadAsAnyParty.
+     * @param scanApiBaseUrl the url for the scan api. Needed for Scan API access
      */
     constructor(
         userId: string,
@@ -81,7 +83,8 @@ export class TokenStandardController {
         accessToken: string = '',
         accessTokenProvider: AccessTokenProvider,
         isAdmin: boolean = false,
-        isMasterUser: boolean = false
+        isMasterUser: boolean = false,
+        scanApiBaseUrl?: URL
     ) {
         this.accessTokenProvider = accessTokenProvider
         this.client = new LedgerClient(
@@ -98,12 +101,17 @@ export class TokenStandardController {
             accessToken,
             this.accessTokenProvider
         )
+        // TODO remove as soon as ScanProxy gets endpoint for traffic-status
+        const scanClient = scanApiBaseUrl
+            ? new ScanClient(scanApiBaseUrl.href, this.logger, accessToken)
+            : undefined
         this.service = new TokenStandardService(
             this.client,
             scanProxyClient,
             this.logger,
             this.accessTokenProvider,
-            isMasterUser
+            isMasterUser,
+            scanClient
         )
         this.userId = userId
     }
@@ -465,6 +473,18 @@ export class TokenStandardController {
         )
 
         return [{ ExerciseCommand: command }, disclosed]
+    }
+
+    /**
+     * Gets status of Member Traffic.
+     * @param memberId The id of the sequencer member (participant or mediator) for which traffic has been purchased
+     * @returns object with total_consumed, total_limit, total_purchased
+     */
+    getMemberTrafficStatus(memberId: string) {
+        return this.service.getMemberTrafficStatus(
+            this.getSynchronizerId(),
+            memberId
+        )
     }
 
     // TODO(#583) TransferPreapproval methods could be moved to SpliceController
@@ -1438,7 +1458,9 @@ export const localTokenStandardDefault = (
         new URL('http://wallet.localhost:2000/api/validator'),
         accessToken,
         accessTokenProvider,
-        isAdmin
+        isAdmin,
+        undefined,
+        localNetStaticConfig.LOCALNET_SCAN_API_URL
     )
 }
 
@@ -1472,7 +1494,9 @@ export const localNetTokenStandardAppUser = (
         new URL('http://wallet.localhost:2000/api/validator'),
         accessToken,
         accessTokenProvider,
-        isAdmin
+        isAdmin,
+        undefined,
+        localNetStaticConfig.LOCALNET_SCAN_API_URL
     )
 }
 
@@ -1488,6 +1512,8 @@ export const localNetTokenStandardAppProvider = (
         new URL('http://wallet.localhost:3000/api/validator'),
         accessToken,
         accessTokenProvider,
-        isAdmin
+        isAdmin,
+        undefined,
+        localNetStaticConfig.LOCALNET_SCAN_API_URL
     )
 }
