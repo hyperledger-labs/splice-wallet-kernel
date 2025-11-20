@@ -531,7 +531,39 @@ export class TokenStandardController {
         }
     }
 
-    //TODO: figure out a nicer way to get the disclosed contracts
+    private groupUtxosByInstrument(utxos: PrettyContract<Holding>[]) {
+        const utxoGroupedByInstrument: Record<
+            string,
+            PrettyContract<Holding>[] | undefined
+        > = Object.groupBy(
+            utxos,
+            (utxo) =>
+                `${utxo.interfaceViewValue.instrumentId.id}::${utxo.interfaceViewValue.instrumentId.admin}` as string
+        )
+
+        return utxoGroupedByInstrument
+    }
+
+    private extractActiveContract(
+        ac: Types['JsGetActiveContractsResponse']
+    ): Types['DisclosedContract'] {
+        if (!ac.contractEntry.JsActiveContract) {
+            throw new Error('Not an active contract')
+        }
+
+        const js = ac.contractEntry.JsActiveContract
+
+        return {
+            templateId: js.createdEvent.templateId,
+            contractId: js.createdEvent.contractId,
+            createdEventBlob: js.createdEvent.createdEventBlob,
+            synchronizerId: js.synchronizerId,
+        }
+    }
+
+    private uniqueDisclosedContracts(dc: DisclosedContract[]) {
+        return Array.from(new Map(dc.map((dc) => [dc.contractId, dc])).values())
+    }
 
     async useMergeDelegations(
         walletParty: PartyId
@@ -549,125 +581,89 @@ export class TokenStandardController {
             walletParty
         )
 
+        if (utxos.length < 10) {
+            throw new Error(`Utxos are less than 10, found ${utxos.length}`)
+        }
+
         const allMergeDelegationChoices = []
 
-        if (utxos.length > 10) {
-            //look up merge delegation contract
-            const mergeDelegationContractForUser =
-                await this.client.activeContracts({
-                    offset: ledgerEnd.offset,
-                    templateIds: [
-                        '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
-                    ],
-                    parties: [walletParty],
-                    filterByParty: true,
-                })
+        //look up merge delegation contract
+        const mergeDelegationContractForUser =
+            await this.client.activeContracts({
+                offset: ledgerEnd.offset,
+                templateIds: [
+                    '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
+                ],
+                parties: [walletParty],
+                filterByParty: true,
+            })
 
-            //batch merge utility contract should be parties = delegate
-            const batchMergeUtilityContract = await this.client.activeContracts(
-                {
-                    offset: ledgerEnd.offset,
-                    templateIds: [
-                        '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
-                    ],
-                    parties: [this.getPartyId()],
-                    filterByParty: true,
-                }
+        //batch merge utility contract should be parties = delegate
+        const batchMergeUtilityContract = await this.client.activeContracts({
+            offset: ledgerEnd.offset,
+            templateIds: [
+                '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
+            ],
+            parties: [this.getPartyId()],
+            filterByParty: true,
+        })
+
+        if (
+            mergeDelegationContractForUser[0].contractEntry.JsActiveContract
+                ?.createdEvent.contractId === undefined
+        ) {
+            throw new Error(
+                `No merge delegation contract found for ${walletParty}.`
+            )
+        }
+
+        if (
+            batchMergeUtilityContract[0].contractEntry.JsActiveContract
+                ?.createdEvent.contractId === undefined
+        ) {
+            throw new Error(
+                `No batch merge utility contract for ${this.getPartyId()}.`
+            )
+        }
+
+        const dc: DisclosedContract[] = [
+            this.extractActiveContract(batchMergeUtilityContract[0]),
+            this.extractActiveContract(mergeDelegationContractForUser[0]),
+        ]
+
+        //group by instruments
+
+        const utxoGroupedByInstrument: Record<
+            string,
+            PrettyContract<Holding>[] | undefined
+        > = this.groupUtxosByInstrument(utxos)
+
+        for (const group of Object.values(utxoGroupedByInstrument)) {
+            if (!group) continue
+            const { id: instrumentId, admin: instrumentAdmin } =
+                group[0].interfaceViewValue.instrumentId
+
+            const amount: number = group.reduce(
+                (totalSum, currentUtxo) =>
+                    totalSum +
+                    parseFloat(currentUtxo.interfaceViewValue.amount),
+                0
             )
 
-            if (
-                mergeDelegationContractForUser[0].contractEntry.JsActiveContract
-                    ?.createdEvent.contractId === undefined ||
-                batchMergeUtilityContract[0].contractEntry.JsActiveContract
-                    ?.createdEvent.contractId === undefined
-            ) {
-                throw new Error('both of these are undefined')
-            }
-            this.logger.info(
-                mergeDelegationContractForUser[0],
-                'merge delegation contract'
-            )
-
-            this.logger.info(
-                batchMergeUtilityContract[0],
-                'batchMergeUtilityContract'
-            )
-
-            const dc: DisclosedContract[] = [
-                {
-                    templateId:
-                        mergeDelegationContractForUser[0].contractEntry
-                            .JsActiveContract?.createdEvent.templateId,
-                    contractId:
-                        mergeDelegationContractForUser[0].contractEntry
-                            .JsActiveContract?.createdEvent.contractId,
-                    createdEventBlob:
-                        mergeDelegationContractForUser[0].contractEntry
-                            .JsActiveContract?.createdEvent.createdEventBlob,
-                    synchronizerId:
-                        mergeDelegationContractForUser[0].contractEntry
-                            .JsActiveContract?.synchronizerId,
-                }!,
-                {
-                    templateId:
-                        batchMergeUtilityContract[0].contractEntry
-                            .JsActiveContract?.createdEvent.templateId,
-                    contractId:
-                        batchMergeUtilityContract[0].contractEntry
-                            .JsActiveContract?.createdEvent.contractId,
-                    createdEventBlob:
-                        batchMergeUtilityContract[0].contractEntry
-                            .JsActiveContract?.createdEvent.createdEventBlob,
-                    synchronizerId:
-                        batchMergeUtilityContract[0].contractEntry
-                            .JsActiveContract?.synchronizerId,
-                }!,
-            ]
-
-            //group by instruments
-
-            const utxoGroupedByInstrument: Record<
-                string,
-                PrettyContract<Holding>[] | undefined
-            > = Object.groupBy(
-                utxos,
-                (utxo) =>
-                    `${utxo.interfaceViewValue.instrumentId.id}::${utxo.interfaceViewValue.instrumentId.admin}` as string
-            )
-
-            this.logger.info(utxoGroupedByInstrument)
-
-            for (const group of Object.values(utxoGroupedByInstrument)) {
-                if (!group) continue
-                const { id: instrumentId, admin: instrumentAdmin } =
-                    group[0].interfaceViewValue.instrumentId
-
-                const amount: number = group.reduce(
-                    (totalSum, currentUtxo) =>
-                        totalSum +
-                        parseFloat(currentUtxo.interfaceViewValue.amount),
-                    0
+            const [transferCommand, disclosedContractsTransfer] =
+                await this.service.transfer.createTransfer(
+                    walletParty,
+                    walletParty,
+                    amount.toString(),
+                    instrumentAdmin,
+                    instrumentId,
+                    this.getTransferFactoryRegistryUrl().href
                 )
 
-                const [transferCommand, disclosedContractsTransfer] =
-                    await this.service.transfer.createTransfer(
-                        walletParty,
-                        walletParty,
-                        amount.toString(),
-                        instrumentAdmin,
-                        instrumentId,
-                        this.getTransferFactoryRegistryUrl().href
-                    )
-                this.logger.info(transferCommand, 'TRANSFER COMMAND')
+            dc.push(...disclosedContractsTransfer)
 
-                this.logger.info(
-                    disclosedContractsTransfer,
-                    'disclosed contracts'
-                )
-
-                dc.push(...disclosedContractsTransfer)
-
-                const moreDc: DisclosedContract[] = group.map((u) => {
+            const disclosedContractsFromInputUtxos: DisclosedContract[] =
+                group.map((u) => {
                     return {
                         templateId: u.activeContract.createdEvent.templateId,
                         contractId: u.activeContract.createdEvent.contractId,
@@ -677,49 +673,50 @@ export class TokenStandardController {
                     }
                 })
 
-                dc.push(...moreDc)
-                const exercise: ExerciseCommand = {
-                    templateId:
-                        '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
-                    contractId:
-                        mergeDelegationContractForUser[0].contractEntry
-                            .JsActiveContract?.createdEvent.contractId,
-                    choice: 'MergeDelegation_Merge',
-                    choiceArgument: {
-                        optMergeTransfer: {
-                            factoryCid: transferCommand.contractId,
-                            choiceArg: transferCommand.choiceArgument,
-                        },
-                    },
-                }
-                const mergeDelegationChoice = [{ ExerciseCommand: exercise }]
+            dc.push(...disclosedContractsFromInputUtxos)
 
-                allMergeDelegationChoices.push(...mergeDelegationChoice)
-            }
-
-            const mergeCallInput = allMergeDelegationChoices.map((c) => {
-                return {
-                    delegationCid: c.ExerciseCommand.contractId,
-                    choiceArg: c.ExerciseCommand.choiceArgument,
-                }
-            })
-
-            const batchExerciseCommand: ExerciseCommand = {
+            const exercise: ExerciseCommand = {
                 templateId:
-                    '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
+                    '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
                 contractId:
-                    batchMergeUtilityContract[0].contractEntry.JsActiveContract
-                        ?.createdEvent.contractId,
-                choice: 'BatchMergeUtility_BatchMerge',
+                    mergeDelegationContractForUser[0].contractEntry
+                        .JsActiveContract?.createdEvent.contractId,
+                choice: 'MergeDelegation_Merge',
                 choiceArgument: {
-                    mergeCalls: mergeCallInput,
+                    optMergeTransfer: {
+                        factoryCid: transferCommand.contractId,
+                        choiceArg: transferCommand.choiceArgument,
+                    },
                 },
             }
+            const mergeDelegationChoice = [{ ExerciseCommand: exercise }]
 
-            return [{ ExerciseCommand: batchExerciseCommand }, dc]
-        } else {
-            throw new Error(`Utxos are less than 10, found ${utxos.length} `)
+            allMergeDelegationChoices.push(...mergeDelegationChoice)
         }
+
+        const mergeCallInput = allMergeDelegationChoices.map((c) => {
+            return {
+                delegationCid: c.ExerciseCommand.contractId,
+                choiceArg: c.ExerciseCommand.choiceArgument,
+            }
+        })
+
+        const batchExerciseCommand: ExerciseCommand = {
+            templateId:
+                '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
+            contractId:
+                batchMergeUtilityContract[0].contractEntry.JsActiveContract
+                    ?.createdEvent.contractId,
+            choice: 'BatchMergeUtility_BatchMerge',
+            choiceArgument: {
+                mergeCalls: mergeCallInput,
+            },
+        }
+
+        return [
+            { ExerciseCommand: batchExerciseCommand },
+            this.uniqueDisclosedContracts(dc),
+        ]
     }
 
     async createBatchMergeUtility() {
