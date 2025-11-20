@@ -5,6 +5,11 @@ import { html, css } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/BaseElement.js'
 
+export class LogoutEvent extends Event {
+    constructor() {
+        super('logout', { bubbles: true, composed: true })
+    }
+}
 @customElement('app-header')
 export class AppHeader extends BaseElement {
     @property({ type: String }) iconSrc: string = 'images/icon.png'
@@ -178,19 +183,11 @@ export class AppHeader extends BaseElement {
     }
 
     /** TODO: abstract this -- the component library might be used in a desktop Electron app */
-    private logout() {
-        localStorage.clear()
-
-        if (
-            window.name === 'wallet-popup' &&
-            window.opener &&
-            !window.opener.closed
-        ) {
-            // close the gateway UI automatically if we are within a popup
-            window.close()
-        } else {
-            // if the gateway UI is running in the main window, redirect to login
-            window.location.href = '/login'
+    private async logout() {
+        try {
+            this.dispatchEvent(new LogoutEvent())
+        } catch (e) {
+            console.error('Error during logout:', e)
         }
     }
 

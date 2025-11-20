@@ -464,6 +464,17 @@
             }
         },
         {
+            "name": "removeSession",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/Null"
+                }
+            },
+            "description": "Removes the current network session."
+        },
+        {
             "name": "listSessions",
             "params": [],
             "result": {
@@ -547,7 +558,7 @@
             },
             "Idp": {
                 "title": "Idp",
-                "description": "An identity provider for a network",
+                "description": "Structure representing the Identity Providers",
                 "type": "object",
                 "properties": {
                     "id": {
