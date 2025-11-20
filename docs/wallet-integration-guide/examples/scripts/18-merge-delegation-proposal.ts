@@ -125,120 +125,74 @@ const validatorOperatorParty = await sdk.validator?.getValidatorUser()!
 logger.info('creating batch merge utility -- setupWalletOperator')
 //following this test:https://github.com/hyperledger-labs/splice/blob/25e2d73c1c42fc55173813b489a63e0713c2d52f/daml/splice-util-token-standard-wallet-test/daml/Splice/Util/Token/Wallet/IntegrationTests/TestMergeDelegation.daml#L150
 
+await sdk.setPartyId(validatorOperatorParty)
 const createBatchMergeUtilityTreasury =
     await sdk.tokenStandard?.createBatchMergeUtility()
 
 logger.info(createBatchMergeUtilityTreasury)
 
-await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-    createBatchMergeUtilityTreasury,
-    keyPairTreasury.privateKey,
-    v4()
-)
+await sdk.userLedger?.submitCommand(createBatchMergeUtilityTreasury, v4())
 
-logger.info('created BatchmergeUtility contract')
-
-// await sdk.setPartyId(alice?.partyId!)
-
-// await sdk.userLedger?.grantRights([alice?.partyId!], [alice?.partyId!])
-
-try {
-    logger.info('creating merge delegation proposal')
-    const createMergeDelegationProposal =
-        await sdk.tokenStandard?.createMergeDelegationProposal(
-            validatorOperatorParty
-        )
-    logger.info(createMergeDelegationProposal)
-
-    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-        createMergeDelegationProposal,
-        keyPairTreasury.privateKey,
-        v4(),
-        []
-    )
-} catch (e) {
-    logger.error(e)
-}
-
-const ledgerEnd = await sdk.userLedger?.ledgerEnd()
-const activeContractsResult = await sdk.userLedger?.activeContracts({
-    offset: ledgerEnd?.offset!,
-    templateIds: [
-        '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
-    ],
-    parties: [alice?.partyId!],
-    filterByParty: true,
-})
-
-logger.info(activeContractsResult)
-
-if (activeContractsResult === undefined || activeContractsResult.length === 0) {
-    throw new Error('no merge delegation proposals')
-}
-logger.info('created merge delegation proposal')
-
-const dc: DisclosedContract = {
-    templateId:
-        activeContractsResult[0].contractEntry.JsActiveContract?.createdEvent
-            .templateId!,
-    contractId:
-        activeContractsResult[0].contractEntry.JsActiveContract?.createdEvent
-            .contractId!,
-    createdEventBlob:
-        activeContractsResult[0].contractEntry.JsActiveContract?.createdEvent
-            .createdEventBlob!,
-    synchronizerId: synchonizerId,
-}
-
-logger.info('approving merge delegation proposal')
-
-const [command, blah] = await sdk.tokenStandard?.approveMergeDelegationProposal(
-    activeContractsResult[0].contractEntry.JsActiveContract?.createdEvent
-        .contractId!
-)!
-
-logger.info(command)
-
-try {
-    await sdk.setPartyId(validatorOperatorParty!)
-    const b = await sdk.userLedger?.submitCommand(command, v4(), [dc])
-
-    logger.info(b)
-
-    logger.info('approved merge delegation proposal by exercisng Accept choice')
-} catch (e) {
-    logger.error(e)
-}
-
-// using merge delegations
-
-try {
-    //todo: only create batch merge utility if it doesn't exist
-    const createBatchMergeUtilityTreasury =
-        await sdk.tokenStandard?.createBatchMergeUtility()
-
-    logger.info(createBatchMergeUtilityTreasury)
-
-    await sdk.userLedger?.submitCommand(createBatchMergeUtilityTreasury, v4())
-    const [mergeExerciseCommand, mergeDisclosedContracts] =
-        await sdk.tokenStandard?.useMergeDelegations(alice?.partyId!)!
-
-    logger.info(mergeExerciseCommand)
-
-    const res = await sdk.userLedger?.submitCommand(
-        mergeExerciseCommand,
-        v4(),
-        mergeDisclosedContracts
-    )
-    logger.info(res)
-} catch (e) {
-    logger.error(e)
-}
+logger.info('created batch merge utility contract')
 
 await sdk.setPartyId(alice?.partyId!)
 
-logger.info(utxsosAfterTapping?.length, 'alice utxos before the merge')
+logger.info('creating merge delegation proposal')
+const createMergeDelegationProposal =
+    await sdk.tokenStandard?.createMergeDelegationProposal(
+        validatorOperatorParty
+    )
+
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    createMergeDelegationProposal,
+    keyPairTreasury.privateKey,
+    v4(),
+    []
+)
+
+logger.info('created merge delegation proposal')
+
+await sdk.setPartyId(validatorOperatorParty!)
+
+logger.info('approving merge delegation proposal as the delegate')
+
+const [command, mergeDelegationProposalDisclosedContract] =
+    await sdk.tokenStandard?.approveMergeDelegationProposal(alice?.partyId)!
+
+logger.debug(command)
+
+const submitMergeDelegationApproval = await sdk.userLedger?.submitCommand(
+    command,
+    v4(),
+    mergeDelegationProposalDisclosedContract
+)
+
+logger.debug(submitMergeDelegationApproval)
+
+logger.info('approved merge delegation proposal')
+
+logger.info('Creating batch merge utility treasury')
+// using merge delegations
+
+const [mergeExerciseCommand, mergeDisclosedContracts] =
+    await sdk.tokenStandard?.useMergeDelegations(alice?.partyId!)!
+
+await sdk.userLedger?.submitCommand(
+    mergeExerciseCommand,
+    v4(),
+    mergeDisclosedContracts
+)
+
+await sdk.setPartyId(alice?.partyId!)
 
 const utxosAfterMerge = await sdk.tokenStandard?.listHoldingUtxos()
 
-logger.info(utxosAfterMerge?.length, 'alice utxos after merge')
+if (!utxosAfterMerge || utxosAfterMerge?.length > 1) {
+    throw new Error(
+        `Utxos didn't merge correctly. Expected 1 utxo, found ${utxosAfterMerge?.length}`
+    )
+} else {
+    logger.info(
+        `merge via delegate was successful. previous number of utxos: ${utxsosAfterTapping?.length} new number: ${utxosAfterMerge?.length}`
+    )
+}

@@ -750,19 +750,47 @@ export class TokenStandardController {
         }
     }
 
+    async lookupMergeDelegationProposal(ownerParty?: PartyId) {
+        const ledgerEnd = await this.client.get('/v2/state/ledger-end')
+        return await this.client.activeContracts({
+            offset: ledgerEnd.offset,
+            templateIds: [
+                '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
+            ],
+            parties: [ownerParty ?? this.getPartyId()],
+            filterByParty: true,
+        })
+    }
+
     async approveMergeDelegationProposal(
-        contractId: string
+        ownerParty?: PartyId
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
+        const mergeDelegationProposal =
+            await this.lookupMergeDelegationProposal(ownerParty)
+        const dc = this.extractActiveContract(mergeDelegationProposal[0])
+
+        if (
+            mergeDelegationProposal === undefined ||
+            mergeDelegationProposal.length === 0 ||
+            !mergeDelegationProposal[0].contractEntry.JsActiveContract
+        ) {
+            throw new Error(`Unable to look up merge proposal active contract.`)
+        }
+
+        const cid =
+            mergeDelegationProposal[0].contractEntry.JsActiveContract
+                ?.createdEvent.contractId
+
         const exercise: ExerciseCommand = {
             templateId:
                 '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
-            contractId,
+            contractId: cid,
             choice: 'MergeDelegationProposal_Accept',
             choiceArgument: {},
         }
-        return [{ ExerciseCommand: exercise }, []]
+        return [{ ExerciseCommand: exercise }, [dc]]
     }
 
     /**
