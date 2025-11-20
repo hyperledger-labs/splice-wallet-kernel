@@ -99,7 +99,7 @@ export type Type = any
 export type ConfigUrl = string
 /**
  *
- * An identity provider for a network
+ * Structure representing the Identity Providers
  *
  */
 export interface Idp {

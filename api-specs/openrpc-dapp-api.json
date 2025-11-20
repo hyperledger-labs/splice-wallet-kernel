@@ -261,6 +261,63 @@
                 "type": "object",
                 "description": "Structure representing JS commands for transaction execution"
             },
+            "JsPrepareSubmissionRequest": {
+                "title": "JsPrepareSubmissionRequest",
+                "type": "object",
+                "description": "Structure representing the request for prepare and execute calls",
+                "properties": {
+                    "commands": {
+                        "$ref": "#/components/schemas/JsCommands"
+                    },
+                    "commandId": {
+                        "title": "commandId",
+                        "type": "string",
+                        "description": "The unique identifier of the command associated with the transaction."
+                    },
+                    "actAs": {
+                        "title": "actAs",
+                        "type": "array",
+                        "description": "Set of parties on whose behalf the command should be executed, if submitted. If not set, the primary wallet's party is used.",
+                        "items": {
+                            "title": "party",
+                            "type": "string"
+                        }
+                    },
+                    "readAs": {
+                        "title": "readAs",
+                        "type": "array",
+                        "description": "Set of parties that should be granted read access to the command, if submitted. If not set, no additional read parties are granted.",
+                        "items": {
+                            "title": "party",
+                            "type": "string"
+                        }
+                    },
+                    "disclosedContracts": {
+                        "title": "disclosedContracts",
+                        "type": "array",
+                        "description": "List of contract IDs to be disclosed with the command.",
+                        "items": {
+                            "title": "contractId",
+                            "type": "string"
+                        }
+                    },
+                    "synchronizerId": {
+                        "title": "synchronizerId",
+                        "type": "string",
+                        "description": "If not set, a suitable synchronizer that this node is connected to will be chosen."
+                    },
+                    "packageIdSelectionPreference": {
+                        "title": "packageIdSelectionPreference",
+                        "type": "array",
+                        "description": "The package-id selection preference of the client for resolving package names and interface instances in command submission and interpretation",
+                        "items": {
+                            "title": "packageId",
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": ["commands"]
+            },
             "JsPrepareSubmissionResponse": {
                 "title": "JsPrepareSubmissionResponse",
                 "type": "object",
