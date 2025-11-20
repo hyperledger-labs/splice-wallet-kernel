@@ -12,9 +12,6 @@ import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
-import { DisclosedContract } from '@canton-network/core-ledger-client'
-import { create } from 'domain'
-import { PartyId } from '@canton-network/core-types'
 
 const logger = pino({ name: '18-merge-delegation-porposal', level: 'info' })
 
@@ -129,7 +126,7 @@ await sdk.setPartyId(validatorOperatorParty)
 const createBatchMergeUtilityTreasury =
     await sdk.tokenStandard?.createBatchMergeUtility()
 
-logger.info(createBatchMergeUtilityTreasury)
+logger.debug(createBatchMergeUtilityTreasury)
 
 await sdk.userLedger?.submitCommand(createBatchMergeUtilityTreasury, v4())
 
