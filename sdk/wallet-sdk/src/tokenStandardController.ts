@@ -297,15 +297,27 @@ export class TokenStandardController {
     /**
      * Merges utxos by instrument
      * @param nodeLimit json api maximum elements limit per node, default is 200
+     * @param partyId optional partyId to create the transfer command for - use for if acting as a delegate party
+     * @param inputUtxos optional utxos to provide as input (e.g. if you're already listing holdings and don't want to repeat the call)
      * @returns an array of exercise commands, where each command can have up to 100 self-transfers
      * these need to be submitted separately as there is a limit of 100 transfers per execution
      */
     async mergeHoldingUtxos(
-        nodeLimit = 200
+        nodeLimit = 200,
+        partyId?: PartyId,
+        inputUtxos?: PrettyContract<Holding>[]
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>[], Types['DisclosedContract'][]]
     > {
-        const utxos = await this.listHoldingUtxos(false, nodeLimit)
+        const walletParty = partyId ?? this.getPartyId()
+        const utxos =
+            inputUtxos ??
+            (await this.listHoldingUtxos(
+                false,
+                nodeLimit,
+                undefined,
+                walletParty
+            ))
 
         const utxoGroupedByInstrument: Record<
             string,
@@ -344,8 +356,8 @@ export class TokenStandardController {
                     }, 0)
 
                     return this.createTransfer(
-                        this.getPartyId(),
-                        this.getPartyId(),
+                        walletParty,
+                        walletParty,
                         accumulatedAmount.toString(),
                         instrument,
                         inputUtxos.map((h) => h.contractId),
@@ -575,7 +587,8 @@ export class TokenStandardController {
     }
 
     async useMergeDelegations(
-        walletParty: PartyId
+        walletParty: PartyId,
+        nodeLimit: number = 200
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -586,7 +599,7 @@ export class TokenStandardController {
         const utxos = await this.listHoldingUtxos(
             true,
             100,
-            ledgerEnd.offset,
+            undefined,
             walletParty
         )
 
@@ -594,8 +607,8 @@ export class TokenStandardController {
             throw new Error(`Utxos are less than 10, found ${utxos.length}`)
         }
 
-        const allMergeDelegationChoices = []
-
+        const allMergeDelegationChoices: WrappedCommand<'ExerciseCommand'>[] =
+            []
         //look up merge delegation contract
         const mergeDelegationContractForUser =
             await this.client.activeContracts({
@@ -625,52 +638,28 @@ export class TokenStandardController {
             batchMergeUtilityContract[0]
         )
 
-        const dc: DisclosedContract[] = [mergeDelegationDc, batchDelegationDc]
+        const disclosedContractsFromInputUtxos: DisclosedContract[] = utxos.map(
+            (u) => {
+                return {
+                    templateId: u.activeContract.createdEvent.templateId,
+                    contractId: u.activeContract.createdEvent.contractId,
+                    createdEventBlob:
+                        u.activeContract.createdEvent.createdEventBlob,
+                    synchronizerId: u.activeContract.synchronizerId,
+                }
+            }
+        )
 
-        //group by instruments
+        const dc: DisclosedContract[] = [
+            mergeDelegationDc,
+            batchDelegationDc,
+            ...disclosedContractsFromInputUtxos,
+        ]
 
-        const utxoGroupedByInstrument: Record<
-            string,
-            PrettyContract<Holding>[] | undefined
-        > = this.groupUtxosByInstrument(utxos)
+        const [transferCommands, transferCommandDc] =
+            await this.mergeHoldingUtxos(nodeLimit, walletParty, utxos)
 
-        for (const group of Object.values(utxoGroupedByInstrument)) {
-            if (!group) continue
-            const { id: instrumentId, admin: instrumentAdmin } =
-                group[0].interfaceViewValue.instrumentId
-
-            const amount: number = group.reduce(
-                (totalSum, currentUtxo) =>
-                    totalSum +
-                    parseFloat(currentUtxo.interfaceViewValue.amount),
-                0
-            )
-
-            const [transferCommand, disclosedContractsTransfer] =
-                await this.service.transfer.createTransfer(
-                    walletParty,
-                    walletParty,
-                    amount.toString(),
-                    instrumentAdmin,
-                    instrumentId,
-                    this.getTransferFactoryRegistryUrl().href
-                )
-
-            dc.push(...disclosedContractsTransfer)
-
-            const disclosedContractsFromInputUtxos: DisclosedContract[] =
-                group.map((u) => {
-                    return {
-                        templateId: u.activeContract.createdEvent.templateId,
-                        contractId: u.activeContract.createdEvent.contractId,
-                        createdEventBlob:
-                            u.activeContract.createdEvent.createdEventBlob,
-                        synchronizerId: u.activeContract.synchronizerId,
-                    }
-                })
-
-            dc.push(...disclosedContractsFromInputUtxos)
-
+        transferCommands.map((tc) => {
             const exercise: ExerciseCommand = {
                 templateId:
                     '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
@@ -678,15 +667,18 @@ export class TokenStandardController {
                 choice: 'MergeDelegation_Merge',
                 choiceArgument: {
                     optMergeTransfer: {
-                        factoryCid: transferCommand.contractId,
-                        choiceArg: transferCommand.choiceArgument,
+                        factoryCid: tc.ExerciseCommand.contractId,
+                        choiceArg: tc.ExerciseCommand.choiceArgument,
                     },
                 },
             }
+
             const mergeDelegationChoice = [{ ExerciseCommand: exercise }]
 
             allMergeDelegationChoices.push(...mergeDelegationChoice)
-        }
+        })
+
+        dc.push(...transferCommandDc)
 
         const mergeCallInput = allMergeDelegationChoices.map((c) => {
             return {
