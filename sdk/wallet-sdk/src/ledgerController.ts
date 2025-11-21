@@ -464,6 +464,10 @@ export class LedgerController {
             grantUserRights
         )
 
+        const oldPartyId = this.getPartyId()
+
+        this.setPartyId(allocatedParty.partyId)
+
         const transferPreApprovalProposal =
             await this.createTransferPreapprovalCommand(
                 providerParty,
@@ -477,7 +481,8 @@ export class LedgerController {
             v4()
         )
 
-        return allocatedParty.partyId
+        this.setPartyId(oldPartyId)
+        return allocatedParty
     }
 
     /**
