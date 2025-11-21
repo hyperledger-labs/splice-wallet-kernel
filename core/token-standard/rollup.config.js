@@ -80,6 +80,28 @@ const codeCjs = {
     ],
 }
 
+// bundle for browser
+const codeBrowser = {
+    input: 'src/index.ts',
+    output: {
+        file: 'dist/index.browser.js',
+        format: 'es',
+        sourcemap: true,
+        platform: 'browser',
+    },
+    external: ['node-fetch'],
+    plugins: [
+        json(),
+        commonjs({ transformMixedEsModules: true }),
+        nodeResolve({
+            browser: true, // Prefer browser entrypoints
+            exportConditions: ['browser', 'default'],
+            preferBuiltins: false, // Do NOT use Node builtins
+        }),
+        typescript(),
+    ],
+}
+
 // bundle DTS including types from codegen
 const types = {
     input: 'src/index.ts',
@@ -97,4 +119,4 @@ const types = {
     ],
 }
 
-export default [codeEsm, codeCjs, types]
+export default [codeEsm, codeCjs, codeBrowser, types]
