@@ -41,7 +41,6 @@ export default {
                 name: 'Canton Local (Self Signed)',
                 description:
                     'A network that connects to a Canton participant using self-signed tokens',
-                synchronizerId: '<REPLACE_SYNCHRONIZER_ID>',
                 identityProviderId: 'idp-example-self-signed',
                 auth: {
                     method: 'self_signed',
@@ -68,7 +67,6 @@ export default {
                 name: 'Canton Local (OAuth IDP)',
                 description:
                     'A network that connects to a Canton participant using an OAuth IDP',
-                synchronizerId: '<REPLACE_SYNCHRONIZER_ID>',
                 identityProviderId: 'idp-example-oauth',
                 auth: {
                     method: 'authorization_code',
