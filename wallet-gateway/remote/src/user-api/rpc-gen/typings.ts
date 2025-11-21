@@ -67,7 +67,7 @@ export interface Network {
     id: NetworkId
     name: Name
     description: Description
-    synchronizerId: SynchronizerId
+    synchronizerId?: SynchronizerId
     identityProviderId: IdentityProviderId
     auth: Auth
     adminAuth?: Auth
@@ -395,4 +395,5 @@ export type SyncWallets = () => Promise<SyncWalletsResult>
 export type Sign = (params: SignParams) => Promise<SignResult>
 export type Execute = (params: ExecuteParams) => Promise<ExecuteResult>
 export type AddSession = (params: AddSessionParams) => Promise<AddSessionResult>
+export type RemoveSession = () => Promise<Null>
 export type ListSessions = () => Promise<ListSessionsResult>

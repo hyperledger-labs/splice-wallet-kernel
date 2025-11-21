@@ -25,7 +25,7 @@ interface IdpTable {
 interface NetworkTable {
     id: string
     name: string
-    synchronizerId: string
+    synchronizerId: string | null // retrieved at runtime if null
     description: string
     ledgerApiBaseUrl: string
     identityProviderId: string
@@ -117,7 +117,7 @@ export const toNetwork = (table: NetworkTable): Network => {
     return {
         name: table.name,
         id: table.id,
-        synchronizerId: table.synchronizerId,
+        synchronizerId: table.synchronizerId ?? undefined,
         identityProviderId: table.identityProviderId,
         description: table.description,
         ledgerApi: {
@@ -137,7 +137,7 @@ export const fromNetwork = (
     return {
         name: network.name,
         id: network.id,
-        synchronizerId: network.synchronizerId,
+        synchronizerId: network.synchronizerId ?? null,
         description: network.description,
         ledgerApiBaseUrl: network.ledgerApi.baseUrl,
         userId: userId,

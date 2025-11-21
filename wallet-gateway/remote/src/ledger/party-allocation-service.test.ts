@@ -47,7 +47,7 @@ jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
 }))
 
 describe('PartyAllocationService', () => {
-    const network: Network = {
+    const network: Network & { synchronizerId: string } = {
         name: 'test',
         id: 'network-id',
         synchronizerId: 'sync-id',
@@ -88,12 +88,12 @@ describe('PartyAllocationService', () => {
                 .mockResolvedValue('admin.jwt'),
         }
 
-        service = new pas.PartyAllocationService(
-            network.synchronizerId,
-            mockAccessTokenProvider,
-            network.ledgerApi.baseUrl,
-            mockLogger
-        )
+        service = new pas.PartyAllocationService({
+            synchronizerId: network.synchronizerId,
+            accessTokenProvider: mockAccessTokenProvider,
+            httpLedgerUrl: network.ledgerApi.baseUrl,
+            logger: mockLogger,
+        })
     })
 
     it('allocates an internal party', async () => {

@@ -8,3 +8,6 @@ export * from './provider/request'
 export * from './provider/events'
 export * from './provider/open'
 export * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'
+
+// Initialize default listeners
+import './listener.js'

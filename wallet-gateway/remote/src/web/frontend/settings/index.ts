@@ -95,7 +95,13 @@ export class UserUiSettings extends LitElement {
               }
 
         const network: Network = {
-            ...e.network,
+            id: e.network.id,
+            name: e.network.name,
+            description: e.network.description,
+            identityProviderId: e.network.identityProviderId,
+            ...(e.network.synchronizerId && {
+                synchronizerId: e.network.synchronizerId as string,
+            }),
             ledgerApi: e.network.ledgerApi.baseUrl,
             auth,
             adminAuth,
