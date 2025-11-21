@@ -87,7 +87,6 @@ const codeBrowser = {
         file: 'dist/index.browser.js',
         format: 'es',
         sourcemap: true,
-        platform: 'browser',
     },
     external,
     plugins: [
@@ -95,7 +94,6 @@ const codeBrowser = {
         commonjs({ transformMixedEsModules: true }),
         nodeResolve({
             browser: true, // Prefer browser entrypoints
-            exportConditions: ['browser', 'default'],
             preferBuiltins: false, // Do NOT use Node builtins
         }),
         typescript(),
