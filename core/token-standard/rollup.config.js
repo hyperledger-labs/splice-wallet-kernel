@@ -89,7 +89,7 @@ const codeBrowser = {
         sourcemap: true,
         platform: 'browser',
     },
-    external: ['node-fetch'],
+    external,
     plugins: [
         json(),
         commonjs({ transformMixedEsModules: true }),
