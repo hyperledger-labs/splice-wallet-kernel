@@ -10,6 +10,13 @@ const dir = path.join(
     getRepoRoot(),
     'docs/wallet-integration-guide/examples/scripts'
 )
+
+// configure background stress runner
+const STRESS_BG_FILE = 'stress/01-party-stress-test.ts'
+const WARMUP_MS = parseInt(process.env.WARMUP_MS ?? '8000', 10)
+const STOP_GRACE_MS = parseInt(process.env.STOP_GRACE_MS ?? '6000', 10)
+const BACKGROUND_STRESS_LOG_LEVEL = 'silent'
+
 // do not run tests from these directory names; full name match
 const EXCEPTIONS_DIR_NAMES = ['stress']
 
@@ -77,12 +84,96 @@ async function cmd(command: string): Promise<void> {
     })
 }
 
+function startBackgroundStress(): child_process.ChildProcess {
+    const target = path.join(dir, STRESS_BG_FILE)
+    if (!fs.existsSync(target)) {
+        throw new Error(`Background stress script not found: ${target}`)
+    }
+
+    console.log(
+        success(
+            `Starting background stress: ${STRESS_BG_FILE} (log=${BACKGROUND_STRESS_LOG_LEVEL})`
+        )
+    )
+
+    const child = child_process.spawn('yarn', ['tsx', target], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+        shell: true,
+        env: {
+            ...process.env,
+            BACKGROUND_STRESS_LOG_LEVEL,
+        },
+    })
+
+    let ready = false
+    const onData = (buf: Buffer) => {
+        const s = buf.toString()
+        if (s.includes('[stress] ready') || s.includes('starting stress run')) {
+            child.stdout?.off('data', onData)
+            ready = true
+        }
+    }
+    child.stdout?.on('data', onData)
+
+    // show only errors from stress
+    child.stderr.pipe(process.stderr)
+
+    const start = Date.now()
+    while (Date.now() - start < WARMUP_MS && !ready) {
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50) // tiny sleep without reformatting structure
+    }
+
+    console.log(success(`Background stress warmed up (<= ${WARMUP_MS}ms).`))
+    return child
+}
+
+async function stopBackgroundStress(
+    child: child_process.ChildProcess
+): Promise<void> {
+    return new Promise<void>((resolve) => {
+        if (!child || child.killed) return resolve()
+        try {
+            process.kill(child.pid!, 'SIGINT') // allow cleanup in the stress script
+        } catch {
+            /* ignore */
+        }
+
+        const t = setTimeout(() => {
+            try {
+                child.kill('SIGKILL')
+            } catch {
+                /* ignore */
+            }
+            resolve()
+        }, STOP_GRACE_MS)
+
+        child.on('exit', () => {
+            clearTimeout(t)
+            resolve()
+        })
+    })
+}
+
 // this is sequential, we can parallelize if needed
+const stressProc = startBackgroundStress()
+
+let failed = false
 for (const script of scripts) {
     try {
         await executeScript(script)
     } catch {
         console.log(error(`=== Failed running script: ${script} ===\n`))
-        process.exit(1)
+        failed = true
+        break
     }
+}
+
+await stopBackgroundStress(stressProc)
+
+if (failed) {
+    process.exit(1)
+} else {
+    console.log(
+        success('All scripts passed while background stress was running.')
+    )
 }
