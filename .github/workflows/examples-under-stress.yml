@@ -5,32 +5,83 @@ permissions:
 on:
     workflow_dispatch:
         inputs:
+            ref:
+                description: 'Branch/commit/PR to test (e.g. main or refs/pull/123/head)'
+                default: 'main'
+            network:
+                description: 'Localnet flavor'
+                type: choice
+                options: [devnet, mainnet]
+                default: devnet
             parties_per_interval:
-                description: PARTIES_PER_INTERVAL
+                description: 'PARTIES_PER_INTERVAL'
                 default: '3'
             interval_length_ms:
-                description: INTERVAL_LENGTH_MS
+                description: 'INTERVAL_LENGTH_MS'
                 default: '5000'
             transfers_per_party:
-                description: TRANSFERS_PER_PARTY
+                description: 'TRANSFERS_PER_PARTY'
                 default: '5'
+            stress_log_level:
+                description: 'BACKGROUND_STRESS_LOG_LEVEL'
+                default: 'silent'
 
 jobs:
-    run:
+    stress-e2e:
         runs-on: ubuntu-latest
-        timeout-minutes: 90
+        timeout-minutes: 120
+
         steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-node@v4
+            - name: Checkout
+              uses: actions/checkout@v4
               with:
-                  node-version: 20
-                  cache: yarn
-            - run: yarn install --frozen-lockfile
-            - run: yarn build --if-present
-            - name: Run examples under stress
+                  ref: ${{ github.event.inputs.ref }}
+
+            - uses: ./.github/actions/setup_yarn
+
+            # Keep parity with your build job
+            - name: run codegen
+              run: yarn generate:all
+
+            - name: Build project
+              run: yarn build:all
+
+            # Localnet lifecycle (same pattern as sdk-e2e)
+            - name: Download localnet (${{ github.event.inputs.network }})
+              run: yarn script:fetch:localnet -- --network=${{ github.event.inputs.network }}
+
+            - name: Start localnet (${{ github.event.inputs.network }})
+              run: yarn start:localnet -- --network=${{ github.event.inputs.network }}
+
+            - uses: ./.github/actions/check_resources
+
+            # Run your under-stress runner
+            - name: Run example scripts under background stress
               env:
                   PARTIES_PER_INTERVAL: ${{ github.event.inputs.parties_per_interval }}
                   INTERVAL_LENGTH_MS: ${{ github.event.inputs.interval_length_ms }}
                   TRANSFERS_PER_PARTY: ${{ github.event.inputs.transfers_per_party }}
                   BACKGROUND_STRESS_LOG_LEVEL: ${{ github.event.inputs.stress_log_level }}
               run: yarn script:test:examples-stress
+
+            - uses: ./.github/actions/check_resources
+
+            - name: Stop localnet (${{ github.event.inputs.network }})
+              if: always()
+              run: yarn stop:localnet -- --network=${{ github.event.inputs.network }}
+
+            - name: Save container logs (on failure)
+              if: failure()
+              run: |
+                  set -euo pipefail
+                  mkdir -p logs
+                  for c in $(docker ps -a --format '{{.Names}}'); do
+                    docker logs "$c" &> "logs/$c.log" || true
+                  done
+
+            - name: Upload logs as artifacts
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: docker-logs-${{ github.event.inputs.network }}
+                  path: logs/
