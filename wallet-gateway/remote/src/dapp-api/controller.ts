@@ -136,7 +136,9 @@ export const dappController = (
 
             const userId = context.userId
             const notifier = notificationService.getNotifier(userId)
-            const commandId = v4()
+
+            params.commandId = params.commandId || v4()
+            const commandId = params.commandId
 
             notifier.emit('txChanged', { status: 'pending', commandId })
 
@@ -149,9 +151,8 @@ export const dappController = (
                     context.userId,
                     wallet.partyId,
                     synchronizerId,
-                    params.commands,
-                    ledgerClient,
-                    commandId
+                    params,
+                    ledgerClient
                 )
 
             store.setTransaction({
@@ -190,7 +191,7 @@ export const dappController = (
                 context.userId,
                 wallet.partyId,
                 network.synchronizerId,
-                params.commands,
+                params,
                 ledgerClient
             )
         },
@@ -243,21 +244,30 @@ async function prepareSubmission(
     userId: string,
     partyId: string,
     synchronizerId: string,
-    commands: unknown,
-    ledgerClient: LedgerClient,
-    commandId?: string
+    params: PrepareExecuteParams | PrepareReturnParams,
+    ledgerClient: LedgerClient
 ): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
+    // Map disclosed contracts to ledger api format (which wrongly defines optional fields as mandatory)
+    const disclosedContracts =
+        params.disclosedContracts?.map((d) => {
+            return {
+                templateId: d.templateId || '',
+                contractId: d.contractId || '',
+                createdEventBlob: d.createdEventBlob,
+                synchronizerId: d.synchronizerId || '',
+            }
+        }) || []
     const prepareParams = {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-        commands: commands as any,
-        commandId: commandId || v4(),
+        commands: params.commands as any,
+        commandId: params.commandId || v4(),
         userId,
-        actAs: [partyId],
-        readAs: [],
-        disclosedContracts: [],
+        actAs: params.actAs || [partyId],
+        readAs: params.readAs || [],
+        disclosedContracts,
         synchronizerId,
         verboseHashing: false,
-        packageIdSelectionPreference: [],
+        packageIdSelectionPreference: params.packageIdSelectionPreference || [],
     }
 
     return await ledgerClient.postWithRetry(
