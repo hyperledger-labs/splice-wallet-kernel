@@ -81,13 +81,7 @@
                     "name": "params",
                     "schema": {
                         "title": "prepareReturnParams",
-                        "type": "object",
-                        "properties": {
-                            "commands": {
-                                "$ref": "#/components/schemas/JsCommands"
-                            }
-                        },
-                        "required": ["commands"]
+                        "$ref": "#/components/schemas/JsPrepareSubmissionRequest"
                     }
                 }
             ],
@@ -112,13 +106,7 @@
                     "name": "params",
                     "schema": {
                         "title": "prepareExecuteParams",
-                        "type": "object",
-                        "properties": {
-                            "commands": {
-                                "$ref": "#/components/schemas/JsCommands"
-                            }
-                        },
-                        "required": ["commands"]
+                        "$ref": "#/components/schemas/JsPrepareSubmissionRequest"
                     }
                 }
             ],
@@ -256,23 +244,16 @@
                 "format": "uri",
                 "description": "A URL that points to a user interface."
             },
-            "JsCommands": {
-                "title": "JsCommands",
-                "type": "object",
-                "description": "Structure representing JS commands for transaction execution"
-            },
             "JsPrepareSubmissionRequest": {
                 "title": "JsPrepareSubmissionRequest",
                 "type": "object",
                 "description": "Structure representing the request for prepare and execute calls",
                 "properties": {
+                    "commandId": {
+                        "$ref": "#/components/schemas/CommandId"
+                    },
                     "commands": {
                         "$ref": "#/components/schemas/JsCommands"
-                    },
-                    "commandId": {
-                        "title": "commandId",
-                        "type": "string",
-                        "description": "The unique identifier of the command associated with the transaction."
                     },
                     "actAs": {
                         "title": "actAs",
@@ -297,8 +278,7 @@
                         "type": "array",
                         "description": "List of contract IDs to be disclosed with the command.",
                         "items": {
-                            "title": "contractId",
-                            "type": "string"
+                            "$ref": "#/components/schemas/DisclosedContract"
                         }
                     },
                     "synchronizerId": {
@@ -317,6 +297,39 @@
                     }
                 },
                 "required": ["commands"]
+            },
+            "DisclosedContract": {
+                "title": "DisclosedContract",
+                "type": "object",
+                "description": "Structure representing a disclosed contract for transaction execution",
+                "properties": {
+                    "templateId": {
+                        "title": "templateId",
+                        "type": "string",
+                        "description": "The template identifier of the disclosed contract."
+                    },
+                    "contractId": {
+                        "title": "contractId",
+                        "type": "string",
+                        "description": "The unique identifier of the disclosed contract."
+                    },
+                    "createdEventBlob": {
+                        "title": "createdEventBlob",
+                        "type": "string",
+                        "description": "The blob data of the created event for the disclosed contract."
+                    },
+                    "synchronizerId": {
+                        "title": "synchronizerId",
+                        "type": "string",
+                        "description": "The synchronizer identifier associated with the disclosed contract."
+                    }
+                },
+                "required": ["createdEventBlob"]
+            },
+            "JsCommands": {
+                "title": "JsCommands",
+                "type": "object",
+                "description": "Structure representing JS commands for transaction execution"
             },
             "JsPrepareSubmissionResponse": {
                 "title": "JsPrepareSubmissionResponse",
