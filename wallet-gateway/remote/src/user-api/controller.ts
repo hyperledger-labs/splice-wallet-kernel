@@ -18,6 +18,7 @@ import {
     AddIdpParams,
     RemoveIdpParams,
     CreateWalletParams,
+    Null,
 } from './rpc-gen/typings.js'
 import {
     Store,
@@ -46,6 +47,7 @@ import {
 } from '../ledger/party-allocation-service.js'
 import { WalletSyncService } from '../ledger/wallet-sync-service.js'
 import { networkStatus } from '../utils.js'
+import { StatusEvent } from '../dapp-api/rpc-gen/typings.js'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
@@ -590,6 +592,20 @@ export const userController = (
                 logger.error(`Failed to add session: ${error}`)
                 throw new Error(`Failed to add session: ${error}`)
             }
+        },
+        removeSession: async (): Promise<Null> => {
+            logger.info(authContext, 'Removing session')
+            const userId = assertConnected(authContext).userId
+            const notifier = notificationService.getNotifier(userId)
+            await store.removeSession()
+            notifier.emit('statusChanged', {
+                kernel: kernelInfo,
+                isConnected: false,
+                isNetworkConnected: false,
+                networkReason: 'Unauthenticated',
+                userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
+            } as StatusEvent)
+            return null
         },
         listSessions: async (): Promise<ListSessionsResult> => {
             const session = await store.getSession()
