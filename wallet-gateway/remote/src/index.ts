@@ -13,6 +13,9 @@ import { readFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import pino from 'pino'
+import z from 'zod'
+import { configSchema } from './config/Config.js'
+import exampleConfig from './example-config.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -23,18 +26,25 @@ const program = new Command()
     .version(pkg.version)
     .description('Run a remotely hosted Wallet Gateway')
     .option('-c, --config <path>', 'set config path', './config.json')
+    .option('--config-schema', 'output the config schema and exit', false)
+    .option('--config-example', 'output an example config and exit', false)
     .option('-p, --port [port]', 'set port', '3030')
     .addOption(
         new Option('-f, --log-format <format>', 'set log format')
             .choices(['json', 'pretty'])
             .default('pretty')
     )
-    .addOption(
-        new Option('-s, --store-type <type>', 'set store type')
-            .choices(['sqlite', 'postgres'])
-            .default('sqlite')
-    )
     .action((opts) => {
+        if (opts.configSchema) {
+            console.log(JSON.stringify(z.toJSONSchema(configSchema), null, 2))
+            process.exit(0)
+        }
+
+        if (opts.configExample) {
+            console.log(JSON.stringify(exampleConfig, null, 2))
+            process.exit(0)
+        }
+
         // Define project-global logger
         const logger = pino({
             name: 'main',
@@ -57,11 +67,19 @@ const options = program.opts()
 
 export type CliOptions = typeof options
 
-const config = ConfigUtils.loadConfigFile(options.config)
+// Add a documented stub
+let db = new Command('db')
+    .description('Database management commands')
+    .allowUnknownOption(true)
 
-// Add the `db` command now, before final parse
-const cli = createCLI(config.store) as Command
-program.addCommand(cli.name('db'))
+const hasDb = process.argv.slice(2).includes('db')
+
+if (hasDb) {
+    const config = ConfigUtils.loadConfigFile(options.config)
+    db = createCLI(config.store) as Command
+}
+
+program.addCommand(db.name('db'))
 
 // Now parse normally for execution/help
 program.parseAsync(process.argv)
