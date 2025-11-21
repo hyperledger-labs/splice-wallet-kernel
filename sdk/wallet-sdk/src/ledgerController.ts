@@ -433,6 +433,53 @@ export class LedgerController {
         return { partyId }
     }
 
+    /** Prepares, signs and submits a new external party topology in one step.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param privateKey The private key of the new external party, used to sign the topology transactions.
+     * @param providerParty providing party retrieved through the getValidatorUser call
+     * @param dsoParty Party that the sender expects to represent the DSO party of the AmuletRules contract they are calling
+     * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold optional parameter for multi-hosted parties (default is 1).
+     * @param confirmingParticipantEndpoints optional list of connection details for other participants to multi-host this party with confirming permissions.
+     * @param observingParticipantEndpoints optional list of connection details for other participants to multi-host this party with observing permissions.
+     * @param grantUserRights Defines if the transaction should also grant user right to current user, defaults to true if undefined
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
+    async signAndAllocateExternalPartyWithPreapproval(
+        privateKey: PrivateKey,
+        providerParty: PartyId,
+        dsoParty: PartyId,
+        partyHint?: string,
+        confirmingThreshold?: number,
+        confirmingParticipantEndpoints?: ParticipantEndpointConfig[],
+        observingParticipantEndpoints?: ParticipantEndpointConfig[],
+        grantUserRights?: boolean
+    ) {
+        const allocatedParty = await this.signAndAllocateExternalParty(
+            privateKey,
+            partyHint,
+            confirmingThreshold,
+            confirmingParticipantEndpoints,
+            observingParticipantEndpoints,
+            grantUserRights
+        )
+
+        const transferPreApprovalProposal =
+            await this.createTransferPreapprovalCommand(
+                providerParty,
+                allocatedParty.partyId,
+                dsoParty
+            )
+
+        await this.prepareSignExecuteAndWaitFor(
+            [transferPreApprovalProposal],
+            privateKey,
+            v4()
+        )
+
+        return allocatedParty.partyId
+    }
+
     /**
      * Calls the allocate endpoint for other hosting participants if a party is multi-hosted
      * all nodes will get the resepective right indicated in the generate-topology request (refleted in the topology transactions)
