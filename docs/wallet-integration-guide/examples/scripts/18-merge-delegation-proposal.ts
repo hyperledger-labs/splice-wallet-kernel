@@ -98,12 +98,6 @@ if (!isDarUploaded) {
     }
 }
 
-sdk.tokenStandard?.setSynchronizerId(synchonizerId)
-
-sdk.tokenStandard?.setTransferFactoryRegistryUrl(
-    localNetStaticConfig.LOCALNET_REGISTRY_API_URL
-)
-
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
@@ -135,8 +129,6 @@ await sdk.setPartyId(validatorOperatorParty)
 const createBatchMergeUtility =
     await sdk.tokenStandard?.createBatchMergeUtility()
 
-logger.debug(createBatchMergeUtility)
-
 await sdk.userLedger?.submitCommand(createBatchMergeUtility, v4())
 
 logger.info('created batch merge utility contract')
@@ -165,15 +157,11 @@ logger.info('approving merge delegation proposal as the delegate')
 const [command, mergeDelegationProposalDisclosedContract] =
     await sdk.tokenStandard?.approveMergeDelegationProposal(alice?.partyId)!
 
-logger.debug(command)
-
 const submitMergeDelegationApproval = await sdk.userLedger?.submitCommand(
     command,
     v4(),
     mergeDelegationProposalDisclosedContract
 )
-
-logger.debug(submitMergeDelegationApproval)
 
 logger.info('approved merge delegation proposal')
 
