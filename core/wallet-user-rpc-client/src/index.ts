@@ -67,7 +67,7 @@ export interface Network {
     id: NetworkId
     name: Name
     description: Description
-    synchronizerId: SynchronizerId
+    synchronizerId?: SynchronizerId
     identityProviderId: IdentityProviderId
     auth: Auth
     adminAuth?: Auth

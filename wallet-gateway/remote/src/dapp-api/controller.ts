@@ -140,11 +140,15 @@ export const dappController = (
 
             notifier.emit('txChanged', { status: 'pending', commandId })
 
+            const synchronizerId =
+                network.synchronizerId ??
+                (await ledgerClient.getSynchronizerId())
+
             const { preparedTransactionHash, preparedTransaction = '' } =
                 await prepareSubmission(
                     context.userId,
                     wallet.partyId,
-                    network.synchronizerId,
+                    synchronizerId,
                     params.commands,
                     ledgerClient,
                     commandId
