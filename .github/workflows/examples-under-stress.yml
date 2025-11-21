@@ -1,0 +1,34 @@
+name: Examples Under Stress
+
+on:
+    workflow_dispatch:
+        inputs:
+            parties_per_interval:
+                description: PARTIES_PER_INTERVAL
+                default: '3'
+            interval_length_ms:
+                description: INTERVAL_LENGTH_MS
+                default: '5000'
+            transfers_per_party:
+                description: TRANSFERS_PER_PARTY
+                default: '5'
+
+jobs:
+    run:
+        runs-on: ubuntu-latest
+        timeout-minutes: 90
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: yarn
+            - run: yarn install --frozen-lockfile
+            - run: yarn build --if-present
+            - name: Run examples under stress
+              env:
+                  PARTIES_PER_INTERVAL: ${{ github.event.inputs.parties_per_interval }}
+                  INTERVAL_LENGTH_MS: ${{ github.event.inputs.interval_length_ms }}
+                  TRANSFERS_PER_PARTY: ${{ github.event.inputs.transfers_per_party }}
+                  BACKGROUND_STRESS_LOG_LEVEL: ${{ github.event.inputs.stress_log_level }}
+              run: yarn script:test:examples-stress
