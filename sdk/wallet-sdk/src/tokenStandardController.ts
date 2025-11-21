@@ -32,6 +32,9 @@ import {
     transferInstructionRegistryTypes,
     allocationInstructionRegistryTypes,
     Beneficiaries,
+    MERGE_DELEGATION_PROPOSAL_TEMPLATE_ID,
+    MERGE_DELEGATION_TEMPLATE_ID,
+    MERGE_DELEGATION_BATCH_MERGE_UTILITY,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
@@ -613,9 +616,7 @@ export class TokenStandardController {
         const mergeDelegationContractForUser =
             await this.client.activeContracts({
                 offset: ledgerEnd.offset,
-                templateIds: [
-                    '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
-                ],
+                templateIds: [MERGE_DELEGATION_TEMPLATE_ID],
                 parties: [walletParty],
                 filterByParty: true,
             })
@@ -627,9 +628,7 @@ export class TokenStandardController {
         //batch merge utility contract should be parties = delegate
         const batchMergeUtilityContract = await this.client.activeContracts({
             offset: ledgerEnd.offset,
-            templateIds: [
-                '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
-            ],
+            templateIds: [MERGE_DELEGATION_BATCH_MERGE_UTILITY],
             parties: [this.getPartyId()],
             filterByParty: true,
         })
@@ -661,8 +660,7 @@ export class TokenStandardController {
 
         transferCommands.map((tc) => {
             const exercise: ExerciseCommand = {
-                templateId:
-                    '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
+                templateId: MERGE_DELEGATION_TEMPLATE_ID,
                 contractId: mergeDelegationDc.contractId,
                 choice: 'MergeDelegation_Merge',
                 choiceArgument: {
@@ -688,8 +686,7 @@ export class TokenStandardController {
         })
 
         const batchExerciseCommand: ExerciseCommand = {
-            templateId:
-                '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
+            templateId: MERGE_DELEGATION_BATCH_MERGE_UTILITY,
             contractId: batchDelegationDc.contractId,
             choice: 'BatchMergeUtility_BatchMerge',
             choiceArgument: {
@@ -706,8 +703,7 @@ export class TokenStandardController {
     async createBatchMergeUtility() {
         return {
             CreateCommand: {
-                templateId:
-                    '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
+                templateId: MERGE_DELEGATION_BATCH_MERGE_UTILITY,
                 createArguments: {
                     operator: this.getPartyId(),
                 },
@@ -721,8 +717,7 @@ export class TokenStandardController {
     ) {
         return {
             CreateCommand: {
-                templateId:
-                    '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
+                templateId: MERGE_DELEGATION_PROPOSAL_TEMPLATE_ID,
                 createArguments: {
                     delegation: {
                         operator: delegate,
@@ -738,9 +733,7 @@ export class TokenStandardController {
         const ledgerEnd = await this.client.get('/v2/state/ledger-end')
         return await this.client.activeContracts({
             offset: ledgerEnd.offset,
-            templateIds: [
-                '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
-            ],
+            templateIds: [MERGE_DELEGATION_PROPOSAL_TEMPLATE_ID],
             parties: [ownerParty ?? this.getPartyId()],
             filterByParty: true,
         })
@@ -768,8 +761,7 @@ export class TokenStandardController {
                 ?.createdEvent.contractId
 
         const exercise: ExerciseCommand = {
-            templateId:
-                '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
+            templateId: MERGE_DELEGATION_PROPOSAL_TEMPLATE_ID,
             contractId: cid,
             choice: 'MergeDelegationProposal_Accept',
             choiceArgument: {},
