@@ -17,6 +17,7 @@ import { Execute } from './typings.js'
 import { AddSession } from './typings.js'
 import { RemoveSession } from './typings.js'
 import { ListSessions } from './typings.js'
+import { GetTransaction } from './typings.js'
 
 export type Methods = {
     addNetwork: AddNetwork
@@ -35,6 +36,7 @@ export type Methods = {
     addSession: AddSession
     removeSession: RemoveSession
     listSessions: ListSessions
+    getTransaction: GetTransaction
 }
 
 function buildController(methods: Methods) {
@@ -55,6 +57,7 @@ function buildController(methods: Methods) {
         addSession: methods.addSession,
         removeSession: methods.removeSession,
         listSessions: methods.listSessions,
+        getTransaction: methods.getTransaction,
     }
 }
 

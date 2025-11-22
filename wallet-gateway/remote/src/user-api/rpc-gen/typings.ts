@@ -179,15 +179,31 @@ export interface WalletFilter {
     signingProviderIds?: SigningProviderIds
     [k: string]: any
 }
+/**
+ *
+ * The transaction data corresponding to the command ID.
+ *
+ */
 export type PreparedTransaction = string
+/**
+ *
+ * The hash of the prepared transaction.
+ *
+ */
 export type PreparedTransactionHash = string
 /**
  *
- * The command ID of the transaction to be executed.
+ * The command ID of the transaction.
  *
  */
 export type CommandId = string
 export type Signature = string
+/**
+ *
+ * The command ID of the transaction to be retrieved.
+ *
+ */
+export type CommandId = string
 export type SignedBy = string
 export type Networks = Network[]
 export type Idps = Idp[]
@@ -235,7 +251,12 @@ export type Removed = Wallet[]
  *
  */
 export type AccessToken = string
-export type Status = 'connected' | 'disconnected'
+/**
+ *
+ * The status of the transaction.
+ *
+ */
+export type Status = string
 /**
  *
  * The reason for the current status.
@@ -254,6 +275,12 @@ export interface Session {
     reason?: Reason
 }
 export type Sessions = Session[]
+/**
+ *
+ * Optional payload associated with the transaction.
+ *
+ */
+export type Payload = string
 export interface AddNetworkParams {
     network: Network
     [k: string]: any
@@ -369,6 +396,14 @@ export interface ListSessionsResult {
     sessions: Sessions
     [k: string]: any
 }
+export interface GetTransactionResult {
+    commandId: CommandId
+    status: Status
+    preparedTransaction: PreparedTransaction
+    preparedTransactionHash: PreparedTransactionHash
+    payload?: Payload
+    [k: string]: any
+}
 /**
  *
  * Generated! Represents an alias to any of the provided schemas
@@ -397,3 +432,6 @@ export type Execute = (params: ExecuteParams) => Promise<ExecuteResult>
 export type AddSession = (params: AddSessionParams) => Promise<AddSessionResult>
 export type RemoveSession = () => Promise<Null>
 export type ListSessions = () => Promise<ListSessionsResult>
+export type GetTransaction = (
+    params: CommandId
+) => Promise<GetTransactionResult>

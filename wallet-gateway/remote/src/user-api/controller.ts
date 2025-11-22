@@ -18,6 +18,7 @@ import {
     AddIdpParams,
     RemoveIdpParams,
     CreateWalletParams,
+    GetTransactionResult,
     Null,
 } from './rpc-gen/typings.js'
 import {
@@ -663,6 +664,23 @@ export const userController = (
             const wallets = await store.getWallets()
             notifier?.emit('accountsChanged', wallets)
             return result
+        },
+        getTransaction: async (
+            commandId: string
+        ): Promise<GetTransactionResult> => {
+            const transaction = await store.getTransaction(commandId)
+            if (!transaction) {
+                throw new Error('Transaction not found')
+            }
+            return {
+                commandId: transaction.commandId,
+                status: transaction.status,
+                preparedTransaction: transaction.preparedTransaction,
+                preparedTransactionHash: transaction.preparedTransactionHash,
+                payload: transaction.payload
+                    ? JSON.stringify(transaction.payload)
+                    : '',
+            }
         },
     })
 }
