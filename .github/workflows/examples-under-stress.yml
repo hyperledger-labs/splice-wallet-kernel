@@ -25,7 +25,10 @@ on:
             stress_log_level:
                 description: 'BACKGROUND_STRESS_LOG_LEVEL'
                 default: 'silent'
-
+    # TEMP: also run on PRs so the workflow "exists" and can be dispatched later
+    pull_request:
+        types: [opened, reopened, synchronize]
+        branches: [main]
 jobs:
     stress-e2e:
         runs-on: ubuntu-latest
@@ -39,14 +42,12 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
-            # Keep parity with your build job
             - name: run codegen
               run: yarn generate:all
 
             - name: Build project
               run: yarn build:all
 
-            # Localnet lifecycle (same pattern as sdk-e2e)
             - name: Download localnet (${{ github.event.inputs.network }})
               run: yarn script:fetch:localnet -- --network=${{ github.event.inputs.network }}
 
@@ -55,7 +56,6 @@ jobs:
 
             - uses: ./.github/actions/check_resources
 
-            # Run your under-stress runner
             - name: Run example scripts under background stress
               env:
                   PARTIES_PER_INTERVAL: ${{ github.event.inputs.parties_per_interval }}
