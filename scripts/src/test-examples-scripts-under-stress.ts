@@ -15,7 +15,11 @@ const dir = path.join(
 const STRESS_BG_FILE = 'stress/01-party-stress-test.ts'
 const WARMUP_MS = parseInt(process.env.WARMUP_MS ?? '8000', 10)
 const STOP_GRACE_MS = parseInt(process.env.STOP_GRACE_MS ?? '6000', 10)
-const BACKGROUND_STRESS_LOG_LEVEL = 'silent'
+const BACKGROUND_STRESS_LOG_LEVEL =
+    process.env.BACKGROUND_STRESS_LOG_LEVEL ?? 'silent'
+const PARTIES_PER_INTERVAL = process.env.PARTIES_PER_INTERVAL ?? 'default'
+const INTERVAL_LENGTH_MS = process.env.INTERVAL_LENGTH_MS ?? 'default'
+const TRANSFERS_PER_PARTY = process.env.TRANSFERS_PER_PARTY ?? 'default'
 
 // do not run tests from these directory names; full name match
 const EXCEPTIONS_DIR_NAMES = ['stress']
@@ -90,9 +94,14 @@ function startBackgroundStress(): child_process.ChildProcess {
         throw new Error(`Background stress script not found: ${target}`)
     }
 
+    // Log configuration (values will use defaults from background stress script if not set)
     console.log(
         success(
-            `Starting background stress: ${STRESS_BG_FILE} (log=${BACKGROUND_STRESS_LOG_LEVEL})`
+            `Starting background stress: ${STRESS_BG_FILE} with configuration:
+PARTIES_PER_INTERVAL: ${PARTIES_PER_INTERVAL}
+INTERVAL_LENGTH_MS: ${INTERVAL_LENGTH_MS}
+TRANSFERS_PER_PARTY: ${TRANSFERS_PER_PARTY}
+BACKGROUND_STRESS_LOG_LEVEL: ${BACKGROUND_STRESS_LOG_LEVEL}`
         )
     )
 
