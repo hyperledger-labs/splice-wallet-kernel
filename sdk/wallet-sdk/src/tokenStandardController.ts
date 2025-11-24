@@ -263,7 +263,7 @@ export class TokenStandardController {
      * @param includeLocked defaulted to true, this will include locked UTXOs.
      * @param limit optional limit for number of UTXOs to return.
      * @param offset optional offset to list utxos from, default is latest.
-     * @param user optional party to list utxos
+     * @param party optional party to list utxos
      * @returns A promise that resolves to an array of holding UTXOs.
      */
 
