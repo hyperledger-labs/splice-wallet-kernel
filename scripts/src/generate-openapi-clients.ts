@@ -121,6 +121,10 @@ const getSpecs = (spliceVersion: string): OpenApiSpec[] => [
         output: 'core/splice-client/src/generated-clients/scan.ts',
     },
     {
+        input: `api-specs/splice/${spliceVersion}/scan-proxy.yaml`,
+        output: 'core/splice-client/src/generated-clients/scan-proxy.ts',
+    },
+    {
         input: `api-specs/splice/${spliceVersion}/validator-internal.yaml`,
         output: 'core/splice-client/src/generated-clients/validator-internal.ts',
     },

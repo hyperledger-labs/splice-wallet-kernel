@@ -54,6 +54,7 @@ export class WgSessions extends BaseElement {
                             <tr>
                                 <th>Network ID</th>
                                 <th>Status</th>
+                                <th>Reason</th>
                                 <th>Access Token</th>
                             </tr>
                         </thead>
@@ -62,7 +63,12 @@ export class WgSessions extends BaseElement {
                                 (session) => html`
                                     <tr>
                                         <td>${session.network.id}</td>
-                                        <td>${session.status}</td>
+                                        <td>
+                                            ${session.status === 'connected'
+                                                ? '🟢'
+                                                : '🔴'}
+                                        </td>
+                                        <td>${session.reason}</td>
                                         <td>
                                             <button
                                                 type="button"
