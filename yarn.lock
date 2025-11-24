@@ -1990,6 +1990,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/example-portfolio@workspace:examples/portfolio"
   dependencies:
+    "@canton-network/core-token-standard": "workspace:^"
     "@canton-network/dapp-sdk": "workspace:^"
     "@eslint/js": "npm:^9.25.0"
     "@playwright/test": "npm:^1.55.0"
