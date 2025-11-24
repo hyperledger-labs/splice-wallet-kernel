@@ -45,11 +45,11 @@ jobs:
             - name: Build project
               run: yarn build:all
 
-            - name: Download localnet (${{ github.event.inputs.network }})
-              run: yarn script:fetch:localnet -- --network=${{ github.event.inputs.network }}
+            - name: Download localnet (${{ github.event.inputs.network || 'devnet' }})
+              run: yarn script:fetch:localnet -- --network=${{ github.event.inputs.network || 'devnet' }}
 
-            - name: Start localnet (${{ github.event.inputs.network }})
-              run: yarn start:localnet -- --network=${{ github.event.inputs.network }}
+            - name: Start localnet (${{ github.event.inputs.network || 'devnet' }})
+              run: yarn start:localnet -- --network=${{ github.event.inputs.network || 'devnet' }}
 
             - uses: ./.github/actions/check_resources
 
@@ -63,9 +63,9 @@ jobs:
 
             - uses: ./.github/actions/check_resources
 
-            - name: Stop localnet (${{ github.event.inputs.network }})
+            - name: Stop localnet (${{ github.event.inputs.network || 'devnet' }})
               if: always()
-              run: yarn stop:localnet -- --network=${{ github.event.inputs.network }}
+              run: yarn stop:localnet -- --network=${{ github.event.inputs.network || 'devnet' }}
 
             - name: Save container logs (on failure)
               if: failure()
@@ -80,5 +80,5 @@ jobs:
               if: failure()
               uses: actions/upload-artifact@v4
               with:
-                  name: docker-logs-${{ github.event.inputs.network }}
+                  name: docker-logs-${{ github.event.inputs.network || 'devnet' }}
                   path: logs/
