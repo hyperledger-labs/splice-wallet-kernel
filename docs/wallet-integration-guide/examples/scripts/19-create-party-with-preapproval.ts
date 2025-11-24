@@ -30,7 +30,6 @@ logger.info('Connected to ledger')
 const keyPairSender = createKeyPair()
 const keyPairReceiver = createKeyPair()
 
-await sdk.connectAdmin()
 await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(
