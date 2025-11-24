@@ -2,17 +2,17 @@ import {
     WalletSDKImpl,
     localNetAuthDefault,
     localNetLedgerDefault,
-    localNetTopologyDefault,
     localNetTokenStandardDefault,
     createKeyPair,
-    localValidatorDefault,
     localNetStaticConfig,
-    LedgerController,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 
-const logger = pino({ name: '05-external-party-setup', level: 'info' })
+const logger = pino({
+    name: '19-create-party-with-transfer-preapproval',
+    level: 'info',
+})
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
