@@ -1,6 +1,30 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+/*
+  Orchestrator for running regular example scripts under background stress load.
+
+  This script starts a background stress process (background-stress-load.ts) that continuously
+  generates load on the ledger, then runs all regular test scripts sequentially to verify
+  they handle heavy load gracefully. If any test script fails, the stress test fails.
+
+  Usage with GitHub CLI:
+    gh workflow run "Examples Under Stress" \
+      -f ref=main \
+      -f network=devnet \
+      -f parties_per_interval=3 \
+      -f interval_length_ms=5000 \
+      -f transfers_per_party=5 \
+      -f stress_log_level=silent
+
+  Environment variables:
+    - PARTIES_PER_INTERVAL: Number of parties created per interval (default: 3)
+    - INTERVAL_LENGTH_MS: Interval length in milliseconds (default: 5000)
+    - TRANSFERS_PER_PARTY: Number of transfers per party (default: 5)
+    - BACKGROUND_STRESS_LOG_LEVEL: Log level for background stress (default: 'silent')
+    - WARMUP_MS: Warmup time for background stress before starting example scripts (default: 8000)
+*/
+
 import fs from 'fs'
 import path from 'path'
 import { error, getRepoRoot, success } from './lib/utils.js'
@@ -12,9 +36,9 @@ const dir = path.join(
 )
 
 // configure background stress runner
-const STRESS_BG_FILE = 'stress/01-party-stress-test.ts'
+const STRESS_BG_FILE = 'stress/background-stress-load.ts'
 const WARMUP_MS = parseInt(process.env.WARMUP_MS ?? '8000', 10)
-const STOP_GRACE_MS = parseInt(process.env.STOP_GRACE_MS ?? '6000', 10)
+const STOP_GRACE_MS = 6000 // Timeout for graceful shutdown of background stress script before SIGKILL
 const BACKGROUND_STRESS_LOG_LEVEL =
     process.env.BACKGROUND_STRESS_LOG_LEVEL ?? 'silent'
 const PARTIES_PER_INTERVAL = process.env.PARTIES_PER_INTERVAL ?? 'default'

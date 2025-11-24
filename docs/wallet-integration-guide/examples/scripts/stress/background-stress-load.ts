@@ -12,11 +12,11 @@ import { v4 } from 'uuid'
 import { getRandomElement, partyDefinition } from './utils.js'
 
 const logger = pino({
-    name: '01-party-stress',
+    name: 'background-stress-load',
     level: process.env.BACKGROUND_STRESS_LOG_LEVEL ?? 'info',
 })
 const warnOnly = pino({
-    name: '01-party-stress',
+    name: 'background-stress-load',
     level: process.env.BACKGROUND_STRESS_LOG_LEVEL ?? 'warn',
 })
 

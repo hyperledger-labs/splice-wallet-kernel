@@ -1,6 +1,20 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+/*
+  Orchestrator for running sequential stress test scripts.
+
+  This script runs all stress test scripts (excluding background-stress-load.ts) sequentially without any background load.
+
+  Usage with GitHub CLI:
+    gh workflow run "Stress Tests" \
+      -f ref=main \
+      -f network=devnet
+
+  The script automatically discovers and runs all .ts files in the stress directory,
+  excluding background-stress-load.ts and utils.ts.
+*/
+
 import fs from 'fs'
 import path from 'path'
 import { error, getRepoRoot, success } from './lib/utils.js'
@@ -13,7 +27,7 @@ const dir = path.join(
 
 // do not run these tests; exceptions can be full filename or just any length subset of its starting characters
 const EXCEPTIONS_FILE_NAMES = [
-    '01-party-stress-test', // This is the background stress test, not meant to be run sequentially
+    'background-stress-load', // This is the background stress test, not meant to be run sequentially
     'utils',
 ]
 
