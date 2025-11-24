@@ -1,4 +1,4 @@
-name: Examples Under Stress
+name: Stress Tests
 permissions:
     contents: read
 
@@ -13,21 +13,12 @@ on:
                 type: choice
                 options: [devnet, mainnet]
                 default: devnet
-            parties_per_interval:
-                description: 'PARTIES_PER_INTERVAL'
-                default: '3'
-            interval_length_ms:
-                description: 'INTERVAL_LENGTH_MS'
-                default: '5000'
-            transfers_per_party:
-                description: 'TRANSFERS_PER_PARTY'
-                default: '5'
-            stress_log_level:
-                description: 'BACKGROUND_STRESS_LOG_LEVEL'
-                default: 'silent'
-
+    # TEMP: also run on PRs so the workflow "exists" and can be dispatched later
+    pull_request:
+        types: [opened, reopened, synchronize]
+        branches: [main]
 jobs:
-    stress-e2e:
+    stress-tests:
         runs-on: ubuntu-latest
         timeout-minutes: 120
 
@@ -53,13 +44,8 @@ jobs:
 
             - uses: ./.github/actions/check_resources
 
-            - name: Run example scripts under background stress
-              env:
-                  PARTIES_PER_INTERVAL: ${{ github.event.inputs.parties_per_interval || '3' }}
-                  INTERVAL_LENGTH_MS: ${{ github.event.inputs.interval_length_ms || '5000' }}
-                  TRANSFERS_PER_PARTY: ${{ github.event.inputs.transfers_per_party || '5' }}
-                  BACKGROUND_STRESS_LOG_LEVEL: ${{ github.event.inputs.stress_log_level || 'silent' }}
-              run: yarn script:test:examples-stress
+            - name: Run stress scripts sequentially
+              run: yarn script:test:stress-scripts
 
             - uses: ./.github/actions/check_resources
 

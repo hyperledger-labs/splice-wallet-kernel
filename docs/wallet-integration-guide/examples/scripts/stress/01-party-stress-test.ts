@@ -11,8 +11,14 @@ import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { getRandomElement, partyDefinition } from './utils.js'
 
-const logger = pino({ name: '01-party-stress', level: 'info' })
-const warnOnly = pino({ name: '01-party-stress', level: 'warn' })
+const logger = pino({
+    name: '01-party-stress',
+    level: process.env.BACKGROUND_STRESS_LOG_LEVEL ?? 'info',
+})
+const warnOnly = pino({
+    name: '01-party-stress',
+    level: process.env.BACKGROUND_STRESS_LOG_LEVEL ?? 'warn',
+})
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
@@ -110,12 +116,14 @@ async function tapAndTransfer(fromParty: partyDefinition, count: number) {
                 })
                 .catch((error) => {
                     logger.error(
-                        `[${fromParty.partyId}] Tap ${i} failed: ${error}`
+                        { error },
+                        `[${fromParty.partyId}] Tap ${i} failed`
                     )
                 })
         } catch (error) {
             logger.error(
-                `[${fromParty.partyId}] Transfer ${i} failed: ${error}`
+                { error },
+                `[${fromParty.partyId}] Transfer ${i} failed`
             )
         }
     }
