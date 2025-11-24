@@ -33,7 +33,7 @@ export default defineConfig([
             'core/ledger-client/src/generated-clients',
             'damljs/**',
             'docs/wallet-integration-guide/examples/**',
-            'example/playwright-report/**',
+            'examples/ping/playwright-report/**',
         ],
     },
     {

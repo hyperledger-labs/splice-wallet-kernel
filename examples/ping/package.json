@@ -1,5 +1,5 @@
 {
-    "name": "@canton-network/example",
+    "name": "@canton-network/example-ping",
     "private": true,
     "version": "0.0.0",
     "type": "module",
