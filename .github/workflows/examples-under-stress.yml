@@ -9,7 +9,7 @@ on:
                 description: 'Branch/commit/PR to test (e.g. main or refs/pull/123/head)'
                 default: 'main'
             network:
-                description: 'Localnet flavor'
+                description: 'Localnet version'
                 type: choice
                 options: [devnet, mainnet]
                 default: devnet
