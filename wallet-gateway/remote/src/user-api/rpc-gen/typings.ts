@@ -193,17 +193,11 @@ export type PreparedTransaction = string
 export type PreparedTransactionHash = string
 /**
  *
- * The command ID of the transaction.
+ * The unique identifier of the command associated with the transaction.
  *
  */
 export type CommandId = string
 export type Signature = string
-/**
- *
- * The command ID of the transaction to be retrieved.
- *
- */
-export type CommandId = string
 export type SignedBy = string
 export type Networks = Network[]
 export type Idps = Idp[]
@@ -335,6 +329,10 @@ export interface AddSessionParams {
     networkId: NetworkId
     [k: string]: any
 }
+export interface GetTransactionParams {
+    commandId: CommandId
+    [k: string]: any
+}
 /**
  *
  * Represents a null value, used in responses where no data is returned.
@@ -433,5 +431,5 @@ export type AddSession = (params: AddSessionParams) => Promise<AddSessionResult>
 export type RemoveSession = () => Promise<Null>
 export type ListSessions = () => Promise<ListSessionsResult>
 export type GetTransaction = (
-    params: CommandId
+    params: GetTransactionParams
 ) => Promise<GetTransactionResult>

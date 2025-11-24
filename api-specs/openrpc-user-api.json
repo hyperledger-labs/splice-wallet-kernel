@@ -348,8 +348,7 @@
                                 "type": "string"
                             },
                             "commandId": {
-                                "title": "commandId",
-                                "type": "string"
+                                "$ref": "#/components/schemas/CommandId"
                             },
                             "partyId": {
                                 "title": "partyId",
@@ -500,8 +499,14 @@
                 {
                     "name": "params",
                     "schema": {
-                        "$ref": "#/components/schemas/CommandId",
-                        "description": "The command ID of the transaction to be retrieved."
+                        "title": "GetTransactionParams",
+                        "type": "object",
+                        "properties": {
+                            "commandId": {
+                                "$ref": "#/components/schemas/CommandId"
+                            }
+                        },
+                        "required": ["commandId"]
                     }
                 }
             ],
@@ -512,9 +517,7 @@
                     "type": "object",
                     "properties": {
                         "commandId": {
-                            "title": "commandId",
-                            "type": "string",
-                            "description": "The command ID of the transaction."
+                            "$ref": "#/components/schemas/CommandId"
                         },
                         "status": {
                             "title": "status",

@@ -19,6 +19,7 @@ import {
     RemoveIdpParams,
     CreateWalletParams,
     GetTransactionResult,
+    GetTransactionParams,
     Null,
 } from './rpc-gen/typings.js'
 import {
@@ -666,11 +667,13 @@ export const userController = (
             return result
         },
         getTransaction: async (
-            commandId: string
+            params: GetTransactionParams
         ): Promise<GetTransactionResult> => {
-            const transaction = await store.getTransaction(commandId)
+            const transaction = await store.getTransaction(params.commandId)
             if (!transaction) {
-                throw new Error('Transaction not found')
+                throw new Error(
+                    `Transaction not found with commandId: ${params.commandId}`
+                )
             }
             return {
                 commandId: transaction.commandId,
