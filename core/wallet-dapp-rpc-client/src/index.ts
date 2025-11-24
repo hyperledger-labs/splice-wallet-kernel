@@ -5,12 +5,85 @@ import { RequestPayload, RpcTransport } from '@canton-network/core-types'
 
 /**
  *
+ * The unique identifier of the command associated with the transaction.
+ *
+ */
+export type CommandId = string
+/**
+ *
  * Structure representing JS commands for transaction execution
  *
  */
 export interface JsCommands {
     [key: string]: any
 }
+/**
+ *
+ * The party that signed the transaction.
+ *
+ */
+export type Party = string
+/**
+ *
+ * Set of parties on whose behalf the command should be executed, if submitted. If not set, the primary wallet's party is used.
+ *
+ */
+export type ActAs = Party[]
+/**
+ *
+ * Set of parties that should be granted read access to the command, if submitted. If not set, no additional read parties are granted.
+ *
+ */
+export type ReadAs = Party[]
+/**
+ *
+ * The template identifier of the disclosed contract.
+ *
+ */
+export type TemplateId = string
+/**
+ *
+ * The unique identifier of the disclosed contract.
+ *
+ */
+export type ContractId = string
+/**
+ *
+ * The blob data of the created event for the disclosed contract.
+ *
+ */
+export type CreatedEventBlob = string
+/**
+ *
+ * If not set, a suitable synchronizer that this node is connected to will be chosen.
+ *
+ */
+export type SynchronizerId = string
+/**
+ *
+ * Structure representing a disclosed contract for transaction execution
+ *
+ */
+export interface DisclosedContract {
+    templateId?: TemplateId
+    contractId?: ContractId
+    createdEventBlob: CreatedEventBlob
+    synchronizerId?: SynchronizerId
+    [k: string]: any
+}
+/**
+ *
+ * List of contract IDs to be disclosed with the command.
+ *
+ */
+export type DisclosedContracts = DisclosedContract[]
+export type PackageId = string
+/**
+ *
+ * The package-id selection preference of the client for resolving package names and interface instances in command submission and interpretation
+ *
+ */
+export type PackageIdSelectionPreference = PackageId[]
 export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
 export type Resource = string
 export type Body = string
@@ -118,12 +191,6 @@ export interface JsPrepareSubmissionResponse {
  *
  */
 export type StatusExecuted = 'executed'
-/**
- *
- * The unique identifier of the command associated with the transaction.
- *
- */
-export type CommandId = string
 /**
  *
  * The update ID corresponding to the transaction.
@@ -258,12 +325,6 @@ export type Signature = string
 export type SignedBy = string
 /**
  *
- * The party that signed the transaction.
- *
- */
-export type Party = string
-/**
- *
  * Payload for the TxChangedSignedEvent.
  *
  */
@@ -297,12 +358,34 @@ export interface TxChangedFailedEvent {
     status: StatusFailed
     commandId: CommandId
 }
+/**
+ *
+ * Structure representing the request for prepare and execute calls
+ *
+ */
 export interface PrepareReturnParams {
+    commandId?: CommandId
     commands: JsCommands
+    actAs?: ActAs
+    readAs?: ReadAs
+    disclosedContracts?: DisclosedContracts
+    synchronizerId?: SynchronizerId
+    packageIdSelectionPreference?: PackageIdSelectionPreference
     [k: string]: any
 }
+/**
+ *
+ * Structure representing the request for prepare and execute calls
+ *
+ */
 export interface PrepareExecuteParams {
+    commandId?: CommandId
     commands: JsCommands
+    actAs?: ActAs
+    readAs?: ReadAs
+    disclosedContracts?: DisclosedContracts
+    synchronizerId?: SynchronizerId
+    packageIdSelectionPreference?: PackageIdSelectionPreference
     [k: string]: any
 }
 export interface LedgerApiParams {

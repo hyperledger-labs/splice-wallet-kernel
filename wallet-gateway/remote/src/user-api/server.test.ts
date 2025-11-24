@@ -8,6 +8,7 @@ import express from 'express'
 import request from 'supertest'
 import { user } from './server.js'
 import { StoreInternal } from '@canton-network/core-wallet-store-inmemory'
+import { Network } from '@canton-network/core-wallet-store'
 import { ConfigUtils } from '../config/ConfigUtils.js'
 import { Notifier } from '../notification/NotificationService.js'
 import { pino } from 'pino'
@@ -50,9 +51,12 @@ test('call listNetworks rpc', async () => {
     const json = await response.body.result
 
     expect(response.statusCode).toBe(200)
-    expect(json.networks.length).toBe(4)
-    expect(json.networks[0].name).toBe('Local (OAuth IDP)')
-    expect(json.networks[1].name).toBe('Local (OAuth IDP - Client Credentials)')
-    expect(json.networks[2].name).toBe('Local (Self signed)')
-    expect(json.networks[3].name).toBe('Devnet (Auth0)')
+    expect(json.networks.length).toBe(5)
+    expect(json.networks.map((n: Network) => n.name)).toStrictEqual([
+        'Local (OAuth IDP)',
+        'Local (OAuth IDP - Client Credentials)',
+        'Local (Self signed)',
+        'Devnet (Auth0)',
+        'LocalNet',
+    ])
 })

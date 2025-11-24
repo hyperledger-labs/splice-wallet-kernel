@@ -18,6 +18,9 @@ import {
     AddIdpParams,
     RemoveIdpParams,
     CreateWalletParams,
+    GetTransactionResult,
+    GetTransactionParams,
+    Null,
 } from './rpc-gen/typings.js'
 import {
     Store,
@@ -46,6 +49,7 @@ import {
 } from '../ledger/party-allocation-service.js'
 import { WalletSyncService } from '../ledger/wallet-sync-service.js'
 import { networkStatus } from '../utils.js'
+import { StatusEvent } from '../dapp-api/rpc-gen/typings.js'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
@@ -148,12 +152,12 @@ export const userController = (
                 network.adminAuth,
                 logger
             )
-            const partyAllocator = new PartyAllocationService(
-                network.synchronizerId,
-                tokenProvider,
-                network.ledgerApi.baseUrl,
-                logger
-            )
+            const partyAllocator = new PartyAllocationService({
+                synchronizerId: network.synchronizerId,
+                accessTokenProvider: tokenProvider,
+                httpLedgerUrl: network.ledgerApi.baseUrl,
+                logger,
+            })
             const driver =
                 drivers[signingProviderId as SigningProvider]?.controller(
                     userId
@@ -463,6 +467,9 @@ export const userController = (
 
             switch (wallet.signingProviderId) {
                 case SigningProvider.PARTICIPANT: {
+                    const synchronizerId =
+                        network.synchronizerId ??
+                        (await ledgerClient.getSynchronizerId())
                     // Participant signing provider specific logic can be added here
                     const request = {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
@@ -472,7 +479,7 @@ export const userController = (
                         actAs: [partyId],
                         readAs: [],
                         disclosedContracts: [],
-                        synchronizerId: network.synchronizerId,
+                        synchronizerId,
                         packageIdSelectionPreference: [],
                     }
                     try {
@@ -588,6 +595,20 @@ export const userController = (
                 throw new Error(`Failed to add session: ${error}`)
             }
         },
+        removeSession: async (): Promise<Null> => {
+            logger.info(authContext, 'Removing session')
+            const userId = assertConnected(authContext).userId
+            const notifier = notificationService.getNotifier(userId)
+            await store.removeSession()
+            notifier.emit('statusChanged', {
+                kernel: kernelInfo,
+                isConnected: false,
+                isNetworkConnected: false,
+                networkReason: 'Unauthenticated',
+                userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
+            } as StatusEvent)
+            return null
+        },
         listSessions: async (): Promise<ListSessionsResult> => {
             const session = await store.getSession()
             if (!session) {
@@ -617,7 +638,7 @@ export const userController = (
         },
         syncWallets: async function (): Promise<SyncWalletsResult> {
             const network = await store.getCurrentNetwork()
-            assertConnected(authContext)
+            const { userId } = assertConnected(authContext)
 
             const userAccessTokenProvider: AccessTokenProvider = {
                 getUserAccessToken: async () => authContext!.accessToken,
@@ -636,7 +657,33 @@ export const userController = (
                 authContext!,
                 logger
             )
-            return await service.syncWallets()
+            const result = await service.syncWallets()
+            if (result.added.length === 0 && result.removed.length === 0) {
+                return result
+            }
+            const notifier = notificationService.getNotifier(userId)
+            const wallets = await store.getWallets()
+            notifier?.emit('accountsChanged', wallets)
+            return result
+        },
+        getTransaction: async (
+            params: GetTransactionParams
+        ): Promise<GetTransactionResult> => {
+            const transaction = await store.getTransaction(params.commandId)
+            if (!transaction) {
+                throw new Error(
+                    `Transaction not found with commandId: ${params.commandId}`
+                )
+            }
+            return {
+                commandId: transaction.commandId,
+                status: transaction.status,
+                preparedTransaction: transaction.preparedTransaction,
+                preparedTransactionHash: transaction.preparedTransactionHash,
+                payload: transaction.payload
+                    ? JSON.stringify(transaction.payload)
+                    : '',
+            }
         },
     })
 }

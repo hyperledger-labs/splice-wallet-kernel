@@ -21,20 +21,30 @@ type SigningCbFn = (hash: string) => Promise<string>
  * This service provides an abstraction for Canton party allocation that seamlessly handles both internal and external parties.
  */
 export class PartyAllocationService {
+    private logger: Logger
     private ledgerClient: LedgerClient
+    private synchronizerId: string | undefined
 
-    constructor(
-        private synchronizerId: string,
-        accessTokenProvider: AccessTokenProvider,
-        httpLedgerUrl: string,
-        private logger: Logger,
-        accessToken: string = ''
-    ) {
+    constructor({
+        synchronizerId,
+        accessTokenProvider,
+        httpLedgerUrl,
+        logger,
+        accessToken,
+    }: {
+        synchronizerId?: string
+        accessTokenProvider: AccessTokenProvider
+        httpLedgerUrl: string
+        logger: Logger
+        accessToken?: string
+    }) {
+        this.logger = logger
+        this.synchronizerId = synchronizerId
         this.ledgerClient = new LedgerClient(
             new URL(httpLedgerUrl),
             this.logger,
             true,
-            accessToken,
+            accessToken ?? '',
             accessTokenProvider
         )
     }
@@ -102,8 +112,10 @@ export class PartyAllocationService {
         hint: string,
         publicKey: string
     ): Promise<GenerateTransactionResponse> {
+        const synchronizerId =
+            this.synchronizerId ?? (await this.ledgerClient.getSynchronizerId())
         return this.ledgerClient.generateTopology(
-            this.synchronizerId,
+            synchronizerId,
             publicKey,
             hint
         )
@@ -129,8 +141,10 @@ export class PartyAllocationService {
         signature: string,
         userId: string
     ): Promise<string> {
+        const synchronizerId =
+            this.synchronizerId ?? (await this.ledgerClient.getSynchronizerId())
         const res = await this.ledgerClient.allocateExternalParty(
-            this.synchronizerId,
+            synchronizerId,
             transactions.map((transaction) => ({
                 transaction,
             })),
@@ -180,6 +194,8 @@ export class PartyAllocationService {
         publicKey: string,
         signingCallback: SigningCbFn
     ): Promise<AllocatedParty> {
+        const synchronizerId =
+            this.synchronizerId ?? (await this.ledgerClient.getSynchronizerId())
         const namespace = this.createFingerprintFromKey(publicKey)
 
         const transactions = await this.generateTopologyTransactions(
@@ -190,7 +206,7 @@ export class PartyAllocationService {
         const signature = await signingCallback(transactions.multiHash)
 
         const res = await this.ledgerClient.allocateExternalParty(
-            this.synchronizerId,
+            synchronizerId,
             transactions.topologyTransactions!.map((transaction) => ({
                 transaction,
             })),

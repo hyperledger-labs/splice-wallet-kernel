@@ -145,7 +145,7 @@ jobs:
             - name: Start remote WK
               run: yarn nx run @canton-network/wallet-gateway-remote:start &
 
-            - run: yarn nx run @canton-network/example:dev &
+            - run: yarn nx run @canton-network/example-ping:dev &
 
             - run: yarn nx run @canton-network/mock-oauth2:start &
 
@@ -190,16 +190,16 @@ jobs:
             # playwright to install everything for us.
             - name: Install Playwright's dependencies
               if: steps.playwright-cache.outputs.cache-hit != 'true'
-              run: yarn workspace @canton-network/example run playwright install --with-deps
+              run: yarn workspace @canton-network/example-ping run playwright install --with-deps
 
             - name: Run example e2e
-              run: yarn nx playwright:e2e @canton-network/example
+              run: yarn nx playwright:e2e @canton-network/example-ping
 
             - uses: actions/upload-artifact@v4
               if: ${{ !cancelled() }}
               with:
                   name: playwright-report
-                  path: example/playwright-report/
+                  path: examples/ping/playwright-report/
                   retention-days: 30
 
     sdk-e2e:

@@ -23,8 +23,8 @@ export const apps = [
         env_development: sharedEnvDevelopment,
     },
     {
-        name: 'example',
-        script: 'yarn workspace @canton-network/example dev',
+        name: 'example-ping',
+        script: 'yarn workspace @canton-network/example-ping dev',
         env_development: sharedEnvDevelopment,
     },
     {

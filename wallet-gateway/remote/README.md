@@ -26,7 +26,17 @@ By default, the service runs on port `3030`, but this can be overridden via the 
 
 ## Configuration
 
-A configuration file is required to start up the Gateway. See [config.json](https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/wallet-gateway/test/config.json) for an example.
+A configuration file is required to start up the Gateway. Create an example config to edit as a starting point:
+
+```bash
+wallet-gateway --config-example > config.json
+```
+
+To show the full [JSON Schema](https://json-schema.org/) representation of the configuration file:
+
+```bash
+wallet-gateway --config-schema
+```
 
 # Developing
 

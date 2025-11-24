@@ -8,6 +8,7 @@ import {
     LedgerApiParams,
     PrepareExecuteParams,
     PrepareReturnParams,
+    StatusEvent,
 } from './rpc-gen/typings.js'
 import { Store } from '@canton-network/core-wallet-store'
 import {
@@ -70,12 +71,13 @@ export const dappController = (
             } else {
                 const notifier = notificationService.getNotifier(context.userId)
                 await store.removeSession()
-
                 notifier.emit('statusChanged', {
                     kernel: kernelInfo,
                     isConnected: false,
+                    isNetworkConnected: false,
+                    networkReason: 'Unauthenticated',
                     userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
-                })
+                } as StatusEvent)
             }
 
             return null
@@ -134,18 +136,23 @@ export const dappController = (
 
             const userId = context.userId
             const notifier = notificationService.getNotifier(userId)
-            const commandId = v4()
+
+            params.commandId = params.commandId || v4()
+            const commandId = params.commandId
 
             notifier.emit('txChanged', { status: 'pending', commandId })
+
+            const synchronizerId =
+                network.synchronizerId ??
+                (await ledgerClient.getSynchronizerId())
 
             const { preparedTransactionHash, preparedTransaction = '' } =
                 await prepareSubmission(
                     context.userId,
                     wallet.partyId,
-                    network.synchronizerId,
-                    params.commands,
-                    ledgerClient,
-                    commandId
+                    synchronizerId,
+                    params,
+                    ledgerClient
                 )
 
             store.setTransaction({
@@ -158,7 +165,7 @@ export const dappController = (
 
             return {
                 // TODO: pull user base URL / port from config
-                userUrl: `http://localhost:3030/approve/index.html?commandId=${commandId}&partyId=${wallet.partyId}&txHash=${encodeURIComponent(preparedTransactionHash)}&tx=${encodeURIComponent(preparedTransaction)}`,
+                userUrl: `http://localhost:3030/approve/index.html?commandId=${commandId}`,
             }
         },
         prepareReturn: async (params: PrepareReturnParams) => {
@@ -184,7 +191,7 @@ export const dappController = (
                 context.userId,
                 wallet.partyId,
                 network.synchronizerId,
-                params.commands,
+                params,
                 ledgerClient
             )
         },
@@ -237,21 +244,30 @@ async function prepareSubmission(
     userId: string,
     partyId: string,
     synchronizerId: string,
-    commands: unknown,
-    ledgerClient: LedgerClient,
-    commandId?: string
+    params: PrepareExecuteParams | PrepareReturnParams,
+    ledgerClient: LedgerClient
 ): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
+    // Map disclosed contracts to ledger api format (which wrongly defines optional fields as mandatory)
+    const disclosedContracts =
+        params.disclosedContracts?.map((d) => {
+            return {
+                templateId: d.templateId || '',
+                contractId: d.contractId || '',
+                createdEventBlob: d.createdEventBlob,
+                synchronizerId: d.synchronizerId || '',
+            }
+        }) || []
     const prepareParams = {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-        commands: commands as any,
-        commandId: commandId || v4(),
+        commands: params.commands as any,
+        commandId: params.commandId || v4(),
         userId,
-        actAs: [partyId],
-        readAs: [],
-        disclosedContracts: [],
+        actAs: params.actAs || [partyId],
+        readAs: params.readAs || [],
+        disclosedContracts,
         synchronizerId,
         verboseHashing: false,
-        packageIdSelectionPreference: [],
+        packageIdSelectionPreference: params.packageIdSelectionPreference || [],
     }
 
     return await ledgerClient.postWithRetry(

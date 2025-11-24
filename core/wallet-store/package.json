@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-store",
-    "version": "0.12.0",
+    "version": "0.13.0",
     "type": "module",
     "description": "The Store API provides persistency for the Wallet Gateway",
     "repository": "github:hyperledger-labs/splice-wallet-kernel",

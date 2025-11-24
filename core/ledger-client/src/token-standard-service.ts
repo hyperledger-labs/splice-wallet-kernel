@@ -39,7 +39,7 @@ import {
 
 import type { PrettyTransactions, Transaction } from './txparse/types.js'
 import { Types } from './ledger-client.js'
-import { ScanProxyClient } from '@canton-network/core-splice-client'
+import { ScanClient, ScanProxyClient } from '@canton-network/core-splice-client'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
@@ -356,6 +356,12 @@ export class CoreService {
             ).viewValue as T,
             fetchedAtOffset: offset,
         }
+    }
+
+    toQualifiedMemberId(memberId: string) {
+        if (!memberId) throw new Error('memberId is required')
+
+        return /^(PAR|MED)::/.test(memberId) ? memberId : `PAR::${memberId}`
     }
 }
 
@@ -1202,14 +1208,17 @@ export class TokenStandardService {
         private scanProxyClient: ScanProxyClient,
         private logger: Logger,
         private accessTokenProvider: AccessTokenProvider,
-        private readonly isMasterUser: boolean
+        private readonly isMasterUser: boolean,
+        private readonly scanClient: ScanClient | undefined
     ) {
         this.core = new CoreService(
             ledgerClient,
             scanProxyClient,
             logger,
             accessTokenProvider,
-            isMasterUser
+            isMasterUser,
+            undefined,
+            undefined
         )
         this.allocation = new AllocationService(this.core, this.logger)
         this.transfer = new TransferService(this.core, this.logger)
@@ -1320,7 +1329,7 @@ export class TokenStandardService {
                 value: cid,
             })),
             provider,
-            memberId,
+            memberId: this.core.toQualifiedMemberId(memberId),
             synchronizerId,
             migrationId,
             trafficAmount,
@@ -1335,6 +1344,21 @@ export class TokenStandardService {
         }
 
         return [exercise, disclosed]
+    }
+
+    async getMemberTrafficStatus(domainId: string, memberId: string) {
+        if (!this.scanClient) {
+            throw new Error('Scan API URL was not provided')
+        }
+        return this.scanClient.get(
+            '/v0/domains/{domain_id}/members/{member_id}/traffic-status',
+            {
+                path: {
+                    domain_id: domainId,
+                    member_id: this.core.toQualifiedMemberId(memberId),
+                },
+            }
+        )
     }
 
     async getInstrumentAdmin(registryUrl: string): Promise<string> {
