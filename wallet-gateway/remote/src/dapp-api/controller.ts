@@ -165,7 +165,7 @@ export const dappController = (
 
             return {
                 // TODO: pull user base URL / port from config
-                userUrl: `http://localhost:3030/approve/index.html?commandId=${commandId}&partyId=${wallet.partyId}&txHash=${encodeURIComponent(preparedTransactionHash)}&tx=${encodeURIComponent(preparedTransaction)}`,
+                userUrl: `http://localhost:3030/approve/index.html?commandId=${commandId}`,
             }
         },
         prepareReturn: async (params: PrepareReturnParams) => {

@@ -21,6 +21,7 @@ export class ApproveUi extends LitElement {
     @state() accessor partyId = ''
     @state() accessor txHash = ''
     @state() accessor tx = ''
+    @state() accessor status = ''
     @state() accessor message: string | null = null
     @state() accessor messageType: 'info' | 'error' | null = null
 
@@ -159,9 +160,22 @@ export class ApproveUi extends LitElement {
         super.connectedCallback()
         const url = new URL(window.location.href)
         this.commandId = url.searchParams.get('commandId') || ''
-        this.partyId = url.searchParams.get('partyId') || ''
-        this.txHash = decodeURIComponent(url.searchParams.get('txHash') || '')
-        this.tx = decodeURIComponent(url.searchParams.get('tx') || '')
+        this.updateState()
+    }
+
+    private async updateState() {
+        const userClient = createUserClient(stateManager.accessToken.get())
+        userClient
+            .request('getTransaction', { commandId: this.commandId })
+            .then((result) => {
+                this.txHash = result.preparedTransactionHash
+                this.tx = result.preparedTransaction
+                this.status = result.status
+            })
+        userClient.request('listWallets', []).then((wallets) => {
+            this.partyId =
+                wallets.find((w) => w.primary === true)?.partyId || ''
+        })
     }
 
     private decode(tx: string) {
@@ -224,11 +238,17 @@ export class ApproveUi extends LitElement {
 
                 <h2>Transaction Details</h2>
 
-                <h3>Transaction Hash</h3>
-                <p>${this.txHash}</p>
-
                 <h3>Command Id</h3>
                 <p>${this.commandId}</p>
+
+                <h3>Status</h3>
+                <p>${this.status}</p>
+
+                <h3>Party Id</h3>
+                <p>${this.partyId}</p>
+
+                <h3>Transaction Hash</h3>
+                <p>${this.txHash}</p>
 
                 <h3>Base64 Transaction</h3>
                 <div class="tx-box">${this.tx}</div>
