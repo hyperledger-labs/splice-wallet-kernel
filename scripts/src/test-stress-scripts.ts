@@ -8,7 +8,8 @@
 
   Usage with GitHub CLI:
     gh workflow run "Stress Tests" \
-      -f ref=main \
+      --ref=your-branch-name \
+      -f ref=your-branch-name \
       -f network=devnet
 
   The script automatically discovers and runs all .ts files in the stress directory,

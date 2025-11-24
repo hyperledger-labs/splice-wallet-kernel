@@ -6,8 +6,8 @@ on:
     workflow_dispatch:
         inputs:
             ref:
-                description: 'Branch/commit/PR to test (e.g. main or refs/pull/123/head)'
-                default: 'main'
+                description: 'Branch/commit/PR to test (e.g. your-branch-name, main, or refs/pull/123/head). Leave empty to use default branch.'
+                default: ''
             network:
                 description: 'Localnet version'
                 type: choice

@@ -10,7 +10,8 @@
 
   Usage with GitHub CLI:
     gh workflow run "Examples Under Stress" \
-      -f ref=main \
+      --ref=your-branch-name \
+      -f ref=your-branch-name \
       -f network=devnet \
       -f parties_per_interval=3 \
       -f interval_length_ms=5000 \
