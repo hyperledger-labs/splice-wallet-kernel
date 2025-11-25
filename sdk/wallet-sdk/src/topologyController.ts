@@ -67,13 +67,13 @@ export class TopologyController {
         accessTokenProvider?: AccessTokenProvider,
         grpcClientOptions?: GrpcClientOptions
     ) {
-        this.client = new LedgerClient(
+        this.client = new LedgerClient({
             baseUrl,
-            this.logger,
-            true,
+            logger: this.logger,
+            isAdmin: true,
             accessToken,
-            accessTokenProvider
-        )
+            accessTokenProvider,
+        })
         this.userId = userId
         this.topologyClient = new TopologyWriteService(
             synchronizerId,
@@ -290,13 +290,13 @@ export class TopologyController {
     async getParticipantId(
         participantEndpoints: MultiHostPartyParticipantConfig
     ): Promise<string> {
-        const lc = new LedgerClient(
-            participantEndpoints.baseUrl,
-            this.logger,
-            true,
-            participantEndpoints.accessToken,
-            participantEndpoints.accessTokenProvider
-        )
+        const lc = new LedgerClient({
+            baseUrl: participantEndpoints.baseUrl,
+            logger: this.logger,
+            isAdmin: true,
+            accessToken: participantEndpoints.accessToken,
+            accessTokenProvider: participantEndpoints.accessTokenProvider,
+        })
 
         return (await lc.getWithRetry('/v2/parties/participant-id'))
             .participantId
@@ -336,13 +336,13 @@ export class TopologyController {
         // on the participant specified in the wallet.sdk.configure
         // now we need to authorize the party to participant transaction on the others
         for (const endpoint of participantEndpoints.slice(1)) {
-            const lc = new LedgerClient(
-                endpoint.baseUrl,
-                this.logger,
-                true,
-                endpoint.accessToken,
-                endpoint.accessTokenProvider
-            )
+            const lc = new LedgerClient({
+                baseUrl: endpoint.baseUrl,
+                logger: this.logger,
+                isAdmin: true,
+                accessToken: endpoint.accessToken,
+                accessTokenProvider: endpoint.accessTokenProvider,
+            })
 
             const service = new TopologyWriteService(
                 synchronizerId,

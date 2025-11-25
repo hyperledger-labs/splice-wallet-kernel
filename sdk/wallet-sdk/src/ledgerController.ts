@@ -74,13 +74,13 @@ export class LedgerController {
         isAdmin: boolean = false,
         accessTokenProvider?: AccessTokenProvider
     ) {
-        this.client = new LedgerClient(
+        this.client = new LedgerClient({
             baseUrl,
-            this.logger,
+            logger: this.logger,
             isAdmin,
-            token,
-            accessTokenProvider
-        )
+            accessToken: token,
+            accessTokenProvider,
+        })
         this.initPromise = this.client.init()
         this.userId = userId
         this.isAdmin = isAdmin
@@ -448,13 +448,13 @@ export class LedgerController {
         publicKeyFingerprint: string
     ) {
         for (const endpoint of endpointConfig) {
-            const lc = new LedgerClient(
-                endpoint.url,
-                this.logger,
-                this.isAdmin,
-                endpoint.accessToken,
-                endpoint.accessTokenProvider
-            )
+            const lc = new LedgerClient({
+                baseUrl: endpoint.url,
+                logger: this.logger,
+                isAdmin: this.isAdmin,
+                accessToken: endpoint.accessToken,
+                accessTokenProvider: endpoint.accessTokenProvider,
+            })
 
             await lc.allocateExternalParty(
                 this.getSynchronizerId(),
@@ -534,13 +534,13 @@ export class LedgerController {
             hostingParticipantConfigs
                 ?.map(
                     (endpoint) =>
-                        new LedgerClient(
-                            endpoint.url,
-                            this.logger,
-                            this.isAdmin,
-                            endpoint.accessToken,
-                            endpoint.accessTokenProvider
-                        )
+                        new LedgerClient({
+                            baseUrl: endpoint.url,
+                            logger: this.logger,
+                            isAdmin: this.isAdmin,
+                            accessToken: endpoint.accessToken,
+                            accessTokenProvider: endpoint.accessTokenProvider,
+                        })
                 )
                 .map((client) =>
                     client

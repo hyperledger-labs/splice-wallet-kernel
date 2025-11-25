@@ -95,52 +95,57 @@ export class LedgerClient {
     private synchronizerId: string | undefined
     baseUrl: URL
 
-    constructor(
-        baseUrl: URL,
-        _logger: Logger,
-        isAdmin: boolean = false,
-        accessToken?: string,
-        accessTokenProvider?: AccessTokenProvider,
-        version?: SupportedVersions,
+    constructor({
+        baseUrl,
+        logger,
+        isAdmin,
+        accessToken,
+        accessTokenProvider,
+        version,
+        acsHelperOptions,
+        ...options
+    }: {
+        baseUrl: URL
+        logger: Logger
+        isAdmin?: boolean
+        accessToken?: string | undefined
+        accessTokenProvider?: AccessTokenProvider | undefined
+        version?: SupportedVersions
         acsHelperOptions?: AcsHelperOptions
-    ) {
-        this.logger = _logger.child({ component: 'LedgerClient' })
+        fetch?: (url: RequestInfo, options: RequestInit) => Promise<Response>
+    }) {
+        this.logger = logger.child({ component: 'LedgerClient' })
         this.accessTokenProvider = accessTokenProvider
+
+        const baseFetch = options.fetch ?? fetch
+        const authenticatedFetch = async (
+            url: RequestInfo,
+            options: RequestInit = {}
+        ) => {
+            let token = accessToken
+            if (this.accessTokenProvider) {
+                token =
+                    (isAdmin ?? false)
+                        ? await this.accessTokenProvider.getAdminAccessToken()
+                        : await this.accessTokenProvider.getUserAccessToken()
+            }
+            return baseFetch(url, {
+                ...options,
+                headers: {
+                    ...(options.headers || {}),
+                    ...(token && { Authorization: `Bearer ${token}` }),
+                },
+            })
+        }
 
         this.clients = {
             '3.3': createClient<v3_3.paths>({
                 baseUrl: baseUrl.href,
-                fetch: async (url: RequestInfo, options: RequestInit = {}) => {
-                    if (this.accessTokenProvider) {
-                        accessToken = isAdmin
-                            ? await this.accessTokenProvider.getAdminAccessToken()
-                            : await this.accessTokenProvider.getUserAccessToken()
-                    }
-                    return fetch(url, {
-                        ...options,
-                        headers: {
-                            ...(options.headers || {}),
-                            Authorization: `Bearer ${accessToken}`,
-                        },
-                    })
-                },
+                fetch: authenticatedFetch,
             }),
             '3.4': createClient<v3_4.paths>({
                 baseUrl: baseUrl.href,
-                fetch: async (url: RequestInfo, options: RequestInit = {}) => {
-                    if (this.accessTokenProvider) {
-                        accessToken = isAdmin
-                            ? await this.accessTokenProvider.getAdminAccessToken()
-                            : await this.accessTokenProvider.getUserAccessToken()
-                    }
-                    return fetch(url, {
-                        ...options,
-                        headers: {
-                            ...(options.headers || {}),
-                            Authorization: `Bearer ${accessToken}`,
-                        },
-                    })
-                },
+                fetch: authenticatedFetch,
             }),
         }
 
@@ -149,7 +154,7 @@ export class LedgerClient {
         this.baseUrl = baseUrl
         this.acsHelper = new ACSHelper(
             this,
-            _logger,
+            logger,
             acsHelperOptions,
             SharedACSCache
         )
