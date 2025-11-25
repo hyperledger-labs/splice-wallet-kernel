@@ -45,6 +45,56 @@ const instrument = {
 
 const validatorOperatorParty = (await sdk.validator?.getValidatorUser()) || ''
 
+const participantId = await sdk.userLedger?.getParticipantId()
+
+// Create a dedicated party for buying traffic
+const trafficBuyerKeyPair = createKeyPair()
+const trafficBuyer = await sdk.userLedger?.signAndAllocateExternalParty(
+    trafficBuyerKeyPair.privateKey,
+    'traffic-buyer'
+)
+logger.info(`Created traffic buyer party: ${trafficBuyer!.partyId}`)
+
+async function buyTraffic(amount: number = 200000) {
+    try {
+        await sdk.setPartyId(trafficBuyer!.partyId)
+
+        // Tap the traffic buyer party to ensure it has funds
+        const [tapCommand, disclosedContracts] =
+            await sdk.tokenStandard!.createTap(
+                trafficBuyer!.partyId,
+                '20000000',
+                instrument
+            )
+
+        await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+            tapCommand,
+            trafficBuyerKeyPair.privateKey,
+            v4(),
+            disclosedContracts
+        )
+
+        // Now buy traffic using the traffic buyer party
+        const [buyTrafficCommand, buyTrafficDisclosedContracts] =
+            await sdk.tokenStandard!.buyMemberTraffic(
+                trafficBuyer!.partyId,
+                amount,
+                participantId!,
+                []
+            )
+
+        await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+            buyTrafficCommand,
+            trafficBuyerKeyPair.privateKey,
+            v4(),
+            buyTrafficDisclosedContracts
+        )
+        logger.info(`Bought ${amount} traffic for participant`)
+    } catch (error) {
+        logger.error({ error }, 'Error buying traffic')
+    }
+}
+
 async function allocateParty() {
     const keyPair = createKeyPair()
     const allocatedParty = await sdk.userLedger?.signAndAllocateExternalParty(
@@ -164,6 +214,17 @@ const transfersPerParty = process.env.TRANSFERS_PER_PARTY
 
 let currentInterval = 0
 
+// Buy traffic periodically to prevent running out
+const trafficPurchaseIntervalMs = parseInt('60000', 10)
+
+const trafficPurchaseAmount = parseInt('200000', 10)
+
+await buyTraffic(trafficPurchaseAmount)
+
+setInterval(async () => {
+    await buyTraffic(trafficPurchaseAmount)
+}, trafficPurchaseIntervalMs)
+
 setInterval(async () => {
     try {
         currentInterval++
@@ -185,14 +246,14 @@ setInterval(async () => {
                     }, intervalLengthMs)
                 })
                 .catch((error) => {
-                    logger.error(`Error allocating party: ${error}`)
+                    logger.error({ error }, 'Error allocating party')
                 })
             await new Promise((resolve) =>
                 setTimeout(resolve, partiesPerInterval / intervalLengthMs)
             )
         }
     } catch (error) {
-        logger.error(`Error in interval ${currentInterval}: ${error}`)
+        logger.error({ error }, `Error in interval ${currentInterval}`)
     }
 }, intervalLengthMs)
 
