@@ -1482,6 +1482,63 @@ export class TokenStandardService {
         )
     }
 
+    /**
+     * Gets a contract by updateId by calling /v2/updates/update-by-id
+     * and extracting contract information from CreatedEvent in the transaction.
+     * @param updateId The update ID to look up
+     * @returns Contract information including contractId, templateId, and payload (createdEventBlob)
+     * @throws Error if the update is not a Transaction or if no CreatedEvent is found
+     */
+    async getContractByUpdateId(updateId: string): Promise<{
+        contractId: string
+        templateId: string
+        payload: string
+    }> {
+        const updateResponse =
+            await this.ledgerClient.postWithRetry<'/v2/updates/update-by-id'>(
+                '/v2/updates/update-by-id',
+                {
+                    updateId,
+                }
+            )
+
+        const update = updateResponse.update
+
+        if (!('Transaction' in update)) {
+            throw new Error(
+                `Update ${updateId} is not a Transaction. Update type: ${Object.keys(update)[0]}`
+            )
+        }
+
+        const transaction = update.Transaction.value
+        const events = transaction.events || []
+
+        const createdEvent = events.find(
+            (event): event is { CreatedEvent: Types['CreatedEvent'] } =>
+                'CreatedEvent' in event
+        )
+
+        if (!createdEvent) {
+            throw new Error(
+                `No CreatedEvent found in transaction ${updateId}. Found ${events.length} events.`
+            )
+        }
+
+        const event = createdEvent.CreatedEvent
+
+        if (!event.createdEventBlob) {
+            throw new Error(
+                `CreatedEvent for contract ${event.contractId} does not have createdEventBlob`
+            )
+        }
+
+        return {
+            contractId: event.contractId,
+            templateId: event.templateId,
+            payload: event.createdEventBlob,
+        }
+    }
+
     async getInputHoldingsCids(sender: PartyId, inputUtxos?: string[]) {
         return this.core.getInputHoldingsCids(sender, inputUtxos)
     }
