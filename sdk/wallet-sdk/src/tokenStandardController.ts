@@ -32,6 +32,9 @@ import {
     transferInstructionRegistryTypes,
     allocationInstructionRegistryTypes,
     Beneficiaries,
+    MERGE_DELEGATION_PROPOSAL_TEMPLATE_ID,
+    MERGE_DELEGATION_TEMPLATE_ID,
+    MERGE_DELEGATION_BATCH_MERGE_UTILITY,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
@@ -260,17 +263,19 @@ export class TokenStandardController {
      * @param includeLocked defaulted to true, this will include locked UTXOs.
      * @param limit optional limit for number of UTXOs to return.
      * @param offset optional offset to list utxos from, default is latest.
+     * @param party optional party to list utxos
      * @returns A promise that resolves to an array of holding UTXOs.
      */
 
     async listHoldingUtxos(
         includeLocked: boolean = true,
         limit?: number,
-        offset?: number
+        offset?: number,
+        party?: PartyId
     ): Promise<PrettyContract<Holding>[]> {
         const utxos = await this.service.listContractsByInterface<Holding>(
             HOLDING_INTERFACE_ID,
-            this.getPartyId(),
+            party ?? this.getPartyId(),
             limit,
             offset
         )
@@ -295,15 +300,27 @@ export class TokenStandardController {
     /**
      * Merges utxos by instrument
      * @param nodeLimit json api maximum elements limit per node, default is 200
+     * @param partyId optional partyId to create the transfer command for - use for if acting as a delegate party
+     * @param inputUtxos optional utxos to provide as input (e.g. if you're already listing holdings and don't want to repeat the call)
      * @returns an array of exercise commands, where each command can have up to 100 self-transfers
      * these need to be submitted separately as there is a limit of 100 transfers per execution
      */
     async mergeHoldingUtxos(
-        nodeLimit = 200
+        nodeLimit = 200,
+        partyId?: PartyId,
+        inputUtxos?: PrettyContract<Holding>[]
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>[], Types['DisclosedContract'][]]
     > {
-        const utxos = await this.listHoldingUtxos(false, nodeLimit)
+        const walletParty = partyId ?? this.getPartyId()
+        const utxos =
+            inputUtxos ??
+            (await this.listHoldingUtxos(
+                false,
+                nodeLimit,
+                undefined,
+                walletParty
+            ))
 
         const utxoGroupedByInstrument: Record<
             string,
@@ -342,8 +359,8 @@ export class TokenStandardController {
                     }, 0)
 
                     return this.createTransfer(
-                        this.getPartyId(),
-                        this.getPartyId(),
+                        walletParty,
+                        walletParty,
                         accumulatedAmount.toString(),
                         instrument,
                         inputUtxos.map((h) => h.contractId),
@@ -527,6 +544,229 @@ export class TokenStandardController {
             this.logger.error(e)
             return undefined
         }
+    }
+
+    private groupUtxosByInstrument(utxos: PrettyContract<Holding>[]) {
+        const utxoGroupedByInstrument: Record<
+            string,
+            PrettyContract<Holding>[] | undefined
+        > = Object.groupBy(
+            utxos,
+            (utxo) =>
+                `${utxo.interfaceViewValue.instrumentId.id}::${utxo.interfaceViewValue.instrumentId.admin}` as string
+        )
+
+        return utxoGroupedByInstrument
+    }
+
+    private extractActiveContract(
+        ac: Types['JsGetActiveContractsResponse']
+    ): Types['DisclosedContract'] {
+        if (!ac.contractEntry.JsActiveContract) {
+            throw new Error('Not an active contract')
+        }
+
+        const contractEntry = ac.contractEntry
+
+        if (!('JsActiveContract' in contractEntry)) {
+            const key = Object.keys(contractEntry)[0] ?? 'UNKOWN'
+            throw new Error(`Expected JsActiveContract, received ${key}`)
+        }
+
+        const js = contractEntry.JsActiveContract
+
+        return {
+            templateId: js.createdEvent.templateId,
+            contractId: js.createdEvent.contractId,
+            createdEventBlob: js.createdEvent.createdEventBlob,
+            synchronizerId: js.synchronizerId,
+        }
+    }
+
+    private uniqueDisclosedContracts(contracts: DisclosedContract[]) {
+        return Array.from(
+            new Map(contracts.map((c) => [c.contractId, c])).values()
+        )
+    }
+
+    async useMergeDelegations(
+        walletParty: PartyId,
+        nodeLimit: number = 200
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        //determine if user has more than 10 Holding UTXOS
+
+        const ledgerEnd = await this.client.get('/v2/state/ledger-end')
+
+        const utxos = await this.listHoldingUtxos(
+            true,
+            100,
+            undefined,
+            walletParty
+        )
+
+        if (utxos.length < 10) {
+            throw new Error(`Utxos are less than 10, found ${utxos.length}`)
+        }
+
+        const allMergeDelegationChoices: WrappedCommand<'ExerciseCommand'>[] =
+            []
+        //look up merge delegation contract
+        const mergeDelegationContractForUser =
+            await this.client.activeContracts({
+                offset: ledgerEnd.offset,
+                templateIds: [MERGE_DELEGATION_TEMPLATE_ID],
+                parties: [walletParty],
+                filterByParty: true,
+            })
+
+        const mergeDelegationDc = this.extractActiveContract(
+            mergeDelegationContractForUser[0]
+        )
+
+        //batch merge utility contract should be parties = delegate
+        const batchMergeUtilityContract = await this.client.activeContracts({
+            offset: ledgerEnd.offset,
+            templateIds: [MERGE_DELEGATION_BATCH_MERGE_UTILITY],
+            parties: [this.getPartyId()],
+            filterByParty: true,
+        })
+
+        const batchDelegationDc = this.extractActiveContract(
+            batchMergeUtilityContract[0]
+        )
+
+        const disclosedContractsFromInputUtxos: DisclosedContract[] = utxos.map(
+            (u) => {
+                return {
+                    templateId: u.activeContract.createdEvent.templateId,
+                    contractId: u.activeContract.createdEvent.contractId,
+                    createdEventBlob:
+                        u.activeContract.createdEvent.createdEventBlob,
+                    synchronizerId: u.activeContract.synchronizerId,
+                }
+            }
+        )
+
+        const dc: DisclosedContract[] = [
+            mergeDelegationDc,
+            batchDelegationDc,
+            ...disclosedContractsFromInputUtxos,
+        ]
+
+        const [transferCommands, transferCommandDc] =
+            await this.mergeHoldingUtxos(nodeLimit, walletParty, utxos)
+
+        transferCommands.map((tc) => {
+            const exercise: ExerciseCommand = {
+                templateId: MERGE_DELEGATION_TEMPLATE_ID,
+                contractId: mergeDelegationDc.contractId,
+                choice: 'MergeDelegation_Merge',
+                choiceArgument: {
+                    optMergeTransfer: {
+                        factoryCid: tc.ExerciseCommand.contractId,
+                        choiceArg: tc.ExerciseCommand.choiceArgument,
+                    },
+                },
+            }
+
+            const mergeDelegationChoice = [{ ExerciseCommand: exercise }]
+
+            allMergeDelegationChoices.push(...mergeDelegationChoice)
+        })
+
+        dc.push(...transferCommandDc)
+
+        const mergeCallInput = allMergeDelegationChoices.map((c) => {
+            return {
+                delegationCid: c.ExerciseCommand.contractId,
+                choiceArg: c.ExerciseCommand.choiceArgument,
+            }
+        })
+
+        const batchExerciseCommand: ExerciseCommand = {
+            templateId: MERGE_DELEGATION_BATCH_MERGE_UTILITY,
+            contractId: batchDelegationDc.contractId,
+            choice: 'BatchMergeUtility_BatchMerge',
+            choiceArgument: {
+                mergeCalls: mergeCallInput,
+            },
+        }
+
+        return [
+            { ExerciseCommand: batchExerciseCommand },
+            this.uniqueDisclosedContracts(dc),
+        ]
+    }
+
+    async createBatchMergeUtility() {
+        return {
+            CreateCommand: {
+                templateId: MERGE_DELEGATION_BATCH_MERGE_UTILITY,
+                createArguments: {
+                    operator: this.getPartyId(),
+                },
+            },
+        }
+    }
+
+    async createMergeDelegationProposal(
+        delegate: PartyId,
+        metadata?: Metadata
+    ) {
+        return {
+            CreateCommand: {
+                templateId: MERGE_DELEGATION_PROPOSAL_TEMPLATE_ID,
+                createArguments: {
+                    delegation: {
+                        operator: delegate,
+                        owner: this.getPartyId(),
+                        meta: metadata ? metadata : { values: {} },
+                    },
+                },
+            },
+        }
+    }
+
+    async lookupMergeDelegationProposal(ownerParty?: PartyId) {
+        const ledgerEnd = await this.client.get('/v2/state/ledger-end')
+        return await this.client.activeContracts({
+            offset: ledgerEnd.offset,
+            templateIds: [MERGE_DELEGATION_PROPOSAL_TEMPLATE_ID],
+            parties: [ownerParty ?? this.getPartyId()],
+            filterByParty: true,
+        })
+    }
+
+    async approveMergeDelegationProposal(
+        ownerParty?: PartyId
+    ): Promise<
+        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
+    > {
+        const mergeDelegationProposal =
+            await this.lookupMergeDelegationProposal(ownerParty)
+        const dc = this.extractActiveContract(mergeDelegationProposal[0])
+
+        if (
+            mergeDelegationProposal === undefined ||
+            mergeDelegationProposal.length === 0 ||
+            !mergeDelegationProposal[0].contractEntry.JsActiveContract
+        ) {
+            throw new Error(`Unable to look up merge proposal active contract.`)
+        }
+
+        const cid =
+            mergeDelegationProposal[0].contractEntry.JsActiveContract
+                ?.createdEvent.contractId
+
+        const exercise: ExerciseCommand = {
+            templateId: MERGE_DELEGATION_PROPOSAL_TEMPLATE_ID,
+            contractId: cid,
+            choice: 'MergeDelegationProposal_Accept',
+            choiceArgument: {},
+        }
+        return [{ ExerciseCommand: exercise }, [dc]]
     }
 
     /**
