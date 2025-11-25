@@ -230,4 +230,5 @@ if (failed) {
     console.log(
         success('All scripts passed while background stress was running.')
     )
+    process.exit(0)
 }
