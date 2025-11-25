@@ -102,45 +102,44 @@ export class LedgerClient {
         accessToken?: string,
         accessTokenProvider?: AccessTokenProvider,
         version?: SupportedVersions,
-        acsHelperOptions?: AcsHelperOptions
+        acsHelperOptions?: AcsHelperOptions,
+        // TODO: named parameters please lol
+        customFetch?: (
+            url: RequestInfo,
+            options: RequestInit
+        ) => Promise<Response>
     ) {
         this.logger = _logger.child({ component: 'LedgerClient' })
         this.accessTokenProvider = accessTokenProvider
 
+        const baseFetch = customFetch ?? fetch
+        const authenticatedFetch = async (
+            url: RequestInfo,
+            options: RequestInit = {}
+        ) => {
+            let token = accessToken
+            if (this.accessTokenProvider) {
+                token = isAdmin
+                    ? await this.accessTokenProvider.getAdminAccessToken()
+                    : await this.accessTokenProvider.getUserAccessToken()
+            }
+            return baseFetch(url, {
+                ...options,
+                headers: {
+                    ...(options.headers || {}),
+                    ...(token && { Authorization: `Bearer ${token}` }),
+                },
+            })
+        }
+
         this.clients = {
             '3.3': createClient<v3_3.paths>({
                 baseUrl: baseUrl.href,
-                fetch: async (url: RequestInfo, options: RequestInit = {}) => {
-                    if (this.accessTokenProvider) {
-                        accessToken = isAdmin
-                            ? await this.accessTokenProvider.getAdminAccessToken()
-                            : await this.accessTokenProvider.getUserAccessToken()
-                    }
-                    return fetch(url, {
-                        ...options,
-                        headers: {
-                            ...(options.headers || {}),
-                            Authorization: `Bearer ${accessToken}`,
-                        },
-                    })
-                },
+                fetch: authenticatedFetch,
             }),
             '3.4': createClient<v3_4.paths>({
                 baseUrl: baseUrl.href,
-                fetch: async (url: RequestInfo, options: RequestInit = {}) => {
-                    if (this.accessTokenProvider) {
-                        accessToken = isAdmin
-                            ? await this.accessTokenProvider.getAdminAccessToken()
-                            : await this.accessTokenProvider.getUserAccessToken()
-                    }
-                    return fetch(url, {
-                        ...options,
-                        headers: {
-                            ...(options.headers || {}),
-                            Authorization: `Bearer ${accessToken}`,
-                        },
-                    })
-                },
+                fetch: authenticatedFetch,
             }),
         }
 

@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
 import * as sdk from '@canton-network/dapp-sdk'
+import { LedgerClient } from '@canton-network/core-ledger-client'
 import { AssetCard } from './components/AssetCard'
+import { pino } from 'pino'
 
 type Holding = {
     contractId: string
@@ -18,6 +20,46 @@ async function getHoldings(party: string): Promise<Holding[]> {
     })
     const offset = JSON.parse(ledgerEnd.response).offset
     console.log('ledgerEnd', ledgerEnd)
+
+    const customFetch = async (
+        url: RequestInfo,
+        options: RequestInit = {}
+    ): Promise<Response> => {
+        let requestMethod: sdk.dappAPI.RequestMethod = 'GET'
+        switch (options.method) {
+            case 'POST':
+                requestMethod = 'POST'
+                break
+        }
+        let resource = ''
+        if (typeof url === 'string') {
+            const parsed = new URL(url)
+            resource = parsed.pathname
+        } else {
+            resource = new URL(url.url).pathname
+        }
+
+        const response = await sdk.ledgerApi({
+            requestMethod,
+            resource,
+        })
+
+        return new Response(response.response)
+    }
+
+    const logger = pino({ name: 'main', level: 'debug' })
+    const ledgerClient = new LedgerClient(
+        new URL('http://ledger.invalid'),
+        logger,
+        false, // isAdmin
+        undefined, // accessToken
+        undefined, // accessTokenProvider
+        undefined, // version
+        undefined, // acsHelperOptions
+        customFetch
+    )
+    await ledgerClient.init()
+
     const activeContracts = await sdk.ledgerApi({
         requestMethod: 'POST',
         resource: '/v2/state/active-contracts',

@@ -10,8 +10,10 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "@canton-network/core-ledger-client": "workspace:^",
         "@canton-network/core-token-standard": "workspace:^",
         "@canton-network/dapp-sdk": "workspace:^",
+        "pino": "^10.0.0",
         "react": "^19.1.0",
         "react-dom": "^19.1.0"
     },
