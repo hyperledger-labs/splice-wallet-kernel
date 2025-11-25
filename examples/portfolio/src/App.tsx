@@ -2,8 +2,16 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
 import * as sdk from '@canton-network/dapp-sdk'
+import { AssetCard } from './components/AssetCard'
 
-async function getHoldings(party: string): Promise<number[]> {
+type Holding = {
+    contractId: string
+    name?: string
+    value: number
+    symbol: string
+}
+
+async function getHoldings(party: string): Promise<Holding[]> {
     const ledgerEnd = await sdk.ledgerApi({
         requestMethod: 'GET',
         resource: '/v2/state/ledger-end',
@@ -37,23 +45,31 @@ async function getHoldings(party: string): Promise<number[]> {
         }),
     })
     console.log('active-contracts')
-    const holdings: number[] = [];
+    const holdings = []
     for (const activeContract of JSON.parse(activeContracts.response)) {
-        const view = activeContract.contractEntry?.JsActiveContract?.createdEvent?.interfaceViews[0];
-        holdings.push(Number(view.viewValue?.amount))
+        console.log(activeContract)
+        const createdEvent =
+            activeContract.contractEntry?.JsActiveContract?.createdEvent
+        const view = createdEvent?.interfaceViews[0]
+        const contractId = createdEvent?.contractId
+        holdings.push({
+            contractId,
+            value: Number(view.viewValue?.amount),
+            symbol: view.viewValue?.instrumentId?.id,
+        })
     }
     return holdings
 }
 
 type AppState =
-    | { status: "connect" }
-    | { status: "connecting" }
-    | { status: "connected", primaryParty?: string, holdings?: number[] }
-    | { status: "broken" }
+    | { status: 'connect' }
+    | { status: 'connecting' }
+    | { status: 'connected'; primaryParty?: string; holdings?: Holding[] }
+    | { status: 'broken' }
 
 function App() {
-    const [state, setState] = useState<AppState>({status: "connect"});
-    console.log("current state: ", state);
+    const [state, setState] = useState<AppState>({ status: 'connect' })
+    console.log('current state: ', state)
 
     const [errorMsg, setErrorMsg] = useState('')
     const [messages, setMessages] = useState<string[]>([])
@@ -66,8 +82,8 @@ function App() {
             .request<sdk.dappAPI.StatusEvent>({ method: 'status' })
             .then((result) => {
                 console.log(result)
-                if (result.state !== "connected") {
-                    setState({status: "connected"})
+                if (result.state !== 'connected') {
+                    setState({ status: 'connected' })
                 }
             })
             .catch((reason) => setErrorMsg(`failed to get status: ${reason}`))
@@ -81,7 +97,10 @@ function App() {
         ) => {
             if (wallets.length > 0) {
                 const primaryWallet = wallets.find((w) => w.primary)
-                setState({status: "connected", primaryParty: primaryWallet!.partyId })
+                setState({
+                    status: 'connected',
+                    primaryParty: primaryWallet!.partyId,
+                })
             } else {
                 // TODO: throw error if no wallet?
             }
@@ -106,8 +125,8 @@ function App() {
     // Second effect: request accounts only when connected
     useEffect(() => {
         const provider = window.canton
-        if (!provider || state.status === "connect") return
-        console.log("requesting accounts..." + state.status)
+        if (!provider || state.status === 'connect') return
+        console.log('requesting accounts...' + state.status)
         provider
             .request({
                 method: 'requestAccounts',
@@ -120,7 +139,10 @@ function App() {
                         (w) => w.primary
                     )
                     if (primaryWallet) {
-                        setState({status: "connected", primaryParty: primaryWallet.partyId})
+                        setState({
+                            status: 'connected',
+                            primaryParty: primaryWallet.partyId,
+                        })
                     } else {
                         // TODO: Throw error
                     }
@@ -132,30 +154,31 @@ function App() {
                 console.error('Error requesting wallets:', err)
                 setErrorMsg(err instanceof Error ? err.message : String(err))
             })
-    }, [state.status === "connected" && state.primaryParty])
+    }, [state.status === 'connected' && state.primaryParty])
 
     // Third effect: load holdings
     useEffect(() => {
         const provider = window.canton
-        if (!provider || state.status !== "connected" || !state.primaryParty) return
+        if (!provider || state.status !== 'connected' || !state.primaryParty)
+            return
         getHoldings(state.primaryParty).then((holdings) => {
-            state.holdings = holdings;
-            console.log("got holdings")
-            setState(state);
+            state.holdings = holdings
+            console.log('got holdings')
+            setState(state)
         })
-    }, [state.status === "connected" && state.primaryParty])
+    }, [state.status === 'connected' && state.primaryParty])
 
     return (
         <div>
             <h1>dApp Portfolio</h1>
             <div className="card">
-                {state.status == "connect" &&
+                {state.status == 'connect' && (
                     <button
                         onClick={() => {
                             console.log('Connecting to Wallet Gateway...')
                             sdk.connect()
                                 .then(({ status }) => {
-                                    setState({status: "connecting"})
+                                    setState({ status: 'connecting' })
                                     setErrorMsg('')
                                     if (status.isConnected) {
                                         // TODO: err?
@@ -169,19 +192,19 @@ function App() {
                     >
                         connect to Wallet Gateway
                     </button>
-                }
-                {state.status == "connected" &&
+                )}
+                {state.status == 'connected' && (
                     <button
                         onClick={() => {
-                            setState({status: "connecting"})
+                            setState({ status: 'connecting' })
                             sdk.disconnect().then(() => {
-                                setState({status: "connect"})
+                                setState({ status: 'connect' })
                             })
                         }}
                     >
                         disconnect
                     </button>
-                }
+                )}
                 <button
                     onClick={() => {
                         console.log('Opening to Wallet Gateway...')
@@ -198,11 +221,19 @@ function App() {
                 <br />
             </div>
 
-            {state.status == "connected" &&
-                <p>
-                    holdings: {JSON.stringify(state.holdings)}
-                </p>
-            }
+            {state.status == 'connected' && (
+                <ul>
+                    {state.holdings?.map((h) => (
+                        <li key={h.contractId}>
+                            <AssetCard
+                                name={h.name}
+                                value={h.value}
+                                symbol={h.symbol}
+                            />
+                        </li>
+                    ))}
+                </ul>
+            )}
 
             <div className="card">
                 <h2>Events</h2>
