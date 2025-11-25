@@ -215,9 +215,9 @@ const transfersPerParty = process.env.TRANSFERS_PER_PARTY
 let currentInterval = 0
 
 // Buy traffic periodically to prevent running out
-const trafficPurchaseIntervalMs = parseInt('60000', 10)
+const trafficPurchaseIntervalMs = 30000
 
-const trafficPurchaseAmount = parseInt('200000', 10)
+const trafficPurchaseAmount = 2000000
 
 await buyTraffic(trafficPurchaseAmount)
 
