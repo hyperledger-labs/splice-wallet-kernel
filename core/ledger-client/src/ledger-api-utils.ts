@@ -1,9 +1,6 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import crypto from 'node:crypto'
-import { randomUUID } from 'node:crypto'
-import { readFileSync } from 'node:fs'
 import { AllKnownMetaKeys, matchInterfaceIds } from './constants.js'
 import { LedgerClient } from './ledger-client.js'
 import { Holding, TransferInstructionView } from './txparse/types.js'
@@ -21,12 +18,7 @@ type EventFormat = Types['EventFormat']
 type CreatedEvent = Types['CreatedEvent']
 type ExercisedEvent = Types['ExercisedEvent']
 type ArchivedEvent = Types['ArchivedEvent']
-type ExerciseCommand = Types['ExerciseCommand']
 type JsInterfaceView = Types['JsInterfaceView']
-type DisclosedContract = Types['DisclosedContract']
-type PartySignatures = Types['PartySignatures']
-type Command = Types['Command']
-type DeduplicationPeriod2 = Types['DeduplicationPeriod2']
 type Completion = Types['Completion']['value']
 export type JsCantonError = Types['JsCantonError']
 
@@ -304,165 +296,6 @@ export function removeParsedMetaKeys(meta: Meta): Meta {
                 ([k]) => !AllKnownMetaKeys.includes(k)
             )
         ),
-    }
-}
-
-//TODO: Investigate, this method is not used anywhere ?
-export async function submitExerciseCommand(
-    ledgerClient: LedgerClient,
-    exerciseCommand: ExerciseCommand,
-    disclosedContracts: DisclosedContract[],
-    partyId: PartyId,
-    userId: string,
-    publicKeyPath: string,
-    privateKeyPath: string
-): Promise<Completion> {
-    const submissionId = randomUUID()
-    const commandId = `tscli-${randomUUID()}`
-
-    const command: Command = {
-        ExerciseCommand: exerciseCommand,
-    }
-
-    const synchronizerId =
-        getSynchronizerIdFromDisclosedContracts(disclosedContracts)
-
-    const prepared = await ledgerClient.postWithRetry(
-        '/v2/interactive-submission/prepare',
-        {
-            actAs: [partyId],
-            readAs: [partyId],
-            userId: userId,
-            commandId,
-            synchronizerId,
-            commands: [command],
-            disclosedContracts,
-            verboseHashing: true,
-            packageIdSelectionPreference: [],
-        }
-    )
-
-    const signed = signTransaction(
-        publicKeyPath,
-        privateKeyPath,
-        prepared.preparedTransactionHash
-    )
-    const partySignatures: PartySignatures = {
-        signatures: [
-            {
-                party: partyId,
-                signatures: [
-                    {
-                        signature: signed.signedHash,
-                        signedBy: signed.signedBy,
-                        format: 'SIGNATURE_FORMAT_CONCAT',
-                        signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
-                    },
-                ],
-            },
-        ],
-    }
-
-    const deduplicationPeriod: DeduplicationPeriod2 = {
-        Empty: {},
-    }
-
-    const ledgerEnd = await ledgerClient.getWithRetry('/v2/state/ledger-end')
-
-    await ledgerClient.postWithRetry('/v2/interactive-submission/execute', {
-        userId,
-        submissionId,
-        preparedTransaction: prepared.preparedTransaction!,
-        hashingSchemeVersion: prepared.hashingSchemeVersion,
-        partySignatures,
-        deduplicationPeriod,
-    })
-
-    const completionPromise = awaitCompletion(
-        ledgerClient,
-        ledgerEnd.offset,
-        partyId,
-        userId,
-        commandId
-    )
-    return promiseWithTimeout(
-        completionPromise,
-        45_000 * 2, // 45s
-        `Timed out getting completion for submission with userId=${userId}, commandId=${commandId}, submissionId=${submissionId}.
-    The submission might have succeeded or failed, but it couldn't be determined in time.`
-    )
-}
-
-// The synchronizer id is mandatory, so we derive it from the disclosed contracts,
-// expecting that they'll all be in the same synchronizer
-function getSynchronizerIdFromDisclosedContracts(
-    disclosedContracts: DisclosedContract[]
-): string {
-    const synchronizerId = disclosedContracts[0].synchronizerId
-    const differentSynchronizerId = disclosedContracts.find(
-        (dc) => dc.synchronizerId !== synchronizerId
-    )
-    if (differentSynchronizerId) {
-        throw new Error(
-            `Contract is in a different domain so can't submit to the correct synchronizer: ${JSON.stringify(
-                differentSynchronizerId
-            )}`
-        )
-    }
-    return synchronizerId
-}
-
-interface SignTransactionResult {
-    signedBy: string
-    // base64 encoded
-    signedHash: string
-}
-function signTransaction(
-    publicKeyPath: string,
-    privateKeyPath: string,
-    preparedTransactionHash: string
-): SignTransactionResult {
-    const publicKey = readFileSync(publicKeyPath)
-    const nodePublicKey = crypto.createPublicKey({
-        key: publicKey,
-        format: 'der',
-        type: 'spki', // pycryptodome exports public keys as SPKI
-    })
-
-    const privateKey = readFileSync(privateKeyPath)
-    const nodePrivateKey = crypto.createPrivateKey({
-        key: privateKey,
-        format: 'der',
-        type: 'pkcs8',
-    })
-
-    const keyFingerprint = crypto
-        .createHash('sha256')
-        .update(
-            Buffer.from(
-                `0000000C${nodePublicKey
-                    .export({ format: 'der', type: 'spki' })
-                    // Ed25519 public key is the last 32 bytes of the SPKI DER key
-                    .subarray(-32)
-                    .toString('hex')}`,
-                'hex'
-            )
-        )
-        .digest('hex')
-    const fingerprintPreFix = '1220' // 12 PublicKeyFingerprint, 20 is a special length encoding
-    const signedBy = `${fingerprintPreFix}${keyFingerprint}`
-
-    const hashBuffer = Buffer.from(preparedTransactionHash, 'base64')
-    const signedHash = crypto
-        .sign(null, hashBuffer, {
-            key: nodePrivateKey,
-            dsaEncoding: 'ieee-p1363',
-        })
-        .toString('base64')
-
-    return {
-        signedBy,
-        signedHash,
     }
 }
 
