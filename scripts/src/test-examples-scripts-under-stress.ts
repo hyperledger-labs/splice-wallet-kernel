@@ -24,6 +24,7 @@
     - TRANSFERS_PER_PARTY: Number of transfers per party (default: 5)
     - BACKGROUND_STRESS_LOG_LEVEL: Log level for background stress (default: 'silent')
     - WARMUP_MS: Warmup time for background stress before starting example scripts (default: 8000)
+    - SCRIPT_NAME: Run only a single script (full name match, e.g. '06-multi-hosted-party')
 */
 
 import fs from 'fs'
@@ -73,7 +74,26 @@ function getScriptsRecursive(currentDir: string): string[] {
     })
 }
 
-const scripts = getScriptsRecursive(dir)
+let scripts = getScriptsRecursive(dir)
+
+// Filter to single script if SCRIPT_NAME env var is set (full name match only)
+const scriptNameFilter = process.env.SCRIPT_NAME
+if (scriptNameFilter) {
+    const matchingScript = scripts.find((script) => {
+        const scriptBaseName = path.basename(script, '.ts')
+        return scriptBaseName === scriptNameFilter
+    })
+    if (!matchingScript) {
+        console.log(
+            error(
+                `Script not found: ${scriptNameFilter}\nAvailable scripts: ${getScriptsRecursive(dir).join(', ')}`
+            )
+        )
+        process.exit(1)
+    }
+    scripts = [matchingScript]
+    console.log(success(`Running single script: ${matchingScript}`))
+}
 
 async function executeScript(name: string) {
     console.log(success(`\n=== Executing script: ${name} ===`))

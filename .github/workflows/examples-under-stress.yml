@@ -25,6 +25,9 @@ on:
             stress_log_level:
                 description: 'BACKGROUND_STRESS_LOG_LEVEL'
                 default: 'silent'
+            script_name:
+                description: 'Run only a single script (full name match, e.g. "06-multi-hosted-party"). Leave empty to run all scripts.'
+                default: ''
 
 jobs:
     stress-e2e:
@@ -59,6 +62,7 @@ jobs:
                   INTERVAL_LENGTH_MS: ${{ github.event.inputs.interval_length_ms || '5000' }}
                   TRANSFERS_PER_PARTY: ${{ github.event.inputs.transfers_per_party || '5' }}
                   BACKGROUND_STRESS_LOG_LEVEL: ${{ github.event.inputs.stress_log_level || 'silent' }}
+                  SCRIPT_NAME: ${{ github.event.inputs.script_name || '' }}
               run: yarn script:test:examples-stress
 
             - uses: ./.github/actions/check_resources
