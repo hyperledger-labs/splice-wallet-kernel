@@ -60,6 +60,9 @@ async function getHoldings(party: string): Promise<Holding[]> {
     )
     await ledgerClient.init()
 
+    const ledgerEnd2 = await ledgerClient.get("/v2/state/ledger-end");
+    console.log('ledgerEnd2', ledgerEnd2.offset)
+
     const activeContracts = await sdk.ledgerApi({
         requestMethod: 'POST',
         resource: '/v2/state/active-contracts',
