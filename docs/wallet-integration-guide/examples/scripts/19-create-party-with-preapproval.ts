@@ -59,8 +59,6 @@ logger.info(`Created party: ${receiver!.partyId}`)
 
 await sdk.setPartyId(receiver?.partyId!)
 
-logger.info('creating transfer preapproval proposal')
-
 await sdk.setPartyId(validatorOperatorParty!)
 await sdk.tokenStandard?.createAndSubmitTapInternal(
     validatorOperatorParty!,
@@ -126,16 +124,6 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     disclosedContracts2
 )
 logger.info('Submitted transfer transaction')
-
-await sdk.setPartyId(validatorOperatorParty!)
-
-const validatorFeatureAppRights =
-    await sdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
-
-logger.info(
-    validatorFeatureAppRights,
-    `Featured App Rights for validator ${validatorOperatorParty}`
-)
 
 {
     await sdk.setPartyId(sender!.partyId)
