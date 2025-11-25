@@ -207,7 +207,7 @@ const partiesPerInterval = process.env.PARTIES_PER_INTERVAL
     : 3
 const intervalLengthMs = process.env.INTERVAL_LENGTH_MS
     ? parseInt(process.env.INTERVAL_LENGTH_MS, 0)
-    : 5000
+    : 7500
 const transfersPerParty = process.env.TRANSFERS_PER_PARTY
     ? parseInt(process.env.TRANSFERS_PER_PARTY, 0)
     : 5

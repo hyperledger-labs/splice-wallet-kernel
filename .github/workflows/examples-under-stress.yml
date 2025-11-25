@@ -18,7 +18,7 @@ on:
                 default: '3'
             interval_length_ms:
                 description: 'INTERVAL_LENGTH_MS'
-                default: '5000'
+                default: '7500'
             transfers_per_party:
                 description: 'TRANSFERS_PER_PARTY'
                 default: '5'
@@ -59,7 +59,7 @@ jobs:
             - name: Run example scripts under background stress
               env:
                   PARTIES_PER_INTERVAL: ${{ github.event.inputs.parties_per_interval || '3' }}
-                  INTERVAL_LENGTH_MS: ${{ github.event.inputs.interval_length_ms || '5000' }}
+                  INTERVAL_LENGTH_MS: ${{ github.event.inputs.interval_length_ms || '7500' }}
                   TRANSFERS_PER_PARTY: ${{ github.event.inputs.transfers_per_party || '5' }}
                   BACKGROUND_STRESS_LOG_LEVEL: ${{ github.event.inputs.stress_log_level || 'silent' }}
                   SCRIPT_NAME: ${{ github.event.inputs.script_name || '' }}

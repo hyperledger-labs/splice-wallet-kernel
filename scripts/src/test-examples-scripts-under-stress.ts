@@ -14,13 +14,13 @@
       -f ref=your-branch-name \
       -f network=devnet \
       -f parties_per_interval=3 \
-      -f interval_length_ms=5000 \
+      -f interval_length_ms=7500 \
       -f transfers_per_party=5 \
       -f stress_log_level=silent
 
   Environment variables:
     - PARTIES_PER_INTERVAL: Number of parties created per interval (default: 3)
-    - INTERVAL_LENGTH_MS: Interval length in milliseconds (default: 5000)
+    - INTERVAL_LENGTH_MS: Interval length in milliseconds (default: 7500)
     - TRANSFERS_PER_PARTY: Number of transfers per party (default: 5)
     - BACKGROUND_STRESS_LOG_LEVEL: Log level for background stress (default: 'silent')
     - WARMUP_MS: Warmup time for background stress before starting example scripts (default: 8000)
