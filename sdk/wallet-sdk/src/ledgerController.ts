@@ -424,9 +424,11 @@ export class LedgerController {
         }
 
         if (grantUserRights) {
+            const HEAVY_LOAD_MAX_RETRIES = 100
             await this.client.waitForPartyAndGrantUserRights(
                 this.userId,
-                partyId
+                partyId,
+                expectHeavyLoad ? HEAVY_LOAD_MAX_RETRIES : undefined
             )
         }
 

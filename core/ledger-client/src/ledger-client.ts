@@ -306,17 +306,18 @@ export class LedgerClient {
      *
      * @param userId The ID of the user to grant rights to.
      * @param partyId The ID of the party to grant rights for.
+     * @param maxTries Optional max number of retries with default 30. May be increased if expecting heavy load.
      * @returns A promise that resolves when the rights have been granted.
      */
     public async waitForPartyAndGrantUserRights(
         userId: string,
-        partyId: PartyId
+        partyId: PartyId,
+        maxTries: number = 30
     ) {
         await this.init()
         // Wait for party to appear on participant
         let partyFound = false
         let tries = 0
-        const maxTries = 30
 
         while (!partyFound && tries < maxTries) {
             partyFound = await this.checkIfPartyExists(partyId)
