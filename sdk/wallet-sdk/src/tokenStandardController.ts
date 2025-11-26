@@ -251,7 +251,7 @@ export class TokenStandardController {
             beforeOffset
         )
     }
-    /** Lists all holdings for the current party.
+    /** Gets transaction info parsed in a way relevant to token standard transfer flows
      * @param updateId id of queried transaction
      * @returns A promise that resolves to a transaction
      */
