@@ -11,11 +11,13 @@
     },
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
+        "@canton-network/core-splice-client": "workspace:^",
         "@canton-network/core-token-standard": "workspace:^",
         "@canton-network/dapp-sdk": "workspace:^",
         "pino": "^10.0.0",
         "react": "^19.1.0",
-        "react-dom": "^19.1.0"
+        "react-dom": "^19.1.0",
+        "uuid": "^11.1.0"
     },
     "devDependencies": {
         "@eslint/js": "^9.25.0",

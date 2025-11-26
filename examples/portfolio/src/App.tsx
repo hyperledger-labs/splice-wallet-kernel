@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
+import {
+    TokenStandardClient,
+    HOLDING_INTERFACE_ID,
+} from '@canton-network/core-token-standard'
 import * as sdk from '@canton-network/dapp-sdk'
 import { LedgerClient } from '@canton-network/core-ledger-client'
 import { AssetCard } from './components/AssetCard'
+import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { pino } from 'pino'
+import { v4 } from 'uuid'
 
 type Holding = {
     contractId: string
@@ -55,7 +60,7 @@ async function getHoldings(party: string): Promise<Holding[]> {
     })
     await ledgerClient.init()
 
-    const ledgerEnd2 = await ledgerClient.get("/v2/state/ledger-end");
+    const ledgerEnd2 = await ledgerClient.get('/v2/state/ledger-end')
     console.log('ledgerEnd2', ledgerEnd2.offset)
 
     const activeContracts = await sdk.ledgerApi({
@@ -101,10 +106,96 @@ async function getHoldings(party: string): Promise<Holding[]> {
     return holdings
 }
 
+export const createTapCommand = async (party: string, sessionToken: string) => {
+    const logger = pino({ name: 'main', level: 'debug' })
+    const tokenStandardClient = new TokenStandardClient(
+        'http://scan.localhost:4000',
+        logger,
+        false // isAdmin
+    )
+    const scanProxyClient = new ScanProxyClient(
+        new URL('http://localhost:2000/api/validator'),
+        logger,
+        false, // isAdmin
+        sessionToken
+    )
+    const REQUESTED_AT_SKEW_MS = 60_000
+    const registryInfo = await tokenStandardClient.get(
+        '/registry/metadata/v1/info'
+    )
+    const instrumentAdmin = registryInfo.adminId
+    const now = new Date()
+    const tomorrow = new Date(now)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const choiceArgs = {
+        expectedAdmin: instrumentAdmin,
+        transfer: {
+            sender: instrumentAdmin,
+            receiver: party,
+            amount: 10000,
+            instrumentId: { admin: instrumentAdmin, id: 'Amulet' },
+            lock: null,
+            requestedAt: new Date(
+                Date.now() - REQUESTED_AT_SKEW_MS
+            ).toISOString(),
+            executeBefore: tomorrow.toISOString(),
+            inputHoldingCids: [],
+            meta: { values: {} },
+        },
+        extraArgs: {
+            context: { values: {} },
+            meta: { values: {} },
+        },
+    }
+    const transferFactory = await tokenStandardClient.post(
+        '/registry/transfer-instruction/v1/transfer-factory',
+        {
+            choiceArguments: choiceArgs as unknown as Record<string, never>,
+        }
+    )
+    const disclosedContracts = transferFactory.choiceContext.disclosedContracts
+    console.log('disclosedContracts', disclosedContracts)
+
+    const amuletRules = await scanProxyClient.getAmuletRules()
+    console.log('amuletRules', amuletRules)
+
+    const latestOpenMiningRound =
+        await scanProxyClient.getActiveOpenMiningRound()
+    console.log('latestOpenMiningRound', latestOpenMiningRound)
+
+    return {
+        commands: [
+            {
+                ExerciseCommand: {
+                    templateId: amuletRules.template_id!,
+                    contractId: amuletRules.contract_id,
+                    choice: 'AmuletRules_DevNet_Tap',
+                    choiceArgument: {
+                        receiver: choiceArgs.transfer.receiver,
+                        amount: choiceArgs.transfer.amount,
+                        openRound: latestOpenMiningRound!.contract_id,
+                    },
+                },
+            },
+        ],
+        commandId: v4(),
+        actAs: [party],
+        disclosedContracts,
+        // userId
+        // synchronizerId
+    }
+}
+
 type AppState =
     | { status: 'connect' }
-    | { status: 'connecting' }
-    | { status: 'connected'; primaryParty?: string; holdings?: Holding[] }
+    // TODO: sessionToken passing is sort of ugly no?
+    | { status: 'connecting'; sessionToken?: string }
+    | {
+          status: 'connected'
+          sessionToken?: string
+          primaryParty?: string
+          holdings?: Holding[]
+      }
     | { status: 'broken' }
 
 function App() {
@@ -123,7 +214,10 @@ function App() {
             .then((result) => {
                 console.log(result)
                 if (result.state !== 'connected') {
-                    setState({ status: 'connected' })
+                    setState({
+                        status: 'connected',
+                        sessionToken: result.sessionToken,
+                    })
                 }
             })
             .catch((reason) => setErrorMsg(`failed to get status: ${reason}`))
@@ -140,6 +234,9 @@ function App() {
                 setState({
                     status: 'connected',
                     primaryParty: primaryWallet!.partyId,
+                    ...('sessionToken' in state && {
+                        sessionToken: state.sessionToken,
+                    }),
                 })
             } else {
                 // TODO: throw error if no wallet?
@@ -180,6 +277,7 @@ function App() {
                     )
                     if (primaryWallet) {
                         setState({
+                            ...state,
                             status: 'connected',
                             primaryParty: primaryWallet.partyId,
                         })
@@ -217,8 +315,11 @@ function App() {
                         onClick={() => {
                             console.log('Connecting to Wallet Gateway...')
                             sdk.connect()
-                                .then(({ status }) => {
-                                    setState({ status: 'connecting' })
+                                .then(({ status, sessionToken }) => {
+                                    setState({
+                                        status: 'connecting',
+                                        sessionToken,
+                                    })
                                     setErrorMsg('')
                                     if (status.isConnected) {
                                         // TODO: err?
@@ -243,6 +344,16 @@ function App() {
                         }}
                     >
                         disconnect
+                    </button>
+                )}
+                {state.status == 'connected' && (
+                    <button
+                        disabled={!state.sessionToken || !state.primaryParty}
+                        onClick={() => {
+                            createTapCommand(state.primaryParty!, state.sessionToken!)
+                        }}
+                    >
+                        TAP
                     </button>
                 )}
                 <button
