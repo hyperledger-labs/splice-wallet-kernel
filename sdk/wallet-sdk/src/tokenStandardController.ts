@@ -243,6 +243,21 @@ export class TokenStandardController {
         )
     }
 
+    /**
+     * Gets the contract that was created in the specified update/transaction.
+     * @param updateId The update ID where the contract was created
+     * @returns Contract creation details from the CreatedEvent
+     * @throws Error if the update is not a Transaction or if no CreatedEvent is found
+     */
+    async getContractByUpdateId(
+        updateId: string
+    ): Promise<Types['CreatedEvent']> {
+        return await this.service.getContractByUpdateId(
+            updateId,
+            this.getPartyId()
+        )
+    }
+
     /** Lists all active contracts' interface view values and cids,
      *  filtered by an interface for the current party.
      * @param interfaceId id of queried interface.

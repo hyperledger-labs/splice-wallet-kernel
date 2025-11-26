@@ -1482,23 +1482,33 @@ export class TokenStandardService {
         )
     }
 
-    /**
-     * Gets a contract by updateId by calling /v2/updates/update-by-id
-     * and extracting contract information from CreatedEvent in the transaction.
-     * @param updateId The update ID to look up
-     * @returns Contract information including contractId, templateId, and payload (createdEventBlob)
-     * @throws Error if the update is not a Transaction or if no CreatedEvent is found
-     */
-    async getContractByUpdateId(updateId: string): Promise<{
-        contractId: string
-        templateId: string
-        payload: string
-    }> {
+    // gets the contract that was created during the update
+    async getContractByUpdateId(
+        updateId: string,
+        partyId: PartyId
+    ): Promise<Types['CreatedEvent']> {
+        const transactionFormat: TransactionFormat = {
+            eventFormat: EventFilterBySetup(
+                TokenStandardTransactionInterfaces,
+                {
+                    includeWildcard: true,
+                    isMasterUser: this.isMasterUser,
+                    partyId: partyId,
+                }
+            ),
+            transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
+        }
+
+        const updateFormat = {
+            includeTransactions: transactionFormat,
+        }
+
         const updateResponse =
             await this.ledgerClient.postWithRetry<'/v2/updates/update-by-id'>(
                 '/v2/updates/update-by-id',
                 {
                     updateId,
+                    updateFormat,
                 }
             )
 
@@ -1524,19 +1534,7 @@ export class TokenStandardService {
             )
         }
 
-        const event = createdEvent.CreatedEvent
-
-        if (!event.createdEventBlob) {
-            throw new Error(
-                `CreatedEvent for contract ${event.contractId} does not have createdEventBlob`
-            )
-        }
-
-        return {
-            contractId: event.contractId,
-            templateId: event.templateId,
-            payload: event.createdEventBlob,
-        }
+        return createdEvent.CreatedEvent
     }
 
     async getInputHoldingsCids(sender: PartyId, inputUtxos?: string[]) {
