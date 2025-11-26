@@ -19,11 +19,18 @@ import { ScanClient, ScanProxyClient } from '@canton-network/core-splice-client'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 import {
-    HOLDING_INTERFACE_ID,
-    TRANSFER_INSTRUCTION_INTERFACE_ID,
+    ALLOCATION_FACTORY_INTERFACE_ID,
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
-    ALLOCATION_INTERFACE_ID,
     ALLOCATION_REQUEST_INTERFACE_ID,
+    ALLOCATION_INTERFACE_ID,
+    HOLDING_INTERFACE_ID,
+    METADATA_INTERFACE_ID,
+    TRANSFER_FACTORY_INTERFACE_ID,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+    FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
+    MERGE_DELEGATION_PROPOSAL_TEMPLATE_ID,
+    MERGE_DELEGATION_TEMPLATE_ID,
+    MERGE_DELEGATION_BATCH_MERGE_UTILITY,
     AllocationSpecification,
     AllocationRequestView,
     AllocationInstructionView,
@@ -32,14 +39,26 @@ import {
     transferInstructionRegistryTypes,
     allocationInstructionRegistryTypes,
     Beneficiaries,
-    MERGE_DELEGATION_PROPOSAL_TEMPLATE_ID,
-    MERGE_DELEGATION_TEMPLATE_ID,
-    MERGE_DELEGATION_BATCH_MERGE_UTILITY,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { localNetStaticConfig } from './config'
+
+export {
+    ALLOCATION_FACTORY_INTERFACE_ID,
+    ALLOCATION_INSTRUCTION_INTERFACE_ID,
+    ALLOCATION_REQUEST_INTERFACE_ID,
+    ALLOCATION_INTERFACE_ID,
+    HOLDING_INTERFACE_ID,
+    METADATA_INTERFACE_ID,
+    TRANSFER_FACTORY_INTERFACE_ID,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+    FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
+    MERGE_DELEGATION_PROPOSAL_TEMPLATE_ID,
+    MERGE_DELEGATION_TEMPLATE_ID,
+    MERGE_DELEGATION_BATCH_MERGE_UTILITY,
+}
 
 export type TransactionInstructionChoice = 'Accept' | 'Reject' | 'Withdraw'
 export type AllocationInstructionChoice = 'Withdraw'

@@ -1149,26 +1149,70 @@ export class LedgerController {
      * Gets all raw events from a transaction by updateId, showing what types of events occurred.
      * Use this method when you need raw ledger events (CreatedEvent, ExercisedEvent, ArchivedEvent).
      * @param updateId The update ID to look up
-     * @returns Raw transaction with events directly from the ledger API
+     * @param options Optional filtering options
+     * @param options.templateIds Optional array of template IDs to filter
+     * @param options.interfaceIds Optional array of interface IDs to filter by
+     * @returns Raw events array
      * @throws Error if the update is not a Transaction
      */
-    async getEventsByUpdateId(updateId: string): Promise<Types['Event'][]> {
+    async getEventsByUpdateId(
+        updateId: string,
+        options?: {
+            templateIds?: string[]
+            interfaceIds?: string[]
+        }
+    ): Promise<Types['Event'][]> {
+        const cumulativeFilters = []
+
+        if (options?.templateIds?.length) {
+            for (const templateId of options.templateIds) {
+                cumulativeFilters.push({
+                    identifierFilter: {
+                        TemplateFilter: {
+                            value: {
+                                templateId,
+                                includeCreatedEventBlob: true,
+                            },
+                        },
+                    },
+                })
+            }
+        }
+
+        if (options?.interfaceIds?.length) {
+            for (const interfaceId of options.interfaceIds) {
+                cumulativeFilters.push({
+                    identifierFilter: {
+                        InterfaceFilter: {
+                            value: {
+                                interfaceId,
+                                includeInterfaceView: true,
+                                includeCreatedEventBlob: true,
+                            },
+                        },
+                    },
+                })
+            }
+        }
+
+        if (cumulativeFilters.length === 0) {
+            cumulativeFilters.push({
+                identifierFilter: {
+                    WildcardFilter: {
+                        value: {
+                            includeCreatedEventBlob: true,
+                        },
+                    },
+                },
+            })
+        }
+
         const updateFormat: Types['UpdateFormat'] = {
             includeTransactions: {
                 eventFormat: {
                     filtersByParty: {
                         [this.getPartyId()]: {
-                            cumulative: [
-                                {
-                                    identifierFilter: {
-                                        WildcardFilter: {
-                                            value: {
-                                                includeCreatedEventBlob: true,
-                                            },
-                                        },
-                                    },
-                                },
-                            ],
+                            cumulative: cumulativeFilters,
                         },
                     },
                     verbose: true,
@@ -1201,13 +1245,20 @@ export class LedgerController {
      * Gets the contract that was created in the specified transaction.
      * Returns the contract as it was at creation time from the CreatedEvent.
      * @param updateId The update ID where the contract was created
+     * @param options Optional filtering options to narrow down which contracts to consider
+     * @param options.templateIds Optional array of template IDs to filter by
+     * @param options.interfaceIds Optional array of interface IDs to filter by
      * @returns Contract creation details from the CreatedEvent
      * @throws Error if the update is not a Transaction or if none or more than one contract was created
      */
     async getCreatedContractByUpdateId(
-        updateId: string
+        updateId: string,
+        options?: {
+            templateIds?: string[]
+            interfaceIds?: string[]
+        }
     ): Promise<Types['CreatedEvent']> {
-        const events = await this.getEventsByUpdateId(updateId)
+        const events = await this.getEventsByUpdateId(updateId, options)
 
         const createdEvents = events
             .filter((event) => 'CreatedEvent' in event)
