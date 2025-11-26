@@ -457,13 +457,11 @@ export const userController = (
                 getAdminAccessToken: async () => authContext!.accessToken,
             }
 
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                false,
-                undefined,
-                userAccessTokenProvider
-            )
+                accessTokenProvider: userAccessTokenProvider,
+            })
 
             switch (wallet.signingProviderId) {
                 case SigningProvider.PARTICIPANT: {
@@ -566,12 +564,11 @@ export const userController = (
                 const { userId, accessToken } = authContext!
                 const notifier = notificationService.getNotifier(userId)
 
-                const ledgerClient = new LedgerClient(
-                    new URL(network.ledgerApi.baseUrl),
+                const ledgerClient = new LedgerClient({
+                    baseUrl: new URL(network.ledgerApi.baseUrl),
                     logger,
-                    false,
-                    accessToken
-                )
+                    accessToken,
+                })
                 const status = await networkStatus(ledgerClient)
                 notifier.emit('onConnected', {
                     status: {
@@ -616,12 +613,11 @@ export const userController = (
             }
 
             const network = await store.getNetwork(session.network)
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                false,
-                authContext!.accessToken
-            )
+                accessToken: authContext!.accessToken,
+            })
             const status = await networkStatus(ledgerClient)
             return {
                 sessions: [
@@ -647,13 +643,11 @@ export const userController = (
 
             const service = new WalletSyncService(
                 store,
-                new LedgerClient(
-                    new URL(network.ledgerApi.baseUrl),
+                new LedgerClient({
+                    baseUrl: new URL(network.ledgerApi.baseUrl),
                     logger,
-                    false,
-                    undefined,
-                    userAccessTokenProvider
-                ),
+                    accessTokenProvider: userAccessTokenProvider,
+                }),
                 authContext!,
                 logger
             )

@@ -40,13 +40,13 @@ export class PartyAllocationService {
     }) {
         this.logger = logger
         this.synchronizerId = synchronizerId
-        this.ledgerClient = new LedgerClient(
-            new URL(httpLedgerUrl),
-            this.logger,
-            true,
-            accessToken ?? '',
-            accessTokenProvider
-        )
+        this.ledgerClient = new LedgerClient({
+            baseUrl: new URL(httpLedgerUrl),
+            logger: this.logger,
+            isAdmin: true,
+            accessToken: accessToken ?? '',
+            accessTokenProvider: accessTokenProvider,
+        })
     }
 
     /**

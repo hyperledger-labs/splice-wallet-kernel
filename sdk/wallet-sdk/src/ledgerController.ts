@@ -74,13 +74,13 @@ export class LedgerController {
         isAdmin: boolean = false,
         accessTokenProvider?: AccessTokenProvider
     ) {
-        this.client = new LedgerClient(
+        this.client = new LedgerClient({
             baseUrl,
-            this.logger,
+            logger: this.logger,
             isAdmin,
-            token,
-            accessTokenProvider
-        )
+            accessToken: token,
+            accessTokenProvider,
+        })
         this.initPromise = this.client.init()
         this.userId = userId
         this.isAdmin = isAdmin
@@ -424,13 +424,69 @@ export class LedgerController {
         }
 
         if (grantUserRights) {
+            const HEAVY_LOAD_MAX_RETRIES = 100
+            const HEAVY_LOAD_RETRY_INTERVAL = 5000
             await this.client.waitForPartyAndGrantUserRights(
                 this.userId,
-                partyId
+                partyId,
+                expectHeavyLoad ? HEAVY_LOAD_MAX_RETRIES : undefined,
+                expectHeavyLoad ? HEAVY_LOAD_RETRY_INTERVAL : undefined
             )
         }
 
         return { partyId }
+    }
+
+    /** Prepares, signs and submits a new external party topology in one step.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param privateKey The private key of the new external party, used to sign the topology transactions.
+     * @param providerParty providing party retrieved through the getValidatorUser call
+     * @param dsoParty Party that the sender expects to represent the DSO party of the AmuletRules contract they are calling
+     * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold optional parameter for multi-hosted parties (default is 1).
+     * @param confirmingParticipantEndpoints optional list of connection details for other participants to multi-host this party with confirming permissions.
+     * @param observingParticipantEndpoints optional list of connection details for other participants to multi-host this party with observing permissions.
+     * @param grantUserRights Defines if the transaction should also grant user right to current user, defaults to true if undefined
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
+    async signAndAllocateExternalPartyWithPreapproval(
+        privateKey: PrivateKey,
+        providerParty: PartyId,
+        dsoParty: PartyId,
+        partyHint?: string,
+        confirmingThreshold?: number,
+        confirmingParticipantEndpoints?: ParticipantEndpointConfig[],
+        observingParticipantEndpoints?: ParticipantEndpointConfig[],
+        grantUserRights?: boolean
+    ) {
+        const allocatedParty = await this.signAndAllocateExternalParty(
+            privateKey,
+            partyHint,
+            confirmingThreshold,
+            confirmingParticipantEndpoints,
+            observingParticipantEndpoints,
+            grantUserRights
+        )
+
+        const oldPartyId = this.getPartyId()
+
+        this.setPartyId(allocatedParty.partyId)
+
+        const transferPreApprovalProposal =
+            await this.createTransferPreapprovalCommand(
+                providerParty,
+                allocatedParty.partyId,
+                dsoParty
+            )
+
+        await this.prepareSignExecuteAndWaitFor(
+            [transferPreApprovalProposal],
+            privateKey,
+            v4()
+        )
+
+        this.setPartyId(oldPartyId)
+        return allocatedParty
     }
 
     /**
@@ -448,13 +504,13 @@ export class LedgerController {
         publicKeyFingerprint: string
     ) {
         for (const endpoint of endpointConfig) {
-            const lc = new LedgerClient(
-                endpoint.url,
-                this.logger,
-                this.isAdmin,
-                endpoint.accessToken,
-                endpoint.accessTokenProvider
-            )
+            const lc = new LedgerClient({
+                baseUrl: endpoint.url,
+                logger: this.logger,
+                isAdmin: this.isAdmin,
+                accessToken: endpoint.accessToken,
+                accessTokenProvider: endpoint.accessTokenProvider,
+            })
 
             await lc.allocateExternalParty(
                 this.getSynchronizerId(),
@@ -534,13 +590,13 @@ export class LedgerController {
             hostingParticipantConfigs
                 ?.map(
                     (endpoint) =>
-                        new LedgerClient(
-                            endpoint.url,
-                            this.logger,
-                            this.isAdmin,
-                            endpoint.accessToken,
-                            endpoint.accessTokenProvider
-                        )
+                        new LedgerClient({
+                            baseUrl: endpoint.url,
+                            logger: this.logger,
+                            isAdmin: this.isAdmin,
+                            accessToken: endpoint.accessToken,
+                            accessTokenProvider: endpoint.accessTokenProvider,
+                        })
                 )
                 .map((client) =>
                     client

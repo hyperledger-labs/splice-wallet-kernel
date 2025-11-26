@@ -48,16 +48,11 @@ async function getHoldings(party: string): Promise<Holding[]> {
     }
 
     const logger = pino({ name: 'main', level: 'debug' })
-    const ledgerClient = new LedgerClient(
-        new URL('http://ledger.invalid'),
+    const ledgerClient = new LedgerClient({
+        baseUrl: new URL('http://ledger.invalid'),
         logger,
-        false, // isAdmin
-        undefined, // accessToken
-        undefined, // accessTokenProvider
-        undefined, // version
-        undefined, // acsHelperOptions
-        customFetch
-    )
+        fetch: customFetch,
+    })
     await ledgerClient.init()
 
     const ledgerEnd2 = await ledgerClient.get("/v2/state/ledger-end");

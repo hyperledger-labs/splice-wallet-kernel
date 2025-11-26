@@ -95,33 +95,39 @@ export class LedgerClient {
     private synchronizerId: string | undefined
     baseUrl: URL
 
-    constructor(
-        baseUrl: URL,
-        _logger: Logger,
-        isAdmin: boolean = false,
-        accessToken?: string,
-        accessTokenProvider?: AccessTokenProvider,
-        version?: SupportedVersions,
-        acsHelperOptions?: AcsHelperOptions,
-        // TODO: named parameters please lol
-        customFetch?: (
-            url: RequestInfo,
-            options: RequestInit
-        ) => Promise<Response>
-    ) {
-        this.logger = _logger.child({ component: 'LedgerClient' })
+    constructor({
+        baseUrl,
+        logger,
+        isAdmin,
+        accessToken,
+        accessTokenProvider,
+        version,
+        acsHelperOptions,
+        ...options
+    }: {
+        baseUrl: URL
+        logger: Logger
+        isAdmin?: boolean
+        accessToken?: string | undefined
+        accessTokenProvider?: AccessTokenProvider | undefined
+        version?: SupportedVersions
+        acsHelperOptions?: AcsHelperOptions
+        fetch?: (url: RequestInfo, options: RequestInit) => Promise<Response>
+    }) {
+        this.logger = logger.child({ component: 'LedgerClient' })
         this.accessTokenProvider = accessTokenProvider
 
-        const baseFetch = customFetch ?? fetch
+        const baseFetch = options.fetch ?? fetch
         const authenticatedFetch = async (
             url: RequestInfo,
             options: RequestInit = {}
         ) => {
             let token = accessToken
             if (this.accessTokenProvider) {
-                token = isAdmin
-                    ? await this.accessTokenProvider.getAdminAccessToken()
-                    : await this.accessTokenProvider.getUserAccessToken()
+                token =
+                    (isAdmin ?? false)
+                        ? await this.accessTokenProvider.getAdminAccessToken()
+                        : await this.accessTokenProvider.getUserAccessToken()
             }
             return baseFetch(url, {
                 ...options,
@@ -148,7 +154,7 @@ export class LedgerClient {
         this.baseUrl = baseUrl
         this.acsHelper = new ACSHelper(
             this,
-            _logger,
+            logger,
             acsHelperOptions,
             SharedACSCache
         )
@@ -305,27 +311,32 @@ export class LedgerClient {
      *
      * @param userId The ID of the user to grant rights to.
      * @param partyId The ID of the party to grant rights for.
+     * @param maxTries Optional max number of retries with default 30. May be increased if expecting heavy load.
+     * @param retryIntervalMs Optional interval between retries to verify that party exists with default 2000ms. May be increased if expecting heavy load.
      * @returns A promise that resolves when the rights have been granted.
      */
     public async waitForPartyAndGrantUserRights(
         userId: string,
-        partyId: PartyId
+        partyId: PartyId,
+        maxTries: number = 30,
+        retryIntervalMs: number = 2000
     ) {
         await this.init()
         // Wait for party to appear on participant
         let partyFound = false
         let tries = 0
-        const maxTries = 30
 
         while (!partyFound && tries < maxTries) {
             partyFound = await this.checkIfPartyExists(partyId)
 
-            await new Promise((resolve) => setTimeout(resolve, 2000))
+            await new Promise((resolve) => setTimeout(resolve, retryIntervalMs))
             tries++
         }
 
         if (tries >= maxTries) {
-            throw new Error('timed out waiting for new party to appear')
+            throw new Error(
+                `timed out waiting for new party to appear after ${maxTries} tries`
+            )
         }
 
         const result = await this.grantRights(userId, {
