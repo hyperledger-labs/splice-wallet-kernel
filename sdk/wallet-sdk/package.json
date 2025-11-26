@@ -33,6 +33,8 @@
         "@canton-network/core-tx-visualizer": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
+        "@grpc/grpc-js": "^1.14.0",
+        "@protobuf-ts/grpc-transport": "^2.11.1",
         "jose": "^5.10.0",
         "pino": "^10.0.0",
         "uuid": "^11.1.0"
