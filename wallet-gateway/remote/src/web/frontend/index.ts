@@ -85,16 +85,19 @@ export class UserUIAuthRedirect extends LitElement {
         }
 
         const accessToken = stateManager.accessToken.get()
-        if (accessToken && isLoginPage) {
+        if (accessToken) {
             const networkId = stateManager.networkId.get()
 
             if (!networkId) {
                 throw new Error('missing networkId in state manager')
             }
 
+            // Ensure to add the session to the backend
             authenticate(accessToken, networkId)
 
-            window.location.href = DEFAULT_PAGE_REDIRECT
+            if (isLoginPage) {
+                window.location.href = DEFAULT_PAGE_REDIRECT
+            }
         }
     }
 }

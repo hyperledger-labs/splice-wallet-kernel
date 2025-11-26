@@ -28,9 +28,11 @@ export class SpliceProviderHttp extends SpliceProviderBase {
 
         const socket = io(socketUrl.href, {
             forceNew: true,
-            auth: {
-                token: `Bearer ${this.sessionToken}`,
-            },
+            auth: this.sessionToken
+                ? {
+                      token: `Bearer ${this.sessionToken}`,
+                  }
+                : {},
         })
 
         socket.onAny((event, ...args) => {

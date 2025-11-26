@@ -33,7 +33,7 @@ export const dappController = (
     const logger = _logger.child({ component: 'dapp-controller' })
     return buildController({
         connect: async () => {
-            if (!context) {
+            if (!context || !(await store.getSession())) {
                 return {
                     sessionToken: '',
                     status: {
@@ -196,7 +196,7 @@ export const dappController = (
             )
         },
         status: async () => {
-            if (!context) {
+            if (!context || !(await store.getSession())) {
                 return {
                     kernel: kernelInfo,
                     isConnected: false,

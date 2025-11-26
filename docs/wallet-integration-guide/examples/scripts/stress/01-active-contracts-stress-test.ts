@@ -13,7 +13,7 @@ import { partyDefinition, getRandomElement, parallelize } from './utils.js'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 
-const logger = pino({ name: '02-stress test', level: 'info' })
+const logger = pino({ name: '01-active-contracts-stress-test', level: 'info' })
 
 type testConfig = {
     partiesToCreate: number
