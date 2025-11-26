@@ -11,8 +11,14 @@ import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { getRandomElement, partyDefinition } from './utils.js'
 
-const logger = pino({ name: '01-party-stress', level: 'info' })
-const warnOnly = pino({ name: '01-party-stress', level: 'warn' })
+const logger = pino({
+    name: 'background-stress-load',
+    level: process.env.BACKGROUND_STRESS_LOG_LEVEL ?? 'info',
+})
+const warnOnly = pino({
+    name: 'background-stress-load',
+    level: process.env.BACKGROUND_STRESS_LOG_LEVEL ?? 'warn',
+})
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
@@ -38,6 +44,56 @@ const instrument = {
 }
 
 const validatorOperatorParty = (await sdk.validator?.getValidatorUser()) || ''
+
+const participantId = await sdk.userLedger?.getParticipantId()
+
+// Create a dedicated party for buying traffic
+const trafficBuyerKeyPair = createKeyPair()
+const trafficBuyer = await sdk.userLedger?.signAndAllocateExternalParty(
+    trafficBuyerKeyPair.privateKey,
+    'traffic-buyer'
+)
+logger.info(`Created traffic buyer party: ${trafficBuyer!.partyId}`)
+
+async function buyTraffic(amount: number = 200000) {
+    try {
+        await sdk.setPartyId(trafficBuyer!.partyId)
+
+        // Tap the traffic buyer party to ensure it has funds
+        const [tapCommand, disclosedContracts] =
+            await sdk.tokenStandard!.createTap(
+                trafficBuyer!.partyId,
+                '20000000',
+                instrument
+            )
+
+        await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+            tapCommand,
+            trafficBuyerKeyPair.privateKey,
+            v4(),
+            disclosedContracts
+        )
+
+        // Now buy traffic using the traffic buyer party
+        const [buyTrafficCommand, buyTrafficDisclosedContracts] =
+            await sdk.tokenStandard!.buyMemberTraffic(
+                trafficBuyer!.partyId,
+                amount,
+                participantId!,
+                []
+            )
+
+        await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+            buyTrafficCommand,
+            trafficBuyerKeyPair.privateKey,
+            v4(),
+            buyTrafficDisclosedContracts
+        )
+        logger.info(`Bought ${amount} traffic for participant`)
+    } catch (error) {
+        logger.error({ error }, 'Error buying traffic')
+    }
+}
 
 async function allocateParty() {
     const keyPair = createKeyPair()
@@ -110,12 +166,14 @@ async function tapAndTransfer(fromParty: partyDefinition, count: number) {
                 })
                 .catch((error) => {
                     logger.error(
-                        `[${fromParty.partyId}] Tap ${i} failed: ${error}`
+                        { error },
+                        `[${fromParty.partyId}] Tap ${i} failed`
                     )
                 })
         } catch (error) {
             logger.error(
-                `[${fromParty.partyId}] Transfer ${i} failed: ${error}`
+                { error },
+                `[${fromParty.partyId}] Transfer ${i} failed`
             )
         }
     }
@@ -149,12 +207,23 @@ const partiesPerInterval = process.env.PARTIES_PER_INTERVAL
     : 3
 const intervalLengthMs = process.env.INTERVAL_LENGTH_MS
     ? parseInt(process.env.INTERVAL_LENGTH_MS, 0)
-    : 5000
+    : 7500
 const transfersPerParty = process.env.TRANSFERS_PER_PARTY
     ? parseInt(process.env.TRANSFERS_PER_PARTY, 0)
     : 5
 
 let currentInterval = 0
+
+// Buy traffic periodically to prevent running out
+const trafficPurchaseIntervalMs = 30000
+
+const trafficPurchaseAmount = 2000000
+
+await buyTraffic(trafficPurchaseAmount)
+
+setInterval(async () => {
+    await buyTraffic(trafficPurchaseAmount)
+}, trafficPurchaseIntervalMs)
 
 setInterval(async () => {
     try {
@@ -177,14 +246,14 @@ setInterval(async () => {
                     }, intervalLengthMs)
                 })
                 .catch((error) => {
-                    logger.error(`Error allocating party: ${error}`)
+                    logger.error({ error }, 'Error allocating party')
                 })
             await new Promise((resolve) =>
                 setTimeout(resolve, partiesPerInterval / intervalLengthMs)
             )
         }
     } catch (error) {
-        logger.error(`Error in interval ${currentInterval}: ${error}`)
+        logger.error({ error }, `Error in interval ${currentInterval}`)
     }
 }, intervalLengthMs)
 

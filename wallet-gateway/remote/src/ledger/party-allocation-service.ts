@@ -4,8 +4,8 @@
 import {
     GenerateTransactionResponse,
     LedgerClient,
-    TopologyWriteService,
 } from '@canton-network/core-ledger-client'
+import { createHash } from 'node:crypto'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { Logger } from 'pino'
 
@@ -40,13 +40,13 @@ export class PartyAllocationService {
     }) {
         this.logger = logger
         this.synchronizerId = synchronizerId
-        this.ledgerClient = new LedgerClient(
-            new URL(httpLedgerUrl),
-            this.logger,
-            true,
-            accessToken ?? '',
-            accessTokenProvider
-        )
+        this.ledgerClient = new LedgerClient({
+            baseUrl: new URL(httpLedgerUrl),
+            logger: this.logger,
+            isAdmin: true,
+            accessToken: accessToken ?? '',
+            accessTokenProvider: accessTokenProvider,
+        })
     }
 
     /**
@@ -95,7 +95,16 @@ export class PartyAllocationService {
     createFingerprintFromKey(publicKey: string): string
 
     createFingerprintFromKey(publicKey: string): string {
-        return TopologyWriteService.createFingerprintFromKey(publicKey)
+        // Hash purpose codes can be looked up in the Canton codebase:
+        //  https://github.com/DACH-NY/canton/blob/62e9ccd3f1743d2c9422d863cfc2ca800405c71b/community/base/src/main/scala/com/digitalasset/canton/crypto/HashPurpose.scala#L52
+        const hashPurpose = 12 // For `PublicKeyFingerprint`
+        const keyBytes = Buffer.from(publicKey, 'base64')
+        const hashInput = Buffer.alloc(4 + keyBytes.length)
+        hashInput.writeUInt32BE(hashPurpose, 0)
+        Buffer.from(keyBytes).copy(hashInput, 4)
+        const hash = createHash('sha256').update(hashInput).digest()
+        const multiprefix = Buffer.from([0x12, 0x20])
+        return Buffer.concat([multiprefix, hash]).toString('hex')
     }
 
     /**

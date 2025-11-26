@@ -140,7 +140,10 @@ export const closeKernelUserUI = () => {
     }
 }
 
-const withTimeout = (reject: (reason?: unknown) => void) =>
+const withTimeout = (
+    reject: (reason?: unknown) => void,
+    timeoutMs: number = 10 * 1000 // default to 10 seconds
+) =>
     setTimeout(() => {
         console.warn('SDK: Timeout waiting for connection')
         reject({
@@ -148,7 +151,7 @@ const withTimeout = (reject: (reason?: unknown) => void) =>
             error: ErrorCode.Timeout,
             details: 'Timeout waiting for connection',
         })
-    }, 10 * 1000) // 10 seconds
+    }, timeoutMs)
 
 // Remote dApp API Server which wraps the Remote-dApp API Server with promises
 export const dappController = (provider: SpliceProvider) =>
@@ -164,7 +167,8 @@ export const dappController = (provider: SpliceProvider) =>
 
             const promise = new Promise<dappAPI.ConnectResult>(
                 (resolve, reject) => {
-                    const timeout = withTimeout(reject)
+                    // 5 minutes timeout
+                    const timeout = withTimeout(reject, 5 * 60 * 1000)
                     provider.on<dappRemoteAPI.OnConnectedEvent>(
                         'onConnected',
                         (event) => {

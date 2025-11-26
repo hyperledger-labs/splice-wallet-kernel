@@ -33,7 +33,7 @@ export const dappController = (
     const logger = _logger.child({ component: 'dapp-controller' })
     return buildController({
         connect: async () => {
-            if (!context) {
+            if (!context || !(await store.getSession())) {
                 return {
                     sessionToken: '',
                     status: {
@@ -47,12 +47,12 @@ export const dappController = (
             }
 
             const network = await store.getCurrentNetwork()
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                false,
-                context.accessToken
-            )
+                isAdmin: false,
+                accessToken: context.accessToken,
+            })
             const status = await networkStatus(ledgerClient)
             return {
                 sessionToken: context.accessToken,
@@ -85,12 +85,12 @@ export const dappController = (
         darsAvailable: async () => ({ dars: ['default-dar'] }),
         ledgerApi: async (params: LedgerApiParams) => {
             const network = await store.getCurrentNetwork()
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                false,
-                assertConnected(context).accessToken
-            )
+                isAdmin: false,
+                accessToken: assertConnected(context).accessToken,
+            })
             let result: unknown
             switch (params.requestMethod) {
                 case 'GET':
@@ -127,12 +127,12 @@ export const dappController = (
                 throw new Error('No primary wallet found')
             }
 
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                false,
-                context.accessToken
-            )
+                isAdmin: false,
+                accessToken: context.accessToken,
+            })
 
             const userId = context.userId
             const notifier = notificationService.getNotifier(userId)
@@ -180,12 +180,12 @@ export const dappController = (
                 throw new Error('No primary wallet found')
             }
 
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                false,
-                context.accessToken
-            )
+                isAdmin: false,
+                accessToken: context.accessToken,
+            })
 
             return prepareSubmission(
                 context.userId,
@@ -196,7 +196,7 @@ export const dappController = (
             )
         },
         status: async () => {
-            if (!context) {
+            if (!context || !(await store.getSession())) {
                 return {
                     kernel: kernelInfo,
                     isConnected: false,
@@ -206,12 +206,12 @@ export const dappController = (
             }
 
             const network = await store.getCurrentNetwork()
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                false,
-                context.accessToken
-            )
+                isAdmin: false,
+                accessToken: context.accessToken,
+            })
             const status = await networkStatus(ledgerClient)
             return {
                 kernel: kernelInfo,

@@ -106,13 +106,11 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                 getAdminAccessToken: async () => this.authContext!.accessToken,
             }
 
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
-                this.logger,
-                false,
-                undefined,
-                userAccessTokenProvider
-            )
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
+                logger: this.logger,
+                accessTokenProvider: userAccessTokenProvider,
+            })
             const rights = await ledgerClient.getWithRetry(
                 '/v2/users/{user-id}/rights',
                 defaultRetryableOptions,

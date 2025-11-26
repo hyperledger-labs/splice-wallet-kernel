@@ -109,13 +109,13 @@ export class TokenStandardController {
         scanApiBaseUrl?: URL
     ) {
         this.accessTokenProvider = accessTokenProvider
-        this.client = new LedgerClient(
+        this.client = new LedgerClient({
             baseUrl,
-            this.logger,
+            logger: this.logger,
             isAdmin,
             accessToken,
-            this.accessTokenProvider
-        )
+            accessTokenProvider: this.accessTokenProvider,
+        })
         const scanProxyClient = new ScanProxyClient(
             validatorBaseUrl,
             this.logger,
