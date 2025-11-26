@@ -1482,61 +1482,6 @@ export class TokenStandardService {
         )
     }
 
-    // gets the contract that was created during the update
-    async getContractByUpdateId(
-        updateId: string,
-        partyId: PartyId
-    ): Promise<Types['CreatedEvent']> {
-        const transactionFormat: TransactionFormat = {
-            eventFormat: EventFilterBySetup(
-                TokenStandardTransactionInterfaces,
-                {
-                    includeWildcard: true,
-                    isMasterUser: this.isMasterUser,
-                    partyId: partyId,
-                }
-            ),
-            transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
-        }
-
-        const updateFormat = {
-            includeTransactions: transactionFormat,
-        }
-
-        const updateResponse =
-            await this.ledgerClient.postWithRetry<'/v2/updates/update-by-id'>(
-                '/v2/updates/update-by-id',
-                {
-                    updateId,
-                    updateFormat,
-                }
-            )
-
-        const update = updateResponse.update
-
-        if (!('Transaction' in update)) {
-            throw new Error(
-                `Update ${updateId} is not a Transaction. Update type: ${Object.keys(update)[0]}`
-            )
-        }
-
-        const transaction = update.Transaction.value
-        const events = transaction.events || []
-
-        const createdEvent = events.find(
-            (event): event is { CreatedEvent: Types['CreatedEvent'] } =>
-                'CreatedEvent' in event
-        )
-
-        if (!createdEvent) {
-            throw new Error(
-                `No CreatedEvent found in transaction ${updateId}. Found ${events.length} events.`
-            )
-        }
-
-        return createdEvent.CreatedEvent
-    }
-
     async getInputHoldingsCids(sender: PartyId, inputUtxos?: string[]) {
         return this.core.getInputHoldingsCids(sender, inputUtxos)
     }
