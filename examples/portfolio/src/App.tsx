@@ -194,7 +194,7 @@ function App() {
                 console.error('Error requesting wallets:', err)
                 setErrorMsg(err instanceof Error ? err.message : String(err))
             })
-    }, [state.status === 'connected' && state.primaryParty])
+    }, [state.status, state.status === 'connected' && state.primaryParty])
 
     // Third effect: load holdings
     useEffect(() => {
