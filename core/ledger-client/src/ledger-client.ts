@@ -711,6 +711,7 @@ export class LedgerClient {
         },
         additionalOptions?: ExtraPostOpts
     ): Promise<PostResponse<Path>> {
+        console.log('postWithRetry body', body)
         return await retryable(
             () => this.post(path, body, params, additionalOptions),
             retryOptions,

@@ -11,6 +11,93 @@ import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 
+const parseRequestMethod = (
+    url: RequestInfo,
+    options: RequestInit
+): sdk.dappAPI.RequestMethod => {
+    let method: string | undefined
+    if (typeof url !== 'string') {
+        method = url.method
+    }
+    if (options.method) {
+        method = options.method
+    }
+    if (!method) return 'GET'
+    method = method.toUpperCase()
+    switch (method) {
+        case 'POST':
+            return 'POST'
+        case 'GET':
+            return 'GET'
+        default:
+            throw new Error(`Unknown method: ${method}`)
+    }
+}
+
+async function createLedgerClient(): Promise<LedgerClient> {
+    const customFetch = async (
+        url: RequestInfo,
+        options: RequestInit
+    ): Promise<Response> => {
+        // Parse method
+        const requestMethod = parseRequestMethod(url, options)
+
+        // Parse URL
+        let resource = ''
+        if (typeof url === 'string') {
+            const parsed = new URL(url)
+            resource = parsed.pathname
+        } else {
+            resource = new URL(url.url).pathname
+        }
+
+        // Parse body
+        let body: undefined | string
+        if (typeof url !== 'string') {
+            body = await url.text()
+        }
+        /*
+        let bodyRepresentation = null
+        console.log('url', url)
+        console.log('options', options)
+        if (options.body) {
+            console.log('options.body', options.body)
+            bodyRepresentation = options.body
+        } else if (typeof url !== 'string') {
+            console.log('url.body', url.text())
+            if (url.bodyUsed) {
+                throw new TypeError('Request body already used.')
+            }
+            bodyRepresentation = url.body
+        }
+        console.log('bodyRepresentation', typeof bodyRepresentation)
+        if (typeof bodyRepresentation === 'string') {
+            body = bodyRepresentation
+        } else if (typeof bodyRepresentation === 'object') {
+            console.log(bodyRepresentation)
+        }
+        */
+        console.log('Sending body', body)
+
+        const response = await sdk.ledgerApi({
+            requestMethod,
+            resource,
+            body,
+        })
+
+        return new Response(response.response)
+    }
+
+    const logger = pino({ name: 'main', level: 'debug' })
+    const ledgerClient = new LedgerClient({
+        baseUrl: new URL('http://ledger.invalid'),
+        logger,
+        fetch: customFetch,
+    })
+    await ledgerClient.init() // Todo: remove?
+    return ledgerClient
+}
+
 type Holding = {
     contractId: string
     name?: string
@@ -26,39 +113,7 @@ async function getHoldings(party: string): Promise<Holding[]> {
     const offset = JSON.parse(ledgerEnd.response).offset
     console.log('ledgerEnd', ledgerEnd)
 
-    const customFetch = async (
-        url: RequestInfo,
-        options: RequestInit = {}
-    ): Promise<Response> => {
-        let requestMethod: sdk.dappAPI.RequestMethod = 'GET'
-        switch (options.method) {
-            case 'POST':
-                requestMethod = 'POST'
-                break
-        }
-        let resource = ''
-        if (typeof url === 'string') {
-            const parsed = new URL(url)
-            resource = parsed.pathname
-        } else {
-            resource = new URL(url.url).pathname
-        }
-
-        const response = await sdk.ledgerApi({
-            requestMethod,
-            resource,
-        })
-
-        return new Response(response.response)
-    }
-
-    const logger = pino({ name: 'main', level: 'debug' })
-    const ledgerClient = new LedgerClient({
-        baseUrl: new URL('http://ledger.invalid'),
-        logger,
-        fetch: customFetch,
-    })
-    await ledgerClient.init()
+    const ledgerClient = await createLedgerClient()
 
     const ledgerEnd2 = await ledgerClient.get('/v2/state/ledger-end')
     console.log('ledgerEnd2', ledgerEnd2.offset)
@@ -163,27 +218,32 @@ export const createTapCommand = async (party: string, sessionToken: string) => {
         await scanProxyClient.getActiveOpenMiningRound()
     console.log('latestOpenMiningRound', latestOpenMiningRound)
 
-    return {
-        commands: [
-            {
-                ExerciseCommand: {
-                    templateId: amuletRules.template_id!,
-                    contractId: amuletRules.contract_id,
-                    choice: 'AmuletRules_DevNet_Tap',
-                    choiceArgument: {
-                        receiver: choiceArgs.transfer.receiver,
-                        amount: choiceArgs.transfer.amount,
-                        openRound: latestOpenMiningRound!.contract_id,
-                    },
-                },
-            },
-        ],
+    const tapCommand = {
+        templateId: amuletRules.template_id!,
+        contractId: amuletRules.contract_id,
+        choice: 'AmuletRules_DevNet_Tap',
+        choiceArgument: {
+            receiver: choiceArgs.transfer.receiver,
+            amount: choiceArgs.transfer.amount,
+            openRound: latestOpenMiningRound!.contract_id,
+        },
+    }
+
+    const request = {
+        commands: [{ ExerciseCommand: tapCommand }],
         commandId: v4(),
         actAs: [party],
         disclosedContracts,
         // userId
         // synchronizerId
     }
+
+    const ledgerClient = await createLedgerClient()
+    const response = await ledgerClient.postWithRetry(
+        '/v2/commands/submit-and-wait',
+        request
+    )
+    console.log(response)
 }
 
 type AppState =
@@ -257,7 +317,7 @@ function App() {
             provider.removeListener('accountsChanged', onAccountsChanged)
             provider.removeListener('statusChanged', onStatusChanged)
         }
-    }, [])
+    }, [state.status])
 
     // Second effect: request accounts only when connected
     useEffect(() => {
@@ -348,9 +408,12 @@ function App() {
                 )}
                 {state.status == 'connected' && (
                     <button
-                        disabled={!state.sessionToken || !state.primaryParty}
+                        disabled={!state.primaryParty}
                         onClick={() => {
-                            createTapCommand(state.primaryParty!, state.sessionToken!)
+                            createTapCommand(
+                                state.primaryParty!,
+                                state.sessionToken!
+                            )
                         }}
                     >
                         TAP
@@ -373,17 +436,24 @@ function App() {
             </div>
 
             {state.status == 'connected' && (
-                <ul>
-                    {state.holdings?.map((h) => (
-                        <li key={h.contractId}>
-                            <AssetCard
-                                name={h.name}
-                                value={h.value}
-                                symbol={h.symbol}
-                            />
-                        </li>
-                    ))}
-                </ul>
+                <div>
+                    <div>
+                        Party: {state.primaryParty}
+                        <br />
+                        SessionToken: {state.sessionToken ? 'ok' : 'nope'}
+                    </div>
+                    <ul>
+                        {state.holdings?.map((h) => (
+                            <li key={h.contractId}>
+                                <AssetCard
+                                    name={h.name}
+                                    value={h.value}
+                                    symbol={h.symbol}
+                                />
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             )}
 
             <div className="card">
