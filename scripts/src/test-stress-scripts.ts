@@ -1,6 +1,21 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+/*
+  Orchestrator for running sequential stress test scripts.
+
+  This script runs all stress test scripts (excluding background-stress-load.ts) sequentially without any background load.
+
+  Usage with GitHub CLI:
+    gh workflow run "Stress Tests" \
+      --ref=your-branch-name \
+      -f ref=your-branch-name \
+      -f network=devnet
+
+  The script automatically discovers and runs all .ts files in the stress directory,
+  excluding background-stress-load.ts and utils.ts.
+*/
+
 import fs from 'fs'
 import path from 'path'
 import { error, getRepoRoot, success } from './lib/utils.js'
@@ -8,26 +23,19 @@ import child_process from 'child_process'
 
 const dir = path.join(
     getRepoRoot(),
-    'docs/wallet-integration-guide/examples/scripts'
+    'docs/wallet-integration-guide/examples/scripts/stress'
 )
-// do not run tests from these directory names; full name match
-const EXCEPTIONS_DIR_NAMES = ['stress']
 
 // do not run these tests; exceptions can be full filename or just any length subset of its starting characters
 const EXCEPTIONS_FILE_NAMES = [
-    '01-auth.ts',
-    '13-auth-tls.ts',
-    '05-',
-    '01-one-step',
-    '02-one-step',
+    'background-stress-load', // This is the background stress test, not meant to be run sequentially
+    'utils',
 ]
 
 function getScriptsRecursive(currentDir: string): string[] {
     return fs.readdirSync(currentDir).flatMap((f) => {
         const fullPath = path.join(currentDir, f)
         if (fs.statSync(fullPath).isDirectory()) {
-            if (EXCEPTIONS_DIR_NAMES.includes(path.basename(fullPath)))
-                return []
             return getScriptsRecursive(fullPath)
         }
         return f.endsWith('.ts') &&
@@ -40,11 +48,11 @@ function getScriptsRecursive(currentDir: string): string[] {
 const scripts = getScriptsRecursive(dir)
 
 async function executeScript(name: string) {
-    console.log(success(`\n=== Executing script: ${name} ===`))
+    console.log(success(`\n=== Executing stress script: ${name} ===`))
     await cmd(`yarn tsx ${path.join(dir, name)}`).then(() => {
-        console.log(success(`Script ${name} executed successfully`))
+        console.log(success(`Stress script ${name} executed successfully`))
     })
-    console.log(success(`=== Finished script: ${name} ===\n`))
+    console.log(success(`=== Finished stress script: ${name} ===\n`))
 }
 
 async function cmd(command: string): Promise<void> {
@@ -82,7 +90,7 @@ for (const script of scripts) {
     try {
         await executeScript(script)
     } catch {
-        console.log(error(`=== Failed running script: ${script} ===\n`))
+        console.log(error(`=== Failed running stress script: ${script} ===\n`))
         process.exit(1)
     }
 }
