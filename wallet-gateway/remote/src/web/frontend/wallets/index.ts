@@ -194,6 +194,7 @@ export class UserUiWallets extends LitElement {
                                       id="party-id-hint"
                                       type="text"
                                       placeholder="Enter party ID hint"
+                                      required
                                   />
 
                                   <label for="signing-provider-id"
