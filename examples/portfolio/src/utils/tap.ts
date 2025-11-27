@@ -5,7 +5,6 @@ import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { TokenStandardClient } from '@canton-network/core-token-standard'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
-import { createLedgerClient } from './createLedgerClient.js'
 
 export const tap = async (party: string, sessionToken: string) => {
     const logger = pino({ name: 'main', level: 'debug' })
@@ -84,10 +83,10 @@ export const tap = async (party: string, sessionToken: string) => {
         // synchronizerId
     }
 
-    const ledgerClient = await createLedgerClient({})
-    const response = await ledgerClient.postWithRetry(
-        '/v2/commands/submit-and-wait',
-        request
-    )
-    console.log(response)
+    const provider = window.canton
+    const result = await provider?.request({
+        method: 'prepareExecute',
+        params: request,
+    })
+    console.log(result)
 }
