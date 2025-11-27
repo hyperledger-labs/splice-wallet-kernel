@@ -602,7 +602,7 @@ export const userController = (
                 isConnected: false,
                 isNetworkConnected: false,
                 networkReason: 'Unauthenticated',
-                userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
+                userUrl: `${kernelInfo.userUrl}/login/`,
             } as StatusEvent)
             return null
         },
