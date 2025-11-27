@@ -14,50 +14,7 @@ import {
     CommandId,
     Transaction,
 } from '@canton-network/core-wallet-user-rpc-client'
-import { decodePreparedTransaction } from '@canton-network/core-tx-visualizer'
-
-interface ParsedTransactionFields {
-    signatories?: string[]
-    stakeholders?: string[]
-    packageName?: string
-    moduleName?: string
-    entityName?: string
-}
-
-function extractTransactionFields(jsonString: string): ParsedTransactionFields {
-    const obj = JSON.parse(jsonString)
-
-    const result: ParsedTransactionFields = {}
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function deepSearch(value: any) {
-        if (value === null || typeof value !== 'object') return
-
-        // Extract fields if present
-        if (typeof value.packageName === 'string') {
-            result.packageName = value.packageName
-        }
-        if (Array.isArray(value.signatories)) {
-            result.signatories = value.signatories
-        }
-        if (Array.isArray(value.stakeholders)) {
-            result.stakeholders = value.stakeholders
-        }
-        if (value.templateId?.moduleName) {
-            result.moduleName = value.templateId.moduleName
-        }
-        if (value.templateId?.entityName) {
-            result.entityName = value.templateId.entityName
-        }
-        // Continue walking the object
-        for (const key of Object.keys(value)) {
-            deepSearch(value[key])
-        }
-    }
-
-    deepSearch(obj)
-    return result
-}
+import { parsePreparedTransaction, PreparedTransactionParsed } from './decode'
 
 @customElement('user-ui-transactions')
 export class UserUiTransactions extends LitElement {
@@ -65,7 +22,7 @@ export class UserUiTransactions extends LitElement {
     accessor transactions: Transaction[] = []
 
     @state()
-    accessor parsedTransactions: Map<CommandId, ParsedTransactionFields> =
+    accessor parsedTransactions: Map<CommandId, PreparedTransactionParsed> =
         new Map()
 
     @state()
@@ -149,6 +106,10 @@ export class UserUiTransactions extends LitElement {
             gap: 0.5rem;
             margin-top: 0.5rem;
         }
+        .status {
+            font-size: 0.95rem;
+            color: #009900;
+        }
         @media (max-width: 600px) {
             .header h1 {
                 font-size: 1.2rem;
@@ -180,9 +141,7 @@ export class UserUiTransactions extends LitElement {
                             <div class="wallet-title">${tx.commandId}</div>
                             <div class="wallet-meta">
                                 <strong>Status:</strong>
-                                <span style="font-size:0.95rem; color:#009900;">
-                                    ${tx.status}
-                                </span>
+                                <span class="status"> ${tx.status} </span>
                                 <br />
                                 <strong>Template:</strong>
                                 ${this.parsedTransactions.get(tx.commandId)
@@ -225,16 +184,6 @@ export class UserUiTransactions extends LitElement {
         this.updateTransactions()
     }
 
-    private decodePreparedTransactionToJsonString(tx: string): string {
-        const t = decodePreparedTransaction(tx)
-        return JSON.stringify(
-            t,
-            (key, value) =>
-                typeof value === 'bigint' ? value.toString() : value,
-            2
-        )
-    }
-
     private async updateTransactions() {
         const userClient = createUserClient(stateManager.accessToken.get())
         userClient.request('listTransactions').then((result) => {
@@ -243,17 +192,12 @@ export class UserUiTransactions extends LitElement {
                 try {
                     this.parsedTransactions.set(
                         tx.commandId,
-                        this.parseTransaction(tx.preparedTransaction)
+                        parsePreparedTransaction(tx.preparedTransaction)
                     )
                 } catch (error) {
                     console.error('Error parsing transaction:', error)
                 }
             }
         })
-    }
-
-    private parseTransaction(tx: string): ParsedTransactionFields {
-        const decoded = this.decodePreparedTransactionToJsonString(tx)
-        return extractTransactionFields(decoded)
     }
 }
