@@ -18,7 +18,7 @@ export const kernelInfoSchema = z.object({
 })
 
 export const serverConfigSchema = z.object({
-    allowedOrigins: z.array(z.string()).default(['*']),
+    allowedOrigins: z.union([z.literal('*'), z.array(z.string())]).default('*'),
 })
 
 export const configSchema = z.object({
