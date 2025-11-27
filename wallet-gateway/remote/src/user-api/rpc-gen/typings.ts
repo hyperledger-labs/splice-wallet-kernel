@@ -151,11 +151,10 @@ export type Namespace = string
  *
  */
 export interface SigningProviderContext {
-    commandId: CommandId
-    status: Status
-    preparedTransaction: PreparedTransaction
-    preparedTransactionHash: PreparedTransactionHash
-    payload?: Payload
+    partyId: PartyId
+    externalTxId: ExternalTxId
+    topologyTransactions: TopologyTransactions
+    namespace: Namespace
     [k: string]: any
 }
 /**
@@ -276,7 +275,15 @@ export type Sessions = Session[]
  *
  */
 export type Payload = string
-export type Transactions = SigningProviderContext[]
+export interface Transaction {
+    commandId: CommandId
+    status: Status
+    preparedTransaction: PreparedTransaction
+    preparedTransactionHash: PreparedTransactionHash
+    payload?: Payload
+    [k: string]: any
+}
+export type Transactions = Transaction[]
 export interface AddNetworkParams {
     network: Network
     [k: string]: any
@@ -396,11 +403,6 @@ export interface ListSessionsResult {
     sessions: Sessions
     [k: string]: any
 }
-/**
- *
- * Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.
- *
- */
 export interface GetTransactionResult {
     commandId: CommandId
     status: Status

@@ -822,9 +822,8 @@
                 ]
             },
             "Transaction": {
-                "title": "SigningProviderContext",
+                "title": "Transaction",
                 "type": "object",
-                "description": "Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.",
                 "properties": {
                     "commandId": {
                         "$ref": "#/components/schemas/CommandId"
