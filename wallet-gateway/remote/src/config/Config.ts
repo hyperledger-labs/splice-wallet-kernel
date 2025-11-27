@@ -17,11 +17,17 @@ export const kernelInfoSchema = z.object({
     userUrl: z.string().url(),
 })
 
+export const serverConfigSchema = z.object({
+    allowedOrigins: z.array(z.string()).default(['*']),
+})
+
 export const configSchema = z.object({
     kernel: kernelInfoSchema,
+    server: serverConfigSchema,
     store: storeConfigSchema,
     signingStore: signingStoreConfigSchema,
 })
 
 export type KernelInfo = z.infer<typeof kernelInfoSchema>
+export type ServerConfig = z.infer<typeof serverConfigSchema>
 export type Config = z.infer<typeof configSchema>

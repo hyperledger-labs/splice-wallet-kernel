@@ -10,6 +10,9 @@ export default {
         url: 'http://localhost:3030/api/v0/dapp',
         userUrl: 'http://localhost:3030',
     },
+    server: {
+        allowedOrigins: ['http://localhost:8080'],
+    },
     signingStore: {
         connection: {
             type: 'sqlite',

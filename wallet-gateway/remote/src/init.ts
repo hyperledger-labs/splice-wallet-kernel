@@ -199,6 +199,7 @@ export async function initialize(opts: CliOptions, logger: Logger) {
         logger,
         server,
         config.kernel,
+        config.server,
         notificationService,
         authService,
         store

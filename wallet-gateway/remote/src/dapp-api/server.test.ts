@@ -48,6 +48,7 @@ test('call connect rpc', async () => {
             pino(sink()),
             server,
             config.kernel,
+            config.server,
             notificationService,
             authService,
             store
