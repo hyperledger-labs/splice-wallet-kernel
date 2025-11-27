@@ -161,21 +161,17 @@ export const createTapCommand = async (party: string, sessionToken: string) => {
     console.log(response)
 }
 
-type AppState =
-    | { status: 'connect' }
-    // TODO: sessionToken passing is sort of ugly no?
-    | { status: 'connecting'; sessionToken?: string }
-    | {
-          status: 'connected'
-          sessionToken?: string
-          primaryParty?: string
-          holdings?: Holding[]
-      }
-    | { status: 'broken' }
+type Connection = {
+    connected: boolean
+    sessionToken?: string
+    primaryParty?: string
+}
 
 function App() {
-    const [state, setState] = useState<AppState>({ status: 'connect' })
-    console.log('current state: ', state)
+    const [connection, setConnection] = useState<Connection>({
+        connected: false,
+    })
+    const [holdings, setHoldings] = useState<Holding[] | undefined>(undefined)
 
     const [errorMsg, setErrorMsg] = useState('')
     const [messages, setMessages] = useState<string[]>([])
@@ -188,12 +184,11 @@ function App() {
             .request<sdk.dappAPI.StatusEvent>({ method: 'status' })
             .then((result) => {
                 console.log(result)
-                if (result.state !== 'connected') {
-                    setState({
-                        status: 'connected',
-                        sessionToken: result.sessionToken,
-                    })
-                }
+                setConnection({
+                    ...connection,
+                    connected: result.isConnected,
+                    sessionToken: result.sessionToken,
+                })
             })
             .catch((reason) => setErrorMsg(`failed to get status: ${reason}`))
 
@@ -204,22 +199,29 @@ function App() {
         const onAccountsChanged = (
             wallets: sdk.dappAPI.AccountsChangedEvent
         ) => {
+            let primaryWallet = undefined
             if (wallets.length > 0) {
-                const primaryWallet = wallets.find((w) => w.primary)
-                setState({
-                    status: 'connected',
+                primaryWallet = wallets.find((w) => w.primary)
+            }
+
+            if (primaryWallet) {
+                setConnection({
+                    ...connection,
                     primaryParty: primaryWallet!.partyId,
-                    ...('sessionToken' in state && {
-                        sessionToken: state.sessionToken,
-                    }),
                 })
             } else {
-                // TODO: throw error if no wallet?
+                const noParty = { ...connection }
+                delete noParty.primaryParty
+                setConnection(noParty)
             }
         }
         const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
             console.log('Status changed event: ', status)
-            // TODO: reconnect?
+            setConnection({
+                ...connection,
+                connected: status.isConnected,
+            })
+            // TODO: reconnect if we got disconnected?
         }
         provider.on<sdk.dappAPI.TxChangedEvent>('txChanged', messageListener)
         provider.on<sdk.dappAPI.AccountsChangedEvent>(
@@ -232,13 +234,13 @@ function App() {
             provider.removeListener('accountsChanged', onAccountsChanged)
             provider.removeListener('statusChanged', onStatusChanged)
         }
-    }, [state.status])
+    }, [])
 
     // Second effect: request accounts only when connected
     useEffect(() => {
         const provider = window.canton
-        if (!provider || state.status === 'connect') return
-        console.log('requesting accounts...' + state.status)
+        if (!provider || !connection.connected) return
+        console.log('requesting accounts...')
         provider
             .request({
                 method: 'requestAccounts',
@@ -251,9 +253,8 @@ function App() {
                         (w) => w.primary
                     )
                     if (primaryWallet) {
-                        setState({
-                            ...state,
-                            status: 'connected',
+                        setConnection({
+                            ...connection,
                             primaryParty: primaryWallet.partyId,
                         })
                     } else {
@@ -267,38 +268,34 @@ function App() {
                 console.error('Error requesting wallets:', err)
                 setErrorMsg(err instanceof Error ? err.message : String(err))
             })
-    }, [state.status, state.status === 'connected' && state.primaryParty])
+    }, [connection.connected])
 
     // Third effect: load holdings
     useEffect(() => {
         const provider = window.canton
-        if (!provider || state.status !== 'connected' || !state.primaryParty)
+        if (!provider || !connection.connected || !connection.primaryParty)
             return
-        getHoldings(state.primaryParty).then((holdings) => {
-            state.holdings = holdings
+        getHoldings(connection.primaryParty).then((holdings) => {
             console.log('got holdings')
-            setState(state)
+            setHoldings(holdings)
         })
-    }, [state.status === 'connected' && state.primaryParty])
+    }, [connection.primaryParty])
 
     return (
         <div>
             <h1>dApp Portfolio</h1>
             <div className="card">
-                {state.status == 'connect' && (
+                {!connection.connected && (
                     <button
                         onClick={() => {
                             console.log('Connecting to Wallet Gateway...')
                             sdk.connect()
                                 .then(({ status, sessionToken }) => {
-                                    setState({
-                                        status: 'connecting',
+                                    setConnection({
+                                        connected: status.isConnected,
                                         sessionToken,
                                     })
                                     setErrorMsg('')
-                                    if (status.isConnected) {
-                                        // TODO: err?
-                                    }
                                 })
                                 .catch((err) => {
                                     console.log(err)
@@ -309,25 +306,24 @@ function App() {
                         connect to Wallet Gateway
                     </button>
                 )}
-                {state.status == 'connected' && (
+                {connection.connected && (
                     <button
                         onClick={() => {
-                            setState({ status: 'connecting' })
                             sdk.disconnect().then(() => {
-                                setState({ status: 'connect' })
+                                setConnection({ connected: false })
                             })
                         }}
                     >
                         disconnect
                     </button>
                 )}
-                {state.status == 'connected' && (
+                {connection.connected && (
                     <button
-                        disabled={!state.primaryParty}
+                        disabled={!connection.primaryParty}
                         onClick={() => {
                             createTapCommand(
-                                state.primaryParty!,
-                                state.sessionToken!
+                                connection.primaryParty!,
+                                connection.sessionToken!
                             )
                         }}
                     >
@@ -350,25 +346,26 @@ function App() {
                 <br />
             </div>
 
-            {state.status == 'connected' && (
+            {connection.connected && (
                 <div>
-                    <div>
-                        Party: {state.primaryParty}
-                        <br />
-                        SessionToken: {state.sessionToken ? 'ok' : 'nope'}
-                    </div>
-                    <ul>
-                        {state.holdings?.map((h) => (
-                            <li key={h.contractId}>
-                                <AssetCard
-                                    name={h.name}
-                                    value={h.value}
-                                    symbol={h.symbol}
-                                />
-                            </li>
-                        ))}
-                    </ul>
+                    Party: {connection.primaryParty}
+                    <br />
+                    SessionToken: {connection.sessionToken ? 'ok' : 'nope'}
                 </div>
+            )}
+
+            {holdings !== undefined && (
+                <ul>
+                    {holdings?.map((h) => (
+                        <li key={h.contractId}>
+                            <AssetCard
+                                name={h.name}
+                                value={h.value}
+                                symbol={h.symbol}
+                            />
+                        </li>
+                    ))}
+                </ul>
             )}
 
             <div className="card">
