@@ -160,7 +160,7 @@ export const dappController = (
                 status: 'pending',
                 preparedTransaction,
                 preparedTransactionHash,
-                payload: params.commands,
+                payload: params,
             })
 
             return {

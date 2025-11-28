@@ -470,21 +470,17 @@ export const userController = (
                         network.synchronizerId ??
                         (await ledgerClient.getSynchronizerId())
                     // Participant signing provider specific logic can be added here
-                    const request = {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-                        commands: transaction?.payload as any,
-                        commandId,
-                        userId,
-                        actAs: [partyId],
-                        readAs: [],
-                        disclosedContracts: [],
-                        synchronizerId,
-                        packageIdSelectionPreference: [],
-                    }
                     try {
                         const res = await ledgerClient.postWithRetry(
                             '/v2/commands/submit-and-wait',
-                            request
+                            {
+                                synchronizerId,
+                                packageIdSelectionPreference: [],
+                                ...(transaction.payload as object),
+                                commandId,
+                                userId,
+                                actAs: [partyId],
+                            }
                         )
 
                         notifier.emit('txChanged', {
