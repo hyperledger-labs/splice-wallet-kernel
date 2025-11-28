@@ -1,8 +1,13 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 import { type Logger, pino } from 'pino'
-import { LedgerClient } from '@canton-network/core-ledger-client'
+import {
+    LedgerClient,
+    TokenStandardService,
+} from '@canton-network/core-ledger-client'
 import * as sdk from '@canton-network/dapp-sdk'
+import { TokenStandardClient } from '@canton-network/core-token-standard'
+import { ScanProxyClient } from '@canton-network/core-splice-client'
 
 // NOTE(jaspervdj): many dApps will need something similar to this, so consider
 // moving this into one of the core libraries.
@@ -31,7 +36,7 @@ const parseRequestMethod = (
 }
 
 export const createLedgerClient = async (options: {
-    logger?: Logger
+    logger: Logger
 }): Promise<LedgerClient> => {
     // TODO: default level should not be debug.
     const logger =
@@ -101,4 +106,51 @@ export const createLedgerClient = async (options: {
     })
     await ledgerClient.init() // Todo: remove?
     return ledgerClient
+}
+
+export const createTokenStandardClient = async ({
+    logger,
+    registryUrl,
+}: {
+    logger: Logger
+    registryUrl: string
+}): Promise<TokenStandardClient> => {
+    return new TokenStandardClient(
+        registryUrl,
+        logger,
+        false // isAdmin
+    )
+}
+
+export const createTokenStandardService = async ({
+    logger,
+    sessionToken,
+}: {
+    logger: Logger
+    sessionToken: string
+}): Promise<{
+    ledgerClient: LedgerClient
+    scanProxyClient: ScanProxyClient // TODO: remove
+    tokenStandardService: TokenStandardService
+}> => {
+    const ledgerClient = await createLedgerClient({ logger })
+    const scanProxyClient = new ScanProxyClient(
+        new URL('http://localhost:2000/api/validator'),
+        logger,
+        false, // isAdmin
+        sessionToken
+    )
+    const tokenStandardService = new TokenStandardService(
+        ledgerClient,
+        scanProxyClient,
+        logger,
+        undefined!, // access token provider
+        false, // isMasterUser
+        undefined // scanClient
+    )
+    return {
+        ledgerClient,
+        scanProxyClient,
+        tokenStandardService,
+    }
 }

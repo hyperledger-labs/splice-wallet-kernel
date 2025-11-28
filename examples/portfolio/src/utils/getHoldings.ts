@@ -1,67 +1,53 @@
-import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
-import * as sdk from '@canton-network/dapp-sdk'
-import { createLedgerClient } from './createLedgerClient.js'
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
 
+import { pino } from 'pino'
+import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
+import { type Holding } from '@canton-network/core-ledger-client'
+import { createTokenStandardService } from './createClients.js'
+
+/*
 export type Holding = {
     contractId: string
     name?: string
     value: number
     symbol: string
 }
+*/
 
-export const getHoldings = async (party: string): Promise<Holding[]> => {
-    const ledgerEnd = await sdk.ledgerApi({
-        requestMethod: 'GET',
-        resource: '/v2/state/ledger-end',
+export const getHoldings = async ({
+    sessionToken,
+    party,
+}: {
+    sessionToken: string
+    party: string
+}): Promise<Holding[]> => {
+    const logger = pino({ name: 'getHoldings', level: 'debug' })
+
+    const { tokenStandardService } = await createTokenStandardService({
+        logger,
+        sessionToken,
     })
-    const offset = JSON.parse(ledgerEnd.response).offset
-    console.log('ledgerEnd', ledgerEnd)
 
-    // TODO: dont create client here?
-    const ledgerClient = await createLedgerClient({})
+    // TODO: copy more from tokenStandardController
+    const utxoContracts =
+        await tokenStandardService.listContractsByInterface<Holding>(
+            HOLDING_INTERFACE_ID,
+            party
+        )
 
-    const ledgerEnd2 = await ledgerClient.get('/v2/state/ledger-end')
-    console.log('ledgerEnd2', ledgerEnd2.offset)
-
-    const activeContracts = await sdk.ledgerApi({
-        requestMethod: 'POST',
-        resource: '/v2/state/active-contracts',
-        body: JSON.stringify({
-            activeAtOffset: offset,
-            filter: {
-                filtersByParty: {
-                    [party]: {
-                        cumulative: [
-                            {
-                                identifierFilter: {
-                                    InterfaceFilter: {
-                                        value: {
-                                            interfaceId: HOLDING_INTERFACE_ID,
-                                            includeInterfaceView: true,
-                                            includeCreatedEventBlob: true,
-                                        },
-                                    },
-                                },
-                            },
-                        ],
-                    },
-                },
-            },
-        }),
-    })
-    console.log('active-contracts')
-    const holdings = []
-    for (const activeContract of JSON.parse(activeContracts.response)) {
-        console.log(activeContract)
-        const createdEvent =
-            activeContract.contractEntry?.JsActiveContract?.createdEvent
-        const view = createdEvent?.interfaceViews[0]
-        const contractId = createdEvent?.contractId
-        holdings.push({
-            contractId,
-            value: Number(view.viewValue?.amount),
-            symbol: view.viewValue?.instrumentId?.id,
-        })
+    const uniqueContractIds = new Set<string>()
+    const uniqueUtxos: Holding[] = []
+    for (const utxo of utxoContracts) {
+        console.log(utxo)
+        if (!uniqueContractIds.has(utxo.contractId)) {
+            uniqueContractIds.add(utxo.contractId)
+            uniqueUtxos.push({
+                ...utxo.interfaceViewValue,
+                contractId: utxo.contractId,
+            })
+        }
     }
-    return holdings
+
+    return uniqueUtxos
 }

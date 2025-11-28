@@ -4,18 +4,18 @@ import React from 'react'
 
 interface AssetCardProps {
     name?: string
-    value: number
+    amount: string
     symbol: string
 }
 
 export const AssetCard: React.FC<AssetCardProps> = ({
     name,
-    value,
+    amount,
     symbol,
 }: AssetCardProps) => {
     return (
         <div>
-            {name && <span>{name}</span>} <strong>{value}</strong> {symbol}
+            {name && <span>{name}</span>} <strong>{amount}</strong> {symbol}
         </div>
     )
 }

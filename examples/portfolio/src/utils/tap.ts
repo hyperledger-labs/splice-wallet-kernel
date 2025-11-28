@@ -3,10 +3,10 @@
 
 import { pino } from 'pino'
 import { v4 } from 'uuid'
-import { TokenStandardClient } from '@canton-network/core-token-standard'
-import { ScanProxyClient } from '@canton-network/core-splice-client'
-import { TokenStandardService } from '@canton-network/core-ledger-client'
-import { createLedgerClient } from './createLedgerClient.js'
+import {
+    createTokenStandardClient,
+    createTokenStandardService,
+} from './createClients.js'
 
 export const tap = async ({
     party,
@@ -19,37 +19,25 @@ export const tap = async ({
 }) => {
     const logger = pino({ name: 'main', level: 'debug' })
     const registryUrl = 'http://scan.localhost:4000'
-    const tokenStandardClient = new TokenStandardClient(
+    const tokenStandardClient = await createTokenStandardClient({
+        logger,
         registryUrl,
+    })
+    const { tokenStandardService } = await createTokenStandardService({
         logger,
-        false // isAdmin
-    )
-    const scanProxyClient = new ScanProxyClient(
-        new URL('http://localhost:2000/api/validator'),
-        logger,
-        false, // isAdmin
-        sessionToken
-    )
-
-    const ledgerClient = await createLedgerClient({});
-    const tokenStandardService = new TokenStandardService(
-        ledgerClient,
-        scanProxyClient,
-        logger,
-        undefined!, // access token provider
-        false, // isMasterUser
-        undefined // scanClient
-    )
+        sessionToken,
+    })
     const registryInfo = await tokenStandardClient.get(
         '/registry/metadata/v1/info'
     )
-    const [tapCommand, disclosedContracts] = await tokenStandardService.createTap(
-        party,
-        `${amount}`,
-        registryInfo.adminId,
-        'Amulet',
-        registryUrl
-    )
+    const [tapCommand, disclosedContracts] =
+        await tokenStandardService.createTap(
+            party,
+            `${amount}`,
+            registryInfo.adminId,
+            'Amulet',
+            registryUrl
+        )
 
     const request = {
         commands: [{ ExerciseCommand: tapCommand }],

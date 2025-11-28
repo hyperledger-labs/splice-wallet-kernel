@@ -1,6 +1,7 @@
+import { type Holding } from '@canton-network/core-ledger-client'
 import { useState, useEffect } from 'react'
 import { AssetCard } from './AssetCard.js'
-import { type Holding, getHoldings } from '../utils/getHoldings.js'
+import { getHoldings } from '../utils/getHoldings.js'
 import { tap } from '../utils/tap.js'
 
 export type HoldingsTabProps = {
@@ -16,7 +17,7 @@ export const HoldingsTab: React.FC<HoldingsTabProps> = ({
     const [tapAmount, setTapAmount] = useState<number>(10000)
 
     const refreshHoldings = async () => {
-        const hs = await getHoldings(party)
+        const hs = await getHoldings({ party, sessionToken: sessionToken! })
         setHoldings(hs)
     }
 
@@ -43,15 +44,17 @@ export const HoldingsTab: React.FC<HoldingsTabProps> = ({
                 TAP
             </button>
             <ul>
-                {holdings?.map((h) => (
-                    <li key={h.contractId}>
-                        <AssetCard
-                            name={h.name}
-                            value={h.value}
-                            symbol={h.symbol}
-                        />
-                    </li>
-                ))}
+                {holdings?.map((h) => {
+                    console.log('contract_id', h.contractId)
+                    return (
+                        <li key={h.contractId}>
+                            <AssetCard
+                                amount={h.amount}
+                                symbol={h.instrumentId.id}
+                            />
+                        </li>
+                    )
+                })}
             </ul>
         </div>
     )
