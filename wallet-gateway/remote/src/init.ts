@@ -136,10 +136,10 @@ async function initializeSigningDatabase(
 export async function initialize(opts: CliOptions, logger: Logger) {
     const config = ConfigUtils.loadConfigFile(opts.config)
 
-    // Use CLI port override, config port, or default
-    const port = opts.port ? Number(opts.port) : (config.server.port ?? 3030)
-    const host = config.server.host ?? 'localhost'
-    const protocol = (config.server.tls ?? false) ? 'https' : 'http'
+    // Use CLI port override or config port
+    const port = opts.port ? Number(opts.port) : config.server.port
+    const host = config.server.host
+    const protocol = config.server.tls ? 'https' : 'http'
 
     const app = express()
     const server = app.listen(port, host, () => {
@@ -196,7 +196,12 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     app.use('/api/*splat', rpcRateLimit)
     app.use('/api/*splat', jwtAuth(authService, logger))
 
-    const { dappUrl, userUrl } = deriveKernelUrls(config.server)
+    // Override config port with CLI parameter port if provided, then derive URLs
+    const serverConfigWithOverride = {
+        ...config.server,
+        port, // Use the actual port we're listening on
+    }
+    const { dappUrl, userUrl } = deriveKernelUrls(serverConfigWithOverride)
 
     const kernelInfo = config.kernel
 
