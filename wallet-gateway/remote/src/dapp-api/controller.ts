@@ -21,7 +21,7 @@ import { v4 } from 'uuid'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo as KernelInfoConfig } from '../config/Config.js'
 import { Logger } from 'pino'
-import { networkStatus } from '../utils.js'
+import { networkStatus, ledgerPrepareParams } from '../utils.js'
 
 export const dappController = (
     kernelInfo: KernelInfoConfig,
@@ -247,31 +247,8 @@ async function prepareSubmission(
     params: PrepareExecuteParams | PrepareReturnParams,
     ledgerClient: LedgerClient
 ): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
-    // Map disclosed contracts to ledger api format (which wrongly defines optional fields as mandatory)
-    const disclosedContracts =
-        params.disclosedContracts?.map((d) => {
-            return {
-                templateId: d.templateId || '',
-                contractId: d.contractId || '',
-                createdEventBlob: d.createdEventBlob,
-                synchronizerId: d.synchronizerId || '',
-            }
-        }) || []
-    const prepareParams = {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-        commands: params.commands as any,
-        commandId: params.commandId || v4(),
-        userId,
-        actAs: params.actAs || [partyId],
-        readAs: params.readAs || [],
-        disclosedContracts,
-        synchronizerId,
-        verboseHashing: false,
-        packageIdSelectionPreference: params.packageIdSelectionPreference || [],
-    }
-
     return await ledgerClient.postWithRetry(
         '/v2/interactive-submission/prepare',
-        prepareParams
+        ledgerPrepareParams(userId, partyId, synchronizerId, params)
     )
 }

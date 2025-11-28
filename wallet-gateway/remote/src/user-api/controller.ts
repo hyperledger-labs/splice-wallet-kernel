@@ -23,6 +23,7 @@ import {
     Null,
     ListTransactionsResult,
 } from './rpc-gen/typings.js'
+import { PrepareExecuteParams } from '../dapp-api/rpc-gen/typings.js'
 import {
     Store,
     Transaction,
@@ -49,7 +50,7 @@ import {
     PartyAllocationService,
 } from '../ledger/party-allocation-service.js'
 import { WalletSyncService } from '../ledger/wallet-sync-service.js'
-import { networkStatus } from '../utils.js'
+import { networkStatus, ledgerPrepareParams } from '../utils.js'
 import { StatusEvent } from '../dapp-api/rpc-gen/typings.js'
 
 type AvailableSigningDrivers = Partial<
@@ -471,16 +472,15 @@ export const userController = (
                         (await ledgerClient.getSynchronizerId())
                     // Participant signing provider specific logic can be added here
                     try {
+                        const prep = ledgerPrepareParams(
+                            userId,
+                            partyId,
+                            synchronizerId,
+                            transaction.payload as PrepareExecuteParams
+                        )
                         const res = await ledgerClient.postWithRetry(
                             '/v2/commands/submit-and-wait',
-                            {
-                                synchronizerId,
-                                packageIdSelectionPreference: [],
-                                ...(transaction.payload as object),
-                                commandId,
-                                userId,
-                                actAs: [partyId],
-                            }
+                            prep
                         )
 
                         notifier.emit('txChanged', {

@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // Disabled unused vars rule to allow for future implementations
 
-import { LedgerClient } from '@canton-network/core-ledger-client'
+import { v4 } from 'uuid'
+import { LedgerClient, PostRequest } from '@canton-network/core-ledger-client'
+import {
+    PrepareExecuteParams,
+    PrepareReturnParams,
+} from './dapp-api/rpc-gen/typings.js'
 
 type NetworkStatus = {
     isConnected: boolean
@@ -24,5 +29,36 @@ export async function networkStatus(
             isConnected: false,
             reason: `Ledger unreachable: ${(e as Error).message}`,
         }
+    }
+}
+
+export function ledgerPrepareParams(
+    userId: string,
+    partyId: string,
+    synchronizerId: string,
+    params: PrepareExecuteParams | PrepareReturnParams
+): PostRequest<'/v2/interactive-submission/prepare'> {
+    // Map disclosed contracts to ledger api format (which wrongly defines optional fields as mandatory)
+    const disclosedContracts =
+        params.disclosedContracts?.map((d) => {
+            return {
+                templateId: d.templateId || '',
+                contractId: d.contractId || '',
+                createdEventBlob: d.createdEventBlob,
+                synchronizerId: d.synchronizerId || '',
+            }
+        }) || []
+
+    return {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
+        commands: params.commands as any,
+        commandId: params.commandId || v4(),
+        userId,
+        actAs: params.actAs || [partyId],
+        readAs: params.readAs || [],
+        disclosedContracts,
+        synchronizerId,
+        verboseHashing: false,
+        packageIdSelectionPreference: params.packageIdSelectionPreference || [],
     }
 }
