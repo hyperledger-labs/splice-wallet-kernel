@@ -33,7 +33,7 @@ test('call listNetworks rpc', async () => {
     app.use(cors())
     app.use(express.json())
 
-    const { userUrl } = deriveKernelUrls(config.server)!
+    const { userUrl } = deriveKernelUrls(config.server)
     const response = await request(
         user(
             '/api/v0/user',

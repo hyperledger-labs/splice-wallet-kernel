@@ -197,11 +197,6 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     app.use('/api/*splat', jwtAuth(authService, logger))
 
     const { dappUrl, userUrl } = deriveKernelUrls(config.server)
-    if (!dappUrl || !userUrl) {
-        throw new Error(
-            'Server config must provide host, port, and tls to derive URLs'
-        )
-    }
 
     const kernelInfo = config.kernel
 

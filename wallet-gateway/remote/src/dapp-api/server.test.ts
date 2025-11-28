@@ -41,7 +41,7 @@ test('call connect rpc', async () => {
     app.use(cors())
     app.use(express.json())
     const server = createServer(app)
-    const { dappUrl, userUrl } = deriveKernelUrls(config.server)!
+    const { dappUrl, userUrl } = deriveKernelUrls(config.server)
     const response = await request(
         dapp(
             '/api/v0/dapp',
