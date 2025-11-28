@@ -64,6 +64,9 @@ export class UserUiWallets extends LitElement {
         }
         .header {
             margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
         .card-list {
             display: grid;

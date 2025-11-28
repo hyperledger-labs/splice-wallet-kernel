@@ -21,6 +21,7 @@ import {
     GetTransactionResult,
     GetTransactionParams,
     Null,
+    ListTransactionsResult,
 } from './rpc-gen/typings.js'
 import {
     Store,
@@ -679,6 +680,19 @@ export const userController = (
                     ? JSON.stringify(transaction.payload)
                     : '',
             }
+        },
+        listTransactions: async function (): Promise<ListTransactionsResult> {
+            const transactions = await store.listTransactions()
+            const txs = transactions.map((transaction) => ({
+                commandId: transaction.commandId,
+                status: transaction.status,
+                preparedTransaction: transaction.preparedTransaction,
+                preparedTransactionHash: transaction.preparedTransactionHash,
+                payload: transaction.payload
+                    ? JSON.stringify(transaction.payload)
+                    : '',
+            }))
+            return { transactions: txs }
         },
     })
 }

@@ -389,4 +389,11 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
 
         return storage.transactions.get(commandId)
     }
+
+    async listTransactions(): Promise<Array<Transaction>> {
+        this.assertConnected()
+        const storage = this.getStorage()
+
+        return Array.from(storage.transactions.values())
+    }
 }
