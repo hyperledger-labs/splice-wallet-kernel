@@ -7,7 +7,6 @@ export default {
     kernel: {
         id: 'remote-da',
         clientType: 'remote',
-        // URLs will be derived from server config
     },
     server: {
         host: 'localhost',

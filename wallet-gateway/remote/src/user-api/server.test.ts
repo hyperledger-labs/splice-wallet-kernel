@@ -40,7 +40,7 @@ test('call listNetworks rpc', async () => {
             app,
             pino(sink()),
             config.kernel,
-            userUrl!,
+            userUrl,
             notificationService,
             drivers,
             store
