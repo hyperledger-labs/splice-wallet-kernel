@@ -38,28 +38,6 @@ function App() {
             .catch((reason) => setErrorMsg(`failed to get status: ${reason}`))
 
         // Listen for connected events from the provider
-        const messageListener = (event: sdk.dappAPI.TxChangedEvent) => {
-            setMessages((prev) => [JSON.stringify(event), ...prev])
-        }
-        const onAccountsChanged = (
-            wallets: sdk.dappAPI.AccountsChangedEvent
-        ) => {
-            let primaryWallet = undefined
-            if (wallets.length > 0) {
-                primaryWallet = wallets.find((w) => w.primary)
-            }
-
-            if (primaryWallet) {
-                setConnection({
-                    ...connection,
-                    primaryParty: primaryWallet!.partyId,
-                })
-            } else {
-                const noParty = { ...connection }
-                delete noParty.primaryParty
-                setConnection(noParty)
-            }
-        }
         const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
             console.log('Status changed event: ', status)
             setConnection({
@@ -68,15 +46,8 @@ function App() {
             })
             // TODO: reconnect if we got disconnected?
         }
-        provider.on<sdk.dappAPI.TxChangedEvent>('txChanged', messageListener)
-        provider.on<sdk.dappAPI.AccountsChangedEvent>(
-            'accountsChanged',
-            onAccountsChanged
-        )
         provider.on<sdk.dappAPI.StatusEvent>('statusChanged', onStatusChanged)
         return () => {
-            provider.removeListener('txChanged', messageListener)
-            provider.removeListener('accountsChanged', onAccountsChanged)
             provider.removeListener('statusChanged', onStatusChanged)
         }
     }, [])
@@ -113,6 +84,38 @@ function App() {
                 console.error('Error requesting wallets:', err)
                 setErrorMsg(err instanceof Error ? err.message : String(err))
             })
+
+        const messageListener = (event: sdk.dappAPI.TxChangedEvent) => {
+            setMessages((prev) => [JSON.stringify(event), ...prev])
+        }
+        const onAccountsChanged = (
+            wallets: sdk.dappAPI.AccountsChangedEvent
+        ) => {
+            let primaryWallet = undefined
+            if (wallets.length > 0) {
+                primaryWallet = wallets.find((w) => w.primary)
+            }
+
+            if (primaryWallet) {
+                setConnection({
+                    ...connection,
+                    primaryParty: primaryWallet!.partyId,
+                })
+            } else {
+                const noParty = { ...connection }
+                delete noParty.primaryParty
+                setConnection(noParty)
+            }
+        }
+        provider.on<sdk.dappAPI.TxChangedEvent>('txChanged', messageListener)
+        provider.on<sdk.dappAPI.AccountsChangedEvent>(
+            'accountsChanged',
+            onAccountsChanged
+        )
+        return () => {
+            provider.removeListener('txChanged', messageListener)
+            provider.removeListener('accountsChanged', onAccountsChanged)
+        }
     }, [connection.connected])
 
     return (
