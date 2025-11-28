@@ -212,6 +212,9 @@ export class AppHeader extends BaseElement {
                     <button @click=${() => this.navigateTo('/wallets/')}>
                         💰 Wallets
                     </button>
+                    <button @click=${() => this.navigateTo('/transactions/')}>
+                        🧾 Transactions
+                    </button>
                     <button @click=${() => this.navigateTo('/settings/')}>
                         ⚙️ Settings
                     </button>
