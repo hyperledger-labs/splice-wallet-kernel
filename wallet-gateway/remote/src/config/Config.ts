@@ -13,15 +13,24 @@ export const kernelInfoSchema = z.object({
         z.literal('mobile'),
         z.literal('remote'),
     ]),
-    url: z.string().url(),
-    userUrl: z.string().url(),
+})
+
+export const serverConfigSchema = z.object({
+    host: z.string(),
+    port: z.number(),
+    tls: z.boolean(),
+    dappPath: z.string().default('/api/v0/dapp'),
+    userPath: z.string().default('/api/v0/user'),
+    allowedOrigins: z.union([z.literal('*'), z.array(z.string())]).default('*'),
 })
 
 export const configSchema = z.object({
     kernel: kernelInfoSchema,
+    server: serverConfigSchema,
     store: storeConfigSchema,
     signingStore: signingStoreConfigSchema,
 })
 
 export type KernelInfo = z.infer<typeof kernelInfoSchema>
+export type ServerConfig = z.infer<typeof serverConfigSchema>
 export type Config = z.infer<typeof configSchema>

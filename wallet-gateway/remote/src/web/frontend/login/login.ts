@@ -177,13 +177,17 @@ export class LoginUI extends LitElement {
     }
 
     private async loadNetworks() {
-        const userClient = createUserClient(stateManager.accessToken.get())
+        const userClient = await createUserClient(
+            stateManager.accessToken.get()
+        )
         const response = await userClient.request('listNetworks')
         return response.networks
     }
 
     private async loadIdps() {
-        const userClient = createUserClient(stateManager.accessToken.get())
+        const userClient = await createUserClient(
+            stateManager.accessToken.get()
+        )
         const response = await userClient.request('listIdps')
         return response.idps
     }
@@ -289,7 +293,7 @@ export class LoginUI extends LitElement {
 
         stateManager.accessToken.set(access_token)
 
-        const authenticatedUserClient = createUserClient(access_token)
+        const authenticatedUserClient = await createUserClient(access_token)
 
         await authenticatedUserClient.request('addSession', {
             networkId: stateManager.networkId.get() || '',

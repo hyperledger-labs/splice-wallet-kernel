@@ -168,7 +168,9 @@ export class ApproveUi extends LitElement {
     }
 
     private async updateState() {
-        const userClient = createUserClient(stateManager.accessToken.get())
+        const userClient = await createUserClient(
+            stateManager.accessToken.get()
+        )
         userClient
             .request('getTransaction', { commandId: this.commandId })
             .then((result) => {
@@ -201,7 +203,9 @@ export class ApproveUi extends LitElement {
                 preparedTransaction: this.tx,
             }
 
-            const userClient = createUserClient(stateManager.accessToken.get())
+            const userClient = await createUserClient(
+                stateManager.accessToken.get()
+            )
             const { signature, signedBy } = await userClient.request(
                 'sign',
                 signRequest

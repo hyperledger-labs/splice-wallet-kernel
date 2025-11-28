@@ -4,11 +4,28 @@
 import { HttpTransport } from '@canton-network/core-types'
 import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 
-export const createUserClient = (token?: string) => {
-    return new UserApiClient(
-        new HttpTransport(
-            new URL(`${window.location.origin}/api/v0/user`),
-            token
-        )
-    )
+let userPathPromise: Promise<string> | null = null
+
+const getUserPath = async (): Promise<string> => {
+    if (!userPathPromise) {
+        userPathPromise = fetch('/.well-known/wallet-gateway-config')
+            .then((response) => response.json())
+            .then((config) => config.userPath || '/api/v0/user')
+            .catch((error) => {
+                console.warn(
+                    'Failed to fetch userPath from config, using default',
+                    error
+                )
+                return '/api/v0/user' // Fallback to default
+            })
+    }
+    return userPathPromise
+}
+
+export const createUserClient = async (
+    token?: string
+): Promise<UserApiClient> => {
+    const userPath = await getUserPath()
+    const url = new URL(`${window.location.origin}${userPath}`)
+    return new UserApiClient(new HttpTransport(url, token))
 }
