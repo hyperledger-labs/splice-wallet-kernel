@@ -49,7 +49,11 @@ import {
     PartyAllocationService,
 } from '../ledger/party-allocation-service.js'
 import { WalletSyncService } from '../ledger/wallet-sync-service.js'
-import { networkStatus } from '../utils.js'
+import {
+    networkStatus,
+    type PrepareParams,
+    ledgerPrepareParams,
+} from '../utils.js'
 import { StatusEvent } from '../dapp-api/rpc-gen/typings.js'
 
 type AvailableSigningDrivers = Partial<
@@ -470,21 +474,16 @@ export const userController = (
                         network.synchronizerId ??
                         (await ledgerClient.getSynchronizerId())
                     // Participant signing provider specific logic can be added here
-                    const request = {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-                        commands: transaction?.payload as any,
-                        commandId,
-                        userId,
-                        actAs: [partyId],
-                        readAs: [],
-                        disclosedContracts: [],
-                        synchronizerId,
-                        packageIdSelectionPreference: [],
-                    }
                     try {
+                        const prep = ledgerPrepareParams(
+                            userId,
+                            partyId,
+                            synchronizerId,
+                            transaction.payload as PrepareParams
+                        )
                         const res = await ledgerClient.postWithRetry(
                             '/v2/commands/submit-and-wait',
-                            request
+                            prep
                         )
 
                         notifier.emit('txChanged', {
