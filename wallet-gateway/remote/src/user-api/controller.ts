@@ -23,7 +23,6 @@ import {
     Null,
     ListTransactionsResult,
 } from './rpc-gen/typings.js'
-import { PrepareExecuteParams } from '../dapp-api/rpc-gen/typings.js'
 import {
     Store,
     Transaction,
@@ -50,7 +49,11 @@ import {
     PartyAllocationService,
 } from '../ledger/party-allocation-service.js'
 import { WalletSyncService } from '../ledger/wallet-sync-service.js'
-import { networkStatus, ledgerPrepareParams } from '../utils.js'
+import {
+    networkStatus,
+    type PrepareParams,
+    ledgerPrepareParams,
+} from '../utils.js'
 import { StatusEvent } from '../dapp-api/rpc-gen/typings.js'
 
 type AvailableSigningDrivers = Partial<
@@ -476,7 +479,7 @@ export const userController = (
                             userId,
                             partyId,
                             synchronizerId,
-                            transaction.payload as PrepareExecuteParams
+                            transaction.payload as PrepareParams
                         )
                         const res = await ledgerClient.postWithRetry(
                             '/v2/commands/submit-and-wait',
