@@ -515,37 +515,28 @@
                 "schema": {
                     "title": "GetTransactionResult",
                     "type": "object",
+                    "$ref": "#/components/schemas/Transaction"
+                }
+            }
+        },
+        {
+            "name": "listTransactions",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "ListTransactionsResult",
+                    "type": "object",
                     "properties": {
-                        "commandId": {
-                            "$ref": "#/components/schemas/CommandId"
-                        },
-                        "status": {
-                            "title": "status",
-                            "type": "string",
-                            "description": "The status of the transaction."
-                        },
-                        "preparedTransaction": {
-                            "title": "preparedTransaction",
-                            "type": "string",
-                            "description": "The transaction data corresponding to the command ID."
-                        },
-                        "preparedTransactionHash": {
-                            "title": "preparedTransactionHash",
-                            "type": "string",
-                            "description": "The hash of the prepared transaction."
-                        },
-                        "payload": {
-                            "title": "payload",
-                            "type": "string",
-                            "description": "Optional payload associated with the transaction."
+                        "transactions": {
+                            "title": "transactions",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/Transaction"
+                            }
                         }
                     },
-                    "required": [
-                        "commandId",
-                        "status",
-                        "preparedTransaction",
-                        "preparedTransactionHash"
-                    ]
+                    "required": ["transactions"]
                 }
             }
         }
@@ -828,6 +819,41 @@
                     "externalTxId",
                     "topologyTransactions",
                     "namespace"
+                ]
+            },
+            "Transaction": {
+                "title": "Transaction",
+                "type": "object",
+                "properties": {
+                    "commandId": {
+                        "$ref": "#/components/schemas/CommandId"
+                    },
+                    "status": {
+                        "title": "status",
+                        "type": "string",
+                        "description": "The status of the transaction."
+                    },
+                    "preparedTransaction": {
+                        "title": "preparedTransaction",
+                        "type": "string",
+                        "description": "The transaction data corresponding to the command ID."
+                    },
+                    "preparedTransactionHash": {
+                        "title": "preparedTransactionHash",
+                        "type": "string",
+                        "description": "The hash of the prepared transaction."
+                    },
+                    "payload": {
+                        "title": "payload",
+                        "type": "string",
+                        "description": "Optional payload associated with the transaction."
+                    }
+                },
+                "required": [
+                    "commandId",
+                    "status",
+                    "preparedTransaction",
+                    "preparedTransactionHash"
                 ]
             }
         }
