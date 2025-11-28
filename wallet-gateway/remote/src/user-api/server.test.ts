@@ -9,7 +9,7 @@ import request from 'supertest'
 import { user } from './server.js'
 import { StoreInternal } from '@canton-network/core-wallet-store-inmemory'
 import { Network } from '@canton-network/core-wallet-store'
-import { ConfigUtils } from '../config/ConfigUtils.js'
+import { ConfigUtils, deriveKernelUrls } from '../config/ConfigUtils.js'
 import { Notifier } from '../notification/NotificationService.js'
 import { pino } from 'pino'
 import { sink } from 'pino-test'
@@ -33,12 +33,14 @@ test('call listNetworks rpc', async () => {
     app.use(cors())
     app.use(express.json())
 
+    const { userUrl } = deriveKernelUrls(config.server)!
     const response = await request(
         user(
             '/api/v0/user',
             app,
             pino(sink()),
             config.kernel,
+            userUrl!,
             notificationService,
             drivers,
             store

@@ -13,11 +13,14 @@ export const kernelInfoSchema = z.object({
         z.literal('mobile'),
         z.literal('remote'),
     ]),
-    url: z.string().url(),
-    userUrl: z.string().url(),
 })
 
 export const serverConfigSchema = z.object({
+    host: z.string().optional(),
+    port: z.number().optional(),
+    tls: z.boolean().optional(),
+    dappPath: z.string().default('/api/v0/dapp'),
+    userPath: z.string().default('/api/v0/user'),
     allowedOrigins: z.union([z.literal('*'), z.array(z.string())]).default('*'),
 })
 

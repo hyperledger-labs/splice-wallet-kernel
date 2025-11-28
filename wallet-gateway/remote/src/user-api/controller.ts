@@ -57,6 +57,7 @@ type AvailableSigningDrivers = Partial<
 
 export const userController = (
     kernelInfo: KernelInfo,
+    userUrl: string,
     store: Store,
     notificationService: NotificationService,
     authContext: AuthContext | undefined,
@@ -602,7 +603,7 @@ export const userController = (
                 isConnected: false,
                 isNetworkConnected: false,
                 networkReason: 'Unauthenticated',
-                userUrl: `${kernelInfo.userUrl}/login/`,
+                userUrl: `${userUrl}/login/`,
             } as StatusEvent)
             return null
         },

@@ -7,10 +7,14 @@ export default {
     kernel: {
         id: 'remote-da',
         clientType: 'remote',
-        url: 'http://localhost:3030/api/v0/dapp',
-        userUrl: 'http://localhost:3030',
+        // URLs will be derived from server config
     },
     server: {
+        host: 'localhost',
+        port: 3030,
+        tls: false,
+        dappPath: '/api/v0/dapp',
+        userPath: '/api/v0/user',
         allowedOrigins: ['http://localhost:8080'],
     },
     signingStore: {

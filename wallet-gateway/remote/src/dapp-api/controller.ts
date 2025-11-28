@@ -25,6 +25,8 @@ import { networkStatus } from '../utils.js'
 
 export const dappController = (
     kernelInfo: KernelInfoConfig,
+    dappUrl: string,
+    userUrl: string,
     store: Store,
     notificationService: NotificationService,
     _logger: Logger,
@@ -41,7 +43,7 @@ export const dappController = (
                         isConnected: false,
                         isNetworkConnected: false,
                         networkReason: 'Unauthenticated',
-                        userUrl: `${kernelInfo.userUrl}/login/`,
+                        userUrl: `${userUrl}/login/`,
                     },
                 }
             }
@@ -61,7 +63,7 @@ export const dappController = (
                     isConnected: true,
                     isNetworkConnected: status.isConnected,
                     networkReason: status.reason ? status.reason : 'OK',
-                    userUrl: `${kernelInfo.userUrl}/login/`,
+                    userUrl: `${userUrl}/login/`,
                 },
             }
         },
@@ -76,7 +78,7 @@ export const dappController = (
                     isConnected: false,
                     isNetworkConnected: false,
                     networkReason: 'Unauthenticated',
-                    userUrl: `${kernelInfo.userUrl}/login/`,
+                    userUrl: `${userUrl}/login/`,
                 } as StatusEvent)
             }
 
@@ -164,7 +166,7 @@ export const dappController = (
             })
 
             return {
-                userUrl: `${kernelInfo.userUrl}/approve/index.html?commandId=${commandId}`,
+                userUrl: `${userUrl}/approve/index.html?commandId=${commandId}`,
             }
         },
         prepareReturn: async (params: PrepareReturnParams) => {

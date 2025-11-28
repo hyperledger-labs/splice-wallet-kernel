@@ -23,6 +23,8 @@ export const dapp = (
     logger: Logger,
     server: Server,
     kernelInfo: KernelInfo,
+    dappUrl: string,
+    userUrl: string,
     serverConfig: ServerConfig,
     notificationService: NotificationService,
     authService: AuthService,
@@ -37,6 +39,8 @@ export const dapp = (
         jsonRpcHandler<Methods>({
             controller: dappController(
                 kernelInfo,
+                dappUrl,
+                userUrl,
                 store.withAuthContext(req.authContext),
                 notificationService,
                 logger,

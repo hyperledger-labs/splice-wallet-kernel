@@ -336,21 +336,27 @@ export class UserUiWallets extends LitElement {
     }
 
     private async updateNetworks() {
-        const userClient = createUserClient(stateManager.accessToken.get())
+        const userClient = await createUserClient(
+            stateManager.accessToken.get()
+        )
         userClient.request('listNetworks').then(({ networks }) => {
             this.networks = networks.map((network) => network.id)
         })
     }
 
     private async updateWallets() {
-        const userClient = createUserClient(stateManager.accessToken.get())
+        const userClient = await createUserClient(
+            stateManager.accessToken.get()
+        )
         userClient.request('listWallets', []).then((wallets) => {
             this.wallets = wallets || []
         })
     }
 
     private async _setPrimary(wallet: Wallet) {
-        const userClient = createUserClient(stateManager.accessToken.get())
+        const userClient = await createUserClient(
+            stateManager.accessToken.get()
+        )
         await userClient.request('setPrimaryWallet', {
             partyId: wallet.partyId,
         })
@@ -378,7 +384,9 @@ export class UserUiWallets extends LitElement {
                 signingProviderId,
             }
 
-            const userClient = createUserClient(stateManager.accessToken.get())
+            const userClient = await createUserClient(
+                stateManager.accessToken.get()
+            )
             await userClient.request('createWallet', body)
         } catch (e) {
             handleErrorToast(e)
@@ -395,7 +403,9 @@ export class UserUiWallets extends LitElement {
     private async _allocateParty(wallet: Wallet) {
         this.loading = true
         try {
-            const userClient = createUserClient(stateManager.accessToken.get())
+            const userClient = await createUserClient(
+                stateManager.accessToken.get()
+            )
             await userClient.request('createWallet', {
                 primary: wallet.primary,
                 partyHint: wallet.hint,
