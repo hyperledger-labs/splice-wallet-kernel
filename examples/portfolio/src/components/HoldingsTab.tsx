@@ -13,6 +13,7 @@ export const HoldingsTab: React.FC<HoldingsTabProps> = ({
     sessionToken,
 }) => {
     const [holdings, setHoldings] = useState<Holding[] | undefined>(undefined)
+    const [tapAmount, setTapAmount] = useState<number>(10000)
 
     const refreshHoldings = async () => {
         const hs = await getHoldings(party)
@@ -24,10 +25,19 @@ export const HoldingsTab: React.FC<HoldingsTabProps> = ({
     }, [party])
     return (
         <div>
+            <input
+                type="number"
+                value={tapAmount}
+                onChange={(e) => setTapAmount(Number(e.target.value))}
+            />
             <button
                 disabled={!sessionToken}
                 onClick={() => {
-                    tap(party, sessionToken!).then(() => refreshHoldings())
+                    tap({
+                        party,
+                        sessionToken: sessionToken!,
+                        amount: tapAmount,
+                    }).then(() => refreshHoldings())
                 }}
             >
                 TAP

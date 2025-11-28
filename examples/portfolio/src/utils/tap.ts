@@ -6,7 +6,15 @@ import { v4 } from 'uuid'
 import { TokenStandardClient } from '@canton-network/core-token-standard'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 
-export const tap = async (party: string, sessionToken: string) => {
+export const tap = async ({
+    party,
+    sessionToken,
+    amount,
+}: {
+    party: string
+    sessionToken: string
+    amount: number
+}) => {
     const logger = pino({ name: 'main', level: 'debug' })
     const tokenStandardClient = new TokenStandardClient(
         'http://scan.localhost:4000',
@@ -32,7 +40,7 @@ export const tap = async (party: string, sessionToken: string) => {
         transfer: {
             sender: instrumentAdmin,
             receiver: party,
-            amount: 10000,
+            amount,
             instrumentId: { admin: instrumentAdmin, id: 'Amulet' },
             lock: null,
             requestedAt: new Date(
@@ -79,8 +87,6 @@ export const tap = async (party: string, sessionToken: string) => {
         commandId: v4(),
         actAs: [party],
         disclosedContracts,
-        // userId
-        // synchronizerId
     }
 
     const provider = window.canton
