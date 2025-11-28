@@ -192,6 +192,9 @@ jobs:
               if: steps.playwright-cache.outputs.cache-hit != 'true'
               run: yarn workspace @canton-network/example-ping run playwright install --with-deps
 
+            - name: Build project
+              run: yarn build:all
+
             - name: Run example e2e
               run: yarn nx playwright:e2e @canton-network/example-ping
 

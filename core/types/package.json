@@ -26,11 +26,11 @@
     },
     "dependencies": {
         "uuid": "^11.1.0",
-        "zod": "^4.1.12"
+        "zod": "^4.1.13"
     },
     "devDependencies": {
-        "tsup": "^8.5.0",
-        "typescript": "^5.8.3"
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3"
     },
     "files": [
         "dist/**"

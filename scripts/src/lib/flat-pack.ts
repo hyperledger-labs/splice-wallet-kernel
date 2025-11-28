@@ -56,6 +56,7 @@ export class FlatPack {
             env: {
                 ...process.env,
                 FLATPACK_OUTDIR: `${this.vendoredDir}/%s.tgz`,
+                TZ: process.env.TZ ?? '',
             },
         })
 

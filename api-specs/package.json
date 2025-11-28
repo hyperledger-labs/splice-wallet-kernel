@@ -13,7 +13,7 @@
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
     "dependencies": {
-        "@open-rpc/generator": "^2.0.0",
+        "@open-rpc/generator": "^2.1.1",
         "@open-rpc/mock-server": "^1.7.8"
     }
 }
