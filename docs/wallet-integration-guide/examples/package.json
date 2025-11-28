@@ -40,16 +40,16 @@
     },
     "devDependencies": {
         "@canton-network/core-signing-lib": "workspace:^",
-        "@jest/globals": "^29.0.0",
-        "@swc/core": "^1.11.31",
-        "@swc/jest": "^0.2.38",
-        "@types/jest": "^29.5.14",
-        "@types/node": "^24.3.0",
-        "jest": "^29.7.0",
-        "pino-pretty": "^13.0.0",
+        "@jest/globals": "^30.2.0",
+        "@swc/core": "^1.15.3",
+        "@swc/jest": "^0.2.39",
+        "@types/jest": "^30.0.0",
+        "@types/node": "^24.10.1",
+        "jest": "^30.2.0",
+        "pino-pretty": "^13.1.2",
         "ts-jest-resolver": "^2.0.1",
-        "tsx": "^4.20.3",
-        "typescript": "^5.8.3"
+        "tsx": "^4.20.6",
+        "typescript": "^5.9.3"
     },
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
@@ -57,8 +57,8 @@
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
         "@canton-network/wallet-sdk": "workspace:^",
-        "pino": "10.0.0",
-        "uuid": "^11.1.0"
+        "pino": "10.1.0",
+        "uuid": "^13.0.0"
     },
     "nx": {
         "targets": {

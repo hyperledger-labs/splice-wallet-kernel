@@ -33,16 +33,16 @@
         "@canton-network/core-tx-visualizer": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
-        "@grpc/grpc-js": "^1.14.0",
+        "@grpc/grpc-js": "^1.14.1",
         "@protobuf-ts/grpc-transport": "^2.11.1",
-        "jose": "^5.10.0",
-        "pino": "^10.0.0",
-        "uuid": "^11.1.0"
+        "jose": "^6.1.2",
+        "pino": "^10.1.0",
+        "uuid": "^13.0.0"
     },
     "devDependencies": {
-        "@types/node": "^24.3.0",
-        "tsup": "^8.5.0",
-        "typescript": "^5.8.3"
+        "@types/node": "^24.10.1",
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3"
     },
     "files": [
         "dist/**"

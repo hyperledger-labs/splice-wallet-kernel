@@ -28,9 +28,9 @@
     "dependencies": {
         "@canton-network/core-types": "workspace:^",
         "lodash": "^4.17.21",
-        "openapi-fetch": "^0.14.0",
-        "uuid": "^11.1.0",
-        "zod": "^4.1.12"
+        "openapi-fetch": "^0.15.0",
+        "uuid": "^13.0.0",
+        "zod": "^4.1.13"
     },
     "devDependencies": {
         "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "workspace:^",
@@ -38,14 +38,14 @@
         "@daml.js/token-standard-models-1.0.0": "workspace:^",
         "@daml/ledger": "3.3.0-snapshot.20250528.13806.0.v3cd439fb",
         "@daml/types": "3.3.0-snapshot.20250528.13806.0.v3cd439fb",
-        "@rollup/plugin-commonjs": "^28.0.6",
+        "@rollup/plugin-commonjs": "^29.0.0",
         "@rollup/plugin-json": "^6.1.0",
-        "@rollup/plugin-node-resolve": "^16.0.1",
-        "@rollup/plugin-typescript": "^12.1.4",
-        "rollup": "^4.52.5",
-        "rollup-plugin-dts": "^6.2.3",
+        "@rollup/plugin-node-resolve": "^16.0.3",
+        "@rollup/plugin-typescript": "^12.3.0",
+        "rollup": "^4.53.3",
+        "rollup-plugin-dts": "^6.3.0",
         "tslib": "^2.8.1",
-        "typescript": "^5.8.3"
+        "typescript": "^5.9.3"
     },
     "files": [
         "dist/**"
