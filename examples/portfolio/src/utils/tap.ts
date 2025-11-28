@@ -5,6 +5,8 @@ import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { TokenStandardClient } from '@canton-network/core-token-standard'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
+import { TokenStandardService } from '@canton-network/core-ledger-client'
+import { createLedgerClient } from './createLedgerClient.js'
 
 export const tap = async ({
     party,
@@ -16,8 +18,9 @@ export const tap = async ({
     amount: number
 }) => {
     const logger = pino({ name: 'main', level: 'debug' })
+    const registryUrl = 'http://scan.localhost:4000'
     const tokenStandardClient = new TokenStandardClient(
-        'http://scan.localhost:4000',
+        registryUrl,
         logger,
         false // isAdmin
     )
@@ -27,60 +30,26 @@ export const tap = async ({
         false, // isAdmin
         sessionToken
     )
-    const REQUESTED_AT_SKEW_MS = 60_000
+
+    const ledgerClient = await createLedgerClient({});
+    const tokenStandardService = new TokenStandardService(
+        ledgerClient,
+        scanProxyClient,
+        logger,
+        undefined!, // access token provider
+        false, // isMasterUser
+        undefined // scanClient
+    )
     const registryInfo = await tokenStandardClient.get(
         '/registry/metadata/v1/info'
     )
-    const instrumentAdmin = registryInfo.adminId
-    const now = new Date()
-    const tomorrow = new Date(now)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const choiceArgs = {
-        expectedAdmin: instrumentAdmin,
-        transfer: {
-            sender: instrumentAdmin,
-            receiver: party,
-            amount,
-            instrumentId: { admin: instrumentAdmin, id: 'Amulet' },
-            lock: null,
-            requestedAt: new Date(
-                Date.now() - REQUESTED_AT_SKEW_MS
-            ).toISOString(),
-            executeBefore: tomorrow.toISOString(),
-            inputHoldingCids: [],
-            meta: { values: {} },
-        },
-        extraArgs: {
-            context: { values: {} },
-            meta: { values: {} },
-        },
-    }
-    const transferFactory = await tokenStandardClient.post(
-        '/registry/transfer-instruction/v1/transfer-factory',
-        {
-            choiceArguments: choiceArgs as unknown as Record<string, never>,
-        }
+    const [tapCommand, disclosedContracts] = await tokenStandardService.createTap(
+        party,
+        `${amount}`,
+        registryInfo.adminId,
+        'Amulet',
+        registryUrl
     )
-    const disclosedContracts = transferFactory.choiceContext.disclosedContracts
-    console.log('disclosedContracts', disclosedContracts)
-
-    const amuletRules = await scanProxyClient.getAmuletRules()
-    console.log('amuletRules', amuletRules)
-
-    const latestOpenMiningRound =
-        await scanProxyClient.getActiveOpenMiningRound()
-    console.log('latestOpenMiningRound', latestOpenMiningRound)
-
-    const tapCommand = {
-        templateId: amuletRules.template_id!,
-        contractId: amuletRules.contract_id,
-        choice: 'AmuletRules_DevNet_Tap',
-        choiceArgument: {
-            receiver: choiceArgs.transfer.receiver,
-            amount: choiceArgs.transfer.amount,
-            openRound: latestOpenMiningRound!.contract_id,
-        },
-    }
 
     const request = {
         commands: [{ ExerciseCommand: tapCommand }],
