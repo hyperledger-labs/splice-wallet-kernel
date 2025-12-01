@@ -42,13 +42,20 @@ async function main() {
 
     const cantonBootstrap = path.join(networkDir, 'bootstrap.sc')
 
-    console.log(
-        info(`using bootstrap: ${cantonBootstrap} and conf ${inputCantonConf}`)
-    )
-
     const { version } = envConfig
 
     const CANTON_BIN = path.resolve(`.canton/${version}/bin/canton`)
+
+    for (const file of [CANTON_BIN, inputCantonConf, cantonBootstrap]) {
+        if (!existsSync(file)) {
+            console.error(error(`Required file not found: ${file}`))
+            process.exit(1)
+        }
+    }
+
+    console.log(
+        info(`Using bootstrap: ${cantonBootstrap} and conf: ${inputCantonConf}`)
+    )
 
     if (existsSync(CANTON_BIN)) {
         console.log(
@@ -60,32 +67,37 @@ async function main() {
                 process.exit(2)
             }
 
-            pm2.start(
-                {
-                    name: processName,
-                    interpreter: '/bin/bash',
-                    script: CANTON_BIN,
-                    args: `daemon --no-tty --config ${inputCantonConf} --bootstrap ${cantonBootstrap} --log-level-stdout=INFO --log-level-canton=INFO`,
-                },
-                function (err) {
-                    pm2.launchBus((err, bus) => {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        bus.on('log:out', (packet: any) => {
-                            if (packet.process.name == processName)
-                                console.log(info(trimNewline(packet.data)))
+            //delete old process if exists - this is useful for if we change networks
+            pm2.delete(processName, () => {
+                pm2.start(
+                    {
+                        name: processName,
+                        interpreter: '/bin/bash',
+                        script: CANTON_BIN,
+                        args: `daemon --no-tty --config ${inputCantonConf} --bootstrap ${cantonBootstrap} --log-level-stdout=INFO --log-level-canton=INFO`,
+                    },
+                    function (err) {
+                        pm2.launchBus((err, bus) => {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            bus.on('log:out', (packet: any) => {
+                                if (packet.process.name == processName)
+                                    console.log(info(trimNewline(packet.data)))
+                            })
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            bus.on('log:err', (packet: any) => {
+                                if (packet.process.name == processName)
+                                    console.error(
+                                        error(trimNewline(packet.data))
+                                    )
+                            })
                         })
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        bus.on('log:err', (packet: any) => {
-                            if (packet.process.name == processName)
-                                console.error(error(trimNewline(packet.data)))
-                        })
-                    })
-                    if (err) {
-                        console.error(err)
-                        return pm2.disconnect()
+                        if (err) {
+                            console.error(err)
+                            return pm2.disconnect()
+                        }
                     }
-                }
-            )
+                )
+            })
         })
     } else {
         console.error(
