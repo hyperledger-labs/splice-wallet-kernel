@@ -73,11 +73,31 @@ Follow these steps to restore the Exchange Validator Node from a backup:
 3. Restore the Exchange Validator Node from the backup.
 4. Reupload all ``.dar`` files that were uploaded after the backup.
 5. Log into the `Canton Console of your validator node <https://docs.dev.sync.global/deployment/console_access.html>`__
-    and query the offset ``offRecovery`` assigned to ``tRecovery`` using
+   and query the offset ``offRecovery`` assigned to ``tRecovery`` using
 
-    .. code-block:: bash
+   .. code-block:: scala
 
-      $ participantX.parties.find_highest_offset_by_timestamp(synchronizerId, tRecovery)
+     def parseTimestamp(t: String) = {
+       val isoFormat = java.time.format.DateTimeFormatter.ISO_INSTANT.withZone(java.time.ZoneId.of("Z"))
+       isoFormat.parse(t, java.time.Instant.from(_))
+     }
+     val synchronizerId = SynchronizerId.tryFromString("example::1220b1431ef217342db44d516bb9befde802be7d8899637d290895fa58880f19accc") // example
+     val tRecovery = parseTimestamp("2024-05-01T12:34:56.789Z") // example
+     val offRecovery = participant.parties.find_highest_offset_by_timestamp(synchronizerId, tRecovery)
+
+   Alternatively, you can use ``grpcurl`` to query the offset ``offRecovery`` from the command line as shown in the
+   example below:
+
+   .. code-block:: bash
+
+      grpcurl -plaintext -d \
+        '{"synchronizerId" : "example::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a",
+          "timestamp": "2025-11-27T06:50:00.000Z"}' \
+        localhost:5002 \
+        com.digitalasset.canton.admin.participant.v30.PartyManagementService.GetHighestOffsetByTimestamp
+
+   If you use authentication for the Canton Admin gRPC API, then you need to add the appropriate
+   authentication flags to the ``grpcurl`` command above.
 
 6. Configure the Tx History Ingestion component to start ingesting from offset ``offRecovery``.
 7. Restart the Tx History Ingestion component.
