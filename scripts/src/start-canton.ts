@@ -6,9 +6,7 @@
  */
 
 import {
-    CANTON_BOOTSTRAP,
     SUPPORTED_VERSIONS,
-    CANTON_CONF,
     error,
     info,
     trimNewline,
@@ -24,7 +22,6 @@ const processName = 'canton'
 
 async function main() {
     const network: Network = getNetworkArg()
-    const inputCantonConf = getArgValue('config') ?? CANTON_CONF
 
     const envConfig = SUPPORTED_VERSIONS[network]?.canton
     if (!envConfig) {
@@ -35,6 +32,18 @@ async function main() {
         )
         process.exit(1)
     }
+
+    const networkDir = path.resolve(`canton/${network}`)
+    const inputCantonConf2 =
+        getArgValue('config') ?? path.join(networkDir, 'canton.conf')
+
+    const cantonBootstrap = path.join(networkDir, 'bootstrap.sc')
+
+    console.log(
+        info(
+            `usinng bootstrap: ${cantonBootstrap} and conf ${inputCantonConf2}`
+        )
+    )
 
     const { version } = envConfig
 
@@ -55,7 +64,7 @@ async function main() {
                     name: processName,
                     interpreter: '/bin/bash',
                     script: CANTON_BIN,
-                    args: `daemon --no-tty --config ${inputCantonConf} --bootstrap ${CANTON_BOOTSTRAP} --log-level-stdout=INFO --log-level-canton=INFO`,
+                    args: `daemon --no-tty --config ${inputCantonConf2} --bootstrap ${cantonBootstrap} --log-level-stdout=INFO --log-level-canton=INFO`,
                 },
                 function (err) {
                     pm2.launchBus((err, bus) => {
