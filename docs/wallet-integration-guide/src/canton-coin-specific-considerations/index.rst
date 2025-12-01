@@ -24,28 +24,28 @@ If your transaction exceeds this window, the API will return a ``409 Conflict`` 
 
    LOCAL_VERDICT_INACTIVE_CONTRACTS
 
-There are currently two ways to handle this limitation:
+There is one way of handle incoming transfers and another way to handle outgoing transfers, listed below.
 
-Solution 1: Implement Pre-approvals for Incoming Transfers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Solution 1: Implement Pre-approvals for Incoming Transfers / Receiving Funds
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Use Case:** Your users need to receive Canton Coin, but you cannot sign a transaction within 10 minutes 
 (e.g., due to cold storage of the receiver's keys).
 
-**The Fix:** Enable **1-Step Transfers** using **Pre-approvals** (docs `here <https://docs.dev.sync.global/background/preapprovals.html>`_).
+**The Fix:** Enable **1-Step Transfers** using **Pre-approvals** (docs `here <https://docs.digitalasset.com/integrate/devnet/token-standard/index.html#step-transfer-vs-1-step-transfer>`_).
 
 Instead of signing every incoming transfer, the receiver signs a single, long-living ``TransferPreapproval`` 
 contract. This authorizes the sending party (or a specific provider) to deposit funds immediately without 
 requiring an interactive acceptance signature for every transaction.
 
-To do this, create a `Splice.Wallet.TransferPreapproval <https://docs.dev.sync.global/app_dev/api/splice-wallet/Splice-Wallet-TransferPreapproval.html>`_ 
-contract.
-See the guide on `Canton Coin Preapprovals <https://docs.dev.sync.global/background/preapprovals.html>`_ for setup instructions.
+To do this, create a `Splice.Wallet.TransferPreapproval` contract. The guide on how to create the pre-approval 
+contract in the Wallet SDK is `here <https://docs.digitalasset.com/integrate/devnet/token-standard/index.html#step-transfer-vs-1-step-transfer>`_ 
+and the general information about Canton Coin Preapprovals is `here <https://docs.dev.sync.global/background/preapprovals.html>`_. 
 By implementing a preapproval contract the receiver doesn't need to accept Canton Coin transfers sent to 
 them as they are automatically accepted.
 
-Solution 2: Use Command Delegation for Sending Funds 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Solution 2: Use Command Delegation for Outgoing Transfers / Sending Funds 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Use Case:** Your users need to send Canton Coin, but the signing process (e.g., institutional custody approval) takes hours.
 
