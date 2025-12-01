@@ -32,15 +32,15 @@ Solution 1: Implement Pre-approvals for Incoming Transfers / Receiving Funds
 **Use Case:** Your users need to receive Canton Coin, but you cannot sign a transaction within 10 minutes 
 (e.g., due to cold storage of the receiver's keys).
 
-**The Fix:** Enable **1-Step Transfers** using **Pre-approvals** (docs `here <https://docs.digitalasset.com/integrate/devnet/token-standard/index.html#step-transfer-vs-1-step-transfer>`_).
+**The Fix:** Enable **1-Step Transfers** using `Pre-approvals <https://docs.digitalasset.com/integrate/devnet/token-standard/index.html#step-transfer-vs-1-step-transfer>`_.
 
 Instead of signing every incoming transfer, the receiver signs a single, long-living ``TransferPreapproval`` 
 contract. This authorizes the sending party (or a specific provider) to deposit funds immediately without 
 requiring an interactive acceptance signature for every transaction.
 
 To do this, create a `Splice.Wallet.TransferPreapproval` contract. The guide on how to create the pre-approval 
-contract in the Wallet SDK is `here <https://docs.digitalasset.com/integrate/devnet/token-standard/index.html#step-transfer-vs-1-step-transfer>`_ 
-and the general information about Canton Coin Preapprovals is `here <https://docs.dev.sync.global/background/preapprovals.html>`_. 
+contract in the `Wallet SDK is here <https://docs.digitalasset.com/integrate/devnet/token-standard/index.html#step-transfer-vs-1-step-transfer>`_ 
+and the general information about `Canton Coin Preapprovals is here <https://docs.dev.sync.global/background/preapprovals.html>`_. 
 By implementing a preapproval contract the receiver doesn't need to accept Canton Coin transfers sent to 
 them as they are automatically accepted.
 
@@ -49,7 +49,7 @@ Solution 2: Use Command Delegation for Outgoing Transfers / Sending Funds
 
 **Use Case:** Your users need to send Canton Coin, but the signing process (e.g., institutional custody approval) takes hours.
 
-**The Fix:** Use **Command Delegation - TransferCommand** (`docs here <https://docs.dev.sync.global/app_dev/api/splice-amulet/Splice-ExternalPartyAmuletRules.html>`_).
+**The Fix:** Use **Command Delegation** - `TransferCommand <https://docs.dev.sync.global/app_dev/api/splice-amulet/Splice-ExternalPartyAmuletRules.html>`_.
 
 Instead of signing the transfer transaction directly (which pins a short-lived Mining Round), the user signs a long-living instruction to transfer funds.
 
