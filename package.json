@@ -4,7 +4,7 @@
     "scripts": {
         "start:all": "yarn pm2 start ecosystem.config.js --env development",
         "start:canton": "tsx ./scripts/src/start-canton.ts",
-        "start:canton:tls": "tsx ./scripts/src/start-canton.ts network=mainnet tls=true",
+        "start:canton:tls": "tsx ./scripts/src/start-canton.ts --network=mainnet --tls=true",
         "start:localnet": "tsx ./scripts/src/start-localnet.ts start",
         "start:canton:console": ".canton/bin/canton --config canton/canton.conf --bootstrap canton/bootstrap.canton",
         "stop:all": "yarn pm2 stop all",
