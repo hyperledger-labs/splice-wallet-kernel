@@ -15,7 +15,7 @@ import {
     SigningDriverStatus,
     SigningDriverConfig,
 } from '@canton-network/core-signing-lib'
-import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely'
+import { CamelCasePlugin, Kysely, SqliteDialect, sql } from 'kysely'
 import Database from 'better-sqlite3'
 import {
     DB,
@@ -280,12 +280,12 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
             .insertInto('signingKeys')
             .values(serialized)
             .onConflict((oc) =>
+                // on conflict preserve keys passed to that method
                 oc.columns(['userId', 'id']).doUpdateSet({
-                    // TODO check if it really should always take data from first key
-                    name: serialized[0].name,
-                    publicKey: serialized[0].publicKey,
-                    privateKey: serialized[0].privateKey,
-                    metadata: serialized[0].metadata,
+                    name: sql`excluded.name`,
+                    publicKey: sql`excluded.public_key`,
+                    privateKey: sql`excluded.private_key`,
+                    metadata: sql`excluded.metadata`,
                     updatedAt: new Date().toISOString(),
                 })
             )
@@ -306,14 +306,14 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
             .insertInto('signingTransactions')
             .values(serialized)
             .onConflict((oc) =>
+                // on conflict preserve transactions passed to that method
                 oc.columns(['userId', 'id']).doUpdateSet({
-                    // TODO check if it really should always take data from first key
-                    hash: serialized[0].hash,
-                    signature: serialized[0].signature,
-                    publicKey: serialized[0].publicKey,
-                    status: serialized[0].status,
-                    metadata: serialized[0].metadata,
-                    signedAt: serialized[0].signedAt,
+                    hash: sql`excluded.hash`,
+                    signature: sql`excluded.signature`,
+                    publicKey: sql`excluded.public_key`,
+                    status: sql`excluded.status`,
+                    metadata: sql`excluded.metadata`,
+                    signedAt: sql`excluded.signed_at`,
                     updatedAt: new Date().toISOString(),
                 })
             )
