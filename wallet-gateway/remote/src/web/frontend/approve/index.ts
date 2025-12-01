@@ -28,6 +28,8 @@ export class ApproveUi extends LitElement {
     @state() accessor status = ''
     @state() accessor message: string | null = null
     @state() accessor messageType: 'info' | 'error' | null = null
+    @state() accessor createdAt: string | null = null
+    @state() accessor signedAt: string | null = null
 
     static styles = css`
         :host {
@@ -175,6 +177,8 @@ export class ApproveUi extends LitElement {
                 this.txHash = result.preparedTransactionHash
                 this.tx = result.preparedTransaction
                 this.status = result.status
+                this.createdAt = result.createdAt || null
+                this.signedAt = result.signedAt || null
                 try {
                     this.txParsed = parsePreparedTransaction(this.tx)
                 } catch (error) {
@@ -243,6 +247,11 @@ export class ApproveUi extends LitElement {
 
                 <h3>Status</h3>
                 <p>${this.status}</p>
+
+                <h3>Created At</h3>
+                <p>${this.createdAt || 'N/A'}</p>
+                <h3>Signed At</h3>
+                <p>${this.signedAt || 'N/A'}</p>
 
                 <h3>Template</h3>
                 <p>

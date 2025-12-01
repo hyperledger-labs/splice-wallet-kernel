@@ -162,6 +162,12 @@ export class UserUiTransactions extends LitElement {
                                                 html`<li>${signatory}</li>`
                                         ) || html`<li>N/A</li>`}
                                 </ul>
+                                <br />
+                                <strong>Created At:</strong>
+                                ${tx.createdAt || 'N/A'}
+                                <br />
+                                <strong>Signed At:</strong>
+                                ${tx.signedAt || 'N/A'}
                             </div>
                             <div class="wallet-actions">
                                 <button
