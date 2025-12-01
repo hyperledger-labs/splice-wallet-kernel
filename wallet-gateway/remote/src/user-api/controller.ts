@@ -408,11 +408,19 @@ export const userController = (
                         )
                     }
 
+                    // Get existing transaction to preserve createdAt if it exists
+                    const existingTx = await store.getTransaction(commandId)
+                    const now = new Date()
+
                     const signedTx: Transaction = {
                         commandId,
                         status: 'signed',
                         preparedTransaction,
                         preparedTransactionHash,
+                        ...(existingTx?.createdAt && {
+                            createdAt: existingTx.createdAt,
+                        }),
+                        signedAt: now,
                     }
 
                     store.setTransaction(signedTx)
@@ -537,6 +545,12 @@ export const userController = (
                         preparedTransactionHash:
                             transaction.preparedTransactionHash,
                         payload: result,
+                        ...(transaction.createdAt && {
+                            createdAt: transaction.createdAt,
+                        }),
+                        ...(transaction.signedAt && {
+                            signedAt: transaction.signedAt,
+                        }),
                     }
 
                     store.setTransaction(signedTx)

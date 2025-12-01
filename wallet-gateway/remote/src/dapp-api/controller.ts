@@ -161,6 +161,7 @@ export const dappController = (
                 preparedTransaction,
                 preparedTransactionHash,
                 payload: params,
+                createdAt: new Date(),
             })
 
             return {
