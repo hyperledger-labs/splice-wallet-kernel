@@ -157,6 +157,7 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
                     publicKey: serialized.publicKey,
                     status: serialized.status,
                     metadata: serialized.metadata,
+                    signedAt: serialized.signedAt,
                     updatedAt: new Date().toISOString(),
                 })
             )
@@ -168,9 +169,23 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
         txId: string,
         status: SigningDriverStatus
     ): Promise<void> {
+        const updateData: {
+            status: string
+            updatedAt: string
+            signedAt?: string
+        } = {
+            status,
+            updatedAt: new Date().toISOString(),
+        }
+
+        // TODO verify if it handles all use cases properly
+        if (status === 'signed') {
+            updateData.signedAt = new Date().toISOString()
+        }
+
         await this.db
             .updateTable('signingTransactions')
-            .set({ status, updatedAt: new Date().toISOString() })
+            .set(updateData)
             .where('userId', '=', userId)
             .where('id', '=', txId)
             .execute()
@@ -262,6 +277,7 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
             .values(serialized)
             .onConflict((oc) =>
                 oc.columns(['userId', 'id']).doUpdateSet({
+                    // TODO check if it really should always take data from first key
                     name: serialized[0].name,
                     publicKey: serialized[0].publicKey,
                     privateKey: serialized[0].privateKey,
@@ -287,11 +303,13 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
             .values(serialized)
             .onConflict((oc) =>
                 oc.columns(['userId', 'id']).doUpdateSet({
+                    // TODO check if it really should always take data from first key
                     hash: serialized[0].hash,
                     signature: serialized[0].signature,
                     publicKey: serialized[0].publicKey,
                     status: serialized[0].status,
                     metadata: serialized[0].metadata,
+                    signedAt: serialized[0].signedAt,
                     updatedAt: new Date().toISOString(),
                 })
             )
