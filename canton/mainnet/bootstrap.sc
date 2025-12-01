@@ -121,6 +121,25 @@ participant1.ledger_api.users.create(id = "operator", actAs = Set(operatorParty)
 
 logger.info(s"WALLET-KERNEL-BOOTSTRAP: created operator user and party")
 
+val parId = participant1.id.toLengthLimitedString
+
+logger.info(s"WALLET-KERNEL-BOOTSTRAP ParticipantId is: $parId")
+
+
+participant1.ledger_api.identity_provider_config.create("mock-oauth2", isDeactivated = false, jwksUrl = "http://127.0.0.1:8889/jwks", issuer = "http://127.0.0.1:8889", audience = None)
+
+participant1.ledger_api.users
+  .create(
+    id = "mock-oauth2-user",
+    primaryParty = Some(operatorParty),
+    actAs = Set(),
+    readAs = Set(),
+    participantAdmin = true,
+    isDeactivated = false,
+    identityProviderAdmin = true,
+    identityProviderId = "mock-oauth2",
+    annotations = Map()
+  )
 
 
 def initializeSequencer(
@@ -139,91 +158,91 @@ def initializeSequencer(
 }
 
 def migrateNode(
-                 migratedNode: InstanceReference with ConsoleCommandGroup,
-                 newStaticSynchronizerParameters: StaticSynchronizerParameters,
-                 synchronizerId: SynchronizerId,
-                 newSequencers: Seq[SequencerReference],
-                 dars: Seq[String],
-                 sequencerTrustThreshold: PositiveInt = PositiveInt.one,
-                 exportDirectory: File,
-               ): Unit = {
-  val files = UpgradeDataFiles.from(migratedNode.name, exportDirectory)
+      migratedNode: InstanceReference with ConsoleCommandGroup,
+      newStaticSynchronizerParameters: StaticSynchronizerParameters,
+      synchronizerId: SynchronizerId,
+      newSequencers: Seq[SequencerReference],
+      dars: Seq[String],
+      sequencerTrustThreshold: PositiveInt = PositiveInt.one,
+      exportDirectory: File,
+  ): Unit = {
+    val files = UpgradeDataFiles.from(migratedNode.name, exportDirectory)
 
-  files.keys.foreach { case (keys, name) =>
-    migratedNode.keys.secret.upload(keys, name)
+    files.keys.foreach { case (keys, name) =>
+      migratedNode.keys.secret.upload(keys, name)
+    }
+    migratedNode.topology.init_id_from_uid(files.uid)
+    migratedNode.health.wait_for_ready_for_node_topology()
+    migratedNode.topology.transactions
+      .import_topology_snapshot(files.authorizedStore, TopologyStoreId.Authorized)
+
+    migratedNode match {
+      case newSequencer: SequencerReference =>
+        initializeSequencer(newSequencer, files.genesisState, newStaticSynchronizerParameters)
+
+      case newMediator: MediatorReference =>
+        newMediator.setup.assign(
+          synchronizerId,
+          SequencerConnections.tryMany(
+            newSequencers
+              .map(s => s.sequencerConnection.withAlias(SequencerAlias.tryCreate(s.name))),
+            sequencerTrustThreshold,
+            SubmissionRequestAmplification.NoAmplification,
+          ),
+        )
+
+      case newParticipant: ParticipantReference =>
+        val node = newParticipant
+        // user-manual-entry-begin: WaitForParticipantInitialization
+        node.health.wait_for_initialized()
+        // user-manual-entry-end: WaitForParticipantInitialization
+        dars.foreach(dar => newParticipant.dars.upload(dar))
+
+      case _ =>
+        throw new IllegalStateException(
+          s"Unsupported migration from $files to $migratedNode"
+        )
+    }
   }
-  migratedNode.topology.init_id_from_uid(files.uid)
-  migratedNode.health.wait_for_ready_for_node_topology()
-  migratedNode.topology.transactions
-    .import_topology_snapshot(files.authorizedStore, TopologyStoreId.Authorized)
-
-  migratedNode match {
-    case newSequencer: SequencerReference =>
-      initializeSequencer(newSequencer, files.genesisState, newStaticSynchronizerParameters)
-
-    case newMediator: MediatorReference =>
-      newMediator.setup.assign(
-        synchronizerId,
-        SequencerConnections.tryMany(
-          newSequencers
-            .map(s => s.sequencerConnection.withAlias(SequencerAlias.tryCreate(s.name))),
-          sequencerTrustThreshold,
-          SubmissionRequestAmplification.NoAmplification,
-        ),
-      )
-
-    case newParticipant: ParticipantReference =>
-      val node = newParticipant
-      // user-manual-entry-begin: WaitForParticipantInitialization
-      node.health.wait_for_initialized()
-      // user-manual-entry-end: WaitForParticipantInitialization
-      dars.foreach(dar => newParticipant.dars.upload(dar))
-
-    case _ =>
-      throw new IllegalStateException(
-        s"Unsupported migration from $files to $migratedNode"
-      )
-  }
-}
 
 final case class UpgradeDataFiles(
-                                   uidFile: File,
-                                   keyFiles: Seq[File],
-                                   authorizedStoreFile: File,
-                                   acsSnapshotFile: File,
-                                   genesisStateFile: File,
-                                 ) {
-  def uid: UniqueIdentifier =
-    UniqueIdentifier.tryFromProtoPrimitive(
-      uidFile.contentAsString
-    )
+      uidFile: File,
+      keyFiles: Seq[File],
+      authorizedStoreFile: File,
+      acsSnapshotFile: File,
+      genesisStateFile: File,
+  ) {
+    def uid: UniqueIdentifier =
+      UniqueIdentifier.tryFromProtoPrimitive(
+        uidFile.contentAsString
+      )
 
-  def keys: Seq[(ByteString, Option[String])] =
-    keyFiles.map { file =>
-      val key = BinaryFileUtil.tryReadByteStringFromFile(file.canonicalPath)
-      val name = file.name.stripSuffix(".keys")
-      key -> Option(name)
-    }
+    def keys: Seq[(ByteString, Option[String])] =
+      keyFiles.map { file =>
+        val key = BinaryFileUtil.tryReadByteStringFromFile(file.canonicalPath)
+        val name = file.name.stripSuffix(".keys")
+        key -> Option(name)
+      }
 
-  def authorizedStore: ByteString =
-    BinaryFileUtil.tryReadByteStringFromFile(authorizedStoreFile.canonicalPath)
+    def authorizedStore: ByteString =
+      BinaryFileUtil.tryReadByteStringFromFile(authorizedStoreFile.canonicalPath)
 
-  def genesisState: ByteString =
-    BinaryFileUtil.tryReadByteStringFromFile(genesisStateFile.canonicalPath)
-}
-
-object UpgradeDataFiles {
-  def from(nodeName: String, baseDirectory: File): UpgradeDataFiles = {
-    val keys =
-      baseDirectory.list
-        .filter(file => file.name.startsWith(nodeName) && file.name.endsWith(".keys"))
-        .toList
-    UpgradeDataFiles(
-      uidFile = baseDirectory / s"$nodeName-uid",
-      keyFiles = keys,
-      authorizedStoreFile = baseDirectory / s"$nodeName-authorized-store",
-      acsSnapshotFile = baseDirectory / s"$nodeName-acs-snapshot",
-      genesisStateFile = baseDirectory / s"$nodeName-genesis-state",
-    )
+    def genesisState: ByteString =
+      BinaryFileUtil.tryReadByteStringFromFile(genesisStateFile.canonicalPath)
   }
-}
+
+  object UpgradeDataFiles {
+    def from(nodeName: String, baseDirectory: File): UpgradeDataFiles = {
+      val keys =
+        baseDirectory.list
+          .filter(file => file.name.startsWith(nodeName) && file.name.endsWith(".keys"))
+          .toList
+      UpgradeDataFiles(
+        uidFile = baseDirectory / s"$nodeName-uid",
+        keyFiles = keys,
+        authorizedStoreFile = baseDirectory / s"$nodeName-authorized-store",
+        acsSnapshotFile = baseDirectory / s"$nodeName-acs-snapshot",
+        genesisStateFile = baseDirectory / s"$nodeName-genesis-state",
+      )
+    }
+  }
