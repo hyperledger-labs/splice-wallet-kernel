@@ -49,15 +49,13 @@ val sequencerAuthKey = participant1.keys.secret.generate_signing_key(s"participa
 val signingKey = participant1.keys.secret.generate_signing_key(s"participant1-${SigningKeyUsage.Protocol.identifier}", SigningKeyUsage.ProtocolOnly)
 val encryptionKey = participant1.keys.secret.generate_encryption_key("participant1-encryption")
 
-
-        participant1.topology.owner_to_key_mappings.propose(
-          member = participant1.id.member,
-          keys = com.daml.nonempty.NonEmpty(Seq, sequencerAuthKey, signingKey, encryptionKey),
-          signedBy = Seq(namespaceKey.fingerprint, sequencerAuthKey.fingerprint, signingKey.fingerprint),
-        )
-
-
-
+participant1.topology.owner_to_key_mappings.propose(
+  OwnerToKeyMapping(
+    participant1.id.member,
+    com.daml.nonempty.NonEmpty(Seq, sequencerAuthKey, signingKey, encryptionKey),
+  ),
+  signedBy = Seq(namespaceKey.fingerprint, sequencerAuthKey.fingerprint, signingKey.fingerprint),
+)
 participant1.health.wait_for_initialized()
 
 //import data
@@ -66,7 +64,7 @@ logger.info("Importing sequencer/mediator data ")
 val synchronizerId = SynchronizerId.tryFromString(better.files.File(s"$synchronizerDir/synchronizer-id").contentAsString)
 logger.info(s"synchronizer id is $synchronizerId")
 
-val testedProtocolVersion = ProtocolVersion.v34
+val testedProtocolVersion = ProtocolVersion.v33
 
 
 val newStaticSynchronizerParameters =
@@ -75,7 +73,7 @@ val newStaticSynchronizerParameters =
 migrateNode(
   migratedNode = sequencer1,
   newStaticSynchronizerParameters = newStaticSynchronizerParameters,
-  synchronizerId = com.digitalasset.canton.topology.PhysicalSynchronizerId(synchronizerId),
+  synchronizerId = synchronizerId,
   newSequencers = Seq(sequencer1),
   dars = Seq(),
   exportDirectory = better.files.File(synchronizerDir),
@@ -84,7 +82,7 @@ migrateNode(
 migrateNode(
   migratedNode = mediator1,
   newStaticSynchronizerParameters = newStaticSynchronizerParameters,
-  synchronizerId = com.digitalasset.canton.topology.PhysicalSynchronizerId(synchronizerId),
+  synchronizerId = synchronizerId,
   newSequencers = Seq(sequencer1),
   dars = Seq(),
   exportDirectory = better.files.File(synchronizerDir),
@@ -162,7 +160,7 @@ def initializeSequencer(
 def migrateNode(
       migratedNode: InstanceReference with ConsoleCommandGroup,
       newStaticSynchronizerParameters: StaticSynchronizerParameters,
-      synchronizerId: com.digitalasset.canton.topology.PhysicalSynchronizerId,
+      synchronizerId: SynchronizerId,
       newSequencers: Seq[SequencerReference],
       dars: Seq[String],
       sequencerTrustThreshold: PositiveInt = PositiveInt.one,

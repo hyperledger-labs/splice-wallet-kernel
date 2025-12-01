@@ -18,7 +18,7 @@ import com.digitalasset.canton.version.ProtocolVersion._
 import com.digitalasset.canton.topology.{SynchronizerId, UniqueIdentifier}
 import com.digitalasset.canton.console.commands.ConsoleCommandGroup
 import com.digitalasset.canton.util.BinaryFileUtil
-import com.digitalasset.canton.sequencing.{SequencerConnections, SubmissionRequestAmplification}
+import com.digitalasset.canton.sequencing.{SequencerConnections, SubmissionRequestAmplification, SequencerConnectionPoolDelays}
 
 
 val cantonDir = "canton"
@@ -72,10 +72,12 @@ val testedProtocolVersion = ProtocolVersion.v34
 val newStaticSynchronizerParameters =
   StaticSynchronizerParameters.defaultsWithoutKMS(protocolVersion = testedProtocolVersion)
 
+val physicalSynchronizerId = com.digitalasset.canton.topology.PhysicalSynchronizerId(synchronizerId, newStaticSynchronizerParameters.toInternal)
+
 migrateNode(
   migratedNode = sequencer1,
   newStaticSynchronizerParameters = newStaticSynchronizerParameters,
-  synchronizerId = com.digitalasset.canton.topology.PhysicalSynchronizerId(synchronizerId),
+  synchronizerId = physicalSynchronizerId,
   newSequencers = Seq(sequencer1),
   dars = Seq(),
   exportDirectory = better.files.File(synchronizerDir),
@@ -84,7 +86,7 @@ migrateNode(
 migrateNode(
   migratedNode = mediator1,
   newStaticSynchronizerParameters = newStaticSynchronizerParameters,
-  synchronizerId = com.digitalasset.canton.topology.PhysicalSynchronizerId(synchronizerId),
+  synchronizerId = physicalSynchronizerId,
   newSequencers = Seq(sequencer1),
   dars = Seq(),
   exportDirectory = better.files.File(synchronizerDir),
@@ -116,32 +118,29 @@ utils.retry_until_true {
 }
 
 
-logger.info(s"WALLET-KERNEL-BOOTSTRAP: Creating operator user and party")
-val operatorParty = participant1.ledger_api.parties.allocate("operator").party
-
-participant1.ledger_api.users.create(id = "operator", actAs = Set(operatorParty), readAs = Set(operatorParty), primaryParty = Some(operatorParty), participantAdmin = false, isDeactivated = false, annotations = Map("foo" -> "bar", "description" -> "This is a description"))
-
-logger.info(s"WALLET-KERNEL-BOOTSTRAP: created operator user and party")
-
 val parId = participant1.id.toLengthLimitedString
 
 logger.info(s"WALLET-KERNEL-BOOTSTRAP ParticipantId is: $parId")
 
 
-participant1.ledger_api.identity_provider_config.create("mock-oauth2", isDeactivated = false, jwksUrl = "http://127.0.0.1:8889/jwks", issuer = "http://127.0.0.1:8889", audience = None)
+//participant1.ledger_api.users.create(id = "operator", actAs = Set(operatorParty), readAs = Set(operatorParty), primaryParty = Some(operatorParty), participantAdmin = false, isDeactivated = false, annotations = Map("foo" -> "bar", "description" -> "This is a description"))
 
-participant1.ledger_api.users
-  .create(
-    id = "mock-oauth2-user",
-    primaryParty = Some(operatorParty),
-    actAs = Set(),
-    readAs = Set(),
-    participantAdmin = true,
-    isDeactivated = false,
-    identityProviderAdmin = true,
-    identityProviderId = "mock-oauth2",
-    annotations = Map()
-  )
+//logger.info(s"WALLET-KERNEL-BOOTSTRAP: created operator user and party")
+
+//participant1.ledger_api.identity_provider_config.create("mock-oauth2", isDeactivated = false, jwksUrl = "http://127.0.0.1:8889/jwks", issuer = "http://127.0.0.1:8889", audience = None)
+//
+//participant1.ledger_api.users
+//  .create(
+//    id = "mock-oauth2-user",
+//    primaryParty = Some(operatorParty),
+//    actAs = Set(),
+//    readAs = Set(),
+//    participantAdmin = true,
+//    isDeactivated = false,
+//    identityProviderAdmin = true,
+//    identityProviderId = "mock-oauth2",
+//    annotations = Map()
+//  )
 
 
 def initializeSequencer(
@@ -167,6 +166,7 @@ def migrateNode(
       dars: Seq[String],
       sequencerTrustThreshold: PositiveInt = PositiveInt.one,
       exportDirectory: File,
+      sequencerLivenessMargin: NonNegativeInt = NonNegativeInt.zero,
   ): Unit = {
     val files = UpgradeDataFiles.from(migratedNode.name, exportDirectory)
 
@@ -189,7 +189,9 @@ def migrateNode(
             newSequencers
               .map(s => s.sequencerConnection.withAlias(SequencerAlias.tryCreate(s.name))),
             sequencerTrustThreshold,
+            sequencerLivenessMargin,
             SubmissionRequestAmplification.NoAmplification,
+            SequencerConnectionPoolDelays.default
           ),
         )
 

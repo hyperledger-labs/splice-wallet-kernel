@@ -55,7 +55,7 @@ async function main() {
                     name: processName,
                     interpreter: '/bin/bash',
                     script: CANTON_BIN,
-                    args: `daemon --no-tty --config ${inputCantonConf} --bootstrap ${CANTON_BOOTSTRAP} --log-level-stdout=INFO --log-level-canton=INFO`,
+                    args: `--no-tty --config ${inputCantonConf} --bootstrap ${CANTON_BOOTSTRAP} --log-level-stdout=INFO --log-level-canton=INFO`,
                 },
                 function (err) {
                     pm2.launchBus((err, bus) => {
