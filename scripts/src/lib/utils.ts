@@ -29,7 +29,7 @@ export const SPLICE_PATH = path.join(repoRoot, '.splice')
 export const SPLICE_SPEC_PATH = path.join(repoRoot, '.splice-spec')
 export const CANTON_BIN = path.join(CANTON_PATH, 'bin/canton')
 export const CANTON_CONF = path.join(repoRoot, 'canton/canton.conf')
-export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton/bootstrap.canton')
+export const CANTON_BOOTSTRAP = path.join(repoRoot, 'canton/bootstrap.sc')
 export const API_SPECS_PATH = path.join(repoRoot, 'api-specs')
 
 export type Network = 'mainnet' | 'devnet'
