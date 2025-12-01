@@ -169,6 +169,9 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
         txId: string,
         status: SigningDriverStatus
     ): Promise<void> {
+        // Get current transaction to check if it's already signed
+        const current = await this.getSigningTransaction(userId, txId)
+
         const updateData: {
             status: string
             updatedAt: string
@@ -178,8 +181,9 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
             updatedAt: new Date().toISOString(),
         }
 
-        // TODO verify if it handles all use cases properly
-        if (status === 'signed') {
+        // Only set signedAt when transitioning to 'signed' if not already set
+        // This preserves the audit trail of when it was originally signed
+        if (status === 'signed' && !current?.signedAt) {
             updateData.signedAt = new Date().toISOString()
         }
 
