@@ -691,6 +691,12 @@ export const userController = (
                 payload: transaction.payload
                     ? JSON.stringify(transaction.payload)
                     : '',
+                ...(transaction.createdAt && {
+                    createdAt: transaction.createdAt.toISOString(),
+                }),
+                ...(transaction.signedAt && {
+                    signedAt: transaction.signedAt.toISOString(),
+                }),
             }
         },
         listTransactions: async function (): Promise<ListTransactionsResult> {
@@ -703,6 +709,12 @@ export const userController = (
                 payload: transaction.payload
                     ? JSON.stringify(transaction.payload)
                     : '',
+                ...(transaction.createdAt && {
+                    createdAt: transaction.createdAt.toISOString(),
+                }),
+                ...(transaction.signedAt && {
+                    signedAt: transaction.signedAt.toISOString(),
+                }),
             }))
             return { transactions: txs }
         },
