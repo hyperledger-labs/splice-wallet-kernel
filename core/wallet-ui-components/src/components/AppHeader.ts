@@ -196,7 +196,7 @@ export class AppHeader extends BaseElement {
         return html`
             <header>
                 <div class="logo-box" @click=${() => this.navigateTo('/')}>
-                    <img src="${this.iconSrc}" alt="App Icon" />Wallet Gateway
+                    <img src=${this.iconSrc} alt="App Icon" />Wallet Gateway
                 </div>
 
                 <button
@@ -211,6 +211,9 @@ export class AppHeader extends BaseElement {
                 <div class="dropdown ${this.menuOpen ? 'open' : ''}">
                     <button @click=${() => this.navigateTo('/wallets/')}>
                         💰 Wallets
+                    </button>
+                    <button @click=${() => this.navigateTo('/transactions/')}>
+                        🧾 Transactions
                     </button>
                     <button @click=${() => this.navigateTo('/settings/')}>
                         ⚙️ Settings

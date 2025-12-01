@@ -64,6 +64,9 @@ export class UserUiWallets extends LitElement {
         }
         .header {
             margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
         .card-list {
             display: grid;
@@ -194,6 +197,7 @@ export class UserUiWallets extends LitElement {
                                       id="party-id-hint"
                                       type="text"
                                       placeholder="Enter party ID hint"
+                                      required
                                   />
 
                                   <label for="signing-provider-id"

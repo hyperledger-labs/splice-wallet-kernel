@@ -132,6 +132,8 @@ if we call `sdk.tokenStandard?.listHoldingUtxos(false)` then it will show 1 utxo
 
 if we call `sdk.tokenStandard?.listHoldingUtxos(true)` then it will show all 3 utxos (100 and 25 both will have a lock).
 
+
+
 2-step transfer vs 1-step transfer
 ----------------------------------
 

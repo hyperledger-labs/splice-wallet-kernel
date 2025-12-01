@@ -12,6 +12,7 @@ import * as jsonc from 'jsonc-parser'
 import * as tar from 'tar-fs'
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import { tmpdir } from 'os'
 
 const ex = promisify(exec)
 
@@ -379,6 +380,24 @@ export function elideMiddle(s: string, len = 8) {
     )
 }
 
+interface NxGraph {
+    nodes: Record<string, { data: { tags: string[] } }>
+    dependencies: Record<string, { target: string }[]>
+}
+
+async function readNxGraphFromFile(
+    projectName: string,
+    filePath: string
+): Promise<NxGraph> {
+    await ex(`yarn nx graph --focus=${projectName} --file=${filePath}`, {
+        cwd: repoRoot,
+    })
+    const raw = fs.readFileSync(filePath, 'utf8')
+    const graph: NxGraph = JSON.parse(raw).graph
+
+    return graph
+}
+
 /**
  * Use Nx to get all dependencies of a project in the repo.
  */
@@ -393,15 +412,10 @@ export async function getAllNxDependencies(
         throw new Error(`Project ${projectName} does not exist.`)
     }
 
-    interface NxGraph {
-        nodes: Record<string, { data: { tags: string[] } }>
-        dependencies: Record<string, { target: string }[]>
-    }
+    const file = `${tmpdir()}/nx-graph-${projectName.replace(/\//g, '_')}.json`
+    console.log(info(`Writing Nx graph to ${file}...`))
 
-    const { nodes, dependencies }: NxGraph = await ex(
-        `yarn nx graph --print --focus=${projectName}`,
-        { cwd: repoRoot }
-    ).then(({ stdout }) => JSON.parse(stdout).graph)
+    const { nodes, dependencies } = await readNxGraphFromFile(projectName, file)
 
     // Nx shows both child dependencies and parent (reverse) dependencies for the focused package.
     // Filter out reverse dependencies.

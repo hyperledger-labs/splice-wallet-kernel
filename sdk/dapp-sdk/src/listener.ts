@@ -4,9 +4,11 @@
 import * as storage from './storage.js'
 import { onStatusChanged } from './provider/events.js'
 
-// Clean up session on disconnect
-onStatusChanged(async (event) => {
-    if (!event.isConnected) {
-        storage.removeKernelSession()
-    }
-})
+if (window.canton) {
+    // Clean up session on disconnect
+    onStatusChanged(async (event) => {
+        if (!event.isConnected) {
+            storage.removeKernelSession()
+        }
+    })
+}

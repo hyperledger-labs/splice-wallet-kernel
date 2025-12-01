@@ -1745,7 +1745,6 @@ class SigningPublicKey$Type extends MessageType<SigningPublicKey> {
                         for (
                             let e = reader.int32() + reader.pos;
                             reader.pos < e;
-
                         )
                             message.usage.push(reader.int32())
                     else message.usage.push(reader.int32())
@@ -1904,7 +1903,6 @@ class SigningPrivateKey$Type extends MessageType<SigningPrivateKey> {
                         for (
                             let e = reader.int32() + reader.pos;
                             reader.pos < e;
-
                         )
                             message.usage.push(reader.int32())
                     else message.usage.push(reader.int32())
@@ -2127,7 +2125,6 @@ class RequiredSigningSpecs$Type extends MessageType<RequiredSigningSpecs> {
                         for (
                             let e = reader.int32() + reader.pos;
                             reader.pos < e;
-
                         )
                             message.algorithms.push(reader.int32())
                     else message.algorithms.push(reader.int32())
@@ -2137,7 +2134,6 @@ class RequiredSigningSpecs$Type extends MessageType<RequiredSigningSpecs> {
                         for (
                             let e = reader.int32() + reader.pos;
                             reader.pos < e;
-
                         )
                             message.keys.push(reader.int32())
                     else message.keys.push(reader.int32())
@@ -2614,7 +2610,6 @@ class RequiredEncryptionSpecs$Type extends MessageType<RequiredEncryptionSpecs> 
                         for (
                             let e = reader.int32() + reader.pos;
                             reader.pos < e;
-
                         )
                             message.algorithms.push(reader.int32())
                     else message.algorithms.push(reader.int32())
@@ -2624,7 +2619,6 @@ class RequiredEncryptionSpecs$Type extends MessageType<RequiredEncryptionSpecs> 
                         for (
                             let e = reader.int32() + reader.pos;
                             reader.pos < e;
-
                         )
                             message.keys.push(reader.int32())
                     else message.keys.push(reader.int32())

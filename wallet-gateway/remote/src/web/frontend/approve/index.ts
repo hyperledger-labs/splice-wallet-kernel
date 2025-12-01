@@ -10,9 +10,12 @@ import {
     ExecuteParams,
     SignParams,
 } from '@canton-network/core-wallet-user-rpc-client'
-import { decodePreparedTransaction } from '@canton-network/core-tx-visualizer'
 import { stateManager } from '../state-manager'
 import '../index'
+import {
+    parsePreparedTransaction,
+    PreparedTransactionParsed,
+} from '../transactions/decode'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends LitElement {
@@ -21,6 +24,7 @@ export class ApproveUi extends LitElement {
     @state() accessor partyId = ''
     @state() accessor txHash = ''
     @state() accessor tx = ''
+    @state() accessor txParsed: PreparedTransactionParsed | null = null
     @state() accessor status = ''
     @state() accessor message: string | null = null
     @state() accessor messageType: 'info' | 'error' | null = null
@@ -171,21 +175,17 @@ export class ApproveUi extends LitElement {
                 this.txHash = result.preparedTransactionHash
                 this.tx = result.preparedTransaction
                 this.status = result.status
+                try {
+                    this.txParsed = parsePreparedTransaction(this.tx)
+                } catch (error) {
+                    console.error('Error parsing prepared transaction:', error)
+                    this.txParsed = null
+                }
             })
         userClient.request('listWallets', []).then((wallets) => {
             this.partyId =
                 wallets.find((w) => w.primary === true)?.partyId || ''
         })
-    }
-
-    private decode(tx: string) {
-        const t = decodePreparedTransaction(tx)
-        return JSON.stringify(
-            t,
-            (key, value) =>
-                typeof value === 'bigint' ? value.toString() : value,
-            2
-        )
     }
 
     private async handleExecute() {
@@ -244,8 +244,26 @@ export class ApproveUi extends LitElement {
                 <h3>Status</h3>
                 <p>${this.status}</p>
 
-                <h3>Party Id</h3>
-                <p>${this.partyId}</p>
+                <h3>Template</h3>
+                <p>
+                    ${this.txParsed?.packageName || 'N/A'}:${this.txParsed
+                        ?.moduleName || 'N/A'}:${this.txParsed?.entityName ||
+                    'N/A'}
+                </p>
+
+                <h3>Signatories</h3>
+                <ul>
+                    ${this.txParsed?.signatories?.map(
+                        (signatory) => html`<li>${signatory}</li>`
+                    ) || html`<li>N/A</li>`}
+                </ul>
+
+                <h3>Stakeholders</h3>
+                <ul>
+                    ${this.txParsed?.stakeholders?.map(
+                        (stakeholder) => html`<li>${stakeholder}</li>`
+                    ) || html`<li>N/A</li>`}
+                </ul>
 
                 <h3>Transaction Hash</h3>
                 <p>${this.txHash}</p>
@@ -254,7 +272,7 @@ export class ApproveUi extends LitElement {
                 <div class="tx-box">${this.tx}</div>
 
                 <h3>Decoded Transaction</h3>
-                <div class="tx-box">${this.decode(this.tx)}</div>
+                <div class="tx-box">${this.txParsed?.jsonString || 'N/A'}</div>
 
                 <button ?disabled=${this.loading} @click=${this.handleExecute}>
                     ${this.loading ? 'Processing...' : 'Approve'}

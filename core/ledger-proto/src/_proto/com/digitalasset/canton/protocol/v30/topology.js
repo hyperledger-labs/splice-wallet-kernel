@@ -562,7 +562,6 @@ class NamespaceDelegation_CanSignSpecificMappings$Type extends MessageType {
                         for (
                             let e = reader.int32() + reader.pos;
                             reader.pos < e;
-
                         )
                             message.mappings.push(reader.int32())
                     else message.mappings.push(reader.int32())

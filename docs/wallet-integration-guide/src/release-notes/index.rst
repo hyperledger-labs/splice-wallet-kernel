@@ -3,6 +3,65 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+0.18.0
+------
+
+**Released on November 26th, 2025**
+
+* merge utxos command
+
+*you can now easily perform utxos merging for you by simply calling the method `mergeHoldingUtxos`, this returns a series of commands that each needs to be executed
+individually to merge the assets. It returns a list of utxos commands because: Firstly, it supports multi-assets (so it will merge both CC and non-CC tokens)
+and secondly there is an upper limit of 100 inputs per transaction so to facilitate if more is present then it splices it for the client.*
+
+.. code-block:: javascript
+
+    const [mergeUtxoCommands, mergedDisclosedContracts] =
+        await sdk.tokenStandard!.mergeHoldingUtxos()!
+
+    for (let i = 0; i < mergeUtxoCommands.length; i++) {
+        await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+            mergeUtxoCommands[i],
+            keyPairSender.privateKey,
+            v4(),
+            mergedDisclosedContracts
+        )
+    }
+
+* merge utxos delegation
+
+*instead of manually monitor and act you can set up utxos merge delegation as described at* `merge-delegation <https://docs.dev.sync.global/app_dev/token_standard/index.html#setting-up-mergedelegations>`__
+*using the new functionality like. An example of the complete setup can be found here:* `Wallet SDK example 18 <https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/docs/wallet-integration-guide/examples/scripts/18-merge-delegation-proposal.ts>`__
+
+* create party with preapproval
+
+*creating a party with preapproval is such a common task that we have decided to add is a combined function similar to lots of other cases.*
+
+.. code-block:: javascript
+
+    const receiver =
+        await sdk.userLedger?.signAndAllocateExternalPartyWithPreapproval(
+            keyPairReceiver.privateKey,
+            validatorOperatorParty,
+            instrumentAdminPartyId,
+            'bob'
+        )
+
+* get traffic status
+
+*in previous release we enabled the purchase of traffic using an external party, now we have included an option to fetch the balance so you can check if
+you actually need to top up with an external party. However this does require providing a scanApiBaseUrl to the tokenStandardController.*
+
+.. code-block:: javascript
+
+    const trafficStatus =
+        await sdk.tokenStandard!.getMemberTrafficStatus(participantId!)
+
+* list holdings at offset
+
+*listHoldingsUtxo have been extended with an optional offset parameter, normally it uses the ledgerEnd, but this allow you to define it yourself.
+Do be warned that this is not a performant operation.*
+
 0.17.0
 ------
 

@@ -25,11 +25,11 @@
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "devDependencies": {
-        "@swc/core": "^1.11.31",
-        "@types/node": "^22.15.30",
+        "@swc/core": "^1.15.3",
+        "@types/node": "^24.10.1",
         "esbuild-plugin-replace": "^1.4.0",
-        "tsup": "^8.5.0",
-        "typescript": "^5.8.3"
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3"
     },
     "dependencies": {
         "@protobuf-ts/runtime": "^2.11.1",

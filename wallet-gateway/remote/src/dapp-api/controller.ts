@@ -21,7 +21,7 @@ import { v4 } from 'uuid'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo as KernelInfoConfig } from '../config/Config.js'
 import { Logger } from 'pino'
-import { networkStatus } from '../utils.js'
+import { networkStatus, ledgerPrepareParams } from '../utils.js'
 
 export const dappController = (
     kernelInfo: KernelInfoConfig,
@@ -47,12 +47,12 @@ export const dappController = (
             }
 
             const network = await store.getCurrentNetwork()
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                false,
-                context.accessToken
-            )
+                isAdmin: false,
+                accessToken: context.accessToken,
+            })
             const status = await networkStatus(ledgerClient)
             return {
                 sessionToken: context.accessToken,
@@ -85,12 +85,12 @@ export const dappController = (
         darsAvailable: async () => ({ dars: ['default-dar'] }),
         ledgerApi: async (params: LedgerApiParams) => {
             const network = await store.getCurrentNetwork()
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                false,
-                assertConnected(context).accessToken
-            )
+                isAdmin: false,
+                accessToken: assertConnected(context).accessToken,
+            })
             let result: unknown
             switch (params.requestMethod) {
                 case 'GET':
@@ -127,12 +127,12 @@ export const dappController = (
                 throw new Error('No primary wallet found')
             }
 
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                false,
-                context.accessToken
-            )
+                isAdmin: false,
+                accessToken: context.accessToken,
+            })
 
             const userId = context.userId
             const notifier = notificationService.getNotifier(userId)
@@ -160,7 +160,7 @@ export const dappController = (
                 status: 'pending',
                 preparedTransaction,
                 preparedTransactionHash,
-                payload: params.commands,
+                payload: params,
             })
 
             return {
@@ -180,12 +180,12 @@ export const dappController = (
                 throw new Error('No primary wallet found')
             }
 
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                false,
-                context.accessToken
-            )
+                isAdmin: false,
+                accessToken: context.accessToken,
+            })
 
             return prepareSubmission(
                 context.userId,
@@ -206,12 +206,12 @@ export const dappController = (
             }
 
             const network = await store.getCurrentNetwork()
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                false,
-                context.accessToken
-            )
+                isAdmin: false,
+                accessToken: context.accessToken,
+            })
             const status = await networkStatus(ledgerClient)
             return {
                 kernel: kernelInfo,
@@ -247,31 +247,8 @@ async function prepareSubmission(
     params: PrepareExecuteParams | PrepareReturnParams,
     ledgerClient: LedgerClient
 ): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
-    // Map disclosed contracts to ledger api format (which wrongly defines optional fields as mandatory)
-    const disclosedContracts =
-        params.disclosedContracts?.map((d) => {
-            return {
-                templateId: d.templateId || '',
-                contractId: d.contractId || '',
-                createdEventBlob: d.createdEventBlob,
-                synchronizerId: d.synchronizerId || '',
-            }
-        }) || []
-    const prepareParams = {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-        commands: params.commands as any,
-        commandId: params.commandId || v4(),
-        userId,
-        actAs: params.actAs || [partyId],
-        readAs: params.readAs || [],
-        disclosedContracts,
-        synchronizerId,
-        verboseHashing: false,
-        packageIdSelectionPreference: params.packageIdSelectionPreference || [],
-    }
-
     return await ledgerClient.postWithRetry(
         '/v2/interactive-submission/prepare',
-        prepareParams
+        ledgerPrepareParams(userId, partyId, synchronizerId, params)
     )
 }

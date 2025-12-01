@@ -97,4 +97,5 @@ export interface Store {
     // Transaction methods
     setTransaction(tx: Transaction): Promise<void>
     getTransaction(commandId: string): Promise<Transaction | undefined>
+    listTransactions(): Promise<Array<Transaction>>
 }

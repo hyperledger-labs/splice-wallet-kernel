@@ -21,6 +21,7 @@ import {
     GetTransactionResult,
     GetTransactionParams,
     Null,
+    ListTransactionsResult,
 } from './rpc-gen/typings.js'
 import {
     Store,
@@ -48,7 +49,11 @@ import {
     PartyAllocationService,
 } from '../ledger/party-allocation-service.js'
 import { WalletSyncService } from '../ledger/wallet-sync-service.js'
-import { networkStatus } from '../utils.js'
+import {
+    networkStatus,
+    type PrepareParams,
+    ledgerPrepareParams,
+} from '../utils.js'
 import { StatusEvent } from '../dapp-api/rpc-gen/typings.js'
 
 type AvailableSigningDrivers = Partial<
@@ -457,13 +462,11 @@ export const userController = (
                 getAdminAccessToken: async () => authContext!.accessToken,
             }
 
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                false,
-                undefined,
-                userAccessTokenProvider
-            )
+                accessTokenProvider: userAccessTokenProvider,
+            })
 
             switch (wallet.signingProviderId) {
                 case SigningProvider.PARTICIPANT: {
@@ -471,21 +474,16 @@ export const userController = (
                         network.synchronizerId ??
                         (await ledgerClient.getSynchronizerId())
                     // Participant signing provider specific logic can be added here
-                    const request = {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-                        commands: transaction?.payload as any,
-                        commandId,
-                        userId,
-                        actAs: [partyId],
-                        readAs: [],
-                        disclosedContracts: [],
-                        synchronizerId,
-                        packageIdSelectionPreference: [],
-                    }
                     try {
+                        const prep = ledgerPrepareParams(
+                            userId,
+                            partyId,
+                            synchronizerId,
+                            transaction.payload as PrepareParams
+                        )
                         const res = await ledgerClient.postWithRetry(
                             '/v2/commands/submit-and-wait',
-                            request
+                            prep
                         )
 
                         notifier.emit('txChanged', {
@@ -566,12 +564,11 @@ export const userController = (
                 const { userId, accessToken } = authContext!
                 const notifier = notificationService.getNotifier(userId)
 
-                const ledgerClient = new LedgerClient(
-                    new URL(network.ledgerApi.baseUrl),
+                const ledgerClient = new LedgerClient({
+                    baseUrl: new URL(network.ledgerApi.baseUrl),
                     logger,
-                    false,
-                    accessToken
-                )
+                    accessToken,
+                })
                 const status = await networkStatus(ledgerClient)
                 notifier.emit('onConnected', {
                     status: {
@@ -616,12 +613,11 @@ export const userController = (
             }
 
             const network = await store.getNetwork(session.network)
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                false,
-                authContext!.accessToken
-            )
+                accessToken: authContext!.accessToken,
+            })
             const status = await networkStatus(ledgerClient)
             return {
                 sessions: [
@@ -647,13 +643,11 @@ export const userController = (
 
             const service = new WalletSyncService(
                 store,
-                new LedgerClient(
-                    new URL(network.ledgerApi.baseUrl),
+                new LedgerClient({
+                    baseUrl: new URL(network.ledgerApi.baseUrl),
                     logger,
-                    false,
-                    undefined,
-                    userAccessTokenProvider
-                ),
+                    accessTokenProvider: userAccessTokenProvider,
+                }),
                 authContext!,
                 logger
             )
@@ -684,6 +678,19 @@ export const userController = (
                     ? JSON.stringify(transaction.payload)
                     : '',
             }
+        },
+        listTransactions: async function (): Promise<ListTransactionsResult> {
+            const transactions = await store.listTransactions()
+            const txs = transactions.map((transaction) => ({
+                commandId: transaction.commandId,
+                status: transaction.status,
+                preparedTransaction: transaction.preparedTransaction,
+                preparedTransactionHash: transaction.preparedTransactionHash,
+                payload: transaction.payload
+                    ? JSON.stringify(transaction.payload)
+                    : '',
+            }))
+            return { transactions: txs }
         },
     })
 }

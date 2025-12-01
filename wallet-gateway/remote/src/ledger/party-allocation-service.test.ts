@@ -13,14 +13,6 @@ const mockLedgerGet = jest.fn<AsyncFn>()
 const mockLedgerPost = jest.fn<AsyncFn>()
 const mockLedgerGrantUserRights = jest.fn()
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const MockTopologyWriteService: jest.MockedClass<any> = jest.fn()
-
-// Add static method to the mock class
-MockTopologyWriteService.createFingerprintFromKey = jest
-    .fn()
-    .mockReturnValue('mypublickey')
-
 jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
     Signature: jest.fn(),
     SignatureFormat: jest.fn(),
@@ -43,7 +35,6 @@ jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
                 .mockResolvedValue({ partyId: 'party2::mypublickey' }),
         }
     }),
-    TopologyWriteService: MockTopologyWriteService,
 }))
 
 describe('PartyAllocationService', () => {
@@ -94,7 +85,13 @@ describe('PartyAllocationService', () => {
             httpLedgerUrl: network.ledgerApi.baseUrl,
             logger: mockLogger,
         })
+
+        jest.spyOn(service, 'createFingerprintFromKey').mockReturnValue(
+            'mypublickey'
+        )
     })
+
+    afterEach(() => jest.restoreAllMocks())
 
     it('allocates an internal party', async () => {
         mockLedgerGet.mockResolvedValueOnce({ participantId: 'participantid' })

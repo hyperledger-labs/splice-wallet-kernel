@@ -436,6 +436,16 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             .executeTakeFirst()
         return transaction ? toTransaction(transaction) : undefined
     }
+
+    async listTransactions(): Promise<Array<Transaction>> {
+        const userId = this.assertConnected()
+        const transactions = await this.db
+            .selectFrom('transactions')
+            .selectAll()
+            .where('userId', '=', userId)
+            .execute()
+        return transactions.map((table) => toTransaction(table))
+    }
 }
 
 export const connection = (config: StoreConfig) => {

@@ -965,7 +965,6 @@ class AuthorizeRequest$Type extends MessageType<AuthorizeRequest> {
                         for (
                             let e = reader.int32() + reader.pos;
                             reader.pos < e;
-
                         )
                             message.forceChanges.push(reader.int32())
                     else message.forceChanges.push(reader.int32())
@@ -1339,7 +1338,6 @@ class AddTransactionsRequest$Type extends MessageType<AddTransactionsRequest> {
                         for (
                             let e = reader.int32() + reader.pos;
                             reader.pos < e;
-
                         )
                             message.forceChanges.push(reader.int32())
                     else message.forceChanges.push(reader.int32())
@@ -1774,7 +1772,6 @@ class SignTransactionsRequest$Type extends MessageType<SignTransactionsRequest> 
                         for (
                             let e = reader.int32() + reader.pos;
                             reader.pos < e;
-
                         )
                             message.forceFlags.push(reader.int32())
                     else message.forceFlags.push(reader.int32())

@@ -275,6 +275,15 @@ export type Sessions = Session[]
  *
  */
 export type Payload = string
+export interface Transaction {
+    commandId: CommandId
+    status: Status
+    preparedTransaction: PreparedTransaction
+    preparedTransactionHash: PreparedTransactionHash
+    payload?: Payload
+    [k: string]: any
+}
+export type Transactions = Transaction[]
 export interface AddNetworkParams {
     network: Network
     [k: string]: any
@@ -402,6 +411,10 @@ export interface GetTransactionResult {
     payload?: Payload
     [k: string]: any
 }
+export interface ListTransactionsResult {
+    transactions: Transactions
+    [k: string]: any
+}
 /**
  *
  * Generated! Represents an alias to any of the provided schemas
@@ -433,3 +446,4 @@ export type ListSessions = () => Promise<ListSessionsResult>
 export type GetTransaction = (
     params: GetTransactionParams
 ) => Promise<GetTransactionResult>
+export type ListTransactions = () => Promise<ListTransactionsResult>

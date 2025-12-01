@@ -74,13 +74,13 @@ export class LedgerController {
         isAdmin: boolean = false,
         accessTokenProvider?: AccessTokenProvider
     ) {
-        this.client = new LedgerClient(
+        this.client = new LedgerClient({
             baseUrl,
-            this.logger,
+            logger: this.logger,
             isAdmin,
-            token,
-            accessTokenProvider
-        )
+            accessToken: token,
+            accessTokenProvider,
+        })
         this.initPromise = this.client.init()
         this.userId = userId
         this.isAdmin = isAdmin
@@ -504,13 +504,13 @@ export class LedgerController {
         publicKeyFingerprint: string
     ) {
         for (const endpoint of endpointConfig) {
-            const lc = new LedgerClient(
-                endpoint.url,
-                this.logger,
-                this.isAdmin,
-                endpoint.accessToken,
-                endpoint.accessTokenProvider
-            )
+            const lc = new LedgerClient({
+                baseUrl: endpoint.url,
+                logger: this.logger,
+                isAdmin: this.isAdmin,
+                accessToken: endpoint.accessToken,
+                accessTokenProvider: endpoint.accessTokenProvider,
+            })
 
             await lc.allocateExternalParty(
                 this.getSynchronizerId(),
@@ -590,13 +590,13 @@ export class LedgerController {
             hostingParticipantConfigs
                 ?.map(
                     (endpoint) =>
-                        new LedgerClient(
-                            endpoint.url,
-                            this.logger,
-                            this.isAdmin,
-                            endpoint.accessToken,
-                            endpoint.accessTokenProvider
-                        )
+                        new LedgerClient({
+                            baseUrl: endpoint.url,
+                            logger: this.logger,
+                            isAdmin: this.isAdmin,
+                            accessToken: endpoint.accessToken,
+                            accessTokenProvider: endpoint.accessTokenProvider,
+                        })
                 )
                 .map((client) =>
                     client
@@ -1199,6 +1199,138 @@ export class LedgerController {
             throw new Error('Use adminLedger to call createUser')
         }
         return await this.client.createUser(userId, primaryParty)
+    }
+
+    /**
+     * Gets all raw events from a transaction by updateId, showing what types of events occurred.
+     * Use this method when you need raw ledger events (CreatedEvent, ExercisedEvent, ArchivedEvent).
+     * @param updateId The update ID to look up
+     * @param options Optional filtering options
+     * @param options.templateIds Optional array of template IDs to filter
+     * @param options.interfaceIds Optional array of interface IDs to filter by
+     * @returns Raw events array
+     * @throws Error if the update is not a Transaction
+     */
+    async getEventsByUpdateId(
+        updateId: string,
+        options?: {
+            templateIds?: string[]
+            interfaceIds?: string[]
+        }
+    ): Promise<Types['Event'][]> {
+        const cumulativeFilters = []
+
+        if (options?.templateIds?.length) {
+            for (const templateId of options.templateIds) {
+                cumulativeFilters.push({
+                    identifierFilter: {
+                        TemplateFilter: {
+                            value: {
+                                templateId,
+                                includeCreatedEventBlob: true,
+                            },
+                        },
+                    },
+                })
+            }
+        }
+
+        if (options?.interfaceIds?.length) {
+            for (const interfaceId of options.interfaceIds) {
+                cumulativeFilters.push({
+                    identifierFilter: {
+                        InterfaceFilter: {
+                            value: {
+                                interfaceId,
+                                includeInterfaceView: true,
+                                includeCreatedEventBlob: true,
+                            },
+                        },
+                    },
+                })
+            }
+        }
+
+        if (cumulativeFilters.length === 0) {
+            cumulativeFilters.push({
+                identifierFilter: {
+                    WildcardFilter: {
+                        value: {
+                            includeCreatedEventBlob: true,
+                        },
+                    },
+                },
+            })
+        }
+
+        const updateFormat: Types['UpdateFormat'] = {
+            includeTransactions: {
+                eventFormat: {
+                    filtersByParty: {
+                        [this.getPartyId()]: {
+                            cumulative: cumulativeFilters,
+                        },
+                    },
+                    verbose: true,
+                },
+                transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
+            },
+        }
+
+        const updateResponse =
+            await this.client.postWithRetry<'/v2/updates/update-by-id'>(
+                '/v2/updates/update-by-id',
+                {
+                    updateId,
+                    updateFormat,
+                }
+            )
+
+        const update = updateResponse.update
+
+        if (!('Transaction' in update)) {
+            throw new Error(
+                `Update ${updateId} is not a Transaction. Update type: ${Object.keys(update)[0]}`
+            )
+        }
+
+        return update.Transaction.value.events ?? []
+    }
+
+    /**
+     * Gets the contract that was created in the specified transaction.
+     * Returns the contract as it was at creation time from the CreatedEvent.
+     * @param updateId The update ID where the contract was created
+     * @param options Optional filtering options to narrow down which contracts to consider
+     * @param options.templateIds Optional array of template IDs to filter by
+     * @param options.interfaceIds Optional array of interface IDs to filter by
+     * @returns Contract creation details from the CreatedEvent
+     * @throws Error if the update is not a Transaction or if none or more than one contract was created
+     */
+    async getCreatedContractByUpdateId(
+        updateId: string,
+        options?: {
+            templateIds?: string[]
+            interfaceIds?: string[]
+        }
+    ): Promise<Types['CreatedEvent']> {
+        const events = await this.getEventsByUpdateId(updateId, options)
+
+        const createdEvents = events
+            .filter((event) => 'CreatedEvent' in event)
+            .map((event) => event.CreatedEvent as Types['CreatedEvent'])
+
+        if (createdEvents.length === 0) {
+            throw new Error(`No CreatedEvent found in transaction ${updateId}`)
+        }
+
+        if (createdEvents.length > 1) {
+            throw new Error(
+                `Multiple CreatedEvents found in transaction ${updateId}. Use getEventsByUpdateId() to see all contracts created in the transaction`
+            )
+        }
+
+        return createdEvents[0]
     }
 }
 
