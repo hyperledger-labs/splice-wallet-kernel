@@ -121,25 +121,6 @@ participant1.ledger_api.users.create(id = "operator", actAs = Set(operatorParty)
 
 logger.info(s"WALLET-KERNEL-BOOTSTRAP: created operator user and party")
 
-val parId = participant1.id.toLengthLimitedString
-
-logger.info(s"WALLET-KERNEL-BOOTSTRAP ParticipantId is: $parId")
-
-
-participant1.ledger_api.identity_provider_config.create("mock-oauth2", isDeactivated = false, jwksUrl = "http://127.0.0.1:8889/jwks", issuer = "http://127.0.0.1:8889", audience = None)
-
-participant1.ledger_api.users
-  .create(
-    id = "mock-oauth2-user",
-    primaryParty = Some(operatorParty),
-    actAs = Set(),
-    readAs = Set(),
-    participantAdmin = true,
-    isDeactivated = false,
-    identityProviderAdmin = true,
-    identityProviderId = "mock-oauth2",
-    annotations = Map()
-  )
 
 
 def initializeSequencer(
