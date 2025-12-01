@@ -22,6 +22,7 @@ const processName = 'canton'
 
 async function main() {
     const network: Network = getNetworkArg()
+    const tlsEnabled: boolean = getArgValue('tls') === 'true'
 
     const envConfig = SUPPORTED_VERSIONS[network]?.canton
     if (!envConfig) {
@@ -34,15 +35,15 @@ async function main() {
     }
 
     const networkDir = path.resolve(`canton/${network}`)
-    const inputCantonConf2 =
-        getArgValue('config') ?? path.join(networkDir, 'canton.conf')
+    const inputCantonConf = path.join(
+        networkDir,
+        tlsEnabled ? 'canton-tls-enabled.conf' : 'canton.conf'
+    )
 
     const cantonBootstrap = path.join(networkDir, 'bootstrap.sc')
 
     console.log(
-        info(
-            `usinng bootstrap: ${cantonBootstrap} and conf ${inputCantonConf2}`
-        )
+        info(`using bootstrap: ${cantonBootstrap} and conf ${inputCantonConf}`)
     )
 
     const { version } = envConfig
@@ -64,7 +65,7 @@ async function main() {
                     name: processName,
                     interpreter: '/bin/bash',
                     script: CANTON_BIN,
-                    args: `daemon --no-tty --config ${inputCantonConf2} --bootstrap ${cantonBootstrap} --log-level-stdout=INFO --log-level-canton=INFO`,
+                    args: `daemon --no-tty --config ${inputCantonConf} --bootstrap ${cantonBootstrap} --log-level-stdout=INFO --log-level-canton=INFO`,
                 },
                 function (err) {
                     pm2.launchBus((err, bus) => {
