@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import * as sdk from '@canton-network/dapp-sdk'
 import { HoldingsTab } from './components/HoldingsTab.js'
+import { PendingTransfersTab } from './components/PendingTransfersTab.js'
+import { TwoStepTransferTab } from './components/TwoStepTransferTab.js'
 import { Tabs } from './components/Tabs.js'
 
 type Connection = {
@@ -185,6 +187,30 @@ function App() {
                         value: 'holdings',
                         content: connection.primaryParty ? (
                             <HoldingsTab
+                                party={connection.primaryParty}
+                                sessionToken={connection.sessionToken}
+                            />
+                        ) : (
+                            <div>no party</div>
+                        ),
+                    },
+                    {
+                        label: 'Transfer',
+                        value: 'twoStepTransfer',
+                        content: connection.primaryParty ? (
+                            <TwoStepTransferTab
+                                party={connection.primaryParty}
+                                sessionToken={connection.sessionToken}
+                            />
+                        ) : (
+                            <div>no party</div>
+                        ),
+                    },
+                    {
+                        label: 'Pending Transfers',
+                        value: 'pendingTransfers',
+                        content: connection.primaryParty ? (
+                            <PendingTransfersTab
                                 party={connection.primaryParty}
                                 sessionToken={connection.sessionToken}
                             />

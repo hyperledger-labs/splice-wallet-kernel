@@ -1991,6 +1991,7 @@ __metadata:
     "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-splice-client": "workspace:^"
     "@canton-network/core-token-standard": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
     "@canton-network/dapp-sdk": "workspace:^"
     "@eslint/js": "npm:^9.25.0"
     "@playwright/test": "npm:^1.55.0"

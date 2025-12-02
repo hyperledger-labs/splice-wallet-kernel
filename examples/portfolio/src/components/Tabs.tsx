@@ -26,13 +26,11 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, initialValue }) => {
                         role="tab"
                         aria-selected={active === t.value}
                         className={`${
-                            active === t.value
-                                ? 'border-b-2 border-blue-500'
-                                : 'opacity-60'
+                            active === t.value ? 'bg-blue-500' : 'opacity-60'
                         }`}
                         onClick={() => setActive(t.value)}
                     >
-                        {t.label}
+                        {active === t.value ? `[${t.label}]` : t.label}
                     </button>
                 ))}
             </div>

@@ -1442,6 +1442,7 @@ export class TokenStandardController {
         let disclosedContracts: DisclosedContract[]
         try {
             switch (instructionChoice) {
+                // TODO: move this logic down into the transfer service?
                 case 'Accept':
                     ;[ExerciseCommand, disclosedContracts] =
                         await this.service.transfer.createAcceptTransferInstruction(
