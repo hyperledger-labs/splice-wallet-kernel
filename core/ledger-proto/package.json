@@ -3,7 +3,6 @@
     "version": "0.14.0",
     "type": "module",
     "description": "Provides TypeScript protobuf bindings for Canton",
-    "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
     "author": "Phillip Olesen <phillip.olesen@digitalasset.com>",
     "packageManager": "yarn@4.9.4",
@@ -40,5 +39,10 @@
     ],
     "publishConfig": {
         "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
+        "directory": "core/ledger-proto"
     }
 }

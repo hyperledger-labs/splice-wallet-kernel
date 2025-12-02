@@ -2,7 +2,6 @@
     "name": "@canton-network/core-signing-store-sql",
     "version": "0.14.0",
     "type": "module",
-    "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "description": "SQL implementation of the Store API",
     "license": "Apache-2.0",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
@@ -49,5 +48,10 @@
     ],
     "publishConfig": {
         "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
+        "directory": "core/signing-store-sql"
     }
 }
