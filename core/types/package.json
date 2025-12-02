@@ -3,7 +3,6 @@
     "version": "0.13.1",
     "type": "module",
     "description": "Types and transport-agnostic parsers for data sent across Wallet components.",
-    "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
     "author": "Alex Matson <alex.matson@digitalasset.com>",
     "packageManager": "yarn@4.9.4",
@@ -37,5 +36,10 @@
     ],
     "publishConfig": {
         "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
+        "directory": "core/types"
     }
 }
