@@ -16,7 +16,7 @@ import {
     hasFlag,
 } from './lib/utils.js'
 import * as fs from 'fs'
-import generateSchema from 'openapi-typescript'
+import generateSchema, { astToString } from 'openapi-typescript'
 import * as path from 'path'
 import crypto from 'crypto'
 
@@ -95,7 +95,8 @@ async function generateOpenApiClient(spec: OpenApiSpec) {
             )
         }
 
-        const schema = await generateSchema(input)
+        const nodes = await generateSchema(input)
+        const schema = astToString(nodes)
 
         await ensureDir(path.join(root, path.dirname(output)))
         fs.writeFileSync(path.join(root, output), schema)

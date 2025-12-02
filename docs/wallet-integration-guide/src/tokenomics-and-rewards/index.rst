@@ -27,9 +27,24 @@ Ways of Obtaining Canton Coin Rewards
 -------------------------------------
 The tokenomics of the network give you options for obtaining Canton Coin:
 
-Validator Liveness Rewards
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-Just for being online and growing the network, Canton Coin tokenomics enable validator operators to mint CC.
+Validator & Super Validator Liveness Rewards
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Just for being online and growing the network, Canton Coin tokenomics enable validator operators to mint CC. 
+Validators and Super Validators generate reward coupons that can be used to mint Canton Coins. The coupons are paid
+out to the validator adminstration party. For local parties onboarded to a validator, the
+validator application runs background automation to mint all activity
+records automatically. An external party signs transactions using a key
+they control. As a consequence, the validator automation is not able to
+perform minting for external parties.
+
+For external parties, automation needs
+to be developed to call ``AmuletRules_Transfer`` at least once per round
+with all activity records as inputs.
+
+You can find more information about the tokenomics of Canton Coin at https://docs.dev.sync.global/overview/overview.html#tokenomics.
+
+*All rewards and coupons are mintable the follow mining round, if rewards are not redemed then they are lost*
+
 
 Validator Activeness Rewards
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -52,10 +67,13 @@ Application Rewards and Featured Activity Markers
 **Featured application activity markers**
 
 * Applications which generate valuable activity for the canton network, and have 'featured application' status can earn more application rewards.
-* By applying a ``FeaturedAppActivityMarker`` to a transaction and qualifying as a Featured Application (apply `here <https://sync.global/featured-app-request/>`__) then you recieve a higher proportion of the application rewards.
+* By qualifying as a Featured Application (apply `here <https://sync.global/featured-app-request/>`__) and applying a ``FeaturedAppActivityMarker`` to a transaction it is marked and converted to reward coupons that can be redeemed.
 * A weighting is applied to each transaction in that Canton Coin minting round.
 * More weightings in a round equate to more application rewards.
 * Currently, featured apps receive many more rewards in Canton Coin than the average transaction costs in traffic fees.
+
+.. todo add code example once we have this in the wallet SDK
+
 
 Gaining Application Rewards as a Wallet/Custodian/Exchange
 ----------------------------------------------------------

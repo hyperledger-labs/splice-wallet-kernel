@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-rpc-errors",
-    "version": "0.10.0",
+    "version": "0.10.1",
     "type": "module",
     "description": "Wrapper for JSON-RPC error objects",
     "author": "Alex Matson <alex.matson@digitalasset.com>",
@@ -34,7 +34,7 @@
         "@metamask/rpc-errors": "^7.0.3"
     },
     "devDependencies": {
-        "tsup": "^8.5.0",
-        "typescript": "^5.9.2"
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3"
     }
 }
