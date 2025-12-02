@@ -4,7 +4,7 @@
     "scripts": {
         "start:all": "yarn pm2 start ecosystem.config.js --env development",
         "start:canton": "tsx ./scripts/src/start-canton.ts",
-        "start:canton:tls": "tsx ./scripts/src/start-canton.ts network=mainnet config=canton/canton-tls-enabled.conf",
+        "start:canton:tls": "tsx ./scripts/src/start-canton.ts --network=mainnet --tls=true",
         "start:localnet": "tsx ./scripts/src/start-localnet.ts start",
         "start:canton:console": ".canton/bin/canton --config canton/canton.conf --bootstrap canton/bootstrap.canton",
         "stop:all": "yarn pm2 stop all",
@@ -101,6 +101,11 @@
         "nx": "^22.1.3"
     },
     "resolutions": {
-        "jose": "^5.10.0"
+        "jose": "^5.10.0",
+        "node-forge": "^1.3.2",
+        "js-yaml": "^3.14.2",
+        "tmp": "^0.2.4",
+        "tar-fs": "^2.1.4",
+        "glob": "^10.5.0"
     }
 }
