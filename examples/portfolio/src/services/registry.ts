@@ -1,5 +1,6 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
+
 import { type Logger, pino } from 'pino'
 import {
     LedgerClient,
@@ -35,7 +36,7 @@ const parseRequestMethod = (
     }
 }
 
-export const createLedgerClient = async (options: {
+const createLedgerClient = async (options: {
     logger: Logger
 }): Promise<LedgerClient> => {
     // TODO: default level should not be debug.
@@ -108,7 +109,7 @@ export const createLedgerClient = async (options: {
     return ledgerClient
 }
 
-export const createTokenStandardClient = async ({
+const createTokenStandardClient = async ({
     logger,
     registryUrl,
 }: {
@@ -122,18 +123,18 @@ export const createTokenStandardClient = async ({
     )
 }
 
-export const createTokenStandardService = async ({
+const createTokenStandardService = async ({
     logger,
+    ledgerClient,
     sessionToken,
 }: {
     logger: Logger
+    ledgerClient: LedgerClient
     sessionToken: string
 }): Promise<{
-    ledgerClient: LedgerClient
     scanProxyClient: ScanProxyClient // TODO: remove
     tokenStandardService: TokenStandardService
 }> => {
-    const ledgerClient = await createLedgerClient({ logger })
     const scanProxyClient = new ScanProxyClient(
         new URL('http://localhost:2000/api/validator'),
         logger,
@@ -149,8 +150,57 @@ export const createTokenStandardService = async ({
         undefined // scanClient
     )
     return {
-        ledgerClient,
         scanProxyClient,
         tokenStandardService,
     }
+}
+
+// Global, but so is the dApp SDK.
+const logger = pino({ name: 'example-portfolio', level: 'debug' })
+const ledgerClient: { singleton: LedgerClient | undefined } = {
+    singleton: undefined,
+}
+const tokenStandardClients = new Map()
+const tokenStandardServices = new Map()
+
+// Can be called to reset clients on disconnects.
+export const clear = () => {
+    ledgerClient.singleton = undefined
+    tokenStandardClients.clear()
+    tokenStandardServices.clear()
+}
+
+export const resolveLedgerClient = async (): Promise<LedgerClient> => {
+    if (!ledgerClient.singleton)
+        ledgerClient.singleton = await createLedgerClient({ logger })
+    return ledgerClient.singleton
+}
+
+export const resolveTokenStandardClient = async ({
+    registryUrl,
+}: {
+    registryUrl: string
+}): Promise<TokenStandardClient> => {
+    const key = registryUrl
+    if (tokenStandardClients.has(key)) return tokenStandardClients.get(key)
+    const client = await createTokenStandardClient({ logger, registryUrl })
+    tokenStandardClients.set(key, client)
+    return client
+}
+
+export const resolveTokenStandardService = async ({
+    sessionToken,
+}: {
+    sessionToken: string
+}): Promise<TokenStandardService> => {
+    const key = sessionToken
+    if (tokenStandardServices.has(key)) return tokenStandardServices.get(key)
+    const ledgerClient = await resolveLedgerClient()
+    const { tokenStandardService } = await createTokenStandardService({
+        logger,
+        ledgerClient,
+        sessionToken,
+    })
+    tokenStandardServices.set(key, tokenStandardService)
+    return tokenStandardService
 }

@@ -1,10 +1,9 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { pino } from 'pino'
 import { v4 } from 'uuid'
 import type { PartyId } from '@canton-network/core-types'
-import { createTokenStandardService } from './createClients.js'
+import { resolveTokenStandardService } from '../services/registry.js'
 
 export const acceptTransfer = async ({
     sessionToken,
@@ -15,10 +14,8 @@ export const acceptTransfer = async ({
     party: PartyId
     contractId: string
 }) => {
-    const logger = pino({ name: 'main', level: 'debug' })
     const registryUrl = 'http://scan.localhost:4000'
-    const { tokenStandardService } = await createTokenStandardService({
-        logger,
+    const tokenStandardService = await resolveTokenStandardService({
         sessionToken,
     })
     const [acceptCommand, disclosedContracts] =

@@ -1,14 +1,13 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { pino } from 'pino'
 import { PartyId } from '@canton-network/core-types'
 import {
     type PrettyContract,
     type TransferInstructionView,
 } from '@canton-network/core-ledger-client'
 import { TRANSFER_INSTRUCTION_INTERFACE_ID } from '@canton-network/core-token-standard'
-import { createTokenStandardService } from './createClients.js'
+import { resolveTokenStandardService } from '../services/registry.js'
 
 export type PendingTransfer = {
     contractId: string
@@ -41,9 +40,7 @@ export const getPendingTransfers = async ({
     sessionToken: string
     party: PartyId
 }): Promise<PendingTransfer[]> => {
-    const logger = pino({ name: 'main', level: 'debug' })
-    const { tokenStandardService } = await createTokenStandardService({
-        logger,
+    const tokenStandardService = await resolveTokenStandardService({
         sessionToken,
     })
     const contracts =

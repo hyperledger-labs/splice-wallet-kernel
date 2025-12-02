@@ -1,19 +1,9 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { pino } from 'pino'
 import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
 import { type Holding } from '@canton-network/core-ledger-client'
-import { createTokenStandardService } from './createClients.js'
-
-/*
-export type Holding = {
-    contractId: string
-    name?: string
-    value: number
-    symbol: string
-}
-*/
+import { resolveTokenStandardService } from '../services/registry.js'
 
 export const getHoldings = async ({
     sessionToken,
@@ -22,10 +12,7 @@ export const getHoldings = async ({
     sessionToken: string
     party: string
 }): Promise<Holding[]> => {
-    const logger = pino({ name: 'getHoldings', level: 'debug' })
-
-    const { tokenStandardService } = await createTokenStandardService({
-        logger,
+    const tokenStandardService = await resolveTokenStandardService({
         sessionToken,
     })
 

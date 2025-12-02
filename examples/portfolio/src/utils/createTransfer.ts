@@ -1,13 +1,12 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { PartyId } from '@canton-network/core-types'
 import {
-    createTokenStandardClient,
-    createTokenStandardService,
-} from './createClients.js'
+    resolveTokenStandardClient,
+    resolveTokenStandardService,
+} from '../services/registry.js'
 
 export const createTransfer = async ({
     sessionToken,
@@ -24,14 +23,11 @@ export const createTransfer = async ({
     inputUtxos?: string[]
     memo?: string
 }) => {
-    const logger = pino({ name: 'main', level: 'debug' })
     const registryUrl = 'http://scan.localhost:4000'
-    const tokenStandardClient = await createTokenStandardClient({
-        logger,
+    const tokenStandardClient = await resolveTokenStandardClient({
         registryUrl,
     })
-    const { tokenStandardService } = await createTokenStandardService({
-        logger,
+    const tokenStandardService = await resolveTokenStandardService({
         sessionToken,
     })
     const registryInfo = await tokenStandardClient.get(
