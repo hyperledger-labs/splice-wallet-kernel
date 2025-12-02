@@ -3,7 +3,6 @@
     "version": "0.14.0",
     "type": "module",
     "description": "daml codegen js for core token standard",
-    "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
     "packageManager": "yarn@4.9.4",
     "main": "dist/index.cjs",
@@ -52,5 +51,10 @@
     ],
     "publishConfig": {
         "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
+        "directory": "core/token-standard"
     }
 }
