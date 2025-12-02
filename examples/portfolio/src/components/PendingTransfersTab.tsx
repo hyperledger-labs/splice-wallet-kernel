@@ -1,9 +1,13 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import { useState, useEffect } from 'react'
 import {
     type PendingTransfer,
     getPendingTransfers,
 } from '../utils/getPendingTransfers.js'
 import { acceptTransfer } from '../utils/acceptTransfer.js'
+import { AssetCard } from './AssetCard.js'
 
 export type PendingTransfersTabProps = {
     party: string
@@ -33,9 +37,9 @@ export const PendingTransfersTab: React.FC<PendingTransfersTabProps> = ({
 
     const PendingTransfer = (p: PendingTransfer) => (
         <div>
-            amount: <strong>{p.amount}</strong> <br />
             sender: <strong>{p.sender}</strong> <br />
             receiver: <strong>{p.receiver}</strong> <br />
+            <AssetCard amount={p.amount} symbol={p.instrumentId.id} />
             {p.incoming && (
                 <button
                     disabled={!sessionToken}

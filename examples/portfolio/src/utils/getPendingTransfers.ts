@@ -12,9 +12,13 @@ import { createTokenStandardService } from './createClients.js'
 
 export type PendingTransfer = {
     contractId: string
-    amount: string
     sender: string
     receiver: string
+    instrumentId: {
+        admin: string
+        id: string
+    }
+    amount: string
     incoming: boolean
 }
 
@@ -22,10 +26,12 @@ const toPendingTransfer = (
     party: string,
     contract: PrettyContract<TransferInstructionView>
 ): PendingTransfer => {
+    console.log(contract)
     const { contractId } = contract
-    const { amount, sender, receiver } = contract.interfaceViewValue.transfer
+    const { amount, sender, receiver, instrumentId } =
+        contract.interfaceViewValue.transfer
     const incoming = party == receiver
-    return { contractId, amount, sender, receiver, incoming }
+    return { contractId, sender, receiver, instrumentId, amount, incoming }
 }
 
 export const getPendingTransfers = async ({
