@@ -10058,6 +10058,7 @@ __metadata:
   resolution: "docs-wallet-integration-guide-examples@workspace:docs/wallet-integration-guide/examples"
   dependencies:
     "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-ledger-proto": "workspace:^"
     "@canton-network/core-signing-lib": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
