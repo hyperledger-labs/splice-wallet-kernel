@@ -136,6 +136,12 @@ export type IsNetworkConnected = boolean
 export type NetworkReason = string
 /**
  *
+ * A URL that points to a user interface.
+ *
+ */
+export type UserUrl = string
+/**
+ *
  * The network ID the wallet corresponds to.
  *
  */
@@ -192,6 +198,7 @@ export interface StatusEvent {
     isConnected: IsConnected
     isNetworkConnected: IsNetworkConnected
     networkReason?: NetworkReason
+    userUrl: UserUrl
     network?: Network
     session?: Session
     [k: string]: any
@@ -226,12 +233,6 @@ export interface JsPrepareSubmissionResponse {
     preparedTransactionHash?: PreparedTransactionHash
     [k: string]: any
 }
-/**
- *
- * A URL that points to a user interface.
- *
- */
-export type UserUrl = string
 export type Response = string
 /**
  *

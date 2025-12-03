@@ -224,10 +224,10 @@ function App() {
                         <br />
                         <b>connected:</b>{' '}
                         <i>{status.isConnected ? '🟢' : '🔴'}</i>
-                        {status.networkId && (
+                        {status.network && (
                             <span>
                                 <br />
-                                <b>network:</b> <i>{status.networkId}</i>
+                                <b>network ID:</b> <i>{status.network.networkId}</i>
                             </span>
                         )}
                         {ledgerApiVersion && (

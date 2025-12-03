@@ -529,6 +529,9 @@
                         "type": "string",
                         "description": "If not connected to a network, the reason why."
                     },
+                    "userUrl": {
+                        "$ref": "#/components/schemas/UserUrl"
+                    },
                     "network": {
                         "title": "network",
                         "type": "object",
@@ -575,7 +578,12 @@
                         "required": ["accessToken", "userId"]
                     }
                 },
-                "required": ["kernel", "isConnected", "isNetworkConnected"]
+                "required": [
+                    "kernel",
+                    "isConnected",
+                    "isNetworkConnected",
+                    "userUrl"
+                ]
             }
         }
     }
