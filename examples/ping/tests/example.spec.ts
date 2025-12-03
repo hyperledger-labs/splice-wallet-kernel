@@ -29,8 +29,9 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
         .getByRole('textbox', { name: 'RPC URL' })
         .fill(`http://localhost:${dappApiPort}/api/v0/dapp`)
 
+    const wkPagePopupPromise = dappPage.waitForEvent('popup')
     await discoverPopup.getByRole('button', { name: 'Connect' }).click()
-    const wkPage = await dappPage.waitForEvent('popup')
+    const wkPage = await wkPagePopupPromise
 
     try {
         await wkPage.locator('#network').selectOption('0')
@@ -100,8 +101,12 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
                 .first()
         ).toBeVisible()
     } catch (e) {
-        await dappPage.screenshot({ path: 'error-dapp.png' })
-        await wkPage.screenshot({ path: 'error-wk.png' })
+        try {
+            await dappPage.screenshot({ path: 'error-dapp.png' })
+            await wkPage.screenshot({ path: 'error-wk.png' })
+        } catch {
+            // Ignore errors during screenshot capture
+        }
         throw e
     }
 })
