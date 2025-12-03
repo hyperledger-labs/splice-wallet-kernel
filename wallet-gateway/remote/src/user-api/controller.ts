@@ -62,6 +62,7 @@ type AvailableSigningDrivers = Partial<
 
 export const userController = (
     kernelInfo: KernelInfo,
+    userUrl: string,
     store: Store,
     notificationService: NotificationService,
     authContext: AuthContext | undefined,
@@ -408,11 +409,19 @@ export const userController = (
                         )
                     }
 
+                    // Get existing transaction to preserve createdAt if it exists
+                    const existingTx = await store.getTransaction(commandId)
+                    const now = new Date()
+
                     const signedTx: Transaction = {
                         commandId,
                         status: 'signed',
                         preparedTransaction,
                         preparedTransactionHash,
+                        ...(existingTx?.createdAt && {
+                            createdAt: existingTx.createdAt,
+                        }),
+                        signedAt: now,
                     }
 
                     store.setTransaction(signedTx)
@@ -537,6 +546,12 @@ export const userController = (
                         preparedTransactionHash:
                             transaction.preparedTransactionHash,
                         payload: result,
+                        ...(transaction.createdAt && {
+                            createdAt: transaction.createdAt,
+                        }),
+                        ...(transaction.signedAt && {
+                            signedAt: transaction.signedAt,
+                        }),
                     }
 
                     store.setTransaction(signedTx)
@@ -602,7 +617,7 @@ export const userController = (
                 isConnected: false,
                 isNetworkConnected: false,
                 networkReason: 'Unauthenticated',
-                userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
+                userUrl: `${userUrl}/login/`,
             } as StatusEvent)
             return null
         },
@@ -677,6 +692,12 @@ export const userController = (
                 payload: transaction.payload
                     ? JSON.stringify(transaction.payload)
                     : '',
+                ...(transaction.createdAt && {
+                    createdAt: transaction.createdAt.toISOString(),
+                }),
+                ...(transaction.signedAt && {
+                    signedAt: transaction.signedAt.toISOString(),
+                }),
             }
         },
         listTransactions: async function (): Promise<ListTransactionsResult> {
@@ -689,6 +710,12 @@ export const userController = (
                 payload: transaction.payload
                     ? JSON.stringify(transaction.payload)
                     : '',
+                ...(transaction.createdAt && {
+                    createdAt: transaction.createdAt.toISOString(),
+                }),
+                ...(transaction.signedAt && {
+                    signedAt: transaction.signedAt.toISOString(),
+                }),
             }))
             return { transactions: txs }
         },

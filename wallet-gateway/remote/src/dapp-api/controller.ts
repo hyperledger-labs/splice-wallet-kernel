@@ -25,6 +25,8 @@ import { networkStatus, ledgerPrepareParams } from '../utils.js'
 
 export const dappController = (
     kernelInfo: KernelInfoConfig,
+    dappUrl: string,
+    userUrl: string,
     store: Store,
     notificationService: NotificationService,
     _logger: Logger,
@@ -41,7 +43,7 @@ export const dappController = (
                         isConnected: false,
                         isNetworkConnected: false,
                         networkReason: 'Unauthenticated',
-                        userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
+                        userUrl: `${userUrl}/login/`,
                     },
                 }
             }
@@ -61,7 +63,7 @@ export const dappController = (
                     isConnected: true,
                     isNetworkConnected: status.isConnected,
                     networkReason: status.reason ? status.reason : 'OK',
-                    userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
+                    userUrl: `${userUrl}/login/`,
                 },
             }
         },
@@ -76,7 +78,7 @@ export const dappController = (
                     isConnected: false,
                     isNetworkConnected: false,
                     networkReason: 'Unauthenticated',
-                    userUrl: 'http://localhost:3030/login/', // TODO: pull user URL from config
+                    userUrl: `${userUrl}/login/`,
                 } as StatusEvent)
             }
 
@@ -161,11 +163,11 @@ export const dappController = (
                 preparedTransaction,
                 preparedTransactionHash,
                 payload: params,
+                createdAt: new Date(),
             })
 
             return {
-                // TODO: pull user base URL / port from config
-                userUrl: `http://localhost:3030/approve/index.html?commandId=${commandId}`,
+                userUrl: `${userUrl}/approve/index.html?commandId=${commandId}`,
             }
         },
         prepareReturn: async (params: PrepareReturnParams) => {

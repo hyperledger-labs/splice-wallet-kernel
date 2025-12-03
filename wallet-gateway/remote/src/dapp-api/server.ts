@@ -15,7 +15,7 @@ import {
     NotificationService,
     Notifier,
 } from '../notification/NotificationService.js'
-import { KernelInfo } from '../config/Config.js'
+import { KernelInfo, ServerConfig } from '../config/Config.js'
 
 export const dapp = (
     route: string,
@@ -23,15 +23,24 @@ export const dapp = (
     logger: Logger,
     server: Server,
     kernelInfo: KernelInfo,
+    dappUrl: string,
+    userUrl: string,
+    serverConfig: ServerConfig,
     notificationService: NotificationService,
     authService: AuthService,
     store: Store & AuthAware<Store>
 ) => {
-    app.use(cors()) // TODO: read allowedOrigins from config
+    app.use(
+        cors({
+            origin: serverConfig.allowedOrigins,
+        })
+    )
     app.use(route, (req, res, next) =>
         jsonRpcHandler<Methods>({
             controller: dappController(
                 kernelInfo,
+                dappUrl,
+                userUrl,
                 store.withAuthContext(req.authContext),
                 notificationService,
                 logger,
@@ -43,7 +52,7 @@ export const dapp = (
 
     const io = new SocketIoServer(server, {
         cors: {
-            origin: '*', // TODO: read allowedOrigins from config
+            origin: serverConfig.allowedOrigins,
             methods: ['GET', 'POST'],
         },
     })

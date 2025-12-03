@@ -27,7 +27,7 @@ test('decode a base 64 encoded prepared tx', async () => {
     const camelCasePreparedTx = camelcaseKeys(preapredTXJson, { deep: true })
     const message = PreparedTransaction.fromJson(camelCasePreparedTx)
 
-    expect(message === preparedTx)
+    expect(preparedTx).toStrictEqual(message)
 })
 
 test('hash from preparedTx ledger api call should match calculated hash', async () => {
@@ -39,7 +39,7 @@ test('hash from preparedTx ledger api call should match calculated hash', async 
 
     const hashResult = await hashPreparedTransaction(preparedTx2, 'base64')
 
-    expect(hashResult === preparedTxFromLedgerAPi)
+    expect(hashResult).toBe(preparedTxFromLedgerAPi)
 })
 
 test('decode a base 64 encoded topology tx', async () => {
@@ -63,9 +63,8 @@ test('decode a base 64 encoded topology tx', async () => {
         partyToParticipantMappingBase64
     )
 
-    expect(
-        decodedPartyToKeyMapping.mapping?.mapping.oneofKind ===
-            'partyToKeyMapping'
+    expect(decodedPartyToKeyMapping.mapping?.mapping.oneofKind).toBe(
+        'partyToKeyMapping'
     )
 
     if (
@@ -78,12 +77,11 @@ test('decode a base 64 encoded topology tx', async () => {
                 'alice::12205a50eb9b9d64bb30ac4125afa1aeea7bcae51792ac2d174a6132ceec9290d062' &&
                 decodedPartyToKeyMapping.mapping?.mapping.partyToKeyMapping
                     .threshold === 1
-        )
+        ).toBe(true)
     }
 
-    expect(
-        decodedPartyToParticipantMapping.mapping?.mapping.oneofKind ===
-            'partyToParticipant'
+    expect(decodedPartyToParticipantMapping.mapping?.mapping.oneofKind).toBe(
+        'partyToParticipant'
     )
 
     if (
@@ -99,11 +97,10 @@ test('decode a base 64 encoded topology tx', async () => {
                         p.participantUid ===
                         'participant::12202e95d2f61efe7b232b6d163fe006188af3b6b05885bd59d47e52e176501b56cd'
                 )
-        )
+        ).toBeTruthy()
     }
 
-    expect(
-        decodedNameSpaceDelegation.mapping?.mapping.oneofKind ===
-            'namespaceDelegation'
+    expect(decodedNameSpaceDelegation.mapping?.mapping.oneofKind).toBe(
+        'namespaceDelegation'
     )
 })

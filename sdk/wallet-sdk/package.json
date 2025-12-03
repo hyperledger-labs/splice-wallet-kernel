@@ -3,7 +3,6 @@
     "type": "module",
     "version": "0.18.0",
     "description": "Node/browser SDK for integrating with Canton Network",
-    "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
     "main": "dist/index.cjs",
@@ -49,5 +48,10 @@
     ],
     "publishConfig": {
         "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
+        "directory": "sdk/wallet-sdk"
     }
 }

@@ -20,6 +20,7 @@ export const user = (
     app: express.Express,
     logger: Logger,
     kernelInfo: KernelInfo,
+    userUrl: string,
     notificationService: NotificationService,
     drivers: Partial<Record<SigningProvider, SigningDriverInterface>>,
     store: Store & AuthAware<Store>
@@ -28,6 +29,7 @@ export const user = (
         jsonRpcHandler<Methods>({
             controller: userController(
                 kernelInfo,
+                userUrl,
                 store.withAuthContext(req.authContext),
                 notificationService,
                 req.authContext,

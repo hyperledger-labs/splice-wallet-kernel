@@ -7,7 +7,11 @@ import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import ViteExpress from 'vite-express'
 
-export const web = (app: express.Express, server: Server) => {
+export const web = (app: express.Express, server: Server, userPath: string) => {
+    // Expose userPath via well-known configuration endpoint
+    app.get('/.well-known/wallet-gateway-config', (_req, res) => {
+        res.json({ userPath })
+    })
     if (process.env.NODE_ENV === 'development') {
         // Enable live reloading and Vite dev server for frontend in development
         ViteExpress.bind(app, server)

@@ -3,7 +3,6 @@
     "type": "module",
     "version": "0.15.0",
     "description": "Browser SDK for dApp development on the Canton Network",
-    "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "main": "dist/index.cjs",
@@ -41,5 +40,10 @@
     ],
     "publishConfig": {
         "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
+        "directory": "sdk/dapp-sdk"
     }
 }

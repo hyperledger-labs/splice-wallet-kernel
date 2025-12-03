@@ -61,6 +61,8 @@ export interface Transaction {
     preparedTransaction: string
     preparedTransactionHash: string
     payload?: unknown
+    createdAt?: Date
+    signedAt?: Date
 }
 
 // Store interface for managing wallets, sessions, networks, and transactions

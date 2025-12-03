@@ -36,6 +36,7 @@ export interface SigningTransactionTable {
     metadata: string | null
     createdAt: string
     updatedAt: string
+    signedAt: string | null
 }
 
 export interface SigningDriverConfigTable {
@@ -111,6 +112,7 @@ export const fromSigningTransaction = (
             : null,
         createdAt: transaction.createdAt.toISOString(),
         updatedAt: transaction.updatedAt.toISOString(),
+        signedAt: transaction.signedAt?.toISOString() || null,
     }
 }
 
@@ -126,6 +128,7 @@ export const toSigningTransaction = (
         ...(table.metadata ? { metadata: JSON.parse(table.metadata) } : {}),
         createdAt: new Date(table.createdAt),
         updatedAt: new Date(table.updatedAt),
+        ...(table.signedAt ? { signedAt: new Date(table.signedAt) } : {}),
     }
 }
 

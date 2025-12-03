@@ -84,6 +84,7 @@ export interface SigningTransaction {
     metadata?: Record<string, unknown> // Driver-specific data
     createdAt: Date
     updatedAt: Date
+    signedAt?: Date
 }
 
 /**

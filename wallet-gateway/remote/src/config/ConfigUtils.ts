@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { readFileSync, existsSync } from 'fs'
-import { Config, configSchema } from './Config.js'
+import { Config, configSchema, ServerConfig } from './Config.js'
 
 export class ConfigUtils {
     static loadConfigFile(filePath: string): Config {
@@ -103,4 +103,15 @@ function validateNetworkAuthMethods(
             }
         }
     }
+}
+
+export const deriveKernelUrls = (
+    serverConfig: ServerConfig
+): { dappUrl: string; userUrl: string } => {
+    const protocol = serverConfig.tls ? 'https' : 'http'
+    const dappUrl = `${protocol}://${serverConfig.host}:${serverConfig.port}${serverConfig.dappPath}`
+    // userUrl is the base URL for the web frontend (no path)
+    const userUrl = `${protocol}://${serverConfig.host}:${serverConfig.port}`
+
+    return { dappUrl, userUrl }
 }
