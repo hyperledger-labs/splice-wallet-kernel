@@ -19,6 +19,7 @@ import {
     Idp,
     Auth as ApiAuth,
 } from '@canton-network/core-wallet-user-rpc-client'
+import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 
 import '../index'
 import '/index.css'
@@ -43,28 +44,36 @@ export class UserUiSettings extends LitElement {
     @state() accessor networks: Network[] = []
     @state() accessor sessions: Session[] = []
     @state() accessor idps: Idp[] = []
+    @state() accessor client: UserApiClient | null = null
 
-    connectedCallback(): void {
+    async connectedCallback(): Promise<void> {
         super.connectedCallback()
+        this.client = await createUserClient(stateManager.accessToken.get())
         this.listNetworks()
         this.listSessions()
         this.listIdps()
     }
 
     private async listNetworks() {
-        const userClient = createUserClient(stateManager.accessToken.get())
+        const userClient = await createUserClient(
+            stateManager.accessToken.get()
+        )
         const response = await userClient.request('listNetworks')
         this.networks = response.networks
     }
 
     private async listSessions() {
-        const userClient = createUserClient(stateManager.accessToken.get())
+        const userClient = await createUserClient(
+            stateManager.accessToken.get()
+        )
         const response = await userClient.request('listSessions')
         this.sessions = response.sessions
     }
 
     private async listIdps() {
-        const userClient = createUserClient(stateManager.accessToken.get())
+        const userClient = await createUserClient(
+            stateManager.accessToken.get()
+        )
         const response = await userClient.request('listIdps')
         this.idps = response.idps
     }
@@ -108,7 +117,9 @@ export class UserUiSettings extends LitElement {
         }
 
         try {
-            const userClient = createUserClient(stateManager.accessToken.get())
+            const userClient = await createUserClient(
+                stateManager.accessToken.get()
+            )
             await userClient.request('addNetwork', { network })
             await this.listNetworks()
         } catch (e) {
@@ -122,7 +133,9 @@ export class UserUiSettings extends LitElement {
             const params: RemoveNetworkParams = {
                 networkName: e.network.id,
             }
-            const userClient = createUserClient(stateManager.accessToken.get())
+            const userClient = await createUserClient(
+                stateManager.accessToken.get()
+            )
             await userClient.request('removeNetwork', params)
             await this.listNetworks()
         } catch (e) {
@@ -133,7 +146,9 @@ export class UserUiSettings extends LitElement {
     private handleIdpSubmit = async (ev: IdpAddEvent) => {
         console.log(ev)
         try {
-            const userClient = createUserClient(stateManager.accessToken.get())
+            const userClient = await createUserClient(
+                stateManager.accessToken.get()
+            )
             await userClient.request('addIdp', { idp: ev.idp })
             await this.listIdps()
         } catch (e) {
@@ -144,7 +159,9 @@ export class UserUiSettings extends LitElement {
     private handleIdpDelete = async (ev: IdpCardDeleteEvent) => {
         console.log(ev)
         try {
-            const userClient = createUserClient(stateManager.accessToken.get())
+            const userClient = await createUserClient(
+                stateManager.accessToken.get()
+            )
             await userClient.request('removeIdp', {
                 identityProviderId: ev.idp.id,
             })
@@ -155,7 +172,10 @@ export class UserUiSettings extends LitElement {
     }
 
     protected render() {
-        const client = createUserClient(stateManager.accessToken.get())
+        if (!this.client) {
+            return html``
+        }
+        const client = this.client
 
         return html`
             <wg-sessions .sessions=${this.sessions}></wg-sessions>
