@@ -4,7 +4,7 @@
 import { v4 } from 'uuid'
 import {
     resolveTokenStandardClient,
-    resolveTokenStandardService,
+    resolveAmuletService,
 } from '../services/registry.js'
 
 export const tap = async ({
@@ -20,14 +20,14 @@ export const tap = async ({
     const tokenStandardClient = await resolveTokenStandardClient({
         registryUrl,
     })
-    const tokenStandardService = await resolveTokenStandardService({
+    const amuletService = await resolveAmuletService({
         sessionToken,
     })
     const registryInfo = await tokenStandardClient.get(
         '/registry/metadata/v1/info'
     )
     const [tapCommand, disclosedContracts] =
-        await tokenStandardService.createTap(
+        await amuletService.createTap(
             party,
             `${amount}`,
             registryInfo.adminId,

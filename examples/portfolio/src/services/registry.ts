@@ -5,6 +5,7 @@ import { type Logger, pino } from 'pino'
 import {
     LedgerClient,
     TokenStandardService,
+    AmuletService,
 } from '@canton-network/core-ledger-client'
 import * as sdk from '@canton-network/dapp-sdk'
 import { TokenStandardClient } from '@canton-network/core-token-standard'
@@ -126,33 +127,37 @@ const createTokenStandardClient = async ({
 const createTokenStandardService = async ({
     logger,
     ledgerClient,
-    sessionToken,
 }: {
     logger: Logger
     ledgerClient: LedgerClient
-    sessionToken: string
-}): Promise<{
-    scanProxyClient: ScanProxyClient // TODO: remove
-    tokenStandardService: TokenStandardService
-}> => {
+}): Promise<TokenStandardService> => {
+    const tokenStandardService = new TokenStandardService(
+        ledgerClient,
+        logger,
+        undefined!, // access token provider
+        false, // isMasterUser
+    )
+    return tokenStandardService
+}
+
+const createAmuletService = async ({
+    sessionToken,
+    tokenStandardService,
+}: {
+    sessionToken: string,
+    tokenStandardService: TokenStandardService,
+}): Promise<AmuletService> => {
     const scanProxyClient = new ScanProxyClient(
         new URL('http://localhost:2000/api/validator'),
         logger,
         false, // isAdmin
         sessionToken
     )
-    const tokenStandardService = new TokenStandardService(
-        ledgerClient,
-        scanProxyClient,
-        logger,
-        undefined!, // access token provider
-        false, // isMasterUser
-        undefined // scanClient
-    )
-    return {
-        scanProxyClient,
+    return new AmuletService(
         tokenStandardService,
-    }
+        scanProxyClient,
+        undefined
+    )
 }
 
 // Global, but so is the dApp SDK.
@@ -162,6 +167,7 @@ const ledgerClient: { singleton: LedgerClient | undefined } = {
 }
 const tokenStandardClients = new Map()
 const tokenStandardServices = new Map()
+const amuletServices = new Map()
 
 // Can be called to reset clients on disconnects.
 export const clear = () => {
@@ -188,19 +194,30 @@ export const resolveTokenStandardClient = async ({
     return client
 }
 
-export const resolveTokenStandardService = async ({
-    sessionToken,
-}: {
-    sessionToken: string
-}): Promise<TokenStandardService> => {
-    const key = sessionToken
+export const resolveTokenStandardService = async (): Promise<TokenStandardService> => {
+    const key = "" // TODO
     if (tokenStandardServices.has(key)) return tokenStandardServices.get(key)
     const ledgerClient = await resolveLedgerClient()
-    const { tokenStandardService } = await createTokenStandardService({
+    const tokenStandardService = await createTokenStandardService({
         logger,
         ledgerClient,
-        sessionToken,
     })
     tokenStandardServices.set(key, tokenStandardService)
     return tokenStandardService
+}
+
+export const resolveAmuletService = async ({
+    sessionToken,  // todo: scan URLs?
+}: {
+    sessionToken: string
+}): Promise<AmuletService> => {
+    const key = sessionToken
+    if (amuletServices.has(key)) return amuletServices.get(key)
+    const tokenStandardService = await resolveTokenStandardService({})
+    const amuletService = await createAmuletService({
+        sessionToken,
+        tokenStandardService
+    })
+    amuletServices.set(key, amuletService)
+    return amuletService
 }
