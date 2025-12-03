@@ -80,7 +80,6 @@ type CreateTransferChoiceArgs = {
 export class CoreService {
     constructor(
         private ledgerClient: LedgerClient,
-        private scanProxyClient: ScanProxyClient,
         private readonly logger: Logger,
         private accessTokenProvider: AccessTokenProvider,
         private readonly isMasterUser: boolean,
@@ -1206,7 +1205,7 @@ export class TokenStandardService {
 
     constructor(
         private ledgerClient: LedgerClient,
-        private scanProxyClient: ScanProxyClient,
+        private readonly scanProxyClient: ScanProxyClient,
         private logger: Logger,
         private accessTokenProvider: AccessTokenProvider,
         private readonly isMasterUser: boolean,
@@ -1214,13 +1213,13 @@ export class TokenStandardService {
     ) {
         this.core = new CoreService(
             ledgerClient,
-            scanProxyClient,
             logger,
             accessTokenProvider,
             isMasterUser,
             undefined,
             undefined
         )
+        this.scanProxyClient = scanProxyClient
         this.allocation = new AllocationService(this.core, this.logger)
         this.transfer = new TransferService(this.core, this.logger)
     }
@@ -1542,75 +1541,6 @@ export class TokenStandardService {
         }
 
         return [exercise, disclosedContracts]
-    }
-
-    // TODO(#583) as it's not a part of token standard, should be moved somewhere else
-    async createTap(
-        receiver: string,
-        amount: string,
-        instrumentAdmin: string, // TODO (#907): replace with registry call
-        instrumentId: string,
-        registryUrl: string
-    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
-        const now = new Date()
-        const tomorrow = new Date(now)
-        tomorrow.setDate(tomorrow.getDate() + 1)
-        const choiceArgs = {
-            expectedAdmin: instrumentAdmin,
-            transfer: {
-                sender: instrumentAdmin,
-                receiver,
-                amount,
-                instrumentId: { admin: instrumentAdmin, id: instrumentId },
-                lock: null,
-                requestedAt: new Date(
-                    Date.now() - REQUESTED_AT_SKEW_MS
-                ).toISOString(),
-                executeBefore: tomorrow.toISOString(),
-                inputHoldingCids: [],
-                meta: { values: {} },
-            },
-            extraArgs: {
-                context: { values: {} },
-                meta: { values: {} },
-            },
-        }
-
-        const transferFactory = await this.core
-            .getTokenStandardClient(registryUrl)
-            .post('/registry/transfer-instruction/v1/transfer-factory', {
-                choiceArguments: choiceArgs as unknown as Record<string, never>,
-            })
-
-        const disclosedContracts =
-            transferFactory.choiceContext.disclosedContracts
-
-        const amuletRules = await this.scanProxyClient.getAmuletRules()
-        if (!amuletRules) {
-            throw new Error('AmuletRules contract not found')
-        }
-
-        const latestOpenMiningRound =
-            await this.scanProxyClient.getActiveOpenMiningRound()
-        if (!latestOpenMiningRound) {
-            throw new Error(
-                'OpenMiningRound active at current moment not found'
-            )
-        }
-
-        return [
-            {
-                templateId: amuletRules.template_id!,
-                contractId: amuletRules.contract_id,
-                choice: 'AmuletRules_DevNet_Tap',
-                choiceArgument: {
-                    receiver,
-                    amount,
-                    openRound: latestOpenMiningRound.contract_id,
-                },
-            },
-            disclosedContracts,
-        ]
     }
 
     async selfGrantFeatureAppRight(
