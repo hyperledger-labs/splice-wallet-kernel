@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { html, css, LitElement } from 'lit'
+import { html, css, LitElement, nothing } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import '@canton-network/core-wallet-ui-components'
 import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
@@ -248,10 +248,14 @@ export class ApproveUi extends LitElement {
                 <h3>Status</h3>
                 <p>${this.status}</p>
 
-                <h3>Created At</h3>
-                <p>${this.createdAt || 'N/A'}</p>
-                <h3>Signed At</h3>
-                <p>${this.signedAt || 'N/A'}</p>
+                ${this.createdAt
+                    ? html`<h3>Created At</h3>
+                          <p>${this.createdAt}</p>`
+                    : nothing}
+                ${this.signedAt
+                    ? html`<h3>Signed At</h3>
+                          <p>${this.signedAt}</p>`
+                    : nothing}
 
                 <h3>Template</h3>
                 <p>
