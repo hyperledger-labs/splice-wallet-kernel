@@ -558,10 +558,50 @@
                         "type": "string",
                         "description": "If not connected to a network, the reason why."
                     },
-                    "networkId": {
-                        "title": "networkId",
-                        "type": "string",
-                        "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
+                    "network": {
+                        "title": "network",
+                        "type": "object",
+                        "description": "Network information, if connected to a network.",
+                        "properties": {
+                            "networkId": {
+                                "title": "networkId",
+                                "type": "string",
+                                "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
+                            },
+                            "ledgerApi": {
+                                "title": "LedgerApiConfig",
+                                "type": "object",
+                                "description": "Ledger API configuration.",
+                                "properties": {
+                                    "baseUrl": {
+                                        "title": "baseUrl",
+                                        "type": "string",
+                                        "format": "uri",
+                                        "description": "The base URL of the ledger API."
+                                    }
+                                },
+                                "required": ["baseUrl"]
+                            }
+                        },
+                        "required": ["networkId", "ledgerApi"]
+                    },
+                    "session": {
+                        "title": "session",
+                        "type": "object",
+                        "description": "Session information, if authenticated.",
+                        "properties": {
+                            "accessToken": {
+                                "title": "accessToken",
+                                "type": "string",
+                                "description": "JWT authentication token."
+                            },
+                            "userId": {
+                                "title": "userId",
+                                "type": "string",
+                                "description": "The user identifier."
+                            }
+                        },
+                        "required": ["accessToken", "userId"]
                     }
                 },
                 "required": ["kernel", "isConnected", "isNetworkConnected"]

@@ -147,12 +147,60 @@ export type NetworkReason = string
  *
  */
 export type NetworkId = string
+/**
+ *
+ * The base URL of the ledger API.
+ *
+ */
+export type BaseUrl = string
+/**
+ *
+ * Ledger API configuration.
+ *
+ */
+export interface LedgerApiConfig {
+    baseUrl: BaseUrl
+    [k: string]: any
+}
+/**
+ *
+ * Network information, if connected to a network.
+ *
+ */
+export interface Network {
+    networkId: NetworkId
+    ledgerApi: LedgerApiConfig
+    [k: string]: any
+}
+/**
+ *
+ * JWT authentication token.
+ *
+ */
+export type AccessToken = string
+/**
+ *
+ * The user identifier.
+ *
+ */
+export type UserId = string
+/**
+ *
+ * Session information, if authenticated.
+ *
+ */
+export interface Session {
+    accessToken: AccessToken
+    userId: UserId
+    [k: string]: any
+}
 export interface StatusEvent {
     kernel: KernelInfo
     isConnected: IsConnected
     isNetworkConnected: IsNetworkConnected
     networkReason?: NetworkReason
-    networkId?: NetworkId
+    network?: Network
+    session?: Session
     [k: string]: any
 }
 /**
