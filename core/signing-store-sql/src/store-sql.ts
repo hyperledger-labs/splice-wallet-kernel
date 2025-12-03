@@ -15,7 +15,7 @@ import {
     SigningDriverStatus,
     SigningDriverConfig,
 } from '@canton-network/core-signing-lib'
-import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely'
+import { CamelCasePlugin, Kysely, SqliteDialect, sql } from 'kysely'
 import Database from 'better-sqlite3'
 import {
     DB,
@@ -157,6 +157,7 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
                     publicKey: serialized.publicKey,
                     status: serialized.status,
                     metadata: serialized.metadata,
+                    signedAt: serialized.signedAt,
                     updatedAt: new Date().toISOString(),
                 })
             )
@@ -168,9 +169,27 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
         txId: string,
         status: SigningDriverStatus
     ): Promise<void> {
+        // Get current transaction to check if it's already signed
+        const current = await this.getSigningTransaction(userId, txId)
+
+        const updateData: {
+            status: string
+            updatedAt: string
+            signedAt?: string
+        } = {
+            status,
+            updatedAt: new Date().toISOString(),
+        }
+
+        // Only set signedAt when transitioning to 'signed' if not already set
+        // This preserves the audit trail of when it was originally signed
+        if (status === 'signed' && !current?.signedAt) {
+            updateData.signedAt = new Date().toISOString()
+        }
+
         await this.db
             .updateTable('signingTransactions')
-            .set({ status, updatedAt: new Date().toISOString() })
+            .set(updateData)
             .where('userId', '=', userId)
             .where('id', '=', txId)
             .execute()
@@ -261,11 +280,12 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
             .insertInto('signingKeys')
             .values(serialized)
             .onConflict((oc) =>
+                // on conflict preserve keys passed to that method
                 oc.columns(['userId', 'id']).doUpdateSet({
-                    name: serialized[0].name,
-                    publicKey: serialized[0].publicKey,
-                    privateKey: serialized[0].privateKey,
-                    metadata: serialized[0].metadata,
+                    name: sql`excluded.name`,
+                    publicKey: sql`excluded.public_key`,
+                    privateKey: sql`excluded.private_key`,
+                    metadata: sql`excluded.metadata`,
                     updatedAt: new Date().toISOString(),
                 })
             )
@@ -286,12 +306,14 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
             .insertInto('signingTransactions')
             .values(serialized)
             .onConflict((oc) =>
+                // on conflict preserve transactions passed to that method
                 oc.columns(['userId', 'id']).doUpdateSet({
-                    hash: serialized[0].hash,
-                    signature: serialized[0].signature,
-                    publicKey: serialized[0].publicKey,
-                    status: serialized[0].status,
-                    metadata: serialized[0].metadata,
+                    hash: sql`excluded.hash`,
+                    signature: sql`excluded.signature`,
+                    publicKey: sql`excluded.public_key`,
+                    status: sql`excluded.status`,
+                    metadata: sql`excluded.metadata`,
+                    signedAt: sql`excluded.signed_at`,
                     updatedAt: new Date().toISOString(),
                 })
             )

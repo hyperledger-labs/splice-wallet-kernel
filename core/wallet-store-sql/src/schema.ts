@@ -56,6 +56,8 @@ interface TransactionTable {
     preparedTransactionHash: string
     payload: string | undefined
     userId: UserId
+    createdAt: string | null
+    signedAt: string | null
 }
 
 interface SessionTable extends Session {
@@ -180,13 +182,27 @@ export const fromTransaction = (
             ? JSON.stringify(transaction.payload)
             : undefined,
         userId: userId,
+        createdAt: transaction.createdAt?.toISOString() || null,
+        signedAt: transaction.signedAt?.toISOString() || null,
     }
 }
 
 export const toTransaction = (table: TransactionTable): Transaction => {
-    return {
-        ...table,
+    const result: Transaction = {
+        commandId: table.commandId,
         status: table.status as 'pending' | 'signed' | 'executed' | 'failed',
+        preparedTransaction: table.preparedTransaction,
+        preparedTransactionHash: table.preparedTransactionHash,
         payload: table.payload ? JSON.parse(table.payload) : undefined,
     }
+
+    if (table.createdAt) {
+        result.createdAt = new Date(table.createdAt)
+    }
+
+    if (table.signedAt) {
+        result.signedAt = new Date(table.signedAt)
+    }
+
+    return result
 }

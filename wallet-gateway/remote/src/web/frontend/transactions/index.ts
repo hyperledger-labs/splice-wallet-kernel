@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { css, html, LitElement } from 'lit'
+import { css, html, LitElement, nothing } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 
 import '@canton-network/core-wallet-ui-components'
@@ -162,6 +162,16 @@ export class UserUiTransactions extends LitElement {
                                                 html`<li>${signatory}</li>`
                                         ) || html`<li>N/A</li>`}
                                 </ul>
+                                ${tx.createdAt
+                                    ? html`<br />
+                                          <strong>Created At:</strong>
+                                          ${tx.createdAt}`
+                                    : nothing}
+                                ${tx.signedAt
+                                    ? html`<br />
+                                          <strong>Signed At:</strong>
+                                          ${tx.signedAt}`
+                                    : nothing}
                             </div>
                             <div class="wallet-actions">
                                 <button
