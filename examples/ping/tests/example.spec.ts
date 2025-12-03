@@ -101,8 +101,12 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
                 .first()
         ).toBeVisible()
     } catch (e) {
-        await dappPage.screenshot({ path: 'error-dapp.png' })
-        await wkPage.screenshot({ path: 'error-wk.png' })
+        try {
+            await dappPage.screenshot({ path: 'error-dapp.png' })
+            await wkPage.screenshot({ path: 'error-wk.png' })
+        } catch {
+            // Ignore errors during screenshot capture
+        }
         throw e
     }
 })
