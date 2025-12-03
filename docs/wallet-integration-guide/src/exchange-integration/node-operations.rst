@@ -263,13 +263,32 @@ We recommend to roll-out the upgrade as follows:
    :ref:`procedure for restoring a validator node from a backup <validator_backup_restore>`
    to determine the offset from which to restart your Tx History Ingestion:
 
-    1. Retrieve the record time ``tRecovery`` and ``synchronizerId`` of the last ingested transaction from the Canton Integration DB.
-    2. Log into the `Canton Console of your validator node <https://docs.dev.sync.global/deployment/console_access.html>`__
-       and query the offset ``offRecovery`` assigned to ``tRecovery`` using
+    1. Retrieve the ``synchronizerId`` of the last ingested transaction from the Canton Integration DB.
+    2. Log into the `Canton Console of your validator node <https://docs.dev.sync.global/deployment/console_access.html>`__ and query the offset ``offRecovery`` assigned to the ACS import transactions at time ``0001-01-01T00:00:00.000000Z`` using
+
+       .. code-block:: scala
+
+         def parseTimestamp(t: String) = {
+            val isoFormat = java.time.format.DateTimeFormatter.ISO_INSTANT.withZone(java.time.ZoneId.of("Z"))
+            isoFormat.parse(t, java.time.Instant.from(_))
+         }
+         val synchronizerId = SynchronizerId.tryFromString("example::1220b1431ef217342db44d516bb9befde802be7d8899637d290895fa58880f19accc") // example
+         val tRecovery = parseTimestamp("0001-01-01T00:00:00.000000Z")
+         val offRecovery = participant.parties.find_highest_offset_by_timestamp(synchronizerId, tRecovery)
+
+       Alternatively, you can use ``grpcurl`` to query the offset ``offRecovery`` from the command line as shown in the
+       example below:
 
        .. code-block:: bash
 
-          $ participantX.parties.find_highest_offset_by_timestamp(synchronizerId, tRecovery)
+          grpcurl -plaintext -d \
+            '{"synchronizerId" : "example::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a",
+               "timestamp": "0001-01-01T00:00:00.000000Z"}' \
+            localhost:5002 \
+            com.digitalasset.canton.admin.participant.v30.PartyManagementService.GetHighestOffsetByTimestamp
+
+       If you use authentication for the Canton Admin gRPC API, then you need to add the appropriate
+       authentication flags to the ``grpcurl`` command above.
 
     3. Configure the Tx History Ingestion component to start ingesting from offset ``offRecovery``.
     4. Restart the Tx History Ingestion component.

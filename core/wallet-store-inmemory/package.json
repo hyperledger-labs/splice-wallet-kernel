@@ -3,7 +3,6 @@
     "version": "0.15.0",
     "type": "module",
     "description": "In-memory implementation of the Store API",
-    "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "license": "Apache-2.0",
     "packageManager": "yarn@4.9.4",
@@ -42,5 +41,10 @@
     ],
     "publishConfig": {
         "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
+        "directory": "core/wallet-store-inmemory"
     }
 }
