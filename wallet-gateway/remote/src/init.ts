@@ -30,6 +30,7 @@ import { CliOptions } from './index.js'
 import { jwtAuth } from './middleware/jwtAuth.js'
 import { rpcRateLimit } from './middleware/rateLimit.js'
 import { Config } from './config/Config.js'
+import { deriveKernelUrls } from './config/ConfigUtils.js'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 
@@ -133,12 +134,17 @@ async function initializeSigningDatabase(
 }
 
 export async function initialize(opts: CliOptions, logger: Logger) {
-    const port = opts.port ? Number(opts.port) : 3030
+    const config = ConfigUtils.loadConfigFile(opts.config)
+
+    // Use CLI port override or config port
+    const port = opts.port ? Number(opts.port) : config.server.port
+    const host = config.server.host
+    const protocol = config.server.tls ? 'https' : 'http'
 
     const app = express()
-    const server = app.listen(port, () => {
+    const server = app.listen(port, host, () => {
         logger.info(
-            `Remote Wallet Gateway starting on http://localhost:${port}`
+            `Remote Wallet Gateway starting on ${protocol}://${host}:${port}`
         )
     })
 
@@ -152,8 +158,6 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     })
 
     const notificationService = new NotificationService(logger)
-
-    const config = ConfigUtils.loadConfigFile(opts.config)
 
     const store = await initializeDatabase(config, logger)
     const signingStore = await initializeSigningDatabase(config, logger)
@@ -192,13 +196,25 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     app.use('/api/*splat', rpcRateLimit)
     app.use('/api/*splat', jwtAuth(authService, logger))
 
+    // Override config port with CLI parameter port if provided, then derive URLs
+    const serverConfigWithOverride = {
+        ...config.server,
+        port, // Use the actual port we're listening on
+    }
+    const { dappUrl, userUrl } = deriveKernelUrls(serverConfigWithOverride)
+
+    const kernelInfo = config.kernel
+
     // register dapp API handlers
     dapp(
-        '/api/v0/dapp',
+        config.server.dappPath,
         app,
         logger,
         server,
-        config.kernel,
+        kernelInfo,
+        dappUrl,
+        userUrl,
+        config.server,
         notificationService,
         authService,
         store
@@ -206,17 +222,18 @@ export async function initialize(opts: CliOptions, logger: Logger) {
 
     // register user API handlers
     user(
-        '/api/v0/user',
+        config.server.userPath,
         app,
         logger,
-        config.kernel,
+        kernelInfo,
+        userUrl,
         notificationService,
         drivers,
         store
     )
 
     // register web handler
-    web(app, server)
+    web(app, server, config.server.userPath)
     isReady = true
 
     logger.info('Wallet Gateway initialization complete')

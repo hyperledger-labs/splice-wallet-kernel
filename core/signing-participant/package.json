@@ -4,7 +4,6 @@
     "packageManager": "yarn@4.9.4",
     "type": "module",
     "description": "Wallet Gateway driver for Canton participant internal parties",
-    "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
     "main": "dist/index.cjs",
     "module": "dist/index.js",
@@ -47,5 +46,10 @@
     ],
     "publishConfig": {
         "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
+        "directory": "core/signing-participant"
     }
 }

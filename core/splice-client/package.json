@@ -3,7 +3,6 @@
     "version": "0.16.0",
     "type": "module",
     "description": "Typescript Client for the multiple Canton Network APIs",
-    "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
     "main": "dist/index.cjs",
     "module": "dist/index.js",
@@ -39,5 +38,10 @@
     ],
     "publishConfig": {
         "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
+        "directory": "core/splice-client"
     }
 }
