@@ -21,7 +21,9 @@ export class UserApp extends LitElement {
     private async handleLogout() {
         localStorage.clear()
 
-        const userClient = createUserClient(stateManager.accessToken.get())
+        const userClient = await createUserClient(
+            stateManager.accessToken.get()
+        )
         await userClient.request('removeSession')
 
         if (
@@ -106,7 +108,7 @@ export const authenticate = async (
     accessToken: string,
     networkId: string
 ): Promise<void> => {
-    const authenticatedUserClient = createUserClient(accessToken)
+    const authenticatedUserClient = await createUserClient(accessToken)
     await authenticatedUserClient.request('addSession', {
         networkId,
     })
