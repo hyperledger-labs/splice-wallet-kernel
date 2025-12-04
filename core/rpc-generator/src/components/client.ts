@@ -63,6 +63,7 @@ export const stripAnyOfTypes = (content: string): string => {
 }
 
 const versionMap = new Map<string, string>()
+const repositoryMap = new Map<string, unknown>()
 
 const hooks: IHooks = {
     afterCopyStatic: [
@@ -86,7 +87,12 @@ const hooks: IHooks = {
                 const pkg = JSON.parse(fileContents.toString())
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const currentVersion = (pkg as any).version
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const currentRepository = (pkg as any).repository
                 versionMap.set(component.name, currentVersion!)
+                if (currentRepository) {
+                    repositoryMap.set(component.name, currentRepository)
+                }
             }
         },
     ],
@@ -96,13 +102,18 @@ const hooks: IHooks = {
                 const packagePath = path.join(dest, 'package.json')
                 const fileContents = await readFile(packagePath)
                 const pkg = JSON.parse(fileContents.toString())
-                const updatedPkg = JSON.stringify({
+                const preservedRepository = repositoryMap.get(component.name)
+                const updatedPkgObj: Record<string, unknown> = {
                     ...pkg,
                     name: component.name,
                     version:
                         versionMap.get(component.name) ??
                         openrpcDocument.info.version,
-                })
+                }
+                if (preservedRepository) {
+                    updatedPkgObj.repository = preservedRepository
+                }
+                const updatedPkg = JSON.stringify(updatedPkgObj)
                 execSync(`yarn prettier --write ${dest}/src/**/*`)
                 return await writeFile(packagePath, updatedPkg)
             }
