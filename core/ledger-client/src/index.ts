@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './token-standard-service.js'
+export { AmuletService } from './amulet-service.js'
 export * from './ledger-client.js'
 export * from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 export * from './acs/acs-container.js'

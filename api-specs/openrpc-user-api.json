@@ -769,6 +769,9 @@
                     "network": {
                         "$ref": "#/components/schemas/Network"
                     },
+                    "idp": {
+                        "$ref": "#/components/schemas/Idp"
+                    },
                     "accessToken": {
                         "title": "accessToken",
                         "type": "string",
@@ -785,7 +788,7 @@
                         "description": "The reason for the current status."
                     }
                 },
-                "required": ["network", "status", "accessToken"],
+                "required": ["network", "idp", "status", "accessToken"],
                 "additionalProperties": false
             },
             "SigningProviderContext": {

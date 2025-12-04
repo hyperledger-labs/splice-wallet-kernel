@@ -39,6 +39,12 @@ const mockSessions: Sessions = [
                 clientSecret: 'admin-client-secret',
             },
         },
+        idp: {
+            id: 'idp-mock-oauth',
+            type: 'oauth',
+            issuer: 'http://127.0.0.1:8889',
+            configUrl: 'http://127.0.0.1:8889/.well-known/openid-configuration',
+        },
         accessToken: 'eyJra...ER7FGYA',
         status: 'connected',
     },

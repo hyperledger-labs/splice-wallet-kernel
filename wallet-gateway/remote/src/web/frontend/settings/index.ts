@@ -181,15 +181,15 @@ export class UserUiSettings extends LitElement {
             <wg-sessions .sessions=${this.sessions}></wg-sessions>
 
             <wg-wallets-sync .client=${client}></wg-wallets-sync>
-
             <wg-networks
                 .networks=${this.networks}
+                .activeSessions=${this.sessions}
                 @network-edit-save=${this.handleNetworkSubmit}
                 @delete=${this.handleNetworkDelete}
             ></wg-networks>
-
             <wg-idps
                 .idps=${this.idps}
+                .activeSessions=${this.sessions}
                 @delete=${this.handleIdpDelete}
                 @idp-add=${this.handleIdpSubmit}
             ></wg-idps>

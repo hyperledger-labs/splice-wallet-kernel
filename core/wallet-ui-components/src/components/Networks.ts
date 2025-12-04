@@ -3,7 +3,7 @@
 
 import { html, css } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import { Network } from '@canton-network/core-wallet-user-rpc-client'
+import { Network, Session } from '@canton-network/core-wallet-user-rpc-client'
 
 import { BaseElement } from '../internal/BaseElement'
 import { modalStyles } from '../styles/modal'
@@ -25,6 +25,7 @@ export class WgNetworks extends BaseElement {
         `,
     ]
 
+    @property({ type: Array }) accessor activeSessions: Session[] = []
     @property({ type: Array }) accessor networks: Network[] = []
     @state() accessor isModalOpen = false
     @state() accessor editingNetwork: Network | null = null
@@ -56,7 +57,10 @@ export class WgNetworks extends BaseElement {
                 </button>
 
                 <div class="mt-2">
-                    <network-table .networks=${this.networks}></network-table>
+                    <network-table
+                        .networks=${this.networks}
+                        .activeSessions=${this.activeSessions}
+                    ></network-table>
                 </div>
 
                 ${this.isModalOpen

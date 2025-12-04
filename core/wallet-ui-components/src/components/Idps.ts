@@ -3,7 +3,7 @@
 
 import { html } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import { Idp } from '@canton-network/core-wallet-user-rpc-client'
+import { Idp, Session } from '@canton-network/core-wallet-user-rpc-client'
 
 import { BaseElement } from '../internal/BaseElement'
 import { modalStyles } from '../styles/modal'
@@ -21,6 +21,8 @@ export class WgIdps extends BaseElement {
     static styles = [BaseElement.styles, modalStyles]
 
     @property({ type: Array }) accessor idps: Idp[] = []
+    @property({ type: Array }) activeSessions: Session[] = []
+
     @state() accessor isModalOpen = false
     @state() accessor modalIdp: Idp = {
         id: '',
@@ -60,9 +62,13 @@ export class WgIdps extends BaseElement {
 
                 <div class="mt-4">
                     ${this.idps.map((idp) => {
+                        const isActive = this.activeSessions.some(
+                            (session) => session.idp.id === idp.id
+                        )
                         return html`<div class="mb-2">
                             <idp-card
                                 .idp=${idp}
+                                .activeSession=${isActive}
                                 @update=${(e: Event) => {
                                     this.modalIdp = idp
                                     this.isModalOpen = true

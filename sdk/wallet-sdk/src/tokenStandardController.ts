@@ -8,6 +8,7 @@ import {
     PrettyContract,
     ViewValue,
     TokenStandardService,
+    AmuletService,
     Transaction,
     TransferInstructionView,
     Holding,
@@ -81,6 +82,7 @@ export class TokenStandardController {
     private logger = pino({ name: 'TokenStandardController', level: 'info' })
     private readonly client: LedgerClient
     private service: TokenStandardService
+    private amuletService: AmuletService
     private userId: string
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
@@ -129,10 +131,13 @@ export class TokenStandardController {
             : undefined
         this.service = new TokenStandardService(
             this.client,
-            scanProxyClient,
             this.logger,
             this.accessTokenProvider,
-            isMasterUser,
+            isMasterUser
+        )
+        this.amuletService = new AmuletService(
+            this.service,
+            scanProxyClient,
             scanClient
         )
         this.userId = userId
@@ -498,7 +503,7 @@ export class TokenStandardController {
         if (expectedDso === undefined) {
             throw new Error('no expected dso found')
         }
-        const [command, disclosed] = await this.service.buyMemberTraffic(
+        const [command, disclosed] = await this.amuletService.buyMemberTraffic(
             expectedDso,
             buyer,
             ccAmount,
@@ -517,7 +522,7 @@ export class TokenStandardController {
      * @returns object with total_consumed, total_limit, total_purchased
      */
     getMemberTrafficStatus(memberId: string) {
-        return this.service.getMemberTrafficStatus(
+        return this.amuletService.getMemberTrafficStatus(
             this.getSynchronizerId(),
             memberId
         )
@@ -546,7 +551,9 @@ export class TokenStandardController {
             await this.getInstrumentById(instrumentId)
 
             const transfer_preapproval =
-                await this.service.getTransferPreApprovalByParty(receiverId)
+                await this.amuletService.getTransferPreApprovalByParty(
+                    receiverId
+                )
 
             const { dso, expiresAt } = transfer_preapproval.contract.payload
             const contractId = transfer_preapproval?.contract?.contract_id
@@ -804,7 +811,7 @@ export class TokenStandardController {
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         const [cancelCommand, disclosed] =
-            await this.service.cancelTransferPreapproval(
+            await this.amuletService.cancelTransferPreapproval(
                 contractId,
                 templateId,
                 actor
@@ -831,7 +838,7 @@ export class TokenStandardController {
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         const [renewCommand, disclosed] =
-            await this.service.renewTransferPreapproval(
+            await this.amuletService.renewTransferPreapproval(
                 contractId,
                 templateId,
                 provider,
@@ -965,13 +972,14 @@ export class TokenStandardController {
     > {
         const instrumentAdmin =
             instrument.instrumentAdmin ?? (await this.getInstrumentAdmin())
-        const [tapCommand, disclosedContracts] = await this.service.createTap(
-            receiver,
-            amount,
-            instrumentAdmin,
-            instrument.instrumentId,
-            this.getTransferFactoryRegistryUrl().href
-        )
+        const [tapCommand, disclosedContracts] =
+            await this.amuletService.createTap(
+                receiver,
+                amount,
+                instrumentAdmin,
+                instrument.instrumentId,
+                this.getTransferFactoryRegistryUrl().href
+            )
 
         return [{ ExerciseCommand: tapCommand }, disclosedContracts]
     }
@@ -994,13 +1002,14 @@ export class TokenStandardController {
     ) {
         const instrumentAdmin =
             instrument.instrumentAdmin ?? (await this.getInstrumentAdmin())
-        const [tapCommand, disclosedContracts] = await this.service.createTap(
-            receiver,
-            amount,
-            instrumentAdmin,
-            instrument.instrumentId,
-            this.getTransferFactoryRegistryUrl().href
-        )
+        const [tapCommand, disclosedContracts] =
+            await this.amuletService.createTap(
+                receiver,
+                amount,
+                instrumentAdmin,
+                instrument.instrumentId,
+                this.getTransferFactoryRegistryUrl().href
+            )
 
         const request = {
             commands: [{ ExerciseCommand: tapCommand }],
@@ -1028,7 +1037,7 @@ export class TokenStandardController {
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         const [featuredAppCommand, disclosedContracts] =
-            await this.service.selfGrantFeatureAppRight(
+            await this.amuletService.selfGrantFeatureAppRight(
                 this.getPartyId(),
                 this.getSynchronizerId()
             )
@@ -1046,7 +1055,7 @@ export class TokenStandardController {
         delayMs = 5000
     ): Promise<FeaturedAppRight | undefined> {
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
-            const result = await this.service.getFeaturedAppsByParty(
+            const result = await this.amuletService.getFeaturedAppsByParty(
                 this.getPartyId()
             )
 

@@ -27,6 +27,9 @@ export class LoginUI extends LitElement {
     accessor selectedNetwork: Network | null = null
 
     @state()
+    accessor selectedIdp: Idp | null = null
+
+    @state()
     accessor message: string | null = null
 
     @state()
@@ -102,6 +105,25 @@ export class LoginUI extends LitElement {
             border-color: #4caf50;
         }
 
+        input[type='text'] {
+            appearance: none;
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-size: 1rem;
+            cursor: pointer;
+            outline: none;
+            transition: border 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        input[type='text']:focus {
+            border-color: #4caf50;
+        }
+
         button {
             padding: 0.7rem;
             border-radius: 8px;
@@ -173,6 +195,10 @@ export class LoginUI extends LitElement {
     private handleChange(e: Event) {
         const index = parseInt((e.target as HTMLSelectElement).value)
         this.selectedNetwork = this.networks[index] ?? null
+        this.selectedIdp =
+            this.idps.find(
+                (idp) => idp.id === this.selectedNetwork?.identityProviderId
+            ) ?? null
         this.message = null
     }
 
@@ -207,6 +233,10 @@ export class LoginUI extends LitElement {
             return
         }
 
+        const clientId =
+            (this.renderRoot.querySelector('#client-id') as HTMLInputElement)
+                ?.value || this.selectedNetwork.auth.clientId
+
         stateManager.networkId.set(this.selectedNetwork.id)
         const idp = this.idps.find(
             (idp) => idp.id === this.selectedNetwork?.identityProviderId
@@ -220,7 +250,7 @@ export class LoginUI extends LitElement {
 
         if (idp.type === 'self_signed') {
             await this.selfSign({
-                clientId: this.selectedNetwork.auth.clientId || '',
+                clientId: clientId,
                 clientSecret: this.selectedNetwork.auth.clientSecret || '',
                 scope: this.selectedNetwork.auth.scope,
                 audience: this.selectedNetwork.auth.audience,
@@ -319,6 +349,17 @@ export class LoginUI extends LitElement {
                     )}
                 </select>
 
+                ${this.selectedIdp?.type === 'self_signed'
+                    ? html`
+                          <input
+                              type="text"
+                              title="client id"
+                              id="client-id"
+                              .value=${this.selectedNetwork?.auth.clientId ||
+                              ''}
+                          />
+                      `
+                    : null}
                 <button @click=${this.handleConnectToIDP}>Connect</button>
 
                 ${this.message
