@@ -203,6 +203,20 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     }
     const { dappUrl, userUrl } = deriveKernelUrls(serverConfigWithOverride)
 
+    logger.info(
+        {
+            host: serverConfigWithOverride.host,
+            port: serverConfigWithOverride.port,
+            tls: serverConfigWithOverride.tls,
+            dappPath: serverConfigWithOverride.dappPath,
+            userPath: serverConfigWithOverride.userPath,
+            allowedOrigins: serverConfigWithOverride.allowedOrigins,
+            dappUrl,
+            userUrl,
+        },
+        'Server configuration'
+    )
+
     const kernelInfo = config.kernel
 
     // register dapp API handlers
