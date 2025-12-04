@@ -254,7 +254,6 @@ export class AmuletService {
         return [exercise, disclosed]
     }
 
-    // TODO(#583) as it's not a part of token standard, should be moved somewhere else
     async createTap(
         receiver: string,
         amount: string,
