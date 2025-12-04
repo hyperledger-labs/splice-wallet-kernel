@@ -33,6 +33,7 @@ import { Config } from './config/Config.js'
 import { deriveKernelUrls } from './config/ConfigUtils.js'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
+import { GATEWAY_VERSION } from './version.js'
 
 let isReady = false
 
@@ -148,6 +149,7 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const useDefaultListenHost = ['0.0.0.0', 'localhost', '127.0.0.1'].includes(
         host
     )
+
     const server = useDefaultListenHost
         ? app.listen(port, () => {
               logger.info(
@@ -262,5 +264,7 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     web(app, server, config.server.userPath)
     isReady = true
 
-    logger.info('Wallet Gateway initialization complete')
+    logger.info(
+        `Wallet Gateway (version: ${GATEWAY_VERSION}) initialization complete`
+    )
 }
