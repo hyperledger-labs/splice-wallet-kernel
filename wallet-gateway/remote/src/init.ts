@@ -142,11 +142,23 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const protocol = config.server.tls ? 'https' : 'http'
 
     const app = express()
-    const server = app.listen(port, host, () => {
-        logger.info(
-            `Remote Wallet Gateway starting on ${protocol}://${host}:${port}`
-        )
-    })
+
+    // Don't pass 'localhost' or '0.0.0.0' to listen() - let express default to 0.0.0.0
+    // This ensures Docker compatibility while keeping localhost as the default for URLs
+    const useDefaultListenHost = ['0.0.0.0', 'localhost', '127.0.0.1'].includes(
+        host
+    )
+    const server = useDefaultListenHost
+        ? app.listen(port, () => {
+              logger.info(
+                  `Remote Wallet Gateway starting on ${protocol}://${host}:${port} (bound to 0.0.0.0:${port})`
+              )
+          })
+        : app.listen(port, host, () => {
+              logger.info(
+                  `Remote Wallet Gateway starting on ${protocol}://${host}:${port}`
+              )
+          })
 
     app.use('/healthz', rpcRateLimit, (_req, res) => res.status(200).send('OK'))
     app.use('/readyz', rpcRateLimit, (_req, res) => {
