@@ -37,6 +37,11 @@ export type Method = string
 export type Scope = string
 export type ClientId = string
 export type ClientSecret = string
+/**
+ *
+ * Issuer of identity provider
+ *
+ */
 export type Issuer = string
 export type Audience = string
 /**
@@ -264,6 +269,7 @@ export type Reason = string
  */
 export interface Session {
     network: Network
+    idp: Idp
     accessToken: AccessToken
     status: Status
     reason?: Reason
@@ -336,6 +342,7 @@ export interface ExecuteParams {
 }
 export interface AddSessionParams {
     networkId: NetworkId
+    idp: Idp
     [k: string]: any
 }
 export interface GetTransactionParams {
@@ -395,6 +402,7 @@ export interface ExecuteResult {
  */
 export interface AddSessionResult {
     network: Network
+    idp: Idp
     accessToken: AccessToken
     status: Status
     reason?: Reason

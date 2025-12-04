@@ -24,6 +24,7 @@ export class IdpCardUpdateEvent extends Event {
 @customElement('idp-card')
 export class IdpCard extends BaseElement {
     @property({ type: Object }) idp: Idp | null = null
+    @property({ type: Boolean }) activeSession = false
 
     static styles = [BaseElement.styles, cardStyles]
 
@@ -47,6 +48,7 @@ export class IdpCard extends BaseElement {
                 </div>
                 <div>
                     <button
+                        ?disabled=${this.activeSession}
                         class="btn btn-sm btn-secondary"
                         @click=${() =>
                             this.dispatchEvent(new IdpCardUpdateEvent())}
@@ -54,6 +56,7 @@ export class IdpCard extends BaseElement {
                         Update
                     </button>
                     <button
+                        ?disabled=${this.activeSession}
                         class="btn btn-sm btn-danger"
                         @click=${() =>
                             this.dispatchEvent(
