@@ -24,6 +24,7 @@ export class NetworkCardUpdateEvent extends Event {
 @customElement('network-card')
 export class NetworkCard extends BaseElement {
     @property({ type: Object }) network: Network | null = null
+    @property({ type: Boolean }) activeSession = false
 
     @state() private _editing = false
 
@@ -53,12 +54,14 @@ export class NetworkCard extends BaseElement {
                     <div class="network-desc">${this.network.description}</div>
                     <div>
                         <button
+                            ?disabled=${this.activeSession}
                             class="btn btn-sm btn-secondary"
                             @click=${() => (this._editing = true)}
                         >
                             Update
                         </button>
                         <button
+                            ?disabled=${this.activeSession}
                             class="btn btn-sm btn-danger"
                             @click=${() =>
                                 this.dispatchEvent(
