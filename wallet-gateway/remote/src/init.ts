@@ -203,7 +203,6 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     }
     const { dappUrl, userUrl } = deriveKernelUrls(serverConfigWithOverride)
 
-    // Log server configuration and URLs
     logger.info(
         {
             host: serverConfigWithOverride.host,
