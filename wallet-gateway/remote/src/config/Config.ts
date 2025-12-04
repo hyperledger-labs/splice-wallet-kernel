@@ -16,9 +16,9 @@ export const kernelInfoSchema = z.object({
 })
 
 export const serverConfigSchema = z.object({
-    host: z.string(),
-    port: z.number(),
-    tls: z.boolean(),
+    host: z.string().default('localhost'),
+    port: z.number().default(3030),
+    tls: z.boolean().default(false),
     dappPath: z.string().default('/api/v0/dapp'),
     userPath: z.string().default('/api/v0/user'),
     allowedOrigins: z.union([z.literal('*'), z.array(z.string())]).default('*'),
