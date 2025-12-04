@@ -132,7 +132,6 @@ export class TokenStandardController {
         this.service = new TokenStandardService(
             this.client,
             this.logger,
-            this.accessTokenProvider,
             isMasterUser
         )
         this.amuletService = new AmuletService(

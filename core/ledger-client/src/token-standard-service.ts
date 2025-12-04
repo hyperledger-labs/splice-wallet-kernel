@@ -39,7 +39,6 @@ import {
 
 import type { PrettyTransactions, Transaction } from './txparse/types.js'
 import { Types } from './ledger-client.js'
-import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
 const REQUESTED_AT_SKEW_MS = 60_000
@@ -80,20 +79,12 @@ export class CoreService {
     constructor(
         private ledgerClient: LedgerClient,
         private readonly logger: Logger,
-        private accessTokenProvider: AccessTokenProvider,
         private readonly isMasterUser: boolean,
-        private isAdmin: boolean = false,
-        private accessToken: string = ''
+        private isAdmin: boolean = false
     ) {}
 
     getTokenStandardClient(registryUrl: string): TokenStandardClient {
-        return new TokenStandardClient(
-            registryUrl,
-            this.logger,
-            this.isAdmin,
-            this.accessToken,
-            this.accessTokenProvider
-        )
+        return new TokenStandardClient(registryUrl, this.logger, this.isAdmin)
     }
 
     // TODO: probably needs a filter by instrument ID as well?
@@ -1205,15 +1196,12 @@ export class TokenStandardService {
     constructor(
         private ledgerClient: LedgerClient,
         private logger: Logger,
-        private accessTokenProvider: AccessTokenProvider,
         private readonly isMasterUser: boolean
     ) {
         this.core = new CoreService(
             ledgerClient,
             logger,
-            accessTokenProvider,
             isMasterUser,
-            undefined,
             undefined
         )
         this.allocation = new AllocationService(this.core, this.logger)
