@@ -26,14 +26,13 @@ export const tap = async ({
     const registryInfo = await tokenStandardClient.get(
         '/registry/metadata/v1/info'
     )
-    const [tapCommand, disclosedContracts] =
-        await amuletService.createTap(
-            party,
-            `${amount}`,
-            registryInfo.adminId,
-            'Amulet',
-            registryUrl
-        )
+    const [tapCommand, disclosedContracts] = await amuletService.createTap(
+        party,
+        `${amount}`,
+        registryInfo.adminId,
+        'Amulet',
+        registryUrl
+    )
 
     const request = {
         commands: [{ ExerciseCommand: tapCommand }],

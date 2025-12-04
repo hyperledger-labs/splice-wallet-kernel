@@ -6,18 +6,14 @@ import type { PartyId } from '@canton-network/core-types'
 import { resolveTokenStandardService } from '../services/registry.js'
 
 export const acceptTransfer = async ({
-    sessionToken,
     party,
     contractId,
 }: {
-    sessionToken: string
     party: PartyId
     contractId: string
 }) => {
     const registryUrl = 'http://scan.localhost:4000'
-    const tokenStandardService = await resolveTokenStandardService({
-        sessionToken,
-    })
+    const tokenStandardService = await resolveTokenStandardService()
     const [acceptCommand, disclosedContracts] =
         await tokenStandardService.transfer.createAcceptTransferInstruction(
             contractId,

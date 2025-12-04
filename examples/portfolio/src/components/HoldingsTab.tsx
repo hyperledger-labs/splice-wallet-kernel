@@ -17,7 +17,7 @@ export const HoldingsTab: React.FC<HoldingsTabProps> = ({
     const [tapAmount, setTapAmount] = useState<number>(10000)
 
     const refreshHoldings = async () => {
-        const hs = await getHoldings({ party, sessionToken: sessionToken! })
+        const hs = await getHoldings({ party })
         setHoldings(hs)
     }
 

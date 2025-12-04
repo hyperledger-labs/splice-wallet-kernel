@@ -6,15 +6,11 @@ import { type Holding } from '@canton-network/core-ledger-client'
 import { resolveTokenStandardService } from '../services/registry.js'
 
 export const getHoldings = async ({
-    sessionToken,
     party,
 }: {
-    sessionToken: string
     party: string
 }): Promise<Holding[]> => {
-    const tokenStandardService = await resolveTokenStandardService({
-        sessionToken,
-    })
+    const tokenStandardService = await resolveTokenStandardService()
 
     // TODO: copy more from tokenStandardController
     const utxoContracts =

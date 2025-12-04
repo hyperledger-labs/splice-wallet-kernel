@@ -9,7 +9,6 @@ import {
 } from '../services/registry.js'
 
 export const createTransfer = async ({
-    sessionToken,
     sender,
     receiver,
     amount,
@@ -27,9 +26,7 @@ export const createTransfer = async ({
     const tokenStandardClient = await resolveTokenStandardClient({
         registryUrl,
     })
-    const tokenStandardService = await resolveTokenStandardService({
-        sessionToken,
-    })
+    const tokenStandardService = await resolveTokenStandardService()
     const registryInfo = await tokenStandardClient.get(
         '/registry/metadata/v1/info'
     )

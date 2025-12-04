@@ -23,10 +23,7 @@ export const PendingTransfersTab: React.FC<PendingTransfersTabProps> = ({
     >(undefined)
 
     const refreshPendingTransfers = async () => {
-        const hs = await getPendingTransfers({
-            party,
-            sessionToken: sessionToken!,
-        })
+        const hs = await getPendingTransfers({ party })
         console.log(hs)
         setPendingTransfers(hs)
     }
@@ -45,7 +42,6 @@ export const PendingTransfersTab: React.FC<PendingTransfersTabProps> = ({
                     disabled={!sessionToken}
                     onClick={() => {
                         acceptTransfer({
-                            sessionToken: sessionToken!,
                             party,
                             contractId: p.contractId,
                         })

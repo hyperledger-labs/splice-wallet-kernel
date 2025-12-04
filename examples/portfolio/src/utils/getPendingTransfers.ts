@@ -34,15 +34,11 @@ const toPendingTransfer = (
 }
 
 export const getPendingTransfers = async ({
-    sessionToken,
     party,
 }: {
-    sessionToken: string
     party: PartyId
 }): Promise<PendingTransfer[]> => {
-    const tokenStandardService = await resolveTokenStandardService({
-        sessionToken,
-    })
+    const tokenStandardService = await resolveTokenStandardService()
     const contracts =
         await tokenStandardService.listContractsByInterface<TransferInstructionView>(
             TRANSFER_INSTRUCTION_INTERFACE_ID,
