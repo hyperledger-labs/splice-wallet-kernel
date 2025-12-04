@@ -16,7 +16,6 @@ export type PendingTransfersTabProps = {
 
 export const PendingTransfersTab: React.FC<PendingTransfersTabProps> = ({
     party,
-    sessionToken,
 }) => {
     const [pendingTransfers, setPendingTransfers] = useState<
         PendingTransfer[] | undefined
@@ -39,7 +38,6 @@ export const PendingTransfersTab: React.FC<PendingTransfersTabProps> = ({
             <AssetCard amount={p.amount} symbol={p.instrumentId.id} />
             {p.incoming && (
                 <button
-                    disabled={!sessionToken}
                     onClick={() => {
                         acceptTransfer({
                             party,

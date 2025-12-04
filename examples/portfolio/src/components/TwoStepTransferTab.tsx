@@ -8,7 +8,6 @@ export type TwoStepTransferTabProps = {
 
 export const TwoStepTransferTab: React.FC<TwoStepTransferTabProps> = ({
     party,
-    sessionToken,
 }) => {
     const [receiver, setReceiver] = useState<string>('')
     const [amount, setAmount] = useState<number>(100)
@@ -41,10 +40,8 @@ export const TwoStepTransferTab: React.FC<TwoStepTransferTabProps> = ({
             />
             <br />
             <button
-                disabled={!sessionToken}
                 onClick={() => {
                     createTransfer({
-                        sessionToken: sessionToken!,
                         sender: party,
                         receiver,
                         amount,

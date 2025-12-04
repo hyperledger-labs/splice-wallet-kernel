@@ -200,7 +200,6 @@ function App() {
                         content: connection.primaryParty ? (
                             <TwoStepTransferTab
                                 party={connection.primaryParty}
-                                sessionToken={connection.sessionToken}
                             />
                         ) : (
                             <div>no party</div>
@@ -212,7 +211,6 @@ function App() {
                         content: connection.primaryParty ? (
                             <PendingTransfersTab
                                 party={connection.primaryParty}
-                                sessionToken={connection.sessionToken}
                             />
                         ) : (
                             <div>no party</div>

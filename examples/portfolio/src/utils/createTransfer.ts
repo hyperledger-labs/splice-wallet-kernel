@@ -15,7 +15,6 @@ export const createTransfer = async ({
     inputUtxos,
     memo,
 }: {
-    sessionToken: string
     sender: PartyId
     receiver: PartyId
     amount: number
