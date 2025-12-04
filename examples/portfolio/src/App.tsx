@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import * as sdk from '@canton-network/dapp-sdk'
 import { HoldingsTab } from './components/HoldingsTab.js'
+import { RegistriesTab } from './components/RegistriesTab.js'
 import { PendingTransfersTab } from './components/PendingTransfersTab.js'
 import { TwoStepTransferTab } from './components/TwoStepTransferTab.js'
 import { Tabs } from './components/Tabs.js'
@@ -217,9 +218,12 @@ function App() {
                         ),
                     },
                     {
-                        label: 'Settings',
-                        value: 'settings',
-                        content: <div>Settings content</div>,
+                        label: 'Registry Settings',
+                        value: 'registries',
+                        content:
+                            <RegistriesTab
+                                registryUrls={new Map()}
+                            />
                     },
                 ]}
             />

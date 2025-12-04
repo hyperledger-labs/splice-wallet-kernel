@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import { type Holding } from '@canton-network/core-ledger-client'
 import { useState, useEffect } from 'react'
 import { AssetCard } from './AssetCard.js'

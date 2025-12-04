@@ -6,7 +6,7 @@ import { PartyId } from '@canton-network/core-types'
 import {
     resolveTokenStandardClient,
     resolveTokenStandardService,
-} from '../services/registry.js'
+} from '../services'
 
 export const createTransfer = async ({
     sender,
