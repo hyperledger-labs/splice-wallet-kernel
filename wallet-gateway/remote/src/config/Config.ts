@@ -26,7 +26,7 @@ export const serverConfigSchema = z.object({
 
 export const configSchema = z.object({
     kernel: kernelInfoSchema,
-    server: serverConfigSchema,
+    server: z.preprocess((val) => val ?? {}, serverConfigSchema),
     store: storeConfigSchema,
     signingStore: signingStoreConfigSchema,
 })
