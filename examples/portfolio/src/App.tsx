@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useEffect, useState } from 'react'
+import { PartyId } from '@canton-network/core-types'
 import './App.css'
 import * as sdk from '@canton-network/dapp-sdk'
 import { HoldingsTab } from './components/HoldingsTab.js'
@@ -20,6 +21,10 @@ function App() {
     const [connection, setConnection] = useState<Connection>({
         connected: false,
     })
+
+    const [registryUrls, setRegistryUrls] = useState<Map<PartyId, string>>(
+        new Map()
+    )
 
     const [errorMsg, setErrorMsg] = useState('')
     const [messages, setMessages] = useState<string[]>([])
@@ -200,6 +205,7 @@ function App() {
                         value: 'twoStepTransfer',
                         content: connection.primaryParty ? (
                             <TwoStepTransferTab
+                                registryUrls={registryUrls}
                                 party={connection.primaryParty}
                             />
                         ) : (
@@ -220,10 +226,12 @@ function App() {
                     {
                         label: 'Registry Settings',
                         value: 'registries',
-                        content:
+                        content: (
                             <RegistriesTab
-                                registryUrls={new Map()}
+                                registryUrls={registryUrls}
+                                onChange={(urls) => setRegistryUrls(urls)}
                             />
+                        ),
                     },
                 ]}
             />

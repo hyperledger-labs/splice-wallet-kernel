@@ -3,39 +3,37 @@
 
 import { v4 } from 'uuid'
 import { PartyId } from '@canton-network/core-types'
-import {
-    resolveTokenStandardClient,
-    resolveTokenStandardService,
-} from '../services'
+import { resolveTokenStandardService } from '../services'
 
 export const createTransfer = async ({
+    registryUrls,
     sender,
     receiver,
+    instrumentId,
     amount,
     inputUtxos,
     memo,
 }: {
+    registryUrls: Map<PartyId, string>
     sender: PartyId
     receiver: PartyId
+    instrumentId: { adminId: PartyId; id: string }
     amount: number
     inputUtxos?: string[]
     memo?: string
 }) => {
-    const registryUrl = 'http://scan.localhost:4000'
-    const tokenStandardClient = await resolveTokenStandardClient({
-        registryUrl,
-    })
+    const registryUrl = registryUrls.get(instrumentId.adminId)
+    if (!registryUrl)
+        throw new Error(`no registry URL for admin ${instrumentId.adminId}`)
     const tokenStandardService = await resolveTokenStandardService()
-    const registryInfo = await tokenStandardClient.get(
-        '/registry/metadata/v1/info'
-    )
+
     const [transferCommand, disclosedContracts] =
         await tokenStandardService.transfer.createTransfer(
             sender,
             receiver,
             `${amount}`,
-            registryInfo.adminId,
-            'Amulet',
+            instrumentId.adminId,
+            instrumentId.id,
             registryUrl,
             inputUtxos,
             memo,

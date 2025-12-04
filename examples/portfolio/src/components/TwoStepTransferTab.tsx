@@ -1,12 +1,15 @@
 import { useState } from 'react'
+import { PartyId } from '@canton-network/core-types'
 import { createTransfer } from '../utils/createTransfer.js'
 
 export type TwoStepTransferTabProps = {
+    registryUrls: Map<PartyId, string>
     party: string
     sessionToken?: string // used to tap
 }
 
 export const TwoStepTransferTab: React.FC<TwoStepTransferTabProps> = ({
+    registryUrls,
     party,
 }) => {
     const [receiver, setReceiver] = useState<string>('')
@@ -41,7 +44,9 @@ export const TwoStepTransferTab: React.FC<TwoStepTransferTabProps> = ({
             <br />
             <button
                 onClick={() => {
+                    // TODO: combo box for held tokens
                     createTransfer({
+                        registryUrls,
                         sender: party,
                         receiver,
                         amount,
