@@ -10058,6 +10058,7 @@ __metadata:
   resolution: "docs-wallet-integration-guide-examples@workspace:docs/wallet-integration-guide/examples"
   dependencies:
     "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-ledger-proto": "workspace:^"
     "@canton-network/core-signing-lib": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
@@ -18779,61 +18780,6 @@ __metadata:
     vite:
       optional: true
   checksum: 10c0/5fcb7f3739d115f36195a692c0e9f9fca4e504bbbbabe29e71ee06630dd05ea2920169371e80e548eb4779d2eca14107277497838d7df588d53e1fadf84be861
-  languageName: node
-  linkType: hard
-
-"vite@npm:*":
-  version: 7.1.10
-  resolution: "vite@npm:7.1.10"
-  dependencies:
-    esbuild: "npm:^0.25.0"
-    fdir: "npm:^6.5.0"
-    fsevents: "npm:~2.3.3"
-    picomatch: "npm:^4.0.3"
-    postcss: "npm:^8.5.6"
-    rollup: "npm:^4.43.0"
-    tinyglobby: "npm:^0.2.15"
-  peerDependencies:
-    "@types/node": ^20.19.0 || >=22.12.0
-    jiti: ">=1.21.0"
-    less: ^4.0.0
-    lightningcss: ^1.21.0
-    sass: ^1.70.0
-    sass-embedded: ^1.70.0
-    stylus: ">=0.54.8"
-    sugarss: ^5.0.0
-    terser: ^5.16.0
-    tsx: ^4.8.1
-    yaml: ^2.4.2
-  dependenciesMeta:
-    fsevents:
-      optional: true
-  peerDependenciesMeta:
-    "@types/node":
-      optional: true
-    jiti:
-      optional: true
-    less:
-      optional: true
-    lightningcss:
-      optional: true
-    sass:
-      optional: true
-    sass-embedded:
-      optional: true
-    stylus:
-      optional: true
-    sugarss:
-      optional: true
-    terser:
-      optional: true
-    tsx:
-      optional: true
-    yaml:
-      optional: true
-  bin:
-    vite: bin/vite.js
-  checksum: 10c0/ea296971a3094b0e463a91af58de64dca56c8c5c563237e59d158641f8ad7f600f624c4f7c05c18fad68f414e23d50d7145118169b8dcd4bc85283c63c7185bb
   languageName: node
   linkType: hard
 

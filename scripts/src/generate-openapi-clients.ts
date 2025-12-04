@@ -86,6 +86,8 @@ async function generateOpenApiClient(spec: OpenApiSpec) {
     console.log(`${message}:\n  ${info(input.toString())}\n`)
 
     try {
+        let specs = ''
+        let filePath = ''
         if ('specdir' in spec) {
             // Try a fetch first, because openapi-fetch silently fails if the URL is a 404
             await downloadToFile(
@@ -93,9 +95,18 @@ async function generateOpenApiClient(spec: OpenApiSpec) {
                 path.join(root, spec.specdir),
                 spec.hash
             )
+            filePath = path.join(root, spec.specdir)
+            specs = fs.readFileSync(filePath, 'utf8')
+        } else {
+            filePath = path.join(root, input.toString())
+            specs = fs.readFileSync(filePath, 'utf8')
         }
 
-        const nodes = await generateSchema(input)
+        console.log(filePath)
+        console.log(path.dirname(filePath))
+        const nodes = await generateSchema(specs, {
+            cwd: path.dirname(filePath),
+        })
         const schema = astToString(nodes)
 
         await ensureDir(path.join(root, path.dirname(output)))
