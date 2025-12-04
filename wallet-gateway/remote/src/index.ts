@@ -28,7 +28,7 @@ const program = new Command()
     .option('-c, --config <path>', 'set config path', './config.json')
     .option('--config-schema', 'output the config schema and exit', false)
     .option('--config-example', 'output an example config and exit', false)
-    .option('-p, --port [port]', 'set port', '3030')
+    .option('-p, --port [port]', 'set port (overrides config)')
     .addOption(
         new Option('-f, --log-format <format>', 'set log format')
             .choices(['json', 'pretty'])
