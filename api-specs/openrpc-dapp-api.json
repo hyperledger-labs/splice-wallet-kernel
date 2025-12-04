@@ -578,12 +578,7 @@
                         "required": ["accessToken", "userId"]
                     }
                 },
-                "required": [
-                    "kernel",
-                    "isConnected",
-                    "isNetworkConnected",
-                    "userUrl"
-                ]
+                "required": ["kernel", "isConnected", "isNetworkConnected"]
             }
         }
     }

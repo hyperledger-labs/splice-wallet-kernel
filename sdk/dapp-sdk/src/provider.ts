@@ -163,7 +163,7 @@ export const dappController = (provider: SpliceProvider) =>
                 })
 
             if (!response.status.isConnected)
-                openKernelUserUI('remote', response.status.userUrl)
+                openKernelUserUI('remote', response.status.userUrl ?? '')
 
             const promise = new Promise<dappAPI.ConnectResult>(
                 (resolve, reject) => {
@@ -207,8 +207,7 @@ export const dappController = (provider: SpliceProvider) =>
                     params,
                 })
 
-            if (!response.isConnected)
-                openKernelUserUI('remote', response.userUrl)
+            if (response.userUrl) openKernelUserUI('remote', response.userUrl)
 
             const promise = new Promise<dappAPI.PrepareExecuteResult>(
                 (resolve, reject) => {

@@ -214,7 +214,6 @@ export const dappController = (
                     isConnected: false,
                     isNetworkConnected: false,
                     networkReason: 'Unauthenticated',
-                    userUrl: `${userUrl}/login/`,
                 }
             }
 
@@ -231,7 +230,6 @@ export const dappController = (
                 isConnected: true,
                 isNetworkConnected: status.isConnected,
                 networkReason: status.reason ? status.reason : 'OK',
-                userUrl: `${userUrl}/login/`,
                 network: {
                     networkId: network.id,
                     ledgerApi: {

@@ -199,7 +199,7 @@ export interface StatusEvent {
     isConnected: IsConnected
     isNetworkConnected: IsNetworkConnected
     networkReason?: NetworkReason
-    userUrl: UserUrl
+    userUrl?: UserUrl
     network?: Network
     session?: Session
     [k: string]: any

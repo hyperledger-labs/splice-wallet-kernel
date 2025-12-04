@@ -30,8 +30,17 @@ export const dappController = (store?: Store) =>
                     isConnected: false,
                     isNetworkConnected: false,
                     networkReason: 'Unauthenticated',
-                    networkId: 'default-network-id',
                     userUrl: Browser.runtime.getURL('pages/user.html'),
+                    network: {
+                        networkId: 'default-network-id',
+                        ledgerApi: {
+                            baseUrl: 'http://default-ledger-api',
+                        },
+                    },
+                    session: {
+                        accessToken: 'default-access-token',
+                        userId: 'default-user-id',
+                    },
                 },
                 sessionToken: 'default-session-token',
             }),
