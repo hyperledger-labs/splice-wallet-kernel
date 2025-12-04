@@ -227,7 +227,8 @@ function App() {
                         {status.network && (
                             <span>
                                 <br />
-                                <b>network ID:</b> <i>{status.network.networkId}</i>
+                                <b>network ID:</b>{' '}
+                                <i>{status.network.networkId}</i>
                             </span>
                         )}
                         {ledgerApiVersion && (
