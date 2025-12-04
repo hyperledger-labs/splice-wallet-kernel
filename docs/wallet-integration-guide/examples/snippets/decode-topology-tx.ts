@@ -1,3 +1,4 @@
+import { TopologyTransaction } from '@canton-network/core-ledger-proto'
 import {
     localNetAuthDefault,
     localNetLedgerDefault,
@@ -28,6 +29,8 @@ export default async function () {
         await sdk.userLedger!.generateExternalParty(publicKey, partyHint)
 
     generateExternalPartyResponse!.topologyTransactions!.map((topologyTx) =>
-        LedgerController.toDecodedTopologyTransaction(topologyTx)
+        TopologyTransaction.toJson(
+            LedgerController.toDecodedTopologyTransaction(topologyTx)
+        )
     )
 }

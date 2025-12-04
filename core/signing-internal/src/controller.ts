@@ -85,14 +85,16 @@ export class InternalSigningDriver implements SigningDriverInterface {
                         key.privateKey
                     )
 
+                    const now = new Date()
                     const internalTransaction: SigningTransaction = {
                         id: txId,
                         hash: params.txHash,
                         signature,
                         publicKey: params.publicKey,
-                        createdAt: new Date(),
+                        createdAt: now,
                         status: 'signed',
-                        updatedAt: new Date(),
+                        updatedAt: now,
+                        signedAt: now,
                     }
 
                     this.store.setSigningTransaction(

@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-lib",
-    "version": "0.15.0",
+    "version": "0.16.0",
     "type": "module",
     "description": "Core library for signing driver implementations",
     "license": "Apache-2.0",
