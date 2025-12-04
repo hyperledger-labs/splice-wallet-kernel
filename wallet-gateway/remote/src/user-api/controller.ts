@@ -591,7 +591,16 @@ export const userController = (
                         isConnected: true,
                         isNetworkConnected: status.isConnected,
                         networkReason: status.reason ? status.reason : 'OK',
-                        networkId: network.id,
+                        network: {
+                            networkId: network.id,
+                            ledgerApi: {
+                                baseUrl: network.ledgerApi.baseUrl,
+                            },
+                        },
+                        session: {
+                            accessToken: accessToken,
+                            userId: userId,
+                        },
                     },
                     sessionToken: accessToken,
                 })
