@@ -7,7 +7,7 @@ import {
     type TransferInstructionView,
 } from '@canton-network/core-ledger-client'
 import { TRANSFER_INSTRUCTION_INTERFACE_ID } from '@canton-network/core-token-standard'
-import { resolveTokenStandardService } from '../services/registry.js'
+import { resolveTokenStandardService } from '../services'
 
 export type PendingTransfer = {
     contractId: string

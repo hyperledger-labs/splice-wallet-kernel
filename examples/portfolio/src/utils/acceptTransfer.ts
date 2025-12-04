@@ -3,7 +3,7 @@
 
 import { v4 } from 'uuid'
 import type { PartyId } from '@canton-network/core-types'
-import { resolveTokenStandardService } from '../services/registry.js'
+import { resolveTokenStandardService } from '../services'
 
 export const acceptTransfer = async ({
     party,

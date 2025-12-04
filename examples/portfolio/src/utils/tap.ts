@@ -2,10 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { v4 } from 'uuid'
-import {
-    resolveTokenStandardClient,
-    resolveAmuletService,
-} from '../services/registry.js'
+import { resolveTokenStandardClient, resolveAmuletService } from '../services'
 
 export const tap = async ({
     party,

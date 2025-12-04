@@ -3,7 +3,7 @@
 
 import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
 import { type Holding } from '@canton-network/core-ledger-client'
-import { resolveTokenStandardService } from '../services/registry.js'
+import { resolveTokenStandardService } from '../services'
 
 export const getHoldings = async ({
     party,
