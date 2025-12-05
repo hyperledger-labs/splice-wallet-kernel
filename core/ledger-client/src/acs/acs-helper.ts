@@ -124,20 +124,7 @@ export class ACSHelper {
                 ACSHelper.createKey(party, templateId, undefined)
             )
         )
-        const result: JsGetActiveContractsResponse[] = []
-
-        for (const key of keys) {
-            const container = this.findACSContainer(key)
-            const activeContractsForKey = await container.update(
-                offset,
-                key,
-                this.apiInstance,
-                this.wsSupport
-            )
-            result.push(...activeContractsForKey)
-        }
-
-        return result
+        return this.queryAcsByKeys(offset, keys)
     }
 
     async activeContractsForInterfaces(
@@ -151,6 +138,10 @@ export class ACSHelper {
             )
         )
 
+        return this.queryAcsByKeys(offset, keys)
+    }
+
+    async queryAcsByKeys(offset: number, keys: ACSKey[]) {
         const result: JsGetActiveContractsResponse[] = []
 
         for (const key of keys) {
