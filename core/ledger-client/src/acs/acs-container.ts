@@ -14,6 +14,7 @@ import {
     JsGetUpdatesResponse,
     GetUpdatesRequest,
     Event,
+    Transaction,
 } from './types.js'
 
 interface ACSUpdateConfig {
@@ -83,7 +84,7 @@ export class ACSContainer {
         key: ACSKey,
         api: LedgerClient,
         wsSupport?: WSSupport
-    ): Promise<Array<JsGetActiveContractsResponse>> {
+    ): Promise<JsGetActiveContractsResponse[]> {
         if (this.acsSet === null) {
             const acs = await this.readACS(offset, key, api, wsSupport)
             this.acsSet = acs
@@ -228,6 +229,22 @@ export class ACSContainer {
             }
         })
         return [newEvents, newOffset]
+    }
+
+    private eventToActiveContract(
+        transcation: Transaction,
+        event: CreatedEvent
+    ) {
+        return {
+            workflowId: transcation.value.workflowId,
+            contractEntry: {
+                JsActiveContract: {
+                    createdEvent: event,
+                    synchronizerId: transcation.value.synchronizerId,
+                    reassignmentCounter: 0,
+                },
+            },
+        }
     }
 
     private static async updateContracts(
