@@ -8,6 +8,7 @@ import { HoldingsTab } from './components/HoldingsTab.js'
 import { RegistriesTab } from './components/RegistriesTab.js'
 import { PendingTransfersTab } from './components/PendingTransfersTab.js'
 import { TwoStepTransferTab } from './components/TwoStepTransferTab.js'
+import { TransactionHistoryTab } from './components/TransactionHistoryTab.js'
 import { Tabs } from './components/Tabs.js'
 import {
     type Registries,
@@ -221,6 +222,17 @@ function App() {
                         content: connection.primaryParty ? (
                             <PendingTransfersTab
                                 registryUrls={registryUrls}
+                                party={connection.primaryParty}
+                            />
+                        ) : (
+                            <div>no party</div>
+                        ),
+                    },
+                    {
+                        label: 'Transaction History',
+                        value: 'transactionHistory',
+                        content: connection.primaryParty ? (
+                            <TransactionHistoryTab
                                 party={connection.primaryParty}
                             />
                         ) : (
