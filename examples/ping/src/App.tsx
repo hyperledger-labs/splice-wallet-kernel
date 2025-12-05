@@ -155,7 +155,7 @@ function App() {
                                 console.log('Connecting to Wallet Gateway...')
                                 setLoading(true)
                                 sdk.connect()
-                                    .then(({ status }) => {
+                                    .then((status) => {
                                         setLoading(false)
                                         setStatus(status)
                                         setErrorMsg('')
@@ -224,10 +224,26 @@ function App() {
                         <br />
                         <b>connected:</b>{' '}
                         <i>{status.isConnected ? '🟢' : '🔴'}</i>
-                        {status.networkId && (
+                        {status.network && (
                             <span>
                                 <br />
-                                <b>network:</b> <i>{status.networkId}</i>
+                                <b>network ID:</b>{' '}
+                                <i>{status.network.networkId}</i>
+                                {status.network.ledgerApi && (
+                                    <>
+                                        <br />
+                                        <b>ledger API:</b>{' '}
+                                        <i>
+                                            {status.network.ledgerApi.baseUrl}
+                                        </i>
+                                    </>
+                                )}
+                            </span>
+                        )}
+                        {status.session && (
+                            <span>
+                                <br />
+                                <b>user ID:</b> <i>{status.session.userId}</i>
                             </span>
                         )}
                         {ledgerApiVersion && (

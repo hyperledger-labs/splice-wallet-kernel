@@ -147,20 +147,53 @@ export type NetworkReason = string
  *
  */
 export type NetworkId = string
-export interface StatusEvent {
-    kernel: KernelInfo
-    isConnected: IsConnected
-    isNetworkConnected: IsNetworkConnected
-    networkReason?: NetworkReason
-    networkId?: NetworkId
+/**
+ *
+ * The base URL of the ledger API.
+ *
+ */
+export type BaseUrl = string
+/**
+ *
+ * Ledger API configuration.
+ *
+ */
+export interface LedgerApiConfig {
+    baseUrl: BaseUrl
     [k: string]: any
 }
 /**
  *
- * JWT authentication token (if applicable).
+ * Network information, if connected to a network.
  *
  */
-export type SessionToken = string
+export interface Network {
+    networkId: NetworkId
+    ledgerApi?: LedgerApiConfig
+    [k: string]: any
+}
+/**
+ *
+ * JWT authentication token.
+ *
+ */
+export type AccessToken = string
+/**
+ *
+ * The user identifier.
+ *
+ */
+export type UserId = string
+/**
+ *
+ * Session information, if authenticated.
+ *
+ */
+export interface Session {
+    accessToken: AccessToken
+    userId: UserId
+    [k: string]: any
+}
 export type Dar = string
 export type Dars = Dar[]
 /**
@@ -394,9 +427,14 @@ export interface LedgerApiParams {
     body?: Body
     [k: string]: any
 }
-export interface ConnectResult {
-    status: StatusEvent
-    sessionToken: SessionToken
+export interface StatusEvent {
+    kernel: KernelInfo
+    isConnected: IsConnected
+    isNetworkConnected: IsNetworkConnected
+    networkReason?: NetworkReason
+    userUrl?: UserUrl
+    network?: Network
+    session?: Session
     [k: string]: any
 }
 /**
@@ -452,7 +490,7 @@ export type TxChangedEvent =
  */
 
 export type Status = () => Promise<StatusEvent>
-export type Connect = () => Promise<ConnectResult>
+export type Connect = () => Promise<StatusEvent>
 export type Disconnect = () => Promise<Null>
 export type DarsAvailable = () => Promise<DarsAvailableResult>
 export type PrepareReturn = (
