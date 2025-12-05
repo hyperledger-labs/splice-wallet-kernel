@@ -574,7 +574,7 @@ export const userController = (
                     accessToken: authContext?.accessToken || '',
                 })
                 const network = await store.getCurrentNetwork()
-
+                const idp = await store.getIdp(network.identityProviderId)
                 // Assumption: `setSession` calls `assertConnected`, so its safe to declare that the authContext is defined.
                 const { userId, accessToken } = authContext!
                 const notifier = notificationService.getNotifier(userId)
@@ -608,6 +608,7 @@ export const userController = (
                 return Promise.resolve({
                     accessToken,
                     network,
+                    idp,
                     status: status.isConnected ? 'connected' : 'disconnected',
                     reason: status.reason ? status.reason : 'OK',
                 })
@@ -642,11 +643,13 @@ export const userController = (
                 logger,
                 accessToken: authContext!.accessToken,
             })
+            const idp = await store.getIdp(network.identityProviderId)
             const status = await networkStatus(ledgerClient)
             return {
                 sessions: [
                     {
                         network,
+                        idp: idp,
                         accessToken: authContext!.accessToken,
                         status: status.isConnected
                             ? 'connected'
