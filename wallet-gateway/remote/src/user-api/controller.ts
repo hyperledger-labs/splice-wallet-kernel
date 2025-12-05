@@ -586,23 +586,20 @@ export const userController = (
                 })
                 const status = await networkStatus(ledgerClient)
                 notifier.emit('onConnected', {
-                    status: {
-                        kernel: kernelInfo,
-                        isConnected: true,
-                        isNetworkConnected: status.isConnected,
-                        networkReason: status.reason ? status.reason : 'OK',
-                        network: {
-                            networkId: network.id,
-                            ledgerApi: {
-                                baseUrl: network.ledgerApi.baseUrl,
-                            },
-                        },
-                        session: {
-                            accessToken: accessToken,
-                            userId: userId,
+                    kernel: kernelInfo,
+                    isConnected: true,
+                    isNetworkConnected: status.isConnected,
+                    networkReason: status.reason ? status.reason : 'OK',
+                    network: {
+                        networkId: network.id,
+                        ledgerApi: {
+                            baseUrl: network.ledgerApi.baseUrl,
                         },
                     },
-                    sessionToken: accessToken,
+                    session: {
+                        accessToken: accessToken,
+                        userId: userId,
+                    },
                 })
 
                 return Promise.resolve({

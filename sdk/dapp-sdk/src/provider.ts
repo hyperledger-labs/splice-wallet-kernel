@@ -157,27 +157,22 @@ const withTimeout = (
 export const dappController = (provider: SpliceProvider) =>
     buildController({
         connect: async () => {
-            const response =
-                await provider.request<dappRemoteAPI.ConnectResult>({
-                    method: 'connect',
-                })
+            const response = await provider.request<dappRemoteAPI.StatusEvent>({
+                method: 'connect',
+            })
 
-            if (!response.status.isConnected)
-                openKernelUserUI('remote', response.status.userUrl ?? '')
+            if (!response.isConnected)
+                openKernelUserUI('remote', response.userUrl ?? '')
 
-            const promise = new Promise<dappAPI.ConnectResult>(
+            const promise = new Promise<dappAPI.StatusEvent>(
                 (resolve, reject) => {
                     // 5 minutes timeout
                     const timeout = withTimeout(reject, 5 * 60 * 1000)
-                    provider.on<dappRemoteAPI.OnConnectedEvent>(
+                    provider.on<dappRemoteAPI.StatusEvent>(
                         'onConnected',
                         (event) => {
                             clearTimeout(timeout)
-                            const result: dappAPI.ConnectResult = {
-                                sessionToken: event.sessionToken ?? '',
-                                status: event.status,
-                            }
-                            resolve(result)
+                            resolve(event)
                         }
                     )
                 }

@@ -194,22 +194,6 @@ export interface Session {
     userId: UserId
     [k: string]: any
 }
-export interface StatusEvent {
-    kernel: KernelInfo
-    isConnected: IsConnected
-    isNetworkConnected: IsNetworkConnected
-    networkReason?: NetworkReason
-    userUrl?: UserUrl
-    network?: Network
-    session?: Session
-    [k: string]: any
-}
-/**
- *
- * JWT authentication token (if applicable).
- *
- */
-export type SessionToken = string
 export type Dar = string
 export type Dars = Dar[]
 /**
@@ -443,9 +427,14 @@ export interface LedgerApiParams {
     body?: Body
     [k: string]: any
 }
-export interface ConnectResult {
-    status: StatusEvent
-    sessionToken: SessionToken
+export interface StatusEvent {
+    kernel: KernelInfo
+    isConnected: IsConnected
+    isNetworkConnected: IsNetworkConnected
+    networkReason?: NetworkReason
+    userUrl?: UserUrl
+    network?: Network
+    session?: Session
     [k: string]: any
 }
 /**
@@ -501,7 +490,7 @@ export type TxChangedEvent =
  */
 
 export type Status = () => Promise<StatusEvent>
-export type Connect = () => Promise<ConnectResult>
+export type Connect = () => Promise<StatusEvent>
 export type Disconnect = () => Promise<Null>
 export type DarsAvailable = () => Promise<DarsAvailableResult>
 export type PrepareReturn = (

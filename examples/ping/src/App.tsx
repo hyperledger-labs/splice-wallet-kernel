@@ -155,7 +155,7 @@ function App() {
                                 console.log('Connecting to Wallet Gateway...')
                                 setLoading(true)
                                 sdk.connect()
-                                    .then(({ status }) => {
+                                    .then((status) => {
                                         setLoading(false)
                                         setStatus(status)
                                         setErrorMsg('')

@@ -25,24 +25,21 @@ export const dappController = (store?: Store) =>
     buildController({
         connect: async () =>
             Promise.resolve({
-                status: {
-                    kernel: kernelInfo,
-                    isConnected: false,
-                    isNetworkConnected: false,
-                    networkReason: 'Unauthenticated',
-                    userUrl: Browser.runtime.getURL('pages/user.html'),
-                    network: {
-                        networkId: 'default-network-id',
-                        ledgerApi: {
-                            baseUrl: 'http://default-ledger-api',
-                        },
-                    },
-                    session: {
-                        accessToken: 'default-access-token',
-                        userId: 'default-user-id',
+                kernel: kernelInfo,
+                isConnected: false,
+                isNetworkConnected: false,
+                networkReason: 'Unauthenticated',
+                userUrl: Browser.runtime.getURL('pages/user.html'),
+                network: {
+                    networkId: 'default-network-id',
+                    ledgerApi: {
+                        baseUrl: 'http://default-ledger-api',
                     },
                 },
-                sessionToken: 'default-session-token',
+                session: {
+                    accessToken: 'default-access-token',
+                    userId: 'default-user-id',
+                },
             }),
         disconnect: async () => Promise.resolve(null),
         darsAvailable: async () => Promise.resolve({ dars: ['default-dar'] }),
