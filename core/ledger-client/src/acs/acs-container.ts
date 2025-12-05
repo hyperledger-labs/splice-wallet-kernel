@@ -14,7 +14,6 @@ import {
     JsGetUpdatesResponse,
     GetUpdatesRequest,
     Event,
-    Transaction,
 } from './types.js'
 
 interface ACSUpdateConfig {
@@ -229,22 +228,6 @@ export class ACSContainer {
             }
         })
         return [newEvents, newOffset]
-    }
-
-    private eventToActiveContract(
-        transcation: Transaction,
-        event: CreatedEvent
-    ) {
-        return {
-            workflowId: transcation.value.workflowId,
-            contractEntry: {
-                JsActiveContract: {
-                    createdEvent: event,
-                    synchronizerId: transcation.value.synchronizerId,
-                    reassignmentCounter: 0,
-                },
-            },
-        }
     }
 
     private static async updateContracts(
