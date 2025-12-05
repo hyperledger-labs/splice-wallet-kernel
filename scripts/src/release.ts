@@ -37,7 +37,7 @@ program
         }).catch(() => process.exit(0))
 
         if (groups.length === 0) {
-            console.log('Aborting')
+            console.log('No release groups selected; quitting.')
             process.exit(0)
         }
 
