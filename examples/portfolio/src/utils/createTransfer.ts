@@ -17,14 +17,14 @@ export const createTransfer = async ({
     registryUrls: Map<PartyId, string>
     sender: PartyId
     receiver: PartyId
-    instrumentId: { adminId: PartyId; id: string }
+    instrumentId: { admin: PartyId; id: string }
     amount: number
     inputUtxos?: string[]
     memo?: string
 }) => {
-    const registryUrl = registryUrls.get(instrumentId.adminId)
+    const registryUrl = registryUrls.get(instrumentId.admin)
     if (!registryUrl)
-        throw new Error(`no registry URL for admin ${instrumentId.adminId}`)
+        throw new Error(`no registry URL for admin ${instrumentId.admin}`)
     const tokenStandardService = await resolveTokenStandardService()
 
     const [transferCommand, disclosedContracts] =
@@ -32,7 +32,7 @@ export const createTransfer = async ({
             sender,
             receiver,
             `${amount}`,
-            instrumentId.adminId,
+            instrumentId.admin,
             instrumentId.id,
             registryUrl,
             inputUtxos,

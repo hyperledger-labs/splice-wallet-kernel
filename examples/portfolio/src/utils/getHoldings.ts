@@ -34,3 +34,22 @@ export const getHoldings = async ({
 
     return uniqueUtxos
 }
+
+export const getTransferableInstrumentIds = async ({
+    party,
+}: {
+    party: string
+}): Promise<{ admin: string; id: string }[]> => {
+    const holdings = await getHoldings({ party })
+    const keys = new Set<string>()
+    const uniqueInstrumentIds: { admin: string; id: string }[] = []
+    for (const holding of holdings) {
+        const instrumentId = holding.instrumentId
+        const key = JSON.stringify([instrumentId.admin, instrumentId.id])
+        if (!keys.has(key)) {
+            keys.add(key)
+            uniqueInstrumentIds.push(instrumentId)
+        }
+    }
+    return uniqueInstrumentIds
+}
