@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState } from 'react'
-import { PartyId } from '@canton-network/core-types'
 import { resolveTokenStandardClient } from '../services'
+import { type Registries } from '../services/registries.js'
 
 export type RegistriesTabProps = {
-    // TODO: multiple URLs per party.
-    registryUrls: Map<PartyId, string>
-    onChange: (registryUrls: Map<PartyId, string>) => void
+    registryUrls: Registries
+    onChange: (registryUrls: Registries) => void
 }
 
 export const RegistriesTab: React.FC<RegistriesTabProps> = (props) => {

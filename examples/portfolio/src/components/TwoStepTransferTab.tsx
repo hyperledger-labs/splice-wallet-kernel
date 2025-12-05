@@ -28,7 +28,7 @@ export const TwoStepTransferTab: React.FC<TwoStepTransferTabProps> = ({
     }, [party])
 
     return (
-        <div>
+        <form onSubmit={(e) => e.preventDefault()}>
             <label htmlFor="instrument">Instrument&nbsp;</label>
             <select
                 value={selectedInstrumentIdx}
@@ -68,6 +68,7 @@ export const TwoStepTransferTab: React.FC<TwoStepTransferTabProps> = ({
             />
             <br />
             <button
+                type="submit"
                 onClick={() => {
                     // TODO: combo box for held tokens
                     createTransfer({
@@ -83,6 +84,6 @@ export const TwoStepTransferTab: React.FC<TwoStepTransferTabProps> = ({
             >
                 Transfer
             </button>
-        </div>
+        </form>
     )
 }

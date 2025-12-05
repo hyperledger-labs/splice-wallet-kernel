@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useEffect, useState } from 'react'
-import { PartyId } from '@canton-network/core-types'
 import './App.css'
 import * as sdk from '@canton-network/dapp-sdk'
 import { HoldingsTab } from './components/HoldingsTab.js'
@@ -10,6 +9,11 @@ import { RegistriesTab } from './components/RegistriesTab.js'
 import { PendingTransfersTab } from './components/PendingTransfersTab.js'
 import { TwoStepTransferTab } from './components/TwoStepTransferTab.js'
 import { Tabs } from './components/Tabs.js'
+import {
+    type Registries,
+    loadRegistries,
+    storeRegistries,
+} from './services/registries.js'
 
 type Connection = {
     connected: boolean
@@ -22,9 +26,8 @@ function App() {
         connected: false,
     })
 
-    const [registryUrls, setRegistryUrls] = useState<Map<PartyId, string>>(
-        new Map()
-    )
+    const [registryUrls, setRegistryUrls] =
+        useState<Registries>(loadRegistries())
 
     const [errorMsg, setErrorMsg] = useState('')
     const [messages, setMessages] = useState<string[]>([])
@@ -230,7 +233,10 @@ function App() {
                         content: (
                             <RegistriesTab
                                 registryUrls={registryUrls}
-                                onChange={(urls) => setRegistryUrls(urls)}
+                                onChange={(registries) => {
+                                    storeRegistries(registries)
+                                    setRegistryUrls(registries)
+                                }}
                             />
                         ),
                     },
