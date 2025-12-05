@@ -233,7 +233,9 @@ function App() {
                                     <>
                                         <br />
                                         <b>ledger API:</b>{' '}
-                                        <i>{status.network.ledgerApi.baseUrl}</i>
+                                        <i>
+                                            {status.network.ledgerApi.baseUrl}
+                                        </i>
                                     </>
                                 )}
                             </span>
@@ -241,8 +243,7 @@ function App() {
                         {status.session && (
                             <span>
                                 <br />
-                                <b>user ID:</b>{' '}
-                                <i>{status.session.userId}</i>
+                                <b>user ID:</b> <i>{status.session.userId}</i>
                             </span>
                         )}
                         {ledgerApiVersion && (
