@@ -607,16 +607,8 @@ export class LedgerClient {
         interfaceIds?: string[]
         limit?: number
     }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
-        const {
-            offset,
-            templateIds,
-            parties,
-            filterByParty,
-            interfaceIds,
-            limit,
-        } = options
+        const { offset, templateIds, parties, interfaceIds, limit } = options
 
-        this.logger.debug(filterByParty)
         this.logger.debug(options, 'options for active contracts')
 
         const hasParties = Array.isArray(parties) && parties.length > 0
