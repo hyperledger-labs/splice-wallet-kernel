@@ -10,7 +10,7 @@ import {
     PrepareReturnParams,
     StatusEvent,
 } from './rpc-gen/typings.js'
-import { Store } from '@canton-network/core-wallet-store'
+import { Store, Transaction } from '@canton-network/core-wallet-store'
 import {
     LedgerClient,
     GetEndpoint,
@@ -30,7 +30,8 @@ export const dappController = (
     store: Store,
     notificationService: NotificationService,
     _logger: Logger,
-    context?: AuthContext
+    context?: AuthContext,
+    origin?: string
 ) => {
     const logger = _logger.child({ component: 'dapp-controller' })
     return buildController({
@@ -157,14 +158,20 @@ export const dappController = (
                     ledgerClient
                 )
 
-            store.setTransaction({
+            const transaction: Transaction = {
                 commandId,
                 status: 'pending',
                 preparedTransaction,
                 preparedTransactionHash,
                 payload: params,
                 createdAt: new Date(),
-            })
+            }
+
+            if (origin) {
+                transaction.origin = origin
+            }
+
+            store.setTransaction(transaction)
 
             return {
                 userUrl: `${userUrl}/approve/index.html?commandId=${commandId}`,
