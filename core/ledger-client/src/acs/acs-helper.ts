@@ -114,13 +114,45 @@ export class ACSHelper {
         return newContainer
     }
 
+    async updateSingleKey(offset: number, key: ACSKey) {
+        const start = performance.now()
+        const container = this.findACSContainer(key)
+        const result = await container.update(
+            offset,
+            key,
+            this.apiInstance,
+            this.wsSupport
+        )
+
+        const end = performance.now()
+
+        const keyStr = ACSHelper.keyToString(key, this.apiInstance.baseUrl.href)
+
+        if (this.contractsSet.has(keyStr)) {
+            SharedACSCacheStats.totalCacheServeTime += end - start
+        }
+
+        return result
+    }
+
+    async queryAcsByKeys(offset: number, keys: ACSKey[]) {
+        const result: JsGetActiveContractsResponse[] = []
+
+        for (const key of keys) {
+            const contracts = await this.updateSingleKey(offset, key)
+            result.push(...contracts)
+        }
+
+        return result
+    }
+
     async activeContractsForTemplates(
         offset: number,
         parties: PartyId[],
         templateIds: string[]
     ): Promise<JsGetActiveContractsResponse[]> {
         const keys = parties.flatMap((party) =>
-            templateIds.flatMap((templateId) =>
+            templateIds.map((templateId) =>
                 ACSHelper.createKey(party, templateId, undefined)
             )
         )
@@ -133,7 +165,7 @@ export class ACSHelper {
         interfaceIds: string[]
     ): Promise<JsGetActiveContractsResponse[]> {
         const keys = parties.flatMap((party) =>
-            interfaceIds.flatMap((interfaceId) =>
+            interfaceIds.map((interfaceId) =>
                 ACSHelper.createKey(party, undefined, interfaceId)
             )
         )
@@ -141,48 +173,15 @@ export class ACSHelper {
         return this.queryAcsByKeys(offset, keys)
     }
 
-    async queryAcsByKeys(offset: number, keys: ACSKey[]) {
-        const result: JsGetActiveContractsResponse[] = []
-
-        for (const key of keys) {
-            const container = this.findACSContainer(key)
-            const activeContractsForKey = await container.update(
-                offset,
-                key,
-                this.apiInstance,
-                this.wsSupport
-            )
-            result.push(...activeContractsForKey)
-        }
-
-        return result
-    }
-
     async activeContractsForTemplate(
         offset: number,
         partyFilter: string,
         templateId: string
     ): Promise<JsGetActiveContractsResponse[]> {
-        const key = ACSHelper.createKey(partyFilter, templateId, undefined)
-        const start = performance.now()
-        const container = this.findACSContainer(key)
-        const result = container.update(
+        return this.updateSingleKey(
             offset,
-            key,
-            this.apiInstance,
-            this.wsSupport
+            ACSHelper.createKey(partyFilter, templateId, undefined)
         )
-        const end = performance.now()
-
-        if (
-            this.contractsSet.has(
-                ACSHelper.keyToString(key, this.apiInstance.baseUrl.href)
-            )
-        ) {
-            SharedACSCacheStats.totalCacheServeTime += end - start
-        }
-
-        return result
     }
 
     async activeContractsForInterface(
@@ -190,27 +189,9 @@ export class ACSHelper {
         partyFilter: string | undefined,
         interfaceId: string
     ): Promise<Array<JsGetActiveContractsResponse>> {
-        const key = ACSHelper.createKey(partyFilter, undefined, interfaceId)
-        const start = performance.now()
-        const container = this.findACSContainer(key)
-
-        const result = container.update(
+        return this.updateSingleKey(
             offset,
-            key,
-            this.apiInstance,
-            this.wsSupport
+            ACSHelper.createKey(partyFilter, undefined, interfaceId)
         )
-
-        const end = performance.now()
-
-        if (
-            this.contractsSet.has(
-                ACSHelper.keyToString(key, this.apiInstance.baseUrl.href)
-            )
-        ) {
-            SharedACSCacheStats.totalCacheServeTime += end - start
-        }
-
-        return result
     }
 }
