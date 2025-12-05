@@ -37,6 +37,11 @@ export const PendingTransfersTab: React.FC<PendingTransfersTabProps> = ({
         <div>
             sender: <strong>{p.sender}</strong> <br />
             receiver: <strong>{p.receiver}</strong> <br />
+            {p.memo && (
+                <span>
+                    message: <strong>{p.memo}</strong> <br />
+                </span>
+            )}
             <AssetCard amount={p.amount} symbol={p.instrumentId.id} />
             {p.incoming && (
                 <button
