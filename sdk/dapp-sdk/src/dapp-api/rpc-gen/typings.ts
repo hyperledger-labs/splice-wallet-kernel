@@ -169,7 +169,7 @@ export interface LedgerApiConfig {
  */
 export interface Network {
     networkId: NetworkId
-    ledgerApi: LedgerApiConfig
+    ledgerApi?: LedgerApiConfig
     [k: string]: any
 }
 /**

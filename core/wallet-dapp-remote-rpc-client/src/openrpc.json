@@ -586,7 +586,7 @@
                                 "required": ["baseUrl"]
                             }
                         },
-                        "required": ["networkId", "ledgerApi"]
+                        "required": ["networkId"]
                     },
                     "session": {
                         "title": "session",
