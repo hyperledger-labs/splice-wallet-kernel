@@ -36,7 +36,6 @@ export const dapp = (
         })
     )
     app.use(route, (req, res, next) => {
-        // TODO test various usages
         const origin = req.headers.origin ?? undefined
 
         jsonRpcHandler<Methods>({
