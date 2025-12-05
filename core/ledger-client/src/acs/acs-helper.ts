@@ -114,11 +114,94 @@ export class ACSHelper {
         return newContainer
     }
 
+    async activeContractsForTemplates(
+        offset: number,
+        parties: PartyId[],
+        templateIds: string[]
+    ): Promise<JsGetActiveContractsResponse[]> {
+        const keys = parties.flatMap((party) =>
+            templateIds.flatMap((templateId) =>
+                ACSHelper.createKey(party, templateId, undefined)
+            )
+        )
+
+        const result: JsGetActiveContractsResponse[] = []
+        // keys.forEach(async (key) => {
+        //     const container = this.findACSContainer(key)
+        //     const t = await container.update(
+        //         offset,
+        //         key,
+        //         this.apiInstance,
+        //         this.wsSupport
+        //     )
+
+        //     result.push(...t)
+        // })
+
+        for (let i = 0; i < keys.length; i++) {
+            const container = this.findACSContainer(keys[i])
+            const t = await container.update(
+                offset,
+                keys[i],
+                this.apiInstance,
+                this.wsSupport
+            )
+            result.push(...t)
+        }
+
+        const finalResults = await Promise.all(result)
+
+        this.logger.info(`results size is ${finalResults.length}`)
+
+        return finalResults
+    }
+
+    async activeContractsForInterfaces(
+        offset: number,
+        parties: PartyId[],
+        interfaceIds: string[]
+    ): Promise<JsGetActiveContractsResponse[]> {
+        const keys = parties.flatMap((party) =>
+            interfaceIds.flatMap((interfaceId) =>
+                ACSHelper.createKey(party, undefined, interfaceId)
+            )
+        )
+
+        const result: JsGetActiveContractsResponse[] = []
+
+        for (let i = 0; i < keys.length; i++) {
+            const container = this.findACSContainer(keys[i])
+            const t = await container.update(
+                offset,
+                keys[i],
+                this.apiInstance,
+                this.wsSupport
+            )
+            result.push(...t)
+        }
+        // keys.forEach(async (key) => {
+        //     const container = this.findACSContainer(key)
+        //     const t = await container.update(
+        //         offset,
+        //         key,
+        //         this.apiInstance,
+        //         this.wsSupport
+        //     )
+        //     result.push(...t)
+        // })
+
+        const finalResults = await Promise.all(result)
+
+        this.logger.info(`results size is ${finalResults.length}`)
+
+        return finalResults
+    }
+
     async activeContractsForTemplate(
         offset: number,
         partyFilter: string,
         templateId: string
-    ): Promise<Array<JsGetActiveContractsResponse>> {
+    ): Promise<JsGetActiveContractsResponse[]> {
         const key = ACSHelper.createKey(partyFilter, templateId, undefined)
         const start = performance.now()
         const container = this.findACSContainer(key)
