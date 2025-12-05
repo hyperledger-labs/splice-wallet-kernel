@@ -525,28 +525,7 @@ export class LedgerClient {
             return this.valueOrError(resp)
         }
     }
-    /*
 
-async function processArraysAsync<T, U, R>(
-  arr1: T[],
-  arr2: U[],
-  asyncOperation: (item1: T, item2: U, index: number) => Promise<R>
-): Promise<R[]> {
-  // Ensure arrays have the same length for direct element pairing
-  if (arr1.length !== arr2.length) {
-    throw new Error("Arrays must have the same length for pairing.");
-  }
-
-  // Create an array of Promises by mapping over one array and using the index
-  // to access elements from both arrays.
-  const promises = arr1.map(async (item1, index) => {
-    const item2 = arr2[index];
-    return await asyncOperation(item1, item2, index);
-  });
-
-  // Await all promises to resolve and return the array of results.
-  return await Promise.all(promises);
-}*/
     async activeContracts(options: {
         offset: number
         templateIds?: string[]
@@ -564,7 +543,17 @@ async function processArraysAsync<T, U, R>(
             limit,
         } = options
 
-        this.logger.info(options, 'options for active contracts')
+        this.logger.debug(options, 'options for active contracts')
+
+        if (interfaceIds?.length === 1 && parties?.length === 1) {
+            const party = parties[0]
+            const interfaceId = interfaceIds[0]
+            return this.acsHelper.activeContractsForInterface(
+                offset,
+                party,
+                interfaceId
+            )
+        }
 
         if (
             templateIds &&
@@ -585,21 +574,10 @@ async function processArraysAsync<T, U, R>(
             parties &&
             parties.length > 0
         ) {
-            this.logger.info(`made it to active contracts for itnerfaces`)
             return this.acsHelper.activeContractsForInterfaces(
                 offset,
                 parties,
                 interfaceIds
-            )
-        }
-
-        if (interfaceIds?.length === 1 && parties?.length === 1) {
-            const party = parties[0]
-            const interfaceId = interfaceIds[0]
-            return this.acsHelper.activeContractsForInterface(
-                offset,
-                party,
-                interfaceId
             )
         }
 
