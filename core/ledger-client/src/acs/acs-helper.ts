@@ -124,36 +124,20 @@ export class ACSHelper {
                 ACSHelper.createKey(party, templateId, undefined)
             )
         )
-
         const result: JsGetActiveContractsResponse[] = []
-        // keys.forEach(async (key) => {
-        //     const container = this.findACSContainer(key)
-        //     const t = await container.update(
-        //         offset,
-        //         key,
-        //         this.apiInstance,
-        //         this.wsSupport
-        //     )
 
-        //     result.push(...t)
-        // })
-
-        for (let i = 0; i < keys.length; i++) {
-            const container = this.findACSContainer(keys[i])
-            const t = await container.update(
+        for (const key of keys) {
+            const container = this.findACSContainer(key)
+            const activeContractsForKey = await container.update(
                 offset,
-                keys[i],
+                key,
                 this.apiInstance,
                 this.wsSupport
             )
-            result.push(...t)
+            result.push(...activeContractsForKey)
         }
 
-        const finalResults = await Promise.all(result)
-
-        this.logger.info(`results size is ${finalResults.length}`)
-
-        return finalResults
+        return result
     }
 
     async activeContractsForInterfaces(
@@ -169,32 +153,18 @@ export class ACSHelper {
 
         const result: JsGetActiveContractsResponse[] = []
 
-        for (let i = 0; i < keys.length; i++) {
-            const container = this.findACSContainer(keys[i])
-            const t = await container.update(
+        for (const key of keys) {
+            const container = this.findACSContainer(key)
+            const activeContractsForKey = await container.update(
                 offset,
-                keys[i],
+                key,
                 this.apiInstance,
                 this.wsSupport
             )
-            result.push(...t)
+            result.push(...activeContractsForKey)
         }
-        // keys.forEach(async (key) => {
-        //     const container = this.findACSContainer(key)
-        //     const t = await container.update(
-        //         offset,
-        //         key,
-        //         this.apiInstance,
-        //         this.wsSupport
-        //     )
-        //     result.push(...t)
-        // })
 
-        const finalResults = await Promise.all(result)
-
-        this.logger.info(`results size is ${finalResults.length}`)
-
-        return finalResults
+        return result
     }
 
     async activeContractsForTemplate(
