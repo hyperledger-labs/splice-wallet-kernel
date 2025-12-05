@@ -45,6 +45,7 @@ export class UserUiSettings extends LitElement {
     @state() accessor sessions: Session[] = []
     @state() accessor idps: Idp[] = []
     @state() accessor client: UserApiClient | null = null
+    @state() accessor gatewayVersion: string | undefined = undefined
 
     async connectedCallback(): Promise<void> {
         super.connectedCallback()
@@ -52,6 +53,12 @@ export class UserUiSettings extends LitElement {
         this.listNetworks()
         this.listSessions()
         this.listIdps()
+
+        const version = await fetch('/.well-known/wallet-gateway-version')
+            .then((res) => res.json())
+            .then((data) => data.version)
+
+        this.gatewayVersion = version ? `v${version}` : 'unknown_version'
     }
 
     private async listNetworks() {
@@ -178,18 +185,21 @@ export class UserUiSettings extends LitElement {
         const client = this.client
 
         return html`
+            <div>
+                <h1>Wallet Gateway (${this.gatewayVersion})</h1>
+            </div>
             <wg-sessions .sessions=${this.sessions}></wg-sessions>
 
             <wg-wallets-sync .client=${client}></wg-wallets-sync>
-
             <wg-networks
                 .networks=${this.networks}
+                .activeSessions=${this.sessions}
                 @network-edit-save=${this.handleNetworkSubmit}
                 @delete=${this.handleNetworkDelete}
             ></wg-networks>
-
             <wg-idps
                 .idps=${this.idps}
+                .activeSessions=${this.sessions}
                 @delete=${this.handleIdpDelete}
                 @idp-add=${this.handleIdpSubmit}
             ></wg-idps>
