@@ -22,15 +22,38 @@ export const RegistriesTab: React.FC<RegistriesTabProps> = (props) => {
     return (
         <div>
             <h2>Registries</h2>
-            <ul>
-                {adminParties.map((p) => {
-                    return (
-                        <li key={p}>
-                            <strong>{p}:</strong> {registryUrls.get(p)}
-                        </li>
-                    )
-                })}
-            </ul>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Party ID</th>
+                        <th>Registry URL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {adminParties.map((p) => {
+                        return (
+                            <tr key={p}>
+                                <td>{p}</td>
+                                <td>{registryUrls.get(p)}</td>
+                                <td>
+                                    <button
+                                        type="submit"
+                                        onClick={() => {
+                                            const newRegistryUrls = new Map(
+                                                registryUrls
+                                            )
+                                            newRegistryUrls.delete(p)
+                                            setRegistryUrls(newRegistryUrls)
+                                        }}
+                                    >
+                                        🗑️
+                                    </button>
+                                </td>
+                            </tr>
+                        )
+                    })}
+                </tbody>
+            </table>
             <h2>Add new registry</h2>
             <form onSubmit={(e) => e.preventDefault()}>
                 <p>
