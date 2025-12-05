@@ -27,6 +27,7 @@
         "@commander-js/extra-typings": "^14.0.0",
         "@inquirer/prompts": "^8.0.1",
         "commander": "^14.0.2",
+        "inquirer-select-pro": "^1.0.0-alpha.9",
         "jsonc-parser": "^3.3.1",
         "pm2": "^6.0.14",
         "yoctocolors": "^2.1.2"
