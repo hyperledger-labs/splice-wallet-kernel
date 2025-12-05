@@ -14,7 +14,7 @@ export default {
         tls: false,
         dappPath: '/api/v0/dapp',
         userPath: '/api/v0/user',
-        allowedOrigins: ['http://localhost:8080'],
+        allowedOrigins: '*',
     },
     signingStore: {
         connection: {
