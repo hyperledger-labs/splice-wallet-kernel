@@ -92,7 +92,7 @@ export class ACSHelper {
 
     private findACSContainer(key: ACSKey): ACSContainer {
         const keyStr = ACSHelper.keyToString(key, this.apiInstance.baseUrl.href)
-        // this.logger.info(`ACS KEY ${keyStr}`)
+
         const start = performance.now()
         const existing = this.contractsSet.get(keyStr)
         const end = performance.now()
