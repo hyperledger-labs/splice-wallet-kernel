@@ -13,6 +13,8 @@ export const tap = async ({
     sessionToken: string
     amount: number
 }) => {
+    // TODO: we'll need to retrieve all instrument info from the known
+    // registries in order to allow the user to tap.
     const registryUrl = 'http://scan.localhost:4000'
     const tokenStandardClient = await resolveTokenStandardClient({
         registryUrl,

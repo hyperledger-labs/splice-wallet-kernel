@@ -217,6 +217,7 @@ function App() {
                         value: 'pendingTransfers',
                         content: connection.primaryParty ? (
                             <PendingTransfersTab
+                                registryUrls={registryUrls}
                                 party={connection.primaryParty}
                             />
                         ) : (

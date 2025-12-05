@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import type { PartyId } from '@canton-network/core-types'
 import { useState, useEffect } from 'react'
 import {
     type PendingTransfer,
@@ -10,11 +11,12 @@ import { acceptTransfer } from '../utils/acceptTransfer.js'
 import { AssetCard } from './AssetCard.js'
 
 export type PendingTransfersTabProps = {
+    registryUrls: Map<PartyId, string>
     party: string
-    sessionToken?: string // used to tap
 }
 
 export const PendingTransfersTab: React.FC<PendingTransfersTabProps> = ({
+    registryUrls,
     party,
 }) => {
     const [pendingTransfers, setPendingTransfers] = useState<
@@ -40,9 +42,11 @@ export const PendingTransfersTab: React.FC<PendingTransfersTabProps> = ({
                 <button
                     onClick={() => {
                         acceptTransfer({
+                            registryUrls,
                             party,
                             contractId: p.contractId,
-                        })
+                            instrumentId: p.instrumentId,
+                        }).then(refreshPendingTransfers)
                     }}
                 >
                     Accept
