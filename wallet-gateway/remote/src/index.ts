@@ -9,26 +9,20 @@ import { initialize } from './init.js'
 import { createCLI } from '@canton-network/core-wallet-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
 
-import { readFileSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
 import pino from 'pino'
 import z from 'zod'
 import { configSchema } from './config/Config.js'
 import exampleConfig from './example-config.js'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const pkg = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8'))
+import { GATEWAY_VERSION } from './version.js'
 
 const program = new Command()
     .name('wallet-gateway')
-    .version(pkg.version)
+    .version(GATEWAY_VERSION)
     .description('Run a remotely hosted Wallet Gateway')
     .option('-c, --config <path>', 'set config path', './config.json')
     .option('--config-schema', 'output the config schema and exit', false)
     .option('--config-example', 'output an example config and exit', false)
-    .option('-p, --port [port]', 'set port', '3030')
+    .option('-p, --port [port]', 'set port (overrides config)')
     .addOption(
         new Option('-f, --log-format <format>', 'set log format')
             .choices(['json', 'pretty'])

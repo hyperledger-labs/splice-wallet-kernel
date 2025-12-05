@@ -41,7 +41,6 @@ import type { PrettyTransactions, Transaction } from './txparse/types.js'
 import { Types } from './ledger-client.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
-const MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
 const REQUESTED_AT_SKEW_MS = 60_000
 
 export type ExerciseCommand = Types['ExerciseCommand']
@@ -755,7 +754,12 @@ class TransferService {
                 ).toISOString(),
                 inputHoldingCids:
                     inputHoldingCids as unknown as ContractId<Holding>[],
-                meta: { values: { [MEMO_KEY]: memo || '', ...meta?.values } },
+                meta: {
+                    values: {
+                        [TokenStandardService.MEMO_KEY]: memo || '',
+                        ...meta?.values,
+                    },
+                },
             },
             extraArgs: {
                 context: { values: {} },
@@ -1198,6 +1202,8 @@ class TransferService {
 }
 
 export class TokenStandardService {
+    static readonly MEMO_KEY = 'splice.lfdecentralizedtrust.org/reason'
+
     readonly core: CoreService
     readonly allocation: AllocationService
     readonly transfer: TransferService

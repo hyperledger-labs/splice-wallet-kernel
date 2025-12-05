@@ -109,9 +109,12 @@ export const deriveKernelUrls = (
     serverConfig: ServerConfig
 ): { dappUrl: string; userUrl: string } => {
     const protocol = serverConfig.tls ? 'https' : 'http'
-    const dappUrl = `${protocol}://${serverConfig.host}:${serverConfig.port}${serverConfig.dappPath}`
+    // Convert 0.0.0.0 to localhost for URL generation since browsers can't use 0.0.0.0
+    const urlHost =
+        serverConfig.host === '0.0.0.0' ? 'localhost' : serverConfig.host
+    const dappUrl = `${protocol}://${urlHost}:${serverConfig.port}${serverConfig.dappPath}`
     // userUrl is the base URL for the web frontend (no path)
-    const userUrl = `${protocol}://${serverConfig.host}:${serverConfig.port}`
+    const userUrl = `${protocol}://${urlHost}:${serverConfig.port}`
 
     return { dappUrl, userUrl }
 }

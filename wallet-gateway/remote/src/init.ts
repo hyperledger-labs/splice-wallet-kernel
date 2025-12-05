@@ -33,6 +33,7 @@ import { Config } from './config/Config.js'
 import { deriveKernelUrls } from './config/ConfigUtils.js'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
+import { GATEWAY_VERSION } from './version.js'
 
 let isReady = false
 
@@ -142,11 +143,24 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const protocol = config.server.tls ? 'https' : 'http'
 
     const app = express()
-    const server = app.listen(port, host, () => {
-        logger.info(
-            `Remote Wallet Gateway starting on ${protocol}://${host}:${port}`
-        )
-    })
+
+    // Don't pass 'localhost' or '0.0.0.0' to listen() - let express default to 0.0.0.0
+    // This ensures Docker compatibility while keeping localhost as the default for URLs
+    const useDefaultListenHost = ['0.0.0.0', 'localhost', '127.0.0.1'].includes(
+        host
+    )
+
+    const server = useDefaultListenHost
+        ? app.listen(port, () => {
+              logger.info(
+                  `Remote Wallet Gateway starting on ${protocol}://${host}:${port} (bound to 0.0.0.0:${port})`
+              )
+          })
+        : app.listen(port, host, () => {
+              logger.info(
+                  `Remote Wallet Gateway starting on ${protocol}://${host}:${port}`
+              )
+          })
 
     app.use('/healthz', rpcRateLimit, (_req, res) => res.status(200).send('OK'))
     app.use('/readyz', rpcRateLimit, (_req, res) => {
@@ -203,6 +217,20 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     }
     const { dappUrl, userUrl } = deriveKernelUrls(serverConfigWithOverride)
 
+    logger.info(
+        {
+            host: serverConfigWithOverride.host,
+            port: serverConfigWithOverride.port,
+            tls: serverConfigWithOverride.tls,
+            dappPath: serverConfigWithOverride.dappPath,
+            userPath: serverConfigWithOverride.userPath,
+            allowedOrigins: serverConfigWithOverride.allowedOrigins,
+            dappUrl,
+            userUrl,
+        },
+        'Server configuration'
+    )
+
     const kernelInfo = config.kernel
 
     // register dapp API handlers
@@ -236,5 +264,7 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     web(app, server, config.server.userPath)
     isReady = true
 
-    logger.info('Wallet Gateway initialization complete')
+    logger.info(
+        `Wallet Gateway (version: ${GATEWAY_VERSION}) initialization complete`
+    )
 }

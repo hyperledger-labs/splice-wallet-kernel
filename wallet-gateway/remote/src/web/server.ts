@@ -6,6 +6,7 @@ import { Server } from 'http'
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import ViteExpress from 'vite-express'
+import { GATEWAY_VERSION } from '../version.js'
 
 export const web = (app: express.Express, server: Server, userPath: string) => {
     // Expose userPath via well-known configuration endpoint
@@ -26,6 +27,11 @@ export const web = (app: express.Express, server: Server, userPath: string) => {
             )
         )
     }
+
+    // Expose gateway version via well-known endpoint
+    app.get('/.well-known/wallet-gateway-version', (_req, res) => {
+        res.json({ version: GATEWAY_VERSION })
+    })
 
     // Middleware to ensure all paths end with a trailing slash
     // This is useful for static file serving and routing consistency

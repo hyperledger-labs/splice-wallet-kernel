@@ -4,8 +4,8 @@
 
 import { spawn } from 'child_process'
 import { program } from '@commander-js/extra-typings'
-import { getAllNxDependencies } from './lib/utils.js'
-import { confirm, select } from '@inquirer/prompts'
+import { confirm } from '@inquirer/prompts'
+import { select } from 'inquirer-select-pro'
 
 // This helper passes through the underlying command's input/output to console
 async function cmd(command: string): Promise<void> {
@@ -24,43 +24,29 @@ async function cmd(command: string): Promise<void> {
     })
 }
 
-const ALL_OPTION = '(all packages)'
-const QUIT_OPTION = '(quit)'
+const options = ['wallet-sdk', 'dapp-sdk', 'wallet-gateway']
 
 program
     .option('--dry-run', 'Perform a dry run (default: true)')
     .option('--no-dry-run', 'Perform a real release')
     .action(async ({ dryRun = true }) => {
-        const project = await select({
-            message: 'Select project to release',
-            choices: [
-                'wallet-sdk',
-                'dapp-sdk',
-                'wallet-gateway-remote',
-                ALL_OPTION,
-                QUIT_OPTION,
-            ],
+        const groups = await select({
+            canToggleAll: true,
+            message: 'Select groups to release',
+            options: options.map((opt) => ({ name: opt, value: opt })),
         }).catch(() => process.exit(0))
 
-        if (project === QUIT_OPTION) {
-            console.log('Aborting')
+        if (groups.length === 0) {
+            console.log('No release groups selected; quitting.')
             process.exit(0)
         }
 
-        let deps = undefined
-
-        if (project === ALL_OPTION) {
-            console.log('Cutting a release for everything.')
-        } else {
-            deps = await getAllNxDependencies(`@canton-network/${project}`)
-        }
-
-        await runRelease(dryRun, deps)
+        await runRelease(dryRun, groups)
         process.exit(0)
     })
     .parseAsync(process.argv)
 
-async function runRelease(dryRun: boolean, projects?: string[]): Promise<void> {
+async function runRelease(dryRun: boolean, groups: string[]): Promise<void> {
     let releaseCmd = `yarn nx release --skip-publish`
 
     if (dryRun === false) {
@@ -78,10 +64,7 @@ async function runRelease(dryRun: boolean, projects?: string[]): Promise<void> {
         releaseCmd += ' --dry-run'
     }
 
-    if (projects && projects.length > 0) {
-        console.log('Releasing the following set of packages: ', projects)
-        releaseCmd += ` --projects='${projects.join(',')}'`
-    }
+    releaseCmd += ` --groups='${groups.concat('core').join(',')}'`
 
     if (!dryRun) {
         const proceedRelease = await confirm({
