@@ -526,6 +526,79 @@ export class LedgerClient {
         }
     }
 
+    // async activeContracts(options: {
+    //     offset: number
+    //     templateIds?: string[]
+    //     parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
+    //     filterByParty?: boolean
+    //     interfaceIds?: string[]
+    //     limit?: number
+    // }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
+    //     const {
+    //         offset,
+    //         templateIds,
+    //         parties,
+    //         filterByParty,
+    //         interfaceIds,
+    //         limit,
+    //     } = options
+
+    //     this.logger.debug(options, 'options for active contracts')
+
+    //     if (
+    //         templateIds &&
+    //         templateIds.length > 0 &&
+    //         parties &&
+    //         parties.length > 0
+    //     ) {
+    //         return this.acsHelper.activeContractsForTemplates(
+    //             offset,
+    //             parties,
+    //             templateIds
+    //         )
+    //     }
+
+    //     if (
+    //         interfaceIds &&
+    //         interfaceIds.length > 0 &&
+    //         parties &&
+    //         parties.length > 0
+    //     ) {
+    //         return this.acsHelper.activeContractsForInterfaces(
+    //             offset,
+    //             parties,
+    //             interfaceIds
+    //         )
+    //     }
+
+    //     if (
+    //         filterByParty &&
+    //         !templateIds?.length &&
+    //         !interfaceIds?.length &&
+    //         parties?.length === 1
+    //     ) {
+    //         const party = parties[0]
+    //         const r = this.acsHelper.activeContractsForInterface(
+    //             offset,
+    //             party,
+    //             ''
+    //         )
+    //         return r
+    //     }
+
+    //     const filter = this.buildActiveContractFilter(options)
+    //     this.logger.debug('falling back to post request')
+
+    //     return await this.postWithRetry(
+    //         '/v2/state/active-contracts',
+    //         filter,
+    //         defaultRetryableOptions,
+    //         {
+    //             query: limit ? { limit: limit.toString() } : {},
+    //         }
+    //     )
+    // }
+
     async activeContracts(options: {
         offset: number
         templateIds?: string[]
@@ -543,57 +616,25 @@ export class LedgerClient {
             limit,
         } = options
 
+        this.logger.debug(filterByParty)
         this.logger.debug(options, 'options for active contracts')
 
-        if (interfaceIds?.length === 1 && parties?.length === 1) {
-            const party = parties[0]
-            const interfaceId = interfaceIds[0]
-            return this.acsHelper.activeContractsForInterface(
-                offset,
-                party,
-                interfaceId
-            )
-        }
+        const hasParties = Array.isArray(parties) && parties.length > 0
 
-        if (
-            templateIds &&
-            templateIds.length > 0 &&
-            parties &&
-            parties.length > 0
-        ) {
+        if (templateIds?.length && hasParties) {
             return this.acsHelper.activeContractsForTemplates(
                 offset,
-                parties,
-                templateIds
+                parties!,
+                templateIds!
             )
         }
 
-        if (
-            interfaceIds &&
-            interfaceIds.length > 0 &&
-            parties &&
-            parties.length > 0
-        ) {
+        if (interfaceIds?.length && hasParties) {
             return this.acsHelper.activeContractsForInterfaces(
                 offset,
-                parties,
-                interfaceIds
+                parties!,
+                interfaceIds!
             )
-        }
-
-        if (
-            filterByParty &&
-            !templateIds?.length &&
-            !interfaceIds?.length &&
-            parties?.length === 1
-        ) {
-            const party = parties[0]
-            const r = this.acsHelper.activeContractsForInterface(
-                offset,
-                party,
-                ''
-            )
-            return r
         }
 
         const filter = this.buildActiveContractFilter(options)
