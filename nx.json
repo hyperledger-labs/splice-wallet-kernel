@@ -11,13 +11,6 @@
         "sharedGlobals": []
     },
     "release": {
-        "projects": [
-            "core/*",
-            "sdk/*",
-            "wallet-gateway/remote",
-            "!core/rpc-generator"
-        ],
-        "projectsRelationship": "independent",
         "version": {
             "conventionalCommits": true,
             "fallbackCurrentVersionResolver": "disk"
@@ -27,6 +20,27 @@
             "projectChangelogs": {
                 "createRelease": "github",
                 "file": false
+            }
+        },
+        "groups": {
+            "core": {
+                "projects": ["core/*", "!core/rpc-generator"],
+                "projectsRelationship": "independent",
+                "version": {
+                    "updateDependents": "never"
+                }
+            },
+            "dapp-sdk": {
+                "projects": ["sdk/dapp-sdk"],
+                "projectsRelationship": "independent"
+            },
+            "wallet-sdk": {
+                "projects": ["sdk/wallet-sdk"],
+                "projectsRelationship": "independent"
+            },
+            "wallet-gateway": {
+                "projects": ["wallet-gateway/remote"],
+                "projectsRelationship": "independent"
             }
         }
     },
