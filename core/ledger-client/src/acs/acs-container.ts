@@ -83,7 +83,7 @@ export class ACSContainer {
         key: ACSKey,
         api: LedgerClient,
         wsSupport?: WSSupport
-    ): Promise<Array<JsGetActiveContractsResponse>> {
+    ): Promise<JsGetActiveContractsResponse[]> {
         if (this.acsSet === null) {
             const acs = await this.readACS(offset, key, api, wsSupport)
             this.acsSet = acs

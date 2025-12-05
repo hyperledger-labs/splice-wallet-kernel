@@ -534,50 +534,26 @@ export class LedgerClient {
         interfaceIds?: string[]
         limit?: number
     }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
-        const {
-            offset,
-            templateIds,
-            parties,
-            filterByParty,
-            interfaceIds,
-            limit,
-        } = options
+        const { offset, templateIds, parties, interfaceIds, limit } = options
 
         this.logger.debug(options, 'options for active contracts')
 
-        if (templateIds?.length === 1 && parties?.length === 1) {
-            const party = parties[0]
-            const templateId = templateIds[0]
-            return this.acsHelper.activeContractsForTemplate(
+        const hasParties = Array.isArray(parties) && parties.length > 0
+
+        if (templateIds?.length && hasParties) {
+            return this.acsHelper.activeContractsForTemplates(
                 offset,
-                party,
-                templateId
+                parties!,
+                templateIds!
             )
         }
 
-        if (interfaceIds?.length === 1 && parties?.length === 1) {
-            const party = parties[0]
-            const interfaceId = interfaceIds[0]
-            return this.acsHelper.activeContractsForInterface(
+        if (interfaceIds?.length && hasParties) {
+            return this.acsHelper.activeContractsForInterfaces(
                 offset,
-                party,
-                interfaceId
+                parties!,
+                interfaceIds!
             )
-        }
-
-        if (
-            filterByParty &&
-            !templateIds?.length &&
-            !interfaceIds?.length &&
-            parties?.length === 1
-        ) {
-            const party = parties[0]
-            const r = this.acsHelper.activeContractsForInterface(
-                offset,
-                party,
-                ''
-            )
-            return r
         }
 
         const filter = this.buildActiveContractFilter(options)
