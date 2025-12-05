@@ -55,6 +55,7 @@ interface TransactionTable {
     preparedTransaction: string
     preparedTransactionHash: string
     payload: string | undefined
+    origin: string | null
     userId: UserId
     createdAt: string | null
     signedAt: string | null
@@ -181,6 +182,7 @@ export const fromTransaction = (
         payload: transaction.payload
             ? JSON.stringify(transaction.payload)
             : undefined,
+        origin: transaction.origin || null,
         userId: userId,
         createdAt: transaction.createdAt?.toISOString() || null,
         signedAt: transaction.signedAt?.toISOString() || null,
@@ -194,6 +196,10 @@ export const toTransaction = (table: TransactionTable): Transaction => {
         preparedTransaction: table.preparedTransaction,
         preparedTransactionHash: table.preparedTransactionHash,
         payload: table.payload ? JSON.parse(table.payload) : undefined,
+    }
+
+    if (table.origin) {
+        result.origin = table.origin
     }
 
     if (table.createdAt) {

@@ -695,6 +695,9 @@ export const userController = (
                 payload: transaction.payload
                     ? JSON.stringify(transaction.payload)
                     : '',
+                ...(transaction.origin && {
+                    origin: transaction.origin,
+                }),
                 ...(transaction.createdAt && {
                     createdAt: transaction.createdAt.toISOString(),
                 }),
@@ -713,6 +716,9 @@ export const userController = (
                 payload: transaction.payload
                     ? JSON.stringify(transaction.payload)
                     : '',
+                ...(transaction.origin && {
+                    origin: transaction.origin,
+                }),
                 ...(transaction.createdAt && {
                     createdAt: transaction.createdAt.toISOString(),
                 }),

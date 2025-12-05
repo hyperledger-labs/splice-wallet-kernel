@@ -850,6 +850,11 @@
                         "title": "payload",
                         "type": "string",
                         "description": "Optional payload associated with the transaction."
+                    },
+                    "origin": {
+                        "title": "origin",
+                        "type": "string",
+                        "description": "The origin (dApp URL) that initiated this transaction request."
                     }
                 },
                 "required": [
