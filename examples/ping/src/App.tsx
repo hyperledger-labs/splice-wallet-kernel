@@ -229,6 +229,20 @@ function App() {
                                 <br />
                                 <b>network ID:</b>{' '}
                                 <i>{status.network.networkId}</i>
+                                {status.network.ledgerApi && (
+                                    <>
+                                        <br />
+                                        <b>ledger API:</b>{' '}
+                                        <i>{status.network.ledgerApi.baseUrl}</i>
+                                    </>
+                                )}
+                            </span>
+                        )}
+                        {status.session && (
+                            <span>
+                                <br />
+                                <b>user ID:</b>{' '}
+                                <i>{status.session.userId}</i>
                             </span>
                         )}
                         {ledgerApiVersion && (
