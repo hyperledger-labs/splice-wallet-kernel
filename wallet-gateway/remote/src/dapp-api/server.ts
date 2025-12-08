@@ -36,7 +36,7 @@ export const dapp = (
         })
     )
     app.use(route, (req, res, next) => {
-        const origin = req.headers.origin ?? undefined
+        const origin: string | null = req.headers.origin ?? null
 
         jsonRpcHandler<Methods>({
             controller: dappController(
@@ -46,8 +46,8 @@ export const dapp = (
                 store.withAuthContext(req.authContext),
                 notificationService,
                 logger,
-                req.authContext,
-                origin
+                origin,
+                req.authContext
             ),
             logger,
         })(req, res, next)

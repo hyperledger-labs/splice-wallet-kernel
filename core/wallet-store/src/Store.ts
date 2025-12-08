@@ -61,7 +61,7 @@ export interface Transaction {
     preparedTransaction: string
     preparedTransactionHash: string
     payload?: unknown
-    origin?: string
+    origin: string | null
     createdAt?: Date
     signedAt?: Date
 }

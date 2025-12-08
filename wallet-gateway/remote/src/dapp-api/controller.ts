@@ -30,8 +30,8 @@ export const dappController = (
     store: Store,
     notificationService: NotificationService,
     _logger: Logger,
-    context?: AuthContext,
-    origin?: string
+    origin: string | null,
+    context?: AuthContext
 ) => {
     const logger = _logger.child({ component: 'dapp-controller' })
     return buildController({
@@ -168,11 +168,8 @@ export const dappController = (
                 preparedTransaction,
                 preparedTransactionHash,
                 payload: params,
+                origin: origin || null,
                 createdAt: new Date(),
-            }
-
-            if (origin) {
-                transaction.origin = origin
             }
 
             store.setTransaction(transaction)

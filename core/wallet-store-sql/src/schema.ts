@@ -196,10 +196,7 @@ export const toTransaction = (table: TransactionTable): Transaction => {
         preparedTransaction: table.preparedTransaction,
         preparedTransactionHash: table.preparedTransactionHash,
         payload: table.payload ? JSON.parse(table.payload) : undefined,
-    }
-
-    if (table.origin) {
-        result.origin = table.origin
+        origin: table.origin || null,
     }
 
     if (table.createdAt) {
