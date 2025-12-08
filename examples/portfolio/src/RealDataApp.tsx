@@ -4,12 +4,12 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import * as sdk from '@canton-network/dapp-sdk'
-import { HoldingsTab } from './components/HoldingsTab.js'
-import { RegistriesTab } from './components/RegistriesTab.js'
-import { PendingTransfersTab } from './components/PendingTransfersTab.js'
-import { TwoStepTransferTab } from './components/TwoStepTransferTab.js'
-import { TransactionHistoryTab } from './components/TransactionHistoryTab.js'
-import { Tabs } from './components/Tabs.js'
+import { HoldingsTab } from './oldcomponents/HoldingsTab.js'
+import { RegistriesTab } from './oldcomponents/RegistriesTab.js'
+import { PendingTransfersTab } from './oldcomponents/PendingTransfersTab.js'
+import { TwoStepTransferTab } from './oldcomponents/TwoStepTransferTab.js'
+import { TransactionHistoryTab } from './oldcomponents/TransactionHistoryTab.js'
+import { Tabs } from './oldcomponents/Tabs.js'
 import {
     type Registries,
     loadRegistries,
