@@ -74,7 +74,7 @@ export class ACSHelper {
             cacheSize: this.contractsSet.size,
             hitRate: hitRate.toFixed(2) + '%',
             averageLookupTime: avgLookupTime.toFixed(3) + ' ms',
-            cacheServeTime: this.totalCacheServeTime.toFixed(3),
+            cacheServeTime: SharedACSCacheStats.totalCacheServeTime.toFixed(3),
         }
     }
 
@@ -175,7 +175,7 @@ export class ACSHelper {
 
     async activeContractsForTemplate(
         offset: number,
-        partyFilter: string,
+        partyFilter: PartyId,
         templateId: string
     ): Promise<JsGetActiveContractsResponse[]> {
         return this.updateSingleKey(
@@ -186,7 +186,7 @@ export class ACSHelper {
 
     async activeContractsForInterface(
         offset: number,
-        partyFilter: string | undefined,
+        partyFilter: PartyId | undefined,
         interfaceId: string
     ): Promise<Array<JsGetActiveContractsResponse>> {
         return this.updateSingleKey(
