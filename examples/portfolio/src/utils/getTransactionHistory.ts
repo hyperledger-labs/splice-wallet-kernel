@@ -16,6 +16,7 @@ export const getTransactionHistory = async ({
         '/v2/updates/flats',
         {
             beginExclusive: 0,
+            verbose: false, // deprecated in 3.4
             updateFormat: {
                 includeTransactions: {
                     transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
