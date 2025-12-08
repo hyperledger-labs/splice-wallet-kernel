@@ -233,6 +233,7 @@ function RealDataApp() {
                         value: 'transactionHistory',
                         content: connection.primaryParty ? (
                             <TransactionHistoryTab
+                                registryUrls={registryUrls}
                                 party={connection.primaryParty}
                             />
                         ) : (

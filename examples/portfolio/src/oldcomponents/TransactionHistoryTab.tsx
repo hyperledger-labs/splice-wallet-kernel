@@ -1,14 +1,18 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import type { PartyId } from '@canton-network/core-types'
 import { useState, useEffect } from 'react'
 import { type Transfer, getTransactionHistory } from '../utils/transfers'
+import { TransferCard } from './TransferCard.js'
 
 export type TransactionHistoryTabProps = {
-    party: string
+    registryUrls: Map<PartyId, string>
+    party: PartyId
 }
 
 export const TransactionHistoryTab: React.FC<TransactionHistoryTabProps> = ({
+    registryUrls,
     party,
 }) => {
     const [transactionHistory, setTransactionHistory] = useState<
@@ -30,7 +34,13 @@ export const TransactionHistoryTab: React.FC<TransactionHistoryTabProps> = ({
             <h2>Trasaction History</h2>
             <ul>
                 {transactionHistory?.map((p) => (
-                    <li key={p.contractId}>{JSON.stringify(p)}</li>
+                    <li key={p.contractId}>
+                        <TransferCard
+                            registryUrls={registryUrls}
+                            party={party}
+                            transfer={p}
+                        />
+                    </li>
                 ))}
             </ul>
         </div>

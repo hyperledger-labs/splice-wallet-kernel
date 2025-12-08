@@ -3,12 +3,8 @@
 
 import type { PartyId } from '@canton-network/core-types'
 import { useState, useEffect } from 'react'
-import {
-    type Transfer,
-    getPendingTransfers,
-    acceptTransfer,
-} from '../utils/transfers'
-import { AssetCard } from './AssetCard.js'
+import { type Transfer, getPendingTransfers } from '../utils/transfers'
+import { TransferCard } from './TransferCard.js'
 
 export type PendingTransfersTabProps = {
     registryUrls: Map<PartyId, string>
@@ -33,33 +29,6 @@ export const PendingTransfersTab: React.FC<PendingTransfersTabProps> = ({
         refreshPendingTransfers()
     }, [party])
 
-    const PendingTransfer = (p: Transfer) => (
-        <div>
-            sender: <strong>{p.sender}</strong> <br />
-            receiver: <strong>{p.receiver}</strong> <br />
-            {p.memo && (
-                <span>
-                    message: <strong>{p.memo}</strong> <br />
-                </span>
-            )}
-            <AssetCard amount={p.amount} symbol={p.instrumentId.id} />
-            {p.incoming && (
-                <button
-                    onClick={() => {
-                        acceptTransfer({
-                            registryUrls,
-                            party,
-                            contractId: p.contractId,
-                            instrumentId: p.instrumentId,
-                        }).then(refreshPendingTransfers)
-                    }}
-                >
-                    Accept
-                </button>
-            )}
-        </div>
-    )
-
     return (
         <div>
             <h2>Incoming</h2>
@@ -67,7 +36,13 @@ export const PendingTransfersTab: React.FC<PendingTransfersTabProps> = ({
                 {pendingTransfers
                     ?.filter((p) => p.incoming)
                     .map((p) => (
-                        <li key={p.contractId}>{PendingTransfer(p)}</li>
+                        <li key={p.contractId}>
+                            <TransferCard
+                                registryUrls={registryUrls}
+                                party={party}
+                                transfer={p}
+                            />
+                        </li>
                     ))}
             </ul>
             <h2>Outgoing</h2>
@@ -75,7 +50,13 @@ export const PendingTransfersTab: React.FC<PendingTransfersTabProps> = ({
                 {pendingTransfers
                     ?.filter((p) => !p.incoming)
                     .map((p) => (
-                        <li key={p.contractId}>{PendingTransfer(p)}</li>
+                        <li key={p.contractId}>
+                            <TransferCard
+                                registryUrls={registryUrls}
+                                party={party}
+                                transfer={p}
+                            />
+                        </li>
                     ))}
             </ul>
         </div>
