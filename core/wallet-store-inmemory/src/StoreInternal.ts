@@ -363,7 +363,31 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         if (networkAlreadyExists) {
             throw new Error(`Network ${network.id} already exists`)
         } else {
-            this.systemStorage.networks.push(network)
+            //connectivity test
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
+                logger: this.logger,
+            })
+            let connectivityCheck = false
+            this.logger.info(
+                `Checking connectivity to ledger at ${network.ledgerApi.baseUrl}`
+            )
+
+            try {
+                const version = await ledgerClient.get('/v2/version')
+                if (version.version) {
+                    connectivityCheck = true
+                }
+            } catch (error) {
+                this.logger.warn(
+                    `Failed to connect to ledger at ${network.ledgerApi.baseUrl}: ${error}`
+                )
+            }
+
+            this.systemStorage.networks.push({
+                ...network,
+                verified: connectivityCheck,
+            })
         }
     }
 

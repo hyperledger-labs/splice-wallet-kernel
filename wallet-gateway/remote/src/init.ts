@@ -68,7 +68,7 @@ async function initializeDatabase(
     config: Config,
     logger: Logger
 ): Promise<StoreSql> {
-    logger.info('Checking for database migrations...')
+    logger.info(config.store, 'Initializing database with config')
 
     let exists = true
     if (config.store.connection.type === 'sqlite') {

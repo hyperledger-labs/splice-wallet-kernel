@@ -65,6 +65,12 @@ export interface Auth {
 export type LedgerApi = string
 /**
  *
+ * Indicates whether we were able to verify connectivity with the node.
+ *
+ */
+export type Verified = boolean
+/**
+ *
  * Structure representing the Networks
  *
  */
@@ -77,6 +83,7 @@ export interface Network {
     auth: Auth
     adminAuth?: Auth
     ledgerApi: LedgerApi
+    verified?: Verified
 }
 /**
  *

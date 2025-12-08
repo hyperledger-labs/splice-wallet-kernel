@@ -593,6 +593,11 @@
                         "title": "ledgerApi",
                         "type": "string",
                         "description": "Ledger api url"
+                    },
+                    "verified": {
+                        "title": "verified",
+                        "type": "boolean",
+                        "description": "Indicates whether we were able to verify connectivity with the node."
                     }
                 },
                 "required": [
