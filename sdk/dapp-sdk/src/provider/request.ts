@@ -11,7 +11,7 @@ import gateways from '../gateways.json'
 import { removeKernelDiscovery, removeKernelSession } from '../storage'
 import { closeKernelUserUI } from '../provider.js'
 
-export async function connect(): Promise<dappAPI.ConnectResult> {
+export async function connect(): Promise<dappAPI.StatusEvent> {
     const config: GatewaysConfig[] = gateways
     return discover(config)
         .then(async (result) => {
@@ -20,11 +20,11 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
             storage.removeKernelSession()
             const provider = injectProvider(result)
 
-            const response = await provider.request<dappAPI.ConnectResult>({
+            const response = await provider.request<dappAPI.StatusEvent>({
                 method: 'connect',
             })
 
-            if (!response.status.isConnected) {
+            if (!response.isConnected) {
                 // TODO: error dialog
                 console.error('SDK: Not connected', response)
                 // openKernelUserUI(result.walletType, response.userUrl)
