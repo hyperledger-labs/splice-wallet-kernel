@@ -74,7 +74,7 @@ export class ACSHelper {
             cacheSize: this.contractsSet.size,
             hitRate: hitRate.toFixed(2) + '%',
             averageLookupTime: avgLookupTime.toFixed(3) + ' ms',
-            cacheServeTime: this.totalCacheServeTime.toFixed(3),
+            cacheServeTime: SharedACSCacheStats.totalCacheServeTime.toFixed(3),
         }
     }
 
@@ -92,7 +92,7 @@ export class ACSHelper {
 
     private findACSContainer(key: ACSKey): ACSContainer {
         const keyStr = ACSHelper.keyToString(key, this.apiInstance.baseUrl.href)
-        // this.logger.info(`ACS KEY ${keyStr}`)
+
         const start = performance.now()
         const existing = this.contractsSet.get(keyStr)
         const end = performance.now()
@@ -114,59 +114,84 @@ export class ACSHelper {
         return newContainer
     }
 
-    async activeContractsForTemplate(
-        offset: number,
-        partyFilter: string,
-        templateId: string
-    ): Promise<Array<JsGetActiveContractsResponse>> {
-        const key = ACSHelper.createKey(partyFilter, templateId, undefined)
+    async updateSingleKey(offset: number, key: ACSKey) {
         const start = performance.now()
         const container = this.findACSContainer(key)
-        const result = container.update(
+        const result = await container.update(
             offset,
             key,
             this.apiInstance,
             this.wsSupport
         )
+
         const end = performance.now()
 
-        if (
-            this.contractsSet.has(
-                ACSHelper.keyToString(key, this.apiInstance.baseUrl.href)
-            )
-        ) {
+        const keyStr = ACSHelper.keyToString(key, this.apiInstance.baseUrl.href)
+
+        if (this.contractsSet.has(keyStr)) {
             SharedACSCacheStats.totalCacheServeTime += end - start
         }
 
         return result
     }
 
-    async activeContractsForInterface(
-        offset: number,
-        partyFilter: string | undefined,
-        interfaceId: string
-    ): Promise<Array<JsGetActiveContractsResponse>> {
-        const key = ACSHelper.createKey(partyFilter, undefined, interfaceId)
-        const start = performance.now()
-        const container = this.findACSContainer(key)
+    async queryAcsByKeys(offset: number, keys: ACSKey[]) {
+        const result: JsGetActiveContractsResponse[] = []
 
-        const result = container.update(
-            offset,
-            key,
-            this.apiInstance,
-            this.wsSupport
-        )
-
-        const end = performance.now()
-
-        if (
-            this.contractsSet.has(
-                ACSHelper.keyToString(key, this.apiInstance.baseUrl.href)
-            )
-        ) {
-            SharedACSCacheStats.totalCacheServeTime += end - start
+        for (const key of keys) {
+            const contracts = await this.updateSingleKey(offset, key)
+            result.push(...contracts)
         }
 
         return result
+    }
+
+    async activeContractsForTemplates(
+        offset: number,
+        parties: PartyId[],
+        templateIds: string[]
+    ): Promise<JsGetActiveContractsResponse[]> {
+        const keys = parties.flatMap((party) =>
+            templateIds.map((templateId) =>
+                ACSHelper.createKey(party, templateId, undefined)
+            )
+        )
+        return this.queryAcsByKeys(offset, keys)
+    }
+
+    async activeContractsForInterfaces(
+        offset: number,
+        parties: PartyId[],
+        interfaceIds: string[]
+    ): Promise<JsGetActiveContractsResponse[]> {
+        const keys = parties.flatMap((party) =>
+            interfaceIds.map((interfaceId) =>
+                ACSHelper.createKey(party, undefined, interfaceId)
+            )
+        )
+
+        return this.queryAcsByKeys(offset, keys)
+    }
+
+    async activeContractsForTemplate(
+        offset: number,
+        partyFilter: PartyId,
+        templateId: string
+    ): Promise<JsGetActiveContractsResponse[]> {
+        return this.updateSingleKey(
+            offset,
+            ACSHelper.createKey(partyFilter, templateId, undefined)
+        )
+    }
+
+    async activeContractsForInterface(
+        offset: number,
+        partyFilter: PartyId | undefined,
+        interfaceId: string
+    ): Promise<Array<JsGetActiveContractsResponse>> {
+        return this.updateSingleKey(
+            offset,
+            ACSHelper.createKey(partyFilter, undefined, interfaceId)
+        )
     }
 }
