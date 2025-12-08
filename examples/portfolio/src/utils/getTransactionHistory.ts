@@ -2,15 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { defaultRetryableOptions } from '@canton-network/core-ledger-client'
+import {
+    type TransferInstructionView,
+    defaultRetryableOptions,
+} from '@canton-network/core-ledger-client'
 import { TRANSFER_INSTRUCTION_INTERFACE_ID } from '@canton-network/core-token-standard'
 import { resolveLedgerClient } from '../services'
+import {
+    type PendingTransfer,
+    toPendingTransfer,
+} from './getPendingTransfers.js'
 
 export const getTransactionHistory = async ({
     party,
 }: {
     party: PartyId
-}): Promise<string[]> => {
+}): Promise<PendingTransfer[]> => {
     const ledgerClient = await resolveLedgerClient()
     const updates = await ledgerClient.postWithRetry(
         '/v2/updates/flats',
@@ -51,7 +58,28 @@ export const getTransactionHistory = async ({
             },
         }
     )
-    console.log(party)
-    console.log(updates)
-    return []
+    const out: PendingTransfer[] = []
+    for (const update of updates) {
+        for (const event of update.update.Transaction?.value.events ?? []) {
+            console.log(event)
+            if (event.CreatedEvent) {
+                for (const interfaceView of event.CreatedEvent.interfaceViews ??
+                    []) {
+                    const contractId = event.CreatedEvent.contractId
+                    // TODO: check if this is the right interface?
+                    if (interfaceView.viewValue) {
+                        out.push(
+                            toPendingTransfer({
+                                party,
+                                contractId,
+                                interfaceViewValue:
+                                    interfaceView.viewValue as TransferInstructionView,
+                            })
+                        )
+                    }
+                }
+            }
+        }
+    }
+    return out
 }
