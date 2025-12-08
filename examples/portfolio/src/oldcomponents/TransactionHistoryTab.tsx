@@ -43,6 +43,13 @@ export const TransactionHistoryTab: React.FC<TransactionHistoryTabProps> = ({
                     </li>
                 ))}
             </ul>
+            <button
+                onClick={() => {
+                    refreshTransactionHistory()
+                }}
+            >
+                load more
+            </button>
         </div>
     )
 }

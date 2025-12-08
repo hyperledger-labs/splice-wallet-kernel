@@ -18,6 +18,7 @@ export const TransferCard: React.FC<TransferCardProps> = ({
 }) => {
     return (
         <div>
+            status: <strong>{transfer.status}</strong> <br />
             sender: <strong>{transfer.sender}</strong> <br />
             receiver: <strong>{transfer.receiver}</strong> <br />
             {transfer.memo && (
@@ -29,7 +30,7 @@ export const TransferCard: React.FC<TransferCardProps> = ({
                 amount={transfer.amount}
                 symbol={transfer.instrumentId.id}
             />
-            {transfer.state == 'pending' && transfer.incoming && (
+            {transfer.status == 'pending' && transfer.incoming && (
                 <button
                     onClick={() => {
                         acceptTransfer({

@@ -19,7 +19,7 @@ export type Transfer = {
     memo?: string
 
     incoming: boolean
-    state: 'pending' | 'accepted' | 'withdrawn' | 'rejected' | 'expired'
+    status: 'pending' | 'accepted' | 'withdrawn' | 'rejected' | 'expired'
 }
 
 export const toTransfer = ({
@@ -43,6 +43,6 @@ export const toTransfer = ({
         amount,
         incoming,
         memo,
-        state: 'pending',
+        status: 'pending',
     }
 }
