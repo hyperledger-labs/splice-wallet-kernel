@@ -38,14 +38,11 @@ export const dappController = (
         connect: async () => {
             if (!context || !(await store.getSession())) {
                 return {
-                    sessionToken: '',
-                    status: {
-                        kernel: kernelInfo,
-                        isConnected: false,
-                        isNetworkConnected: false,
-                        networkReason: 'Unauthenticated',
-                        userUrl: `${userUrl}/login/`,
-                    },
+                    kernel: kernelInfo,
+                    isConnected: false,
+                    isNetworkConnected: false,
+                    networkReason: 'Unauthenticated',
+                    userUrl: `${userUrl}/login/`,
                 }
             }
 
@@ -58,13 +55,20 @@ export const dappController = (
             })
             const status = await networkStatus(ledgerClient)
             return {
-                sessionToken: context.accessToken,
-                status: {
-                    kernel: kernelInfo,
-                    isConnected: true,
-                    isNetworkConnected: status.isConnected,
-                    networkReason: status.reason ? status.reason : 'OK',
-                    userUrl: `${userUrl}/login/`,
+                kernel: kernelInfo,
+                isConnected: true,
+                isNetworkConnected: status.isConnected,
+                networkReason: status.reason ? status.reason : 'OK',
+                userUrl: `${userUrl}/login/`,
+                network: {
+                    networkId: network.id,
+                    ledgerApi: {
+                        baseUrl: network.ledgerApi.baseUrl,
+                    },
+                },
+                session: {
+                    accessToken: context.accessToken,
+                    userId: context.userId,
                 },
             }
         },
@@ -227,7 +231,16 @@ export const dappController = (
                 isConnected: true,
                 isNetworkConnected: status.isConnected,
                 networkReason: status.reason ? status.reason : 'OK',
-                networkId: (await store.getCurrentNetwork()).id,
+                network: {
+                    networkId: network.id,
+                    ledgerApi: {
+                        baseUrl: network.ledgerApi.baseUrl,
+                    },
+                },
+                session: {
+                    accessToken: context.accessToken,
+                    userId: context.userId,
+                },
             }
         },
         onConnected: async () => {
