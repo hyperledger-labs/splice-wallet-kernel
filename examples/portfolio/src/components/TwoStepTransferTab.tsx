@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { PartyId } from '@canton-network/core-types'
-import { createTransfer } from '../utils/createTransfer.js'
+import { createTransfer } from '../utils/transfers'
 import { getTransferableInstrumentIds } from '../utils/getHoldings.js'
 
 export type TwoStepTransferTabProps = {

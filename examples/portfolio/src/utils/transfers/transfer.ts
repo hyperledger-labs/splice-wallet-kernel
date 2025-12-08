@@ -6,11 +6,8 @@ import {
     type TransferInstructionView,
     TokenStandardService,
 } from '@canton-network/core-ledger-client'
-import { TRANSFER_INSTRUCTION_INTERFACE_ID } from '@canton-network/core-token-standard'
-import { resolveTokenStandardService } from '../services'
 
-// TODO: move to service now that we export this
-export type PendingTransfer = {
+export type Transfer = {
     contractId: string
     sender: string
     receiver: string
@@ -23,16 +20,15 @@ export type PendingTransfer = {
     memo?: string
 }
 
-// TODO: move to service now that we export this
-export const toPendingTransfer = ({
+export const toTransfer = ({
     party,
     contractId,
     interfaceViewValue,
 }: {
-    party: string
+    party: PartyId
     contractId: string
     interfaceViewValue: TransferInstructionView
-}): PendingTransfer => {
+}): Transfer => {
     const { amount, sender, receiver, instrumentId, meta } =
         interfaceViewValue.transfer
     const incoming = party == receiver
@@ -46,24 +42,4 @@ export const toPendingTransfer = ({
         incoming,
         memo,
     }
-}
-
-export const getPendingTransfers = async ({
-    party,
-}: {
-    party: PartyId
-}): Promise<PendingTransfer[]> => {
-    const tokenStandardService = await resolveTokenStandardService()
-    const contracts =
-        await tokenStandardService.listContractsByInterface<TransferInstructionView>(
-            TRANSFER_INSTRUCTION_INTERFACE_ID,
-            party
-        )
-    return contracts.map((c) =>
-        toPendingTransfer({
-            party,
-            contractId: c.contractId,
-            interfaceViewValue: c.interfaceViewValue,
-        })
-    )
 }

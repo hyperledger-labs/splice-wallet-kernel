@@ -4,10 +4,10 @@
 import type { PartyId } from '@canton-network/core-types'
 import { useState, useEffect } from 'react'
 import {
-    type PendingTransfer,
+    type Transfer,
     getPendingTransfers,
-} from '../utils/getPendingTransfers.js'
-import { acceptTransfer } from '../utils/acceptTransfer.js'
+    acceptTransfer,
+} from '../utils/transfers'
 import { AssetCard } from './AssetCard.js'
 
 export type PendingTransfersTabProps = {
@@ -20,7 +20,7 @@ export const PendingTransfersTab: React.FC<PendingTransfersTabProps> = ({
     party,
 }) => {
     const [pendingTransfers, setPendingTransfers] = useState<
-        PendingTransfer[] | undefined
+        Transfer[] | undefined
     >(undefined)
 
     const refreshPendingTransfers = async () => {
@@ -33,7 +33,7 @@ export const PendingTransfersTab: React.FC<PendingTransfersTabProps> = ({
         refreshPendingTransfers()
     }, [party])
 
-    const PendingTransfer = (p: PendingTransfer) => (
+    const PendingTransfer = (p: Transfer) => (
         <div>
             sender: <strong>{p.sender}</strong> <br />
             receiver: <strong>{p.receiver}</strong> <br />

@@ -3,7 +3,7 @@
 
 import { v4 } from 'uuid'
 import { PartyId } from '@canton-network/core-types'
-import { resolveTokenStandardService } from '../services'
+import { resolveTokenStandardService } from '../../services'
 
 export const createTransfer = async ({
     registryUrls,

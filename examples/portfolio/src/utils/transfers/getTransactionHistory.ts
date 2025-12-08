@@ -7,17 +7,14 @@ import {
     defaultRetryableOptions,
 } from '@canton-network/core-ledger-client'
 import { TRANSFER_INSTRUCTION_INTERFACE_ID } from '@canton-network/core-token-standard'
-import { resolveLedgerClient } from '../services'
-import {
-    type PendingTransfer,
-    toPendingTransfer,
-} from './getPendingTransfers.js'
+import { resolveLedgerClient } from '../../services'
+import { type Transfer, toTransfer } from './transfer.js'
 
 export const getTransactionHistory = async ({
     party,
 }: {
     party: PartyId
-}): Promise<PendingTransfer[]> => {
+}): Promise<Transfer[]> => {
     const ledgerClient = await resolveLedgerClient()
     const updates = await ledgerClient.postWithRetry(
         '/v2/updates/flats',
@@ -58,7 +55,7 @@ export const getTransactionHistory = async ({
             },
         }
     )
-    const out: PendingTransfer[] = []
+    const out: Transfer[] = []
     for (const update of updates) {
         for (const event of update.update.Transaction?.value.events ?? []) {
             console.log(event)
@@ -69,7 +66,7 @@ export const getTransactionHistory = async ({
                     // TODO: check if this is the right interface?
                     if (interfaceView.viewValue) {
                         out.push(
-                            toPendingTransfer({
+                            toTransfer({
                                 party,
                                 contractId,
                                 interfaceViewValue:

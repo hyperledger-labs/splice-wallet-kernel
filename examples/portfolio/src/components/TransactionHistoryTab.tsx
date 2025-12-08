@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState, useEffect } from 'react'
-import { type PendingTransfer } from '../utils/getPendingTransfers.js'
-import { getTransactionHistory } from '../utils/getTransactionHistory.js'
+import { type Transfer, getTransactionHistory } from '../utils/transfers'
 
 export type TransactionHistoryTabProps = {
     party: string
@@ -13,7 +12,7 @@ export const TransactionHistoryTab: React.FC<TransactionHistoryTabProps> = ({
     party,
 }) => {
     const [transactionHistory, setTransactionHistory] = useState<
-        PendingTransfer[] | undefined
+        Transfer[] | undefined
     >(undefined)
 
     const refreshTransactionHistory = async () => {
