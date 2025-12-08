@@ -33,6 +33,7 @@ import {
     toTransaction,
     toWallet,
 } from './schema.js'
+import { LedgerClient } from '@canton-network/core-ledger-client'
 
 export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     authContext: AuthContext | undefined
@@ -372,9 +373,34 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             if (networkAlreadyExists) {
                 throw new Error(`Network ${network.id} already exists`)
             } else {
+                //connectivity test
+                const ledgerClient = new LedgerClient({
+                    baseUrl: new URL(network.ledgerApi.baseUrl),
+                    logger: this.logger,
+                })
+                let connectivityCheck = false
+                this.logger.info(
+                    `Checking connectivity to ledger at ${network.ledgerApi.baseUrl}`
+                )
+
+                try {
+                    const version = await ledgerClient.get('/v2/version')
+                    if (version.version) {
+                        connectivityCheck = true
+                    }
+                } catch (error) {
+                    this.logger.warn(
+                        `Failed to connect to ledger at ${network.ledgerApi.baseUrl}: ${error}`
+                    )
+                }
                 await trx
                     .insertInto('networks')
-                    .values(fromNetwork(network, userId))
+                    .values(
+                        fromNetwork(
+                            { ...network, verified: connectivityCheck },
+                            userId
+                        )
+                    )
                     .execute()
             }
         })
