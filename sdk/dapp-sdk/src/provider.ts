@@ -32,35 +32,25 @@ import { ErrorCode } from './error.js'
  */
 export class Provider implements SpliceProvider {
     private providerType: ProviderType
-    private httpProvider?: SpliceProvider
-    private windowProvider?: SpliceProvider
+    private provider: SpliceProvider
 
     constructor({ walletType, url }: DiscoverResult, sessionToken?: string) {
         if (walletType == 'extension') {
             this.providerType = ProviderType.WINDOW
-            this.windowProvider = new SpliceProviderWindow()
+            this.provider = new SpliceProviderWindow()
         } else if (walletType == 'remote') {
             this.providerType = ProviderType.HTTP
-            this.httpProvider = new SpliceProviderHttp(
-                new URL(url),
-                sessionToken
-            )
+            this.provider = new SpliceProviderHttp(new URL(url), sessionToken)
         } else {
             throw new Error(`Unsupported wallet type ${walletType}`)
         }
     }
 
-    private getProvider(): SpliceProvider {
-        if (this.providerType === ProviderType.WINDOW)
-            return this.windowProvider!
-        return this.httpProvider!
-    }
-
     request<T>(args: RequestPayload): Promise<T> {
         if (this.providerType === ProviderType.WINDOW)
-            return this.getProvider().request(args)
+            return this.provider.request(args)
 
-        const controller = dappController(this.getProvider())
+        const controller = dappController(this.provider)
         switch (args.method) {
             case 'status':
                 return controller.status() as Promise<T>
@@ -90,18 +80,18 @@ export class Provider implements SpliceProvider {
     }
 
     on<T>(event: string, listener: EventListener<T>): SpliceProvider {
-        return this.getProvider().on(event, listener)
+        return this.provider.on(event, listener)
     }
 
     emit<T>(event: string, ...args: T[]): boolean {
-        return this.getProvider().emit(event, args)
+        return this.provider.emit(event, args)
     }
 
     removeListener<T>(
         event: string,
         listenerToRemove: EventListener<T>
     ): SpliceProvider {
-        return this.getProvider().removeListener(event, listenerToRemove)
+        return this.provider.removeListener(event, listenerToRemove)
     }
 }
 
