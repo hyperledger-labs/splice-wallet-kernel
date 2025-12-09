@@ -342,7 +342,6 @@ export interface ExecuteParams {
 }
 export interface AddSessionParams {
     networkId: NetworkId
-    idp: Idp
     [k: string]: any
 }
 export interface GetTransactionParams {

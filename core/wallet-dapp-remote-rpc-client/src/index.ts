@@ -107,6 +107,12 @@ export type ClientType = 'browser' | 'desktop' | 'mobile' | 'remote'
 export type Url = string
 /**
  *
+ * A URL that points to a user interface.
+ *
+ */
+export type UserUrl = string
+/**
+ *
  * Represents a Wallet Gateway.
  *
  */
@@ -114,6 +120,7 @@ export interface KernelInfo {
     id: Id
     clientType: ClientType
     url?: Url
+    userUrl?: UserUrl
     [k: string]: any
 }
 /**
@@ -134,12 +141,6 @@ export type IsNetworkConnected = boolean
  *
  */
 export type NetworkReason = string
-/**
- *
- * A URL that points to a user interface.
- *
- */
-export type UserUrl = string
 /**
  *
  * The network ID the wallet corresponds to.
@@ -420,6 +421,11 @@ export interface PrepareExecuteParams {
     packageIdSelectionPreference?: PackageIdSelectionPreference
     [k: string]: any
 }
+/**
+ *
+ * Ledger API request structure
+ *
+ */
 export interface LedgerApiParams {
     requestMethod: RequestMethod
     resource: Resource

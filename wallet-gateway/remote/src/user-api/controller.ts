@@ -55,6 +55,7 @@ import {
     ledgerPrepareParams,
 } from '../utils.js'
 import { StatusEvent } from '../dapp-api/rpc-gen/typings.js'
+import { user } from './server.js'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
@@ -586,7 +587,10 @@ export const userController = (
                 })
                 const status = await networkStatus(ledgerClient)
                 notifier.emit('onConnected', {
-                    kernel: kernelInfo,
+                    kernel: {
+                        ...kernelInfo,
+                        userUrl: `${userUrl}/login/`,
+                    },
                     isConnected: true,
                     isNetworkConnected: status.isConnected,
                     networkReason: status.reason ? status.reason : 'OK',
