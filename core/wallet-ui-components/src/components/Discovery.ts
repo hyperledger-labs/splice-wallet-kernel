@@ -140,7 +140,11 @@ export class Discovery extends HTMLElement {
         )
 
         if (cachedLastUsed) {
-            this.lastUsed = JSON.parse(cachedLastUsed) as KernelType
+            try {
+                this.lastUsed = JSON.parse(cachedLastUsed) as KernelType
+            } catch {
+                localStorage.removeItem(this.DISCOVERY_LAST_USED_KEY)
+            }
         }
 
         window.addEventListener('message', (event) => {
