@@ -85,6 +85,8 @@ const SUBSTITUTABLE_CSS = cssToString([
  */
 export class Discovery extends HTMLElement {
     static observedAttributes = ['wallet-extension-loaded']
+    private readonly DISCOVERY_LAST_USED_KEY =
+        'splice_wallet_discovery_last_used'
 
     static styles = SUBSTITUTABLE_CSS
 
@@ -103,6 +105,7 @@ export class Discovery extends HTMLElement {
     private root: HTMLElement
     private selectedTabId: string = 'tab-1'
     private verifiedKernels?: KernelType[]
+    private lastUsed?: KernelType | undefined
 
     constructor() {
         super()
@@ -130,6 +133,14 @@ export class Discovery extends HTMLElement {
                     }
                 }
             )
+        }
+
+        const cachedLastUsed = localStorage.getItem(
+            this.DISCOVERY_LAST_USED_KEY
+        )
+
+        if (cachedLastUsed) {
+            this.lastUsed = JSON.parse(cachedLastUsed) as KernelType
         }
 
         window.addEventListener('message', (event) => {
@@ -179,7 +190,10 @@ export class Discovery extends HTMLElement {
         return div
     }
 
-    private renderKernelOption(kernel: KernelType) {
+    private renderKernelOption(
+        kernel: KernelType,
+        onClear: undefined | (() => void) = undefined
+    ) {
         const div = this.mkElement('div', '', {
             class: 'kernel d-flex justify-content-space-between align-items-center flex-wrap mb-3',
         })
@@ -211,6 +225,16 @@ export class Discovery extends HTMLElement {
 
         div.appendChild(button)
 
+        if (onClear) {
+            const clearButton = this.mkElement('button', 'X', {
+                class: 'btn btn-sm btn-secondary',
+                type: 'button',
+            })
+
+            clearButton.addEventListener('click', onClear)
+            div.appendChild(clearButton)
+        }
+
         return div
     }
 
@@ -238,6 +262,35 @@ export class Discovery extends HTMLElement {
         })
 
         return element
+    }
+
+    private renderLastUsed() {
+        const wrapper = this.mkElement('div', '')
+
+        if (!this.lastUsed) return wrapper // empty div
+
+        wrapper.className = 'mt-4'
+
+        const card = this.mkElement('div', '', { class: 'card mt-4' })
+        const cardHeader = this.mkElement('div', '', { class: 'card-header' })
+
+        const header = this.mkElement('h5', 'Previously connected', {
+            class: 'm-0',
+        })
+        cardHeader.appendChild(header)
+
+        const cardBody = this.mkElement('div', '', { class: 'card-body' })
+        const k = this.renderKernelOption(this.lastUsed, () => {
+            localStorage.removeItem(this.DISCOVERY_LAST_USED_KEY)
+            this.lastUsed = undefined
+            this.render()
+        })
+        cardBody.appendChild(k)
+
+        card.append(cardHeader, cardBody)
+        wrapper.append(card)
+
+        return wrapper
     }
 
     render() {
@@ -309,6 +362,11 @@ export class Discovery extends HTMLElement {
             button.addEventListener('click', () => {
                 const url = input.value
                 console.log('Connecting to Wallet Gateway...' + url)
+                this.lastUsed = { name: url, rpcUrl: url, walletType: 'remote' }
+                localStorage.setItem(
+                    this.DISCOVERY_LAST_USED_KEY,
+                    JSON.stringify(this.lastUsed)
+                )
                 this.selectKernel({ url, walletType: 'remote' })
             })
             div.append(input, button)
@@ -318,6 +376,9 @@ export class Discovery extends HTMLElement {
         card.append(cardHeader, cardBody)
 
         wrapper.append(header, card)
+        const lastUsed = this.renderLastUsed()
+        wrapper.appendChild(lastUsed)
+
         root.appendChild(wrapper)
 
         // Replace the whole root (except styles), don't append
