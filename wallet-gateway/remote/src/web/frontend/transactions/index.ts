@@ -172,6 +172,11 @@ export class UserUiTransactions extends LitElement {
                                           <strong>Signed At:</strong>
                                           ${tx.signedAt}`
                                     : nothing}
+                                ${tx.origin
+                                    ? html`<br />
+                                          <strong>Origin:</strong>
+                                          ${tx.origin}`
+                                    : nothing}
                             </div>
                             <div class="wallet-actions">
                                 <button
