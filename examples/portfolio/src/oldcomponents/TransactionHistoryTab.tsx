@@ -15,14 +15,16 @@ export const TransactionHistoryTab: React.FC<TransactionHistoryTabProps> = ({
     registryUrls,
     party,
 }) => {
+    const [loadingMore, setLoadingMore] = useState(false)
     const [transactionHistory, setTransactionHistory] = useState<
         Transfer[] | undefined
     >(undefined)
 
     const refreshTransactionHistory = async () => {
+        setLoadingMore(true)
         const th = await getTransactionHistory({ party })
-        console.log(th)
         setTransactionHistory(th)
+        setLoadingMore(false)
     }
 
     useEffect(() => {
@@ -43,13 +45,18 @@ export const TransactionHistoryTab: React.FC<TransactionHistoryTabProps> = ({
                     </li>
                 ))}
             </ul>
-            <button
-                onClick={() => {
-                    refreshTransactionHistory()
-                }}
-            >
-                load more
-            </button>
+            {loadingMore ? (
+                <span>⏳</span>
+            ) : (
+                <button
+                    disabled={loadingMore}
+                    onClick={() => {
+                        refreshTransactionHistory()
+                    }}
+                >
+                    load more
+                </button>
+            )}
         </div>
     )
 }

@@ -176,7 +176,7 @@ export class TransactionHistoryService {
         // process.  Repeat until we have all updates.  Each update will
         // include the offset.  Then we can adjust...
         const endExclusive = await this.getOldestOffset()
-        const beginExclusive = Math.max(0, endExclusive - 10)
+        const beginExclusive = Math.max(0, endExclusive - 10 - 1)
         this.logger.debug({ beginExclusive }, 'fetching older transactions')
         for await (const updates of paginateUpdates({
             logger: this.logger,
