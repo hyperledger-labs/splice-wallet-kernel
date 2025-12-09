@@ -11,11 +11,13 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
     // Expect a title "to contain" a substring.
     await expect(dappPage).toHaveTitle(/Example dApp/)
 
-    const discoverPopupPromise = dappPage.waitForEvent('popup')
+    const connectButton = dappPage.getByRole('button', {
+        name: 'connect to Wallet Gateway',
+    })
+    await expect(connectButton).toBeVisible()
 
-    await dappPage
-        .getByRole('button', { name: 'connect to Wallet Gateway' })
-        .click()
+    const discoverPopupPromise = dappPage.waitForEvent('popup')
+    await connectButton.click()
 
     const discoverPopup = await discoverPopupPromise
 

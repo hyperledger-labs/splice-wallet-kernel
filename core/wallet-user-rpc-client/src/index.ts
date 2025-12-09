@@ -281,12 +281,19 @@ export type Sessions = Session[]
  *
  */
 export type Payload = string
+/**
+ *
+ * The origin (dApp URL) that initiated this transaction request.
+ *
+ */
+export type Origin = string
 export interface Transaction {
     commandId: CommandId
     status: Status
     preparedTransaction: PreparedTransaction
     preparedTransactionHash: PreparedTransactionHash
     payload?: Payload
+    origin?: Origin
     [k: string]: any
 }
 export type Transactions = Transaction[]
@@ -416,6 +423,7 @@ export interface GetTransactionResult {
     preparedTransaction: PreparedTransaction
     preparedTransactionHash: PreparedTransactionHash
     payload?: Payload
+    origin?: Origin
     [k: string]: any
 }
 export interface ListTransactionsResult {
