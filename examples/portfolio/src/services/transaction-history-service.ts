@@ -12,10 +12,96 @@ import {
 import { TRANSFER_INSTRUCTION_INTERFACE_ID } from '@canton-network/core-token-standard'
 import { type Transfer, toTransfer } from '../utils/transfers/transfer.js'
 
+type FiltersByParty = Types['Map_Filters']
+
+type Update = Types['JsGetUpdatesResponse']
+
 type Event =
     | { type: 'CreatedEvent'; event: Types['CreatedEvent'] }
     | { type: 'ArchivedEvent'; event: Types['ArchivedEvent'] }
     | { type: 'ExercisedEvent'; event: Types['ExercisedEvent'] }
+
+const updateOffset = (update: Update): number | undefined => {
+    return (
+        update.update.OffsetCheckpoint?.value.offset ??
+        update.update.Reassignment?.value.offset ??
+        update.update.TopologyTransaction?.value.offset ??
+        update.update.Transaction?.value.offset
+    )
+}
+
+const paginateUpdates = async function* ({
+    logger,
+    ledgerClient,
+    beginExclusive,
+    endExclusive,
+    filtersByParty,
+}: {
+    logger: Logger
+    ledgerClient: LedgerClient
+    beginExclusive: number
+    endExclusive: number
+    filtersByParty: FiltersByParty
+}): AsyncGenerator<Update[], void, void> {
+    const limit = 2 // just to test
+    let more = true
+    while (more) {
+        const updates = await ledgerClient.postWithRetry(
+            '/v2/updates',
+            {
+                beginExclusive,
+                verbose: false, // deprecated in 3.4
+                updateFormat: {
+                    includeTransactions: {
+                        transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
+                        eventFormat: {
+                            verbose: false,
+                            filtersByParty,
+                        },
+                    },
+                },
+            },
+            defaultRetryableOptions,
+            {
+                query: {
+                    limit: `${limit}`,
+                },
+            }
+        )
+
+        if (updates.length == 0) {
+            more = false
+        } else {
+            // Filter out updates before endExclusive.  If we received any at
+            // or after endExclusive, we immediately know that we won't have
+            // more pages.
+            const relevantUpdates: Update[] = []
+            let latestOffset: number | undefined = undefined
+            for (const update of updates) {
+                const offset = updateOffset(update)
+                if (
+                    offset &&
+                    (latestOffset !== null || offset >= latestOffset)
+                ) {
+                    latestOffset = offset
+                }
+                if (offset && offset >= endExclusive) {
+                    more = false
+                } else {
+                    relevantUpdates.push(update)
+                }
+            }
+
+            if (latestOffset === undefined) {
+                logger.error('no events with an offset, skipping')
+            } else if (latestOffset > beginExclusive) {
+                beginExclusive = latestOffset
+            }
+
+            yield relevantUpdates
+        }
+    }
+}
 
 export class TransactionHistoryService {
     private logger: Logger
@@ -23,7 +109,7 @@ export class TransactionHistoryService {
     private party: string
     private transfers: Map<string, Transfer> // By contractId
     private unprocessed: Event[]
-    private offset: number | undefined
+    private oldestOffset: number | undefined
 
     constructor({
         logger,
@@ -78,11 +164,10 @@ export class TransactionHistoryService {
         return transfers
     }
 
-    private async getOffset(): Promise<number> {
-        if (this.offset !== undefined) return this.offset
+    private async getOldestOffset(): Promise<number> {
+        if (this.oldestOffset !== undefined) return this.oldestOffset
         const ledgerEnd = await this.ledgerClient.get('/v2/state/ledger-end')
-        this.offset = ledgerEnd.offset
-        this.logger.debug({ offset: this.offset }, 'initialized offset')
+        this.oldestOffset = ledgerEnd.offset
         return ledgerEnd.offset
     }
 
@@ -90,80 +175,63 @@ export class TransactionHistoryService {
         // Strategy: fetch N+1 to see if there are more updates than we can
         // process.  Repeat until we have all updates.  Each update will
         // include the offset.  Then we can adjust...
-        const offset = await this.getOffset()
-        const limit = 2000
-        const updates = await this.ledgerClient.postWithRetry(
-            '/v2/updates/flats',
-            {
-                beginExclusive: offset - limit,
-                verbose: false, // deprecated in 3.4
-                updateFormat: {
-                    includeTransactions: {
-                        transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
-                        eventFormat: {
-                            verbose: false,
-                            filtersByParty: {
-                                [this.party]: {
-                                    cumulative: [
-                                        {
-                                            identifierFilter: {
-                                                InterfaceFilter: {
-                                                    value: {
-                                                        interfaceId:
-                                                            TRANSFER_INSTRUCTION_INTERFACE_ID,
-                                                        includeInterfaceView: true,
-                                                        includeCreatedEventBlob: true,
-                                                    },
-                                                },
-                                            },
-                                        },
-                                    ],
+        const endExclusive = await this.getOldestOffset()
+        const beginExclusive = Math.max(0, endExclusive - 10)
+        this.logger.debug({ beginExclusive }, 'fetching older transactions')
+        for await (const updates of paginateUpdates({
+            logger: this.logger,
+            ledgerClient: this.ledgerClient,
+            beginExclusive,
+            endExclusive,
+            filtersByParty: {
+                [this.party]: {
+                    cumulative: [
+                        {
+                            identifierFilter: {
+                                InterfaceFilter: {
+                                    value: {
+                                        interfaceId:
+                                            TRANSFER_INSTRUCTION_INTERFACE_ID,
+                                        includeInterfaceView: true,
+                                        includeCreatedEventBlob: true,
+                                    },
                                 },
                             },
                         },
-                    },
+                    ],
                 },
             },
-            defaultRetryableOptions,
-            {
-                query: {
-                    limit: `${limit}`,
-                },
-            }
-        )
-
-        let events: Event[] = []
-        for (const update of updates) {
-            console.log('update', update)
-            for (const event of update.update.Transaction?.value.events ?? []) {
-                console.log(event)
-                if (event.CreatedEvent) {
-                    events.push({
-                        type: 'CreatedEvent',
-                        event: event.CreatedEvent,
-                    })
-                } else if (event.ExercisedEvent) {
-                    events.push({
-                        type: 'ExercisedEvent',
-                        event: event.ExercisedEvent,
-                    })
+        })) {
+            let events: Event[] = []
+            for (const update of updates) {
+                console.log('update', update)
+                for (const event of update.update.Transaction?.value.events ??
+                    []) {
+                    console.log(event)
+                    if (event.CreatedEvent) {
+                        events.push({
+                            type: 'CreatedEvent',
+                            event: event.CreatedEvent,
+                        })
+                    } else if (event.ExercisedEvent) {
+                        events.push({
+                            type: 'ExercisedEvent',
+                            event: event.ExercisedEvent,
+                        })
+                    }
                 }
             }
-            if (update.update.OffsetCheckpoint?.value.offset !== undefined) {
-                const offset = update.update.OffsetCheckpoint?.value.offset
-                if (this.offset === undefined || offset < this.offset)
-                    this.offset = offset
+
+            events = [...events, ...this.unprocessed]
+
+            const newUnprocessed = []
+            for (const event of events) {
+                if (!this.process(event)) newUnprocessed.push(event)
             }
+
+            this.unprocessed = newUnprocessed
         }
-
-        events = [...events, ...this.unprocessed]
-
-        const newUnprocessed = []
-        for (const event of events) {
-            if (!this.process(event)) newUnprocessed.push(event)
-        }
-
-        this.unprocessed = newUnprocessed
+        this.oldestOffset = beginExclusive + 1
 
         return this.list()
     }
