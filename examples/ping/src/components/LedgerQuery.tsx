@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import * as sdk from '@canton-network/dapp-sdk'
+import { prettyjson } from '../utils'
 
 export function LedgerQuery(props: {
     primaryParty?: string
@@ -41,8 +42,8 @@ export function LedgerQuery(props: {
                     query preferred package version
                 </button>
                 {queryResponse && (
-                    <pre>
-                        <p>{JSON.stringify(queryResponse, null, 2)}</p>
+                    <pre style={{ textAlign: 'left' }}>
+                        <p>{prettyjson(queryResponse)}</p>
                     </pre>
                 )}
 
