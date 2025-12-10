@@ -7,12 +7,10 @@ import { type Transfer, getTransactionHistory } from '../utils/transfers'
 import { TransferCard } from './TransferCard.js'
 
 export type TransactionHistoryTabProps = {
-    registryUrls: Map<PartyId, string>
     party: PartyId
 }
 
 export const TransactionHistoryTab: React.FC<TransactionHistoryTabProps> = ({
-    registryUrls,
     party,
 }) => {
     const [loadingMore, setLoadingMore] = useState(false)
@@ -37,11 +35,7 @@ export const TransactionHistoryTab: React.FC<TransactionHistoryTabProps> = ({
             <ul>
                 {transactionHistory?.map((p) => (
                     <li key={p.contractId}>
-                        <TransferCard
-                            registryUrls={registryUrls}
-                            party={party}
-                            transfer={p}
-                        />
+                        <TransferCard party={party} transfer={p} />
                     </li>
                 ))}
             </ul>

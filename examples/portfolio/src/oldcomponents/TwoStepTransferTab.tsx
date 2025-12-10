@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react'
-import { PartyId } from '@canton-network/core-types'
 import { createTransfer } from '../utils/transfers'
 import { getTransferableInstrumentIds } from '../utils/getHoldings.js'
+import { useRegistries } from '../contexts/RegistriesContext.js'
 
 export type TwoStepTransferTabProps = {
-    registryUrls: Map<PartyId, string>
     party: string
     sessionToken?: string // used to tap
 }
 
 export const TwoStepTransferTab: React.FC<TwoStepTransferTabProps> = ({
-    registryUrls,
     party,
 }) => {
+    const { registries } = useRegistries()
     const [receiver, setReceiver] = useState<string>('')
     const [amount, setAmount] = useState<number>(100)
     const [memo, setMemo] = useState<string | undefined>(undefined)
@@ -72,7 +71,7 @@ export const TwoStepTransferTab: React.FC<TwoStepTransferTabProps> = ({
                 onClick={() => {
                     // TODO: combo box for held tokens
                     createTransfer({
-                        registryUrls,
+                        registryUrls: registries,
                         instrumentId:
                             transferableInstrumentIds[selectedInstrumentIdx],
                         sender: party,

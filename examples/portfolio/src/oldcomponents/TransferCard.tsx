@@ -3,19 +3,19 @@
 
 import type { PartyId } from '@canton-network/core-types'
 import { type Transfer, acceptTransfer } from '../utils/transfers'
+import { useRegistries } from '../contexts/RegistriesContext.js'
 import { AssetCard } from './AssetCard.js'
 
 export type TransferCardProps = {
-    registryUrls: Map<PartyId, string>
     party: PartyId
     transfer: Transfer
 }
 
 export const TransferCard: React.FC<TransferCardProps> = ({
-    registryUrls,
     party,
     transfer,
 }) => {
+    const { registries } = useRegistries()
     return (
         <div>
             status: <strong>{transfer.status}</strong> <br />
@@ -34,7 +34,7 @@ export const TransferCard: React.FC<TransferCardProps> = ({
                 <button
                     onClick={() => {
                         acceptTransfer({
-                            registryUrls,
+                            registryUrls: registries,
                             party,
                             contractId: transfer.contractId,
                             instrumentId: transfer.instrumentId,

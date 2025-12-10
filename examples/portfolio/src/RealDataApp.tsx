@@ -4,17 +4,13 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import * as sdk from '@canton-network/dapp-sdk'
+import { RegistriesProvider } from './contexts/RegistriesContext.js'
 import { HoldingsTab } from './oldcomponents/HoldingsTab.js'
 import { RegistriesTab } from './oldcomponents/RegistriesTab.js'
 import { PendingTransfersTab } from './oldcomponents/PendingTransfersTab.js'
 import { TwoStepTransferTab } from './oldcomponents/TwoStepTransferTab.js'
 import { TransactionHistoryTab } from './oldcomponents/TransactionHistoryTab.js'
 import { Tabs } from './oldcomponents/Tabs.js'
-import {
-    type Registries,
-    loadRegistries,
-    storeRegistries,
-} from './services/registries.js'
 
 type Connection = {
     connected: boolean
@@ -26,9 +22,6 @@ function RealDataApp() {
     const [connection, setConnection] = useState<Connection>({
         connected: false,
     })
-
-    const [registryUrls, setRegistryUrls] =
-        useState<Registries>(loadRegistries())
 
     const [errorMsg, setErrorMsg] = useState('')
     const [messages, setMessages] = useState<string[]>([])
@@ -131,7 +124,7 @@ function RealDataApp() {
     }, [connection.connected])
 
     return (
-        <div>
+        <RegistriesProvider>
             <h1>dApp Portfolio</h1>
             <div className="card">
                 {!connection.connected && (
@@ -139,10 +132,11 @@ function RealDataApp() {
                         onClick={() => {
                             console.log('Connecting to Wallet Gateway...')
                             sdk.connect()
-                                .then(({ status, sessionToken }) => {
+                                .then((status) => {
                                     setConnection({
                                         connected: status.isConnected,
-                                        sessionToken,
+                                        sessionToken:
+                                            status.session?.accessToken,
                                     })
                                     setErrorMsg('')
                                 })
@@ -209,7 +203,6 @@ function RealDataApp() {
                         value: 'twoStepTransfer',
                         content: connection.primaryParty ? (
                             <TwoStepTransferTab
-                                registryUrls={registryUrls}
                                 party={connection.primaryParty}
                             />
                         ) : (
@@ -221,7 +214,6 @@ function RealDataApp() {
                         value: 'pendingTransfers',
                         content: connection.primaryParty ? (
                             <PendingTransfersTab
-                                registryUrls={registryUrls}
                                 party={connection.primaryParty}
                             />
                         ) : (
@@ -233,7 +225,6 @@ function RealDataApp() {
                         value: 'transactionHistory',
                         content: connection.primaryParty ? (
                             <TransactionHistoryTab
-                                registryUrls={registryUrls}
                                 party={connection.primaryParty}
                             />
                         ) : (
@@ -243,15 +234,7 @@ function RealDataApp() {
                     {
                         label: 'Registry Settings',
                         value: 'registries',
-                        content: (
-                            <RegistriesTab
-                                registryUrls={registryUrls}
-                                onChange={(registries) => {
-                                    storeRegistries(registries)
-                                    setRegistryUrls(registries)
-                                }}
-                            />
-                        ),
+                        content: <RegistriesTab />,
                     },
                 ]}
             />
@@ -266,7 +249,7 @@ function RealDataApp() {
                         ))}
                 </pre>
             </div>
-        </div>
+        </RegistriesProvider>
     )
 }
 

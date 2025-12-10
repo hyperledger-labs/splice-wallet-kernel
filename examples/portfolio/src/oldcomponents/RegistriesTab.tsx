@@ -2,21 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState } from 'react'
-import { resolveTokenStandardClient } from '../services'
-import { type Registries } from '../services/registries.js'
+import { useRegistries } from '../contexts/RegistriesContext'
 
-export type RegistriesTabProps = {
-    registryUrls: Registries
-    onChange: (registryUrls: Registries) => void
-}
-
-export const RegistriesTab: React.FC<RegistriesTabProps> = (props) => {
-    const [registryUrls, setRegistryUrls] = useState(props.registryUrls)
+export const RegistriesTab: React.FC = () => {
+    const { registries, setRegistry, deleteRegistry } = useRegistries()
 
     const [newPartyId, setNewPartyId] = useState('')
     const [newRegistryUrl, setNewRegistryUrl] = useState('')
 
-    const adminParties = [...registryUrls.keys()]
+    const adminParties = [...registries.keys()]
     adminParties.sort()
 
     return (
@@ -34,17 +28,11 @@ export const RegistriesTab: React.FC<RegistriesTabProps> = (props) => {
                         return (
                             <tr key={p}>
                                 <td>{p}</td>
-                                <td>{registryUrls.get(p)}</td>
+                                <td>{registries.get(p)}</td>
                                 <td>
                                     <button
                                         type="submit"
-                                        onClick={() => {
-                                            const newRegistryUrls = new Map(
-                                                registryUrls
-                                            )
-                                            newRegistryUrls.delete(p)
-                                            setRegistryUrls(newRegistryUrls)
-                                        }}
+                                        onClick={() => deleteRegistry(p)}
                                     >
                                         🗑️
                                     </button>
@@ -78,19 +66,10 @@ export const RegistriesTab: React.FC<RegistriesTabProps> = (props) => {
                 <button
                     type="submit"
                     onClick={async () => {
-                        const tokenStandardClient =
-                            await resolveTokenStandardClient({
-                                registryUrl: newRegistryUrl,
-                            })
-                        const registryInfo = await tokenStandardClient.get(
-                            '/registry/metadata/v1/info'
-                        )
-                        const newRegistryUrls = new Map(registryUrls).set(
-                            registryInfo.adminId,
+                        setRegistry(
+                            newPartyId ? undefined : newPartyId,
                             newRegistryUrl
                         )
-                        setRegistryUrls(newRegistryUrls)
-                        props.onChange(newRegistryUrls)
                     }}
                 >
                     Add registry
