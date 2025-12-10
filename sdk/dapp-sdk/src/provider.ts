@@ -25,6 +25,7 @@ import {
     PrepareExecuteParams,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { ErrorCode } from './error.js'
+import { StatusEvent } from './dapp-api/rpc-gen/typings'
 
 /**
  * The Provider class abstracts over the different types of SpliceProviders (Window and HTTP).
@@ -146,29 +147,31 @@ const withTimeout = (
 // Remote dApp API Server which wraps the Remote-dApp API Server with promises
 export const dappController = (provider: SpliceProvider) =>
     buildController({
-        connect: async () => {
+        connect: async (): Promise<StatusEvent> => {
             const response = await provider.request<dappRemoteAPI.StatusEvent>({
                 method: 'connect',
             })
 
-            if (!response.isConnected)
+            if (response.isConnected) {
+                return response
+            } else {
                 openKernelUserUI('remote', response.userUrl ?? '')
+                const promise = new Promise<dappAPI.StatusEvent>(
+                    (resolve, reject) => {
+                        // 5 minutes timeout
+                        const timeout = withTimeout(reject, 5 * 60 * 1000)
+                        provider.on<dappRemoteAPI.StatusEvent>(
+                            'onConnected',
+                            (event) => {
+                                clearTimeout(timeout)
+                                resolve(event)
+                            }
+                        )
+                    }
+                )
 
-            const promise = new Promise<dappAPI.StatusEvent>(
-                (resolve, reject) => {
-                    // 5 minutes timeout
-                    const timeout = withTimeout(reject, 5 * 60 * 1000)
-                    provider.on<dappRemoteAPI.StatusEvent>(
-                        'onConnected',
-                        (event) => {
-                            clearTimeout(timeout)
-                            resolve(event)
-                        }
-                    )
-                }
-            )
-
-            return promise
+                return promise
+            }
         },
         disconnect: async () => {
             return await provider.request<dappRemoteAPI.Null>({
@@ -196,19 +199,23 @@ export const dappController = (provider: SpliceProvider) =>
 
             const promise = new Promise<dappAPI.PrepareExecuteResult>(
                 (resolve, reject) => {
+                    const listener = (event: dappRemoteAPI.TxChangedEvent) => {
+                        console.log('SDK: TxChangedEvent', event)
+                        clearTimeout(timeout)
+
+                        if (event.status === 'executed') {
+                            provider.removeListener('txChanged', listener)
+                            resolve({
+                                tx: event,
+                            })
+                        }
+                    }
+
                     const timeout = withTimeout(reject)
+
                     provider.on<dappRemoteAPI.TxChangedEvent>(
                         'txChanged',
-                        (event) => {
-                            console.log('SDK: TxChangedEvent', event)
-                            clearTimeout(timeout)
-
-                            if (event.status === 'executed') {
-                                resolve({
-                                    tx: event,
-                                })
-                            }
-                        }
+                        listener
                     )
                 }
             )
