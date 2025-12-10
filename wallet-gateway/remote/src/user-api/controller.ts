@@ -410,7 +410,7 @@ export const userController = (
                         )
                     }
 
-                    // Get existing transaction to preserve createdAt if it exists
+                    // Get existing transaction to preserve createdAt and origin if they exist
                     const existingTx = await store.getTransaction(commandId)
                     const now = new Date()
 
@@ -419,6 +419,7 @@ export const userController = (
                         status: 'signed',
                         preparedTransaction,
                         preparedTransactionHash,
+                        origin: existingTx?.origin ?? null,
                         ...(existingTx?.createdAt && {
                             createdAt: existingTx.createdAt,
                         }),
@@ -547,6 +548,7 @@ export const userController = (
                         preparedTransactionHash:
                             transaction.preparedTransactionHash,
                         payload: result,
+                        origin: transaction.origin ?? null,
                         ...(transaction.createdAt && {
                             createdAt: transaction.createdAt,
                         }),
@@ -587,14 +589,20 @@ export const userController = (
                 })
                 const status = await networkStatus(ledgerClient)
                 notifier.emit('onConnected', {
-                    status: {
-                        kernel: kernelInfo,
-                        isConnected: true,
-                        isNetworkConnected: status.isConnected,
-                        networkReason: status.reason ? status.reason : 'OK',
+                    kernel: kernelInfo,
+                    isConnected: true,
+                    isNetworkConnected: status.isConnected,
+                    networkReason: status.reason ? status.reason : 'OK',
+                    network: {
                         networkId: network.id,
+                        ledgerApi: {
+                            baseUrl: network.ledgerApi.baseUrl,
+                        },
                     },
-                    sessionToken: accessToken,
+                    session: {
+                        accessToken: accessToken,
+                        userId: userId,
+                    },
                 })
 
                 return Promise.resolve({
@@ -696,6 +704,9 @@ export const userController = (
                 payload: transaction.payload
                     ? JSON.stringify(transaction.payload)
                     : '',
+                ...(transaction.origin !== null && {
+                    origin: transaction.origin,
+                }),
                 ...(transaction.createdAt && {
                     createdAt: transaction.createdAt.toISOString(),
                 }),
@@ -714,6 +725,9 @@ export const userController = (
                 payload: transaction.payload
                     ? JSON.stringify(transaction.payload)
                     : '',
+                ...(transaction.origin !== null && {
+                    origin: transaction.origin,
+                }),
                 ...(transaction.createdAt && {
                     createdAt: transaction.createdAt.toISOString(),
                 }),

@@ -17,16 +17,15 @@ export class SpliceProviderHttp extends SpliceProviderBase {
     private transport: HttpTransport
 
     private openSocket(url: URL): Socket {
-        // Assumes the RPC URL is on /rpc, and the socket URL is the same but without the /rpc path.
-        const socketUrl = new URL(url.href)
-        socketUrl.pathname = ''
+        // Assumes the socket URL is accessed directly on the host w/o the API path.
+        const socketUri = url.origin
 
         if (this.socket) {
             console.debug('SpliceProviderHttp: closing existing socket')
             this.socket.disconnect()
         }
 
-        const socket = io(socketUrl.href, {
+        const socket = io(socketUri, {
             forceNew: true,
             auth: this.sessionToken
                 ? {
@@ -76,10 +75,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 // dappApi.OnConnectedEvent are mapped manually to avoid dependency.
                 this.request({ method: 'status' })
                     .then((status) => {
-                        this.emit('onConnected', {
-                            status: status,
-                            sessionToken: this.sessionToken,
-                        })
+                        this.emit('onConnected', status)
                     })
                     .catch((err) => {
                         console.error(
