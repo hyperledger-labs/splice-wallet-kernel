@@ -421,6 +421,11 @@ export interface PrepareExecuteParams {
     packageIdSelectionPreference?: PackageIdSelectionPreference
     [k: string]: any
 }
+/**
+ *
+ * Ledger API request structure
+ *
+ */
 export interface LedgerApiParams {
     requestMethod: RequestMethod
     resource: Resource
@@ -432,7 +437,6 @@ export interface StatusEvent {
     isConnected: IsConnected
     isNetworkConnected: IsNetworkConnected
     networkReason?: NetworkReason
-    userUrl?: UserUrl
     network?: Network
     session?: Session
     [k: string]: any
