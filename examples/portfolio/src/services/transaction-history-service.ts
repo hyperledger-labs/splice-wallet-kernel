@@ -43,7 +43,7 @@ const paginateUpdates = async function* ({
     endExclusive: number
     filtersByParty: FiltersByParty
 }): AsyncGenerator<Update[], void, void> {
-    const limit = 2 // just to test
+    const limit = 32 // just to test
     let more = true
     while (more) {
         const updates = await ledgerClient.postWithRetry(
@@ -204,10 +204,8 @@ export class TransactionHistoryService {
         })) {
             let events: Event[] = []
             for (const update of updates) {
-                console.log('update', update)
                 for (const event of update.update.Transaction?.value.events ??
                     []) {
-                    console.log(event)
                     if (event.CreatedEvent) {
                         events.push({
                             type: 'CreatedEvent',

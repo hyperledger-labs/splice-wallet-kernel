@@ -33,7 +33,6 @@ function RealDataApp() {
         provider
             .request<sdk.dappAPI.StatusEvent>({ method: 'status' })
             .then((result) => {
-                console.log(result)
                 setConnection({
                     ...connection,
                     connected: result.isConnected,
@@ -44,7 +43,6 @@ function RealDataApp() {
 
         // Listen for connected events from the provider
         const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
-            console.log('Status changed event: ', status)
             setConnection({
                 ...connection,
                 connected: status.isConnected,
@@ -61,7 +59,6 @@ function RealDataApp() {
     useEffect(() => {
         const provider = window.canton
         if (!provider || !connection.connected) return
-        console.log('requesting accounts...')
         provider
             .request({
                 method: 'requestAccounts',

@@ -22,7 +22,6 @@ export const getHoldings = async ({
     const uniqueContractIds = new Set<string>()
     const uniqueUtxos: Holding[] = []
     for (const utxo of utxoContracts) {
-        console.log(utxo)
         if (!uniqueContractIds.has(utxo.contractId)) {
             uniqueContractIds.add(utxo.contractId)
             uniqueUtxos.push({

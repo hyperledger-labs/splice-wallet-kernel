@@ -48,7 +48,6 @@ export const HoldingsTab: React.FC<HoldingsTabProps> = ({
             </button>
             <ul>
                 {holdings?.map((h) => {
-                    console.log('contract_id', h.contractId)
                     return (
                         <li key={h.contractId}>
                             <AssetCard

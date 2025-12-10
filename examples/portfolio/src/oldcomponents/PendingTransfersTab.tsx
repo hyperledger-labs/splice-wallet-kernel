@@ -18,7 +18,6 @@ export const PendingTransfersTab: React.FC<PendingTransfersTabProps> = ({
 
     const refreshPendingTransfers = async () => {
         const hs = await getPendingTransfers({ party })
-        console.log(hs)
         setPendingTransfers(hs)
     }
 

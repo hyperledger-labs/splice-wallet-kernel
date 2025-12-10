@@ -41,9 +41,9 @@ export const tap = async ({
     }
 
     const provider = window.canton
-    const result = await provider?.request({
+    // TODO: check success
+    await provider?.request({
         method: 'prepareExecute',
         params: request,
     })
-    console.log(result)
 }

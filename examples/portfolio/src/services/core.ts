@@ -70,28 +70,6 @@ const createLedgerClient = async (options: {
         if (typeof url !== 'string') {
             body = await url.text()
         }
-        /*
-        let bodyRepresentation = null
-        console.log('url', url)
-        console.log('options', options)
-        if (options.body) {
-            console.log('options.body', options.body)
-            bodyRepresentation = options.body
-        } else if (typeof url !== 'string') {
-            console.log('url.body', url.text())
-            if (url.bodyUsed) {
-                throw new TypeError('Request body already used.')
-            }
-            bodyRepresentation = url.body
-        }
-        console.log('bodyRepresentation', typeof bodyRepresentation)
-        if (typeof bodyRepresentation === 'string') {
-            body = bodyRepresentation
-        } else if (typeof bodyRepresentation === 'object') {
-            console.log(bodyRepresentation)
-        }
-        */
-        console.log('Sending body', body)
 
         const response = await sdk.ledgerApi({
             requestMethod,
