@@ -23,7 +23,21 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/StatusEvent"
+                    "title": "StatusEventAsync",
+                    "allOf": [
+                        {
+                            "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/StatusEvent"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "userUrl": {
+                                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/UserUrl"
+                                }
+                            },
+                            "required": ["userUrl"]
+                        }
+                    ]
                 }
             },
             "description": "Ensures ledger connectivity and returns the connected network information along with the user access token. NetworkId should follow CAIP-2 and represent the synchronizerId."

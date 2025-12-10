@@ -55,7 +55,6 @@ import {
     ledgerPrepareParams,
 } from '../utils.js'
 import { StatusEvent } from '../dapp-api/rpc-gen/typings.js'
-import { user } from './server.js'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>

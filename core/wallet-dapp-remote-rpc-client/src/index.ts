@@ -194,6 +194,19 @@ export interface Session {
     userId: UserId
     [k: string]: any
 }
+export interface StatusEvent {
+    kernel: KernelInfo
+    isConnected: IsConnected
+    isNetworkConnected: IsNetworkConnected
+    networkReason?: NetworkReason
+    network?: Network
+    session?: Session
+    [k: string]: any
+}
+export interface ObjectOfUserUrlMkZ1IR2Z {
+    userUrl: UserUrl
+    [k: string]: any
+}
 export type Dar = string
 export type Dars = Dar[]
 /**
@@ -432,16 +445,7 @@ export interface LedgerApiParams {
     body?: Body
     [k: string]: any
 }
-export interface StatusEvent {
-    kernel: KernelInfo
-    isConnected: IsConnected
-    isNetworkConnected: IsNetworkConnected
-    networkReason?: NetworkReason
-    userUrl?: UserUrl
-    network?: Network
-    session?: Session
-    [k: string]: any
-}
+export type StatusEventAsync = StatusEvent & ObjectOfUserUrlMkZ1IR2Z
 /**
  *
  * Represents a null value, used in responses where no data is returned.
@@ -495,7 +499,7 @@ export type TxChangedEvent =
  */
 
 export type Status = () => Promise<StatusEvent>
-export type Connect = () => Promise<StatusEvent>
+export type Connect = () => Promise<StatusEventAsync>
 export type Disconnect = () => Promise<Null>
 export type DarsAvailable = () => Promise<DarsAvailableResult>
 export type PrepareReturn = (

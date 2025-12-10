@@ -522,9 +522,6 @@
                         "type": "string",
                         "description": "If not connected to a network, the reason why."
                     },
-                    "userUrl": {
-                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/UserUrl"
-                    },
                     "network": {
                         "title": "network",
                         "type": "object",
