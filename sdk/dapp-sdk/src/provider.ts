@@ -171,7 +171,6 @@ export const dappController = (provider: SpliceProvider) =>
                     provider.on<dappRemoteAPI.StatusEvent>(
                         'onConnected',
                         (event) => {
-                            console.log('SDK: onConnected event', event)
                             clearTimeout(timeout)
                             resolve(event)
                         }
