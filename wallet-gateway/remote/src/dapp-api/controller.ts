@@ -235,7 +235,8 @@ export const dappController = (
                     accessToken: context.accessToken,
                     userId: context.userId,
                 },
-            }
+                userUrl: `${userUrl}/login/`,
+            } as StatusEventAsync
         },
         onConnected: async () => {
             throw new Error('Only for events.')
