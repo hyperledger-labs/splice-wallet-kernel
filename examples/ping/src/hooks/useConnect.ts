@@ -15,10 +15,8 @@ export function useConnect(): {
     const [status, setStatus] = useState<sdk.dappAPI.StatusEvent>()
 
     async function connect() {
-        console.log('calling connect in hook', sdk.connect)
         sdk.connect()
             .then((status) => {
-                console.log('hey we did it: ', status)
                 setStatus(status)
             })
             .catch((err) => {
@@ -34,9 +32,16 @@ export function useConnect(): {
     }
 
     useEffect(() => {
+        sdk.status()
+            .then(setStatus)
+            .catch(() => {
+                setStatus(undefined)
+            })
+    }, [])
+
+    useEffect(() => {
         if (status?.isConnected) {
             const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
-                console.log('Status changed event: ', status)
                 setStatus(status)
             }
 
