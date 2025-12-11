@@ -199,11 +199,6 @@ export class CoreService {
         return cIds
     }
 
-    // hasKey<K extends string>(key: K) {
-    //     return <T extends object>(obj: T): obj is T & Record<K, unknown> =>
-    //         key in obj
-    // }
-
     async listContractsByInterface<T = ViewValue>(
         interfaceId: string,
         partyId?: PartyId,
