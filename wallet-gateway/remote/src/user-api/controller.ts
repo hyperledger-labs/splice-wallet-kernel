@@ -504,10 +504,7 @@ export const userController = (
 
                         return res
                     } catch (error) {
-                        console.error(
-                            'Failed to submit transaction: ' +
-                                JSON.stringify(error)
-                        )
+                        logger.error(error, 'Failed to submit transaction')
                         throw error
                     }
                 }
