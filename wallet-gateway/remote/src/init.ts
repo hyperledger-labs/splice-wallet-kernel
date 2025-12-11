@@ -34,6 +34,8 @@ import { deriveKernelUrls } from './config/ConfigUtils.js'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 import { GATEWAY_VERSION } from './version.js'
+import cron from 'node-cron'
+import { startLedgerConnectivityTester } from './backgorund-jobs/ledger-connectivity-tester.js'
 
 let isReady = false
 
@@ -134,6 +136,12 @@ async function initializeSigningDatabase(
     return new SigningStoreSql(db, logger)
 }
 
+export function initializeBackgroundJobs(store: StoreSql, logger: Logger) {
+    cron.schedule('* * * * *', () => {
+        startLedgerConnectivityTester(store, logger)
+    })
+}
+
 export async function initialize(opts: CliOptions, logger: Logger) {
     const config = ConfigUtils.loadConfigFile(opts.config)
 
@@ -176,6 +184,7 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const store = await initializeDatabase(config, logger)
     const signingStore = await initializeSigningDatabase(config, logger)
     const authService = jwtAuthService(store, logger)
+    initializeBackgroundJobs(store, logger)
 
     // Provide apiKey from User API in Fireblocks
     const apiPath = path.resolve(process.cwd(), 'fireblocks_api.key')

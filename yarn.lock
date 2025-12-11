@@ -2078,6 +2078,7 @@ __metadata:
     jest: "npm:^30.2.0"
     jose: "npm:^6.1.2"
     lit: "npm:^3.3.1"
+    node-cron: "npm:^4.2.1"
     pino: "npm:^10.1.0"
     pino-pretty: "npm:^13.1.2"
     pino-test: "npm:^1.1.0"
@@ -14775,6 +14776,13 @@ __metadata:
   dependencies:
     semver: "npm:^7.3.5"
   checksum: 10c0/3354289ccca052538f653968ead73d00785e5ab159ce3a575dbff465724dac749821e7c327ae6c4774f29994f94c402fbafc8799b172aabf4aa8a082a070b00a
+  languageName: node
+  linkType: hard
+
+"node-cron@npm:^4.2.1":
+  version: 4.2.1
+  resolution: "node-cron@npm:4.2.1"
+  checksum: 10c0/804df01df230e96fd2f8ffcde004f4d5af953bccdf3ccf993dc450526dd65f553a2f2ad4bc0faf55c90c38cbc99c9ddbb88ee16cba3fc6bc74e606da6efb249e
   languageName: node
   linkType: hard
 

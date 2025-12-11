@@ -345,6 +345,7 @@ export class LoginUI extends LitElement {
                                 'client_credentials'}
                             >
                                 ${net.name}
+                                ${net.verified === false ? '⚠️' : '✅'}
                             </option>`
                     )}
                 </select>

@@ -54,6 +54,7 @@
         "express-rate-limit": "^8.2.1",
         "jose": "^6.1.2",
         "lit": "^3.3.1",
+        "node-cron": "^4.2.1",
         "pino": "^10.1.0",
         "pino-pretty": "^13.1.2",
         "socket.io": "^4.8.1",
