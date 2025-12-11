@@ -126,12 +126,16 @@ export class ValidatorController {
      * to accept it such that it can be signed externally
      * @param contractId contract id of an ExternalPartySetupProposal
      */
-    async prepareExternalPartyProposal(contractId: string) {
+    async prepareExternalPartyProposal(
+        contractId: string,
+        verboseHashing?: boolean
+    ) {
         return await this.validatorClient.post(
             '/v0/admin/external-party/setup-proposal/prepare-accept',
             {
                 contract_id: contractId,
                 user_party_id: this.getPartyId(),
+                verbose_hashing: verboseHashing ?? false,
             }
         )
     }
