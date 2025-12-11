@@ -17,7 +17,6 @@ export const networkSchema = z.object({
     ledgerApi: ledgerApiSchema,
     auth: authSchema,
     adminAuth: authSchema.optional(),
-    verified: z.boolean().optional(),
 })
 
 export const storeConfigSchema = z.object({
@@ -42,6 +41,11 @@ export const storeConfigSchema = z.object({
     networks: z.array(networkSchema),
 })
 
+export const verifiedNetworkSchema = networkSchema.extend({
+    verified: z.boolean(),
+})
+
 export type StoreConfig = z.infer<typeof storeConfigSchema>
 export type Network = z.infer<typeof networkSchema>
+export type VerifiedNetwork = z.infer<typeof verifiedNetworkSchema>
 export type LedgerApi = z.infer<typeof ledgerApiSchema>

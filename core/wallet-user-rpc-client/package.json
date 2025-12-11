@@ -46,6 +46,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git"
+        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
+        "directory": "core/wallet-user-rpc-client"
     }
 }

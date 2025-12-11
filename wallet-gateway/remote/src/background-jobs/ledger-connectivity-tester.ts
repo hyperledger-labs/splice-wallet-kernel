@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { LedgerClient } from '@canton-network/core-ledger-client'
-import { StoreSql } from '@canton-network/core-wallet-store-sql'
 import { Logger } from 'pino'
+import { NetworkCacheStore } from '../cache/network-cache.js'
 
 export async function startLedgerConnectivityTester(
-    store: StoreSql,
+    networkCacheStore: NetworkCacheStore,
     logger: Logger
 ) {
-    const networks = await store.listNetworks()
+    const networks = await networkCacheStore.getStore().listNetworks()
 
     networks.map(async (network) => {
         try {
@@ -31,16 +31,18 @@ export async function startLedgerConnectivityTester(
                 }
             } catch (error) {
                 logger.debug(
-                    `Failed to connect to ledger at ${network.ledgerApi.baseUrl}: ${error}`
+                    `Failed to connect to ledger at ${network.name}(${network.ledgerApi.baseUrl}): ${JSON.stringify(error)}`
                 )
             }
 
-            await store.updateNetwork({
+            networkCacheStore.getCache().set(network.id, {
                 ...network,
                 verified: connectivityCheck,
             })
             logger.info(
-                `Network ${network.name} (${network.id}) verified successfully.`
+                connectivityCheck
+                    ? `Network ${network.name} (${network.id}) verified successfully.`
+                    : `Network ${network.name} (${network.id}) verification failed.`
             )
         } catch (error) {
             logger.error(

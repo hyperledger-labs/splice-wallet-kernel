@@ -78,7 +78,8 @@
         "supertest": "^7.1.4",
         "ts-jest-resolver": "^2.0.1",
         "tsx": "^4.20.6",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "typescript-lru-cache": "^2.0.0"
     },
     "nx": {
         "targets": {

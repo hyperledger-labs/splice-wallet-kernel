@@ -13,11 +13,13 @@ import { ConfigUtils, deriveKernelUrls } from '../config/ConfigUtils.js'
 import { Notifier } from '../notification/NotificationService.js'
 import { pino } from 'pino'
 import { sink } from 'pino-test'
+import { NetworkCacheStore } from '../cache/network-cache.js'
 
 const configPath = '../test/config.json'
 const config = ConfigUtils.loadConfigFile(configPath)
 
 const store = new StoreInternal(config.store, pino(sink()))
+const networkCacheStore = new NetworkCacheStore(store)
 
 const notificationService = {
     getNotifier: jest.fn<() => Notifier>().mockReturnValue({
@@ -43,7 +45,8 @@ test('call listNetworks rpc', async () => {
             userUrl,
             notificationService,
             drivers,
-            store
+            store,
+            networkCacheStore
         )
     )
         .post('/api/v0/user')

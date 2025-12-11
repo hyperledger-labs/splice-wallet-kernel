@@ -24,7 +24,7 @@ const mockSessions: Sessions = [
                 'wallet::1220e7b23ea52eb5c672fb0b1cdbc916922ffed3dd7676c223a605664315e2d43edd',
             identityProviderId: 'idp-mock-oauth',
             description: 'Mock OAuth IDP',
-            ledgerApi: 'http://127.0.0.1:5003',
+            ledgerApi: { baseUrl: 'http://127.0.0.1:5003' },
             auth: {
                 method: 'authorization_code',
                 audience: 'https://audience',

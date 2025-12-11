@@ -33,7 +33,6 @@ interface NetworkTable {
 
     auth: string // json stringified
     adminAuth: string | undefined // json stringified
-    verified: number | undefined
 }
 
 interface WalletTable {
@@ -130,8 +129,6 @@ export const toNetwork = (table: NetworkTable): Network => {
         adminAuth: table.adminAuth
             ? authSchema.parse(JSON.parse(table.adminAuth))
             : undefined,
-        verified:
-            table.verified !== undefined ? table.verified === 1 : undefined,
     }
 }
 
@@ -151,12 +148,6 @@ export const fromNetwork = (
         adminAuth: network.adminAuth
             ? JSON.stringify(network.adminAuth)
             : undefined,
-        verified:
-            network.verified !== undefined
-                ? network.verified
-                    ? 1
-                    : 0
-                : undefined,
     }
 }
 

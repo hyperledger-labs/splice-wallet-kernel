@@ -6,7 +6,10 @@ import { customElement, state } from 'lit/decorators.js'
 
 import '@canton-network/core-wallet-ui-components'
 import { createUserClient } from '../rpc-client'
-import { Idp, Network } from '@canton-network/core-wallet-user-rpc-client'
+import {
+    Idp,
+    VerifiedNetwork,
+} from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
 import { WalletEvent } from '@canton-network/core-types'
@@ -18,13 +21,15 @@ import {
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
     @state()
-    accessor networks: Network[] = []
+    accessor networks: VerifiedNetwork[] = []
 
     @state()
     accessor idps: Idp[] = []
 
+    private networkPollingInterval?: number
+
     @state()
-    accessor selectedNetwork: Network | null = null
+    accessor selectedNetwork: VerifiedNetwork | null = null
 
     @state()
     accessor selectedIdp: Idp | null = null
@@ -222,6 +227,19 @@ export class LoginUI extends LitElement {
         super.connectedCallback()
         this.networks = await this.loadNetworks()
         this.idps = await this.loadIdps()
+
+        // Poll for network updates every 5 seconds
+        this.networkPollingInterval = window.setInterval(async () => {
+            this.networks = await this.loadNetworks()
+        }, 5000)
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback()
+        // Clean up the interval when component is removed
+        if (this.networkPollingInterval !== undefined) {
+            clearInterval(this.networkPollingInterval)
+        }
     }
 
     private async handleConnectToIDP() {

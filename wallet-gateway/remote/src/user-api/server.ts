@@ -9,6 +9,7 @@ import { AuthAware } from '@canton-network/core-wallet-auth'
 import { Store } from '@canton-network/core-wallet-store'
 import express from 'express'
 import { Logger } from 'pino'
+import { NetworkCacheStore } from '../cache/network-cache.js'
 import { KernelInfo } from '../config/Config.js'
 import { jsonRpcHandler } from '../middleware/jsonRpcHandler.js'
 import { NotificationService } from '../notification/NotificationService.js'
@@ -23,7 +24,8 @@ export const user = (
     userUrl: string,
     notificationService: NotificationService,
     drivers: Partial<Record<SigningProvider, SigningDriverInterface>>,
-    store: Store & AuthAware<Store>
+    store: Store & AuthAware<Store>,
+    networkCacheStore: NetworkCacheStore
 ) => {
     app.use(route, (req, res, next) =>
         jsonRpcHandler<Methods>({
@@ -31,6 +33,7 @@ export const user = (
                 kernelInfo,
                 userUrl,
                 store.withAuthContext(req.authContext),
+                networkCacheStore,
                 notificationService,
                 req.authContext,
                 drivers,

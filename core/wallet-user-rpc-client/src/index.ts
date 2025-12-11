@@ -62,13 +62,16 @@ export interface Auth {
  * Ledger api url
  *
  */
-export type LedgerApi = string
+export type BaseUrl = string
 /**
  *
- * Indicates whether we were able to verify connectivity with the node.
+ * Ledger api url
  *
  */
-export type Verified = boolean
+export interface LedgerApi {
+    baseUrl: BaseUrl
+    [k: string]: any
+}
 /**
  *
  * Structure representing the Networks
@@ -83,7 +86,6 @@ export interface Network {
     auth: Auth
     adminAuth?: Auth
     ledgerApi: LedgerApi
-    verified?: Verified
 }
 /**
  *
@@ -211,7 +213,23 @@ export type PreparedTransactionHash = string
 export type CommandId = string
 export type Signature = string
 export type SignedBy = string
-export type Networks = Network[]
+/**
+ *
+ * check if connectivity to the ledger node could be established
+ *
+ */
+export type BooleanYOuCSU8N = boolean
+export interface ObjectOfBooleanYOuCSU8NKjcqLmyA {
+    verified: BooleanYOuCSU8N
+    [k: string]: any
+}
+/**
+ *
+ * Structure representing the Networks with connectivity verification
+ *
+ */
+export type VerifiedNetwork = Network & ObjectOfBooleanYOuCSU8NKjcqLmyA
+export type Networks = VerifiedNetwork[]
 export type Idps = Idp[]
 /**
  *

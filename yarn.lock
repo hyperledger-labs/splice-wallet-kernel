@@ -2087,6 +2087,7 @@ __metadata:
     ts-jest-resolver: "npm:^2.0.1"
     tsx: "npm:^4.20.6"
     typescript: "npm:^5.9.3"
+    typescript-lru-cache: "npm:^2.0.0"
     uuid: "npm:^11.1.0"
     vite: "npm:^7.2.4"
     vite-express: "npm:^0.21.1"

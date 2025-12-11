@@ -71,7 +71,7 @@
                             "title": "networks",
                             "type": "array",
                             "items": {
-                                "$ref": "#/components/schemas/Network"
+                                "$ref": "#/components/schemas/VerifiedNetwork"
                             }
                         }
                     },
@@ -553,6 +553,25 @@
                 "type": "string",
                 "description": "The unique identifier of the command associated with the transaction."
             },
+            "VerifiedNetwork": {
+                "title": "VerifiedNetwork",
+                "description": "Structure representing the Networks with connectivity verification",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Network"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "verified": {
+                                "type": "boolean",
+                                "description": "check if connectivity to the ledger node could be established"
+                            }
+                        },
+                        "required": ["verified"]
+                    }
+                ]
+            },
             "Network": {
                 "title": "Network",
                 "type": "object",
@@ -591,8 +610,16 @@
                     },
                     "ledgerApi": {
                         "title": "ledgerApi",
-                        "type": "string",
-                        "description": "Ledger api url"
+                        "type": "object",
+                        "description": "Ledger api url",
+                        "properties": {
+                            "baseUrl": {
+                                "title": "baseUrl",
+                                "type": "string",
+                                "description": "Ledger api url"
+                            }
+                        },
+                        "required": ["baseUrl"]
                     }
                 },
                 "required": [

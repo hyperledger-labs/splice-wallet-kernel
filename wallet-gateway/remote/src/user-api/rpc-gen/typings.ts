@@ -62,7 +62,16 @@ export interface Auth {
  * Ledger api url
  *
  */
-export type LedgerApi = string
+export type BaseUrl = string
+/**
+ *
+ * Ledger api url
+ *
+ */
+export interface LedgerApi {
+    baseUrl: BaseUrl
+    [k: string]: any
+}
 /**
  *
  * Structure representing the Networks
@@ -204,7 +213,23 @@ export type PreparedTransactionHash = string
 export type CommandId = string
 export type Signature = string
 export type SignedBy = string
-export type Networks = Network[]
+/**
+ *
+ * check if connectivity to the ledger node could be established
+ *
+ */
+export type BooleanYOuCSU8N = boolean
+export interface ObjectOfBooleanYOuCSU8NKjcqLmyA {
+    verified: BooleanYOuCSU8N
+    [k: string]: any
+}
+/**
+ *
+ * Structure representing the Networks with connectivity verification
+ *
+ */
+export type VerifiedNetwork = Network & ObjectOfBooleanYOuCSU8NKjcqLmyA
+export type Networks = VerifiedNetwork[]
 export type Idps = Idp[]
 /**
  *
@@ -342,7 +367,6 @@ export interface ExecuteParams {
 }
 export interface AddSessionParams {
     networkId: NetworkId
-    idp: Idp
     [k: string]: any
 }
 export interface GetTransactionParams {

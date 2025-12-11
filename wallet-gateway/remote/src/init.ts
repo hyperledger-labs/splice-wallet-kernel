@@ -35,7 +35,8 @@ import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 import { GATEWAY_VERSION } from './version.js'
 import cron from 'node-cron'
-import { startLedgerConnectivityTester } from './backgorund-jobs/ledger-connectivity-tester.js'
+import { startLedgerConnectivityTester } from './background-jobs/ledger-connectivity-tester.js'
+import { NetworkCacheStore } from './cache/network-cache.js'
 
 let isReady = false
 
@@ -136,9 +137,14 @@ async function initializeSigningDatabase(
     return new SigningStoreSql(db, logger)
 }
 
-export function initializeBackgroundJobs(store: StoreSql, logger: Logger) {
+export function initializeBackgroundJobs(
+    networkCacheStore: NetworkCacheStore,
+    logger: Logger
+) {
+    // Run immediately on startup to fill cache
+    startLedgerConnectivityTester(networkCacheStore, logger)
     cron.schedule('* * * * *', () => {
-        startLedgerConnectivityTester(store, logger)
+        startLedgerConnectivityTester(networkCacheStore, logger)
     })
 }
 
@@ -184,7 +190,8 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const store = await initializeDatabase(config, logger)
     const signingStore = await initializeSigningDatabase(config, logger)
     const authService = jwtAuthService(store, logger)
-    initializeBackgroundJobs(store, logger)
+    const networkCacheStore = new NetworkCacheStore(store, logger)
+    initializeBackgroundJobs(networkCacheStore, logger)
 
     // Provide apiKey from User API in Fireblocks
     const apiPath = path.resolve(process.cwd(), 'fireblocks_api.key')
@@ -266,7 +273,8 @@ export async function initialize(opts: CliOptions, logger: Logger) {
         userUrl,
         notificationService,
         drivers,
-        store
+        store,
+        networkCacheStore
     )
 
     // register web handler
