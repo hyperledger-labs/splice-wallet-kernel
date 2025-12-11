@@ -50,4 +50,4 @@ The JSON-RPC API specs from `api-specs/` are generated into strongly-typed metho
 
 2. Place the `fireblocks_secret.key` file at the path `/splice-wallet-kernel/wallet-gateway/remote`
 
-3. Create a file named `fireblocks_api.key` at the path `/splice-wallet-kernel/wallet-gateway/remote` and insert your Fireblocks API key into it
+3. Create a file named `fireblocks_api.key` at the path `/splice-wallet-kernel/wallet-gateway/remote` and insert your Fireblocks API key into it (get it from `API User (ID)` column in fireblocks api users table)
