@@ -32,7 +32,16 @@ export const Default: StoryObj = {
 
 export const Popup: StoryObj = {
     render: () =>
-        html`<button class="btn btn-primary" @click=${discover}>
+        html`<button
+            class="btn btn-primary"
+            @click=${() =>
+                discover([
+                    {
+                        name: 'Wallet Gateway',
+                        rpcUrl: 'http://gateway:3030/api/v0/dapp',
+                    },
+                ])}
+        >
             connect
         </button>`,
 }

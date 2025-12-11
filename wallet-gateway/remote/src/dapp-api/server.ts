@@ -35,7 +35,9 @@ export const dapp = (
             origin: serverConfig.allowedOrigins,
         })
     )
-    app.use(route, (req, res, next) =>
+    app.use(route, (req, res, next) => {
+        const origin: string | null = req.headers.origin ?? null
+
         jsonRpcHandler<Methods>({
             controller: dappController(
                 kernelInfo,
@@ -44,11 +46,12 @@ export const dapp = (
                 store.withAuthContext(req.authContext),
                 notificationService,
                 logger,
+                origin,
                 req.authContext
             ),
             logger,
         })(req, res, next)
-    )
+    })
 
     const io = new SocketIoServer(server, {
         cors: {

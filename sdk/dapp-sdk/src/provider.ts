@@ -32,35 +32,25 @@ import { ErrorCode } from './error.js'
  */
 export class Provider implements SpliceProvider {
     private providerType: ProviderType
-    private httpProvider?: SpliceProvider
-    private windowProvider?: SpliceProvider
+    private provider: SpliceProvider
 
     constructor({ walletType, url }: DiscoverResult, sessionToken?: string) {
         if (walletType == 'extension') {
             this.providerType = ProviderType.WINDOW
-            this.windowProvider = new SpliceProviderWindow()
+            this.provider = new SpliceProviderWindow()
         } else if (walletType == 'remote') {
             this.providerType = ProviderType.HTTP
-            this.httpProvider = new SpliceProviderHttp(
-                new URL(url),
-                sessionToken
-            )
+            this.provider = new SpliceProviderHttp(new URL(url), sessionToken)
         } else {
             throw new Error(`Unsupported wallet type ${walletType}`)
         }
     }
 
-    private getProvider(): SpliceProvider {
-        if (this.providerType === ProviderType.WINDOW)
-            return this.windowProvider!
-        return this.httpProvider!
-    }
-
     request<T>(args: RequestPayload): Promise<T> {
         if (this.providerType === ProviderType.WINDOW)
-            return this.getProvider().request(args)
+            return this.provider.request(args)
 
-        const controller = dappController(this.getProvider())
+        const controller = dappController(this.provider)
         switch (args.method) {
             case 'status':
                 return controller.status() as Promise<T>
@@ -90,18 +80,18 @@ export class Provider implements SpliceProvider {
     }
 
     on<T>(event: string, listener: EventListener<T>): SpliceProvider {
-        return this.getProvider().on(event, listener)
+        return this.provider.on(event, listener)
     }
 
     emit<T>(event: string, ...args: T[]): boolean {
-        return this.getProvider().emit(event, args)
+        return this.provider.emit(event, args)
     }
 
     removeListener<T>(
         event: string,
         listenerToRemove: EventListener<T>
     ): SpliceProvider {
-        return this.getProvider().removeListener(event, listenerToRemove)
+        return this.provider.removeListener(event, listenerToRemove)
     }
 }
 
@@ -157,27 +147,22 @@ const withTimeout = (
 export const dappController = (provider: SpliceProvider) =>
     buildController({
         connect: async () => {
-            const response =
-                await provider.request<dappRemoteAPI.ConnectResult>({
-                    method: 'connect',
-                })
+            const response = await provider.request<dappRemoteAPI.StatusEvent>({
+                method: 'connect',
+            })
 
-            if (!response.status.isConnected)
-                openKernelUserUI('remote', response.status.userUrl)
+            if (!response.isConnected)
+                openKernelUserUI('remote', response.userUrl ?? '')
 
-            const promise = new Promise<dappAPI.ConnectResult>(
+            const promise = new Promise<dappAPI.StatusEvent>(
                 (resolve, reject) => {
                     // 5 minutes timeout
                     const timeout = withTimeout(reject, 5 * 60 * 1000)
-                    provider.on<dappRemoteAPI.OnConnectedEvent>(
+                    provider.on<dappRemoteAPI.StatusEvent>(
                         'onConnected',
                         (event) => {
                             clearTimeout(timeout)
-                            const result: dappAPI.ConnectResult = {
-                                sessionToken: event.sessionToken ?? '',
-                                status: event.status,
-                            }
-                            resolve(result)
+                            resolve(event)
                         }
                     )
                 }
@@ -207,24 +192,22 @@ export const dappController = (provider: SpliceProvider) =>
                     params,
                 })
 
-            if (!response.isConnected)
-                openKernelUserUI('remote', response.userUrl)
+            if (response.userUrl) openKernelUserUI('remote', response.userUrl)
 
             const promise = new Promise<dappAPI.PrepareExecuteResult>(
-                (resolve, reject) => {
-                    const timeout = withTimeout(reject)
+                (resolve) => {
+                    const listener = (event: dappRemoteAPI.TxChangedEvent) => {
+                        if (event.status === 'executed') {
+                            provider.removeListener('txChanged', listener)
+                            resolve({
+                                tx: event,
+                            })
+                        }
+                    }
+
                     provider.on<dappRemoteAPI.TxChangedEvent>(
                         'txChanged',
-                        (event) => {
-                            console.log('SDK: TxChangedEvent', event)
-                            clearTimeout(timeout)
-
-                            if (event.status === 'executed') {
-                                resolve({
-                                    tx: event,
-                                })
-                            }
-                        }
+                        listener
                     )
                 }
             )

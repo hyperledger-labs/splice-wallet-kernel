@@ -64,6 +64,33 @@ export const stripAnyOfTypes = (content: string): string => {
 
 const versionMap = new Map<string, string>()
 
+// Derives the repository directory path from the destination path relative to repo root
+const getRepositoryDirectory = (destPath: string): string | null => {
+    let currentPath = destPath
+    const maxDepth = 10
+    for (let i = 0; i < maxDepth; i++) {
+        const packageJsonPath = path.join(currentPath, 'package.json')
+        try {
+            if (fs.existsSync(packageJsonPath)) {
+                const pkgContent = fs.readFileSync(packageJsonPath, 'utf-8')
+                const pkg = JSON.parse(pkgContent)
+                if (pkg.workspaces || pkg.name === 'splice-wallet-kernel') {
+                    const relativePath = path.relative(currentPath, destPath)
+                    return relativePath.replace(/\\/g, '/') // Normalize to forward slashes
+                }
+            }
+        } catch {
+            // Continue searching
+        }
+        const parentPath = path.dirname(currentPath)
+        if (parentPath === currentPath) {
+            break
+        }
+        currentPath = parentPath
+    }
+    return null
+}
+
 const hooks: IHooks = {
     afterCopyStatic: [
         async (dest, frm, component): Promise<void> => {
@@ -96,13 +123,24 @@ const hooks: IHooks = {
                 const packagePath = path.join(dest, 'package.json')
                 const fileContents = await readFile(packagePath)
                 const pkg = JSON.parse(fileContents.toString())
-                const updatedPkg = JSON.stringify({
+                const updatedPkgObj: Record<string, unknown> = {
                     ...pkg,
                     name: component.name,
                     version:
                         versionMap.get(component.name) ??
                         openrpcDocument.info.version,
-                })
+                }
+
+                const repositoryDirectory = getRepositoryDirectory(dest)
+                if (repositoryDirectory) {
+                    updatedPkgObj.repository = {
+                        type: 'git',
+                        url: 'git+https://github.com/hyperledger-labs/splice-wallet-kernel.git',
+                        directory: repositoryDirectory,
+                    }
+                }
+                // else - fallback to repository field in template
+                const updatedPkg = JSON.stringify(updatedPkgObj)
                 execSync(`yarn prettier --write ${dest}/src/**/*`)
                 return await writeFile(packagePath, updatedPkg)
             }

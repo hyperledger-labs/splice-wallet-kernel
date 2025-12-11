@@ -14,6 +14,7 @@ import {
     JsonRpcResponse,
     jsonRpcResponse,
 } from '@canton-network/core-types'
+import { isJsCantonError } from '@canton-network/core-ledger-client'
 
 interface JsonRpcHttpOptions<T> {
     logger: Logger
@@ -50,6 +51,14 @@ const handleRpcError = (
         response.error = error
         const httpCode = toHttpErrorCode(error.code)
         return [httpCode, jsonRpcResponse(id, response)]
+    }
+
+    if (isJsCantonError(error)) {
+        response.error = {
+            code: rpcErrors.internal().code,
+            message: error.cause,
+            data: error,
+        }
     }
 
     if (error instanceof Error) {

@@ -47,6 +47,13 @@ them as they are automatically accepted.
 Solution 2: Use Command Delegation for Outgoing Transfers / Sending Funds 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. note::
+    Using ``TransferCommand`` only works where the receiver has enabled pre-approvals for Canton Coin and the 
+    sending external party has been onboarded to the splice wallet using the `Validator APIs <https://docs.dev.sync.global/app_dev/validator_api/index.html>`_.
+    Parties set up using the validator APIs and not using `these workarounds <https://docs.dev.sync.global/scalability/scalability.html#bypassing-the-limit>`_
+    are subject to the 200 party limit described `here <https://docs.dev.sync.global/scalability/scalability.html#number-of-parties-per-validator>`_.
+
+
 **Use Case:** Your users need to send Canton Coin, but the signing process (e.g., institutional custody approval) takes hours.
 
 **The Fix:** Use **Command Delegation** - `TransferCommand <https://docs.dev.sync.global/app_dev/api/splice-amulet/Splice-ExternalPartyAmuletRules.html>`_.

@@ -9,8 +9,9 @@ import {
     PrepareExecuteParams,
     PrepareReturnParams,
     StatusEvent,
+    StatusEventAsync,
 } from './rpc-gen/typings.js'
-import { Store } from '@canton-network/core-wallet-store'
+import { Store, Transaction } from '@canton-network/core-wallet-store'
 import {
     LedgerClient,
     GetEndpoint,
@@ -30,6 +31,7 @@ export const dappController = (
     store: Store,
     notificationService: NotificationService,
     _logger: Logger,
+    origin: string | null,
     context?: AuthContext
 ) => {
     const logger = _logger.child({ component: 'dapp-controller' })
@@ -37,14 +39,11 @@ export const dappController = (
         connect: async () => {
             if (!context || !(await store.getSession())) {
                 return {
-                    sessionToken: '',
-                    status: {
-                        kernel: kernelInfo,
-                        isConnected: false,
-                        isNetworkConnected: false,
-                        networkReason: 'Unauthenticated',
-                        userUrl: `${userUrl}/login/`,
-                    },
+                    kernel: kernelInfo,
+                    isConnected: false,
+                    isNetworkConnected: false,
+                    networkReason: 'Unauthenticated',
+                    userUrl: `${userUrl}/login/`,
                 }
             }
 
@@ -57,15 +56,22 @@ export const dappController = (
             })
             const status = await networkStatus(ledgerClient)
             return {
-                sessionToken: context.accessToken,
-                status: {
-                    kernel: kernelInfo,
-                    isConnected: true,
-                    isNetworkConnected: status.isConnected,
-                    networkReason: status.reason ? status.reason : 'OK',
-                    userUrl: `${userUrl}/login/`,
+                kernel: kernelInfo,
+                isConnected: true,
+                isNetworkConnected: status.isConnected,
+                networkReason: status.reason ? status.reason : 'OK',
+                network: {
+                    networkId: network.id,
+                    ledgerApi: {
+                        baseUrl: network.ledgerApi.baseUrl,
+                    },
                 },
-            }
+                session: {
+                    accessToken: context.accessToken,
+                    userId: context.userId,
+                },
+                userUrl: `${userUrl}/login/`,
+            } as StatusEventAsync
         },
         disconnect: async () => {
             if (!context) {
@@ -157,14 +163,17 @@ export const dappController = (
                     ledgerClient
                 )
 
-            store.setTransaction({
+            const transaction: Transaction = {
                 commandId,
                 status: 'pending',
                 preparedTransaction,
                 preparedTransactionHash,
                 payload: params,
+                origin: origin || null,
                 createdAt: new Date(),
-            })
+            }
+
+            store.setTransaction(transaction)
 
             return {
                 userUrl: `${userUrl}/approve/index.html?commandId=${commandId}`,
@@ -220,8 +229,18 @@ export const dappController = (
                 isConnected: true,
                 isNetworkConnected: status.isConnected,
                 networkReason: status.reason ? status.reason : 'OK',
-                networkId: (await store.getCurrentNetwork()).id,
-            }
+                network: {
+                    networkId: network.id,
+                    ledgerApi: {
+                        baseUrl: network.ledgerApi.baseUrl,
+                    },
+                },
+                session: {
+                    accessToken: context.accessToken,
+                    userId: context.userId,
+                },
+                userUrl: `${userUrl}/login/`,
+            } as StatusEventAsync
         },
         onConnected: async () => {
             throw new Error('Only for events.')

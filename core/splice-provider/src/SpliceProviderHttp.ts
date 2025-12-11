@@ -11,35 +11,43 @@ import { SpliceProviderBase } from './SpliceProvider'
 import { io, Socket } from 'socket.io-client'
 import { popupHref } from '@canton-network/core-wallet-ui-components'
 
+// Maintain a global socket instance in-memory to avoid multiple connections
+// per SpliceProviderHttp instance.
+type GatewaySocket = {
+    socket: Socket
+    token: string
+} | null
+
+let connection: GatewaySocket = null
+
 export class SpliceProviderHttp extends SpliceProviderBase {
     private sessionToken?: string
-    private socket: Socket
     private transport: HttpTransport
 
-    private openSocket(url: URL): Socket {
-        // Assumes the RPC URL is on /rpc, and the socket URL is the same but without the /rpc path.
-        const socketUrl = new URL(url.href)
-        socketUrl.pathname = ''
+    private openSocket(url: URL, token: string): void {
+        // Assumes the socket URI is accessed directly on the host w/o the API path.
+        const socketUri = url.origin
 
-        if (this.socket) {
-            console.debug('SpliceProviderHttp: closing existing socket')
-            this.socket.disconnect()
+        // Reconnect if the token has changed
+        if (connection && connection.token !== token) {
+            connection.socket.disconnect()
+            connection = null
         }
 
-        const socket = io(socketUrl.href, {
-            forceNew: true,
-            auth: this.sessionToken
-                ? {
-                      token: `Bearer ${this.sessionToken}`,
-                  }
-                : {},
-        })
+        if (!connection) {
+            connection = {
+                token,
+                socket: io(socketUri, {
+                    auth: {
+                        token: `Bearer ${token}`,
+                    },
+                }),
+            }
 
-        socket.onAny((event, ...args) => {
-            this.emit(event, ...args)
-        })
-
-        return socket
+            connection.socket.onAny((event, ...args) => {
+                this.emit(event, ...args)
+            })
+        }
     }
 
     constructor(
@@ -48,14 +56,12 @@ export class SpliceProviderHttp extends SpliceProviderBase {
     ) {
         super()
 
-        if (sessionToken) this.sessionToken = sessionToken
+        if (sessionToken) {
+            this.sessionToken = sessionToken
+            this.openSocket(url, sessionToken)
+        }
+
         this.transport = new HttpTransport(url, sessionToken)
-
-        this.socket = this.openSocket(url)
-
-        // Prevent serialization of the socket
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(this.socket as any).toJSON = () => ({})
 
         // Listen for the auth success event sent from the WK UI popup to the SDK running in the parent window.
         window.addEventListener('message', async (event) => {
@@ -66,20 +72,14 @@ export class SpliceProviderHttp extends SpliceProviderBase {
             ) {
                 this.sessionToken = event.data.token
                 this.transport = new HttpTransport(url, this.sessionToken)
-                console.log(
-                    `SpliceProviderHttp: setting sessionToken to ${this.sessionToken}`
-                )
-                this.openSocket(this.url)
+                this.openSocket(this.url, event.data.token)
 
                 // We requery the status explicitly here, as it's not guaranteed that the socket will be open & authenticated
                 // before the `onConnected` event is fired from the `addSession` RPC call. The dappApi.StatusResult and
                 // dappApi.OnConnectedEvent are mapped manually to avoid dependency.
                 this.request({ method: 'status' })
                     .then((status) => {
-                        this.emit('onConnected', {
-                            status: status,
-                            sessionToken: this.sessionToken,
-                        })
+                        this.emit('onConnected', status)
                     })
                     .catch((err) => {
                         console.error(
