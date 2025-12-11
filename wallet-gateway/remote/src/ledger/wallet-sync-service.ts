@@ -40,7 +40,7 @@ export class WalletSyncService {
         }
     }
 
-    private async resolveSigningProvider(
+    protected async resolveSigningProvider(
         namespace: string,
         isLocal?: boolean
     ): Promise<
@@ -133,7 +133,8 @@ export class WalletSyncService {
                                     'Matched namespace with signing provider'
                                 )
                                 return {
-                                    signingProviderId: providerId,
+                                    signingProviderId:
+                                        providerId as SigningProvider,
                                     publicKey: key.publicKey,
                                 }
                             }
