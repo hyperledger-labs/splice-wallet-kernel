@@ -4,6 +4,7 @@
 import './App.css'
 import { RegistriesProvider } from './contexts/RegistriesContext.js'
 import { ConnectionProvider } from './contexts/ConnectionContext.js'
+import { PortfolioProvider } from './contexts/PortfolioContext.js'
 import { HoldingsTab } from './oldcomponents/HoldingsTab.js'
 import { RegistriesTab } from './oldcomponents/RegistriesTab.js'
 import { PendingTransfersTab } from './oldcomponents/PendingTransfersTab.js'
@@ -15,37 +16,39 @@ import { Tabs } from './oldcomponents/Tabs.js'
 const RealDataApp: React.FC = () => (
     <RegistriesProvider>
         <ConnectionProvider>
-            <h1>dApp Portfolio</h1>
-            <ConnectionCard />
-            <Tabs
-                tabs={[
-                    {
-                        label: 'Holdings',
-                        value: 'holdings',
-                        content: <HoldingsTab />,
-                    },
-                    {
-                        label: 'Transfer',
-                        value: 'twoStepTransfer',
-                        content: <TwoStepTransferTab />,
-                    },
-                    {
-                        label: 'Pending Transfers',
-                        value: 'pendingTransfers',
-                        content: <PendingTransfersTab />,
-                    },
-                    {
-                        label: 'Transaction History',
-                        value: 'transactionHistory',
-                        content: <TransactionHistoryTab />,
-                    },
-                    {
-                        label: 'Registry Settings',
-                        value: 'registries',
-                        content: <RegistriesTab />,
-                    },
-                ]}
-            />
+            <PortfolioProvider>
+                <h1>dApp Portfolio</h1>
+                <ConnectionCard />
+                <Tabs
+                    tabs={[
+                        {
+                            label: 'Holdings',
+                            value: 'holdings',
+                            content: <HoldingsTab />,
+                        },
+                        {
+                            label: 'Transfer',
+                            value: 'twoStepTransfer',
+                            content: <TwoStepTransferTab />,
+                        },
+                        {
+                            label: 'Pending Transfers',
+                            value: 'pendingTransfers',
+                            content: <PendingTransfersTab />,
+                        },
+                        {
+                            label: 'Transaction History',
+                            value: 'transactionHistory',
+                            content: <TransactionHistoryTab />,
+                        },
+                        {
+                            label: 'Registry Settings',
+                            value: 'registries',
+                            content: <RegistriesTab />,
+                        },
+                    ]}
+                />
+            </PortfolioProvider>
         </ConnectionProvider>
     </RegistriesProvider>
 )

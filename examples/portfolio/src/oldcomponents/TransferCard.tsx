@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { PartyId } from '@canton-network/core-types'
-import { type Transfer, acceptTransfer } from '../utils/transfers'
+import { type Transfer } from '../utils/transfers'
 import { useRegistries } from '../contexts/RegistriesContext.js'
+import { usePortfolio } from '../contexts/PortfolioContext.js'
 import { AssetCard } from './AssetCard.js'
 
 export type TransferCardProps = {
@@ -16,6 +17,7 @@ export const TransferCard: React.FC<TransferCardProps> = ({
     transfer,
 }) => {
     const { registries } = useRegistries()
+    const { acceptTransfer } = usePortfolio()
     return (
         <div>
             status: <strong>{transfer.status}</strong> <br />
