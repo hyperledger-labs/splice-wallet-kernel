@@ -4,29 +4,30 @@
 import { type Holding } from '@canton-network/core-ledger-client'
 import { useState, useEffect } from 'react'
 import { AssetCard } from './AssetCard.js'
+import { useConnection } from '../contexts/ConnectionContext.js'
 import { getHoldings } from '../utils/getHoldings.js'
 import { tap } from '../utils/tap.js'
 
-export type HoldingsTabProps = {
-    party: string
-    sessionToken?: string // used to tap
-}
-
-export const HoldingsTab: React.FC<HoldingsTabProps> = ({
-    party,
-    sessionToken,
-}) => {
+export const HoldingsTab: React.FC = () => {
+    const {
+        status: { primaryParty, sessionToken },
+    } = useConnection()
     const [holdings, setHoldings] = useState<Holding[] | undefined>(undefined)
     const [tapAmount, setTapAmount] = useState<number>(10000)
 
     const refreshHoldings = async () => {
-        const hs = await getHoldings({ party })
-        setHoldings(hs)
+        if (primaryParty) {
+            const hs = await getHoldings({ party: primaryParty })
+            setHoldings(hs)
+        } else {
+            setHoldings(undefined)
+        }
     }
 
     useEffect(() => {
         refreshHoldings()
-    }, [party])
+    }, [primaryParty])
+
     return (
         <div>
             <input
@@ -35,10 +36,10 @@ export const HoldingsTab: React.FC<HoldingsTabProps> = ({
                 onChange={(e) => setTapAmount(Number(e.target.value))}
             />
             <button
-                disabled={!sessionToken}
+                disabled={!sessionToken || !primaryParty}
                 onClick={() => {
                     tap({
-                        party,
+                        party: primaryParty!,
                         sessionToken: sessionToken!,
                         amount: tapAmount,
                     }).then(() => refreshHoldings())

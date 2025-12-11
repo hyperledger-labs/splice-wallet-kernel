@@ -3,50 +3,62 @@
 
 import { useState, useEffect } from 'react'
 import { type Transfer, getPendingTransfers } from '../utils/transfers'
+import { useConnection } from '../contexts/ConnectionContext.js'
 import { TransferCard } from './TransferCard.js'
 
-export type PendingTransfersTabProps = {
-    party: string
-}
-
-export const PendingTransfersTab: React.FC<PendingTransfersTabProps> = ({
-    party,
-}) => {
+export const PendingTransfersTab: React.FC = () => {
+    const {
+        status: { primaryParty },
+    } = useConnection()
     const [pendingTransfers, setPendingTransfers] = useState<
         Transfer[] | undefined
     >(undefined)
 
     const refreshPendingTransfers = async () => {
-        const hs = await getPendingTransfers({ party })
-        setPendingTransfers(hs)
+        if (primaryParty) {
+            const hs = await getPendingTransfers({ party: primaryParty })
+            setPendingTransfers(hs)
+        } else {
+            setPendingTransfers(undefined)
+        }
     }
 
     useEffect(() => {
         refreshPendingTransfers()
-    }, [party])
+    }, [primaryParty])
 
     return (
         <div>
             <h2>Incoming</h2>
-            <ul>
-                {pendingTransfers
-                    ?.filter((p) => p.incoming)
-                    .map((p) => (
-                        <li key={p.contractId}>
-                            <TransferCard party={party} transfer={p} />
-                        </li>
-                    ))}
-            </ul>
+            {primaryParty && (
+                <ul>
+                    {pendingTransfers
+                        ?.filter((p) => p.incoming)
+                        .map((p) => (
+                            <li key={p.contractId}>
+                                <TransferCard
+                                    party={primaryParty}
+                                    transfer={p}
+                                />
+                            </li>
+                        ))}
+                </ul>
+            )}
             <h2>Outgoing</h2>
-            <ul>
-                {pendingTransfers
-                    ?.filter((p) => !p.incoming)
-                    .map((p) => (
-                        <li key={p.contractId}>
-                            <TransferCard party={party} transfer={p} />
-                        </li>
-                    ))}
-            </ul>
+            {primaryParty && (
+                <ul>
+                    {pendingTransfers
+                        ?.filter((p) => !p.incoming)
+                        .map((p) => (
+                            <li key={p.contractId}>
+                                <TransferCard
+                                    party={primaryParty}
+                                    transfer={p}
+                                />
+                            </li>
+                        ))}
+                </ul>
+            )}
         </div>
     )
 }

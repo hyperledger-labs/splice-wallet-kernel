@@ -2,15 +2,12 @@ import { useEffect, useState } from 'react'
 import { createTransfer } from '../utils/transfers'
 import { getTransferableInstrumentIds } from '../utils/getHoldings.js'
 import { useRegistries } from '../contexts/RegistriesContext.js'
+import { useConnection } from '../contexts/ConnectionContext.js'
 
-export type TwoStepTransferTabProps = {
-    party: string
-    sessionToken?: string // used to tap
-}
-
-export const TwoStepTransferTab: React.FC<TwoStepTransferTabProps> = ({
-    party,
-}) => {
+export const TwoStepTransferTab: React.FC = () => {
+    const {
+        status: { primaryParty },
+    } = useConnection()
     const { registries } = useRegistries()
     const [receiver, setReceiver] = useState<string>('')
     const [amount, setAmount] = useState<number>(100)
@@ -21,10 +18,12 @@ export const TwoStepTransferTab: React.FC<TwoStepTransferTabProps> = ({
     const [selectedInstrumentIdx, setSelectedInstrumentIdx] = useState(0)
 
     useEffect(() => {
-        getTransferableInstrumentIds({ party }).then((instrumentIds) =>
-            setTransferableInstrumentIds(instrumentIds)
-        )
-    }, [party])
+        if (primaryParty) {
+            getTransferableInstrumentIds({ party: primaryParty }).then(
+                (instrumentIds) => setTransferableInstrumentIds(instrumentIds)
+            )
+        }
+    }, [primaryParty])
 
     return (
         <form onSubmit={(e) => e.preventDefault()}>
@@ -68,13 +67,13 @@ export const TwoStepTransferTab: React.FC<TwoStepTransferTabProps> = ({
             <br />
             <button
                 type="submit"
+                disabled={!primaryParty}
                 onClick={() => {
-                    // TODO: combo box for held tokens
                     createTransfer({
                         registryUrls: registries,
                         instrumentId:
                             transferableInstrumentIds[selectedInstrumentIdx],
-                        sender: party,
+                        sender: primaryParty!,
                         receiver,
                         amount,
                         memo,
