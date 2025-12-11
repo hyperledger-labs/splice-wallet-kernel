@@ -107,6 +107,29 @@ export class PartyAllocationService {
         return Buffer.concat([multiprefix, hash]).toString('hex')
     }
 
+    // TODO jsdoc
+    normalizePublicKeyToBase64(publicKey: string): string | null {
+        try {
+            // Try hex first (Fireblocks format), fallback to base64 (internal format)
+            try {
+                const hexKey = Buffer.from(publicKey, 'hex')
+                // If it's valid hex and produces 32 bytes, convert to base64
+                if (hexKey.length === 32) {
+                    return hexKey.toString('base64')
+                } else {
+                    // Invalid hex length, treat as base64
+                    return publicKey
+                }
+            } catch {
+                // Not valid hex, treat as base64
+                return publicKey
+            }
+        } catch {
+            // If any conversion fails, return null
+            return null
+        }
+    }
+
     /**
      * Generate topology transactions
      * @param hint A hint for the party ID.
