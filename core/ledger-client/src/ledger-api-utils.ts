@@ -437,7 +437,11 @@ export async function retryable<T>(
 
 // Helper for differentiating ledger errors from others and satisfying TS when checking error properties
 export const isJsCantonError = (e: unknown): e is JsCantonError =>
-    typeof e === 'object' && e !== null && 'status' in e && 'errorCategory' in e
+    typeof e === 'object' &&
+    e !== null &&
+    'code' in e &&
+    'cause' in e &&
+    'errorCategory' in e
 
 export const asJsCantonError = (e: unknown): JsCantonError => {
     if (isJsCantonError(e)) {

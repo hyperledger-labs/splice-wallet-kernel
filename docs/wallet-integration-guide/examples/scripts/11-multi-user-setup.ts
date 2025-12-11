@@ -1,18 +1,13 @@
 import {
     WalletSDKImpl,
-    localNetAuthDefault,
-    localNetLedgerDefault,
-    localNetTopologyDefault,
-    localNetTokenStandardDefault,
     createKeyPair,
     localNetStaticConfig,
     AuthController,
     UnsafeAuthController,
 } from '@canton-network/wallet-sdk'
 import { Logger, pino } from 'pino'
-import { v4 } from 'uuid'
 
-const logger = pino({ name: '04-token-standard-localnet', level: 'info' })
+const logger = pino({ name: '11-multi-user-setup', level: 'info' })
 
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const operatorSDK = new WalletSDKImpl().configure({

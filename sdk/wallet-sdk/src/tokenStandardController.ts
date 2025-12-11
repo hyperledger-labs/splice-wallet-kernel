@@ -1447,39 +1447,15 @@ export class TokenStandardController {
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
-        let ExerciseCommand: ExerciseCommand
-        let disclosedContracts: DisclosedContract[]
         try {
-            switch (instructionChoice) {
-                // TODO: move this logic down into the transfer service?
-                case 'Accept':
-                    ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.transfer.createAcceptTransferInstruction(
-                            transferInstructionCid,
-                            this.getTransferFactoryRegistryUrl().href,
-                            prefetchedRegistryChoiceContext?.choiceContext
-                        )
-                    return [{ ExerciseCommand }, disclosedContracts]
-                case 'Reject':
-                    ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.transfer.createRejectTransferInstruction(
-                            transferInstructionCid,
-                            this.getTransferFactoryRegistryUrl().href,
-                            prefetchedRegistryChoiceContext?.choiceContext
-                        )
-                    return [{ ExerciseCommand }, disclosedContracts]
-                case 'Withdraw':
-                    ;[ExerciseCommand, disclosedContracts] =
-                        await this.service.transfer.createWithdrawTransferInstruction(
-                            transferInstructionCid,
-                            this.getTransferFactoryRegistryUrl().href,
-                            prefetchedRegistryChoiceContext?.choiceContext
-                        )
-
-                    return [{ ExerciseCommand }, disclosedContracts]
-                default:
-                    throw new Error('Unexpected transfer instruction choice')
-            }
+            const [ExerciseCommand, disclosedContracts] =
+                await this.service.transfer.createTransferInstruction(
+                    transferInstructionCid,
+                    this.getTransferFactoryRegistryUrl().href,
+                    instructionChoice,
+                    prefetchedRegistryChoiceContext?.choiceContext
+                )
+            return [{ ExerciseCommand }, disclosedContracts]
         } catch (error) {
             this.logger.error(
                 { error },

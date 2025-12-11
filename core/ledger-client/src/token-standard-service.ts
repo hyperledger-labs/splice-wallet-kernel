@@ -1200,6 +1200,34 @@ class TransferService {
             choiceContext
         )
     }
+
+    async createTransferInstruction(
+        transferInstructionCid: string,
+        registryUrl: string,
+        instructionChoice: 'Accept' | 'Reject' | 'Withdraw',
+        prefetchedRegistryChoiceContext?: transferInstructionRegistryTypes['schemas']['ChoiceContext']
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        switch (instructionChoice) {
+            case 'Accept':
+                return this.createAcceptTransferInstruction(
+                    transferInstructionCid,
+                    registryUrl,
+                    prefetchedRegistryChoiceContext
+                )
+            case 'Reject':
+                return this.createRejectTransferInstruction(
+                    transferInstructionCid,
+                    registryUrl,
+                    prefetchedRegistryChoiceContext
+                )
+            case 'Withdraw':
+                return this.createWithdrawTransferInstruction(
+                    transferInstructionCid,
+                    registryUrl,
+                    prefetchedRegistryChoiceContext
+                )
+        }
+    }
 }
 
 export class TokenStandardService {
