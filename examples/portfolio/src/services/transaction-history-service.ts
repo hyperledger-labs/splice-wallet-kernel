@@ -128,9 +128,9 @@ export class TransactionHistoryService {
     }
 
     private process(event: Event): boolean {
+        const contractId = event.event.contractId
         if (event.type === 'CreatedEvent') {
             for (const interfaceView of event.event.interfaceViews ?? []) {
-                const contractId = event.event.contractId
                 // TODO: check if this is the right interface?
                 if (interfaceView.viewValue) {
                     const transfer = toTransfer({
@@ -146,12 +146,22 @@ export class TransactionHistoryService {
         }
 
         if (event.type === 'ExercisedEvent') {
-            if (event.event.choice === 'TransferInstruction_Accept') {
-                const contractId = event.event.contractId
-                const transfer = this.transfers.get(contractId)
-                if (!transfer) return false
-                transfer.status = 'accepted'
-                return true
+            const transfer = this.transfers.get(contractId)
+            if (!transfer) return false
+
+            switch(event.event.choice) {
+                case 'TransferInstruction_Accept':
+                    transfer.status = 'accepted'
+                    return true
+                case 'TransferInstruction_Reject':
+                    transfer.status = 'rejected'
+                    return true
+                case 'TransferInstruction_Withdraw':
+                    transfer.status = 'withdrawn'
+                    return true
+                case 'TransferInstruction_Update':
+                    // TODO: update meta?
+                    return false
             }
         }
 

@@ -20,7 +20,7 @@ export interface PortfolioService {
 }
 
 export class PortfolioServiceImplementation {
-    acceptTransfer = async ({
+    async acceptTransfer({
         registryUrls,
         party,
         contractId,
@@ -30,7 +30,7 @@ export class PortfolioServiceImplementation {
         party: PartyId
         contractId: string
         instrumentId: { admin: string; id: string }
-    }) => {
+    }) {
         // TODO: resolve this BEFORE calling this function so we can gray out the
         // button?
         const registryUrl = registryUrls.get(instrumentId.admin)
