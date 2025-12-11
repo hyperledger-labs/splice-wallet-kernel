@@ -107,6 +107,12 @@ export type ClientType = 'browser' | 'desktop' | 'mobile' | 'remote'
 export type Url = string
 /**
  *
+ * A URL that points to a user interface.
+ *
+ */
+export type UserUrl = string
+/**
+ *
  * Represents a Wallet Gateway.
  *
  */
@@ -114,6 +120,7 @@ export interface KernelInfo {
     id: Id
     clientType: ClientType
     url?: Url
+    userUrl?: UserUrl
     [k: string]: any
 }
 /**
@@ -134,12 +141,6 @@ export type IsNetworkConnected = boolean
  *
  */
 export type NetworkReason = string
-/**
- *
- * A URL that points to a user interface.
- *
- */
-export type UserUrl = string
 /**
  *
  * The network ID the wallet corresponds to.
@@ -191,6 +192,19 @@ export type UserId = string
 export interface Session {
     accessToken: AccessToken
     userId: UserId
+    [k: string]: any
+}
+export interface StatusEvent {
+    kernel: KernelInfo
+    isConnected: IsConnected
+    isNetworkConnected: IsNetworkConnected
+    networkReason?: NetworkReason
+    network?: Network
+    session?: Session
+    [k: string]: any
+}
+export interface ObjectOfUserUrlMkZ1IR2Z {
+    userUrl: UserUrl
     [k: string]: any
 }
 export type Dar = string
@@ -420,22 +434,18 @@ export interface PrepareExecuteParams {
     packageIdSelectionPreference?: PackageIdSelectionPreference
     [k: string]: any
 }
+/**
+ *
+ * Ledger API request structure
+ *
+ */
 export interface LedgerApiParams {
     requestMethod: RequestMethod
     resource: Resource
     body?: Body
     [k: string]: any
 }
-export interface StatusEvent {
-    kernel: KernelInfo
-    isConnected: IsConnected
-    isNetworkConnected: IsNetworkConnected
-    networkReason?: NetworkReason
-    userUrl?: UserUrl
-    network?: Network
-    session?: Session
-    [k: string]: any
-}
+export type StatusEventAsync = StatusEvent & ObjectOfUserUrlMkZ1IR2Z
 /**
  *
  * Represents a null value, used in responses where no data is returned.
@@ -489,7 +499,7 @@ export type TxChangedEvent =
  */
 
 export type Status = () => Promise<StatusEvent>
-export type Connect = () => Promise<StatusEvent>
+export type Connect = () => Promise<StatusEventAsync>
 export type Disconnect = () => Promise<Null>
 export type DarsAvailable = () => Promise<DarsAvailableResult>
 export type PrepareReturn = (

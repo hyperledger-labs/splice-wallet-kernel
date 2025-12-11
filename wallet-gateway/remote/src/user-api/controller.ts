@@ -587,7 +587,10 @@ export const userController = (
                 })
                 const status = await networkStatus(ledgerClient)
                 notifier.emit('onConnected', {
-                    kernel: kernelInfo,
+                    kernel: {
+                        ...kernelInfo,
+                        userUrl: `${userUrl}/login/`,
+                    },
                     isConnected: true,
                     isNetworkConnected: status.isConnected,
                     networkReason: status.reason ? status.reason : 'OK',

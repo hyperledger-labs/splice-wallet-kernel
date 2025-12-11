@@ -15,5 +15,5 @@ export async function open(): Promise<void> {
         throw new Error('No previous session found')
     }
 
-    openKernelUserUI(discovery.walletType, session.status.kernel.userUrl ?? '')
+    openKernelUserUI(discovery.walletType, session.userUrl ?? '')
 }
