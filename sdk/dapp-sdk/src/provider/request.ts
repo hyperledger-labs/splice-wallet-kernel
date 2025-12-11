@@ -8,16 +8,16 @@ import * as storage from '../storage'
 import { injectProvider } from './index'
 import { GatewaysConfig } from '@canton-network/core-types'
 import gateways from '../gateways.json'
-import { removeKernelDiscovery, removeKernelSession } from '../storage'
-import { closeKernelUserUI } from '../provider.js'
+import { clearAllLocalState } from '../util'
 
 export async function connect(): Promise<dappAPI.StatusEvent> {
     const config: GatewaysConfig[] = gateways
     return discover(config)
         .then(async (result) => {
             // Store discovery result and remove previous session
+            clearAllLocalState()
+
             storage.setKernelDiscovery(result)
-            storage.removeKernelSession()
             const provider = injectProvider(result)
 
             const response = await provider.request<dappAPI.StatusEvent>({
@@ -63,10 +63,7 @@ export async function disconnect(): Promise<dappAPI.Null> {
             method: 'disconnect',
         })
         .then(() => {
-            removeKernelSession()
-            removeKernelDiscovery()
-            closeKernelUserUI()
-
+            clearAllLocalState()
             return null
         })
 }
