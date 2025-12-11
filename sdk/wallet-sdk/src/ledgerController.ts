@@ -10,6 +10,7 @@ import {
     promiseWithTimeout,
     GenerateTransactionResponse,
     AllocateExternalPartyResponse,
+    JSContractEntry,
     isJsCantonError,
     components,
 } from '@canton-network/core-ledger-client'
@@ -191,6 +192,12 @@ export class LedgerController {
         return LedgerController.toDecodedTopologyTransaction(
             preparedTopologyTransaction
         )
+    }
+
+    getActiveContractCid(entry: JSContractEntry) {
+        if ('JsActiveContract' in entry) {
+            return entry.JsActiveContract.createdEvent.contractId
+        }
     }
 
     /**

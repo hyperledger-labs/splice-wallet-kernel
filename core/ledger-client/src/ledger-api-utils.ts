@@ -20,6 +20,7 @@ type ExercisedEvent = Types['ExercisedEvent']
 type ArchivedEvent = Types['ArchivedEvent']
 type JsInterfaceView = Types['JsInterfaceView']
 type Completion = Types['Completion']['value']
+export type JSContractEntry = Types['JsContractEntry']
 export type JsCantonError = Types['JsCantonError']
 
 export function TransactionFilterBySetup(

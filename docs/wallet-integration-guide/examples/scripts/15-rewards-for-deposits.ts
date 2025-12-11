@@ -233,9 +233,9 @@ const activeContractsForDelegateProxy = await sdk.userLedger?.activeContracts({
     ],
 })
 
-const proxyCid =
-    activeContractsForDelegateProxy![0].contractEntry.JsActiveContract
-        ?.createdEvent.contractId
+const proxyCid = sdk.userLedger?.getActiveContractCid(
+    activeContractsForDelegateProxy![0].contractEntry
+)
 
 logger.info(proxyCid, `Fetched proxyCid`)
 
