@@ -504,9 +504,8 @@ export const userController = (
 
                         return res
                     } catch (error) {
-                        throw new Error(
-                            'Failed to submit transaction: ' + error
-                        )
+                        logger.error(error, 'Failed to submit transaction')
+                        throw error
                     }
                 }
                 case SigningProvider.WALLET_KERNEL: {
