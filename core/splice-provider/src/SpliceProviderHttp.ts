@@ -60,6 +60,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
             this.sessionToken = sessionToken
             this.openSocket(url, sessionToken)
         }
+
         this.transport = new HttpTransport(url, sessionToken)
 
         // Listen for the auth success event sent from the WK UI popup to the SDK running in the parent window.
@@ -71,9 +72,6 @@ export class SpliceProviderHttp extends SpliceProviderBase {
             ) {
                 this.sessionToken = event.data.token
                 this.transport = new HttpTransport(url, this.sessionToken)
-                console.log(
-                    `SpliceProviderHttp: setting sessionToken to ${this.sessionToken}`
-                )
                 this.openSocket(this.url, event.data.token)
 
                 // We requery the status explicitly here, as it's not guaranteed that the socket will be open & authenticated

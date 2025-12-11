@@ -198,11 +198,8 @@ export const dappController = (provider: SpliceProvider) =>
             if (response.userUrl) openKernelUserUI('remote', response.userUrl)
 
             const promise = new Promise<dappAPI.PrepareExecuteResult>(
-                (resolve, reject) => {
+                (resolve) => {
                     const listener = (event: dappRemoteAPI.TxChangedEvent) => {
-                        console.log('SDK: TxChangedEvent', event)
-                        clearTimeout(timeout)
-
                         if (event.status === 'executed') {
                             provider.removeListener('txChanged', listener)
                             resolve({
@@ -210,8 +207,6 @@ export const dappController = (provider: SpliceProvider) =>
                             })
                         }
                     }
-
-                    const timeout = withTimeout(reject)
 
                     provider.on<dappRemoteAPI.TxChangedEvent>(
                         'txChanged',

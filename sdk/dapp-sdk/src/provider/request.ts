@@ -29,7 +29,6 @@ export async function connect(): Promise<dappAPI.StatusEvent> {
                 console.error('SDK: Not connected', response)
                 // openKernelUserUI(result.walletType, response.userUrl)
             } else {
-                console.log('SDK: Store connection', response)
                 storage.setKernelSession(response)
             }
 
