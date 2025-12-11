@@ -20,7 +20,7 @@ export function useAccounts(status?: sdk.dappAPI.StatusEvent) {
                     )
                 })
         }
-    }, [status])
+    }, [status, setErrorMsg])
 
     useEffect(() => {
         if (status?.isConnected) {
