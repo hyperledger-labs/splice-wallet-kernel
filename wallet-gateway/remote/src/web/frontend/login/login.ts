@@ -228,7 +228,6 @@ export class LoginUI extends LitElement {
         this.networks = await this.loadNetworks()
         this.idps = await this.loadIdps()
 
-        // Poll for network updates every 5 seconds
         this.networkPollingInterval = window.setInterval(async () => {
             this.networks = await this.loadNetworks()
         }, 5000)

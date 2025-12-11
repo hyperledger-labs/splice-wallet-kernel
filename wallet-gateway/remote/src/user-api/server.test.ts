@@ -19,7 +19,7 @@ const configPath = '../test/config.json'
 const config = ConfigUtils.loadConfigFile(configPath)
 
 const store = new StoreInternal(config.store, pino(sink()))
-const networkCacheStore = new NetworkCacheStore(store)
+const networkCacheStore = new NetworkCacheStore(store, pino(sink()))
 
 const notificationService = {
     getNotifier: jest.fn<() => Notifier>().mockReturnValue({

@@ -561,11 +561,14 @@
                         "$ref": "#/components/schemas/Network"
                     },
                     {
+                        "title": "VerifiedNetworkProperties",
+                        "description": "holder for boolean verified property",
                         "type": "object",
                         "properties": {
                             "verified": {
-                                "type": "boolean",
-                                "description": "check if connectivity to the ledger node could be established"
+                                "title": "verified",
+                                "description": "true if we could succesfully call the ledger version endpoint",
+                                "type": "boolean"
                             }
                         },
                         "required": ["verified"]

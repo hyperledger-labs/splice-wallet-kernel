@@ -215,12 +215,17 @@ export type Signature = string
 export type SignedBy = string
 /**
  *
- * check if connectivity to the ledger node could be established
+ * true if we could succesfully call the ledger version endpoint
  *
  */
-export type BooleanYOuCSU8N = boolean
-export interface ObjectOfBooleanYOuCSU8NKjcqLmyA {
-    verified: BooleanYOuCSU8N
+export type Verified = boolean
+/**
+ *
+ * holder for boolean verified property
+ *
+ */
+export interface VerifiedNetworkProperties {
+    verified: Verified
     [k: string]: any
 }
 /**
@@ -228,7 +233,7 @@ export interface ObjectOfBooleanYOuCSU8NKjcqLmyA {
  * Structure representing the Networks with connectivity verification
  *
  */
-export type VerifiedNetwork = Network & ObjectOfBooleanYOuCSU8NKjcqLmyA
+export type VerifiedNetwork = Network & VerifiedNetworkProperties
 export type Networks = VerifiedNetwork[]
 export type Idps = Idp[]
 /**
