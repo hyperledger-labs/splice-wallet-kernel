@@ -6,6 +6,7 @@ import {
     localNetTokenStandardDefault,
     createKeyPair,
     localNetStaticConfig,
+    LedgerController,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
@@ -185,7 +186,7 @@ const activeTradeProposals = await sdk.userLedger?.activeContracts({
     filterByParty: true,
 })
 
-const otcpCid = sdk.userLedger?.getActiveContractCid(
+const otcpCid = LedgerController.getActiveContractCid(
     activeTradeProposals?.[0]?.contractEntry!
 )
 
@@ -226,7 +227,7 @@ const now = new Date()
 const prepareUntil = new Date(now.getTime() + 60 * 60 * 1000).toISOString()
 const settleBefore = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString()
 
-const otcpCid2 = sdk.userLedger?.getActiveContractCid(
+const otcpCid2 = LedgerController.getActiveContractCid(
     activeTradeProposals2?.[0]?.contractEntry!
 )
 
@@ -259,7 +260,7 @@ const otcTrades = await sdk.userLedger!.activeContracts({
     filterByParty: true,
 })
 
-const otcTradeCid = sdk.userLedger?.getActiveContractCid(
+const otcTradeCid = LedgerController.getActiveContractCid(
     otcTrades?.[0]?.contractEntry
 )
 if (!otcTradeCid) throw new Error('OTCTrade not found for venue')
