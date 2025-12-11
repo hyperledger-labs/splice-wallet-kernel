@@ -11,7 +11,7 @@ export const TwoStepTransferTab: React.FC = () => {
     const { registries } = useRegistries()
     const [receiver, setReceiver] = useState<string>('')
     const [amount, setAmount] = useState<number>(100)
-    const [memo, setMemo] = useState<string | undefined>(undefined)
+    const [memo, setMemo] = useState<string>('')
     const [transferableInstrumentIds, setTransferableInstrumentIds] = useState<
         { admin: string; id: string }[]
     >([])
@@ -60,9 +60,7 @@ export const TwoStepTransferTab: React.FC = () => {
             <input
                 id="memo"
                 value={memo}
-                onChange={(e) =>
-                    setMemo(e.target.value ? e.target.value : undefined)
-                }
+                onChange={(e) => setMemo(e.target.value)}
             />
             <br />
             <button
@@ -76,7 +74,7 @@ export const TwoStepTransferTab: React.FC = () => {
                         sender: primaryParty!,
                         receiver,
                         amount,
-                        memo,
+                        memo: memo ? memo : undefined,
                     })
                 }}
             >
