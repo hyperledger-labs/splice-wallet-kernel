@@ -107,7 +107,12 @@ export class PartyAllocationService {
         return Buffer.concat([multiprefix, hash]).toString('hex')
     }
 
-    // TODO jsdoc
+    /**
+     * Normalizes a public key to base64 format.
+     * Converts hex format (Fireblocks) to base64, or returns base64 as-is.
+     * @param publicKey Public key in hex or base64 format
+     * @returns Public key in base64 format, or null if conversion fails
+     */
     normalizePublicKeyToBase64(publicKey: string): string | null {
         try {
             // Try hex first (Fireblocks format), fallback to base64 (internal format)
