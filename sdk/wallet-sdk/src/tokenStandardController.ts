@@ -588,7 +588,7 @@ export class TokenStandardController {
     private extractActiveContract(
         ac: Types['JsGetActiveContractsResponse']
     ): Types['DisclosedContract'] {
-        if (!ac.contractEntry.JsActiveContract) {
+        if (!('JsActiveContract' in ac.contractEntry)) {
             throw new Error('Not an active contract')
         }
 
@@ -777,7 +777,7 @@ export class TokenStandardController {
         if (
             mergeDelegationProposal === undefined ||
             mergeDelegationProposal.length === 0 ||
-            !mergeDelegationProposal[0].contractEntry.JsActiveContract
+            !('JsActiveContract' in mergeDelegationProposal[0].contractEntry)
         ) {
             throw new Error(`Unable to look up merge proposal active contract.`)
         }
