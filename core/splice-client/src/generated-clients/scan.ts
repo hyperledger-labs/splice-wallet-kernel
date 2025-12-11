@@ -3,426 +3,1308 @@
 
 export interface paths {
     '/readyz': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         get: operations['isReady']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/livez': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         get: operations['isLive']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/status': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         get: operations['getHealthStatus']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/version': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         get: operations['getVersion']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/dso': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         get: operations['getDsoInfo']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/validators/validator-faucets': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description For every argument that is a valid onboarded validator, return
-         * statistics on its liveness activity, according to on-ledger state at the
-         * time of the request.
+         *     statistics on its liveness activity, according to on-ledger state at the
+         *     time of the request.
          */
         get: operations['getValidatorFaucetsByValidator']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/scans': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description Retrieve Canton scan configuration for all SVs, grouped by
-         * connected synchronizer ID
+         *     connected synchronizer ID
          */
         get: operations['listDsoScans']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/admin/validator/licenses': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description List all validators currently approved by members of the DSO, paginated,
-         * sorted newest-first.
+         *     sorted newest-first.
          */
         get: operations['listValidatorLicenses']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/dso-sequencers': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description Retrieve Canton sequencer configuration for all SVs, grouped by
-         * connected synchronizer ID
+         *     connected synchronizer ID
          */
         get: operations['listDsoSequencers']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/sv-bft-sequencers': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /** @description Retrieve Canton BFT sequencer configuration for this SV, for each configured Synchronizer */
         get: operations['listSvBftSequencers']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/domains/{domain_id}/parties/{party_id}/participant-id': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description Get the ID of the participant hosting a given party.  This will fail if
-         * there are multiple party-to-participant mappings for the given
-         * synchronizer and party, which is not currently supported.
+         *     there are multiple party-to-participant mappings for the given
+         *     synchronizer and party, which is not currently supported.
          */
         get: operations['getPartyToParticipant']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/domains/{domain_id}/members/{member_id}/traffic-status': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description Get a member's traffic status as reported by the sequencer, according to
-         * ledger state at the time of the request.
+         *     ledger state at the time of the request.
          */
         get: operations['getMemberTrafficStatus']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/closed-rounds': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description Every closed mining round on the ledger still in post-close process for
-         * the connected Splice network, in round number order, earliest-first.
+         *     the connected Splice network, in round number order, earliest-first.
          */
         get: operations['getClosedRounds']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/open-and-issuing-mining-rounds': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /**
          * @description All current open and issuing mining rounds, if the request is empty;
-         * passing contract IDs in the request can reduce the response data for
-         * polling/client-cache-update efficiency.
+         *     passing contract IDs in the request can reduce the response data for
+         *     polling/client-cache-update efficiency.
          */
         post: operations['getOpenAndIssuingMiningRounds']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v2/updates': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /**
          * @description Returns the update history in ascending order, paged, from ledger begin or optionally starting after a record time.
-         * Compared to `/v1/updates`, the `/v2/updates` removes the `offset` field in responses,
-         * which was hardcoded to 1 in `/v1/updates` for compatibility, and is now removed.
-         * `/v2/updates` sorts events lexicographically in `events_by_id` by `ID` for convenience, which should not be confused with the
-         * order of events in the transaction, for this you should rely on the order of `root_event_ids` and `child_event_ids`.
-         * Updates are ordered lexicographically by `(migration id, record time)`.
-         * For a given migration id, each update has a unique record time.
-         * The record time ranges of different migrations may overlap, i.e.,
-         * it is not guaranteed that the maximum record time of one migration is smaller than the minimum record time of the next migration,
-         * and there may be two updates with the same record time but different migration ids.
+         *     Compared to `/v1/updates`, the `/v2/updates` removes the `offset` field in responses,
+         *     which was hardcoded to 1 in `/v1/updates` for compatibility, and is now removed.
+         *     `/v2/updates` sorts events lexicographically in `events_by_id` by `ID` for convenience, which should not be confused with the
+         *     order of events in the transaction, for this you should rely on the order of `root_event_ids` and `child_event_ids`.
+         *     Updates are ordered lexicographically by `(migration id, record time)`.
+         *     For a given migration id, each update has a unique record time.
+         *     The record time ranges of different migrations may overlap, i.e.,
+         *     it is not guaranteed that the maximum record time of one migration is smaller than the minimum record time of the next migration,
+         *     and there may be two updates with the same record time but different migration ids.
          */
         post: operations['getUpdateHistoryV2']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v2/updates/{update_id}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description Returns the update with the given update_id.
-         * Compared to `/v1/updates/{update_id}`, the `/v2/updates/{update_id}` removes the `offset` field in responses,
-         * which was hardcoded to 1 in `/v1/updates/{update_id}` for compatibility, and is now removed.
-         * `/v2/updates/{update_id}` sorts events lexicographically in `events_by_id` by `ID` for convenience, which should not be confused with the
-         * order of events in the transaction, for this you should rely on the order of `root_event_ids` and `child_event_ids`.
+         *     Compared to `/v1/updates/{update_id}`, the `/v2/updates/{update_id}` removes the `offset` field in responses,
+         *     which was hardcoded to 1 in `/v1/updates/{update_id}` for compatibility, and is now removed.
+         *     `/v2/updates/{update_id}` sorts events lexicographically in `events_by_id` by `ID` for convenience, which should not be confused with the
+         *     order of events in the transaction, for this you should rely on the order of `root_event_ids` and `child_event_ids`.
          */
         get: operations['getUpdateByIdV2']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v1/updates': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /**
          * @deprecated
          * @description Returns the update history in ascending order, paged, from ledger begin or optionally starting after a record time.
-         * Unlike /v0/updates, this endpoint returns responses that are consistent across different
-         * scan instances. Event ids returned by this endpoint are not comparable to event ids returned by /v0/updates.
+         *     Unlike /v0/updates, this endpoint returns responses that are consistent across different
+         *     scan instances. Event ids returned by this endpoint are not comparable to event ids returned by /v0/updates.
          *
-         * Updates are ordered lexicographically by `(migration id, record time)`.
-         * For a given migration id, each update has a unique record time.
-         * The record time ranges of different migrations may overlap, i.e.,
-         * it is not guaranteed that the maximum record time of one migration is smaller than the minimum record time of the next migration,
-         * and there may be two updates with the same record time but different migration ids.
-         * The order of items in events_by_id is not defined.
+         *     Updates are ordered lexicographically by `(migration id, record time)`.
+         *     For a given migration id, each update has a unique record time.
+         *     The record time ranges of different migrations may overlap, i.e.,
+         *     it is not guaranteed that the maximum record time of one migration is smaller than the minimum record time of the next migration,
+         *     and there may be two updates with the same record time but different migration ids.
+         *     The order of items in events_by_id is not defined.
          */
         post: operations['getUpdateHistoryV1']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v1/updates/{update_id}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @deprecated
          * @description Returns the update with the given update_id.
-         * Unlike /v0/updates/{update_id}, this endpoint returns responses that are consistent across different
-         * scan instances. Event ids returned by this endpoint are not comparable to event ids returned by /v0/updates.
-         * The order of items in events_by_id is not defined.
+         *     Unlike /v0/updates/{update_id}, this endpoint returns responses that are consistent across different
+         *     scan instances. Event ids returned by this endpoint are not comparable to event ids returned by /v0/updates.
+         *     The order of items in events_by_id is not defined.
          */
         get: operations['getUpdateByIdV1']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/state/acs/snapshot-timestamp': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description Returns the timestamp of the most recent snapshot before the given date, for the given migration_id.
-         * This corresponds to the record time of the last transaction in the snapshot.
+         *     This corresponds to the record time of the last transaction in the snapshot.
          */
         get: operations['getDateOfMostRecentSnapshotBefore']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/state/acs': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /** @description Returns the ACS in creation date ascending order, paged, for a given migration id and record time. */
         post: operations['getAcsSnapshotAt']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/state/acs/force': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /**
          * @description Takes a snapshot of the ACS at the current time.
-         * The responses can be used as parameters to `/v0/state/acs` to retrieve the snapshot.
-         * Disabled in production environments due to its persistent alteration of
-         * the behavior of future invocations of `/v0/state/acs`, as it causes an
-         * immediate internal snapshot and delay in the next automatic snapshot.
+         *     The responses can be used as parameters to `/v0/state/acs` to retrieve the snapshot.
+         *     Disabled in production environments due to its persistent alteration of
+         *     the behavior of future invocations of `/v0/state/acs`, as it causes an
+         *     immediate internal snapshot and delay in the next automatic snapshot.
          */
         post: operations['forceAcsSnapshotNow']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/holdings/state': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /** @description Returns the active amulet contracts for a given migration id and record time, in creation date ascending order, paged. */
         post: operations['getHoldingsStateAt']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/holdings/summary': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /**
          * @description Returns the summary of active amulet contracts for a given migration id and record time, for the given parties.
-         * This is an aggregate of `/v0/holdings/state` by owner party ID with better performance than client-side computation.
+         *     This is an aggregate of `/v0/holdings/state` by owner party ID with better performance than client-side computation.
          */
         post: operations['getHoldingsSummaryAt']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/ans-entries': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description Lists all non-expired ANS entries whose names are prefixed with the
-         * `name_prefix`, up to `page_size` entries.
+         *     `name_prefix`, up to `page_size` entries.
          */
         get: operations['listAnsEntries']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/ans-entries/by-party/{party}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description If present, the first ANS entry for user `party` according to
-         * `name` lexicographic order.
+         *     `name` lexicographic order.
          */
         get: operations['lookupAnsEntryByParty']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/ans-entries/by-name/{name}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /** @description If present, the ANS entry named exactly `name`. */
         get: operations['lookupAnsEntryByName']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/dso-party-id': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /** @description The party ID of the DSO for the Splice network connected by this Scan app. */
         get: operations['getDsoPartyId']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/amulet-rules': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         post: operations['getAmuletRules']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/external-party-amulet-rules': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         post: operations['getExternalPartyAmuletRules']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/ans-rules': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         post: operations['getAnsRules']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/featured-apps': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /** @description List every `FeaturedAppRight` registered with the DSO on the ledger. */
         get: operations['listFeaturedAppRights']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/featured-apps/{provider_party_id}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description If `provider_party_id` has a `FeaturedAppRight` registered with the DSO,
-         * return it; `featured_app_right` will be empty otherwise.
+         *     return it; `featured_app_right` will be empty otherwise.
          */
         get: operations['lookupFeaturedAppRight']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/top-validators-by-validator-faucets': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description Get a list of top validators by number of rounds in which they collected
-         * faucets, and basis statistics on their round collection history
+         *     faucets, and basis statistics on their round collection history
          */
         get: operations['getTopValidatorsByValidatorFaucets']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/transfer-preapprovals/by-party/{party}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /** @description Lookup a TransferPreapproval by the receiver party. */
         get: operations['lookupTransferPreapprovalByParty']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/transfer-command-counter/{party}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /** @description Lookup a TransferCommandCounter by the receiver party. */
         get: operations['lookupTransferCommandCounterByParty']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/transfer-command/status': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /** @description Retrieve the status of all transfer commands (up to a limit of 100) of the given sender for the specified nonce. */
         get: operations['lookupTransferCommandStatus']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/migrations/schedule': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description If the DSO has scheduled a synchronizer upgrade, return its planned time
-         * and the new migration ID.
+         *     and the new migration ID.
          */
         get: operations['getMigrationSchedule']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/synchronizer-identities/{domain_id_prefix}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         get: operations['getSynchronizerIdentities']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/synchronizer-bootstrapping-transactions/{domain_id_prefix}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         get: operations['getSynchronizerBootstrappingTransactions']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/splice-instance-names': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /** @description Retrieve the UI names of various elements of this Splice network. */
         get: operations['getSpliceInstanceNames']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/amulet-price/votes': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /** @description Retrieve a list of the latest amulet price votes */
         get: operations['listAmuletPriceVotes']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/voterequest': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /** @description Look up several `VoteRequest`\ s at once by their contract IDs. */
         post: operations['listVoteRequestsByTrackingCid']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/voterequests/{vote_request_contract_id}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /** @description Look up a `VoteRequest` by contract ID. */
         get: operations['lookupDsoRulesVoteRequest']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/admin/sv/voterequests': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /** @description List all active `VoteRequest`\ s. */
         get: operations['listDsoRulesVoteRequests']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/admin/sv/voteresults': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         post: operations['listVoteRequestResults']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/backfilling/migration-info': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /** @description List all previous synchronizer migrations in this Splice network's history. */
         post: operations['getMigrationInfo']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/backfilling/updates-before': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /**
          * @description Retrieve transactions and synchronizer reassignments prior to the
-         * request's specification.
+         *     request's specification.
          */
         post: operations['getUpdatesBefore']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/backfilling/status': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /** @description Retrieve the status of the backfilling process. */
         get: operations['getBackfillingStatus']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/acs/{party}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @deprecated
          * @description **Deprecated**. Fetch the current SV participant ACS snapshot for the DSO and `party`.
          */
         get: operations['getAcsSnapshot']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/aggregated-rounds': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @deprecated
          * @description **Deprecated**. Retrieve the current earliest and latest rounds aggregated for this Scan.
          */
         get: operations['getAggregatedRounds']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/round-totals': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /**
          * @deprecated
          * @description **Deprecated**. List Amulet statistics for up to 200 closed rounds.
          */
         post: operations['listRoundTotals']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/round-party-totals': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /**
          * @deprecated
          * @description **Deprecated**. Retrieve per-party Amulet statistics for up to 50 closed rounds.
          */
         post: operations['listRoundPartyTotals']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/total-amulet-balance': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @deprecated
          * @description **Deprecated**. Get the total balance of Amulet in the network
          */
         get: operations['getTotalAmuletBalance']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/wallet-balance': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @deprecated
          * @description **Deprecated**, use /v0/holdings/summary with /v0/state/acs/snapshot-timestamp instead. Get the Amulet balance for a specific party at the end of a closed round
          */
         get: operations['getWalletBalance']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/amulet-config-for-round': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @deprecated
          * @description **Deprecated**. Retrieve some information from the `AmuletRules` selected for the given round
          */
         get: operations['getAmuletConfigForRound']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/round-of-latest-data': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @deprecated
          * @description **Deprecated**. Get the latest round number for which aggregated data is available and
-         * the ledger effective time at which the round was closed.
+         *     the ledger effective time at which the round was closed.
          */
         get: operations['getRoundOfLatestData']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/rewards-collected': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @deprecated
          * @description **Deprecated**. Get the total rewards collected ever
          */
         get: operations['getRewardsCollected']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/top-providers-by-app-rewards': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @deprecated
          * @description **Deprecated**. Get a list of top-earning app providers, and the total earned app
-         * rewards for each
+         *     rewards for each
          */
         get: operations['getTopProvidersByAppRewards']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/top-validators-by-validator-rewards': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @deprecated
          * @description **Deprecated**. Get a list of top-earning validators, and the total earned validator
-         * rewards for each
+         *     rewards for each
          */
         get: operations['getTopValidatorsByValidatorRewards']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/top-validators-by-purchased-traffic': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @deprecated
          * @description **Deprecated**. Get a list of validators and their domain fees spends, sorted by the
-         * amount of extra traffic purchased
+         *     amount of extra traffic purchased
          */
         get: operations['getTopValidatorsByPurchasedTraffic']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/activities': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /**
          * @deprecated
          * @description **Deprecated**. Lists activities in descending order, paged, optionally starting after a provided event id.
          */
         post: operations['listActivity']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/transactions': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /**
          * @deprecated
          * @description **Deprecated with known bugs that will not be fixed, use /v2/updates instead**.
          *
-         * Lists transactions, by default in ascending order, paged, from ledger begin or optionally starting after a provided event id.
+         *     Lists transactions, by default in ascending order, paged, from ledger begin or optionally starting after a provided event id.
          */
         post: operations['listTransactionHistory']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/updates': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /**
          * @deprecated
          * @description **Deprecated**, use /v2/updates instead.
-         * Returns the update history in ascending order, paged, from ledger begin or optionally starting after a record time.
+         *     Returns the update history in ascending order, paged, from ledger begin or optionally starting after a record time.
          */
         post: operations['getUpdateHistory']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/updates/{update_id}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @deprecated
          * @description **Deprecated**, use /v2/updates/{update_id} instead.
          */
         get: operations['getUpdateById']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/feature-support': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         get: operations['featureSupport']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/backfilling/import-updates': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         post: operations['getImportUpdates']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/events': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
         /**
          * @description Returns the event history in ascending order, paged, from ledger begin or optionally starting after a record time.
-         * An event bears some combination of a transaction, a contract reassignment, and a verdict.
-         * Events are ordered lexicographically by `(migration id, record time)`.
-         * For a given migration id, each event has a unique record time.
-         * The record time ranges of different migrations may overlap, i.e.,
-         * it is not guaranteed that the maximum record time of one migration is smaller than the minimum record time of the next migration,
-         * and there may be two updates with the same record time but different migration ids.
+         *     An event bears some combination of a transaction, a contract reassignment, and a verdict.
+         *     Events are ordered lexicographically by `(migration id, record time)`.
+         *     For a given migration id, each event has a unique record time.
+         *     The record time ranges of different migrations may overlap, i.e.,
+         *     it is not guaranteed that the maximum record time of one migration is smaller than the minimum record time of the next migration,
+         *     and there may be two updates with the same record time but different migration ids.
          */
         post: operations['getEventHistory']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/v0/events/{update_id}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description Returns the event with the given update_id.
-         * An event bears some combination of a transaction, a contract reassignment, and a verdict.
+         *     An event bears some combination of a transaction, a contract reassignment, and a verdict.
          */
         get: operations['getEventById']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
 }
-
 export type webhooks = Record<string, never>
-
 export interface components {
     schemas: {
         GetSpliceInstanceNamesResponse: {
@@ -445,37 +1327,37 @@ export interface components {
         GetClosedRoundsResponse: {
             /**
              * @description Contracts of the Daml template `Splice.Round:ClosedMiningRound`, one
-             * for every closed round that is still in process, i.e. it either has
-             * unprocessed rewards or a missing `Splice.DsoRules:Confirmation`.
+             *     for every closed round that is still in process, i.e. it either has
+             *     unprocessed rewards or a missing `Splice.DsoRules:Confirmation`.
              */
             rounds: components['schemas']['Contract'][]
         }
         GetOpenAndIssuingMiningRoundsRequest: {
             /**
              * @description The contract IDs for `open_mining_rounds` in the response the caller
-             * knows about. If unsure, an empty array is fine; only a performance
-             * penalty is incurred.
+             *     knows about. If unsure, an empty array is fine; only a performance
+             *     penalty is incurred.
              */
             cached_open_mining_round_contract_ids: components['schemas']['ContractId'][]
             /**
              * @description The contract IDs for `issuing_mining_rounds` in the response the
-             * caller knows about. If unsure, an empty array is fine; only a
-             * performance penalty is incurred.
+             *     caller knows about. If unsure, an empty array is fine; only a
+             *     performance penalty is incurred.
              */
             cached_issuing_round_contract_ids: components['schemas']['ContractId'][]
         }
         /**
          * @description Daml contracts of the templates `Splice.Round.OpenMiningRound` and
-         * `Splice.Round.IssuingMiningRound` representing rounds for which rewards
-         * can be registered or are currently being computed, respectively.
-         * Contract IDs in the input serve as input sets for the two
-         * `MaybeCachedContractWithStateMap`s as described for that structure for
-         * `open_mining_rounds` and `issuing_mining_rounds`.
+         *     `Splice.Round.IssuingMiningRound` representing rounds for which rewards
+         *     can be registered or are currently being computed, respectively.
+         *     Contract IDs in the input serve as input sets for the two
+         *     `MaybeCachedContractWithStateMap`s as described for that structure for
+         *     `open_mining_rounds` and `issuing_mining_rounds`.
          */
         GetOpenAndIssuingMiningRoundsResponse: {
             /**
              * @description Suggested cache TTL for the response; this should expire before the
-             * `opensAt` of any open rounds that may not be in this response yet.
+             *     `opensAt` of any open rounds that may not be in this response yet.
              */
             time_to_live_in_microseconds: number
             open_mining_rounds: components['schemas']['MaybeCachedContractWithStateMap']
@@ -487,11 +1369,11 @@ export interface components {
         }
         /**
          * @description Contract of the Daml template `Splice.AmuletRules.AmuletRules`,
-         * including the full schedule of `AmuletConfig` changes approved by
-         * the DSO. Callers should not assume that `initialValue` is up-to-date,
-         * and should instead search `futureValues` for the latest configuration
-         * valid as of now. `contract` will be absent if its ID matches the input
-         * `cached_amulet_rules_contract_id`.
+         *     including the full schedule of `AmuletConfig` changes approved by
+         *     the DSO. Callers should not assume that `initialValue` is up-to-date,
+         *     and should instead search `futureValues` for the latest configuration
+         *     valid as of now. `contract` will be absent if its ID matches the input
+         *     `cached_amulet_rules_contract_id`.
          */
         GetAmuletRulesResponse: {
             amulet_rules_update: components['schemas']['MaybeCachedContractWithState']
@@ -502,7 +1384,7 @@ export interface components {
         }
         /**
          * @description A contract state update of Daml template
-         * `Splice.ExternalPartyAmuletRules.ExternalPartyAmuletRules`
+         *     `Splice.ExternalPartyAmuletRules.ExternalPartyAmuletRules`
          */
         GetExternalPartyAmuletRulesResponse: {
             external_party_amulet_rules_update: components['schemas']['MaybeCachedContractWithState']
@@ -574,9 +1456,9 @@ export interface components {
         GetTopValidatorsByValidatorFaucetsResponse: {
             /**
              * @description Up to `limit` validators, sorted greatest number of rounds
-             * collected first
+             *     collected first
              */
-            validatorsByReceivedFaucets: external['scan.yaml']['components']['schemas']['ValidatorReceivedFaucets'][]
+            validatorsByReceivedFaucets: components['schemas']['ValidatorReceivedFaucets'][]
         }
         GetTopValidatorsByPurchasedTrafficResponse: {
             validatorsByPurchasedTraffic: components['schemas']['ValidatorPurchasedTraffic'][]
@@ -639,7 +1521,7 @@ export interface components {
             domainId: string
             /**
              * @description SV scans for the associated synchronizer ID; there is at most one
-             * scan per SV for each synchronizer ID.
+             *     scan per SV for each synchronizer ID.
              */
             scans: components['schemas']['ScanInfo'][]
         }
@@ -652,16 +1534,15 @@ export interface components {
         TransactionHistoryRequest: {
             /**
              * @description Note that all transactions carry some monotonically-increasing event_id.
-             * Omit this page_end_event_id to start reading the first page, from the beginning or the end of the ledger, depending on the sort_order column.
-             * A subsequent request can fill the page_end_event_id with the last event_id of the TransactionHistoryResponse to continue reading in the same sort_order.
-             * The transaction with event_id == page_end_event_id will be skipped in the next response, making it possible to continuously read pages in the same sort_order.
+             *     Omit this page_end_event_id to start reading the first page, from the beginning or the end of the ledger, depending on the sort_order column.
+             *     A subsequent request can fill the page_end_event_id with the last event_id of the TransactionHistoryResponse to continue reading in the same sort_order.
+             *     The transaction with event_id == page_end_event_id will be skipped in the next response, making it possible to continuously read pages in the same sort_order.
              */
             page_end_event_id?: string
             /**
              * @description Sort order for the transactions. For ascending order, from beginning to the end of the ledger, use "asc".
-             * For descending order, from end to beginning of the ledger, use "desc".
-             * "asc" is used if the sort_order is omitted.
-             *
+             *     For descending order, from end to beginning of the ledger, use "desc".
+             *     "asc" is used if the sort_order is omitted.
              * @enum {string}
              */
             sort_order?: 'asc' | 'desc'
@@ -677,9 +1558,8 @@ export interface components {
         TransactionHistoryResponseItem: {
             /**
              * @description Describes the type of activity that occurred.
-             * Determines if the data for the transaction should be read
-             * from the `transfer`, `mint`, or `tap` property.
-             *
+             *     Determines if the data for the transaction should be read
+             *     from the `transfer`, `mint`, or `tap` property.
              * @enum {string}
              */
             transaction_type:
@@ -691,7 +1571,7 @@ export interface components {
             event_id: string
             /**
              * @description The ledger offset of the event.
-             * Note that this field may not be the same across nodes, and therefore should not be compared between SVs.
+             *     Note that this field may not be the same across nodes, and therefore should not be compared between SVs.
              */
             offset?: string
             /**
@@ -724,16 +1604,16 @@ export interface components {
             after_migration_id: number
             /**
              * @description The record time to start returning transactions from. This only affects
-             * transactions with the same migration id as after_migration_id. Higher migration ids
-             * are always considered to be later.
+             *     transactions with the same migration id as after_migration_id. Higher migration ids
+             *     are always considered to be later.
              */
             after_record_time: string
         }
         UpdateHistoryRequest: {
             /**
              * @description The transactions returned will either have a higher migration id or
-             * the same migration id and a record_time greater than the migration id and record time
-             * specified.
+             *     the same migration id and a record_time greater than the migration id and record time
+             *     specified.
              */
             after?: components['schemas']['UpdateHistoryRequestAfter']
             /**
@@ -743,16 +1623,16 @@ export interface components {
             page_size: number
             /**
              * @description Whether contract payload should be encoded into json using a lossless, but much harder to process, encoding.
-             * This is mostly used for backend calls, and is not recommended for external users.
-             * Optional and defaults to false.
+             *     This is mostly used for backend calls, and is not recommended for external users.
+             *     Optional and defaults to false.
              */
             lossless?: boolean
         }
         UpdateHistoryRequestV1: {
             /**
              * @description The transactions returned will either have a higher migration id or
-             * the same migration id and a record_time greater than the migration id and record time
-             * specified.
+             *     the same migration id and a record_time greater than the migration id and record time
+             *     specified.
              */
             after?: components['schemas']['UpdateHistoryRequestAfter']
             /**
@@ -765,8 +1645,8 @@ export interface components {
         UpdateHistoryRequestV2: {
             /**
              * @description The transactions returned will either have a higher migration id or
-             * the same migration id and a record_time greater than the migration id and record time
-             * specified.
+             *     the same migration id and a record_time greater than the migration id and record time
+             *     specified.
              */
             after?: components['schemas']['UpdateHistoryRequestAfter']
             /**
@@ -796,7 +1676,7 @@ export interface components {
             update_id: string
             /**
              * @description The absolute offset.
-             * Note that this field may not be the same across nodes, and therefore should not be compared between SVs.
+             *     Note that this field may not be the same across nodes, and therefore should not be compared between SVs.
              */
             offset: string
             /** @description The time at which the transaction was sequenced. */
@@ -820,8 +1700,8 @@ export interface components {
             migration_id: number
             /**
              * @description The id of the corresponding unassign event; this assignment will
-             * usually, but not always, occur after the so-identified unassignment
-             * event.
+             *     usually, but not always, occur after the so-identified unassignment
+             *     event.
              */
             unassign_id: string
             /** @description The corresponding contract create event */
@@ -864,38 +1744,38 @@ export interface components {
             migration_id: number
             /**
              * @description This transaction's Daml workflow ID; a workflow ID can be associated
-             * with multiple transactions. If empty, no workflow ID was set.
+             *     with multiple transactions. If empty, no workflow ID was set.
              */
             workflow_id: string
             /**
              * @description The time at which the transaction was sequenced, with microsecond
-             * resolution, using ISO-8601 representation.
+             *     resolution, using ISO-8601 representation.
              */
             record_time: string
             /** @description The id of the synchronizer through which this transaction was sequenced. */
             synchronizer_id: string
             /**
              * @description Ledger effective time, using ISO-8601 representation. This is the time
-             * returned by `getTime` for all Daml executed as part of this transaction,
-             * both by the submitting participant and all confirming participants.
+             *     returned by `getTime` for all Daml executed as part of this transaction,
+             *     both by the submitting participant and all confirming participants.
              */
             effective_at: string
             /**
              * @description The absolute offset.
-             * Note that this field may not be the same across nodes, and therefore should not be compared between SVs.
-             * However, within a single SV's scan, it is monotonically, lexicographically increasing.
+             *     Note that this field may not be the same across nodes, and therefore should not be compared between SVs.
+             *     However, within a single SV's scan, it is monotonically, lexicographically increasing.
              */
             offset: string
             /**
              * @description Roots of the transaction tree. These are guaranteed to occur as keys
-             * of the `events_by_id` object.
+             *     of the `events_by_id` object.
              */
             root_event_ids: string[]
             /**
              * @description Changes to the ledger that were caused by this transaction, keyed by ID.
-             * Values are nodes of the transaction tree.
-             * Within a transaction, IDs may be referenced by `root_event_ids` or
-             * `child_event_ids` in `ExercisedEvent` herein.
+             *     Values are nodes of the transaction tree.
+             *     Within a transaction, IDs may be referenced by `root_event_ids` or
+             *     `child_event_ids` in `ExercisedEvent` herein.
              */
             events_by_id: {
                 [key: string]: components['schemas']['TreeEvent']
@@ -911,32 +1791,32 @@ export interface components {
             migration_id: number
             /**
              * @description This transaction's Daml workflow ID; a workflow ID can be associated
-             * with multiple transactions. If empty, no workflow ID was set.
+             *     with multiple transactions. If empty, no workflow ID was set.
              */
             workflow_id: string
             /**
              * @description The time at which the transaction was sequenced, with microsecond
-             * resolution, using ISO-8601 representation.
+             *     resolution, using ISO-8601 representation.
              */
             record_time: string
             /** @description The id of the synchronizer through which this transaction was sequenced. */
             synchronizer_id: string
             /**
              * @description Ledger effective time, using ISO-8601 representation. This is the time
-             * returned by `getTime` for all Daml executed as part of this transaction,
-             * both by the submitting participant and all confirming participants.
+             *     returned by `getTime` for all Daml executed as part of this transaction,
+             *     both by the submitting participant and all confirming participants.
              */
             effective_at: string
             /**
              * @description Roots of the transaction tree. These are guaranteed to occur as keys
-             * of the `events_by_id` object.
+             *     of the `events_by_id` object.
              */
             root_event_ids: string[]
             /**
              * @description Changes to the ledger that were caused by this transaction, keyed by ID and sorted lexicographically by ID for display consistency.
-             * Values are nodes of the transaction tree.
-             * Within a transaction, IDs may be referenced by `root_event_ids` or
-             * `child_event_ids` in `ExercisedEvent` herein, which are sorted in the order as they occurred in the transaction.
+             *     Values are nodes of the transaction tree.
+             *     Within a transaction, IDs may be referenced by `root_event_ids` or
+             *     `child_event_ids` in `ExercisedEvent` herein, which are sorted in the order as they occurred in the transaction.
              */
             events_by_id: {
                 [key: string]: components['schemas']['TreeEvent']
@@ -947,10 +1827,14 @@ export interface components {
             | components['schemas']['CreatedEvent']
             | components['schemas']['ExercisedEvent']
         CreatedEvent: {
-            event_type: string
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            event_type: 'created_event'
             /**
              * @description The ID of this particular event. Equal to the key of this element of
-             * the containing `events_by_id` if this is part of a `TreeEvent`.
+             *     the containing `events_by_id` if this is part of a `TreeEvent`.
              */
             event_id: string
             /** @description The ID of the created contract. */
@@ -961,7 +1845,7 @@ export interface components {
             package_name: string
             /**
              * @description The arguments that have been used to create the contract, in the
-             * form of JSON representation of a Daml record.
+             *     form of JSON representation of a Daml record.
              */
             create_arguments: Record<string, never>
             /**
@@ -975,10 +1859,14 @@ export interface components {
             observers: string[]
         }
         ExercisedEvent: {
-            event_type: string
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            event_type: 'exercised_event'
             /**
              * @description The ID of this particular event. Equal to the key of this element of
-             * the containing `events_by_id` if this is part of a `TreeEvent`.
+             *     the containing `events_by_id` if this is part of a `TreeEvent`.
              */
             event_id: string
             /** @description The ID of the created contract. */
@@ -989,25 +1877,25 @@ export interface components {
             package_name: string
             /**
              * @description The choice that was exercised on the target contract, as an unqualified
-             * choice name, i.e. with no package or module name qualifiers.
+             *     choice name, i.e. with no package or module name qualifiers.
              */
             choice: string
             /**
              * @description The argument of the exercised choice, in the form of JSON
-             * representation of a Daml value. This is usually a record with field
-             * names being the argument names, even in the case of a single apparent
-             * choice argument, which is represented as a single-element Daml record.
+             *     representation of a Daml value. This is usually a record with field
+             *     names being the argument names, even in the case of a single apparent
+             *     choice argument, which is represented as a single-element Daml record.
              */
             choice_argument: Record<string, never>
             /**
              * @description References to further events in the same transaction that appeared as a result of this ExercisedEvent.
-             * It contains only the immediate children of this event, not all members of the subtree rooted at this node.
-             * The order of the children is the same as the event order in the transaction.
+             *     It contains only the immediate children of this event, not all members of the subtree rooted at this node.
+             *     The order of the children is the same as the event order in the transaction.
              */
             child_event_ids: string[]
             /**
              * @description The result of exercising the choice, as the JSON representation of a
-             * Daml value.
+             *     Daml value.
              */
             exercise_result: Record<string, never>
             /** @description If true, the target contract may no longer be exercised. */
@@ -1033,25 +1921,24 @@ export interface components {
             /**
              * Format: date-time
              * @description The timestamp at which the contract set was active.
-             * This needs to be an exact timestamp, i.e.,
-             * needs to correspond to a timestamp reported by `/v0/state/acs/snapshot-timestamp` if `record_time_match` is set to `exact` (which is the default).
-             * If `record_time_match` is set to `at_or_before`, this can be any timestamp, and the most recent snapshot at or before the given `record_time` will be returned.
+             *     This needs to be an exact timestamp, i.e.,
+             *     needs to correspond to a timestamp reported by `/v0/state/acs/snapshot-timestamp` if `record_time_match` is set to `exact` (which is the default).
+             *     If `record_time_match` is set to `at_or_before`, this can be any timestamp, and the most recent snapshot at or before the given `record_time` will be returned.
              */
             record_time: string
             /**
              * @description How to match the record_time. "exact" requires the record_time to match exactly.
-             * "at_or_before" finds the most recent snapshot at or before the given record_time.
-             *
+             *     "at_or_before" finds the most recent snapshot at or before the given record_time.
              * @default exact
              * @enum {string}
              */
-            record_time_match?: 'exact' | 'at_or_before'
+            record_time_match: 'exact' | 'at_or_before'
             /**
              * Format: int64
              * @description Pagination token for the next page of results. For this to be valid,
-             * this must be the `next_page_token` from a prior request with identical
-             * parameters aside from `after` and `page_size`; the response may be
-             * invalid otherwise.
+             *     this must be the `next_page_token` from a prior request with identical
+             *     parameters aside from `after` and `page_size`; the response may be
+             *     invalid otherwise.
              */
             after?: number
             /**
@@ -1073,19 +1960,18 @@ export interface components {
             /**
              * Format: date-time
              * @description The timestamp at which the contract set was active.
-             * This needs to be an exact timestamp, i.e.,
-             * needs to correspond to a timestamp reported by `/v0/state/acs/snapshot-timestamp` if `record_time_match` is set to `exact` (which is the default).
-             * If `record_time_match` is set to `at_or_before`, this can be any timestamp, and the most recent snapshot at or before the given `record_time` will be returned.
+             *     This needs to be an exact timestamp, i.e.,
+             *     needs to correspond to a timestamp reported by `/v0/state/acs/snapshot-timestamp` if `record_time_match` is set to `exact` (which is the default).
+             *     If `record_time_match` is set to `at_or_before`, this can be any timestamp, and the most recent snapshot at or before the given `record_time` will be returned.
              */
             record_time: string
             /**
              * @description How to match the record_time. "exact" requires the record_time to match exactly.
-             * "at_or_before" finds the most recent snapshot at or before the given record_time.
-             *
+             *     "at_or_before" finds the most recent snapshot at or before the given record_time.
              * @default exact
              * @enum {string}
              */
-            record_time_match?: 'exact' | 'at_or_before'
+            record_time_match: 'exact' | 'at_or_before'
             /**
              * Format: int64
              * @description Pagination token for the next page of results.
@@ -1108,19 +1994,18 @@ export interface components {
             /**
              * Format: date-time
              * @description The timestamp at which the contract set was active.
-             * This needs to be an exact timestamp, i.e.,
-             * needs to correspond to a timestamp reported by `/v0/state/acs/snapshot-timestamp` if `record_time_match` is set to `exact` (which is the default).
-             * If `record_time_match` is set to `at_or_before`, this can be any timestamp, and the most recent snapshot at or before the given `record_time` will be returned.
+             *     This needs to be an exact timestamp, i.e.,
+             *     needs to correspond to a timestamp reported by `/v0/state/acs/snapshot-timestamp` if `record_time_match` is set to `exact` (which is the default).
+             *     If `record_time_match` is set to `at_or_before`, this can be any timestamp, and the most recent snapshot at or before the given `record_time` will be returned.
              */
             record_time: string
             /**
              * @description How to match the record_time. "exact" requires the record_time to match exactly.
-             * "at_or_before" finds the most recent snapshot at or before the given record_time.
-             *
+             *     "at_or_before" finds the most recent snapshot at or before the given record_time.
              * @default exact
              * @enum {string}
              */
-            record_time_match?: 'exact' | 'at_or_before'
+            record_time_match: 'exact' | 'at_or_before'
             /** @description The owners for which to compute the summary. */
             owner_party_ids: string[]
             /**
@@ -1154,14 +2039,14 @@ export interface components {
             migration_id: number
             /**
              * @description Up to `page_size` contracts in the ACS.
-             * `create_arguments` are always encoded as `compact_json`.
+             *     `create_arguments` are always encoded as `compact_json`.
              */
             created_events: components['schemas']['CreatedEvent'][]
             /**
              * Format: int64
              * @description When requesting the next page of results, pass this as `after`
-             * to the `AcsRequest` or `HoldingsStateRequest`.
-             * Will be absent when there are no more pages.
+             *     to the `AcsRequest` or `HoldingsStateRequest`.
+             *     Will be absent when there are no more pages.
              */
             next_page_token?: number
         }
@@ -1189,25 +2074,25 @@ export interface components {
             party_id: string
             /**
              * @description Sum of unlocked amulet at time of reception, not counting holding
-             * fees deducted since.
+             *     fees deducted since.
              */
             total_unlocked_coin: string
             /**
              * @description Sum of locked amulet at time of original amulet reception, not
-             * counting holding fees deducted since.
+             *     counting holding fees deducted since.
              */
             total_locked_coin: string
             /** @description `total_unlocked_coin` + `total_locked_coin`. */
             total_coin_holdings: string
             /**
              * @description Sum of holding fees as of `computed_as_of_round` that apply to
-             * unlocked amulet.
+             *     unlocked amulet.
              */
             accumulated_holding_fees_unlocked: string
             /**
              * @description Sum of holding fees as of `computed_as_of_round` that apply to
-             * locked amulet, including fees applied since the amulet's creation
-             * round.
+             *     locked amulet, including fees applied since the amulet's creation
+             *     round.
              */
             accumulated_holding_fees_locked: string
             /** @description Same as `accumulated_holding_fees_unlocked` + `accumulated_holding_fees_locked`. */
@@ -1218,7 +2103,7 @@ export interface components {
         ListActivityRequest: {
             /**
              * @description Minimal event_id for returned activities.
-             * Note that all activities carry some monotonically-increasing event_id. begin_after_id sets the minimum value for event_id's for the query.
+             *     Note that all activities carry some monotonically-increasing event_id. begin_after_id sets the minimum value for event_id's for the query.
              */
             begin_after_id?: string
             /**
@@ -1233,9 +2118,8 @@ export interface components {
         ListActivityResponseItem: {
             /**
              * @description Describes the type of activity that occurred.
-             * Determines if the data for the activity should be read
-             * from the `transfer`, `mint`, or `tap` property.
-             *
+             *     Determines if the data for the activity should be read
+             *     from the `transfer`, `mint`, or `tap` property.
              * @enum {string}
              */
             activity_type:
@@ -1247,7 +2131,7 @@ export interface components {
             event_id: string
             /**
              * @description The ledger offset of the event.
-             * Note that this field may not be the same across nodes, and therefore should not be compared between SVs.
+             *     Note that this field may not be the same across nodes, and therefore should not be compared between SVs.
              */
             offset?: string
             /**
@@ -1302,7 +2186,7 @@ export interface components {
             party: string
             /**
              * @description The change to the total balance introduced by this balance change, normalized to round zero, i.e.,
-             * a amulet created in round 3 is treated as a amulet created in round 0 with a higher initial amount.
+             *     a amulet created in round 3 is treated as a amulet created in round 0 with a higher initial amount.
              */
             change_to_initial_amount_as_of_round_zero: string
             /** @description The change of total holding fees introduced by this balance change. */
@@ -1329,8 +2213,8 @@ export interface components {
             input_validator_faucet_amount?: string
             /**
              * @description Fee charged for returning change to the sender,
-             * which is the smaller of the left-over balance after paying for all outputs
-             * or one amulet create fee.
+             *     which is the smaller of the left-over balance after paying for all outputs
+             *     or one amulet create fee.
              */
             sender_change_fee: string
             /** @description The final amount of amulet returned to the sender after paying for all outputs and fees. */
@@ -1375,7 +2259,7 @@ export interface components {
         }
         /**
          * @description A contract of Daml template `Splice.ExternalPartyAmuletRules:TransferCommand`,
-         * and its status determined by the latest transactions.
+         *     and its status determined by the latest transactions.
          */
         TransferCommandContractWithStatus: {
             contract: components['schemas']['Contract']
@@ -1388,33 +2272,50 @@ export interface components {
         BaseLookupTransferCommandStatusResponse: {
             /**
              * @description The status of the transfer command.
-             * created:
-             *   The transfer command has been created and is waiting for automation to complete it.
-             * sent:
-             *   The transfer command has been completed and the transfer to the receiver has finished.
-             * failed:
-             *   The transfer command has failed permanently and nothing has been transferred. Refer to
-             *   failure_reason for details. A new transfer command can be created.
+             *     created:
+             *       The transfer command has been created and is waiting for automation to complete it.
+             *     sent:
+             *       The transfer command has been completed and the transfer to the receiver has finished.
+             *     failed:
+             *       The transfer command has failed permanently and nothing has been transferred. Refer to
+             *       failure_reason for details. A new transfer command can be created.
              */
             status: string
         }
-        TransferCommandCreatedResponse: components['schemas']['BaseLookupTransferCommandStatusResponse']
-        TransferCommandSentResponse: components['schemas']['BaseLookupTransferCommandStatusResponse']
+        TransferCommandCreatedResponse: components['schemas']['BaseLookupTransferCommandStatusResponse'] & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: 'created'
+        }
+        TransferCommandSentResponse: components['schemas']['BaseLookupTransferCommandStatusResponse'] & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: 'sent'
+        }
         TransferCommandFailedResponse: components['schemas']['BaseLookupTransferCommandStatusResponse'] & {
             /**
              * @description The reason for the failure of the TransferCommand.
-             * failed:
-             *   Completing the transfer failed, check the reason for details.
-             * withdrawn:
-             *   The sender has withdrawn the TransferCommand before it could be completed.
-             * expired:
-             *   The expiry time on the TransferCommand was reached before it could be completed.
-             *
+             *     failed:
+             *       Completing the transfer failed, check the reason for details.
+             *     withdrawn:
+             *       The sender has withdrawn the TransferCommand before it could be completed.
+             *     expired:
+             *       The expiry time on the TransferCommand was reached before it could be completed.
              * @enum {string}
              */
             failure_kind: 'failed' | 'expired' | 'withdrawn'
             /** @description Human readable description of the failure */
             reason: string
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: 'failed'
         }
         GetAcsSnapshotResponse: {
             /** @description base64-encoded ACS snapshot for the intersection of the DSO party and the requested party’s ACS */
@@ -1423,7 +2324,7 @@ export interface components {
         AnsEntry: {
             /**
              * @description If present, Daml contract ID of template `Splice.Ans:AnsEntry`.
-             * If absent, this is a DSO-provided entry for either the DSO or an SV.
+             *     If absent, this is a DSO-provided entry for either the DSO or an SV.
              */
             contract_id?: string
             /** @description Owner party ID of this ANS entry. */
@@ -1437,9 +2338,9 @@ export interface components {
             /**
              * Format: date-time
              * @description Time after which this ANS entry expires; if renewed, it will have a
-             * new `contract_id` and `expires_at`.
-             * If `null` or absent, does not expire; this is the case only for
-             * special entries provided by the DSO.
+             *     new `contract_id` and `expires_at`.
+             *     If `null` or absent, does not expire; this is the case only for
+             *     special entries provided by the DSO.
              */
             expires_at?: string
         }
@@ -1532,12 +2433,12 @@ export interface components {
             previous_migration_id?: number
             /**
              * @description All domains for which there are updates in the given migration id,
-             * along with the record time of the newest and oldest update associated with each domain
+             *     along with the record time of the newest and oldest update associated with each domain
              */
             record_time_range: components['schemas']['RecordTimeRange'][]
             /**
              * @description The update id of the last import update (where import updates are sorted by update id, ascending)
-             * for the given migration id, if any
+             *     for the given migration id, if any
              */
             last_import_update_id?: string
             /** @description True if this scan has all non-import updates for given migration id */
@@ -1591,22 +2492,21 @@ export interface components {
         }
         /**
          * @description How daml values should be encoded in the response.
-         * "compact_json" is a compact, human-readable JSON encoding. It is the same encoding
-         * as the one used in the HTTP JSON API or the JavaScript codegen.
-         * "protobuf_json" is a verbose JSON encoding that is more difficult to parse,
-         * but contains type information, i.e., the values can be parsed losslessly
-         * without having access to the Daml source code.
-         * Optional and defaults to "compact_json".
-         *
+         *     "compact_json" is a compact, human-readable JSON encoding. It is the same encoding
+         *     as the one used in the HTTP JSON API or the JavaScript codegen.
+         *     "protobuf_json" is a verbose JSON encoding that is more difficult to parse,
+         *     but contains type information, i.e., the values can be parsed losslessly
+         *     without having access to the Daml source code.
+         *     Optional and defaults to "compact_json".
          * @enum {string}
          */
         DamlValueEncoding: 'compact_json' | 'protobuf_json'
         GetMemberTrafficStatusResponse: {
             /**
              * @description The current traffic state for the member on the synchronizer under
-             * `actual`, and the total purchased traffic under `target`.  The purchased
-             * traffic may exceed the `actual` limit as purchases take time to be
-             * incorporated into the limit.
+             *     `actual`, and the total purchased traffic under `target`.  The purchased
+             *     traffic may exceed the `actual` limit as purchases take time to be
+             *     incorporated into the limit.
              */
             traffic_status: components['schemas']['MemberTrafficStatus']
         }
@@ -1625,7 +2525,7 @@ export interface components {
             /**
              * Format: int64
              * @description Current extra traffic limit set for the member on the given synchronizer.
-             * An extra traffic top-up is complete once total_limit matches total_purchased.
+             *     An extra traffic top-up is complete once total_limit matches total_purchased.
              */
             total_limit: number
         }
@@ -1633,21 +2533,21 @@ export interface components {
             /**
              * Format: int64
              * @description Total extra traffic purchased for the member on the given
-             * synchronizer in bytes.
+             *     synchronizer in bytes.
              */
             total_purchased: number
         }
         GetPartyToParticipantResponse: {
             /**
              * @description ID of the participant hosting the provided party, in the form
-             * `PAR::id::fingerprint`
+             *     `PAR::id::fingerprint`
              */
             participant_id: string
         }
         GetValidatorFaucetsByValidatorResponse: {
             /**
              * @description Statistics for any party ID arguments found to have valid onboarding
-             * licenses; the order in the response is unrelated to argument order.
+             *     licenses; the order in the response is unrelated to argument order.
              */
             validatorsReceivedFaucets: components['schemas']['ValidatorReceivedFaucets'][]
         }
@@ -1657,27 +2557,27 @@ export interface components {
             /**
              * Format: int64
              * @description how many rounds the validator has received a faucet for; guaranteed
-             * that collected + missed = last - first + 1
+             *     that collected + missed = last - first + 1
              */
             numRoundsCollected: number
             /**
              * Format: int64
              * @description how many rounds between firstCollected and lastCollected in which
-             * the validator failed to collect (i.e. was not active or available);
-             * can at most be max(0, lastCollected - firstCollected - 1).
+             *     the validator failed to collect (i.e. was not active or available);
+             *     can at most be max(0, lastCollected - firstCollected - 1).
              */
             numRoundsMissed: number
             /**
              * Format: int64
              * @description the round number when this validator started collecting faucets;
-             * the validator definitely recorded liveness in this round
+             *     the validator definitely recorded liveness in this round
              */
             firstCollectedInRound: number
             /**
              * Format: int64
              * @description The most recent round number in which the validator collected a faucet;
-             * the validator definitely recorded liveness in this round.  Will equal
-             * `firstCollected` if the validator has collected in only one round
+             *     the validator definitely recorded liveness in this round.  Will equal
+             *     `firstCollected` if the validator has collected in only one round
              */
             lastCollectedInRound: number
         }
@@ -1685,19 +2585,19 @@ export interface components {
             /**
              * @description True if ALL backfilling processes are complete, false otherwise.
              *
-             * Some scan endpoints return error responses if backfilling is not complete
-             * (e.g., `/v1/updates`), others return partial results (e.g., `/v0/transactions`).
-             * This endpoint is a simple indicator for whether historical information may be incomplete.
+             *     Some scan endpoints return error responses if backfilling is not complete
+             *     (e.g., `/v1/updates`), others return partial results (e.g., `/v0/transactions`).
+             *     This endpoint is a simple indicator for whether historical information may be incomplete.
              *
-             * To determine the progress of individual backfilling processes, inspect the corresponding metrics.
+             *     To determine the progress of individual backfilling processes, inspect the corresponding metrics.
              */
             complete: boolean
         }
         EventHistoryRequest: {
             /**
              * @description The events returned will either have a higher migration id or
-             * the same migration id and a record_time greater than the migration id and record time
-             * specified.
+             *     the same migration id and a record_time greater than the migration id and record time
+             *     specified.
              */
             after?: components['schemas']['UpdateHistoryRequestAfter']
             /**
@@ -1712,10 +2612,10 @@ export interface components {
         }
         /**
          * @description An event history item may contain a transaction update, a verdict from a mediator, both, or a contract reassignment.
-         * If an event pertains to a contract reassignment, there will be no verdict data.
-         * If an event pertains to a wholly private transaction, there will only be verdict data.
-         * If an event pertains to a transaction that is partially private, it may also bear verdict information for the private portions.
-         * When both fields are present, the transaction and verdict have the same `update_id` and `record_time`.
+         *     If an event pertains to a contract reassignment, there will be no verdict data.
+         *     If an event pertains to a wholly private transaction, there will only be verdict data.
+         *     If an event pertains to a transaction that is partially private, it may also bear verdict information for the private portions.
+         *     When both fields are present, the transaction and verdict have the same `update_id` and `record_time`.
          */
         EventHistoryItem: {
             update?: components['schemas']['UpdateHistoryItemV2']
@@ -1735,7 +2635,7 @@ export interface components {
             record_time: string
             /**
              * @description The finalization_time of the transaction the verdict corresponds to.
-             * Note that this time might be different between different scans/mediators.
+             *     Note that this time might be different between different scans/mediators.
              */
             finalization_time: string
             /** @description Parties on whose behalf the transaction was submitted. */
@@ -1824,40 +2724,40 @@ export interface components {
             sv_party_id: string
             /**
              * @description Party representing the whole DSO; for Scan only, also returned by
-             * `/v0/dso-party-id`
+             *     `/v0/dso-party-id`
              */
             dso_party_id: string
             /**
              * @description Threshold required to pass vote requests; also known as the
-             * "governance threshold", it is always derived from the number of
-             * `svs` in `dso_rules`
+             *     "governance threshold", it is always derived from the number of
+             *     `svs` in `dso_rules`
              */
             voting_threshold: number
             /**
              * @description Contract of the Daml template `Splice.Round.OpenMiningRound`, the
-             * one with the highest round number on the ledger that has been signed
-             * by `dso_party_id`. The round may not be usable as it may not be
-             * opened yet, in accordance with its `opensAt` template field
+             *     one with the highest round number on the ledger that has been signed
+             *     by `dso_party_id`. The round may not be usable as it may not be
+             *     opened yet, in accordance with its `opensAt` template field
              */
             latest_mining_round: components['schemas']['ContractWithState']
             /**
              * @description Contract of the Daml template `Splice.AmuletRules.AmuletRules`,
-             * including the full schedule of `AmuletConfig` changes approved by
-             * the DSO. Callers should not assume that `initialValue` is up-to-date,
-             * and should instead search `futureValues` for the latest configuration
-             * valid as of now
+             *     including the full schedule of `AmuletConfig` changes approved by
+             *     the DSO. Callers should not assume that `initialValue` is up-to-date,
+             *     and should instead search `futureValues` for the latest configuration
+             *     valid as of now
              */
             amulet_rules: components['schemas']['ContractWithState']
             /**
              * @description Contract of the Daml template `Splice.DsoRules.DsoRules`, listing
-             * the governance rules approved by the DSO governing this Splice network.
+             *     the governance rules approved by the DSO governing this Splice network.
              */
             dso_rules: components['schemas']['ContractWithState']
             /**
              * @description For every one of `svs` listed in `dso_rules`, a contract of the Daml
-             * template `Splice.DSO.SvState.SvNodeState`. This does not include
-             * states for offboarded SVs, though they may still have an on-ledger
-             * state contract
+             *     template `Splice.DSO.SvState.SvNodeState`. This does not include
+             *     states for offboarded SVs, though they may still have an on-ledger
+             *     state contract
              */
             sv_node_states: components['schemas']['ContractWithState'][]
             /** @description Initial round from which the network bootstraps */
@@ -1869,7 +2769,7 @@ export interface components {
             /**
              * Format: int64
              * @description When requesting the next page of results, pass this as URL query parameter `after`.
-             * If absent or `null`, there are no more pages.
+             *     If absent or `null`, there are no more pages.
              */
             next_page_token?: number
         }
@@ -1880,12 +2780,12 @@ export interface components {
         }
         /**
          * @description Always created with respect to an input set of contract IDs. If an input
-         * contract ID is absent from the keys of this map, that contract should be
-         * considered removed by the caller; if present, `contract` may be empty,
-         * reflecting that the caller should already have the full contract data
-         * for that contract ID. Contracts not present in the input set will have
-         * full contract data. `domain_id` is always up-to-date; if undefined the
-         * contract is currently unassigned to a synchronizer, i.e. "in-flight".
+         *     contract ID is absent from the keys of this map, that contract should be
+         *     considered removed by the caller; if present, `contract` may be empty,
+         *     reflecting that the caller should already have the full contract data
+         *     for that contract ID. Contracts not present in the input set will have
+         *     full contract data. `domain_id` is always up-to-date; if undefined the
+         *     contract is currently unassigned to a synchronizer, i.e. "in-flight".
          */
         MaybeCachedContractWithStateMap: {
             [key: string]: components['schemas']['MaybeCachedContractWithState']
@@ -1901,7 +2801,7 @@ export interface components {
         ListVoteRequestByTrackingCidResponse: {
             /**
              * @description Contracts of Daml template `Splice.DsoRules:VoteRequest` that match
-             * `vote_request_contract_ids` in the request.
+             *     `vote_request_contract_ids` in the request.
              */
             vote_requests: components['schemas']['Contract'][]
         }
@@ -1931,18 +2831,27 @@ export interface components {
     responses: {
         /** @description bad request */
         400: {
+            headers: {
+                [name: string]: unknown
+            }
             content: {
                 'application/json': components['schemas']['ErrorResponse']
             }
         }
         /** @description not found */
         404: {
+            headers: {
+                [name: string]: unknown
+            }
             content: {
                 'application/json': components['schemas']['ErrorResponse']
             }
         }
         /** @description internal server error */
         500: {
+            headers: {
+                [name: string]: unknown
+            }
             content: {
                 'application/json': components['schemas']['ErrorResponse']
             }
@@ -1953,40 +2862,72 @@ export interface components {
     headers: never
     pathItems: never
 }
-
 export type $defs = Record<string, never>
-
-export type external = Record<string, never>
-
 export interface operations {
     isReady: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
-                content: never
+                headers: {
+                    [name: string]: unknown
+                }
+                content?: never
             }
             /** @description service_unavailable */
             503: {
-                content: never
+                headers: {
+                    [name: string]: unknown
+                }
+                content?: never
             }
         }
     }
     isLive: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
-                content: never
+                headers: {
+                    [name: string]: unknown
+                }
+                content?: never
             }
             /** @description service_unavailable */
             503: {
-                content: never
+                headers: {
+                    [name: string]: unknown
+                }
+                content?: never
             }
         }
     }
     getHealthStatus: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['NodeStatus']
                 }
@@ -1994,9 +2935,19 @@ export interface operations {
         }
     }
     getVersion: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['Version']
                 }
@@ -2004,33 +2955,45 @@ export interface operations {
         }
     }
     getDsoInfo: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetDsoInfoResponse']
                 }
             }
         }
     }
-    /**
-     * @description For every argument that is a valid onboarded validator, return
-     * statistics on its liveness activity, according to on-ledger state at the
-     * time of the request.
-     */
     getValidatorFaucetsByValidator: {
         parameters: {
             query: {
                 /**
                  * @description A list of validator party IDs, one per specification of the parameter.
-                 * Any party IDs not matching onboarded validators will be ignored
+                 *     Any party IDs not matching onboarded validators will be ignored
                  */
                 validator_ids: string[]
             }
+            header?: never
+            path?: never
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetValidatorFaucetsByValidatorResponse']
                 }
@@ -2039,24 +3002,26 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /**
-     * @description Retrieve Canton scan configuration for all SVs, grouped by
-     * connected synchronizer ID
-     */
     listDsoScans: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ListDsoScansResponse']
                 }
             }
         }
     }
-    /**
-     * @description List all validators currently approved by members of the DSO, paginated,
-     * sorted newest-first.
-     */
     listValidatorLicenses: {
         parameters: {
             query?: {
@@ -2065,58 +3030,82 @@ export interface operations {
                 /** @description Maximum number of elements to return, 1000 by default. */
                 limit?: number
             }
+            header?: never
+            path?: never
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ListValidatorLicensesResponse']
                 }
             }
         }
     }
-    /**
-     * @description Retrieve Canton sequencer configuration for all SVs, grouped by
-     * connected synchronizer ID
-     */
     listDsoSequencers: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ListDsoSequencersResponse']
                 }
             }
         }
     }
-    /** @description Retrieve Canton BFT sequencer configuration for this SV, for each configured Synchronizer */
     listSvBftSequencers: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ListSvBftSequencersResponse']
                 }
             }
         }
     }
-    /**
-     * @description Get the ID of the participant hosting a given party.  This will fail if
-     * there are multiple party-to-participant mappings for the given
-     * synchronizer and party, which is not currently supported.
-     */
     getPartyToParticipant: {
         parameters: {
+            query?: never
+            header?: never
             path: {
                 /** @description The synchronizer ID to look up a mapping for. */
                 domain_id: string
                 /** @description The party ID to lookup a participant ID for. */
                 party_id: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetPartyToParticipantResponse']
                 }
@@ -2125,25 +3114,28 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /**
-     * @description Get a member's traffic status as reported by the sequencer, according to
-     * ledger state at the time of the request.
-     */
     getMemberTrafficStatus: {
         parameters: {
+            query?: never
+            header?: never
             path: {
                 /** @description The synchronizer ID to look up traffic for. */
                 domain_id: string
                 /**
                  * @description The participant or mediator whose traffic to look up, in the format
-                 * `code::id::fingerprint` where `code` is `PAR` or `MED`.
+                 *     `code::id::fingerprint` where `code` is `PAR` or `MED`.
                  */
                 member_id: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetMemberTrafficStatusResponse']
                 }
@@ -2153,26 +3145,33 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /**
-     * @description Every closed mining round on the ledger still in post-close process for
-     * the connected Splice network, in round number order, earliest-first.
-     */
     getClosedRounds: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetClosedRoundsResponse']
                 }
             }
         }
     }
-    /**
-     * @description All current open and issuing mining rounds, if the request is empty;
-     * passing contract IDs in the request can reduce the response data for
-     * polling/client-cache-update efficiency.
-     */
     getOpenAndIssuingMiningRounds: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['GetOpenAndIssuingMiningRoundsRequest']
@@ -2181,25 +3180,22 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetOpenAndIssuingMiningRoundsResponse']
                 }
             }
         }
     }
-    /**
-     * @description Returns the update history in ascending order, paged, from ledger begin or optionally starting after a record time.
-     * Compared to `/v1/updates`, the `/v2/updates` removes the `offset` field in responses,
-     * which was hardcoded to 1 in `/v1/updates` for compatibility, and is now removed.
-     * `/v2/updates` sorts events lexicographically in `events_by_id` by `ID` for convenience, which should not be confused with the
-     * order of events in the transaction, for this you should rely on the order of `root_event_ids` and `child_event_ids`.
-     * Updates are ordered lexicographically by `(migration id, record time)`.
-     * For a given migration id, each update has a unique record time.
-     * The record time ranges of different migrations may overlap, i.e.,
-     * it is not guaranteed that the maximum record time of one migration is smaller than the minimum record time of the next migration,
-     * and there may be two updates with the same record time but different migration ids.
-     */
     getUpdateHistoryV2: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['UpdateHistoryRequestV2']
@@ -2208,6 +3204,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['UpdateHistoryResponseV2']
                 }
@@ -2216,25 +3215,24 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /**
-     * @description Returns the update with the given update_id.
-     * Compared to `/v1/updates/{update_id}`, the `/v2/updates/{update_id}` removes the `offset` field in responses,
-     * which was hardcoded to 1 in `/v1/updates/{update_id}` for compatibility, and is now removed.
-     * `/v2/updates/{update_id}` sorts events lexicographically in `events_by_id` by `ID` for convenience, which should not be confused with the
-     * order of events in the transaction, for this you should rely on the order of `root_event_ids` and `child_event_ids`.
-     */
     getUpdateByIdV2: {
         parameters: {
             query?: {
                 daml_value_encoding?: components['schemas']['DamlValueEncoding']
             }
+            header?: never
             path: {
                 update_id: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['UpdateHistoryItemV2']
                 }
@@ -2244,20 +3242,13 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /**
-     * @deprecated
-     * @description Returns the update history in ascending order, paged, from ledger begin or optionally starting after a record time.
-     * Unlike /v0/updates, this endpoint returns responses that are consistent across different
-     * scan instances. Event ids returned by this endpoint are not comparable to event ids returned by /v0/updates.
-     *
-     * Updates are ordered lexicographically by `(migration id, record time)`.
-     * For a given migration id, each update has a unique record time.
-     * The record time ranges of different migrations may overlap, i.e.,
-     * it is not guaranteed that the maximum record time of one migration is smaller than the minimum record time of the next migration,
-     * and there may be two updates with the same record time but different migration ids.
-     * The order of items in events_by_id is not defined.
-     */
     getUpdateHistoryV1: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['UpdateHistoryRequestV1']
@@ -2266,6 +3257,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['UpdateHistoryResponse']
                 }
@@ -2274,25 +3268,24 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /**
-     * @deprecated
-     * @description Returns the update with the given update_id.
-     * Unlike /v0/updates/{update_id}, this endpoint returns responses that are consistent across different
-     * scan instances. Event ids returned by this endpoint are not comparable to event ids returned by /v0/updates.
-     * The order of items in events_by_id is not defined.
-     */
     getUpdateByIdV1: {
         parameters: {
             query?: {
                 daml_value_encoding?: components['schemas']['DamlValueEncoding']
             }
+            header?: never
             path: {
                 update_id: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['UpdateHistoryItem']
                 }
@@ -2302,20 +3295,23 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /**
-     * @description Returns the timestamp of the most recent snapshot before the given date, for the given migration_id.
-     * This corresponds to the record time of the last transaction in the snapshot.
-     */
     getDateOfMostRecentSnapshotBefore: {
         parameters: {
             query: {
                 before: string
                 migration_id: number
             }
+            header?: never
+            path?: never
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['AcsSnapshotTimestampResponse']
                 }
@@ -2325,8 +3321,13 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /** @description Returns the ACS in creation date ascending order, paged, for a given migration id and record time. */
     getAcsSnapshotAt: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['AcsRequest']
@@ -2335,6 +3336,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['AcsResponse']
                 }
@@ -2344,17 +3348,20 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /**
-     * @description Takes a snapshot of the ACS at the current time.
-     * The responses can be used as parameters to `/v0/state/acs` to retrieve the snapshot.
-     * Disabled in production environments due to its persistent alteration of
-     * the behavior of future invocations of `/v0/state/acs`, as it causes an
-     * immediate internal snapshot and delay in the next automatic snapshot.
-     */
     forceAcsSnapshotNow: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ForceAcsSnapshotResponse']
                 }
@@ -2363,8 +3370,13 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /** @description Returns the active amulet contracts for a given migration id and record time, in creation date ascending order, paged. */
     getHoldingsStateAt: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['HoldingsStateRequest']
@@ -2373,6 +3385,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['AcsResponse']
                 }
@@ -2382,11 +3397,13 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /**
-     * @description Returns the summary of active amulet contracts for a given migration id and record time, for the given parties.
-     * This is an aggregate of `/v0/holdings/state` by owner party ID with better performance than client-side computation.
-     */
     getHoldingsSummaryAt: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['HoldingsSummaryRequest']
@@ -2395,6 +3412,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['HoldingsSummaryResponse']
                 }
@@ -2404,49 +3424,55 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /**
-     * @description Lists all non-expired ANS entries whose names are prefixed with the
-     * `name_prefix`, up to `page_size` entries.
-     */
     listAnsEntries: {
         parameters: {
             query: {
                 /**
                  * @description Every result's name will start with this substring; if empty or absent,
-                 * all entries will be listed.
-                 * Does not have to be a whole word or segment; any substring will be accepted.
+                 *     all entries will be listed.
+                 *     Does not have to be a whole word or segment; any substring will be accepted.
                  */
                 name_prefix?: string
                 /**
                  * @description The maximum number of results returned.
-                 * Older (but still non-expired) results are listed first.
+                 *     Older (but still non-expired) results are listed first.
                  */
                 page_size: number
             }
+            header?: never
+            path?: never
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ListEntriesResponse']
                 }
             }
         }
     }
-    /**
-     * @description If present, the first ANS entry for user `party` according to
-     * `name` lexicographic order.
-     */
     lookupAnsEntryByParty: {
         parameters: {
+            query?: never
+            header?: never
             path: {
                 /** @description The user party ID that holds the ANS entry. */
                 party: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['LookupEntryByPartyResponse']
                 }
@@ -2454,16 +3480,22 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /** @description If present, the ANS entry named exactly `name`. */
     lookupAnsEntryByName: {
         parameters: {
+            query?: never
+            header?: never
             path: {
                 name: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['LookupEntryByNameResponse']
                 }
@@ -2471,11 +3503,20 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /** @description The party ID of the DSO for the Splice network connected by this Scan app. */
     getDsoPartyId: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetDsoPartyIdResponse']
                 }
@@ -2483,6 +3524,12 @@ export interface operations {
         }
     }
     getAmuletRules: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['GetAmuletRulesRequest']
@@ -2491,6 +3538,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetAmuletRulesResponse']
                 }
@@ -2498,6 +3548,12 @@ export interface operations {
         }
     }
     getExternalPartyAmuletRules: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['GetExternalPartyAmuletRulesRequest']
@@ -2506,6 +3562,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetExternalPartyAmuletRulesResponse']
                 }
@@ -2513,6 +3572,12 @@ export interface operations {
         }
     }
     getAnsRules: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['GetAnsRulesRequest']
@@ -2521,59 +3586,77 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetAnsRulesResponse']
                 }
             }
         }
     }
-    /** @description List every `FeaturedAppRight` registered with the DSO on the ledger. */
     listFeaturedAppRights: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ListFeaturedAppRightsResponse']
                 }
             }
         }
     }
-    /**
-     * @description If `provider_party_id` has a `FeaturedAppRight` registered with the DSO,
-     * return it; `featured_app_right` will be empty otherwise.
-     */
     lookupFeaturedAppRight: {
         parameters: {
+            query?: never
+            header?: never
             path: {
                 provider_party_id: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['LookupFeaturedAppRightResponse']
                 }
             }
         }
     }
-    /**
-     * @description Get a list of top validators by number of rounds in which they collected
-     * faucets, and basis statistics on their round collection history
-     */
     getTopValidatorsByValidatorFaucets: {
         parameters: {
             query: {
                 /**
                  * @description Maximum number of validator records that may be returned in the
-                 * response
+                 *     response
                  */
                 limit: number
             }
+            header?: never
+            path?: never
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetTopValidatorsByValidatorFaucetsResponse']
                 }
@@ -2582,16 +3665,22 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /** @description Lookup a TransferPreapproval by the receiver party. */
     lookupTransferPreapprovalByParty: {
         parameters: {
+            query?: never
+            header?: never
             path: {
                 party: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['LookupTransferPreapprovalByPartyResponse']
                 }
@@ -2599,16 +3688,22 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /** @description Lookup a TransferCommandCounter by the receiver party. */
     lookupTransferCommandCounterByParty: {
         parameters: {
+            query?: never
+            header?: never
             path: {
                 party: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['LookupTransferCommandCounterByPartyResponse']
                 }
@@ -2617,17 +3712,23 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /** @description Retrieve the status of all transfer commands (up to a limit of 100) of the given sender for the specified nonce. */
     lookupTransferCommandStatus: {
         parameters: {
             query: {
                 sender: string
                 nonce: number
             }
+            header?: never
+            path?: never
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['LookupTransferCommandStatusResponse']
                 }
@@ -2636,33 +3737,49 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /**
-     * @description If the DSO has scheduled a synchronizer upgrade, return its planned time
-     * and the new migration ID.
-     */
     getMigrationSchedule: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['MigrationSchedule']
                 }
             }
             /** @description No migration scheduled */
             404: {
-                content: never
+                headers: {
+                    [name: string]: unknown
+                }
+                content?: never
             }
         }
     }
     getSynchronizerIdentities: {
         parameters: {
+            query?: never
+            header?: never
             path: {
                 domain_id_prefix: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['SynchronizerIdentities']
                 }
@@ -2672,13 +3789,20 @@ export interface operations {
     }
     getSynchronizerBootstrappingTransactions: {
         parameters: {
+            query?: never
+            header?: never
             path: {
                 domain_id_prefix: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['SynchronizerBootstrappingTransactions']
                 }
@@ -2686,11 +3810,20 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /** @description Retrieve the UI names of various elements of this Splice network. */
     getSpliceInstanceNames: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetSpliceInstanceNamesResponse']
                 }
@@ -2698,19 +3831,33 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /** @description Retrieve a list of the latest amulet price votes */
     listAmuletPriceVotes: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ListAmuletPriceVotesResponse']
                 }
             }
         }
     }
-    /** @description Look up several `VoteRequest`\ s at once by their contract IDs. */
     listVoteRequestsByTrackingCid: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['BatchListVotesByVoteRequestsRequest']
@@ -2719,39 +3866,60 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ListVoteRequestByTrackingCidResponse']
                 }
             }
         }
     }
-    /** @description Look up a `VoteRequest` by contract ID. */
     lookupDsoRulesVoteRequest: {
         parameters: {
+            query?: never
+            header?: never
             path: {
                 vote_request_contract_id: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['LookupDsoRulesVoteRequestResponse']
                 }
             }
             /** @description VoteRequest contract not found. */
             404: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ErrorResponse']
                 }
             }
         }
     }
-    /** @description List all active `VoteRequest`\ s. */
     listDsoRulesVoteRequests: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ListDsoRulesVoteRequestsResponse']
                 }
@@ -2759,6 +3927,12 @@ export interface operations {
         }
     }
     listVoteRequestResults: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['ListVoteResultsRequest']
@@ -2767,14 +3941,22 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ListDsoRulesVoteResultsResponse']
                 }
             }
         }
     }
-    /** @description List all previous synchronizer migrations in this Splice network's history. */
     getMigrationInfo: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['GetMigrationInfoRequest']
@@ -2783,6 +3965,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetMigrationInfoResponse']
                 }
@@ -2790,11 +3975,13 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /**
-     * @description Retrieve transactions and synchronizer reassignments prior to the
-     * request's specification.
-     */
     getUpdatesBefore: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['GetUpdatesBeforeRequest']
@@ -2803,6 +3990,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetUpdatesBeforeResponse']
                 }
@@ -2810,47 +4000,64 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /** @description Retrieve the status of the backfilling process. */
     getBackfillingStatus: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetBackfillingStatusResponse']
                 }
             }
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated**. Fetch the current SV participant ACS snapshot for the DSO and `party`.
-     */
     getAcsSnapshot: {
         parameters: {
             query?: {
                 record_time?: string
             }
+            header?: never
             path: {
                 party: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetAcsSnapshotResponse']
                 }
             }
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated**. Retrieve the current earliest and latest rounds aggregated for this Scan.
-     */
     getAggregatedRounds: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetAggregatedRoundsResponse']
                 }
@@ -2858,11 +4065,13 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated**. List Amulet statistics for up to 200 closed rounds.
-     */
     listRoundTotals: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['ListRoundTotalsRequest']
@@ -2871,6 +4080,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ListRoundTotalsResponse']
                 }
@@ -2880,11 +4092,13 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated**. Retrieve per-party Amulet statistics for up to 50 closed rounds.
-     */
     listRoundPartyTotals: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['ListRoundPartyTotalsRequest']
@@ -2893,6 +4107,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ListRoundPartyTotalsResponse']
                 }
@@ -2902,19 +4119,22 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated**. Get the total balance of Amulet in the network
-     */
     getTotalAmuletBalance: {
         parameters: {
             query: {
                 asOfEndOfRound: number
             }
+            header?: never
+            path?: never
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetTotalAmuletBalanceResponse']
                 }
@@ -2922,20 +4142,23 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated**, use /v0/holdings/summary with /v0/state/acs/snapshot-timestamp instead. Get the Amulet balance for a specific party at the end of a closed round
-     */
     getWalletBalance: {
         parameters: {
             query: {
                 party_id: string
                 asOfEndOfRound: number
             }
+            header?: never
+            path?: never
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetWalletBalanceResponse']
                 }
@@ -2943,19 +4166,22 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated**. Retrieve some information from the `AmuletRules` selected for the given round
-     */
     getAmuletConfigForRound: {
         parameters: {
             query: {
                 round: number
             }
+            header?: never
+            path?: never
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetAmuletConfigForRoundResponse']
                 }
@@ -2963,15 +4189,20 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated**. Get the latest round number for which aggregated data is available and
-     * the ledger effective time at which the round was closed.
-     */
     getRoundOfLatestData: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetRoundOfLatestDataResponse']
                 }
@@ -2979,19 +4210,22 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated**. Get the total rewards collected ever
-     */
     getRewardsCollected: {
         parameters: {
             query?: {
                 round?: number
             }
+            header?: never
+            path?: never
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetRewardsCollectedResponse']
                 }
@@ -2999,21 +4233,23 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated**. Get a list of top-earning app providers, and the total earned app
-     * rewards for each
-     */
     getTopProvidersByAppRewards: {
         parameters: {
             query: {
                 round: number
                 limit: number
             }
+            header?: never
+            path?: never
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetTopProvidersByAppRewardsResponse']
                 }
@@ -3022,21 +4258,23 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated**. Get a list of top-earning validators, and the total earned validator
-     * rewards for each
-     */
     getTopValidatorsByValidatorRewards: {
         parameters: {
             query: {
                 round: number
                 limit: number
             }
+            header?: never
+            path?: never
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetTopValidatorsByValidatorRewardsResponse']
                 }
@@ -3045,21 +4283,23 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated**. Get a list of validators and their domain fees spends, sorted by the
-     * amount of extra traffic purchased
-     */
     getTopValidatorsByPurchasedTraffic: {
         parameters: {
             query: {
                 round: number
                 limit: number
             }
+            header?: never
+            path?: never
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetTopValidatorsByPurchasedTrafficResponse']
                 }
@@ -3068,11 +4308,13 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated**. Lists activities in descending order, paged, optionally starting after a provided event id.
-     */
     listActivity: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['ListActivityRequest']
@@ -3081,6 +4323,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ListActivityResponse']
                 }
@@ -3089,13 +4334,13 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated with known bugs that will not be fixed, use /v2/updates instead**.
-     *
-     * Lists transactions, by default in ascending order, paged, from ledger begin or optionally starting after a provided event id.
-     */
     listTransactionHistory: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['TransactionHistoryRequest']
@@ -3104,6 +4349,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['TransactionHistoryResponse']
                 }
@@ -3113,12 +4361,13 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated**, use /v2/updates instead.
-     * Returns the update history in ascending order, paged, from ledger begin or optionally starting after a record time.
-     */
     getUpdateHistory: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['UpdateHistoryRequest']
@@ -3127,6 +4376,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['UpdateHistoryResponse']
                 }
@@ -3135,27 +4387,29 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /**
-     * @deprecated
-     * @description **Deprecated**, use /v2/updates/{update_id} instead.
-     */
     getUpdateById: {
         parameters: {
             query?: {
                 /**
                  * @description Whether contract payload should be encoded into json using a lossless, but much harder to process, encoding.
-                 * This is mostly used for backend calls, and is not recommended for external users.
-                 * Optional and defaults to false.
+                 *     This is mostly used for backend calls, and is not recommended for external users.
+                 *     Optional and defaults to false.
                  */
                 lossless?: boolean
             }
+            header?: never
             path: {
                 update_id: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['UpdateHistoryItem']
                 }
@@ -3166,9 +4420,19 @@ export interface operations {
         }
     }
     featureSupport: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['FeatureSupportResponse']
                 }
@@ -3177,6 +4441,12 @@ export interface operations {
         }
     }
     getImportUpdates: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['GetImportUpdatesRequest']
@@ -3185,6 +4455,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetImportUpdatesResponse']
                 }
@@ -3192,16 +4465,13 @@ export interface operations {
             404: components['responses']['404']
         }
     }
-    /**
-     * @description Returns the event history in ascending order, paged, from ledger begin or optionally starting after a record time.
-     * An event bears some combination of a transaction, a contract reassignment, and a verdict.
-     * Events are ordered lexicographically by `(migration id, record time)`.
-     * For a given migration id, each event has a unique record time.
-     * The record time ranges of different migrations may overlap, i.e.,
-     * it is not guaranteed that the maximum record time of one migration is smaller than the minimum record time of the next migration,
-     * and there may be two updates with the same record time but different migration ids.
-     */
     getEventHistory: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         requestBody: {
             content: {
                 'application/json': components['schemas']['EventHistoryRequest']
@@ -3210,6 +4480,9 @@ export interface operations {
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['EventHistoryResponse']
                 }
@@ -3218,22 +4491,24 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /**
-     * @description Returns the event with the given update_id.
-     * An event bears some combination of a transaction, a contract reassignment, and a verdict.
-     */
     getEventById: {
         parameters: {
             query?: {
                 daml_value_encoding?: components['schemas']['DamlValueEncoding']
             }
+            header?: never
             path: {
                 update_id: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['EventHistoryItem']
                 }
