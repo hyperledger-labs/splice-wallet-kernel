@@ -504,9 +504,8 @@ export const userController = (
 
                         return res
                     } catch (error) {
-                        throw new Error(
-                            'Failed to submit transaction: ' + error
-                        )
+                        logger.error(error, 'Failed to submit transaction')
+                        throw error
                     }
                 }
                 case SigningProvider.WALLET_KERNEL: {
@@ -588,7 +587,10 @@ export const userController = (
                 })
                 const status = await networkStatus(ledgerClient)
                 notifier.emit('onConnected', {
-                    kernel: kernelInfo,
+                    kernel: {
+                        ...kernelInfo,
+                        userUrl: `${userUrl}/login/`,
+                    },
                     isConnected: true,
                     isNetworkConnected: status.isConnected,
                     networkReason: status.reason ? status.reason : 'OK',

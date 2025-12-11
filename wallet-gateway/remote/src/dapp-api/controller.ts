@@ -9,6 +9,7 @@ import {
     PrepareExecuteParams,
     PrepareReturnParams,
     StatusEvent,
+    StatusEventAsync,
 } from './rpc-gen/typings.js'
 import { Store, Transaction } from '@canton-network/core-wallet-store'
 import {
@@ -59,7 +60,6 @@ export const dappController = (
                 isConnected: true,
                 isNetworkConnected: status.isConnected,
                 networkReason: status.reason ? status.reason : 'OK',
-                userUrl: `${userUrl}/login/`,
                 network: {
                     networkId: network.id,
                     ledgerApi: {
@@ -70,7 +70,8 @@ export const dappController = (
                     accessToken: context.accessToken,
                     userId: context.userId,
                 },
-            }
+                userUrl: `${userUrl}/login/`,
+            } as StatusEventAsync
         },
         disconnect: async () => {
             if (!context) {
@@ -238,7 +239,8 @@ export const dappController = (
                     accessToken: context.accessToken,
                     userId: context.userId,
                 },
-            }
+                userUrl: `${userUrl}/login/`,
+            } as StatusEventAsync
         },
         onConnected: async () => {
             throw new Error('Only for events.')
