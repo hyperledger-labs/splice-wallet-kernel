@@ -168,13 +168,14 @@ export class ACSContainer {
         })
         const createdContracts = acs.initialAcs.concat(addedContracts)
 
-        const result = createdContracts.filter(
-            (contract) =>
-                !removedContractIds.has(
-                    contract.contractEntry.JsActiveContract?.createdEvent
-                        .contractId ?? ''
-                )
-        )
+        const result = createdContracts.filter(({ contractEntry }) => {
+            const id =
+                'JsActiveContract' in contractEntry
+                    ? contractEntry.JsActiveContract.createdEvent.contractId
+                    : ''
+
+            return !removedContractIds.has(id)
+        })
 
         return Promise.resolve(result)
     }

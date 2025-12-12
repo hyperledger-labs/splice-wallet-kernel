@@ -5,7 +5,7 @@ import { SpliceProvider } from './SpliceProvider'
 
 declare global {
     interface Window {
-        canton?: SpliceProvider
+        canton?: SpliceProvider | undefined
     }
 }
 
