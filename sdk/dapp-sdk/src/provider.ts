@@ -6,13 +6,7 @@ import {
     SpliceProvider,
     EventListener,
 } from '@canton-network/core-splice-provider'
-import {
-    DiscoverResult,
-    RequestPayload,
-    SpliceMessage,
-    WalletEvent,
-} from '@canton-network/core-types'
-import { popupHref } from '@canton-network/core-wallet-ui-components'
+import { DiscoverResult, RequestPayload } from '@canton-network/core-types'
 import {
     SpliceProviderHttp,
     SpliceProviderWindow,
@@ -26,6 +20,7 @@ import {
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { ErrorCode } from './error.js'
 import { StatusEvent } from './dapp-api/rpc-gen/typings'
+import { gatewayUi } from './ui'
 
 /**
  * The Provider class abstracts over the different types of SpliceProviders (Window and HTTP).
@@ -96,41 +91,6 @@ export class Provider implements SpliceProvider {
     }
 }
 
-let kernelUiPopup: WindowProxy | null = null
-
-export const openKernelUserUI = (
-    walletType: DiscoverResult['walletType'],
-    userUrl: string
-) => {
-    switch (walletType) {
-        case 'remote':
-            // Focus the existing popup if it's already open
-            if (kernelUiPopup === null || kernelUiPopup.closed) {
-                popupHref(new URL(userUrl)).then((window) => {
-                    kernelUiPopup = window
-                })
-            } else {
-                kernelUiPopup.focus()
-            }
-            break
-        case 'extension': {
-            const msg: SpliceMessage = {
-                type: WalletEvent.SPLICE_WALLET_EXT_OPEN,
-                url: userUrl,
-            }
-            window.postMessage(msg, '*')
-            break
-        }
-    }
-}
-
-export const closeKernelUserUI = () => {
-    if (kernelUiPopup && !kernelUiPopup.closed) {
-        kernelUiPopup.close()
-        kernelUiPopup = null
-    }
-}
-
 const withTimeout = (
     reject: (reason?: unknown) => void,
     timeoutMs: number = 10 * 1000 // default to 10 seconds
@@ -152,10 +112,10 @@ export const dappController = (provider: SpliceProvider) =>
                 method: 'connect',
             })
 
-            if (response.isConnected) {
+            if (response.session) {
                 return response
             } else {
-                openKernelUserUI('remote', response.userUrl ?? '')
+                gatewayUi.open('remote', response.userUrl ?? '')
                 const promise = new Promise<dappAPI.StatusEvent>(
                     (resolve, reject) => {
                         // 5 minutes timeout
@@ -195,7 +155,7 @@ export const dappController = (provider: SpliceProvider) =>
                     params,
                 })
 
-            if (response.userUrl) openKernelUserUI('remote', response.userUrl)
+            if (response.userUrl) gatewayUi.open('remote', response.userUrl)
 
             const promise = new Promise<dappAPI.PrepareExecuteResult>(
                 (resolve) => {

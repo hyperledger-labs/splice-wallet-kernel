@@ -20,6 +20,7 @@ type ExercisedEvent = Types['ExercisedEvent']
 type ArchivedEvent = Types['ArchivedEvent']
 type JsInterfaceView = Types['JsInterfaceView']
 type Completion = Types['Completion']['value']
+export type JSContractEntry = Types['JsContractEntry']
 export type JsCantonError = Types['JsCantonError']
 
 export function TransactionFilterBySetup(
@@ -331,31 +332,39 @@ export async function awaitCompletion(
     )
 
     const completions = responses.filter(
-        (response) => !!response.completionResponse.Completion
+        (r) => 'Completion' in r.completionResponse
     )
 
-    const wantedCompletion = completions.find((response) => {
-        const completion = response.completionResponse.Completion
-        if (!completion) return false
-        if (completion.value.userId !== userId) return false
-        if (completion.value.commandId === commandIdOrSubmissionId) return true
-        if (completion.value.submissionId === commandIdOrSubmissionId)
-            return true
+    const wantedCompletion = responses.find((r) => {
+        if ('Completion' in r.completionResponse) {
+            const completion = r.completionResponse.Completion.value
+            return (
+                completion.userId === userId &&
+                (completion.commandId === commandIdOrSubmissionId ||
+                    completion.submissionId === commandIdOrSubmissionId)
+            )
+        }
         return false
     })
 
-    if (wantedCompletion) {
-        const completion = wantedCompletion.completionResponse.Completion!
-        const status = completion.value.status
+    if (
+        wantedCompletion &&
+        'Completion' in wantedCompletion.completionResponse
+    ) {
+        const completion = wantedCompletion.completionResponse.Completion.value
+        const status = completion.status
         if (status && status.code !== 0) {
             // status.code is 0 for success
             throw asGrpcError(status)
         }
-        return completion.value
+        return completion
     } else {
         const lastCompletion = completions[completions.length - 1]
         const newLedgerEnd =
-            lastCompletion?.completionResponse.Completion!.value.offset
+            lastCompletion && 'Completion' in lastCompletion.completionResponse
+                ? lastCompletion.completionResponse.Completion.value.offset
+                : undefined
+
         return awaitCompletion(
             ledgerClient,
             newLedgerEnd || ledgerEnd, // !newLedgerEnd implies response was empty
