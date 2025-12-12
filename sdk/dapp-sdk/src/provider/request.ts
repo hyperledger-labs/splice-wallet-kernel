@@ -24,12 +24,10 @@ export async function connect(): Promise<dappAPI.StatusEvent> {
                 method: 'connect',
             })
 
-            if (!response.isConnected) {
-                // TODO: error dialog
-                console.error('SDK: Not connected', response)
-                // openKernelUserUI(result.walletType, response.userUrl)
-            } else {
+            if (response.session) {
                 storage.setKernelSession(response)
+            } else {
+                console.warn('SDK: Connected without session', response)
             }
 
             return response
