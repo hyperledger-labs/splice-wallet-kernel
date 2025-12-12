@@ -44,8 +44,8 @@ jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
 
 // Test subclass to expose protected method
 class TestableWalletSyncService extends WalletSyncService {
-    public async resolveSigningProvider(namespace: string, isLocal?: boolean) {
-        return super.resolveSigningProvider(namespace, isLocal)
+    public async resolveSigningProvider(namespace: string) {
+        return super.resolveSigningProvider(namespace)
     }
 }
 
@@ -127,19 +127,21 @@ describe('WalletSyncService - resolveSigningProvider', () => {
 
     it('resolves participant when namespace matches participant namespace', async () => {
         const participantNamespace = 'participant-namespace-123'
+        const participantId = `participant1::${participantNamespace}`
         mockLedgerGet.mockResolvedValueOnce({
-            participantId: participantNamespace,
+            participantId,
         })
 
-        const result = await service.resolveSigningProvider(
-            participantNamespace,
-            true
-        )
+        const result =
+            await service.resolveSigningProvider(participantNamespace)
 
+        expect(result).not.toBeNull()
         expect(result).toEqual({
             signingProviderId: SigningProvider.PARTICIPANT,
         })
-        expect('publicKey' in result).toBe(false)
+        if (result) {
+            expect('publicKey' in result).toBe(false)
+        }
     })
 
     it('resolves wallet-kernel when namespace matches internal key', async () => {
@@ -152,14 +154,17 @@ describe('WalletSyncService - resolveSigningProvider', () => {
         const namespace = partyAllocator.createFingerprintFromKey(key.publicKey)
 
         mockLedgerGet.mockResolvedValueOnce({
-            participantId: 'different-participant-namespace',
+            participantId: 'participant1::different-participant-namespace',
         })
 
-        const result = await service.resolveSigningProvider(namespace, false)
+        const result = await service.resolveSigningProvider(namespace)
 
-        expect(result.signingProviderId).toBe(SigningProvider.WALLET_KERNEL)
-        if (result.signingProviderId !== SigningProvider.PARTICIPANT) {
-            expect(result.publicKey).toBe(key.publicKey)
+        expect(result).not.toBeNull()
+        if (result) {
+            expect(result.signingProviderId).toBe(SigningProvider.WALLET_KERNEL)
+            if (result.signingProviderId !== SigningProvider.PARTICIPANT) {
+                expect(result.publicKey).toBe(key.publicKey)
+            }
         }
     })
 
@@ -205,17 +210,29 @@ describe('WalletSyncService - resolveSigningProvider', () => {
         )
 
         mockLedgerGet.mockResolvedValueOnce({
-            participantId: 'different-participant-namespace',
+            participantId: 'participant1::different-participant-namespace',
         })
 
-        const result = await serviceWithFireblocks.resolveSigningProvider(
-            namespace,
-            false
-        )
+        const result =
+            await serviceWithFireblocks.resolveSigningProvider(namespace)
 
-        expect(result.signingProviderId).toBe(SigningProvider.FIREBLOCKS)
-        if (result.signingProviderId !== SigningProvider.PARTICIPANT) {
-            expect(result.publicKey).toBe(fireblocksPublicKeyHex)
+        expect(result).not.toBeNull()
+        if (result) {
+            expect(result.signingProviderId).toBe(SigningProvider.FIREBLOCKS)
+            if (result.signingProviderId !== SigningProvider.PARTICIPANT) {
+                expect(result.publicKey).toBe(fireblocksPublicKeyHex)
+            }
         }
+    })
+
+    it('returns null when no signing provider match is found', async () => {
+        const unknownNamespace = 'unknown-namespace-123'
+        mockLedgerGet.mockResolvedValueOnce({
+            participantId: 'participant1::different-participant-namespace',
+        })
+
+        const result = await service.resolveSigningProvider(unknownNamespace)
+
+        expect(result).toBeNull()
     })
 })

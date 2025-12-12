@@ -206,8 +206,17 @@ export class PartyAllocationService {
         userId: string,
         hint: string
     ): Promise<AllocatedParty> {
-        const { participantId: namespace } =
-            await this.ledgerClient.getWithRetry('/v2/parties/participant-id')
+        const { participantId } = await this.ledgerClient.getWithRetry(
+            '/v2/parties/participant-id'
+        )
+        // Extract the namespace part from participantId
+        // Format is hint::namespace
+        const [, namespace] = participantId.split('::')
+        if (!namespace) {
+            throw new Error(
+                `Invalid participantId format: expected "hint::namespace", got "${participantId}"`
+            )
+        }
 
         const res = await this.ledgerClient.postWithRetry('/v2/parties', {
             partyIdHint: hint,

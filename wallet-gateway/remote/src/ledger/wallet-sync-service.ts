@@ -40,10 +40,7 @@ export class WalletSyncService {
         }
     }
 
-    protected async resolveSigningProvider(
-        namespace: string,
-        isLocal?: boolean
-    ): Promise<
+    protected async resolveSigningProvider(namespace: string): Promise<
         | { signingProviderId: SigningProvider.PARTICIPANT }
         | {
               signingProviderId: Exclude<
@@ -52,32 +49,34 @@ export class WalletSyncService {
               >
               publicKey: string
           }
+        | null
     > {
         try {
-            // If isLocal is false, skip participant check (definitely external party)
-            // If isLocal is true or undefined, check participant namespace first
-            if (isLocal !== false) {
-                let participantNamespace: string | undefined
-                try {
-                    const { participantId } =
-                        await this.ledgerClient.getWithRetry(
-                            '/v2/parties/participant-id',
-                            defaultRetryableOptions
-                        )
-                    participantNamespace = participantId
-                } catch (err) {
+            // Check if namespace matches participant namespace first
+            // (participant parties have namespace === participantId's namespace)
+            let participantNamespace: string | undefined
+            try {
+                const { participantId } = await this.ledgerClient.getWithRetry(
+                    '/v2/parties/participant-id',
+                    defaultRetryableOptions
+                )
+                // Extract the namespace part from participantId
+                // Format is hint::namespace
+                const [, extractedNamespace] = participantId.split('::')
+                if (extractedNamespace) {
+                    participantNamespace = extractedNamespace
+                } else {
                     this.logger.warn(
-                        { err },
-                        'Failed to get participant namespace'
+                        { participantId },
+                        `Invalid participantId format: expected "hint::namespace", got "${participantId}"`
                     )
                 }
+            } catch (err) {
+                this.logger.warn({ err }, 'Failed to get participant namespace')
+            }
 
-                if (
-                    participantNamespace &&
-                    namespace === participantNamespace
-                ) {
-                    return { signingProviderId: SigningProvider.PARTICIPANT }
-                }
+            if (participantNamespace && namespace === participantNamespace) {
+                return { signingProviderId: SigningProvider.PARTICIPANT }
             }
 
             // Get keys from signing providers try to match
@@ -149,18 +148,18 @@ export class WalletSyncService {
                 }
             }
 
-            // Default to participant if no match found
-            this.logger.debug(
+            // No match found - reject this wallet
+            this.logger.warn(
                 { namespace },
-                'No signing provider match found, defaulting to participant'
+                'No signing provider match found for namespace, rejecting wallet'
             )
-            return { signingProviderId: SigningProvider.PARTICIPANT }
+            return null
         } catch (err) {
             this.logger.error(
                 { err, namespace },
-                'Error resolving signing provider, defaulting to participant'
+                'Error resolving signing provider, rejecting wallet'
             )
-            return { signingProviderId: SigningProvider.PARTICIPANT }
+            return null
         }
     }
 
@@ -203,7 +202,7 @@ export class WalletSyncService {
                     partiesWithRights.set(party, rightType)
             })
             this.logger.info(
-                partiesWithRights,
+                [...partiesWithRights],
                 'Found new parties to sync with Wallet Gateway'
             )
 
@@ -220,41 +219,21 @@ export class WalletSyncService {
                 // todo: filter on idp id
             )
 
-            const newParticipantWallets: Array<Wallet> = await Promise.all(
+            const walletResults = await Promise.all(
                 newParties.map(async (party) => {
                     const [hint, namespace] = party.split('::')
 
-                    // Get party details to check isLocal flag
-                    let isLocal: boolean | undefined
-                    try {
-                        const partyDetails =
-                            await this.ledgerClient.getWithRetry(
-                                '/v2/parties/{party}',
-                                defaultRetryableOptions,
-                                {
-                                    path: { party },
-                                }
-                            )
-                        // PartyDetails is an array, get the first matching party
-                        const details = partyDetails.partyDetails?.find(
-                            (p) => p.party === party
-                        )
-                        isLocal = details?.isLocal
-                        this.logger.debug(
-                            { party, isLocal },
-                            'Retrieved party details'
-                        )
-                    } catch (err) {
-                        this.logger.debug(
-                            { err, party },
-                            'Failed to get party details, proceeding without isLocal'
-                        )
-                        // Continue without isLocal - will check both paths
-                    }
-
-                    // const { signingProviderId, publicKey } =
                     const resolvedSigningProvider =
-                        await this.resolveSigningProvider(namespace, isLocal)
+                        await this.resolveSigningProvider(namespace)
+
+                    // Reject wallets where no signing provider match was found
+                    if (!resolvedSigningProvider) {
+                        this.logger.warn(
+                            { party, hint, namespace },
+                            'Rejecting wallet - no signing provider match found'
+                        )
+                        return null
+                    }
 
                     // Namespace is saved as public key in case of participant
                     const walletPublicKey =
@@ -292,12 +271,25 @@ export class WalletSyncService {
                 })
             )
 
+            // Filter out rejected wallets
+            const newParticipantWallets: Array<Wallet> = walletResults.filter(
+                (wallet): wallet is Wallet => wallet !== null
+            )
+
             await Promise.all(
                 newParticipantWallets.map((wallet) =>
                     this.store.addWallet(wallet)
                 )
             )
-            this.logger.info(newParticipantWallets, 'Created new wallets')
+            this.logger.info({ newParticipantWallets }, 'Created new wallets')
+            this.logger.info(
+                {
+                    totalProcessed: newParties.length,
+                    rejected: newParties.length - newParticipantWallets.length,
+                    added: newParticipantWallets.length,
+                },
+                'Wallet sync summary'
+            )
 
             // Set primary wallet if none exists
             const wallets = await this.store.getWallets()
