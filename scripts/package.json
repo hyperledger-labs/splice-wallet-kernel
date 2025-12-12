@@ -12,6 +12,7 @@
         "clean": "tsc -b --clean"
     },
     "devDependencies": {
+        "@asyncapi/modelina": "^5.10.1",
         "@open-rpc/meta-schema": "^1.14.9",
         "@types/node": "^24.10.1",
         "@types/tar-fs": "^2.0.4",
