@@ -108,6 +108,34 @@ export class PartyAllocationService {
     }
 
     /**
+     * Normalizes a public key to base64 format.
+     * Converts hex format (Fireblocks) to base64, or returns base64 as-is.
+     * @param publicKey Public key in hex or base64 format
+     * @returns Public key in base64 format, or null if conversion fails
+     */
+    normalizePublicKeyToBase64(publicKey: string): string | null {
+        try {
+            // Try hex first (Fireblocks format), fallback to base64 (internal format)
+            try {
+                const hexKey = Buffer.from(publicKey, 'hex')
+                // If it's valid hex and produces 32 bytes, convert to base64
+                if (hexKey.length === 32) {
+                    return hexKey.toString('base64')
+                } else {
+                    // Invalid hex length, treat as base64
+                    return publicKey
+                }
+            } catch {
+                // Not valid hex, treat as base64
+                return publicKey
+            }
+        } catch {
+            // If any conversion fails, return null
+            return null
+        }
+    }
+
+    /**
      * Generate topology transactions
      * @param hint A hint for the party ID.
      * @param publicKey The public key of the user.
@@ -178,8 +206,17 @@ export class PartyAllocationService {
         userId: string,
         hint: string
     ): Promise<AllocatedParty> {
-        const { participantId: namespace } =
-            await this.ledgerClient.getWithRetry('/v2/parties/participant-id')
+        const { participantId } = await this.ledgerClient.getWithRetry(
+            '/v2/parties/participant-id'
+        )
+        // Extract the namespace part from participantId
+        // Format is hint::namespace
+        const [, namespace] = participantId.split('::')
+        if (!namespace) {
+            throw new Error(
+                `Invalid participantId format: expected "hint::namespace", got "${participantId}"`
+            )
+        }
 
         const res = await this.ledgerClient.postWithRetry('/v2/parties', {
             partyIdHint: hint,
