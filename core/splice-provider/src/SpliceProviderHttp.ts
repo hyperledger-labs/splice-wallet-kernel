@@ -15,6 +15,7 @@ import { popupHref } from '@canton-network/core-wallet-ui-components'
 // per SpliceProviderHttp instance.
 type GatewaySocket = {
     socket: Socket
+    url: string
     token: string
 } | null
 
@@ -28,8 +29,11 @@ export class SpliceProviderHttp extends SpliceProviderBase {
         // Assumes the socket URI is accessed directly on the host w/o the API path.
         const socketUri = url.origin
 
-        // Reconnect if the token has changed
-        if (connection && connection.token !== token) {
+        // Reconnect if the URL or token has changed
+        if (
+            connection &&
+            (token !== connection.token || socketUri !== connection.url)
+        ) {
             connection.socket.disconnect()
             connection = null
         }
@@ -37,6 +41,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
         if (!connection) {
             connection = {
                 token,
+                url: socketUri,
                 socket: io(socketUri, {
                     auth: {
                         token: `Bearer ${token}`,
