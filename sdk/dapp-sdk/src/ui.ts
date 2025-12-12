@@ -8,29 +8,14 @@ import {
 } from '@canton-network/core-types'
 import { popupHref } from '@canton-network/core-wallet-ui-components'
 
-type GatewayUiConfig = {
-    walletType: DiscoverResult['walletType']
-    userUrl: string
-}
-
 class GatewayUi {
     private identifier: string = 'splice_wallet_gateway_popup'
     private popup: WindowProxy | undefined = undefined
-    private current: GatewayUiConfig | undefined = undefined
 
     open(
         walletType: DiscoverResult['walletType'],
         userUrl: string
     ): WindowProxy | undefined {
-        // Force a new open if the wallet type or URL has changed
-        if (
-            walletType !== this.current?.walletType ||
-            userUrl !== this.current?.userUrl
-        ) {
-            this.current = { walletType, userUrl }
-            this.close()
-        }
-
         switch (walletType) {
             case 'remote':
                 // Focus the existing popup if it's already open
@@ -57,6 +42,7 @@ class GatewayUi {
     }
 
     close() {
+        console.log('closing gateway UI popup if open 22')
         if (this.popup) {
             this.popup.close()
         } else {
