@@ -526,6 +526,10 @@ export class LedgerClient {
         }
     }
 
+    /*
+    if limit is provided, this function performs a one-time query
+    if limit is omitted, results may be served from the ACS cache
+    */
     async activeContracts(options: {
         offset: number
         templateIds?: string[]
@@ -536,11 +540,13 @@ export class LedgerClient {
     }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
         const { offset, templateIds, parties, interfaceIds, limit } = options
 
+        const hasLimit = typeof limit === 'number'
+
         this.logger.debug(options, 'options for active contracts')
 
         const hasParties = Array.isArray(parties) && parties.length > 0
 
-        if (templateIds?.length && hasParties) {
+        if (templateIds?.length && hasParties && !hasLimit) {
             return this.acsHelper.activeContractsForTemplates(
                 offset,
                 parties!,
@@ -548,7 +554,7 @@ export class LedgerClient {
             )
         }
 
-        if (interfaceIds?.length && hasParties) {
+        if (interfaceIds?.length && hasParties && !hasLimit) {
             return this.acsHelper.activeContractsForInterfaces(
                 offset,
                 parties!,
