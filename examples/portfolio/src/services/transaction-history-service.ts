@@ -97,7 +97,7 @@ const paginateUpdates = async function* ({
 
             if (latestOffset === undefined) {
                 logger.error('no events with an offset, skipping')
-            } else if (latestOffset > beginExclusive) {
+            } else if (latestOffset >= beginExclusive) {
                 beginExclusive = latestOffset
             }
 

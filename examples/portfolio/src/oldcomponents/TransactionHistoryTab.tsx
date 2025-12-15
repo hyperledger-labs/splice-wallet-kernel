@@ -18,6 +18,7 @@ export const TransactionHistoryTab: React.FC = () => {
     } = usePortfolio()
 
     const [loadingMore, setLoadingMore] = useState(false)
+    const [haveInitialHistory, setHaveInitialHistory] = useState(false) // ugly
     const [transactionHistory, setTransactionHistory] = useState<
         Transfer[] | undefined
     >(undefined)
@@ -26,13 +27,13 @@ export const TransactionHistoryTab: React.FC = () => {
         ;(async () => {
             if (primaryParty) {
                 setLoadingMore(true)
-                const th =
-                    transactionHistory === undefined
-                        ? await getTransactionHistory({ party: primaryParty })
-                        : await fetchMoreRecentTransactionHistory({
-                              party: primaryParty,
-                          })
+                const th = haveInitialHistory
+                    ? await fetchMoreRecentTransactionHistory({
+                          party: primaryParty,
+                      })
+                    : await getTransactionHistory({ party: primaryParty })
                 setTransactionHistory(th)
+                setHaveInitialHistory(true)
                 setLoadingMore(false)
             } else {
                 setTransactionHistory(undefined)
@@ -40,8 +41,8 @@ export const TransactionHistoryTab: React.FC = () => {
         })()
     }, [
         primaryParty,
+        haveInitialHistory,
         getTransactionHistory,
-        transactionHistory,
         fetchMoreRecentTransactionHistory,
     ])
 
