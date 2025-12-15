@@ -165,6 +165,17 @@ export const jsonRpcResponse = (
     }
 }
 
+export class HttpError extends Error {
+    constructor(
+        public readonly status: number,
+        public readonly statusText: string,
+        public readonly body: string
+    ) {
+        super(`HTTP ${status} ${statusText}`)
+        this.name = 'HttpError'
+    }
+}
+
 export interface RpcTransport {
     submit: (payload: RequestPayload) => Promise<ResponsePayload>
 }
@@ -239,9 +250,8 @@ export class HttpTransport implements RpcTransport {
         })
 
         if (!response.ok) {
-            throw new Error(
-                `HTTP error! status: ${response.status}, text: ${await response.text()} `
-            )
+            const body = await response.text()
+            throw new HttpError(response.status, response.statusText, body)
         }
 
         const json = await response.json()

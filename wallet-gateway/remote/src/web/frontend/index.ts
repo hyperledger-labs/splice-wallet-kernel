@@ -9,22 +9,43 @@ import '@canton-network/core-wallet-ui-components'
 import '@canton-network/core-wallet-ui-components/dist/index.css'
 import '/index.css'
 import { stateManager } from './state-manager'
-import { WalletEvent } from '@canton-network/core-types'
+import { WalletEvent, HttpError } from '@canton-network/core-types'
+import {
+    DEFAULT_PAGE_REDIRECT,
+    NOT_FOUND_PAGE_REDIRECT,
+    LOGIN_PAGE_REDIRECT,
+    AllowedRoute,
+    isAllowedRoute,
+} from './constants'
 
-const DEFAULT_PAGE_REDIRECT = '/wallets'
-const NOT_FOUND_PAGE_REDIRECT = '/404'
-const LOGIN_PAGE_REDIRECT = '/login'
-const ALLOWED_ROUTES = ['/login/', '/wallets/', '/settings/', '/approve/', '/']
+export const redirectToIntendedOrDefault = (): void => {
+    const intendedPage = stateManager.intendedPage.get()
+    stateManager.intendedPage.clear()
+    window.location.href = intendedPage || DEFAULT_PAGE_REDIRECT
+}
 
 @customElement('user-app')
 export class UserApp extends LitElement {
     private async handleLogout() {
-        localStorage.clear()
+        if (!stateManager.accessToken.get()) {
+            window.location.href = LOGIN_PAGE_REDIRECT
+            return
+        }
 
-        const userClient = await createUserClient(
-            stateManager.accessToken.get()
-        )
-        await userClient.request('removeSession')
+        const accessToken = stateManager.accessToken.get()
+
+        if (accessToken) {
+            try {
+                const userClient = await createUserClient(accessToken)
+                await userClient.request('removeSession')
+            } catch (error) {
+                // If removeSession fails (for example token is invalid),
+                // clear the local state anyway
+                console.debug('Failed to remove session during logout:', error)
+            }
+        }
+
+        stateManager.clearAuthState()
 
         if (
             window.name === 'wallet-popup' &&
@@ -54,11 +75,15 @@ export class UserUI extends LitElement {
     connectedCallback(): void {
         super.connectedCallback()
 
-        if (!ALLOWED_ROUTES.includes(window.location.pathname)) {
+        // remove trailing slash (except root)
+        const normalizedPath =
+            window.location.pathname.replace(/\/$/, '') || '/'
+        // Only redirect to 404 if route is not allowed
+        // If route is allowed, let UserUIAuthRedirect handle any redirects
+        if (!isAllowedRoute(normalizedPath)) {
             window.location.href = NOT_FOUND_PAGE_REDIRECT
-        } else {
-            window.location.href = DEFAULT_PAGE_REDIRECT
         }
+        // TODO verify all cases if it should redirect or not
     }
 }
 
@@ -66,40 +91,97 @@ export class UserUI extends LitElement {
 export class UserUIAuthRedirect extends LitElement {
     connectedCallback(): void {
         super.connectedCallback()
+        this.handleAuthRedirect()
+    }
 
+    private async handleAuthRedirect(): Promise<void> {
         const isLoginPage =
             window.location.pathname.startsWith(LOGIN_PAGE_REDIRECT)
-        const expirationDate = new Date(stateManager.expirationDate.get() || '')
-        const now = new Date()
-
-        if (expirationDate > now) {
-            setTimeout(() => {
-                localStorage.clear()
-                window.location.href = LOGIN_PAGE_REDIRECT
-            }, expirationDate.getTime() - now.getTime())
-        } else if (stateManager.accessToken.get()) {
-            localStorage.clear()
-            window.location.href = LOGIN_PAGE_REDIRECT
-        }
-
-        if (!stateManager.accessToken.get() && !isLoginPage) {
-            window.location.href = LOGIN_PAGE_REDIRECT
-        }
-
         const accessToken = stateManager.accessToken.get()
-        if (accessToken) {
-            const networkId = stateManager.networkId.get()
 
+        // If not on login page and not authenticated, store intended page and redirect to login
+        if (!accessToken && !isLoginPage) {
+            // Store the intended page for redirect after login
+            const currentPath = window.location.pathname
+            if (
+                currentPath !== '/' &&
+                !currentPath.startsWith(LOGIN_PAGE_REDIRECT) &&
+                !currentPath.startsWith('/callback')
+            ) {
+                // Remove trailing slash for consistency
+                const normalizedPath = currentPath.replace(/\/$/, '') || '/'
+                stateManager.intendedPage.set(normalizedPath as AllowedRoute)
+            }
+            window.location.href = LOGIN_PAGE_REDIRECT
+            return
+        }
+
+        // If authenticated, check token expiration
+        if (accessToken) {
+            const expirationDate = new Date(
+                stateManager.expirationDate.get() || ''
+            )
+            const now = new Date()
+
+            // Check if token has already expired
+            if (expirationDate <= now) {
+                // Token has expired, clear state and redirect to login
+                stateManager.clearAuthState()
+                if (!isLoginPage) {
+                    window.location.href = LOGIN_PAGE_REDIRECT
+                }
+                return
+            }
+
+            // Token is still valid - API calls will catch 401 errors if token becomes invalid
+
+            // If on login page and authenticated, validate token before redirecting
+            if (isLoginPage) {
+                const isValid = await this.validateToken(accessToken)
+                if (isValid) {
+                    // Token is valid, redirect to intended page or default
+                    redirectToIntendedOrDefault()
+                } else {
+                    // Token is invalid, clear state and stay on login page
+                    stateManager.clearAuthState()
+                }
+                return
+            }
+
+            // Not on login page, ensure session is added to backend
+            const networkId = stateManager.networkId.get()
             if (!networkId) {
                 throw new Error('missing networkId in state manager')
             }
 
             // Ensure to add the session to the backend
-            authenticate(accessToken, networkId)
-
-            if (isLoginPage) {
-                window.location.href = DEFAULT_PAGE_REDIRECT
+            try {
+                await authenticate(accessToken, networkId)
+            } catch (error) {
+                // If authentication fails (e.g., 401), the error interceptor will handle logout
+                console.debug('Failed to authenticate:', error)
             }
+
+            // If on root path, redirect to intended page or default
+            if (window.location.pathname === '/') {
+                redirectToIntendedOrDefault()
+            }
+        }
+    }
+
+    /**
+     * Validate token by making a lightweight API call
+     */
+    private async validateToken(accessToken: string): Promise<boolean> {
+        try {
+            const userClient = await createUserClient(accessToken)
+            // Use listSessions as a lightweight validation call
+            await userClient.request('listSessions')
+            return true
+        } catch (error) {
+            // If validation fails (e.g., 401), token is invalid
+            console.debug('Token validation failed:', error)
+            return false
         }
     }
 }
@@ -108,18 +190,28 @@ export const authenticate = async (
     accessToken: string,
     networkId: string
 ): Promise<void> => {
-    const authenticatedUserClient = await createUserClient(accessToken)
-    await authenticatedUserClient.request('addSession', {
-        networkId,
-    })
+    try {
+        const authenticatedUserClient = await createUserClient(accessToken)
+        await authenticatedUserClient.request('addSession', {
+            networkId,
+        })
 
-    if (window.opener && !window.opener.closed) {
-        window.opener.postMessage(
-            {
-                type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
-                token: stateManager.accessToken.get(),
-            },
-            '*'
-        )
+        if (window.opener && !window.opener.closed) {
+            window.opener.postMessage(
+                {
+                    type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
+                    token: stateManager.accessToken.get(),
+                },
+                '*'
+            )
+        }
+    } catch (error) {
+        // If addSession fails with 401, the error interceptor will handle logout
+        // But we should also clear invalid tokens here
+        if (error instanceof HttpError && error.status === 401) {
+            stateManager.clearAuthState()
+        }
+        // Re-throw to allow caller to handle if needed
+        throw error
     }
 }

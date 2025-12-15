@@ -1,6 +1,8 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { AllowedRoute } from './constants'
+
 class StateManager {
     static localStorageKey(item: string): string {
         return `com.splice.wallet.${item}`
@@ -50,6 +52,20 @@ class StateManager {
         set: (expirationDate: string) =>
             this.setWithStorage('expirationDate', expirationDate),
         clear: () => this.clearWithStorage('expirationDate'),
+    }
+
+    intendedPage = {
+        get: () =>
+            this.getWithStorage('intendedPage') as AllowedRoute | undefined,
+        set: (page: AllowedRoute) => this.setWithStorage('intendedPage', page),
+        clear: () => this.clearWithStorage('intendedPage'),
+    }
+
+    clearAuthState(): void {
+        this.accessToken.clear()
+        this.networkId.clear()
+        this.expirationDate.clear()
+        this.intendedPage.clear()
     }
 }
 

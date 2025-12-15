@@ -14,6 +14,7 @@ import {
     AuthTokenProviderSelfSigned,
     ClientCredentials,
 } from '@canton-network/core-wallet-auth'
+import { redirectToIntendedOrDefault } from '../index'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
@@ -255,9 +256,7 @@ export class LoginUI extends LitElement {
                 scope: this.selectedNetwork.auth.scope,
                 audience: this.selectedNetwork.auth.audience,
             } as ClientCredentials)
-            setTimeout(() => {
-                window.location.replace('/')
-            }, 400)
+            redirectToIntendedOrDefault()
         } else if (idp.type === 'oauth') {
             if (this.selectedNetwork.auth.method === 'authorization_code') {
                 const redirectUri = `${window.origin}/callback/`
@@ -319,6 +318,7 @@ export class LoginUI extends LitElement {
         }
 
         const payload = JSON.parse(atob(access_token.split('.')[1]))
+        // TODO maybe better .toISOString?
         stateManager.expirationDate.set(new Date(payload.exp * 1000).toString())
 
         stateManager.accessToken.set(access_token)
