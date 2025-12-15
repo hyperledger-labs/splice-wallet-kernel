@@ -17,7 +17,7 @@ export const TransferCard: React.FC<TransferCardProps> = ({
     transfer,
 }) => {
     const { registries } = useRegistries()
-    const { acceptTransfer } = usePortfolio()
+    const { exerciseTransfer } = usePortfolio()
     return (
         <div>
             status: <strong>{transfer.status}</strong> <br />
@@ -33,19 +33,50 @@ export const TransferCard: React.FC<TransferCardProps> = ({
                 symbol={transfer.instrumentId.id}
             />
             {transfer.status == 'pending' && transfer.incoming && (
+                <div>
+                    <button
+                        onClick={() => {
+                            exerciseTransfer({
+                                registryUrls: registries,
+                                party,
+                                contractId: transfer.contractId,
+                                instrumentId: transfer.instrumentId,
+                                instructionChoice: 'Accept',
+                            })
+                            // TODO: callback on this card so we can refresh in a
+                            // then?
+                        }}
+                    >
+                        Accept
+                    </button>
+                    <button
+                        onClick={() => {
+                            exerciseTransfer({
+                                registryUrls: registries,
+                                party,
+                                contractId: transfer.contractId,
+                                instrumentId: transfer.instrumentId,
+                                instructionChoice: 'Reject',
+                            })
+                        }}
+                    >
+                        Reject
+                    </button>
+                </div>
+            )}
+            {transfer.status == 'pending' && !transfer.incoming && (
                 <button
                     onClick={() => {
-                        acceptTransfer({
+                        exerciseTransfer({
                             registryUrls: registries,
                             party,
                             contractId: transfer.contractId,
                             instrumentId: transfer.instrumentId,
+                            instructionChoice: 'Withdraw',
                         })
-                        // TODO: callback on this card so we can refresh in a
-                        // then?
                     }}
                 >
-                    Accept
+                    Withdraw
                 </button>
             )}
         </div>

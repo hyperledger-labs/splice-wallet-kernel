@@ -3,32 +3,41 @@
 
 import { useState, useEffect } from 'react'
 import { useConnection } from '../contexts/ConnectionContext.js'
-import { type Transfer, getTransactionHistory } from '../utils/transfers'
+import { usePortfolio } from '../contexts/PortfolioContext.js'
+import { type Transfer } from '../utils/transfers'
 import { TransferCard } from './TransferCard.js'
 
 export const TransactionHistoryTab: React.FC = () => {
     const {
         status: { primaryParty },
     } = useConnection()
+    const {
+        getTransactionHistory,
+        fetchMoreRecentTransactionHistory,
+        fetchOlderTransactionHistory,
+    } = usePortfolio()
 
     const [loadingMore, setLoadingMore] = useState(false)
     const [transactionHistory, setTransactionHistory] = useState<
         Transfer[] | undefined
     >(undefined)
 
-    const refreshTransactionHistory = async () => {
-        if (primaryParty) {
-            setLoadingMore(true)
-            const th = await getTransactionHistory({ party: primaryParty })
-            setTransactionHistory(th)
-            setLoadingMore(false)
-        } else {
-            setTransactionHistory(undefined)
-        }
-    }
-
     useEffect(() => {
-        refreshTransactionHistory()
+        ;(async () => {
+            if (primaryParty) {
+                setLoadingMore(true)
+                const th =
+                    transactionHistory === undefined
+                        ? await getTransactionHistory({ party: primaryParty })
+                        : await fetchMoreRecentTransactionHistory({
+                              party: primaryParty,
+                          })
+                setTransactionHistory(th)
+                setLoadingMore(false)
+            } else {
+                setTransactionHistory(undefined)
+            }
+        })()
     }, [primaryParty])
 
     return (
@@ -47,9 +56,14 @@ export const TransactionHistoryTab: React.FC = () => {
                 <span>⏳</span>
             ) : (
                 <button
-                    disabled={loadingMore}
-                    onClick={() => {
-                        refreshTransactionHistory()
+                    disabled={loadingMore || !primaryParty}
+                    onClick={async () => {
+                        setLoadingMore(true)
+                        const th = await fetchOlderTransactionHistory({
+                            party: primaryParty!,
+                        })
+                        setTransactionHistory(th)
+                        setLoadingMore(false)
                     }}
                 >
                     load more

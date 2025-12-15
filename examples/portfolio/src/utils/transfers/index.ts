@@ -4,4 +4,3 @@
 export { type Transfer, toTransfer } from './transfer.js'
 export { getPendingTransfers } from './getPendingTransfers.js'
 export { createTransfer } from './createTransfer.js'
-export { getTransactionHistory } from './getTransactionHistory.js'

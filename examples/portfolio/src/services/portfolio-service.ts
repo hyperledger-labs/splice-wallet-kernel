@@ -3,7 +3,11 @@
 
 import { v4 } from 'uuid'
 import { PartyId } from '@canton-network/core-types'
-import { resolveTokenStandardService } from './core.js'
+import {
+    resolveTokenStandardService,
+    resolveTransactionHistoryService,
+} from './core.js'
+import { type Transfer } from '../utils/transfers/transfer.js'
 
 // PortfolioService is a fat interface that tries to capture everything our
 // portflio can do.  Separating the interface from the implementation will
@@ -11,25 +15,35 @@ import { resolveTokenStandardService } from './core.js'
 // of react.
 export interface PortfolioService {
     // Transfers
-    acceptTransfer: (_: {
+    exerciseTransfer: (_: {
         registryUrls: Map<PartyId, string>
         party: PartyId
         contractId: string
         instrumentId: { admin: string; id: string }
+        instructionChoice: 'Accept' | 'Reject' | 'Withdraw'
     }) => Promise<void>
+
+    // History
+    getTransactionHistory: (_: { party: PartyId }) => Promise<Transfer[]>
+    fetchOlderTransactionHistory: (_: { party: PartyId }) => Promise<Transfer[]>
+    fetchMoreRecentTransactionHistory: (_: {
+        party: PartyId
+    }) => Promise<Transfer[]>
 }
 
 export class PortfolioServiceImplementation {
-    async acceptTransfer({
+    async exerciseTransfer({
         registryUrls,
         party,
         contractId,
         instrumentId,
+        instructionChoice,
     }: {
         registryUrls: Map<PartyId, string>
         party: PartyId
         contractId: string
         instrumentId: { admin: string; id: string }
+        instructionChoice: 'Accept' | 'Reject' | 'Withdraw'
     }) {
         // TODO: resolve this BEFORE calling this function so we can gray out the
         // button?
@@ -39,9 +53,10 @@ export class PortfolioServiceImplementation {
 
         const tokenStandardService = await resolveTokenStandardService()
         const [acceptCommand, disclosedContracts] =
-            await tokenStandardService.transfer.createAcceptTransferInstruction(
+            await tokenStandardService.transfer.createTransferInstruction(
                 contractId,
-                registryUrl
+                registryUrl,
+                instructionChoice
             )
 
         const request = {
@@ -57,5 +72,41 @@ export class PortfolioServiceImplementation {
             method: 'prepareExecute',
             params: request,
         })
+    }
+
+    async getTransactionHistory({
+        party,
+    }: {
+        party: PartyId
+    }): Promise<Transfer[]> {
+        const transactionHistoryService =
+            await resolveTransactionHistoryService({
+                party,
+            })
+        return transactionHistoryService.list()
+    }
+
+    async fetchOlderTransactionHistory({
+        party,
+    }: {
+        party: PartyId
+    }): Promise<Transfer[]> {
+        const transactionHistoryService =
+            await resolveTransactionHistoryService({
+                party,
+            })
+        return transactionHistoryService.fetchOlder()
+    }
+
+    async fetchMoreRecentTransactionHistory({
+        party,
+    }: {
+        party: PartyId
+    }): Promise<Transfer[]> {
+        const transactionHistoryService =
+            await resolveTransactionHistoryService({
+                party,
+            })
+        return transactionHistoryService.fetchMoreRecent()
     }
 }

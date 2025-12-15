@@ -17,11 +17,11 @@ type FiltersByParty = Types['Map_Filters']
 type Update = Types['JsGetUpdatesResponse']
 
 type Event =
-    | { type: 'CreatedEvent'; event: Types['CreatedEvent'] }
-    | { type: 'ArchivedEvent'; event: Types['ArchivedEvent'] }
-    | { type: 'ExercisedEvent'; event: Types['ExercisedEvent'] }
+    | { type: 'CreatedEvent'; offset: number; event: Types['CreatedEvent'] }
+    | { type: 'ArchivedEvent'; offset: number; event: Types['ArchivedEvent'] }
+    | { type: 'ExercisedEvent'; offset: number; event: Types['ExercisedEvent'] }
 
-const updateOffset = (update: Update): number | undefined => {
+const updateOffset = (update: Update): number => {
     if ('OffsetCheckpoint' in update.update)
         return update.update.OffsetCheckpoint.value.offset
     if ('Reassignment' in update.update)
@@ -30,6 +30,7 @@ const updateOffset = (update: Update): number | undefined => {
         return update.update.TopologyTransaction.value.offset
     if ('Transaction' in update.update)
         return update.update.Transaction.value.offset
+    throw new Error('Ledger update is missing an offset')
 }
 
 /** Helper function to paginate over all updates in a range. */
@@ -37,13 +38,13 @@ const paginateUpdates = async function* ({
     logger,
     ledgerClient,
     beginExclusive,
-    endExclusive,
+    endInclusive,
     filtersByParty,
 }: {
     logger: Logger
     ledgerClient: LedgerClient
     beginExclusive: number
-    endExclusive: number
+    endInclusive: number
     filtersByParty: FiltersByParty
 }): AsyncGenerator<Update[], void, void> {
     const limit = 32 // just to test
@@ -75,22 +76,20 @@ const paginateUpdates = async function* ({
         if (updates.length == 0) {
             more = false
         } else {
-            // Filter out updates before endExclusive.  If we received any at
-            // or after endExclusive, we immediately know that we won't have
+            // Filter out updates after endInclusive.  If we received any at
+            // or after endInclusive, we immediately know that we won't have
             // more pages.
             const relevantUpdates: Update[] = []
             let latestOffset: number | undefined = undefined
             for (const update of updates) {
                 const offset = updateOffset(update)
-                if (
-                    offset &&
-                    (latestOffset !== null || offset >= latestOffset)
-                ) {
+                if (latestOffset !== null || offset >= latestOffset) {
                     latestOffset = offset
                 }
-                if (offset && offset >= endExclusive) {
+                if (offset >= endInclusive) {
                     more = false
-                } else {
+                }
+                if (offset < endInclusive) {
                     relevantUpdates.push(update)
                 }
             }
@@ -112,17 +111,17 @@ export class TransactionHistoryService {
     private party: string
 
     /** Currently we just store relevant transactions in a map by contractId.
-    *   We probably want to move this to a SQLite based format instead. */
+     *   We probably want to move this to a SQLite based format instead. */
     private transfers: Map<string, Transfer> // By contractId
 
     /** Events that we have retrieved from the ledger but not processed yet
-    *   (e.g. an exercise on a contract that we don't know about). */
+     *   (e.g. an exercise on a contract that we don't know about). */
     private unprocessed: Event[]
 
     /** The oldest and most recent offset we know about.  If both are set, you
-    *   can assume we have gathered all updates in this range. */
-    private oldestOffset: number | undefined
-    private mostRecentOffset: number | undefined
+     *   can assume we have gathered all updates in this range. */
+    private beginExclusive: number | undefined
+    private endInclusive: number | undefined
 
     constructor({
         logger,
@@ -162,7 +161,7 @@ export class TransactionHistoryService {
             const transfer = this.transfers.get(contractId)
             if (!transfer) return false
 
-            switch(event.event.choice) {
+            switch (event.event.choice) {
                 case 'TransferInstruction_Accept':
                     transfer.status = 'accepted'
                     return true
@@ -181,31 +180,20 @@ export class TransactionHistoryService {
         return true // unrecognized, so skip
     }
 
-    private list(): Transfer[] {
-        const transfers = [...this.transfers.values()]
-        // TODO: sort
-        return transfers
-    }
-
-    private async getOldestOffset(): Promise<number> {
-        if (this.oldestOffset !== undefined) return this.oldestOffset
-        const ledgerEnd = await this.ledgerClient.get('/v2/state/ledger-end')
-        this.oldestOffset = ledgerEnd.offset
-        return ledgerEnd.offset
-    }
-
-    async fetch(): Promise<Transfer[]> {
-        // Strategy: fetch N+1 to see if there are more updates than we can
-        // process.  Repeat until we have all updates.  Each update will
-        // include the offset.  Then we can adjust...
-        const endExclusive = await this.getOldestOffset()
-        const beginExclusive = Math.max(0, endExclusive - 10 - 1)
-        this.logger.debug({ beginExclusive }, 'fetching older transactions')
+    private async fetchRange({
+        beginExclusive,
+        endInclusive,
+    }: {
+        beginExclusive: number
+        endInclusive: number
+    }): Promise<void> {
+        // TODO: check the invariant that this range is adjacent to the
+        // current range (this.beginExclusive, this.endInclusive).
         for await (const updates of paginateUpdates({
             logger: this.logger,
             ledgerClient: this.ledgerClient,
             beginExclusive,
-            endExclusive,
+            endInclusive,
             filtersByParty: {
                 [this.party]: {
                     cumulative: [
@@ -228,20 +216,24 @@ export class TransactionHistoryService {
             let events: Event[] = []
             for (const update of updates) {
                 if ('Transaction' in update.update) {
-                    for (const event of update.update.Transaction?.value.events ?? []) {
+                    for (const event of update.update.Transaction?.value
+                        .events ?? []) {
                         if ('CreatedEvent' in event) {
                             events.push({
                                 type: 'CreatedEvent',
+                                offset: updateOffset(update),
                                 event: event.CreatedEvent,
                             })
                         } else if ('ExercisedEvent' in event) {
                             events.push({
                                 type: 'ExercisedEvent',
+                                offset: updateOffset(update),
                                 event: event.ExercisedEvent,
                             })
                         } else if ('ArchivedEvent' in event) {
                             events.push({
                                 type: 'ArchivedEvent',
+                                offset: updateOffset(update),
                                 event: event.ArchivedEvent,
                             })
                         }
@@ -250,6 +242,7 @@ export class TransactionHistoryService {
             }
 
             events = [...events, ...this.unprocessed]
+            events.sort((e1, e2) => e1.offset - e2.offset)
 
             const newUnprocessed = []
             for (const event of events) {
@@ -258,8 +251,71 @@ export class TransactionHistoryService {
 
             this.unprocessed = newUnprocessed
         }
-        this.oldestOffset = beginExclusive + 1
 
+        // Update the known range.
+        if (
+            this.beginExclusive === undefined ||
+            beginExclusive < this.beginExclusive
+        ) {
+            this.beginExclusive = beginExclusive
+        }
+        if (
+            this.endInclusive === undefined ||
+            endInclusive > this.endInclusive
+        ) {
+            this.endInclusive = endInclusive
+        }
+
+        this.logger.debug(
+            {
+                beginExclusive: this.beginExclusive,
+                endInclusive: this.endInclusive,
+            },
+            'TransactionHistoryService state'
+        )
+    }
+
+    // TODO: instead of fetching more recent history, can we rely on transaction
+    // events?
+    async fetchMoreRecent(): Promise<Transfer[]> {
+        if (this.endInclusive === undefined) {
+            // This means we never fetched any transactions.  We want to start
+            // with fetching a batch of older ones.
+            return this.fetchOlder()
+        } else {
+            // If we do have an endInclusive, fetch everything in between
+            // that and the most recent offset (ledger end).
+            const ledgerEnd = await this.ledgerClient.get(
+                '/v2/state/ledger-end'
+            )
+            await this.fetchRange({
+                beginExclusive: this.endInclusive,
+                endInclusive: ledgerEnd.offset,
+            })
+            return this.list()
+        }
+    }
+
+    // TODO: return bool to determine we are finished?
+    async fetchOlder(): Promise<Transfer[]> {
+        // Figure out the of the range.
+        let endInclusive = this.beginExclusive
+        if (endInclusive === undefined) {
+            const ledgerEnd = await this.ledgerClient.get(
+                '/v2/state/ledger-end'
+            )
+            endInclusive = ledgerEnd.offset
+        }
+
+        // Figure out the start of the range, TODO: bisect
+        const beginExclusive = Math.max(0, endInclusive - 250)
+        await this.fetchRange({ beginExclusive, endInclusive })
         return this.list()
+    }
+
+    list(): Transfer[] {
+        const transfers = [...this.transfers.values()]
+        // TODO: sort
+        return transfers
     }
 }
