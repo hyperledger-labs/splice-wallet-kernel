@@ -12,7 +12,8 @@
         "clean": "tsc -b --clean"
     },
     "devDependencies": {
-        "@asyncapi/modelina": "^5.10.1",
+        "@asyncapi/generator": "^2.11.0",
+        "@asyncapi/nodejs-ws-template": "^0.10.0",
         "@open-rpc/meta-schema": "^1.14.9",
         "@stoplight/types": "^14.1.1",
         "@types/js-yaml": "^4",
