@@ -529,6 +529,8 @@ export class LedgerClient {
     /*
     if limit is provided, this function performs a one-time query
     if limit is omitted, results may be served from the ACS cache
+    current cache design doesn't support limiting queries because updates/deltas for the acs at offset x will be incorrect
+    TODO: expose query mode vs subscribe mode to call queryActiveContracts vs subscribeActiveContracts
     */
     async activeContracts(options: {
         offset: number
@@ -542,11 +544,26 @@ export class LedgerClient {
 
         const hasLimit = typeof limit === 'number'
 
+        //Query-mode:  if limit it set, perform one off http query
+
+        if (hasLimit) {
+            const filter = this.buildActiveContractFilter(options)
+            return await this.postWithRetry(
+                '/v2/state/active-contracts',
+                filter,
+                defaultRetryableOptions,
+                {
+                    query: limit ? { limit: limit.toString() } : {},
+                }
+            )
+        }
+
         this.logger.debug(options, 'options for active contracts')
 
         const hasParties = Array.isArray(parties) && parties.length > 0
 
-        if (templateIds?.length && hasParties && !hasLimit) {
+        //subscribe mode: no limit set and fits the cache requirements, back this by the acs subscription
+        if (templateIds?.length && hasParties) {
             return this.acsHelper.activeContractsForTemplates(
                 offset,
                 parties!,
@@ -554,7 +571,7 @@ export class LedgerClient {
             )
         }
 
-        if (interfaceIds?.length && hasParties && !hasLimit) {
+        if (interfaceIds?.length && hasParties) {
             return this.acsHelper.activeContractsForInterfaces(
                 offset,
                 parties!,
@@ -562,16 +579,14 @@ export class LedgerClient {
             )
         }
 
+        //fallback to generic query without template/interface filter (doesn't use cache)
         const filter = this.buildActiveContractFilter(options)
         this.logger.debug('falling back to post request')
 
         return await this.postWithRetry(
             '/v2/state/active-contracts',
             filter,
-            defaultRetryableOptions,
-            {
-                query: limit ? { limit: limit.toString() } : {},
-            }
+            defaultRetryableOptions
         )
     }
 
