@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState, useEffect } from 'react'
-import { type Transfer } from '../utils/transfers'
+import { type Transfer } from '../models/transfer.js'
 import { useConnection } from '../contexts/ConnectionContext.js'
 import { usePortfolio } from '../contexts/PortfolioContext.js'
 import { TransferCard } from './TransferCard.js'

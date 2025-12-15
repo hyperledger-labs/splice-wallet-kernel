@@ -10,7 +10,7 @@ import {
     type Types,
 } from '@canton-network/core-ledger-client'
 import { TRANSFER_INSTRUCTION_INTERFACE_ID } from '@canton-network/core-token-standard'
-import { type Transfer, toTransfer } from '../utils/transfers/transfer.js'
+import { type Transfer, toTransfer } from '../models/transfer.js'
 
 type FiltersByParty = Types['Map_Filters']
 

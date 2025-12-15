@@ -6,13 +6,12 @@ import { useState, useEffect } from 'react'
 import { AssetCard } from './AssetCard.js'
 import { useConnection } from '../contexts/ConnectionContext.js'
 import { usePortfolio } from '../contexts/PortfolioContext.js'
-import { tap } from '../utils/tap.js'
 
 export const HoldingsTab: React.FC = () => {
     const {
         status: { primaryParty, sessionToken },
     } = useConnection()
-    const { listHoldings } = usePortfolio()
+    const { listHoldings, tap } = usePortfolio()
     const [holdings, setHoldings] = useState<Holding[] | undefined>(undefined)
     const [tapAmount, setTapAmount] = useState<number>(10000)
 

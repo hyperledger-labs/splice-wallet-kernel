@@ -14,8 +14,10 @@ import {
 import {
     resolveTokenStandardService,
     resolveTransactionHistoryService,
+    resolveAmuletService,
+    resolveTokenStandardClient,
 } from './core.js'
-import { type Transfer, toTransfer } from '../utils/transfers/transfer.js'
+import { type Transfer, toTransfer } from '../models/transfer.js'
 
 // PortfolioService is a fat interface that tries to capture everything our
 // portflio can do.  Separating the interface from the implementation will
@@ -49,6 +51,17 @@ export interface PortfolioService {
     fetchMoreRecentTransactionHistory: (_: {
         party: PartyId
     }) => Promise<Transfer[]>
+
+    // Tap
+    tap: ({
+        party,
+        sessionToken,
+        amount,
+    }: {
+        party: string
+        sessionToken: string
+        amount: number
+    }) => Promise<void>
 }
 
 export class PortfolioServiceImplementation {
@@ -223,5 +236,49 @@ export class PortfolioServiceImplementation {
                 party,
             })
         return transactionHistoryService.fetchMoreRecent()
+    }
+
+    async tap({
+        party,
+        sessionToken,
+        amount,
+    }: {
+        party: string
+        sessionToken: string
+        amount: number
+    }) {
+        // TODO: we'll need to retrieve all instrument info from the known
+        // registries in order to allow the user to tap.
+        const registryUrl = 'http://scan.localhost:4000'
+        const tokenStandardClient = await resolveTokenStandardClient({
+            registryUrl,
+        })
+        const amuletService = await resolveAmuletService({
+            sessionToken,
+        })
+        const registryInfo = await tokenStandardClient.get(
+            '/registry/metadata/v1/info'
+        )
+        const [tapCommand, disclosedContracts] = await amuletService.createTap(
+            party,
+            `${amount}`,
+            registryInfo.adminId,
+            'Amulet',
+            registryUrl
+        )
+
+        const request = {
+            commands: [{ ExerciseCommand: tapCommand }],
+            commandId: v4(),
+            actAs: [party],
+            disclosedContracts,
+        }
+
+        const provider = window.canton
+        // TODO: check success
+        await provider?.request({
+            method: 'prepareExecute',
+            params: request,
+        })
     }
 }

@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react'
 import { useConnection } from '../contexts/ConnectionContext.js'
 import { usePortfolio } from '../contexts/PortfolioContext.js'
-import { type Transfer } from '../utils/transfers'
+import { type Transfer } from '../models/transfer.js'
 import { TransferCard } from './TransferCard.js'
 
 export const TransactionHistoryTab: React.FC = () => {

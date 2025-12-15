@@ -7,6 +7,8 @@ import {
     TokenStandardService,
 } from '@canton-network/core-ledger-client'
 
+// TODO: it's probably wise to replace this by TransferInstruction and a few
+// extra fields so it integrates better with the existing libraries.
 export type Transfer = {
     contractId: string
     sender: string
