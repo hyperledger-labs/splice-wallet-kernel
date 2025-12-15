@@ -82,6 +82,7 @@ const paginateUpdates = async function* ({
             const relevantUpdates: Update[] = []
             let latestOffset: number | undefined = undefined
             for (const update of updates) {
+                console.log(update)
                 const offset = updateOffset(update)
                 if (latestOffset !== null || offset >= latestOffset) {
                     latestOffset = offset
@@ -186,9 +187,10 @@ export class TransactionHistoryService {
     }: {
         beginExclusive: number
         endInclusive: number
-    }): Promise<void> {
+    }): Promise<number> {
         // TODO: check the invariant that this range is adjacent to the
         // current range (this.beginExclusive, this.endInclusive).
+        let fetchedUpdates = 0
         for await (const updates of paginateUpdates({
             logger: this.logger,
             ledgerClient: this.ledgerClient,
@@ -214,6 +216,7 @@ export class TransactionHistoryService {
             },
         })) {
             let events: Event[] = []
+            fetchedUpdates += updates.length
             for (const update of updates) {
                 if ('Transaction' in update.update) {
                     for (const event of update.update.Transaction?.value
@@ -273,10 +276,12 @@ export class TransactionHistoryService {
             },
             'TransactionHistoryService state'
         )
+
+        return fetchedUpdates
     }
 
     // TODO: instead of fetching more recent history, can we rely on transaction
-    // events?
+    // events?  Or can we insert them here as they are purged from the ACS?
     async fetchMoreRecent(): Promise<Transfer[]> {
         if (this.endInclusive === undefined) {
             // This means we never fetched any transactions.  We want to start
@@ -298,7 +303,7 @@ export class TransactionHistoryService {
 
     // TODO: return bool to determine we are finished?
     async fetchOlder(): Promise<Transfer[]> {
-        // Figure out the of the range.
+        // Figure out the end of the range.
         let endInclusive = this.beginExclusive
         if (endInclusive === undefined) {
             const ledgerEnd = await this.ledgerClient.get(
@@ -307,9 +312,31 @@ export class TransactionHistoryService {
             endInclusive = ledgerEnd.offset
         }
 
-        // Figure out the start of the range, TODO: bisect
-        const beginExclusive = Math.max(0, endInclusive - 250)
-        await this.fetchRange({ beginExclusive, endInclusive })
+        // Figure out the start of the ledger; we can't cache this but we could
+        // cache the fact that we reached the start of it (since it would only
+        // move forwards).
+        const ledgerStartExclusive = (
+            await this.ledgerClient.get('/v2/state/latest-pruned-offsets')
+        ).participantPrunedUpToInclusive
+
+        // Fetch an increasingly larger offset delta.
+        // The actual fetching is handled by fetchRange which will paginate
+        // into smaller batches.
+        let delta = 256
+        let beginExclusive = Math.max(
+            ledgerStartExclusive,
+            endInclusive - delta
+        )
+        let numUpdates = await this.fetchRange({ beginExclusive, endInclusive })
+        while (numUpdates === 0 && beginExclusive > ledgerStartExclusive) {
+            delta *= 2
+            beginExclusive = Math.max(
+                ledgerStartExclusive,
+                endInclusive - delta
+            )
+            numUpdates = await this.fetchRange({ beginExclusive, endInclusive })
+        }
+
         return this.list()
     }
 
