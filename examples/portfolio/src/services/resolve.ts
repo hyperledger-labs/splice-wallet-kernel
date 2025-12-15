@@ -12,32 +12,11 @@ import { TokenStandardClient } from '@canton-network/core-token-standard'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { TransactionHistoryService } from './transaction-history-service.js'
 
+// This module allows us to resolve (i.e. get an instance of) the different
+// dependency services used throughout the project.
+
 // NOTE(jaspervdj): many dApps will need something similar to this, so consider
 // moving this into one of the core libraries.
-
-const parseRequestMethod = (
-    url: RequestInfo,
-    options: RequestInit
-): sdk.dappAPI.RequestMethod => {
-    let method: string | undefined
-    if (typeof url !== 'string') {
-        method = url.method
-    }
-    if (options.method) {
-        method = options.method
-    }
-    if (!method) return 'GET'
-    method = method.toUpperCase()
-    switch (method) {
-        case 'POST':
-            return 'POST'
-        case 'GET':
-            return 'GET'
-        default:
-            throw new Error(`Unknown method: ${method}`)
-    }
-}
-
 const createLedgerClient = async (options: {
     logger: Logger
 }): Promise<LedgerClient> => {
@@ -48,6 +27,29 @@ const createLedgerClient = async (options: {
     // The .invalid TLD is guaranteed to never resolve.  This helps us ensure
     // we don't accidentally send data somewhere we don't want to.
     const fakeHost = 'ledger.invalid'
+
+    const parseRequestMethod = (
+        url: RequestInfo,
+        options: RequestInit
+    ): sdk.dappAPI.RequestMethod => {
+        let method: string | undefined
+        if (typeof url !== 'string') {
+            method = url.method
+        }
+        if (options.method) {
+            method = options.method
+        }
+        if (!method) return 'GET'
+        method = method.toUpperCase()
+        switch (method) {
+            case 'POST':
+                return 'POST'
+            case 'GET':
+                return 'GET'
+            default:
+                throw new Error(`Unknown method: ${method}`)
+        }
+    }
 
     const customFetch = async (
         url: RequestInfo,
@@ -85,6 +87,7 @@ const createLedgerClient = async (options: {
         logger,
         fetch: customFetch,
     })
+
     await ledgerClient.init() // Todo: remove?
     return ledgerClient
 }

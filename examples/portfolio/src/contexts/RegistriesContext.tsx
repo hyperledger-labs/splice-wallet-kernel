@@ -9,7 +9,7 @@ import {
     useContext,
 } from 'react'
 import { PartyId } from '@canton-network/core-types'
-import { resolveTokenStandardClient } from '../services'
+import { resolveTokenStandardClient } from '../services/resolve.js'
 
 export type Registries = Map<PartyId, string>
 

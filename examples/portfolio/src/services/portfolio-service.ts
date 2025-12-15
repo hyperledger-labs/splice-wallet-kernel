@@ -16,7 +16,7 @@ import {
     resolveTransactionHistoryService,
     resolveAmuletService,
     resolveTokenStandardClient,
-} from './core.js'
+} from './resolve.js'
 import { type Transfer, toTransfer } from '../models/transfer.js'
 
 // PortfolioService is a fat interface that tries to capture everything our
