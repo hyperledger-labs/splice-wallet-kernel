@@ -233,6 +233,7 @@ export class CoreService {
             const isActiveContractEntry = (
                 acsResponse: JsGetActiveContractsResponse
             ): acsResponse is JsActiveContractEntryResponse =>
+                'JsActiveContract' in acsResponse.contractEntry &&
                 !!acsResponse.contractEntry.JsActiveContract?.createdEvent
 
             const activeContractEntries = acsResponses.filter(
@@ -260,11 +261,13 @@ export class CoreService {
         const isOffsetCheckpointUpdate = (
             updateResponse: JsGetUpdatesResponse
         ): updateResponse is OffsetCheckpointUpdate =>
-            !!updateResponse?.update?.OffsetCheckpoint
+            'OffsetCheckpoint' in updateResponse.update
+
         const isTransactionUpdate = (
             updateResponse: JsGetUpdatesResponse
         ): updateResponse is TransactionUpdate =>
-            !!updateResponse.update?.Transaction?.value
+            'Transaction' in updateResponse.update &&
+            !!updateResponse.update.Transaction?.value
 
         const offsetCheckpoints: number[] = updates
             .filter(isOffsetCheckpointUpdate)
@@ -343,7 +346,8 @@ export class CoreService {
         response: JsActiveContractEntryResponse,
         offset?: number
     ): PrettyContract<T> {
-        const activeContract = response.contractEntry.JsActiveContract
+        const activeContract = response.contractEntry
+            .JsActiveContract as Types['JsActiveContract']
         const { createdEvent } = activeContract
         return {
             contractId: createdEvent.contractId,
@@ -411,7 +415,8 @@ class AllocationService {
 
     async fetchAllocationFactoryChoiceContext(
         registryUrl: string,
-        choiceArgs: AllocationFactory_Allocate
+        choiceArgs: AllocationFactory_Allocate,
+        excludeDebugFields: boolean = true
     ): Promise<
         allocationInstructionRegistryTypes['schemas']['FactoryWithChoiceContext']
     > {
@@ -419,6 +424,7 @@ class AllocationService {
             .getTokenStandardClient(registryUrl)
             .post('/registry/allocation-instruction/v1/allocation-factory', {
                 choiceArguments: choiceArgs as unknown as Record<string, never>,
+                excludeDebugFields,
             })
     }
 
@@ -770,7 +776,8 @@ class TransferService {
 
     async fetchTransferFactoryChoiceContext(
         registryUrl: string,
-        choiceArgs: CreateTransferChoiceArgs
+        choiceArgs: CreateTransferChoiceArgs,
+        excludeDebugFields: boolean = true
     ): Promise<
         transferInstructionRegistryTypes['schemas']['TransferFactoryWithChoiceContext']
     > {
@@ -778,6 +785,7 @@ class TransferService {
             .getTokenStandardClient(registryUrl)
             .post('/registry/transfer-instruction/v1/transfer-factory', {
                 choiceArguments: choiceArgs as unknown as Record<string, never>,
+                excludeDebugFields,
             })
     }
 

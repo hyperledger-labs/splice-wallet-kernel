@@ -6,6 +6,7 @@ import {
     localNetTokenStandardDefault,
     createKeyPair,
     localNetStaticConfig,
+    LedgerController,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
@@ -184,14 +185,14 @@ const activeTradeProposals = await sdk.userLedger?.activeContracts({
     parties: [bob!.partyId],
     filterByParty: true,
 })
-const otcpCid =
-    activeTradeProposals?.[0]?.contractEntry?.JsActiveContract?.createdEvent
-        .contractId
+
+const otcpCid = LedgerController.getActiveContractCid(
+    activeTradeProposals?.[0]?.contractEntry!
+)
 
 if (otcpCid === undefined) {
     throw new Error('Unexpected lack of OTCTradeProposal contract')
 }
-
 const acceptCmd = [
     {
         ExerciseCommand: {
@@ -226,12 +227,10 @@ const now = new Date()
 const prepareUntil = new Date(now.getTime() + 60 * 60 * 1000).toISOString()
 const settleBefore = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString()
 
-const otcpCid2 =
-    activeTradeProposals2?.[0]?.contractEntry?.JsActiveContract?.createdEvent
-        .contractId
+const otcpCid2 = LedgerController.getActiveContractCid(
+    activeTradeProposals2?.[0]?.contractEntry!
+)
 
-if (otcpCid2 === undefined)
-    throw new Error('Unexpected lack of OTCTradeProposal contract')
 const initiateSettlementCmd = [
     {
         ExerciseCommand: {
@@ -260,8 +259,10 @@ const otcTrades = await sdk.userLedger!.activeContracts({
     parties: [venue!.partyId],
     filterByParty: true,
 })
-const otcTradeCid =
-    otcTrades?.[0]?.contractEntry?.JsActiveContract?.createdEvent.contractId
+
+const otcTradeCid = LedgerController.getActiveContractCid(
+    otcTrades?.[0]?.contractEntry
+)
 if (!otcTradeCid) throw new Error('OTCTrade not found for venue')
 
 // Alice's leg allocation

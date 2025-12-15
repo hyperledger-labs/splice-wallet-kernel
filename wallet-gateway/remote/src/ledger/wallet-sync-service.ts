@@ -7,7 +7,12 @@ import {
 } from '@canton-network/core-ledger-client'
 import { AuthContext } from '@canton-network/core-wallet-auth'
 import { Store, Wallet } from '@canton-network/core-wallet-store'
+import {
+    SigningDriverInterface,
+    SigningProvider,
+} from '@canton-network/core-signing-lib'
 import { Logger } from 'pino'
+import { PartyAllocationService } from './party-allocation-service.js'
 
 export type WalletSyncReport = {
     added: Wallet[]
@@ -18,7 +23,11 @@ export class WalletSyncService {
         private store: Store,
         private ledgerClient: LedgerClient,
         private authContext: AuthContext,
-        private logger: Logger
+        private logger: Logger,
+        private signingDrivers: Partial<
+            Record<SigningProvider, SigningDriverInterface>
+        > = {},
+        private partyAllocator: PartyAllocationService
     ) {}
 
     async run(timeoutMs: number): Promise<void> {
@@ -28,6 +37,129 @@ export class WalletSyncService {
         while (true) {
             await this.syncWallets()
             await new Promise((res) => setTimeout(res, timeoutMs))
+        }
+    }
+
+    protected async resolveSigningProvider(namespace: string): Promise<
+        | { signingProviderId: SigningProvider.PARTICIPANT }
+        | {
+              signingProviderId: Exclude<
+                  SigningProvider,
+                  SigningProvider.PARTICIPANT
+              >
+              publicKey: string
+          }
+        | null
+    > {
+        try {
+            // Check if namespace matches participant namespace first
+            // (participant parties have namespace === participantId's namespace)
+            let participantNamespace: string | undefined
+            try {
+                const { participantId } = await this.ledgerClient.getWithRetry(
+                    '/v2/parties/participant-id',
+                    defaultRetryableOptions
+                )
+                // Extract the namespace part from participantId
+                // Format is hint::namespace
+                const [, extractedNamespace] = participantId.split('::')
+                if (extractedNamespace) {
+                    participantNamespace = extractedNamespace
+                } else {
+                    this.logger.warn(
+                        { participantId },
+                        `Invalid participantId format: expected "hint::namespace", got "${participantId}"`
+                    )
+                }
+            } catch (err) {
+                this.logger.warn({ err }, 'Failed to get participant namespace')
+            }
+
+            if (participantNamespace && namespace === participantNamespace) {
+                return { signingProviderId: SigningProvider.PARTICIPANT }
+            }
+
+            // Get keys from signing providers try to match
+            const userId = this.authContext?.userId
+            for (const [providerId, driver] of Object.entries(
+                this.signingDrivers
+            )) {
+                if (!driver) continue
+
+                // Participant already handled above
+                if (providerId === SigningProvider.PARTICIPANT) {
+                    continue
+                }
+
+                try {
+                    const controller = driver.controller(userId)
+                    const result = await controller.getKeys()
+
+                    // In case of error getKeys resolve Promise but with error object
+                    if ('error' in result) {
+                        this.logger.debug(
+                            {
+                                providerId,
+                                error: result.error,
+                                error_description: result.error_description,
+                            },
+                            'Failed to get keys from signing provider'
+                        )
+                        continue
+                    }
+
+                    // Try to match namespace with public keys
+                    if (result.keys) {
+                        for (const key of result.keys) {
+                            const normalizedKey =
+                                this.partyAllocator.normalizePublicKeyToBase64(
+                                    key.publicKey
+                                )
+                            if (!normalizedKey) continue
+
+                            const keyNamespace =
+                                this.partyAllocator.createFingerprintFromKey(
+                                    normalizedKey
+                                )
+                            if (keyNamespace === namespace) {
+                                this.logger.debug(
+                                    {
+                                        namespace,
+                                        providerId,
+                                        keyId: key.id,
+                                        publicKey: key.publicKey,
+                                    },
+                                    'Matched namespace with signing provider'
+                                )
+                                return {
+                                    signingProviderId:
+                                        providerId as SigningProvider,
+                                    publicKey: key.publicKey,
+                                }
+                            }
+                        }
+                    }
+                } catch (err) {
+                    this.logger.debug(
+                        { err, providerId },
+                        'Error getting keys from signing provider'
+                    )
+                    // Continue to next signing provider
+                }
+            }
+
+            // No match found - reject this wallet
+            this.logger.warn(
+                { namespace },
+                'No signing provider match found for namespace, rejecting wallet'
+            )
+            return null
+        } catch (err) {
+            this.logger.error(
+                { err, namespace },
+                'Error resolving signing provider, rejecting wallet'
+            )
+            return null
         }
     }
 
@@ -70,7 +202,7 @@ export class WalletSyncService {
                     partiesWithRights.set(party, rightType)
             })
             this.logger.info(
-                partiesWithRights,
+                [...partiesWithRights],
                 'Found new parties to sync with Wallet Gateway'
             )
 
@@ -81,32 +213,83 @@ export class WalletSyncService {
                 existingWallets.map((w) => [w.partyId, w.signingProviderId])
             )
 
-            const newParticipantWallets: Array<Wallet> =
-                Array.from(partiesWithRights.keys())
-                    ?.filter(
-                        (party) => !existingPartyIdToSigningProvider.has(party)
-                        // todo: filter on idp id
-                    )
-                    .map((party) => {
-                        const [hint, namespace] = party.split('::')
-                        return {
+            // Resolve signing providers for all new parties
+            const newParties = Array.from(partiesWithRights.keys()).filter(
+                (party) => !existingPartyIdToSigningProvider.has(party)
+                // todo: filter on idp id
+            )
+
+            const walletResults = await Promise.all(
+                newParties.map(async (party) => {
+                    const [hint, namespace] = party.split('::')
+
+                    const resolvedSigningProvider =
+                        await this.resolveSigningProvider(namespace)
+
+                    // Reject wallets where no signing provider match was found
+                    if (!resolvedSigningProvider) {
+                        this.logger.warn(
+                            { party, hint, namespace },
+                            'Rejecting wallet - no signing provider match found'
+                        )
+                        return null
+                    }
+
+                    // Namespace is saved as public key in case of participant
+                    const walletPublicKey =
+                        resolvedSigningProvider.signingProviderId ===
+                        SigningProvider.PARTICIPANT
+                            ? namespace
+                            : resolvedSigningProvider.publicKey
+
+                    this.logger.info(
+                        {
                             primary: false,
                             status: 'allocated',
                             partyId: party,
                             hint: hint,
-                            publicKey: namespace,
+                            publicKey: walletPublicKey,
                             namespace: namespace,
                             networkId: network.id,
-                            signingProviderId: 'participant', // todo: determine based on partyDetails.isLocal
-                        } as Wallet
-                    }) || []
+                            signingProviderId:
+                                resolvedSigningProvider.signingProviderId,
+                        },
+                        'Wallet sync result'
+                    )
+
+                    return {
+                        primary: false,
+                        status: 'allocated',
+                        partyId: party,
+                        hint: hint,
+                        publicKey: walletPublicKey,
+                        namespace: namespace,
+                        networkId: network.id,
+                        signingProviderId:
+                            resolvedSigningProvider.signingProviderId,
+                    } as Wallet
+                })
+            )
+
+            // Filter out rejected wallets
+            const newParticipantWallets: Array<Wallet> = walletResults.filter(
+                (wallet): wallet is Wallet => wallet !== null
+            )
 
             await Promise.all(
                 newParticipantWallets.map((wallet) =>
                     this.store.addWallet(wallet)
                 )
             )
-            this.logger.info(newParticipantWallets, 'Created new wallets')
+            this.logger.info({ newParticipantWallets }, 'Created new wallets')
+            this.logger.info(
+                {
+                    totalProcessed: newParties.length,
+                    rejected: newParties.length - newParticipantWallets.length,
+                    added: newParticipantWallets.length,
+                },
+                'Wallet sync summary'
+            )
 
             // Set primary wallet if none exists
             const wallets = await this.store.getWallets()

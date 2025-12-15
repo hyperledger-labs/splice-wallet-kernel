@@ -38,6 +38,11 @@ export const apps = [
         env_development: sharedEnvDevelopment,
     },
     {
+        name: 'splice-dapp-sdk',
+        script: 'yarn workspace @canton-network/dapp-sdk dev',
+        env_development: sharedEnvDevelopment,
+    },
+    {
         name: 'core-ledger-client',
         script: 'yarn workspace @canton-network/core-ledger-client dev',
         env_development: sharedEnvDevelopment,

@@ -8,6 +8,7 @@ import {
     localValidatorDefault,
     localNetStaticConfig,
     signTransactionHash,
+    LedgerController,
 } from '@canton-network/wallet-sdk'
 import path from 'path'
 import { pino } from 'pino'
@@ -233,9 +234,9 @@ const activeContractsForDelegateProxy = await sdk.userLedger?.activeContracts({
     ],
 })
 
-const proxyCid =
-    activeContractsForDelegateProxy![0].contractEntry.JsActiveContract
-        ?.createdEvent.contractId
+const proxyCid = LedgerController.getActiveContractCid(
+    activeContractsForDelegateProxy![0].contractEntry
+)
 
 logger.info(proxyCid, `Fetched proxyCid`)
 

@@ -670,6 +670,13 @@ export const userController = (
                 getAdminAccessToken: async () => authContext!.accessToken,
             }
 
+            const partyAllocator = new PartyAllocationService({
+                synchronizerId: network.synchronizerId,
+                accessTokenProvider: userAccessTokenProvider,
+                httpLedgerUrl: network.ledgerApi.baseUrl,
+                logger,
+            })
+
             const service = new WalletSyncService(
                 store,
                 new LedgerClient({
@@ -678,7 +685,9 @@ export const userController = (
                     accessTokenProvider: userAccessTokenProvider,
                 }),
                 authContext!,
-                logger
+                logger,
+                drivers,
+                partyAllocator
             )
             const result = await service.syncWallets()
             if (result.added.length === 0 && result.removed.length === 0) {
