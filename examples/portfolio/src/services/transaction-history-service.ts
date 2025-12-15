@@ -22,14 +22,17 @@ type Event =
     | { type: 'ExercisedEvent'; event: Types['ExercisedEvent'] }
 
 const updateOffset = (update: Update): number | undefined => {
-    return (
-        update.update.OffsetCheckpoint?.value.offset ??
-        update.update.Reassignment?.value.offset ??
-        update.update.TopologyTransaction?.value.offset ??
-        update.update.Transaction?.value.offset
-    )
+    if ('OffsetCheckpoint' in update.update)
+        return update.update.OffsetCheckpoint.value.offset
+    if ('Reassignment' in update.update)
+        return update.update.Reassignment.value.offset
+    if ('TopologyTransaction' in update.update)
+        return update.update.TopologyTransaction.value.offset
+    if ('Transaction' in update.update)
+        return update.update.Transaction.value.offset
 }
 
+/** Helper function to paginate over all updates in a range. */
 const paginateUpdates = async function* ({
     logger,
     ledgerClient,
@@ -107,9 +110,19 @@ export class TransactionHistoryService {
     private logger: Logger
     private ledgerClient: LedgerClient
     private party: string
+
+    /** Currently we just store relevant transactions in a map by contractId.
+    *   We probably want to move this to a SQLite based format instead. */
     private transfers: Map<string, Transfer> // By contractId
+
+    /** Events that we have retrieved from the ledger but not processed yet
+    *   (e.g. an exercise on a contract that we don't know about). */
     private unprocessed: Event[]
+
+    /** The oldest and most recent offset we know about.  If both are set, you
+    *   can assume we have gathered all updates in this range. */
     private oldestOffset: number | undefined
+    private mostRecentOffset: number | undefined
 
     constructor({
         logger,
@@ -214,18 +227,24 @@ export class TransactionHistoryService {
         })) {
             let events: Event[] = []
             for (const update of updates) {
-                for (const event of update.update.Transaction?.value.events ??
-                    []) {
-                    if (event.CreatedEvent) {
-                        events.push({
-                            type: 'CreatedEvent',
-                            event: event.CreatedEvent,
-                        })
-                    } else if (event.ExercisedEvent) {
-                        events.push({
-                            type: 'ExercisedEvent',
-                            event: event.ExercisedEvent,
-                        })
+                if ('Transaction' in update.update) {
+                    for (const event of update.update.Transaction?.value.events ?? []) {
+                        if ('CreatedEvent' in event) {
+                            events.push({
+                                type: 'CreatedEvent',
+                                event: event.CreatedEvent,
+                            })
+                        } else if ('ExercisedEvent' in event) {
+                            events.push({
+                                type: 'ExercisedEvent',
+                                event: event.ExercisedEvent,
+                            })
+                        } else if ('ArchivedEvent' in event) {
+                            events.push({
+                                type: 'ArchivedEvent',
+                                event: event.ArchivedEvent,
+                            })
+                        }
                     }
                 }
             }
