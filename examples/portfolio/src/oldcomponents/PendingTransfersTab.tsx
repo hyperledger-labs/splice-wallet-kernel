@@ -16,18 +16,16 @@ export const PendingTransfersTab: React.FC = () => {
         Transfer[] | undefined
     >(undefined)
 
-    const refreshPendingTransfers = async () => {
-        if (primaryParty) {
-            const hs = await listPendingTransfers({ party: primaryParty })
-            setPendingTransfers(hs)
-        } else {
-            setPendingTransfers(undefined)
-        }
-    }
-
     useEffect(() => {
-        refreshPendingTransfers()
-    }, [primaryParty])
+        ;(async () => {
+            if (primaryParty) {
+                const hs = await listPendingTransfers({ party: primaryParty })
+                setPendingTransfers(hs)
+            } else {
+                setPendingTransfers(undefined)
+            }
+        })()
+    }, [primaryParty, listPendingTransfers])
 
     return (
         <div>

@@ -23,7 +23,6 @@ import {
     Null,
     ListTransactionsResult,
 } from './rpc-gen/typings.js'
-import { PrepareExecuteParams } from '../dapp-api/rpc-gen/typings.js'
 import {
     Store,
     Transaction,

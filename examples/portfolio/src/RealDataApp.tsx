@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import './App.css'
-import { RegistriesProvider } from './contexts/RegistriesContext.js'
-import { ConnectionProvider } from './contexts/ConnectionContext.js'
-import { PortfolioProvider } from './contexts/PortfolioContext.js'
+import { RegistriesProvider } from './contexts/RegistriesProvider.js'
+import { ConnectionProvider } from './contexts/ConnectionProvider.js'
+import { PortfolioProvider } from './contexts/PortfolioProvider.js'
 import { HoldingsTab } from './oldcomponents/HoldingsTab.js'
 import { RegistriesTab } from './oldcomponents/RegistriesTab.js'
 import { PendingTransfersTab } from './oldcomponents/PendingTransfersTab.js'

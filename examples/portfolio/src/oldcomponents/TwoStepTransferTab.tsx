@@ -36,7 +36,7 @@ export const TwoStepTransferTab: React.FC = () => {
                 setTransferableInstrumentIds(uniqueInstrumentIds)
             })
         }
-    }, [primaryParty])
+    }, [primaryParty, listHoldings])
 
     return (
         <form onSubmit={(e) => e.preventDefault()}>

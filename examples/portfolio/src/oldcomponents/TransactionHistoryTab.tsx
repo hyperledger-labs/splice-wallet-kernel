@@ -38,7 +38,12 @@ export const TransactionHistoryTab: React.FC = () => {
                 setTransactionHistory(undefined)
             }
         })()
-    }, [primaryParty])
+    }, [
+        primaryParty,
+        getTransactionHistory,
+        transactionHistory,
+        fetchMoreRecentTransactionHistory,
+    ])
 
     return (
         <div>
