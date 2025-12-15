@@ -211,12 +211,21 @@ export class CoreService {
                 (await this.ledgerClient.getWithRetry('/v2/state/ledger-end'))
                     .offset
 
-            const options = {
+            const options: {
+                offset: number
+                interfaceIds: string[]
+                parties: PartyId[]
+                filterByParty: boolean
+                limit?: number
+            } = {
                 offset: ledgerEnd,
                 interfaceIds: [interfaceId],
                 parties: [partyId!],
                 filterByParty: true,
-                limit: limit ?? 100,
+            }
+
+            if (limit !== undefined) {
+                options.limit = limit
             }
 
             const acsResponses: JsGetActiveContractsResponse[] =
