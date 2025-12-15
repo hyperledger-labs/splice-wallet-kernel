@@ -315,7 +315,9 @@ export class TransactionHistoryService {
 
     list(): Transfer[] {
         const transfers = [...this.transfers.values()]
-        // TODO: sort
+        transfers.sort(
+            (a, b) => b.requestedAt.valueOf() - a.requestedAt.valueOf()
+        )
         return transfers
     }
 }

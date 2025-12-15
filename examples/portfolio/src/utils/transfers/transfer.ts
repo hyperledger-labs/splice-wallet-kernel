@@ -16,6 +16,7 @@ export type Transfer = {
         id: string
     }
     amount: string
+    requestedAt: Date
     memo?: string
 
     incoming: boolean
@@ -33,6 +34,7 @@ export const toTransfer = ({
 }): Transfer => {
     const { amount, sender, receiver, instrumentId, meta } =
         interfaceViewValue.transfer
+    const requestedAt = new Date(interfaceViewValue.transfer.requestedAt)
     const incoming = party == receiver
     const memo = meta.values[TokenStandardService.MEMO_KEY]
     return {
@@ -41,6 +43,7 @@ export const toTransfer = ({
         receiver,
         instrumentId,
         amount,
+        requestedAt,
         incoming,
         memo,
         status: 'pending',
