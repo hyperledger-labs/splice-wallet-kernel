@@ -5,19 +5,20 @@ import { type Holding } from '@canton-network/core-ledger-client'
 import { useState, useEffect } from 'react'
 import { AssetCard } from './AssetCard.js'
 import { useConnection } from '../contexts/ConnectionContext.js'
-import { getHoldings } from '../utils/getHoldings.js'
+import { usePortfolio } from '../contexts/PortfolioContext.js'
 import { tap } from '../utils/tap.js'
 
 export const HoldingsTab: React.FC = () => {
     const {
         status: { primaryParty, sessionToken },
     } = useConnection()
+    const { listHoldings } = usePortfolio()
     const [holdings, setHoldings] = useState<Holding[] | undefined>(undefined)
     const [tapAmount, setTapAmount] = useState<number>(10000)
 
     const refreshHoldings = async () => {
         if (primaryParty) {
-            const hs = await getHoldings({ party: primaryParty })
+            const hs = await listHoldings({ party: primaryParty })
             setHoldings(hs)
         } else {
             setHoldings(undefined)

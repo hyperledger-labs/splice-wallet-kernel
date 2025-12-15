@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
-import { createTransfer } from '../utils/transfers'
-import { getTransferableInstrumentIds } from '../utils/getHoldings.js'
 import { useRegistries } from '../contexts/RegistriesContext.js'
 import { useConnection } from '../contexts/ConnectionContext.js'
+import { usePortfolio } from '../contexts/PortfolioContext.js'
 
 export const TwoStepTransferTab: React.FC = () => {
     const {
         status: { primaryParty },
     } = useConnection()
     const { registries } = useRegistries()
+    const { listHoldings, createTransfer } = usePortfolio()
     const [receiver, setReceiver] = useState<string>('')
     const [amount, setAmount] = useState<number>(100)
     const [memo, setMemo] = useState<string>('')
@@ -19,9 +19,22 @@ export const TwoStepTransferTab: React.FC = () => {
 
     useEffect(() => {
         if (primaryParty) {
-            getTransferableInstrumentIds({ party: primaryParty }).then(
-                (instrumentIds) => setTransferableInstrumentIds(instrumentIds)
-            )
+            listHoldings({ party: primaryParty }).then((holdings) => {
+                const keys = new Set<string>()
+                const uniqueInstrumentIds: { admin: string; id: string }[] = []
+                for (const holding of holdings) {
+                    const instrumentId = holding.instrumentId
+                    const key = JSON.stringify([
+                        instrumentId.admin,
+                        instrumentId.id,
+                    ])
+                    if (!keys.has(key)) {
+                        keys.add(key)
+                        uniqueInstrumentIds.push(instrumentId)
+                    }
+                }
+                setTransferableInstrumentIds(uniqueInstrumentIds)
+            })
         }
     }, [primaryParty])
 

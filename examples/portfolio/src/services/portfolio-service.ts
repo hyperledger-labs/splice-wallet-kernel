@@ -4,17 +4,36 @@
 import { v4 } from 'uuid'
 import { PartyId } from '@canton-network/core-types'
 import {
+    type Holding,
+    type TransferInstructionView,
+} from '@canton-network/core-ledger-client'
+import {
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+    HOLDING_INTERFACE_ID,
+} from '@canton-network/core-token-standard'
+import {
     resolveTokenStandardService,
     resolveTransactionHistoryService,
 } from './core.js'
-import { type Transfer } from '../utils/transfers/transfer.js'
+import { type Transfer, toTransfer } from '../utils/transfers/transfer.js'
 
 // PortfolioService is a fat interface that tries to capture everything our
 // portflio can do.  Separating the interface from the implementation will
 // hopefully help us when we port the codebase to use web components instead
 // of react.
 export interface PortfolioService {
+    // Holdings
+    listHoldings: ({ party }: { party: string }) => Promise<Holding[]>
+
     // Transfers
+    createTransfer: (_: {
+        registryUrls: Map<PartyId, string>
+        sender: PartyId
+        receiver: PartyId
+        instrumentId: { admin: PartyId; id: string }
+        amount: number
+        memo?: string
+    }) => Promise<void>
     exerciseTransfer: (_: {
         registryUrls: Map<PartyId, string>
         party: PartyId
@@ -22,6 +41,7 @@ export interface PortfolioService {
         instrumentId: { admin: string; id: string }
         instructionChoice: 'Accept' | 'Reject' | 'Withdraw'
     }) => Promise<void>
+    listPendingTransfers: (_: { party: PartyId }) => Promise<Transfer[]>
 
     // History
     getTransactionHistory: (_: { party: PartyId }) => Promise<Transfer[]>
@@ -32,6 +52,81 @@ export interface PortfolioService {
 }
 
 export class PortfolioServiceImplementation {
+    async listHoldings({ party }: { party: string }): Promise<Holding[]> {
+        const tokenStandardService = await resolveTokenStandardService()
+
+        // TODO: copy more from tokenStandardController
+        const utxoContracts =
+            await tokenStandardService.listContractsByInterface<Holding>(
+                HOLDING_INTERFACE_ID,
+                party
+            )
+
+        const uniqueContractIds = new Set<string>()
+        const uniqueUtxos: Holding[] = []
+        for (const utxo of utxoContracts) {
+            if (!uniqueContractIds.has(utxo.contractId)) {
+                uniqueContractIds.add(utxo.contractId)
+                uniqueUtxos.push({
+                    ...utxo.interfaceViewValue,
+                    contractId: utxo.contractId,
+                })
+            }
+        }
+
+        return uniqueUtxos
+    }
+
+    async createTransfer({
+        registryUrls,
+        sender,
+        receiver,
+        instrumentId,
+        amount,
+        memo,
+    }: {
+        registryUrls: Map<PartyId, string>
+        sender: PartyId
+        receiver: PartyId
+        instrumentId: { admin: PartyId; id: string }
+        amount: number
+        memo?: string
+    }) {
+        const registryUrl = registryUrls.get(instrumentId.admin)
+        if (!registryUrl)
+            throw new Error(`no registry URL for admin ${instrumentId.admin}`)
+        const tokenStandardService = await resolveTokenStandardService()
+
+        const [transferCommand, disclosedContracts] =
+            await tokenStandardService.transfer.createTransfer(
+                sender,
+                receiver,
+                `${amount}`,
+                instrumentId.admin,
+                instrumentId.id,
+                registryUrl,
+                undefined, // inputUtxos
+                memo,
+                undefined, // expiryDate
+                undefined, // Metadata
+                undefined // prefetchedRegistryChoiceContext
+            )
+
+        const request = {
+            commands: [{ ExerciseCommand: transferCommand }],
+            commandId: v4(),
+            actAs: [sender],
+            disclosedContracts,
+        }
+
+        const provider = window.canton
+        // TODO: check success
+        await provider?.request({
+            method: 'prepareExecute',
+            params: request,
+        })
+    }
+
     async exerciseTransfer({
         registryUrls,
         party,
@@ -72,6 +167,26 @@ export class PortfolioServiceImplementation {
             method: 'prepareExecute',
             params: request,
         })
+    }
+
+    async listPendingTransfers({
+        party,
+    }: {
+        party: PartyId
+    }): Promise<Transfer[]> {
+        const tokenStandardService = await resolveTokenStandardService()
+        const contracts =
+            await tokenStandardService.listContractsByInterface<TransferInstructionView>(
+                TRANSFER_INSTRUCTION_INTERFACE_ID,
+                party
+            )
+        return contracts.map((c) =>
+            toTransfer({
+                party,
+                contractId: c.contractId,
+                interfaceViewValue: c.interfaceViewValue,
+            })
+        )
     }
 
     async getTransactionHistory({

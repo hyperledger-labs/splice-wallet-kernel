@@ -2,21 +2,23 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState, useEffect } from 'react'
-import { type Transfer, getPendingTransfers } from '../utils/transfers'
+import { type Transfer } from '../utils/transfers'
 import { useConnection } from '../contexts/ConnectionContext.js'
+import { usePortfolio } from '../contexts/PortfolioContext.js'
 import { TransferCard } from './TransferCard.js'
 
 export const PendingTransfersTab: React.FC = () => {
     const {
         status: { primaryParty },
     } = useConnection()
+    const { listPendingTransfers } = usePortfolio()
     const [pendingTransfers, setPendingTransfers] = useState<
         Transfer[] | undefined
     >(undefined)
 
     const refreshPendingTransfers = async () => {
         if (primaryParty) {
-            const hs = await getPendingTransfers({ party: primaryParty })
+            const hs = await listPendingTransfers({ party: primaryParty })
             setPendingTransfers(hs)
         } else {
             setPendingTransfers(undefined)
