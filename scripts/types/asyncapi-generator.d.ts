@@ -15,7 +15,7 @@ declare module '@asyncapi/generator' {
         entrypoint?: string
     }
 
-    class Generator {
+    export default class Generator {
         static default: typeof Generator
         constructor(
             templateName: string,
@@ -28,5 +28,5 @@ declare module '@asyncapi/generator' {
         generateFromUrl(asyncapiString: string): Promise<void>
     }
 
-    export = Generator
+    // export = Generator
 }
