@@ -30,6 +30,7 @@
                         },
                         {
                             "type": "object",
+                            "additionalProperties": false,
                             "properties": {
                                 "userUrl": {
                                     "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/UserUrl"
@@ -61,6 +62,7 @@
                 "schema": {
                     "title": "darsAvailableResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "dars": {
                             "title": "dars",
@@ -117,6 +119,7 @@
                 "schema": {
                     "title": "prepareExecuteResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "userUrl": {
                             "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/UserUrl"

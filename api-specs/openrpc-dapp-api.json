@@ -47,6 +47,7 @@
                 "schema": {
                     "title": "darsAvailableResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "dars": {
                             "title": "dars",
@@ -103,6 +104,7 @@
                 "schema": {
                     "title": "prepareExecuteResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "tx": {
                             "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/TxChangedExecutedEvent"
@@ -174,6 +176,7 @@
             "KernelInfo": {
                 "title": "KernelInfo",
                 "type": "object",
+                "additionalProperties": false,
                 "description": "Represents a Wallet Gateway.",
                 "properties": {
                     "id": {
@@ -201,6 +204,7 @@
             "LedgerApiResult": {
                 "title": "LedgerApiResult",
                 "type": "object",
+                "additionalProperties": false,
                 "description": "Ledger Api configuration options",
                 "properties": {
                     "response": {
@@ -219,6 +223,7 @@
             "JsPrepareSubmissionRequest": {
                 "title": "JsPrepareSubmissionRequest",
                 "type": "object",
+                "additionalProperties": false,
                 "description": "Structure representing the request for prepare and execute calls",
                 "properties": {
                     "commandId": {
@@ -273,6 +278,7 @@
             "DisclosedContract": {
                 "title": "DisclosedContract",
                 "type": "object",
+                "additionalProperties": false,
                 "description": "Structure representing a disclosed contract for transaction execution",
                 "properties": {
                     "templateId": {
@@ -301,11 +307,13 @@
             "JsCommands": {
                 "title": "JsCommands",
                 "type": "object",
+                "additionalProperties": true,
                 "description": "Structure representing JS commands for transaction execution"
             },
             "JsPrepareSubmissionResponse": {
                 "title": "JsPrepareSubmissionResponse",
                 "type": "object",
+                "additionalProperties": false,
                 "description": "Structure representing the result of a prepareReturn call",
                 "properties": {
                     "preparedTransaction": {
@@ -323,6 +331,7 @@
             "LedgerApiRequest": {
                 "title": "LedgerApiRequest",
                 "type": "object",
+                "additionalProperties": false,
                 "description": "Ledger API request structure",
                 "properties": {
                     "requestMethod": {
@@ -503,6 +512,7 @@
             "StatusEvent": {
                 "title": "StatusEvent",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                     "kernel": {
                         "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/KernelInfo"
@@ -525,6 +535,7 @@
                     "network": {
                         "title": "network",
                         "type": "object",
+                        "additionalProperties": false,
                         "description": "Network information, if connected to a network.",
                         "properties": {
                             "networkId": {
@@ -535,6 +546,7 @@
                             "ledgerApi": {
                                 "title": "LedgerApiConfig",
                                 "type": "object",
+                                "additionalProperties": false,
                                 "description": "Ledger API configuration.",
                                 "properties": {
                                     "baseUrl": {
@@ -552,6 +564,7 @@
                     "session": {
                         "title": "session",
                         "type": "object",
+                        "additionalProperties": false,
                         "description": "Session information, if authenticated.",
                         "properties": {
                             "accessToken": {
