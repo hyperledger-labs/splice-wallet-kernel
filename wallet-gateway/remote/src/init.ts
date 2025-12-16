@@ -34,6 +34,7 @@ import { deriveKernelUrls } from './config/ConfigUtils.js'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 import { GATEWAY_VERSION } from './version.js'
+import { sessionHandler } from './middleware/sessionHandler.js'
 
 let isReady = false
 
@@ -206,9 +207,22 @@ export async function initialize(opts: CliOptions, logger: Logger) {
         }),
     }
 
+    const allowedPaths = {
+        [config.server.dappPath]: ['*'],
+        [config.server.userPath]: ['addSession', 'listNetworks', 'listIdps'],
+    }
+
     app.use('/api/*splat', express.json())
     app.use('/api/*splat', rpcRateLimit)
-    app.use('/api/*splat', jwtAuth(authService, logger))
+    app.use(
+        '/api/*splat',
+        jwtAuth(authService, logger.child({ component: 'JwtHandler' })),
+        sessionHandler(
+            store,
+            allowedPaths,
+            logger.child({ component: 'SessionHandler' })
+        )
+    )
 
     // Override config port with CLI parameter port if provided, then derive URLs
     const serverConfigWithOverride = {
