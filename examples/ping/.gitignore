@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 
 # Playwright
+*.png
 test-results/
 playwright-report/
 blob-report/
