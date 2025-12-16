@@ -165,17 +165,6 @@ export const jsonRpcResponse = (
     }
 }
 
-export class HttpError extends Error {
-    constructor(
-        public readonly status: number,
-        public readonly statusText: string,
-        public readonly body: string
-    ) {
-        super(`HTTP ${status} ${statusText}`)
-        this.name = 'HttpError'
-    }
-}
-
 export interface RpcTransport {
     submit: (payload: RequestPayload) => Promise<ResponsePayload>
 }
@@ -228,6 +217,13 @@ export class HttpTransport implements RpcTransport {
         private accessToken?: string
     ) {}
 
+    protected async handleErrorResponse(response: Response): Promise<never> {
+        const body = await response.text()
+        throw new Error(
+            `HTTP ${response.status} ${response.statusText}: ${body}`
+        )
+    }
+
     async submit(payload: RequestPayload): Promise<ResponsePayload> {
         const request: JsonRpcRequest = {
             jsonrpc: '2.0',
@@ -250,8 +246,7 @@ export class HttpTransport implements RpcTransport {
         })
 
         if (!response.ok) {
-            const body = await response.text()
-            throw new HttpError(response.status, response.statusText, body)
+            return this.handleErrorResponse(response)
         }
 
         const json = await response.json()

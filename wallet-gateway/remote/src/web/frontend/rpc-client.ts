@@ -1,19 +1,10 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    HttpTransport,
-    HttpError,
-    ErrorResponse,
-    RequestPayload,
-    ResponsePayload,
-    JsonRpcRequest,
-} from '@canton-network/core-types'
-import { providerErrors } from '@canton-network/core-rpc-errors'
+import { HttpTransport } from '@canton-network/core-types'
 import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from './state-manager'
 import { LOGIN_PAGE_REDIRECT } from './constants'
-import { v4 as uuidv4 } from 'uuid'
 
 // Flag to prevent multiple simultaneous logout attempts
 let isLoggingOut = false
@@ -78,63 +69,11 @@ const handleAutoLogout = async (): Promise<void> => {
 }
 
 class HttpTransportWithAuthInterceptor extends HttpTransport {
-    private readonly url: URL
-    private readonly accessToken?: string
-
-    constructor(url: URL, accessToken?: string) {
-        super(url, accessToken)
-        this.url = url
-        this.accessToken = accessToken
-    }
-
-    async submit(payload: RequestPayload): Promise<ResponsePayload> {
-        const request: JsonRpcRequest = {
-            jsonrpc: '2.0',
-            method: payload.method,
-            params: payload.params,
-            id: uuidv4(),
-        }
-
-        const header = this.accessToken
-            ? { Authorization: `Bearer ${this.accessToken}` }
-            : undefined
-
-        const response = await fetch(this.url.href, {
-            method: 'POST',
-            headers: {
-                ...header,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(request),
-        })
-
-        // Check HTTP status 401 before JSON parsing
+    protected async handleErrorResponse(response: Response): Promise<never> {
         if (response.status === 401) {
             handleAutoLogout()
-            const body = await response.text()
-            throw new HttpError(response.status, response.statusText, body)
         }
-
-        if (!response.ok) {
-            const body = await response.text()
-            throw new HttpError(response.status, response.statusText, body)
-        }
-
-        // Parse JSON and check for JSON-RPC error codes
-        const json = await response.json()
-
-        // Check if it's an error response with unauthorized code
-        if ('error' in json) {
-            const errorResponse = json as ErrorResponse
-            if (
-                errorResponse.error.code === providerErrors.unauthorized().code
-            ) {
-                handleAutoLogout()
-            }
-        }
-
-        // Continue with normal parsing
-        return ResponsePayload.parse(json)
+        return super.handleErrorResponse(response)
     }
 }
 

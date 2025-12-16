@@ -9,7 +9,7 @@ import '@canton-network/core-wallet-ui-components'
 import '@canton-network/core-wallet-ui-components/dist/index.css'
 import '/index.css'
 import { stateManager } from './state-manager'
-import { WalletEvent, HttpError } from '@canton-network/core-types'
+import { WalletEvent } from '@canton-network/core-types'
 import {
     DEFAULT_PAGE_REDIRECT,
     NOT_FOUND_PAGE_REDIRECT,
@@ -190,28 +190,18 @@ export const authenticate = async (
     accessToken: string,
     networkId: string
 ): Promise<void> => {
-    try {
-        const authenticatedUserClient = await createUserClient(accessToken)
-        await authenticatedUserClient.request('addSession', {
-            networkId,
-        })
+    const authenticatedUserClient = await createUserClient(accessToken)
+    await authenticatedUserClient.request('addSession', {
+        networkId,
+    })
 
-        if (window.opener && !window.opener.closed) {
-            window.opener.postMessage(
-                {
-                    type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
-                    token: stateManager.accessToken.get(),
-                },
-                '*'
-            )
-        }
-    } catch (error) {
-        // If addSession fails with 401, the error interceptor will handle logout
-        // But we should also clear invalid tokens here
-        if (error instanceof HttpError && error.status === 401) {
-            stateManager.clearAuthState()
-        }
-        // Re-throw to allow caller to handle if needed
-        throw error
+    if (window.opener && !window.opener.closed) {
+        window.opener.postMessage(
+            {
+                type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
+                token: stateManager.accessToken.get(),
+            },
+            '*'
+        )
     }
 }
