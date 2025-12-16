@@ -49,9 +49,8 @@ export class LoginCallback extends LitElement {
                 const payload = JSON.parse(
                     atob(tokenResponse.access_token.split('.')[1])
                 )
-                // TODO maybe better .toISOString?
                 stateManager.expirationDate.set(
-                    new Date(payload.exp * 1000).toString()
+                    new Date(payload.exp * 1000).toISOString()
                 )
 
                 stateManager.accessToken.set(tokenResponse.access_token)

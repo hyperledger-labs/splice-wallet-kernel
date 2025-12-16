@@ -318,8 +318,9 @@ export class LoginUI extends LitElement {
         }
 
         const payload = JSON.parse(atob(access_token.split('.')[1]))
-        // TODO maybe better .toISOString?
-        stateManager.expirationDate.set(new Date(payload.exp * 1000).toString())
+        stateManager.expirationDate.set(
+            new Date(payload.exp * 1000).toISOString()
+        )
 
         stateManager.accessToken.set(access_token)
 
