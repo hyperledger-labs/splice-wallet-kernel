@@ -3,7 +3,7 @@
 
 import type { PartyId } from '@canton-network/core-types'
 import { type Transfer } from '../models/transfer.js'
-import { useRegistries } from '../contexts/RegistriesContext.js'
+import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
 import { usePortfolio } from '../contexts/PortfolioContext.js'
 import { AssetCard } from './AssetCard.js'
 
@@ -16,7 +16,7 @@ export const TransferCard: React.FC<TransferCardProps> = ({
     party,
     transfer,
 }) => {
-    const { registries } = useRegistries()
+    const registryUrls = useRegistryUrls()
     const { exerciseTransfer } = usePortfolio()
     return (
         <div>
@@ -37,7 +37,7 @@ export const TransferCard: React.FC<TransferCardProps> = ({
                     <button
                         onClick={() => {
                             exerciseTransfer({
-                                registryUrls: registries,
+                                registryUrls,
                                 party,
                                 contractId: transfer.contractId,
                                 instrumentId: transfer.instrumentId,
@@ -52,7 +52,7 @@ export const TransferCard: React.FC<TransferCardProps> = ({
                     <button
                         onClick={() => {
                             exerciseTransfer({
-                                registryUrls: registries,
+                                registryUrls,
                                 party,
                                 contractId: transfer.contractId,
                                 instrumentId: transfer.instrumentId,
@@ -68,7 +68,7 @@ export const TransferCard: React.FC<TransferCardProps> = ({
                 <button
                     onClick={() => {
                         exerciseTransfer({
-                            registryUrls: registries,
+                            registryUrls,
                             party,
                             contractId: transfer.contractId,
                             instrumentId: transfer.instrumentId,
