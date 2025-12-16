@@ -27,22 +27,20 @@ export const redirectToIntendedOrDefault = (): void => {
 @customElement('user-app')
 export class UserApp extends LitElement {
     private async handleLogout() {
-        if (!stateManager.accessToken.get()) {
+        const accessToken = stateManager.accessToken.get()
+
+        if (!accessToken) {
             window.location.href = LOGIN_PAGE_REDIRECT
             return
         }
 
-        const accessToken = stateManager.accessToken.get()
-
-        if (accessToken) {
-            try {
-                const userClient = await createUserClient(accessToken)
-                await userClient.request('removeSession')
-            } catch (error) {
-                // If removeSession fails (for example token is invalid),
-                // clear the local state anyway
-                console.debug('Failed to remove session during logout:', error)
-            }
+        try {
+            const userClient = await createUserClient(accessToken)
+            await userClient.request('removeSession')
+        } catch (error) {
+            // If removeSession fails (for example token is invalid),
+            // clear the local state anyway
+            console.debug('Failed to remove session during logout:', error)
         }
 
         stateManager.clearAuthState()
