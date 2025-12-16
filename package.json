@@ -43,7 +43,7 @@
         "core/**",
         "docs/wallet-integration-guide/examples",
         "damljs/**",
-        "examples/ping",
+        "examples/*",
         "example-scripts",
         "sdk/**",
         "scripts",

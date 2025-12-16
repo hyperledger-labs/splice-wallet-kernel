@@ -1,0 +1,51 @@
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+import { PartyId } from '@canton-network/core-types'
+import { type Holding } from '@canton-network/core-ledger-client'
+import { type Transfer } from '../models/transfer.js'
+
+// PortfolioService is a fat interface that tries to capture everything our
+// portflio can do.  Separating the interface from the implementation will
+// hopefully help us when we port the codebase to use web components instead
+// of react.
+export interface PortfolioService {
+    // Holdings
+    listHoldings: ({ party }: { party: string }) => Promise<Holding[]>
+
+    // Transfers
+    createTransfer: (_: {
+        registryUrls: Map<PartyId, string>
+        sender: PartyId
+        receiver: PartyId
+        instrumentId: { admin: PartyId; id: string }
+        amount: number
+        memo?: string
+    }) => Promise<void>
+    exerciseTransfer: (_: {
+        registryUrls: Map<PartyId, string>
+        party: PartyId
+        contractId: string
+        instrumentId: { admin: string; id: string }
+        instructionChoice: 'Accept' | 'Reject' | 'Withdraw'
+    }) => Promise<void>
+    listPendingTransfers: (_: { party: PartyId }) => Promise<Transfer[]>
+
+    // History
+    getTransactionHistory: (_: { party: PartyId }) => Promise<Transfer[]>
+    fetchOlderTransactionHistory: (_: { party: PartyId }) => Promise<Transfer[]>
+    fetchMoreRecentTransactionHistory: (_: {
+        party: PartyId
+    }) => Promise<Transfer[]>
+
+    // Tap
+    tap: ({
+        party,
+        sessionToken,
+        amount,
+    }: {
+        party: string
+        sessionToken: string
+        amount: number
+    }) => Promise<void>
+}

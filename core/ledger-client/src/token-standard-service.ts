@@ -817,6 +817,7 @@ class TransferService {
         return [exercise, choiceContext.disclosedContracts]
     }
 
+    // TODO: use named parameters
     async createTransfer(
         sender: PartyId,
         receiver: PartyId,
