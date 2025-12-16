@@ -71,7 +71,7 @@
                             "title": "networks",
                             "type": "array",
                             "items": {
-                                "$ref": "#/components/schemas/Network"
+                                "$ref": "#/components/schemas/VerifiedNetwork"
                             }
                         }
                     },
@@ -553,6 +553,28 @@
                 "type": "string",
                 "description": "The unique identifier of the command associated with the transaction."
             },
+            "VerifiedNetwork": {
+                "title": "VerifiedNetwork",
+                "description": "Structure representing the Networks with connectivity verification",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/Network"
+                    },
+                    {
+                        "title": "VerifiedNetworkProperties",
+                        "description": "holder for boolean verified property",
+                        "type": "object",
+                        "properties": {
+                            "verified": {
+                                "title": "verified",
+                                "description": "true if we could succesfully call the ledger version endpoint",
+                                "type": "boolean"
+                            }
+                        },
+                        "required": ["verified"]
+                    }
+                ]
+            },
             "Network": {
                 "title": "Network",
                 "type": "object",
@@ -591,8 +613,16 @@
                     },
                     "ledgerApi": {
                         "title": "ledgerApi",
-                        "type": "string",
-                        "description": "Ledger api url"
+                        "type": "object",
+                        "description": "Ledger api url",
+                        "properties": {
+                            "baseUrl": {
+                                "title": "baseUrl",
+                                "type": "string",
+                                "description": "Ledger api url"
+                            }
+                        },
+                        "required": ["baseUrl"]
                     }
                 },
                 "required": [

@@ -341,7 +341,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         await this.db.transaction().execute(async (trx) => {
             // we do not set a userId for now and leave all networks global when updating
             const networkEntry = fromNetwork(network, undefined)
-            this.logger.info(networkEntry, 'Updating network table')
+            this.logger.debug(networkEntry, 'Updating network table')
             await trx
                 .updateTable('networks')
                 .set(networkEntry)

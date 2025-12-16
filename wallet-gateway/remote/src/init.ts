@@ -34,6 +34,9 @@ import { deriveKernelUrls } from './config/ConfigUtils.js'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 import { GATEWAY_VERSION } from './version.js'
+import cron from 'node-cron'
+import { startLedgerConnectivityTester } from './background-jobs/ledger-connectivity-tester.js'
+import { NetworkCacheStore } from './cache/network-cache.js'
 
 let isReady = false
 
@@ -68,7 +71,7 @@ async function initializeDatabase(
     config: Config,
     logger: Logger
 ): Promise<StoreSql> {
-    logger.info('Checking for database migrations...')
+    logger.info(config.store, 'Initializing database with config')
 
     let exists = true
     if (config.store.connection.type === 'sqlite') {
@@ -134,6 +137,17 @@ async function initializeSigningDatabase(
     return new SigningStoreSql(db, logger)
 }
 
+export function initializeBackgroundJobs(
+    networkCacheStore: NetworkCacheStore,
+    logger: Logger
+) {
+    // Run immediately on startup to fill cache
+    startLedgerConnectivityTester(networkCacheStore, logger)
+    cron.schedule('* * * * *', () => {
+        startLedgerConnectivityTester(networkCacheStore, logger)
+    })
+}
+
 export async function initialize(opts: CliOptions, logger: Logger) {
     const config = ConfigUtils.loadConfigFile(opts.config)
 
@@ -176,6 +190,8 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const store = await initializeDatabase(config, logger)
     const signingStore = await initializeSigningDatabase(config, logger)
     const authService = jwtAuthService(store, logger)
+    const networkCacheStore = new NetworkCacheStore(store, logger)
+    initializeBackgroundJobs(networkCacheStore, logger)
 
     // Provide apiKey from User API in Fireblocks
     const apiPath = path.resolve(process.cwd(), 'fireblocks_api.key')
@@ -257,7 +273,8 @@ export async function initialize(opts: CliOptions, logger: Logger) {
         userUrl,
         notificationService,
         drivers,
-        store
+        store,
+        networkCacheStore
     )
 
     // register web handler

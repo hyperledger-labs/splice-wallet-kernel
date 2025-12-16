@@ -62,7 +62,16 @@ export interface Auth {
  * Ledger api url
  *
  */
-export type LedgerApi = string
+export type BaseUrl = string
+/**
+ *
+ * Ledger api url
+ *
+ */
+export interface LedgerApi {
+    baseUrl: BaseUrl
+    [k: string]: any
+}
 /**
  *
  * Structure representing the Networks
@@ -204,7 +213,28 @@ export type PreparedTransactionHash = string
 export type CommandId = string
 export type Signature = string
 export type SignedBy = string
-export type Networks = Network[]
+/**
+ *
+ * true if we could succesfully call the ledger version endpoint
+ *
+ */
+export type Verified = boolean
+/**
+ *
+ * holder for boolean verified property
+ *
+ */
+export interface VerifiedNetworkProperties {
+    verified: Verified
+    [k: string]: any
+}
+/**
+ *
+ * Structure representing the Networks with connectivity verification
+ *
+ */
+export type VerifiedNetwork = Network & VerifiedNetworkProperties
+export type Networks = VerifiedNetwork[]
 export type Idps = Idp[]
 /**
  *

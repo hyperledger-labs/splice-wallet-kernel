@@ -4,7 +4,8 @@
         "rootDir": "./src",
         "outDir": "./dist",
         "experimentalDecorators": false,
-        "useDefineForClassFields": false
+        "useDefineForClassFields": false,
+        "exactOptionalPropertyTypes": false
     },
     "include": ["src", "types/express.d.ts"],
     "exclude": ["src/web/frontend"]

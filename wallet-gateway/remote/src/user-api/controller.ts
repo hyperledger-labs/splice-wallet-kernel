@@ -55,6 +55,7 @@ import {
     ledgerPrepareParams,
 } from '../utils.js'
 import { StatusEvent } from '../dapp-api/rpc-gen/typings.js'
+import { NetworkCacheStore } from '../cache/network-cache.js'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
@@ -64,6 +65,7 @@ export const userController = (
     kernelInfo: KernelInfo,
     userUrl: string,
     store: Store,
+    cache: NetworkCacheStore,
     notificationService: NotificationService,
     authContext: AuthContext | undefined,
     drivers: AvailableSigningDrivers,
@@ -74,10 +76,6 @@ export const userController = (
     return buildController({
         addNetwork: async (params: AddNetworkParams) => {
             const { network } = params
-
-            const ledgerApi = {
-                baseUrl: network.ledgerApi ?? '',
-            }
 
             const auth = authSchema.parse(network.auth)
             const adminAuth = network.adminAuth
@@ -92,25 +90,26 @@ export const userController = (
                 identityProviderId: network.identityProviderId,
                 auth,
                 adminAuth,
-                ledgerApi,
+                ledgerApi: network.ledgerApi,
             }
 
             // TODO: Add an explicit updateNetwork method to the User API spec and controller
-            const existingNetworks = await store.listNetworks()
+            const existingNetworks = await cache.listNetworks()
             if (existingNetworks.find((n) => n.id === newNetwork.id)) {
-                await store.updateNetwork(newNetwork)
+                await cache.updateNetwork(newNetwork)
             } else {
-                await store.addNetwork(newNetwork)
+                await cache.addNetwork(newNetwork)
             }
 
             return null
         },
         removeNetwork: async (params: RemoveNetworkParams) => {
-            await store.removeNetwork(params.networkName)
+            await cache.removeNetwork(params.networkName)
             return null
         },
-        listNetworks: async () =>
-            Promise.resolve({ networks: await store.listNetworks() }),
+        listNetworks: async () => {
+            return { networks: await cache.listNetworks() }
+        },
         addIdp: async (params: AddIdpParams) => {
             const validatedIdp = idpSchema.parse(params.idp)
 
@@ -144,22 +143,21 @@ export const userController = (
 
             const userId = assertConnected(authContext).userId
             const notifier = notificationService.getNotifier(userId)
-            const network = await store.getCurrentNetwork()
+            const network = await cache.getCurrentNetwork()
 
             if (network === undefined) {
                 throw new Error('No network session found')
             }
 
             const idp = await store.getIdp(network.identityProviderId)
-
             const tokenProvider = new AuthTokenProvider(
                 idp,
                 network.auth,
-                network.adminAuth,
+                network.adminAuth!,
                 logger
             )
             const partyAllocator = new PartyAllocationService({
-                synchronizerId: network.synchronizerId,
+                synchronizerId: network.synchronizerId!,
                 accessTokenProvider: tokenProvider,
                 httpLedgerUrl: network.ledgerApi.baseUrl,
                 logger,
