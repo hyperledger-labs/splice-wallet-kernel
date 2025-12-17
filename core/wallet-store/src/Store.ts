@@ -51,6 +51,7 @@ export interface Wallet {
 // Session management
 
 export interface Session {
+    id: string
     network: string
     accessToken: string
 }

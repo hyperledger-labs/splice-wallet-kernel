@@ -56,14 +56,15 @@ export async function connect(): Promise<dappAPI.StatusEvent> {
 }
 
 export async function disconnect(): Promise<dappAPI.Null> {
-    return await assertProvider()
-        .request<dappAPI.Null>({
+    try {
+        const provider = assertProvider()
+        return provider.request<dappAPI.Null>({
             method: 'disconnect',
         })
-        .then(() => {
-            clearAllLocalState()
-            return null
-        })
+    } catch {
+        clearAllLocalState()
+        return null
+    }
 }
 
 export async function status(): Promise<dappAPI.StatusEvent> {
