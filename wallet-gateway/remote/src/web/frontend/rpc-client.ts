@@ -6,9 +6,7 @@ import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from './state-manager'
 import { LOGIN_PAGE_REDIRECT } from './constants'
 
-// Flag to prevent multiple simultaneous logout attempts
 let isLoggingOut = false
-
 let userPathPromise: Promise<string> | null = null
 
 const getUserPath = async (): Promise<string> => {
@@ -27,9 +25,6 @@ const getUserPath = async (): Promise<string> => {
     return userPathPromise
 }
 
-/**
- * Automatically log out user when token becomes invalid
- */
 const handleAutoLogout = async (): Promise<void> => {
     // Prevent multiple simultaneous logout attempts
     if (isLoggingOut) {
@@ -41,30 +36,22 @@ const handleAutoLogout = async (): Promise<void> => {
     try {
         const accessToken = stateManager.accessToken.get()
         if (accessToken) {
-            try {
-                const userPath = await getUserPath()
-                const url = new URL(`${window.location.origin}${userPath}`)
-                const tempClient = new UserApiClient(
-                    new HttpTransport(url, accessToken)
-                )
-                await tempClient.request('removeSession')
-            } catch (error) {
-                console.debug(
-                    'Failed to remove session during auto-logout:',
-                    error
-                )
-            }
+            const userPath = await getUserPath()
+            const url = new URL(`${window.location.origin}${userPath}`)
+            const userApiClient = new UserApiClient(
+                new HttpTransport(url, accessToken)
+            )
+            await userApiClient.request('removeSession')
         }
-
+    } catch (error) {
+        console.debug('Failed to remove session during auto-logout:', error)
+    } finally {
         stateManager.clearAuthState()
+        isLoggingOut = false
 
         if (!window.location.pathname.startsWith(LOGIN_PAGE_REDIRECT)) {
             window.location.href = LOGIN_PAGE_REDIRECT
         }
-    } finally {
-        setTimeout(() => {
-            isLoggingOut = false
-        }, 1000)
     }
 }
 
