@@ -32,7 +32,6 @@ registryService.addOnRegistryUrlsChangeListener((registryUrls) =>
 export const RegistryServiceProvider: React.FC<{
     children: React.ReactNode
 }> = ({ children }) => {
-    console.log(registryService)
     return (
         <RegistryServiceContext.Provider value={registryService}>
             {children}
