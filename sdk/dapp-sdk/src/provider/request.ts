@@ -58,7 +58,7 @@ export async function connect(): Promise<dappAPI.StatusEvent> {
 export async function disconnect(): Promise<dappAPI.Null> {
     try {
         const provider = assertProvider()
-        return provider.request<dappAPI.Null>({
+        return await provider.request<dappAPI.Null>({
             method: 'disconnect',
         })
     } catch {
