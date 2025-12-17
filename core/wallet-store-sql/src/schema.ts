@@ -62,6 +62,7 @@ interface TransactionTable {
 }
 
 interface SessionTable extends Session {
+    id: string
     userId: UserId
 }
 
