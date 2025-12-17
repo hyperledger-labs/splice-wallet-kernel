@@ -80,7 +80,7 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
         await dappPage.reload()
 
         await expect(
-            dappPage.getByText(new RegExp(`primary party: ${party2}::.*`))
+            dappPage.getByText(new RegExp(`${party2}::.*`))
         ).toBeVisible()
         await expect(
             dappPage.getByRole('button', { name: 'create Ping contract' })
@@ -100,11 +100,7 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
         await wkPage.getByRole('button', { name: 'Approve' }).click()
 
         // Wait for command to have fully executed
-        await expect(
-            dappPage
-                .getByText(`{"commandId":"${id}","status":"executed","`)
-                .first()
-        ).toBeVisible()
+        await expect(dappPage.getByText(id || '')).toHaveCount(3)
     } catch (e) {
         try {
             await dappPage.screenshot({

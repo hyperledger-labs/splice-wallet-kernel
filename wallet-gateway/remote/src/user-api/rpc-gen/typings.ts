@@ -268,6 +268,7 @@ export type Reason = string
  *
  */
 export interface Session {
+    id: Id
     network: Network
     idp: Idp
     accessToken: AccessToken
@@ -407,6 +408,7 @@ export interface ExecuteResult {
  *
  */
 export interface AddSessionResult {
+    id: Id
     network: Network
     idp: Idp
     accessToken: AccessToken

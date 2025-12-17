@@ -19,7 +19,7 @@ import {
     PrepareExecuteParams,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { ErrorCode } from './error.js'
-import { StatusEvent } from './dapp-api/rpc-gen/typings'
+import { Session, StatusEvent } from './dapp-api/rpc-gen/typings'
 import { gatewayUi } from './ui'
 
 /**
@@ -30,13 +30,16 @@ export class Provider implements SpliceProvider {
     private providerType: ProviderType
     private provider: SpliceProvider
 
-    constructor({ walletType, url }: DiscoverResult, sessionToken?: string) {
+    constructor({ walletType, url }: DiscoverResult, session?: Session) {
         if (walletType == 'extension') {
             this.providerType = ProviderType.WINDOW
             this.provider = new SpliceProviderWindow()
         } else if (walletType == 'remote') {
             this.providerType = ProviderType.HTTP
-            this.provider = new SpliceProviderHttp(new URL(url), sessionToken)
+            this.provider = new SpliceProviderHttp(
+                new URL(url),
+                session?.accessToken
+            )
         } else {
             throw new Error(`Unsupported wallet type ${walletType}`)
         }

@@ -5,6 +5,7 @@ npm-debug.log
 .env
 .DS_Store
 *.tsbuildinfo
+*.sqlite
 **/build
 .temp/
 
@@ -36,3 +37,6 @@ generated/
 storybook-static
 
 **/target/
+
+# scala
+.scala-build/
