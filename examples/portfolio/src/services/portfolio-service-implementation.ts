@@ -15,7 +15,6 @@ import {
     resolveTokenStandardService,
     resolveTransactionHistoryService,
     resolveAmuletService,
-    resolveTokenStandardClient,
 } from './resolve.js'
 import { type Transfer, toTransfer } from '../models/transfer.js'
 
@@ -61,7 +60,7 @@ export const createTransfer = async ({
     amount,
     memo,
 }: {
-    registryUrls: Map<PartyId, string>
+    registryUrls: ReadonlyMap<PartyId, string>
     sender: PartyId
     receiver: PartyId
     instrumentId: { admin: PartyId; id: string }
@@ -110,7 +109,7 @@ export const exerciseTransfer = async ({
     instrumentId,
     instructionChoice,
 }: {
-    registryUrls: Map<PartyId, string>
+    registryUrls: ReadonlyMap<PartyId, string>
     party: PartyId
     contractId: string
     instrumentId: { admin: string; id: string }
@@ -199,31 +198,32 @@ export const fetchMoreRecentTransactionHistory = async ({
 }
 
 export const tap = async ({
+    registryUrls,
     party,
     sessionToken,
+    instrumentId,
     amount,
 }: {
+    registryUrls: ReadonlyMap<PartyId, string>
     party: string
     sessionToken: string
+    instrumentId: { admin: string; id: string }
     amount: number
 }) => {
-    // TODO: we'll need to retrieve all instrument info from the known
-    // registries in order to allow the user to tap.
-    const registryUrl = 'http://scan.localhost:4000'
-    const tokenStandardClient = await resolveTokenStandardClient({
-        registryUrl,
-    })
+    // TODO: resolve this BEFORE calling this function so we can gray out the
+    // button?
+    const registryUrl = registryUrls.get(instrumentId.admin)
+    if (!registryUrl)
+        throw new Error(`no registry URL for admin ${instrumentId.admin}`)
+
     const amuletService = await resolveAmuletService({
         sessionToken,
     })
-    const registryInfo = await tokenStandardClient.get(
-        '/registry/metadata/v1/info'
-    )
     const [tapCommand, disclosedContracts] = await amuletService.createTap(
         party,
         `${amount}`,
-        registryInfo.adminId,
-        'Amulet',
+        instrumentId.admin,
+        instrumentId.id,
         registryUrl
     )
 

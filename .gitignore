@@ -37,3 +37,6 @@ generated/
 storybook-static
 
 **/target/
+
+# scala
+.scala-build/

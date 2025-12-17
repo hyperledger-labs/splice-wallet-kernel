@@ -766,6 +766,11 @@
                 "type": "object",
                 "description": "Structure representing the connected network session",
                 "properties": {
+                    "id": {
+                        "title": "id",
+                        "type": "string",
+                        "description": "The unique identifier of the session."
+                    },
                     "network": {
                         "$ref": "#/components/schemas/Network"
                     },
@@ -788,7 +793,7 @@
                         "description": "The reason for the current status."
                     }
                 },
-                "required": ["network", "idp", "status", "accessToken"],
+                "required": ["network", "idp", "status", "accessToken", "id"],
                 "additionalProperties": false
             },
             "SigningProviderContext": {

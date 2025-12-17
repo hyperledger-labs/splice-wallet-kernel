@@ -42,7 +42,6 @@ class GatewayUi {
     }
 
     close() {
-        console.log('closing gateway UI popup if open 22')
         if (this.popup) {
             this.popup.close()
         } else {

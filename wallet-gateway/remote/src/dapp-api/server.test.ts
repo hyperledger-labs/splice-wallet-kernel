@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { expect, test, jest } from '@jest/globals'
+import { expect, test } from '@jest/globals'
 
 import cors from 'cors'
 import request from 'supertest'
@@ -10,7 +10,7 @@ import { dapp } from './server.js'
 import { StoreInternal } from '@canton-network/core-wallet-store-inmemory'
 import { AuthService } from '@canton-network/core-wallet-auth'
 import { ConfigUtils, deriveKernelUrls } from '../config/ConfigUtils.js'
-import { Notifier } from '../notification/NotificationService.js'
+import { NotificationService } from '../notification/NotificationService.js'
 import { pino } from 'pino'
 import { sink } from 'pino-test'
 import { createServer } from 'http'
@@ -28,13 +28,7 @@ const config = ConfigUtils.loadConfigFile(configPath)
 
 const store = new StoreInternal(config.store, pino(sink()))
 
-const notificationService = {
-    getNotifier: jest.fn<() => Notifier>().mockReturnValue({
-        on: jest.fn(),
-        emit: jest.fn<Notifier['emit']>(),
-        removeListener: jest.fn(),
-    }),
-}
+const notificationService = new NotificationService(pino(sink()))
 
 test('call connect rpc', async () => {
     const app = express()

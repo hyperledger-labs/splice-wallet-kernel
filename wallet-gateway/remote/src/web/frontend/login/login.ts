@@ -9,11 +9,11 @@ import { createUserClient } from '../rpc-client'
 import { Idp, Network } from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
-import { WalletEvent } from '@canton-network/core-types'
 import {
     AuthTokenProviderSelfSigned,
     ClientCredentials,
 } from '@canton-network/core-wallet-auth'
+import { addUserSession } from '../index'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
@@ -308,26 +308,13 @@ export class LoginUI extends LitElement {
             3600
         )
 
-        if (window.opener && !window.opener.closed) {
-            window.opener.postMessage(
-                {
-                    type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
-                    token: access_token,
-                },
-                '*'
-            )
-        }
-
         const payload = JSON.parse(atob(access_token.split('.')[1]))
-        stateManager.expirationDate.set(new Date(payload.exp * 1000).toString())
 
+        stateManager.expirationDate.set(new Date(payload.exp * 1000).toString())
         stateManager.accessToken.set(access_token)
 
-        const authenticatedUserClient = await createUserClient(access_token)
-
-        await authenticatedUserClient.request('addSession', {
-            networkId: stateManager.networkId.get() || '',
-        })
+        const networkId = stateManager.networkId.get() || ''
+        addUserSession(access_token, networkId)
     }
 
     protected render() {

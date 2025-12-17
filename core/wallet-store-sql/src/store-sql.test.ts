@@ -215,6 +215,7 @@ implementations.forEach(([name, StoreImpl]) => {
             await store.addIdp(idp)
             await store.addNetwork(network)
             const session: Session = {
+                id: 'sess-123',
                 network: 'network1',
                 accessToken: 'token',
             }

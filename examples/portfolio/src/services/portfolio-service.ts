@@ -15,7 +15,7 @@ export interface PortfolioService {
 
     // Transfers
     createTransfer: (_: {
-        registryUrls: Map<PartyId, string>
+        registryUrls: ReadonlyMap<PartyId, string>
         sender: PartyId
         receiver: PartyId
         instrumentId: { admin: PartyId; id: string }
@@ -23,7 +23,7 @@ export interface PortfolioService {
         memo?: string
     }) => Promise<void>
     exerciseTransfer: (_: {
-        registryUrls: Map<PartyId, string>
+        registryUrls: ReadonlyMap<PartyId, string>
         party: PartyId
         contractId: string
         instrumentId: { admin: string; id: string }
@@ -39,13 +39,11 @@ export interface PortfolioService {
     }) => Promise<Transfer[]>
 
     // Tap
-    tap: ({
-        party,
-        sessionToken,
-        amount,
-    }: {
+    tap: (_: {
+        registryUrls: ReadonlyMap<PartyId, string>
         party: string
         sessionToken: string
+        instrumentId: { admin: string; id: string }
         amount: number
     }) => Promise<void>
 }

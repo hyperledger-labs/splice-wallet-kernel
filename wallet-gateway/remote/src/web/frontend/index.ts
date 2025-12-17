@@ -11,7 +11,7 @@ import '/index.css'
 import { stateManager } from './state-manager'
 import { WalletEvent } from '@canton-network/core-types'
 
-const DEFAULT_PAGE_REDIRECT = '/wallets'
+export const DEFAULT_PAGE_REDIRECT = '/wallets'
 const NOT_FOUND_PAGE_REDIRECT = '/404'
 const LOGIN_PAGE_REDIRECT = '/login'
 const ALLOWED_ROUTES = ['/login/', '/wallets/', '/settings/', '/approve/', '/']
@@ -26,11 +26,7 @@ export class UserApp extends LitElement {
         )
         await userClient.request('removeSession')
 
-        if (
-            window.name === 'wallet-popup' &&
-            window.opener &&
-            !window.opener.closed
-        ) {
+        if (window.opener && !window.opener.closed) {
             // close the gateway UI automatically if we are within a popup
             window.close()
         } else {
@@ -56,8 +52,6 @@ export class UserUI extends LitElement {
 
         if (!ALLOWED_ROUTES.includes(window.location.pathname)) {
             window.location.href = NOT_FOUND_PAGE_REDIRECT
-        } else {
-            window.location.href = DEFAULT_PAGE_REDIRECT
         }
     }
 }
@@ -87,6 +81,7 @@ export class UserUIAuthRedirect extends LitElement {
         }
 
         const accessToken = stateManager.accessToken.get()
+
         if (accessToken) {
             const networkId = stateManager.networkId.get()
 
@@ -94,32 +89,50 @@ export class UserUIAuthRedirect extends LitElement {
                 throw new Error('missing networkId in state manager')
             }
 
-            // Ensure to add the session to the backend
-            authenticate(accessToken, networkId)
+            // Verify that the access token is still valid by making a simple RPC call
+            createUserClient(accessToken)
+                .then((client) => {
+                    return client.request('listSessions') // todo: make private getSession endpoint
+                })
+                .then((sessions) => {
+                    // Token is valid - redirect to default page if on login page
+                    if (isLoginPage || window.location.pathname === '/') {
+                        window.location.href = DEFAULT_PAGE_REDIRECT
+                    }
 
-            if (isLoginPage) {
-                window.location.href = DEFAULT_PAGE_REDIRECT
-            }
+                    // Share the connection with the opener window if it exists
+                    const sessionId = sessions.sessions[0]?.id
+                    shareConnection(accessToken, sessionId)
+                })
+                .catch(() => {
+                    // Token is invalid, clear state and redirect to login
+                    localStorage.clear()
+                    if (!isLoginPage) {
+                        window.location.href = LOGIN_PAGE_REDIRECT
+                    }
+                })
         }
     }
 }
 
-export const authenticate = async (
-    accessToken: string,
-    networkId: string
-): Promise<void> => {
-    const authenticatedUserClient = await createUserClient(accessToken)
-    await authenticatedUserClient.request('addSession', {
-        networkId,
-    })
-
+export const shareConnection = (token: string, sessionId: string) => {
     if (window.opener && !window.opener.closed) {
         window.opener.postMessage(
             {
                 type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
-                token: stateManager.accessToken.get(),
+                token,
+                sessionId,
             },
             '*'
         )
     }
+}
+
+export const addUserSession = async (token: string, networkId: string) => {
+    const authenticatedUserClient = await createUserClient(token)
+    const session = await authenticatedUserClient.request('addSession', {
+        networkId,
+    })
+
+    shareConnection(token, session.id)
 }

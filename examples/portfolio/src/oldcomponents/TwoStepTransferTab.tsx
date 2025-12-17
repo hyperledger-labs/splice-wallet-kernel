@@ -1,58 +1,32 @@
-import { useEffect, useState } from 'react'
-import { useRegistries } from '../contexts/RegistriesContext.js'
+// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+import { useState } from 'react'
+import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
 import { useConnection } from '../contexts/ConnectionContext.js'
 import { usePortfolio } from '../contexts/PortfolioContext.js'
+import { SelectInstrument } from './SelectInstrument.js'
 
 export const TwoStepTransferTab: React.FC = () => {
     const {
         status: { primaryParty },
     } = useConnection()
-    const { registries } = useRegistries()
-    const { listHoldings, createTransfer } = usePortfolio()
+    const registryUrls = useRegistryUrls()
+    const { createTransfer } = usePortfolio()
     const [receiver, setReceiver] = useState<string>('')
     const [amount, setAmount] = useState<number>(100)
     const [memo, setMemo] = useState<string>('')
-    const [transferableInstrumentIds, setTransferableInstrumentIds] = useState<
-        { admin: string; id: string }[]
-    >([])
-    const [selectedInstrumentIdx, setSelectedInstrumentIdx] = useState(0)
-
-    useEffect(() => {
-        if (primaryParty) {
-            listHoldings({ party: primaryParty }).then((holdings) => {
-                const keys = new Set<string>()
-                const uniqueInstrumentIds: { admin: string; id: string }[] = []
-                for (const holding of holdings) {
-                    const instrumentId = holding.instrumentId
-                    const key = JSON.stringify([
-                        instrumentId.admin,
-                        instrumentId.id,
-                    ])
-                    if (!keys.has(key)) {
-                        keys.add(key)
-                        uniqueInstrumentIds.push(instrumentId)
-                    }
-                }
-                setTransferableInstrumentIds(uniqueInstrumentIds)
-            })
-        }
-    }, [primaryParty, listHoldings])
+    const [selectedInstrument, setSelectedInstrument] = useState<
+        { admin: string; id: string } | undefined
+    >(undefined)
 
     return (
         <form onSubmit={(e) => e.preventDefault()}>
             <label htmlFor="instrument">Instrument&nbsp;</label>
-            <select
-                value={selectedInstrumentIdx}
-                onChange={(e) =>
-                    setSelectedInstrumentIdx(Number(e.target.value))
-                }
-            >
-                {transferableInstrumentIds.map((instrument, idx) => (
-                    <option key={idx} value={idx}>
-                        {instrument.id}
-                    </option>
-                ))}
-            </select>
+            <SelectInstrument
+                value={selectedInstrument}
+                onChange={(instrument) => setSelectedInstrument(instrument)}
+            />
             <br />
             <label htmlFor="receiver">Receiver:&nbsp;</label>
             <input
@@ -78,12 +52,11 @@ export const TwoStepTransferTab: React.FC = () => {
             <br />
             <button
                 type="submit"
-                disabled={!primaryParty}
+                disabled={!primaryParty || !selectedInstrument}
                 onClick={() => {
                     createTransfer({
-                        registryUrls: registries,
-                        instrumentId:
-                            transferableInstrumentIds[selectedInstrumentIdx],
+                        registryUrls,
+                        instrumentId: selectedInstrument!,
                         sender: primaryParty!,
                         receiver,
                         amount,

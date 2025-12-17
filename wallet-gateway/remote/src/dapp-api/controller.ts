@@ -47,6 +47,7 @@ export const dappController = (
                 }
             }
 
+            const session = await store.getSession()
             const network = await store.getCurrentNetwork()
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
@@ -67,6 +68,7 @@ export const dappController = (
                     },
                 },
                 session: {
+                    id: session?.id,
                     accessToken: context.accessToken,
                     userId: context.userId,
                 },
@@ -216,6 +218,7 @@ export const dappController = (
                 }
             }
 
+            const session = await store.getSession()
             const network = await store.getCurrentNetwork()
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
@@ -236,6 +239,7 @@ export const dappController = (
                     },
                 },
                 session: {
+                    id: session?.id,
                     accessToken: context.accessToken,
                     userId: context.userId,
                 },
