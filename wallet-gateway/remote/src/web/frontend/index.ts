@@ -97,74 +97,79 @@ export class UserUIAuthRedirect extends LitElement {
             window.location.pathname.startsWith(LOGIN_PAGE_REDIRECT)
         const accessToken = stateManager.accessToken.get()
 
-        // If not on login page and not authenticated, store intended page and redirect to login
-        if (!accessToken && !isLoginPage) {
-            // Store the intended page for redirect after login
+        if (!accessToken) {
+            this.handleUnauthenticated(isLoginPage)
+            return
+        }
+
+        if (this.isTokenExpired()) {
+            this.handleExpiredToken(isLoginPage)
+            return
+        }
+
+        if (isLoginPage) {
+            await this.handleAuthenticatedOnLoginPage(accessToken)
+            return
+        }
+
+        await this.handleAuthenticatedOnOtherPage(accessToken)
+    }
+
+    private handleUnauthenticated(isLoginPage: boolean): void {
+        if (!isLoginPage) {
             const currentPath = window.location.pathname
             if (
                 currentPath !== '/' &&
                 !currentPath.startsWith(LOGIN_PAGE_REDIRECT) &&
                 !currentPath.startsWith('/callback')
             ) {
-                // Remove trailing slash for consistency
                 const normalizedPath = currentPath.replace(/\/$/, '') || '/'
                 stateManager.intendedPage.set(normalizedPath as AllowedRoute)
             }
             window.location.href = LOGIN_PAGE_REDIRECT
-            return
+        }
+    }
+
+    private handleExpiredToken(isLoginPage: boolean): void {
+        stateManager.clearAuthState()
+        if (!isLoginPage) {
+            window.location.href = LOGIN_PAGE_REDIRECT
+        }
+    }
+
+    private async handleAuthenticatedOnLoginPage(
+        accessToken: string
+    ): Promise<void> {
+        const isValid = await this.validateToken(accessToken)
+        if (isValid) {
+            redirectToIntendedOrDefault()
+        } else {
+            stateManager.clearAuthState()
+        }
+    }
+
+    private async handleAuthenticatedOnOtherPage(
+        accessToken: string
+    ): Promise<void> {
+        const networkId = stateManager.networkId.get()
+        if (!networkId) {
+            throw new Error('missing networkId in state manager')
         }
 
-        // If authenticated, check token expiration
-        if (accessToken) {
-            const expirationDate = new Date(
-                stateManager.expirationDate.get() || ''
-            )
-            const now = new Date()
-
-            // Check if token has already expired
-            if (expirationDate <= now) {
-                // Token has expired, clear state and redirect to login
-                stateManager.clearAuthState()
-                if (!isLoginPage) {
-                    window.location.href = LOGIN_PAGE_REDIRECT
-                }
-                return
-            }
-
-            // Token is still valid - API calls will catch 401 errors if token becomes invalid
-
-            // If on login page and authenticated, validate token before redirecting
-            if (isLoginPage) {
-                const isValid = await this.validateToken(accessToken)
-                if (isValid) {
-                    // Token is valid, redirect to intended page or default
-                    redirectToIntendedOrDefault()
-                } else {
-                    // Token is invalid, clear state and stay on login page
-                    stateManager.clearAuthState()
-                }
-                return
-            }
-
-            // Not on login page, ensure session is added to backend
-            const networkId = stateManager.networkId.get()
-            if (!networkId) {
-                throw new Error('missing networkId in state manager')
-            }
-
-            // Ensure to add the session to the backend
-            try {
-                await authenticate(accessToken, networkId)
-            } catch (error) {
-                // If authentication fails (e.g., 401), the error interceptor will handle logout
-                console.debug('Failed to authenticate:', error)
-            }
-
-            // If on root path, redirect to intended page or default
-            if (window.location.pathname === '/') {
-                redirectToIntendedOrDefault()
-            }
+        try {
+            await authenticate(accessToken, networkId)
+        } catch (error) {
+            console.debug('Failed to authenticate:', error)
         }
+
+        if (window.location.pathname === '/') {
+            redirectToIntendedOrDefault()
+        }
+    }
+
+    private isTokenExpired(): boolean {
+        const expirationDate = new Date(stateManager.expirationDate.get() || 0)
+        return expirationDate <= new Date()
     }
 
     /**

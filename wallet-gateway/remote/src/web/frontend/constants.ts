@@ -16,9 +16,6 @@ export type AllowedRoute =
     | (typeof ALLOWED_ROUTES)[number]
     | typeof NOT_FOUND_PAGE_REDIRECT
 
-/**
- * Type guard to check if a path is an allowed route
- */
 export function isAllowedRoute(path: string): path is AllowedRoute {
     return ALLOWED_ROUTES.includes(path as (typeof ALLOWED_ROUTES)[number])
 }
