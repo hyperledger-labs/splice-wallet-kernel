@@ -20,7 +20,7 @@ Wallet providers and exchanges have three options for supporting USDCx on the Ca
 
 1. Transfer & hold USDCx - Since USDCx is a token standard (`CIP-56 <https://github.com/global-synchronizer-foundation/cips/blob/main/cip-0056/cip-0056.md>`_) compliant asset then as such any wallet that supports the token standard will have built in support for transfers and holding.
 2. Support xReserves deposits and withdrawals - Custom API integration is required for wallet providers and exchanges to support xReserve deposits and withdrawals to the utility-bridge daml models to / from their parties using the `xReserves UI <https://digital-asset.github.io/xreserve-deposits/>`_. Instructions for doing this are included in the section “Supporting xReserve Deposits and Withdrawals” below.
-3. Integrating the xReserve UI (Ethereum)  into the wallet - To enable a full end to end experience for the user a wallet can integrate against Ethereum directly for Deposits on top of integrating point 2. To provide an example for doing this the `xReserves UI <https://digital-asset.github.io/xreserve-deposits/>`_ as well as example scripts have been open sourced and can be found `here <https://github.com/digital-asset/xreserve-deposits>`_. This demonstrates the 2 ethereum transactions that must be submitted to an ethereum node:
+3. Integrating the xReserve UI (Ethereum) into the wallet - To enable a full end-to-end experience for the user, a wallet can integrate against Ethereum directly for deposits on top of integrating point 2. To provide an example for doing this, the `xReserves UI <https://digital-asset.github.io/xreserve-deposits/>`_ as well as `open-sourced example scripts <https://github.com/digital-asset/xreserve-deposits>`_ are available for reference. This demonstrates the 2 ethereum transactions that must be submitted to an ethereum node:
     * approve a USDC spending allowance.
     * depositToRemote to deposit USDC into the xReserve contract.
 
@@ -200,4 +200,4 @@ Example API call:
         ]
     }
 
-The values for the disclosed contracts can be found `here <https://docs.digitalasset.com/usdc/xreserve/mainnet-technical-setup.html#example-values-file>`_.
+Refer to `this example values file <https://docs.digitalasset.com/usdc/xreserve/mainnet-technical-setup.html#example-values-file>`_ for the specific values of the disclosed contracts.
