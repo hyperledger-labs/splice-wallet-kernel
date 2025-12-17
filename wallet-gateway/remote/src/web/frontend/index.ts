@@ -143,6 +143,7 @@ export class UserUIAuthRedirect extends LitElement {
         const isValid = await this.validateToken(accessToken)
         if (isValid) {
             redirectToIntendedOrDefault()
+            shareConnection()
         } else {
             stateManager.clearAuthState()
         }
@@ -156,12 +157,18 @@ export class UserUIAuthRedirect extends LitElement {
             throw new Error('missing networkId in state manager')
         }
 
-        try {
-            await authenticate(accessToken, networkId)
-        } catch (error) {
-            console.debug('Failed to authenticate:', error)
+        const isValid = await this.validateToken(accessToken)
+        if (!isValid) {
+            // Token is invalid, clear state and redirect to login
+            stateManager.clearAuthState()
+            window.location.href = LOGIN_PAGE_REDIRECT
+            return
         }
 
+        // Token is valid - share the connection with the opener window if it exists
+        shareConnection()
+
+        // Redirect to default page if on root path
         if (window.location.pathname === '/') {
             redirectToIntendedOrDefault()
         }
@@ -172,9 +179,7 @@ export class UserUIAuthRedirect extends LitElement {
         return expirationDate <= new Date()
     }
 
-    /**
-     * Validate token by making a lightweight API call
-     */
+    // Verify that the access token is still valid by making a simple RPC call
     private async validateToken(accessToken: string): Promise<boolean> {
         try {
             const userClient = await createUserClient(accessToken)
@@ -189,15 +194,7 @@ export class UserUIAuthRedirect extends LitElement {
     }
 }
 
-export const authenticate = async (
-    accessToken: string,
-    networkId: string
-): Promise<void> => {
-    const authenticatedUserClient = await createUserClient(accessToken)
-    await authenticatedUserClient.request('addSession', {
-        networkId,
-    })
-
+export const shareConnection = (): void => {
     if (window.opener && !window.opener.closed) {
         window.opener.postMessage(
             {

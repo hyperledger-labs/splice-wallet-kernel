@@ -4,7 +4,8 @@
 import { LitElement, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { stateManager } from '../state-manager'
-import { authenticate, redirectToIntendedOrDefault } from '..'
+import { createUserClient } from '../rpc-client'
+import { shareConnection, redirectToIntendedOrDefault } from '..'
 
 @customElement('login-callback')
 export class LoginCallback extends LitElement {
@@ -50,7 +51,7 @@ export class LoginCallback extends LitElement {
                     atob(tokenResponse.access_token.split('.')[1])
                 )
                 stateManager.expirationDate.set(
-                    new Date(payload.exp * 1000).toISOString()
+                    new Date(payload.exp * 1000).toString()
                 )
 
                 stateManager.accessToken.set(tokenResponse.access_token)
@@ -68,4 +69,17 @@ export class LoginCallback extends LitElement {
     render() {
         return html`<h2>Logged in!</h2>`
     }
+}
+
+const authenticate = async (
+    accessToken: string,
+    networkId: string
+): Promise<void> => {
+    const authenticatedUserClient = await createUserClient(accessToken)
+    await authenticatedUserClient.request('addSession', {
+        networkId,
+    })
+
+    // Share the connection with the opener window if it exists
+    shareConnection()
 }
