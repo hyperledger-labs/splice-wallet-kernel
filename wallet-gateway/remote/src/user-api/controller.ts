@@ -676,25 +676,38 @@ export const userController = (
             const network = await store.getCurrentNetwork()
             const { userId } = assertConnected(authContext)
 
-            const userAccessTokenProvider: AccessTokenProvider = {
-                getUserAccessToken: async () => authContext!.accessToken,
-                getAdminAccessToken: async () => authContext!.accessToken,
-            }
+            const idp = await store.getIdp(network.identityProviderId)
+            const tokenProvider = new AuthTokenProvider(
+                idp,
+                network.auth,
+                network.adminAuth,
+                logger
+            )
 
             const partyAllocator = new PartyAllocationService({
                 synchronizerId: network.synchronizerId,
-                accessTokenProvider: userAccessTokenProvider,
+                accessTokenProvider: tokenProvider,
                 httpLedgerUrl: network.ledgerApi.baseUrl,
                 logger,
             })
 
+            const userLedger = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
+                logger,
+                accessTokenProvider: tokenProvider,
+            })
+
+            const adminLedger = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
+                logger,
+                isAdmin: true,
+                accessTokenProvider: tokenProvider,
+            })
+
             const service = new WalletSyncService(
                 store,
-                new LedgerClient({
-                    baseUrl: new URL(network.ledgerApi.baseUrl),
-                    logger,
-                    accessTokenProvider: userAccessTokenProvider,
-                }),
+                userLedger,
+                adminLedger,
                 authContext!,
                 logger,
                 drivers,
