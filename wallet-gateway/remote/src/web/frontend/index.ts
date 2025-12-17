@@ -114,25 +114,43 @@ export class UserUIAuthRedirect extends LitElement {
         await this.handleAuthenticatedOnOtherPage(accessToken)
     }
 
+    private getIntendedPageFromCurrentPath(): AllowedRoute | undefined {
+        const currentPath = window.location.pathname
+        if (
+            currentPath !== '/' &&
+            !currentPath.startsWith(LOGIN_PAGE_REDIRECT) &&
+            !currentPath.startsWith('/callback')
+        ) {
+            const normalizedPath = currentPath.replace(/\/$/, '') || '/'
+            return normalizedPath as AllowedRoute
+        }
+        return undefined
+    }
+
+    private clearAuthStateAndPreserveIntendedPage(): void {
+        const intendedPage = this.getIntendedPageFromCurrentPath()
+        stateManager.clearAuthState()
+        if (intendedPage) {
+            stateManager.intendedPage.set(intendedPage)
+        }
+    }
+
     private handleUnauthenticated(isLoginPage: boolean): void {
         if (!isLoginPage) {
-            const currentPath = window.location.pathname
-            if (
-                currentPath !== '/' &&
-                !currentPath.startsWith(LOGIN_PAGE_REDIRECT) &&
-                !currentPath.startsWith('/callback')
-            ) {
-                const normalizedPath = currentPath.replace(/\/$/, '') || '/'
-                stateManager.intendedPage.set(normalizedPath as AllowedRoute)
+            const intendedPage = this.getIntendedPageFromCurrentPath()
+            if (intendedPage) {
+                stateManager.intendedPage.set(intendedPage)
             }
             window.location.href = LOGIN_PAGE_REDIRECT
         }
     }
 
     private handleExpiredToken(isLoginPage: boolean): void {
-        stateManager.clearAuthState()
         if (!isLoginPage) {
+            this.clearAuthStateAndPreserveIntendedPage()
             window.location.href = LOGIN_PAGE_REDIRECT
+        } else {
+            stateManager.clearAuthState()
         }
     }
 
@@ -158,8 +176,8 @@ export class UserUIAuthRedirect extends LitElement {
 
         const isValid = await this.validateToken(accessToken)
         if (!isValid) {
-            // Token is invalid, clear state and redirect to login
-            stateManager.clearAuthState()
+            // Token is invalid - clear auth state and preserve intended page
+            this.clearAuthStateAndPreserveIntendedPage()
             window.location.href = LOGIN_PAGE_REDIRECT
             return
         }

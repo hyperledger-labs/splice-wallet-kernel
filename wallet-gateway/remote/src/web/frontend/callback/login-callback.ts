@@ -51,7 +51,7 @@ export class LoginCallback extends LitElement {
                     atob(tokenResponse.access_token.split('.')[1])
                 )
                 stateManager.expirationDate.set(
-                    new Date(payload.exp * 1000).toString()
+                    new Date(payload.exp * 1000).toISOString()
                 )
 
                 stateManager.accessToken.set(tokenResponse.access_token)
