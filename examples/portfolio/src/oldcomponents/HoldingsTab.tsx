@@ -34,8 +34,6 @@ export const HoldingsTab: React.FC = () => {
         refreshHoldings()
     }, [primaryParty, refreshHoldings])
 
-    console.log('tapInstrument', tapInstrument)
-
     return (
         <div>
             <SelectInstrument
