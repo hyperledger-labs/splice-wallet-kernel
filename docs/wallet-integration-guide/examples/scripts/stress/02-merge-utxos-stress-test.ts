@@ -116,6 +116,16 @@ await processTapInBatches(150)
 const utxosAlice = await sdk.tokenStandard?.listHoldingUtxos(false)
 logger.info(`number of unlocked utxos for alice ${utxosAlice?.length}`)
 
+//should also be able to add a limit on how many holdingUtxos we query for
+
+const utxosAliceLimited = await sdk.tokenStandard?.listHoldingUtxos(false, 50)
+
+if (utxosAliceLimited?.length !== 50) {
+    throw new Error(
+        `Listing utxos with a limit passed did not work. Expected 50, returned ${utxosAliceLimited}`
+    )
+}
+
 const [commands, mergedDisclosedContracts] =
     await sdk.tokenStandard?.mergeHoldingUtxos()!
 

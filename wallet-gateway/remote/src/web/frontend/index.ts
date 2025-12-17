@@ -81,7 +81,6 @@ export class UserUI extends LitElement {
         if (!isAllowedRoute(normalizedPath)) {
             window.location.href = NOT_FOUND_PAGE_REDIRECT
         }
-        // TODO verify all cases if it should redirect or not
     }
 }
 
