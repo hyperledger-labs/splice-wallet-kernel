@@ -2,15 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState } from 'react'
-import { useRegistries } from '../contexts/RegistriesContext'
+import {
+    useRegistryService,
+    useRegistryUrls,
+} from '../contexts/RegistryServiceContext.js'
 
 export const RegistriesTab: React.FC = () => {
-    const { registries, setRegistry, deleteRegistry } = useRegistries()
+    const registryService = useRegistryService()
+    const registryUrls = useRegistryUrls()
 
     const [newPartyId, setNewPartyId] = useState('')
     const [newRegistryUrl, setNewRegistryUrl] = useState('')
 
-    const adminParties = [...registries.keys()]
+    const adminParties = [...registryUrls.keys()]
     adminParties.sort()
 
     return (
@@ -28,11 +32,13 @@ export const RegistriesTab: React.FC = () => {
                         return (
                             <tr key={p}>
                                 <td>{p}</td>
-                                <td>{registries.get(p)}</td>
+                                <td>{registryUrls.get(p)}</td>
                                 <td>
                                     <button
                                         type="submit"
-                                        onClick={() => deleteRegistry(p)}
+                                        onClick={() =>
+                                            registryService.deleteRegistryUrl(p)
+                                        }
                                     >
                                         🗑️
                                     </button>
@@ -65,12 +71,12 @@ export const RegistriesTab: React.FC = () => {
                 <br />
                 <button
                     type="submit"
-                    onClick={async () => {
-                        setRegistry(
+                    onClick={async () =>
+                        registryService.setRegistryUrl(
                             newPartyId ? undefined : newPartyId,
                             newRegistryUrl
                         )
-                    }}
+                    }
                 >
                     Add registry
                 </button>
