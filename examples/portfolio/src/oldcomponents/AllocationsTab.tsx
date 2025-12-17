@@ -6,6 +6,7 @@ import { useConnection } from '../contexts/ConnectionContext.js'
 import { usePortfolio } from '../contexts/PortfolioContext.js'
 import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
 import { SelectInstrument } from './SelectInstrument.js'
+import { DateTimePicker } from './DateTimePicker.js'
 
 export const AllocationsTab: React.FC = () => {
     const registryUrls = useRegistryUrls()
@@ -16,9 +17,11 @@ export const AllocationsTab: React.FC = () => {
 
     const [executor, setExecutor] = useState('')
     const [settlementRefId, setSettlementRefId] = useState('')
-    const [requestedAt, setRequestedAt] = useState('')
-    const [allocateBefore, setAllocateBefore] = useState('')
-    const [settleBefore, setSettleBefore] = useState('')
+    const [requestedAt, setRequestedAt] = useState(new Date())
+    const defaultDeadline = new Date(requestedAt)
+    defaultDeadline.setDate(defaultDeadline.getDate() + 7)
+    const [allocateBefore, setAllocateBefore] = useState(defaultDeadline)
+    const [settleBefore, setSettleBefore] = useState(defaultDeadline)
     const [transferLegId, setTransferLegId] = useState('')
     const [sender, setSender] = useState('')
     const [receiver, setReceiver] = useState('')
@@ -55,17 +58,6 @@ export const AllocationsTab: React.FC = () => {
         }
     }, [portfolio, primaryParty])
 
-    /*
-                    export declare type SettlementInfo = {
-                        executor: damlTypes.Party
-                        settlementRef: Reference
-                        requestedAt: damlTypes.Time
-                        allocateBefore: damlTypes.Time
-                        settleBefore: damlTypes.Time
-                        meta: Splice_Api_Token_MetadataV1.Metadata
-                    }
-                    */
-
     return (
         <div>
             <h2>Create allocation</h2>
@@ -89,29 +81,26 @@ export const AllocationsTab: React.FC = () => {
                 <br />
 
                 <label htmlFor="requestedAt">Requested at</label>
-                <input
+                <DateTimePicker
                     id="requestedAt"
                     value={requestedAt}
-                    type="datetime-local"
-                    onChange={(e) => setRequestedAt(e.target.value)}
+                    onChange={(d) => setRequestedAt(d)}
                 />
                 <br />
 
                 <label htmlFor="allocateBefore">Allocate before</label>
-                <input
+                <DateTimePicker
                     id="allocateBefore"
                     value={allocateBefore}
-                    type="datetime-local"
-                    onChange={(e) => setAllocateBefore(e.target.value)}
+                    onChange={(d) => setAllocateBefore(d)}
                 />
                 <br />
 
                 <label htmlFor="settleBefore">Settle before</label>
-                <input
+                <DateTimePicker
                     id="settleBefore"
                     value={settleBefore}
-                    type="datetime-local"
-                    onChange={(e) => setSettleBefore(e.target.value)}
+                    onChange={(d) => setSettleBefore(d)}
                 />
                 <br />
 
@@ -171,9 +160,10 @@ export const AllocationsTab: React.FC = () => {
                                         id: settlementRefId,
                                         cid: null, // TODO
                                     },
-                                    requestedAt,
-                                    allocateBefore,
-                                    settleBefore,
+                                    requestedAt: requestedAt.toISOString(),
+                                    allocateBefore:
+                                        allocateBefore.toISOString(),
+                                    settleBefore: settleBefore.toISOString(),
                                     meta: { values: {} },
                                 },
                                 transferLegId: 'foo',

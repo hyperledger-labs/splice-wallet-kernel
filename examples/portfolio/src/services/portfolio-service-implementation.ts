@@ -178,7 +178,7 @@ export const createAllocationInstruction = async ({
     allocationSpecification,
 }: {
     registryUrls: ReadonlyMap<PartyId, string>
-    party: PartyId,
+    party: PartyId
     allocationSpecification: AllocationSpecification
 }): Promise<void> => {
     const { instrumentId } = allocationSpecification.transferLeg
