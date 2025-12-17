@@ -55,6 +55,7 @@ import {
     ledgerPrepareParams,
 } from '../utils.js'
 import { StatusEvent } from '../dapp-api/rpc-gen/typings.js'
+import { v4 } from 'uuid'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
@@ -570,7 +571,13 @@ export const userController = (
             params: AddSessionParams
         ): Promise<AddSessionResult> {
             try {
+                const newSessionId = v4()
+                logger.info(
+                    `Adding session with ID ${newSessionId} for network ${params.networkId}`
+                )
+
                 await store.setSession({
+                    id: newSessionId,
                     network: params.networkId,
                     accessToken: authContext?.accessToken || '',
                 })
@@ -601,12 +608,14 @@ export const userController = (
                         },
                     },
                     session: {
+                        id: newSessionId,
                         accessToken: accessToken,
                         userId: userId,
                     },
                 })
 
                 return Promise.resolve({
+                    id: newSessionId,
                     accessToken,
                     network,
                     idp,
@@ -623,6 +632,7 @@ export const userController = (
             const userId = assertConnected(authContext).userId
             const notifier = notificationService.getNotifier(userId)
             await store.removeSession()
+
             notifier.emit('statusChanged', {
                 kernel: kernelInfo,
                 isConnected: false,
@@ -630,6 +640,7 @@ export const userController = (
                 networkReason: 'Unauthenticated',
                 userUrl: `${userUrl}/login/`,
             } as StatusEvent)
+
             return null
         },
         listSessions: async (): Promise<ListSessionsResult> => {
@@ -649,6 +660,7 @@ export const userController = (
             return {
                 sessions: [
                     {
+                        id: session.id,
                         network,
                         idp: idp,
                         accessToken: authContext!.accessToken,

@@ -26,11 +26,7 @@ export class UserApp extends LitElement {
         )
         await userClient.request('removeSession')
 
-        if (
-            window.name === 'wallet-popup' &&
-            window.opener &&
-            !window.opener.closed
-        ) {
+        if (window.opener && !window.opener.closed) {
             // close the gateway UI automatically if we are within a popup
             window.close()
         } else {
@@ -98,14 +94,15 @@ export class UserUIAuthRedirect extends LitElement {
                 .then((client) => {
                     return client.request('listSessions') // todo: make private getSession endpoint
                 })
-                .then(() => {
+                .then((sessions) => {
                     // Token is valid - redirect to default page if on login page
                     if (isLoginPage || window.location.pathname === '/') {
                         window.location.href = DEFAULT_PAGE_REDIRECT
                     }
 
                     // Share the connection with the opener window if it exists
-                    shareConnection()
+                    const sessionId = sessions.sessions[0]?.id
+                    shareConnection(accessToken, sessionId)
                 })
                 .catch(() => {
                     // Token is invalid, clear state and redirect to login
@@ -118,14 +115,24 @@ export class UserUIAuthRedirect extends LitElement {
     }
 }
 
-export const shareConnection = () => {
+export const shareConnection = (token: string, sessionId: string) => {
     if (window.opener && !window.opener.closed) {
         window.opener.postMessage(
             {
                 type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
-                token: stateManager.accessToken.get(),
+                token,
+                sessionId,
             },
             '*'
         )
     }
+}
+
+export const addUserSession = async (token: string, networkId: string) => {
+    const authenticatedUserClient = await createUserClient(token)
+    const session = await authenticatedUserClient.request('addSession', {
+        networkId,
+    })
+
+    shareConnection(token, session.id)
 }

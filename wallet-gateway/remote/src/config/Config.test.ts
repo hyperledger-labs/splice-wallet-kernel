@@ -15,9 +15,9 @@ test('config from json file', async () => {
         'openid daml_ledger_api offline_access'
     )
     expect(resp.store.networks[0].auth.method).toBe('authorization_code')
-    expect(resp.store.networks[1].auth.method).toBe('client_credentials')
-    if (resp.store.networks[1].auth.method === 'client_credentials') {
-        expect(resp.store.networks[1].auth.audience).toBe(
+    expect(resp.store.networks[2].auth.method).toBe('client_credentials')
+    if (resp.store.networks[2].auth.method === 'client_credentials') {
+        expect(resp.store.networks[2].auth.audience).toBe(
             'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424'
         )
     }
