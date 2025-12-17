@@ -22,6 +22,7 @@ export class WalletSyncService {
     constructor(
         private store: Store,
         private ledgerClient: LedgerClient,
+        private adminLedgerClient: LedgerClient,
         private authContext: AuthContext,
         private logger: Logger,
         private signingDrivers: Partial<
@@ -56,10 +57,11 @@ export class WalletSyncService {
             // (participant parties have namespace === participantId's namespace)
             let participantNamespace: string | undefined
             try {
-                const { participantId } = await this.ledgerClient.getWithRetry(
-                    '/v2/parties/participant-id',
-                    defaultRetryableOptions
-                )
+                const { participantId } =
+                    await this.adminLedgerClient.getWithRetry(
+                        '/v2/parties/participant-id',
+                        defaultRetryableOptions
+                    )
                 // Extract the namespace part from participantId
                 // Format is hint::namespace
                 const [, extractedNamespace] = participantId.split('::')
