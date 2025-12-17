@@ -174,12 +174,14 @@ export const listPendingTransfers = async ({
 
 export const createAllocationInstruction = async ({
     registryUrls,
+    party,
     allocationSpecification,
 }: {
     registryUrls: ReadonlyMap<PartyId, string>
+    party: PartyId,
     allocationSpecification: AllocationSpecification
 }): Promise<void> => {
-    const { instrumentId, sender } = allocationSpecification.transferLeg
+    const { instrumentId } = allocationSpecification.transferLeg
     const registryUrl = registryUrls.get(instrumentId.admin)
     if (!registryUrl)
         throw new Error(`no registry URL for admin ${instrumentId.admin}`)
@@ -197,7 +199,7 @@ export const createAllocationInstruction = async ({
     const request = {
         commands: [{ ExerciseCommand: command }],
         commandId: v4(),
-        actAs: [sender],
+        actAs: [party],
         disclosedContracts,
     }
 

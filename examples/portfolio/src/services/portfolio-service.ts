@@ -43,6 +43,7 @@ export interface PortfolioService {
     // Allocations
     createAllocationInstruction: (_: {
         registryUrls: ReadonlyMap<PartyId, string>
+        party: PartyId // Party creating the allocation, not necessarily the sender or receiver
         allocationSpecification: AllocationSpecification
     }) => Promise<void>
     listPendingAllocationInstructions: (_: {
