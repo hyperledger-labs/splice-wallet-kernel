@@ -58,13 +58,14 @@ export async function connect(): Promise<dappAPI.StatusEvent> {
 export async function disconnect(): Promise<dappAPI.Null> {
     try {
         const provider = assertProvider()
-        return await provider.request<dappAPI.Null>({
+        await provider.request<dappAPI.Null>({
             method: 'disconnect',
         })
-    } catch {
+    } finally {
         clearAllLocalState()
-        return null
     }
+
+    return null
 }
 
 export async function status(): Promise<dappAPI.StatusEvent> {

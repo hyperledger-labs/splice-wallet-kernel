@@ -62,6 +62,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
         super()
 
         if (sessionToken) {
+            this.sessionToken = sessionToken
             this.openSocket(url, sessionToken)
         }
 
