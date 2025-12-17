@@ -41,13 +41,19 @@ export function useConnect(): {
 
     useEffect(() => {
         if (status?.isConnected) {
+            console.debug('[use-connect] Adding status changed listener')
             const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
+                console.debug(
+                    '[use-connect] Received status changed event:',
+                    status
+                )
                 setStatus(status)
             }
 
             sdk.onStatusChanged(onStatusChanged)
 
             return () => {
+                console.debug('[use-connect] Removing status changed listener')
                 sdk.removeOnStatusChanged(onStatusChanged)
             }
         }

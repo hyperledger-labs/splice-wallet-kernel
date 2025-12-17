@@ -16,7 +16,6 @@ import { popupHref } from '@canton-network/core-wallet-ui-components'
 type GatewaySocket = {
     socket: Socket
     url: string
-    sessionId: string
     token: string
 } | null
 
@@ -26,16 +25,14 @@ export class SpliceProviderHttp extends SpliceProviderBase {
     private sessionToken?: string
     private transport: HttpTransport
 
-    private openSocket(url: URL, sessionId: string, token: string): void {
+    private openSocket(url: URL, token: string): void {
         // Assumes the socket URI is accessed directly on the host w/o the API path.
         const socketUri = url.origin
 
         // Reconnect if the URL or token has changed
         if (
             connection &&
-            (sessionId !== connection.sessionId ||
-                token !== connection.token ||
-                socketUri !== connection.url)
+            (token !== connection.token || socketUri !== connection.url)
         ) {
             connection.socket.disconnect()
             connection = null
@@ -44,7 +41,6 @@ export class SpliceProviderHttp extends SpliceProviderBase {
         if (!connection) {
             connection = {
                 token,
-                sessionId,
                 url: socketUri,
                 socket: io(socketUri, {
                     auth: {
@@ -64,6 +60,11 @@ export class SpliceProviderHttp extends SpliceProviderBase {
         sessionToken?: string
     ) {
         super()
+
+        if (sessionToken) {
+            this.openSocket(url, sessionToken)
+        }
+
         this.transport = new HttpTransport(url, sessionToken)
 
         // Listen for the auth success event sent from the WK UI popup to the SDK running in the parent window.
@@ -75,11 +76,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
             ) {
                 this.sessionToken = event.data.token
                 this.transport = new HttpTransport(url, this.sessionToken)
-                this.openSocket(
-                    this.url,
-                    event.data.sessionId,
-                    event.data.token
-                )
+                this.openSocket(this.url, event.data.token)
 
                 // We requery the status explicitly here, as it's not guaranteed that the socket will be open & authenticated
                 // before the `onConnected` event is fired from the `addSession` RPC call. The dappApi.StatusResult and

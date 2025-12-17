@@ -8,10 +8,7 @@ import * as storage from '../storage'
 
 export const injectProvider = (discovery: DiscoverResult) => {
     return injectSpliceProvider(
-        new Provider(
-            discovery,
-            storage.getKernelSession()?.session?.accessToken
-        )
+        new Provider(discovery, storage.getKernelSession()?.session)
     )
 }
 

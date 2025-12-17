@@ -81,6 +81,10 @@ export const dapp = (
                 io.to(sessionId).emit('accountsChanged', ...event)
             }
             const onStatusChanged = (...event: unknown[]) => {
+                logger.debug(
+                    { sessionId },
+                    'Emitting statusChanged event via Socket.io'
+                )
                 io.to(sessionId).emit('statusChanged', ...event)
             }
             const onConnected = (...event: unknown[]) => {

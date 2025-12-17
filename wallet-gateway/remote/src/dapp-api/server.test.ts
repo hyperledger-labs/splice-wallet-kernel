@@ -30,14 +30,6 @@ const store = new StoreInternal(config.store, pino(sink()))
 
 const notificationService = new NotificationService(pino(sink()))
 
-// {
-//     getNotifier: jest.fn<() => Notifier>().mockReturnValue({
-//         on: jest.fn(),
-//         emit: jest.fn<Notifier['emit']>(),
-//         removeListener: jest.fn(),
-//     }),
-// }
-
 test('call connect rpc', async () => {
     const app = express()
     app.use(cors())
