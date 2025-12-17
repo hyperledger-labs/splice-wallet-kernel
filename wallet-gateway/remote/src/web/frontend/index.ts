@@ -11,7 +11,7 @@ import '/index.css'
 import { stateManager } from './state-manager'
 import { WalletEvent } from '@canton-network/core-types'
 
-const DEFAULT_PAGE_REDIRECT = '/wallets'
+export const DEFAULT_PAGE_REDIRECT = '/wallets'
 const NOT_FOUND_PAGE_REDIRECT = '/404'
 const LOGIN_PAGE_REDIRECT = '/login'
 const ALLOWED_ROUTES = ['/login/', '/wallets/', '/settings/', '/approve/', '/']
@@ -56,8 +56,6 @@ export class UserUI extends LitElement {
 
         if (!ALLOWED_ROUTES.includes(window.location.pathname)) {
             window.location.href = NOT_FOUND_PAGE_REDIRECT
-        } else {
-            window.location.href = DEFAULT_PAGE_REDIRECT
         }
     }
 }
@@ -87,6 +85,7 @@ export class UserUIAuthRedirect extends LitElement {
         }
 
         const accessToken = stateManager.accessToken.get()
+
         if (accessToken) {
             const networkId = stateManager.networkId.get()
 
@@ -94,25 +93,32 @@ export class UserUIAuthRedirect extends LitElement {
                 throw new Error('missing networkId in state manager')
             }
 
-            // Ensure to add the session to the backend
-            authenticate(accessToken, networkId)
+            // Verify that the access token is still valid by making a simple RPC call
+            createUserClient(accessToken)
+                .then((client) => {
+                    return client.request('listSessions') // todo: make private getSession endpoint
+                })
+                .then(() => {
+                    // Token is valid - redirect to default page if on login page
+                    if (isLoginPage || window.location.pathname === '/') {
+                        window.location.href = DEFAULT_PAGE_REDIRECT
+                    }
 
-            if (isLoginPage) {
-                window.location.href = DEFAULT_PAGE_REDIRECT
-            }
+                    // Share the connection with the opener window if it exists
+                    shareConnection()
+                })
+                .catch(() => {
+                    // Token is invalid, clear state and redirect to login
+                    localStorage.clear()
+                    if (!isLoginPage) {
+                        window.location.href = LOGIN_PAGE_REDIRECT
+                    }
+                })
         }
     }
 }
 
-export const authenticate = async (
-    accessToken: string,
-    networkId: string
-): Promise<void> => {
-    const authenticatedUserClient = await createUserClient(accessToken)
-    await authenticatedUserClient.request('addSession', {
-        networkId,
-    })
-
+export const shareConnection = () => {
     if (window.opener && !window.opener.closed) {
         window.opener.postMessage(
             {

@@ -44,8 +44,6 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     ) {
         this.logger = logger.child({ component: 'StoreSql' })
         this.authContext = authContext
-
-        // this.syncWallets()
     }
 
     withAuthContext(context?: AuthContext): StoreSql {
