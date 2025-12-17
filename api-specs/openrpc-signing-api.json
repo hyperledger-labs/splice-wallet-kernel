@@ -296,7 +296,7 @@
                     "publicKey": {
                         "title": "publicKey",
                         "type": "string",
-                        "description": "Public key associated with the key"
+                        "description": "Public key associated with the key (base64 encoded)."
                     }
                 },
                 "required": ["id", "name", "publicKey"]

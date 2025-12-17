@@ -3,24 +3,61 @@
 
 export interface paths {
     '/registry/metadata/v1/info': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /**
          * @description Get information about the registry.
-         * The response includes the standards supported by the registry.
+         *     The response includes the standards supported by the registry.
          */
         get: operations['getRegistryInfo']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/registry/metadata/v1/instruments': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /** @description List all instruments managed by this instrument admin. */
         get: operations['listInstruments']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
     '/registry/metadata/v1/instruments/{instrumentId}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
         /** @description Retrieve an instrument's metadata. */
         get: operations['getInstrument']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
     }
 }
-
 export type webhooks = Record<string, never>
-
 export interface components {
     schemas: {
         GetRegistryInfoResponse: {
@@ -47,13 +84,12 @@ export interface components {
              * Format: int8
              * @description The number of decimal places used by the instrument.
              *
-             * Must be a number between 0 and 10, as the Daml interfaces represent holding amounts as
-             * `Decimal` values, which use 10 decimal places and are precise for 38 digits.
-             * Setting this to 0 means that the instrument can only be held in whole units.
+             *     Must be a number between 0 and 10, as the Daml interfaces represent holding amounts as
+             *     `Decimal` values, which use 10 decimal places and are precise for 38 digits.
+             *     Setting this to 0 means that the instrument can only be held in whole units.
              *
-             * This number SHOULD be used for display purposes in a wallet to decide how many
-             * decimal places to show and accept when displaying or entering amounts.
-             *
+             *     This number SHOULD be used for display purposes in a wallet to decide how many
+             *     decimal places to show and accept when displaying or entering amounts.
              * @default 10
              */
             decimals: number
@@ -69,7 +105,7 @@ export interface components {
         }
         /**
          * @description Map from token standard API name to the minor version of the API supported, e.g.,
-         * splice-api-token-metadata-v1 -> 1 where the `1` corresponds to the minor version.
+         *     splice-api-token-metadata-v1 -> 1 where the `1` corresponds to the minor version.
          */
         SupportedApis: {
             [key: string]: number
@@ -78,24 +114,36 @@ export interface components {
     responses: {
         /** @description bad request */
         400: {
+            headers: {
+                [name: string]: unknown
+            }
             content: {
                 'application/json': components['schemas']['ErrorResponse']
             }
         }
         /** @description not found */
         404: {
+            headers: {
+                [name: string]: unknown
+            }
             content: {
                 'application/json': components['schemas']['ErrorResponse']
             }
         }
         /** @description conflict */
         409: {
+            headers: {
+                [name: string]: unknown
+            }
             content: {
                 'application/json': components['schemas']['ErrorResponse']
             }
         }
         /** @description Internal server error */
         500: {
+            headers: {
+                [name: string]: unknown
+            }
             content: {
                 'application/json': components['schemas']['ErrorResponse']
             }
@@ -106,20 +154,22 @@ export interface components {
     headers: never
     pathItems: never
 }
-
 export type $defs = Record<string, never>
-
-export type external = Record<string, never>
-
 export interface operations {
-    /**
-     * @description Get information about the registry.
-     * The response includes the standards supported by the registry.
-     */
     getRegistryInfo: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['GetRegistryInfoResponse']
                 }
@@ -128,7 +178,6 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /** @description List all instruments managed by this instrument admin. */
     listInstruments: {
         parameters: {
             query?: {
@@ -137,10 +186,17 @@ export interface operations {
                 /** @description The `nextPageToken` received from the response for the previous page. */
                 pageToken?: string
             }
+            header?: never
+            path?: never
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['ListInstrumentsResponse']
                 }
@@ -149,16 +205,22 @@ export interface operations {
             500: components['responses']['500']
         }
     }
-    /** @description Retrieve an instrument's metadata. */
     getInstrument: {
         parameters: {
+            query?: never
+            header?: never
             path: {
                 instrumentId: string
             }
+            cookie?: never
         }
+        requestBody?: never
         responses: {
             /** @description ok */
             200: {
+                headers: {
+                    [name: string]: unknown
+                }
                 content: {
                     'application/json': components['schemas']['Instrument']
                 }

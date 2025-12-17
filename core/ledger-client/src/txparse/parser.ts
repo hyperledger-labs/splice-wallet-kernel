@@ -886,7 +886,7 @@ interface NodeIdAndEvent {
     createdEvent?: CreatedEvent
 }
 function getNodeIdAndEvent(event: Event): NodeIdAndEvent {
-    if (event.ExercisedEvent) {
+    if ('ExercisedEvent' in event) {
         // ledger API's TRANSACTION_SHAPE_LEDGER_EFFECTS does not include ArchivedEvent, instead has the choice as Archive
         if (event.ExercisedEvent.choice === 'Archive') {
             return {
@@ -899,12 +899,12 @@ function getNodeIdAndEvent(event: Event): NodeIdAndEvent {
                 exercisedEvent: event.ExercisedEvent,
             }
         }
-    } else if (event.CreatedEvent) {
+    } else if ('CreatedEvent' in event) {
         return {
             nodeId: event.CreatedEvent.nodeId,
             createdEvent: event.CreatedEvent,
         }
-    } else if (event.ArchivedEvent) {
+    } else if ('ArchivedEvent' in event) {
         return {
             nodeId: event.ArchivedEvent.nodeId,
             archivedEvent: event.ArchivedEvent,

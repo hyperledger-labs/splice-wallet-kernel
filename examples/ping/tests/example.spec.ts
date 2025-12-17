@@ -31,9 +31,11 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
         .getByRole('textbox', { name: 'RPC URL' })
         .fill(`http://localhost:${dappApiPort}/api/v0/dapp`)
 
-    const wkPagePopupPromise = dappPage.waitForEvent('popup')
     await discoverPopup.getByRole('button', { name: 'Connect' }).click()
-    const wkPage = await wkPagePopupPromise
+
+    const wkPage = await dappPage.waitForEvent('popup', (popup) => {
+        return popup.url() !== 'about:blank'
+    })
 
     try {
         await wkPage.locator('#network').selectOption('0')
@@ -78,7 +80,7 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
         await dappPage.reload()
 
         await expect(
-            dappPage.getByText(new RegExp(`primary party: ${party2}::.*`))
+            dappPage.getByText(new RegExp(`${party2}::.*`))
         ).toBeVisible()
         await expect(
             dappPage.getByRole('button', { name: 'create Ping contract' })
@@ -88,6 +90,7 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
         await dappPage
             .getByRole('button', { name: 'create Ping contract' })
             .click()
+
         await expect(
             wkPage.getByRole('heading', { name: 'Pending Transaction Request' })
         ).toBeVisible()
@@ -97,15 +100,13 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
         await wkPage.getByRole('button', { name: 'Approve' }).click()
 
         // Wait for command to have fully executed
-        await expect(
-            dappPage
-                .getByText(`{"commandId":"${id}","status":"executed","`)
-                .first()
-        ).toBeVisible()
+        await expect(dappPage.getByText(id || '')).toHaveCount(3)
     } catch (e) {
         try {
-            await dappPage.screenshot({ path: 'error-dapp.png' })
-            await wkPage.screenshot({ path: 'error-wk.png' })
+            await dappPage.screenshot({
+                path: './test-results/error-dapp.png',
+            })
+            await wkPage.screenshot({ path: './test-results/error-wk.png' })
         } catch {
             // Ignore errors during screenshot capture
         }

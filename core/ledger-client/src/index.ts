@@ -37,5 +37,6 @@ export {
     isJsCantonError,
     asJsCantonError,
     JsCantonError,
+    JSContractEntry,
     defaultRetryableOptions,
 } from './ledger-api-utils.js'

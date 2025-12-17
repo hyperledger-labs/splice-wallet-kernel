@@ -9,7 +9,7 @@
         "tls": false,
         "dappPath": "/api/v0/dapp",
         "userPath": "/api/v0/user",
-        "allowedOrigins": ["http://localhost:8080"]
+        "allowedOrigins": ["http://localhost:8080", "http://localhost:8081"]
     },
     "store": {
         "connection": {

@@ -94,7 +94,9 @@ describe('PartyAllocationService', () => {
     afterEach(() => jest.restoreAllMocks())
 
     it('allocates an internal party', async () => {
-        mockLedgerGet.mockResolvedValueOnce({ participantId: 'participantid' })
+        mockLedgerGet.mockResolvedValueOnce({
+            participantId: 'participant1::participantid',
+        })
         mockLedgerPost.mockResolvedValueOnce({
             partyDetails: { party: 'party1::participantid' },
         })

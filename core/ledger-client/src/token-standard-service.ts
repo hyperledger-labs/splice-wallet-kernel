@@ -211,12 +211,21 @@ export class CoreService {
                 (await this.ledgerClient.getWithRetry('/v2/state/ledger-end'))
                     .offset
 
-            const options = {
+            const options: {
+                offset: number
+                interfaceIds: string[]
+                parties: PartyId[]
+                filterByParty: boolean
+                limit?: number
+            } = {
                 offset: ledgerEnd,
                 interfaceIds: [interfaceId],
                 parties: [partyId!],
                 filterByParty: true,
-                limit: limit ?? 100,
+            }
+
+            if (limit !== undefined) {
+                options.limit = limit
             }
 
             const acsResponses: JsGetActiveContractsResponse[] =
@@ -233,6 +242,7 @@ export class CoreService {
             const isActiveContractEntry = (
                 acsResponse: JsGetActiveContractsResponse
             ): acsResponse is JsActiveContractEntryResponse =>
+                'JsActiveContract' in acsResponse.contractEntry &&
                 !!acsResponse.contractEntry.JsActiveContract?.createdEvent
 
             const activeContractEntries = acsResponses.filter(
@@ -260,11 +270,13 @@ export class CoreService {
         const isOffsetCheckpointUpdate = (
             updateResponse: JsGetUpdatesResponse
         ): updateResponse is OffsetCheckpointUpdate =>
-            !!updateResponse?.update?.OffsetCheckpoint
+            'OffsetCheckpoint' in updateResponse.update
+
         const isTransactionUpdate = (
             updateResponse: JsGetUpdatesResponse
         ): updateResponse is TransactionUpdate =>
-            !!updateResponse.update?.Transaction?.value
+            'Transaction' in updateResponse.update &&
+            !!updateResponse.update.Transaction?.value
 
         const offsetCheckpoints: number[] = updates
             .filter(isOffsetCheckpointUpdate)
@@ -343,7 +355,8 @@ export class CoreService {
         response: JsActiveContractEntryResponse,
         offset?: number
     ): PrettyContract<T> {
-        const activeContract = response.contractEntry.JsActiveContract
+        const activeContract = response.contractEntry
+            .JsActiveContract as Types['JsActiveContract']
         const { createdEvent } = activeContract
         return {
             contractId: createdEvent.contractId,
@@ -411,7 +424,8 @@ class AllocationService {
 
     async fetchAllocationFactoryChoiceContext(
         registryUrl: string,
-        choiceArgs: AllocationFactory_Allocate
+        choiceArgs: AllocationFactory_Allocate,
+        excludeDebugFields: boolean = true
     ): Promise<
         allocationInstructionRegistryTypes['schemas']['FactoryWithChoiceContext']
     > {
@@ -419,6 +433,7 @@ class AllocationService {
             .getTokenStandardClient(registryUrl)
             .post('/registry/allocation-instruction/v1/allocation-factory', {
                 choiceArguments: choiceArgs as unknown as Record<string, never>,
+                excludeDebugFields,
             })
     }
 
@@ -770,7 +785,8 @@ class TransferService {
 
     async fetchTransferFactoryChoiceContext(
         registryUrl: string,
-        choiceArgs: CreateTransferChoiceArgs
+        choiceArgs: CreateTransferChoiceArgs,
+        excludeDebugFields: boolean = true
     ): Promise<
         transferInstructionRegistryTypes['schemas']['TransferFactoryWithChoiceContext']
     > {
@@ -778,6 +794,7 @@ class TransferService {
             .getTokenStandardClient(registryUrl)
             .post('/registry/transfer-instruction/v1/transfer-factory', {
                 choiceArguments: choiceArgs as unknown as Record<string, never>,
+                excludeDebugFields,
             })
     }
 
@@ -800,6 +817,7 @@ class TransferService {
         return [exercise, choiceContext.disclosedContracts]
     }
 
+    // TODO: use named parameters
     async createTransfer(
         sender: PartyId,
         receiver: PartyId,
@@ -1198,6 +1216,34 @@ class TransferService {
             transferInstructionCid,
             choiceContext
         )
+    }
+
+    async createTransferInstruction(
+        transferInstructionCid: string,
+        registryUrl: string,
+        instructionChoice: 'Accept' | 'Reject' | 'Withdraw',
+        prefetchedRegistryChoiceContext?: transferInstructionRegistryTypes['schemas']['ChoiceContext']
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        switch (instructionChoice) {
+            case 'Accept':
+                return this.createAcceptTransferInstruction(
+                    transferInstructionCid,
+                    registryUrl,
+                    prefetchedRegistryChoiceContext
+                )
+            case 'Reject':
+                return this.createRejectTransferInstruction(
+                    transferInstructionCid,
+                    registryUrl,
+                    prefetchedRegistryChoiceContext
+                )
+            case 'Withdraw':
+                return this.createWithdrawTransferInstruction(
+                    transferInstructionCid,
+                    registryUrl,
+                    prefetchedRegistryChoiceContext
+                )
+        }
     }
 }
 
