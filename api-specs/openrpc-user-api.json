@@ -14,6 +14,7 @@
                     "schema": {
                         "title": "AddNetworkParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "network": {
                                 "$ref": "#/components/schemas/Network"
@@ -39,6 +40,7 @@
                     "schema": {
                         "title": "RemoveNetworkParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "networkName": {
                                 "title": "networkName",
@@ -66,6 +68,7 @@
                 "schema": {
                     "title": "ListNetworksResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "networks": {
                             "title": "networks",
@@ -88,6 +91,7 @@
                     "schema": {
                         "title": "AddIdpParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "idp": {
                                 "$ref": "#/components/schemas/Idp"
@@ -113,6 +117,7 @@
                     "schema": {
                         "title": "RemoveIdpParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "identityProviderId": {
                                 "title": "identityProviderId",
@@ -139,6 +144,7 @@
                 "schema": {
                     "title": "ListIdpsResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "idps": {
                             "title": "idps",
@@ -160,6 +166,7 @@
                     "schema": {
                         "title": "CreateWalletParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "primary": {
                                 "title": "primary",
@@ -200,6 +207,7 @@
                 "schema": {
                     "title": "CreateWalletResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "wallet": {
                             "type": "object",
@@ -220,6 +228,7 @@
                     "schema": {
                         "title": "SetPrimaryWalletParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "partyId": {
                                 "title": "partyId",
@@ -247,6 +256,7 @@
                     "schema": {
                         "title": "RemoveWalletParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "partyId": {
                                 "title": "partyId",
@@ -275,6 +285,7 @@
                     "schema": {
                         "title": "ListWalletsParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "filter": {
                                 "title": "WalletFilter",
@@ -308,6 +319,7 @@
                 "schema": {
                     "title": "SyncWalletsResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "added": {
                             "title": "added",
@@ -338,6 +350,7 @@
                     "schema": {
                         "title": "SignParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "preparedTransaction": {
                                 "title": "preparedTransaction",
@@ -369,6 +382,7 @@
                 "schema": {
                     "title": "SignResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "signature": {
                             "title": "signature",
@@ -396,6 +410,7 @@
                     "schema": {
                         "title": "ExecuteParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "signature": {
                                 "title": "signature",
@@ -441,6 +456,7 @@
                     "schema": {
                         "title": "AddSessionParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "networkId": {
                                 "title": "networkId",
@@ -480,6 +496,7 @@
                 "schema": {
                     "title": "ListSessionsResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "sessions": {
                             "title": "sessions",
@@ -501,6 +518,7 @@
                     "schema": {
                         "title": "GetTransactionParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "commandId": {
                                 "$ref": "#/components/schemas/CommandId"
@@ -527,6 +545,7 @@
                 "schema": {
                     "title": "ListTransactionsResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "transactions": {
                             "title": "transactions",
@@ -556,6 +575,7 @@
             "Network": {
                 "title": "Network",
                 "type": "object",
+                "additionalProperties": false,
                 "description": "Structure representing the Networks",
                 "properties": {
                     "id": {
@@ -602,13 +622,13 @@
                     "identityProviderId",
                     "auth",
                     "ledgerApi"
-                ],
-                "additionalProperties": false
+                ]
             },
             "Idp": {
                 "title": "Idp",
                 "description": "Structure representing the Identity Providers",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                     "id": {
                         "title": "id",
@@ -631,8 +651,7 @@
                         "description": "The configuration URL for the identity provider."
                     }
                 },
-                "required": ["id", "type", "issuer"],
-                "additionalProperties": false
+                "required": ["id", "type", "issuer"]
             },
             "Auth": {
                 "title": "auth",
@@ -670,6 +689,7 @@
             "Wallet": {
                 "title": "Wallet",
                 "type": "object",
+                "additionalProperties": false,
                 "description": "Structure representing a wallet",
                 "properties": {
                     "primary": {
@@ -738,6 +758,7 @@
             "WalletFilter": {
                 "title": "WalletFilter",
                 "type": "object",
+                "additionalProperties": false,
                 "description": "Filter for wallets",
                 "properties": {
                     "networkIds": {
@@ -764,6 +785,7 @@
             "Session": {
                 "title": "Session",
                 "type": "object",
+                "additionalProperties": false,
                 "description": "Structure representing the connected network session",
                 "properties": {
                     "id": {
@@ -793,12 +815,12 @@
                         "description": "The reason for the current status."
                     }
                 },
-                "required": ["network", "idp", "status", "accessToken", "id"],
-                "additionalProperties": false
+                "required": ["network", "idp", "status", "accessToken", "id"]
             },
             "SigningProviderContext": {
                 "title": "SigningProviderContext",
                 "type": "object",
+                "additionalProperties": false,
                 "description": "Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.",
                 "properties": {
                     "partyId": {
@@ -832,6 +854,7 @@
             "Transaction": {
                 "title": "Transaction",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                     "commandId": {
                         "$ref": "#/components/schemas/CommandId"
