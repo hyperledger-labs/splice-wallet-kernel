@@ -10,12 +10,15 @@ export const ALLOWED_ROUTES = [
     '/settings',
     '/approve',
     '/',
+    '/404',
 ] as const
 
-export type AllowedRoute =
-    | (typeof ALLOWED_ROUTES)[number]
-    | typeof NOT_FOUND_PAGE_REDIRECT
+export type AllowedRoute = (typeof ALLOWED_ROUTES)[number]
 
 export function isAllowedRoute(path: string): path is AllowedRoute {
+    // TODO understand and test with callbacks
+    if (path.startsWith('/callback')) {
+        return true
+    }
     return ALLOWED_ROUTES.includes(path as (typeof ALLOWED_ROUTES)[number])
 }
