@@ -243,7 +243,7 @@ async function generateAsyncApiClient(
                 }
 
                 channels.push(`   '${channelPath}': {
-                        subscriibe: ${subscribeMessageType};
+                        subscribe: ${subscribeMessageType};
                         publish: ${publishMessageType};
 
                     }`)

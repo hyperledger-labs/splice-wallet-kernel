@@ -40,3 +40,5 @@ export {
     JSContractEntry,
     defaultRetryableOptions,
 } from './ledger-api-utils.js'
+export * from './websocket-client.js'
+export { GetActiveContractsRequest } from './generated-clients/asyncapi-3.4.7.js'

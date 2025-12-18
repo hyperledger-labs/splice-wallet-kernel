@@ -1093,23 +1093,23 @@ export interface ExercisedTreeEvent {
 // WebSocket Channel Definitions
 export interface WebSocketChannels {
     '/v2/commands/completions': {
-        subscriibe: Either_JsCantonError_CompletionStreamResponse
+        subscribe: Either_JsCantonError_CompletionStreamResponse
         publish: CompletionStreamRequest
     }
     '/v2/state/active-contracts': {
-        subscriibe: Either_JsCantonError_JsGetActiveContractsResponse
+        subscribe: Either_JsCantonError_JsGetActiveContractsResponse
         publish: GetActiveContractsRequest
     }
     '/v2/updates': {
-        subscriibe: Either_JsCantonError_JsGetUpdatesResponse
+        subscribe: Either_JsCantonError_JsGetUpdatesResponse
         publish: GetUpdatesRequest
     }
     '/v2/updates/flats': {
-        subscriibe: Either_JsCantonError_JsGetUpdatesResponse
+        subscribe: Either_JsCantonError_JsGetUpdatesResponse
         publish: GetUpdatesRequest
     }
     '/v2/updates/trees': {
-        subscriibe: Either_JsCantonError_JsGetUpdateTreesResponse
+        subscribe: Either_JsCantonError_JsGetUpdateTreesResponse
         publish: GetUpdatesRequest
     }
 }

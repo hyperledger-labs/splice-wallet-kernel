@@ -13,6 +13,7 @@ import {
     JSContractEntry,
     isJsCantonError,
     components,
+    WebSocketClient,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -59,6 +60,7 @@ export class LedgerController {
     private synchronizerId: PartyId | undefined
     private logger = pino({ name: 'LedgerController', level: 'info' })
     private initPromise: Promise<void>
+    private wsClient: WebSocketClient
 
     /** Creates a new instance of the LedgerController.
      *
@@ -85,7 +87,28 @@ export class LedgerController {
         this.initPromise = this.client.init()
         this.userId = userId
         this.isAdmin = isAdmin
+
+        const wsBaseUrl = baseUrl.href.replace('https://', 'wss://')
+        this.wsClient = new WebSocketClient({
+            baseUrl: wsBaseUrl,
+            isAdmin,
+            accessToken: token,
+            accessTokenProvider,
+            logger: this.logger,
+            wsSupportBackOff: 1000 * 6,
+        })
         return this
+    }
+
+    async subscribeToActiveContract(interfaceIds: string[], offset?: number) {
+        const ledgerEnd = await this.ledgerEnd()
+
+        console.log(offset)
+        return this.wsClient.subscribeToActiveContracts2(
+            interfaceIds,
+            this.getPartyId(),
+            ledgerEnd.offset
+        )
     }
 
     async awaitInit() {

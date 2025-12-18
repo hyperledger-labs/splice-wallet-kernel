@@ -140,3 +140,8 @@ logger.info('Submitted transfer transaction')
         )
     logger.info(transferPreApprovalStatus, '[BOB] transfer preapproval status')
 }
+const blah = await sdk.userLedger?.subscribeToActiveContract([
+    '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding',
+])
+
+logger.info(blah, 'active contracts subscription')
