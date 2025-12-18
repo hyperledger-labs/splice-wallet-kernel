@@ -27,6 +27,8 @@ export const redirectToIntendedOrDefault = (): void => {
 @customElement('user-app')
 export class UserApp extends LitElement {
     private async handleLogout() {
+        clearTokenExpirationTimeout()
+
         const accessToken = stateManager.accessToken.get()
 
         if (!accessToken) {
@@ -81,6 +83,15 @@ export class UserUI extends LitElement {
         if (!isAllowedRoute(normalizedPath)) {
             window.location.href = NOT_FOUND_PAGE_REDIRECT
         }
+    }
+}
+
+let tokenExpirationTimeoutId: ReturnType<typeof setTimeout> | null = null
+
+const clearTokenExpirationTimeout = (): void => {
+    if (tokenExpirationTimeoutId !== null) {
+        clearTimeout(tokenExpirationTimeoutId)
+        tokenExpirationTimeoutId = null
     }
 }
 
@@ -146,6 +157,8 @@ export class UserUIAuthRedirect extends LitElement {
     }
 
     private async handleExpiredToken(isLoginPage: boolean): Promise<void> {
+        clearTokenExpirationTimeout()
+
         const accessToken = stateManager.accessToken.get()
         if (accessToken) {
             // Attempt to remove session even if token is expired
@@ -165,6 +178,7 @@ export class UserUIAuthRedirect extends LitElement {
     ): Promise<void> {
         const isValid = await this.validateToken(accessToken)
         if (isValid) {
+            this.setTokenExpirationTimeout()
             redirectToIntendedOrDefault()
             shareConnection()
         } else {
@@ -189,12 +203,32 @@ export class UserUIAuthRedirect extends LitElement {
             return
         }
 
-        // Token is valid - share the connection with the opener window if it exists
+        // Token is valid - set up expiration timeout
+        this.setTokenExpirationTimeout()
+
+        // Share the connection with the opener window if it exists
         shareConnection()
 
         // Redirect to default page if on root path
         if (window.location.pathname === '/') {
             redirectToIntendedOrDefault()
+        }
+    }
+
+    private setTokenExpirationTimeout(): void {
+        clearTokenExpirationTimeout()
+
+        const expirationDate = new Date(stateManager.expirationDate.get() || '')
+        const now = new Date()
+        const timeUntilExpiration = expirationDate.getTime() - now.getTime()
+
+        if (timeUntilExpiration > 0) {
+            tokenExpirationTimeoutId = setTimeout(async () => {
+                const isLoginPage =
+                    window.location.pathname.startsWith(LOGIN_PAGE_REDIRECT)
+                await this.handleExpiredToken(isLoginPage)
+                tokenExpirationTimeoutId = null
+            }, timeUntilExpiration)
         }
     }
 
