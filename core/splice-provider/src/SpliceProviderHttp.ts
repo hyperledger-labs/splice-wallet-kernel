@@ -9,7 +9,6 @@ import {
 } from '@canton-network/core-types'
 import { SpliceProviderBase } from './SpliceProvider'
 import { io, Socket } from 'socket.io-client'
-import { popupHref } from '@canton-network/core-wallet-ui-components'
 
 // Maintain a global socket instance in-memory to avoid multiple connections
 // per SpliceProviderHttp instance.
@@ -101,14 +100,6 @@ export class SpliceProviderHttp extends SpliceProviderBase {
 
         if ('error' in response) throw new Error(response.error.message)
 
-        const result = response.result as T
-        if (method === 'prepareExecute') {
-            const { userUrl } = result as { userUrl?: string }
-            if (!userUrl) {
-                throw new Error('No userUrl provided in response')
-            }
-            popupHref(userUrl)
-        }
-        return result
+        return response.result as T
     }
 }
