@@ -3,7 +3,7 @@
 
 import { html, LitElement } from 'lit'
 import { customElement } from 'lit/decorators.js'
-import { createUserClient } from './rpc-client'
+import { createUserClient, attemptRemoveSession } from './rpc-client'
 
 import '@canton-network/core-wallet-ui-components'
 import '@canton-network/core-wallet-ui-components/dist/index.css'
@@ -111,7 +111,7 @@ export class UserUIAuthRedirect extends LitElement {
             return
         }
 
-        await this.handleAuthenticatedOnOtherPage(accessToken)
+        await this.handleAuthenticatedOnLoggedInPage(accessToken)
     }
 
     private getIntendedPageFromCurrentPath(): AllowedRoute | undefined {
@@ -145,7 +145,13 @@ export class UserUIAuthRedirect extends LitElement {
         }
     }
 
-    private handleExpiredToken(isLoginPage: boolean): void {
+    private async handleExpiredToken(isLoginPage: boolean): Promise<void> {
+        const accessToken = stateManager.accessToken.get()
+        if (accessToken) {
+            // Attempt to remove session even if token is expired
+            await attemptRemoveSession(accessToken)
+        }
+
         if (!isLoginPage) {
             this.clearAuthStateAndPreserveIntendedPage()
             window.location.href = LOGIN_PAGE_REDIRECT
@@ -162,11 +168,12 @@ export class UserUIAuthRedirect extends LitElement {
             redirectToIntendedOrDefault()
             shareConnection()
         } else {
+            await attemptRemoveSession(accessToken)
             stateManager.clearAuthState()
         }
     }
 
-    private async handleAuthenticatedOnOtherPage(
+    private async handleAuthenticatedOnLoggedInPage(
         accessToken: string
     ): Promise<void> {
         const networkId = stateManager.networkId.get()
@@ -176,7 +183,7 @@ export class UserUIAuthRedirect extends LitElement {
 
         const isValid = await this.validateToken(accessToken)
         if (!isValid) {
-            // Token is invalid - clear auth state and preserve intended page
+            await attemptRemoveSession(accessToken)
             this.clearAuthStateAndPreserveIntendedPage()
             window.location.href = LOGIN_PAGE_REDIRECT
             return

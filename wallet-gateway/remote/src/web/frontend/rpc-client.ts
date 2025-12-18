@@ -25,6 +25,25 @@ const getUserPath = async (): Promise<string> => {
     return userPathPromise
 }
 
+export const attemptRemoveSession = async (
+    accessToken: string
+): Promise<void> => {
+    try {
+        const userPath = await getUserPath()
+        const url = new URL(`${window.location.origin}${userPath}`)
+        // Use HttpTransport directly (not HttpTransportWithAuthInterceptor)
+        // to avoid infinite loops if removeSession itself returns 401
+        const userApiClient = new UserApiClient(
+            new HttpTransport(url, accessToken)
+        )
+        await userApiClient.request('removeSession')
+    } catch (error) {
+        // If removeSession fails that's okay
+        // We still want to clear local state
+        console.debug('Failed to remove session:', error)
+    }
+}
+
 const handleAutoLogout = async (): Promise<void> => {
     // Prevent multiple simultaneous logout attempts
     if (isLoggingOut) {
@@ -36,15 +55,8 @@ const handleAutoLogout = async (): Promise<void> => {
     try {
         const accessToken = stateManager.accessToken.get()
         if (accessToken) {
-            const userPath = await getUserPath()
-            const url = new URL(`${window.location.origin}${userPath}`)
-            const userApiClient = new UserApiClient(
-                new HttpTransport(url, accessToken)
-            )
-            await userApiClient.request('removeSession')
+            await attemptRemoveSession(accessToken)
         }
-    } catch (error) {
-        console.debug('Failed to remove session during auto-logout:', error)
     } finally {
         stateManager.clearAuthState()
         isLoggingOut = false
