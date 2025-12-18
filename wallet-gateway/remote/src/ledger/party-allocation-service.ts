@@ -15,7 +15,7 @@ export type AllocatedParty = {
     namespace: string
 }
 
-type SigningCbFn = (hash: string) => Promise<string>
+type SigningCbFn = (hash: string, tx?: string[]) => Promise<string>
 
 /**
  * This service provides an abstraction for Canton party allocation that seamlessly handles both internal and external parties.
@@ -249,7 +249,10 @@ export class PartyAllocationService {
             publicKey
         )
 
-        const signature = await signingCallback(transactions.multiHash)
+        const signature = await signingCallback(
+            transactions.multiHash,
+            transactions.topologyTransactions
+        )
 
         const res = await this.ledgerClient.allocateExternalParty(
             synchronizerId,

@@ -3,12 +3,13 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+export type Tx = string
 /**
  *
- * Bytestring of the prepared transaction for verification purposes.
+ * Bytestring(s) of the prepared transaction(s) for verification purposes.
  *
  */
-export type Tx = string
+export type Txs = Tx[]
 /**
  *
  * Hash of the prepared transaction that will be signed.
@@ -125,7 +126,7 @@ export interface Key {
  */
 export type Keys = Key[]
 export interface SignTransactionParams {
-    tx: Tx
+    txs: Txs
     txHash: TxHash
     publicKey: PublicKey
     internalTxId?: InternalTxId
