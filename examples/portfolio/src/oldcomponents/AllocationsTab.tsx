@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { useConnection } from '../contexts/ConnectionContext.js'
 import { usePortfolio } from '../contexts/PortfolioContext.js'
 import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
-import { SelectInstrument } from './SelectInstrument.js'
+import { type TransferLegInputFields, TransferLegInput } from './TransferLegInput.js'
 import { DateTimePicker } from './DateTimePicker.js'
 
 export const AllocationsTab: React.FC = () => {
@@ -22,13 +22,13 @@ export const AllocationsTab: React.FC = () => {
     defaultDeadline.setDate(defaultDeadline.getDate() + 7)
     const [allocateBefore, setAllocateBefore] = useState(defaultDeadline)
     const [settleBefore, setSettleBefore] = useState(defaultDeadline)
-    const [transferLegId, setTransferLegId] = useState('')
-    const [sender, setSender] = useState('')
-    const [receiver, setReceiver] = useState('')
-    const [amount, setAmount] = useState('')
-    const [instrument, setInstrument] = useState<
-        { admin: string; id: string } | undefined
-    >(undefined)
+    const [transferLeg, setTransferLeg] = useState<TransferLegInputFields>({
+        transferLegId: '',
+        sender: '',
+        receiver: '',
+        amount: '',
+        instrument: undefined,
+    })
 
     useEffect(() => {
         if (primaryParty) {
@@ -106,49 +106,14 @@ export const AllocationsTab: React.FC = () => {
 
                 <h3>Transfer Leg</h3>
 
-                <label htmlFor="transferLegId">Transfer Leg ID</label>
-                <input
-                    id="transferLegId"
-                    value={transferLegId}
-                    onChange={(e) => setTransferLegId(e.target.value)}
+                <TransferLegInput
+                  value={transferLeg}
+                  onChange={(v) => setTransferLeg(v)}
                 />
-                <br />
-
-                <label htmlFor="sender">Sender</label>
-                <input
-                    id="sender"
-                    value={sender}
-                    onChange={(e) => setSender(e.target.value)}
-                />
-                <br />
-
-                <label htmlFor="receiver">Receiver</label>
-                <input
-                    id="receiver"
-                    value={receiver}
-                    onChange={(e) => setReceiver(e.target.value)}
-                />
-                <br />
-
-                <label htmlFor="instrument">Instrument</label>
-                <SelectInstrument
-                    value={instrument}
-                    onChange={(i) => setInstrument(i)}
-                />
-                <br />
-
-                <label htmlFor="amount">Amount</label>
-                <input
-                    id="amount"
-                    type="number"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                />
-                <br />
 
                 <button
                     type="submit"
-                    disabled={!instrument}
+                    disabled={!transferLeg.instrument}
                     onClick={() => {
                         portfolio.createAllocationInstruction({
                             registryUrls,
@@ -168,11 +133,9 @@ export const AllocationsTab: React.FC = () => {
                                 },
                                 transferLegId: 'foo',
                                 transferLeg: {
-                                    sender,
-                                    receiver,
-                                    amount,
-                                    instrumentId: instrument!,
-                                    meta: { values: {} },
+                                    ...transferLeg,
+                                    instrumentId: transferLeg.instrument!,
+                                    meta: {values: {}},
                                 },
                             },
                         })
