@@ -3,7 +3,9 @@
 
 import type { PartyId } from '@canton-network/core-types'
 import { type AllocationRequestView } from '@canton-network/core-token-standard'
-// import { AssetCard } from './AssetCard.js'
+import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
+import { usePortfolio } from '../contexts/PortfolioContext.js'
+import { AssetCard } from './AssetCard.js'
 
 export type AllocationRequestCardProps = {
     party: PartyId
@@ -11,9 +13,12 @@ export type AllocationRequestCardProps = {
 }
 
 export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
+    party,
     allocationRequest,
 }) => {
     const { settlement, transferLegs } = allocationRequest
+    const registryUrls = useRegistryUrls()
+    const { createAllocationInstruction } = usePortfolio()
 
     // const transferLegIds = Object.entries(transferLegs)
 
@@ -21,6 +26,11 @@ export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
         <div>
             <h2>Settlement</h2>
             <strong>executor:</strong> {settlement.executor}
+            <br/>
+            <strong>allocateBefore:</strong> {settlement.allocateBefore}
+            {new Date(settlement.allocateBefore) <= new Date() &&
+                 "(EXPIRED!)"}
+            <br/>
             <h2>Transfer Legs</h2>
             {Object.entries(transferLegs).map(
                 ([transferLegId, transferLeg]) => (
@@ -30,6 +40,29 @@ export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
                         <br />
                         <strong>receiver:</strong> {transferLeg.receiver}
                         <br />
+                        <AssetCard
+                            amount={transferLeg.amount}
+                            /* TODO: use actual symbol! */
+                            symbol={transferLeg.instrumentId.id}
+                        />
+
+                        {transferLeg.sender === party && (
+                            <button
+                                onClick={() => {
+                                    createAllocationInstruction({
+                                        registryUrls,
+                                        party,
+                                        allocationSpecification: {
+                                            settlement,
+                                            transferLegId,
+                                            transferLeg
+                                        }
+                                    })
+                                }}
+                            >
+                                Accept
+                            </button>
+                        )}
                     </div>
                 )
             )}
