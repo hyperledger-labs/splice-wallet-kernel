@@ -2111,6 +2111,7 @@ __metadata:
     "@grpc/grpc-js": "npm:^1.14.1"
     "@protobuf-ts/grpc-transport": "npm:^2.11.1"
     "@types/node": "npm:^24.10.1"
+    decimal.js: "npm:^10.6.0"
     jose: "npm:^6.1.2"
     pino: "npm:^10.1.0"
     tsup: "npm:^8.5.1"
@@ -9893,6 +9894,13 @@ __metadata:
   version: 6.0.1
   resolution: "decamelize@npm:6.0.1"
   checksum: 10c0/c0a3a529591ebab1d1a9458b60684194e91d904e9b0a56367d3d507b2c8ab89dfd40c61423ca6a1eb2f70e2d44d2efe78f3342326395d3738d1d42592b1a6224
+  languageName: node
+  linkType: hard
+
+"decimal.js@npm:^10.6.0":
+  version: 10.6.0
+  resolution: "decimal.js@npm:10.6.0"
+  checksum: 10c0/07d69fbcc54167a340d2d97de95f546f9ff1f69d2b45a02fd7a5292412df3cd9eb7e23065e532a318f5474a2e1bccf8392fdf0443ef467f97f3bf8cb0477e5aa
   languageName: node
   linkType: hard
 
