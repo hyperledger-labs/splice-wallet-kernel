@@ -29,6 +29,10 @@ export default defineConfig({
                     __dirname,
                     'src/web/frontend/settings/index.html'
                 ),
+                transactions: resolve(
+                    __dirname,
+                    'src/web/frontend/transactions/index.html'
+                ),
                 wallets: resolve(
                     __dirname,
                     'src/web/frontend/wallets/index.html'
