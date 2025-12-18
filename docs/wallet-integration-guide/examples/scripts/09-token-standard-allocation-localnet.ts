@@ -41,7 +41,6 @@ logger.info('SDK initialized')
 await sdk.connect()
 logger.info('Connected to ledger')
 
-const keyPairAlice = createKeyPair()
 const keyPairBob = createKeyPair()
 const keyPairVenue = createKeyPair()
 
@@ -77,18 +76,20 @@ if (!isDarUploaded) {
     }
 }
 
-const alice = await sdk.userLedger?.signAndAllocateExternalParty(
-    keyPairAlice.privateKey,
-    'alice'
-)
-logger.info(`Created party: ${alice!.partyId}`)
-await sdk.setPartyId(alice!.partyId)
-
 const bob = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairBob.privateKey,
     'bob'
 )
 logger.info(`Created party: ${bob!.partyId}`)
+
+// const synchronizer =' global-domain::1220d4b1a8ec257bed85d458fa4ac4cd8a7a93e5b75081bf713cca0803afa76a861c'
+// const alice = await sdk.userLedger?.allocateInternalParty('alice')
+// console.log(await sdk.userLedger?.listSynchronizers(alice!))
+// logger.info(`Created party: ${alice}`)
+const alice =
+    'alice::12209b9a22297a870f679ca61e15e4efbe256ed72b462f2e052de11ce2d6c0c078ec'
+// await sdk.setPartyId(alice!, synchronizer)
+await sdk.setPartyId(alice)
 
 const venue = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairVenue.privateKey,
@@ -103,8 +104,9 @@ const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
 // Mint holdings for Alice
+logger.info(`Minting holdings for Alice...`)
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
-    alice!.partyId,
+    alice!,
     '2000000',
     {
         instrumentId: 'Amulet',
@@ -112,14 +114,10 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     }
 )
 
-await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-    tapCommand,
-    keyPairAlice.privateKey,
-    v4(),
-    disclosedContracts
-)
+await sdk.userLedger?.submitCommand(tapCommand, v4(), disclosedContracts)
 
 // Mint holdings for Bob
+logger.info(`Minting holdings for Bob...`)
 await sdk.setPartyId(bob!.partyId)
 const [tapCmdBob, tapDiscBob] = await sdk.tokenStandard!.createTap(
     bob!.partyId,
@@ -134,12 +132,12 @@ await sdk.userLedger!.prepareSignExecuteAndWaitFor(
 )
 
 // Alice creates OTCTradeProposal
-await sdk.setPartyId(alice!.partyId)
+await sdk.setPartyId(alice!)
 
 // Define what holdings each party will trade
 const transferLegs = {
     leg0: {
-        sender: alice!.partyId,
+        sender: alice!,
         receiver: bob!.partyId,
         amount: '100',
         instrumentId: { admin: instrumentAdminPartyId, id: 'Amulet' },
@@ -147,7 +145,7 @@ const transferLegs = {
     },
     leg1: {
         sender: bob!.partyId,
-        receiver: alice!.partyId,
+        receiver: alice!,
         amount: '20',
         instrumentId: { admin: instrumentAdminPartyId, id: 'Amulet' },
         meta: { values: {} },
@@ -162,16 +160,12 @@ const createProposal = {
             venue: venue!.partyId,
             tradeCid: null,
             transferLegs,
-            approvers: [alice!.partyId],
+            approvers: [alice!],
         },
     },
 }
 
-await sdk.userLedger!.prepareSignExecuteAndWaitFor(
-    createProposal,
-    keyPairAlice.privateKey,
-    v4()
-)
+await sdk.userLedger!.submitCommand(createProposal, v4())
 
 logger.info('Alice created OTCTradeProposal')
 
@@ -265,8 +259,10 @@ const otcTradeCid = LedgerController.getActiveContractCid(
 )
 if (!otcTradeCid) throw new Error('OTCTrade not found for venue')
 
+throw new Error('lets call it a day here')
+
 // Alice's leg allocation
-await sdk?.setPartyId(alice!.partyId)
+await sdk?.setPartyId(alice!)
 const pendingAllocationRequestsAlice =
     await sdk.tokenStandard?.fetchPendingAllocationRequestView()
 
@@ -276,8 +272,7 @@ const allocationRequestViewAlice =
 const settlementRefId = allocationRequestViewAlice.settlement.settlementRef.id
 
 const legIdAlice = Object.keys(allocationRequestViewAlice.transferLegs).find(
-    (key) =>
-        allocationRequestViewAlice.transferLegs[key].sender === alice!.partyId
+    (key) => allocationRequestViewAlice.transferLegs[key].sender === alice!
 )!
 if (!legIdAlice) throw new Error(`No leg found for Alice`)
 
@@ -295,9 +290,8 @@ const [allocateCmdAlice, allocateDisclosedAlice] =
         legAlice.instrumentId.admin
     )
 
-await sdk.userLedger!.prepareSignExecuteAndWaitFor(
+await sdk.userLedger!.submitCommand(
     allocateCmdAlice,
-    keyPairAlice.privateKey,
     v4(),
     allocateDisclosedAlice
 )
@@ -414,7 +408,7 @@ logger.info(
 )
 
 {
-    await sdk.setPartyId(alice!.partyId)
+    await sdk.setPartyId(alice!)
     await sdk.tokenStandard?.listHoldingTransactions().then((transactions) => {
         logger.info(
             transactions,

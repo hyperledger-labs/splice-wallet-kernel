@@ -2,11 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState, useEffect } from 'react'
+import { type AllocationRequestView } from '@canton-network/core-token-standard'
+import { type PrettyContract } from '@canton-network/core-ledger-client'
 import { useConnection } from '../contexts/ConnectionContext.js'
 import { usePortfolio } from '../contexts/PortfolioContext.js'
 import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
-import { type TransferLegInputFields, TransferLegInput } from './TransferLegInput.js'
+import {
+    type TransferLegInputFields,
+    TransferLegInput,
+} from './TransferLegInput.js'
 import { DateTimePicker } from './DateTimePicker.js'
+import { AllocationRequestCard } from './AllocationRequestCard.js'
 
 export const AllocationsTab: React.FC = () => {
     const registryUrls = useRegistryUrls()
@@ -14,6 +20,10 @@ export const AllocationsTab: React.FC = () => {
     const {
         status: { primaryParty },
     } = useConnection()
+
+    const [pendingAllocationRequests, setPendingAllocationRequests] = useState<
+        PrettyContract<AllocationRequestView>[] | undefined
+    >(undefined)
 
     const [executor, setExecutor] = useState('')
     const [settlementRefId, setSettlementRefId] = useState('')
@@ -30,6 +40,7 @@ export const AllocationsTab: React.FC = () => {
         instrument: undefined,
     })
 
+    // TODO: replace by react-query hook
     useEffect(() => {
         if (primaryParty) {
             ;(async () => {
@@ -49,6 +60,7 @@ export const AllocationsTab: React.FC = () => {
                     'pendingAllocationRequests',
                     pendingAllocationRequests
                 )
+                setPendingAllocationRequests(pendingAllocationRequests)
                 const pendingAllocations =
                     await portfolio.listPendingAllocations({
                         party: primaryParty,
@@ -60,7 +72,20 @@ export const AllocationsTab: React.FC = () => {
 
     return (
         <div>
+            <h2>Allocation requests</h2>
+
+            {primaryParty &&
+                pendingAllocationRequests?.map((p) => (
+                    <div key={p.contractId}>
+                        <AllocationRequestCard
+                            party={primaryParty!}
+                            allocationRequest={p.interfaceViewValue}
+                        />
+                    </div>
+                ))}
+
             <h2>Create allocation</h2>
+
             <form onSubmit={(e) => e.preventDefault()}>
                 <h3>Settlement</h3>
 
@@ -107,8 +132,8 @@ export const AllocationsTab: React.FC = () => {
                 <h3>Transfer Leg</h3>
 
                 <TransferLegInput
-                  value={transferLeg}
-                  onChange={(v) => setTransferLeg(v)}
+                    value={transferLeg}
+                    onChange={(v) => setTransferLeg(v)}
                 />
 
                 <button
@@ -135,7 +160,7 @@ export const AllocationsTab: React.FC = () => {
                                 transferLeg: {
                                     ...transferLeg,
                                     instrumentId: transferLeg.instrument!,
-                                    meta: {values: {}},
+                                    meta: { values: {} },
                                 },
                             },
                         })
