@@ -34,6 +34,7 @@
         "@canton-network/core-wallet-auth": "workspace:^",
         "@grpc/grpc-js": "^1.14.1",
         "@protobuf-ts/grpc-transport": "^2.11.1",
+        "decimal.js": "^10.6.0",
         "jose": "^6.1.2",
         "pino": "^10.1.0",
         "uuid": "^11.1.0"
