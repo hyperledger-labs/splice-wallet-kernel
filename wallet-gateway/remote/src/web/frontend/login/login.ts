@@ -13,7 +13,7 @@ import {
     AuthTokenProviderSelfSigned,
     ClientCredentials,
 } from '@canton-network/core-wallet-auth'
-import { redirectToIntendedOrDefault, shareConnection } from '../index'
+import { redirectToIntendedOrDefault, addUserSession } from '../index'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
@@ -310,16 +310,10 @@ export class LoginUI extends LitElement {
         stateManager.expirationDate.set(
             new Date(payload.exp * 1000).toISOString()
         )
-
         stateManager.accessToken.set(access_token)
 
-        shareConnection()
-
-        const authenticatedUserClient = await createUserClient(access_token)
-
-        await authenticatedUserClient.request('addSession', {
-            networkId: stateManager.networkId.get() || '',
-        })
+        const networkId = stateManager.networkId.get() || ''
+        addUserSession(access_token, networkId)
     }
 
     protected render() {

@@ -47,11 +47,7 @@ export class UserApp extends LitElement {
 
         stateManager.clearAuthState()
 
-        if (
-            window.name === 'wallet-popup' &&
-            window.opener &&
-            !window.opener.closed
-        ) {
+        if (window.opener && !window.opener.closed) {
             // close the gateway UI automatically if we are within a popup
             window.close()
         } else {
@@ -176,11 +172,11 @@ export class UserUIAuthRedirect extends LitElement {
     private async handleAuthenticatedOnLoginPage(
         accessToken: string
     ): Promise<void> {
-        const isValid = await this.validateToken(accessToken)
-        if (isValid) {
+        const sessionId = await getSessionId(accessToken)
+        if (sessionId) {
             this.setTokenExpirationTimeout()
             redirectToIntendedOrDefault()
-            shareConnection()
+            shareConnection(accessToken, sessionId)
         } else {
             await attemptRemoveSession(accessToken)
             stateManager.clearAuthState()
@@ -195,8 +191,8 @@ export class UserUIAuthRedirect extends LitElement {
             throw new Error('missing networkId in state manager')
         }
 
-        const isValid = await this.validateToken(accessToken)
-        if (!isValid) {
+        const sessionId = await getSessionId(accessToken)
+        if (!sessionId) {
             await attemptRemoveSession(accessToken)
             this.clearAuthStateAndPreserveIntendedPage()
             window.location.href = LOGIN_PAGE_REDIRECT
@@ -205,9 +201,7 @@ export class UserUIAuthRedirect extends LitElement {
 
         // Token is valid - set up expiration timeout
         this.setTokenExpirationTimeout()
-
-        // Share the connection with the opener window if it exists
-        shareConnection()
+        shareConnection(accessToken, sessionId)
 
         // Redirect to default page if on root path
         if (window.location.pathname === '/') {
@@ -236,30 +230,34 @@ export class UserUIAuthRedirect extends LitElement {
         const expirationDate = new Date(stateManager.expirationDate.get() || 0)
         return expirationDate <= new Date()
     }
-
-    // Verify that the access token is still valid by making a simple RPC call
-    private async validateToken(accessToken: string): Promise<boolean> {
-        try {
-            const userClient = await createUserClient(accessToken)
-            // Use listSessions as a lightweight validation call
-            await userClient.request('listSessions')
-            return true
-        } catch (error) {
-            // If validation fails (e.g., 401), token is invalid
-            console.debug('Token validation failed:', error)
-            return false
-        }
-    }
 }
 
-export const shareConnection = (): void => {
+const getSessionId = async (token: string): Promise<string | undefined> => {
+    const userClient = await createUserClient(token)
+    const sessions = await userClient.request('listSessions').catch(() => {
+        return null
+    })
+    return sessions?.sessions?.[0]?.id ?? undefined
+}
+
+export const shareConnection = (token: string, sessionId: string) => {
     if (window.opener && !window.opener.closed) {
         window.opener.postMessage(
             {
                 type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
-                token: stateManager.accessToken.get(),
+                token,
+                sessionId,
             },
             '*'
         )
     }
+}
+
+export const addUserSession = async (token: string, networkId: string) => {
+    const authenticatedUserClient = await createUserClient(token)
+    const session = await authenticatedUserClient.request('addSession', {
+        networkId,
+    })
+
+    shareConnection(token, session.id)
 }

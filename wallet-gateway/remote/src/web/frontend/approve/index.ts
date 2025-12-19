@@ -297,10 +297,16 @@ export class ApproveUi extends LitElement {
                 <h3>Decoded Transaction</h3>
                 <div class="tx-box">${this.txParsed?.jsonString || 'N/A'}</div>
 
-                <button ?disabled=${this.loading} @click=${this.handleExecute}>
-                    ${this.loading ? 'Processing...' : 'Approve'}
-                </button>
-
+                ${this.status === 'executed'
+                    ? nothing
+                    : html`
+                          <button
+                              ?disabled=${this.loading}
+                              @click=${this.handleExecute}
+                          >
+                              ${this.loading ? 'Processing...' : 'Approve'}
+                          </button>
+                      `}
                 ${this.message
                     ? html`<div class="message ${this.messageType}">
                           ${this.message}

@@ -100,6 +100,7 @@ export const SpliceMessage = z.discriminatedUnion('type', [
     z.object({
         type: z.literal(WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS),
         token: z.string(),
+        sessionId: z.string(),
     }),
 ])
 export type SpliceMessage = z.infer<typeof SpliceMessage>
@@ -219,9 +220,15 @@ export class HttpTransport implements RpcTransport {
 
     protected async handleErrorResponse(response: Response): Promise<never> {
         const body = await response.text()
-        throw new Error(
-            `HTTP ${response.status} ${response.statusText}: ${body}`
-        )
+
+        // if the response uses the RPC error format, throw it as is
+        if (ErrorResponse.safeParse(JSON.parse(body)).success) {
+            throw JSON.parse(body)
+        } else {
+            throw new Error(
+                `HTTP request failed: ${response.status}, text: ${await response.text()} `
+            )
+        }
     }
 
     async submit(payload: RequestPayload): Promise<ResponsePayload> {

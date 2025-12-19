@@ -18,8 +18,6 @@ import {
     migrator as signingMigrator,
 } from '@canton-network/core-signing-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
-import { Notifier } from './notification/NotificationService.js'
-import EventEmitter from 'events'
 import { SigningProvider } from '@canton-network/core-signing-lib'
 import { ParticipantSigningDriver } from '@canton-network/core-signing-participant'
 import { InternalSigningDriver } from '@canton-network/core-signing-internal'
@@ -35,35 +33,9 @@ import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 import { GATEWAY_VERSION } from './version.js'
 import { sessionHandler } from './middleware/sessionHandler.js'
+import { NotificationService } from './notification/NotificationService.js'
 
 let isReady = false
-
-class NotificationService implements NotificationService {
-    private notifiers: Map<string, Notifier> = new Map()
-
-    constructor(private logger: Logger) {}
-
-    getNotifier(notifierId: string): Notifier {
-        const logger = this.logger
-        let notifier = this.notifiers.get(notifierId)
-
-        if (!notifier) {
-            notifier = new EventEmitter()
-            // Wrap all events to log with pino
-            const originalEmit = notifier.emit
-            notifier.emit = function (event: string, ...args: unknown[]) {
-                logger.debug(
-                    { event, args },
-                    `Notifier emitted event: ${event}`
-                )
-                return originalEmit.apply(this, [event, ...args])
-            }
-            this.notifiers.set(notifierId, notifier)
-        }
-
-        return notifier
-    }
-}
 
 async function initializeDatabase(
     config: Config,

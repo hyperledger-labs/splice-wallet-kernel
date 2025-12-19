@@ -11,10 +11,7 @@ import { Store } from '@canton-network/core-wallet-store'
 import { AuthService, AuthAware } from '@canton-network/core-wallet-auth'
 import { Server } from 'http'
 import { Server as SocketIoServer } from 'socket.io'
-import {
-    NotificationService,
-    Notifier,
-} from '../notification/NotificationService.js'
+import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo, ServerConfig } from '../config/Config.js'
 
 export const dapp = (
@@ -60,51 +57,57 @@ export const dapp = (
         },
     })
 
-    io.on('connection', (socket) => {
-        logger.info('Socket.io client connected')
+    io.on('connection', async (socket) => {
+        let sessionId = undefined
+        const context = await authService.verifyToken(
+            socket.handshake.auth.token
+        )
 
-        let notifier: Notifier | undefined = undefined
-
-        const onAccountsChanged = (...event: unknown[]) => {
-            io.emit('accountsChanged', ...event)
-        }
-        const onStatusChanged = (...event: unknown[]) => {
-            io.emit('statusChanged', ...event)
-        }
-        const onConnected = (...event: unknown[]) => {
-            io.emit('onConnected', ...event)
-        }
-        const onTxChanged = (...event: unknown[]) => {
-            io.emit('txChanged', ...event)
+        if (context !== undefined) {
+            const newStore = store.withAuthContext(context)
+            const session = await newStore.getSession()
+            sessionId = session?.id
         }
 
-        authService
-            .verifyToken(socket.handshake.auth.token)
-            .then((authContext) => {
-                const userId = authContext?.userId
+        if (context && sessionId) {
+            socket.join(sessionId)
+            logger.debug(
+                `Socket.io connected for user: ${context.userId} with session ID: ${sessionId}`
+            )
 
-                if (!userId) {
-                    return
-                }
+            const notifier = notificationService.getNotifier(context.userId)
 
-                notifier = notificationService.getNotifier(userId)
+            const onAccountsChanged = (...event: unknown[]) => {
+                io.to(sessionId).emit('accountsChanged', ...event)
+            }
+            const onStatusChanged = (...event: unknown[]) => {
+                logger.debug(
+                    { sessionId },
+                    'Emitting statusChanged event via Socket.io'
+                )
+                io.to(sessionId).emit('statusChanged', ...event)
+            }
+            const onConnected = (...event: unknown[]) => {
+                io.to(sessionId).emit('onConnected', ...event)
+            }
+            const onTxChanged = (...event: unknown[]) => {
+                io.to(sessionId).emit('txChanged', ...event)
+            }
 
-                notifier.on('accountsChanged', onAccountsChanged)
-                notifier.on('onConnected', onConnected)
-                notifier.on('statusChanged', onStatusChanged)
-                notifier.on('txChanged', onTxChanged)
-            })
+            notifier.on('accountsChanged', onAccountsChanged)
+            notifier.on('onConnected', onConnected)
+            notifier.on('statusChanged', onStatusChanged)
+            notifier.on('txChanged', onTxChanged)
 
-        socket.on('disconnect', () => {
-            logger.info('Socket.io client disconnected')
+            socket.on('disconnect', () => {
+                logger.debug('Socket.io client disconnected')
 
-            if (notifier) {
                 notifier.removeListener('accountsChanged', onAccountsChanged)
                 notifier.removeListener('onConnected', onConnected)
                 notifier.removeListener('statusChanged', onStatusChanged)
                 notifier.removeListener('txChanged', onTxChanged)
-            }
-        })
+            })
+        }
     })
 
     return server

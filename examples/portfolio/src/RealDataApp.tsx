@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import './App.css'
-import { RegistriesProvider } from './contexts/RegistriesProvider.js'
+import { RegistryServiceProvider } from './contexts/RegistriesServiceProvider.js'
 import { ConnectionProvider } from './contexts/ConnectionProvider.js'
 import { PortfolioProvider } from './contexts/PortfolioProvider.js'
 import { HoldingsTab } from './oldcomponents/HoldingsTab.js'
@@ -14,7 +14,7 @@ import { ConnectionCard } from './oldcomponents/ConnectionCard.js'
 import { Tabs } from './oldcomponents/Tabs.js'
 
 const RealDataApp: React.FC = () => (
-    <RegistriesProvider>
+    <RegistryServiceProvider>
         <ConnectionProvider>
             <PortfolioProvider>
                 <h1>dApp Portfolio</h1>
@@ -50,7 +50,7 @@ const RealDataApp: React.FC = () => (
                 />
             </PortfolioProvider>
         </ConnectionProvider>
-    </RegistriesProvider>
+    </RegistryServiceProvider>
 )
 
 export default RealDataApp

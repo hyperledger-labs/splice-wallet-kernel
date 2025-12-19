@@ -8,6 +8,7 @@ export const ALLOWED_ROUTES = [
     '/login',
     '/wallets',
     '/settings',
+    '/transactions',
     '/approve',
     '/',
     '/404',
@@ -16,7 +17,6 @@ export const ALLOWED_ROUTES = [
 export type AllowedRoute = (typeof ALLOWED_ROUTES)[number]
 
 export function isAllowedRoute(path: string): path is AllowedRoute {
-    // TODO understand and test with callbacks
     if (path.startsWith('/callback')) {
         return true
     }
