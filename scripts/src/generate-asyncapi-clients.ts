@@ -225,10 +225,6 @@ async function generateAsyncApiClient(
             for (const [channelPath, channel] of Object.entries<any>(
                 asyncapiDoc.channels
             )) {
-                // const safeName = channelPath
-                //     .replace(/^\//, '')
-                //     .replace(/[^a-zA-Z0-9]/g, '_')
-
                 let subscribeMessageType = 'any'
                 let publishMessageType = 'any'
 
@@ -262,7 +258,6 @@ async function generateAsyncApiClient(
 
                 outputLines.push(`  ${safeName}: '${channelPath}' as const,`)
 
-                // outputLines.push('} as const;')
                 outputLines.push('')
             }
             outputLines.push('}')
@@ -277,10 +272,8 @@ async function generateAsyncApiClient(
             if (asyncapiDoc.info.description) {
                 const escapedDescription = asyncapiDoc.info.description
                     .replace(/\\/g, '\\\\')
-                    .replace(/'/g, "\\'");
-                outputLines.push(
-                    `  description: '${escapedDescription}',`
-                )
+                    .replace(/'/g, "\\'")
+                outputLines.push(`  description: '${escapedDescription}',`)
             }
 
             outputLines.push('} as const;')
@@ -288,12 +281,12 @@ async function generateAsyncApiClient(
         }
 
         const outputPath = path.join(root, output)
-        // const outputDir = path.dirname(outputPath)
+        const outputDir = path.dirname(outputPath)
         console.info(info(`writing to output path ${outputPath}`))
 
-        // if (!fs.existsSync(outputDir)) {
-        //     fs.mkdirSync(outputDir, { recursive: true })
-        // }
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true })
+        }
         fs.writeFileSync(outputPath, outputLines.join('\n'))
 
         console.info(info(`Generated: ${output}`))
