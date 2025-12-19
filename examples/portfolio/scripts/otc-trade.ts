@@ -4,7 +4,6 @@ import {
     localNetLedgerDefault,
     localNetTopologyDefault,
     localNetTokenStandardDefault,
-    createKeyPair,
     localNetStaticConfig,
     LedgerController,
 } from '@canton-network/wallet-sdk'
@@ -13,21 +12,33 @@ import { v4 } from 'uuid'
 import fs from 'fs/promises'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import * as readline from 'node:readline'
+
+const logger = pino({ name: 'otc-trade', level: 'info' })
+
+export function prompt(question: string): Promise<string> {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    })
+
+    logger.info({ prompt: question })
+    return new Promise((resolve) => {
+        rl.question("", (answer) => {
+            rl.close()
+            resolve(answer)
+        })
+    })
+}
 
 // This example needs uploaded .dar for splice-token-test-trading-app
 // It's in files of localnet, but it's not uploaded to participant, so we need to do this in the script
 // Adjust if to your .localnet location
-const PATH_TO_LOCALNET = '../../../../.localnet'
+const PATH_TO_LOCALNET = '../../../.localnet'
 const PATH_TO_DAR_IN_LOCALNET = '/dars/splice-token-test-trading-app-1.0.0.dar'
 const TRADING_APP_PACKAGE_ID =
     'e5c9847d5a88d3b8d65436f01765fc5ba142cc58529692e2dacdd865d9939f71'
 
-const logger = pino({
-    name: '09-token-standard-allocation-localnet',
-    level: 'info',
-})
-
-// it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
     logger,
     authFactory: localNetAuthDefault,
@@ -40,10 +51,6 @@ logger.info('SDK initialized')
 
 await sdk.connect()
 logger.info('Connected to ledger')
-
-const keyPairAlice = createKeyPair()
-const keyPairBob = createKeyPair()
-const keyPairVenue = createKeyPair()
 
 await sdk.connectAdmin()
 await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
@@ -77,24 +84,12 @@ if (!isDarUploaded) {
     }
 }
 
-const alice = await sdk.userLedger?.signAndAllocateExternalParty(
-    keyPairAlice.privateKey,
-    'alice'
-)
-logger.info(`Created party: ${alice!.partyId}`)
-await sdk.setPartyId(alice!.partyId)
-
-const bob = await sdk.userLedger?.signAndAllocateExternalParty(
-    keyPairBob.privateKey,
-    'bob'
-)
-logger.info(`Created party: ${bob!.partyId}`)
-
-const venue = await sdk.userLedger?.signAndAllocateExternalParty(
-    keyPairVenue.privateKey,
-    'venue'
-)
-logger.info(`Created party: ${venue!.partyId}`)
+const venue = await prompt('Party ID for Venue')
+await sdk.setPartyId(venue)
+const alice = await prompt('Party ID for Alice')
+await sdk.setPartyId(alice) // Sanity check
+const bob = await prompt('Party ID for Bob')
+await sdk.setPartyId(bob)
 
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(
     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
@@ -103,8 +98,10 @@ const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
 // Mint holdings for Alice
+logger.info(`Minting holdings for Alice...`)
+await sdk.setPartyId(alice)
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
-    alice!.partyId,
+    alice,
     '2000000',
     {
         instrumentId: 'Amulet',
@@ -112,42 +109,33 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     }
 )
 
-await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-    tapCommand,
-    keyPairAlice.privateKey,
-    v4(),
-    disclosedContracts
-)
+await sdk.userLedger?.submitCommand(tapCommand, v4(), disclosedContracts)
 
 // Mint holdings for Bob
-await sdk.setPartyId(bob!.partyId)
+logger.info(`Minting holdings for Bob...`)
+await sdk.setPartyId(bob)
 const [tapCmdBob, tapDiscBob] = await sdk.tokenStandard!.createTap(
-    bob!.partyId,
+    bob,
     '2000000',
     { instrumentId: 'Amulet', instrumentAdmin: instrumentAdminPartyId }
 )
-await sdk.userLedger!.prepareSignExecuteAndWaitFor(
-    tapCmdBob,
-    keyPairBob.privateKey,
-    v4(),
-    tapDiscBob
-)
+await sdk.userLedger!.submitCommand(tapCmdBob, v4(), tapDiscBob)
 
 // Alice creates OTCTradeProposal
-await sdk.setPartyId(alice!.partyId)
+await sdk.setPartyId(alice)
 
 // Define what holdings each party will trade
 const transferLegs = {
     leg0: {
-        sender: alice!.partyId,
-        receiver: bob!.partyId,
+        sender: alice,
+        receiver: bob,
         amount: '100',
         instrumentId: { admin: instrumentAdminPartyId, id: 'Amulet' },
         meta: { values: {} },
     },
     leg1: {
-        sender: bob!.partyId,
-        receiver: alice!.partyId,
+        sender: bob,
+        receiver: alice,
         amount: '20',
         instrumentId: { admin: instrumentAdminPartyId, id: 'Amulet' },
         meta: { values: {} },
@@ -159,35 +147,31 @@ const createProposal = {
         templateId:
             '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
         createArguments: {
-            venue: venue!.partyId,
+            venue,
             tradeCid: null,
             transferLegs,
-            approvers: [alice!.partyId],
+            approvers: [alice],
         },
     },
 }
 
-await sdk.userLedger!.prepareSignExecuteAndWaitFor(
-    createProposal,
-    keyPairAlice.privateKey,
-    v4()
-)
+await sdk.userLedger!.submitCommand(createProposal, v4())
 
 logger.info('Alice created OTCTradeProposal')
 
 // Bob accepts the OTCTradeProposal
-await sdk.setPartyId(bob!.partyId)
+await sdk.setPartyId(bob)
 const activeTradeProposals = await sdk.userLedger?.activeContracts({
     offset: (await sdk.userLedger!.ledgerEnd()).offset,
     templateIds: [
         '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
     ],
-    parties: [bob!.partyId],
+    parties: [bob],
     filterByParty: true,
 })
 
 const otcpCid = LedgerController.getActiveContractCid(
-    activeTradeProposals?.[0]?.contractEntry!
+    activeTradeProposals?.[0]?.contractEntry
 )
 
 if (otcpCid === undefined) {
@@ -200,26 +184,22 @@ const acceptCmd = [
                 '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
             contractId: otcpCid,
             choice: 'OTCTradeProposal_Accept',
-            choiceArgument: { approver: bob!.partyId },
+            choiceArgument: { approver: bob },
         },
     },
 ]
-await sdk.userLedger!.prepareSignExecuteAndWaitFor(
-    acceptCmd,
-    keyPairBob.privateKey,
-    v4()
-)
+await sdk.userLedger!.submitCommand(acceptCmd, v4())
 
 logger.info('Bob accepted OTCTradeProposal')
 
 // Venue initiates settlement of OTCTradeProposal
-await sdk.setPartyId(venue!.partyId)
+await sdk.setPartyId(venue)
 const activeTradeProposals2 = await sdk.userLedger?.activeContracts({
     offset: (await sdk.userLedger!.ledgerEnd()).offset,
     templateIds: [
         '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
     ],
-    parties: [venue!.partyId],
+    parties: [venue],
     filterByParty: true,
 })
 
@@ -228,7 +208,7 @@ const prepareUntil = new Date(now.getTime() + 60 * 60 * 1000).toISOString()
 const settleBefore = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString()
 
 const otcpCid2 = LedgerController.getActiveContractCid(
-    activeTradeProposals2?.[0]?.contractEntry!
+    activeTradeProposals2?.[0]?.contractEntry
 )
 
 const initiateSettlementCmd = [
@@ -243,11 +223,7 @@ const initiateSettlementCmd = [
     },
 ]
 
-await sdk.userLedger!.prepareSignExecuteAndWaitFor(
-    initiateSettlementCmd,
-    keyPairVenue.privateKey,
-    v4()
-)
+await sdk.userLedger!.submitCommand(initiateSettlementCmd, v4())
 
 logger.info('Venue initated settlement of OTCTradeProposal')
 
@@ -256,7 +232,7 @@ const otcTrades = await sdk.userLedger!.activeContracts({
     templateIds: [
         '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTrade',
     ],
-    parties: [venue!.partyId],
+    parties: [venue],
     filterByParty: true,
 })
 
@@ -265,92 +241,16 @@ const otcTradeCid = LedgerController.getActiveContractCid(
 )
 if (!otcTradeCid) throw new Error('OTCTrade not found for venue')
 
-// Alice's leg allocation
-await sdk?.setPartyId(alice!.partyId)
-const pendingAllocationRequestsAlice =
-    await sdk.tokenStandard?.fetchPendingAllocationRequestView()
-
-const allocationRequestViewAlice =
-    pendingAllocationRequestsAlice?.[0].interfaceViewValue!
-
-const settlementRefId = allocationRequestViewAlice.settlement.settlementRef.id
-
-const legIdAlice = Object.keys(allocationRequestViewAlice.transferLegs).find(
-    (key) =>
-        allocationRequestViewAlice.transferLegs[key].sender === alice!.partyId
-)!
-if (!legIdAlice) throw new Error(`No leg found for Alice`)
-
-const legAlice = allocationRequestViewAlice.transferLegs[legIdAlice]
-
-const specAlice = {
-    settlement: allocationRequestViewAlice.settlement,
-    transferLegId: legIdAlice,
-    transferLeg: legAlice,
-}
-
-const [allocateCmdAlice, allocateDisclosedAlice] =
-    await sdk.tokenStandard!.createAllocationInstruction(
-        specAlice,
-        legAlice.instrumentId.admin
-    )
-
-await sdk.userLedger!.prepareSignExecuteAndWaitFor(
-    allocateCmdAlice,
-    keyPairAlice.privateKey,
-    v4(),
-    allocateDisclosedAlice
-)
-
-logger.info('Alice created Allocation for her TransferLeg')
-
-// Bob's leg allocation
-await sdk.setPartyId(bob!.partyId)
-
-const pendingAllocationRequestBob =
-    await sdk.tokenStandard?.fetchPendingAllocationRequestView()
-
-const allocationRequestViewBob =
-    pendingAllocationRequestBob?.[0].interfaceViewValue!
-
-const legIdBob = Object.keys(allocationRequestViewAlice.transferLegs).find(
-    (key) =>
-        allocationRequestViewAlice.transferLegs[key].sender === bob!.partyId
-)!
-if (!legIdBob) throw new Error(`No leg found for Bob`)
-
-const legBob = allocationRequestViewAlice.transferLegs[legIdBob]
-
-const specBob = {
-    settlement: allocationRequestViewBob.settlement,
-    transferLegId: legIdBob,
-    transferLeg: legBob,
-}
-
-const [allocateCmdBob, AllocateDisclosedABob] =
-    await sdk.tokenStandard!.createAllocationInstruction(
-        specBob,
-        legBob.instrumentId.admin
-    )
-
-await sdk.userLedger!.prepareSignExecuteAndWaitFor(
-    allocateCmdBob,
-    keyPairBob.privateKey,
-    v4(),
-    AllocateDisclosedABob
-)
-logger.info('Bob created Allocation for her TransferLeg')
+await prompt('Please type yes once both parties have made their allocations')
 
 // Once the legs have been allocated, venue settles the trade triggering transfer of holdings
-await sdk.setPartyId(venue!.partyId)
+await sdk.setPartyId(venue)
 
 const allocationsVenue = await sdk.tokenStandard!.fetchPendingAllocationView()
 const relevantAllocations = allocationsVenue.filter(
     (a) =>
-        a.interfaceViewValue.allocation.settlement.executor ===
-            venue!.partyId &&
-        a.interfaceViewValue.allocation.settlement.settlementRef.id ===
-            settlementRefId
+        // TODO: check settlementRefId?
+        a.interfaceViewValue.allocation.settlement.executor === venue
 )
 if (relevantAllocations.length === 0)
     throw new Error('No matching allocations for this trade')
@@ -377,7 +277,7 @@ const allocationEntries = await Promise.all(
     })
 )
 
-const allocationsWithContext: Record<string, { _1: string; _2: any }> =
+const allocationsWithContext: Record<string, { _1: string; _2: unknown }> =
     Object.fromEntries(
         allocationEntries.map((e) => [e.legId, { _1: e.cid, _2: e.extraArgs }])
     )
@@ -386,7 +286,7 @@ const uniqueDisclosedContracts = Array.from(
     new Map(
         allocationEntries
             .flatMap((e) => e.disclosedContracts)
-            .map((d: any) => [d.contractId, d])
+            .map((d: unknown) => [d.contractId, d])
     ).values()
 )
 
@@ -402,19 +302,14 @@ const settleCmd = [
     },
 ]
 
-await sdk.userLedger!.prepareSignExecuteAndWaitFor(
-    settleCmd,
-    keyPairVenue.privateKey,
-    v4(),
-    uniqueDisclosedContracts
-)
+await sdk.userLedger!.submitCommand(settleCmd, v4(), uniqueDisclosedContracts)
 
 logger.info(
     'Venue settled the OTCTrade, holdings are transfered to Alice and Bob'
 )
 
 {
-    await sdk.setPartyId(alice!.partyId)
+    await sdk.setPartyId(alice)
     await sdk.tokenStandard?.listHoldingTransactions().then((transactions) => {
         logger.info(
             transactions,
@@ -422,7 +317,7 @@ logger.info(
         )
     })
 
-    await sdk.setPartyId(bob!.partyId)
+    await sdk.setPartyId(bob)
     await sdk.tokenStandard?.listHoldingTransactions().then((transactions) => {
         logger.info(transactions, 'Token Standard Holding Transactions (Bob):')
     })

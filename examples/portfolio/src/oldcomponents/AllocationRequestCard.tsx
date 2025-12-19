@@ -26,11 +26,10 @@ export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
         <div>
             <h2>Settlement</h2>
             <strong>executor:</strong> {settlement.executor}
-            <br/>
+            <br />
             <strong>allocateBefore:</strong> {settlement.allocateBefore}
-            {new Date(settlement.allocateBefore) <= new Date() &&
-                 "(EXPIRED!)"}
-            <br/>
+            {new Date(settlement.allocateBefore) <= new Date() && '(EXPIRED!)'}
+            <br />
             <h2>Transfer Legs</h2>
             {Object.entries(transferLegs).map(
                 ([transferLegId, transferLeg]) => (
@@ -45,7 +44,6 @@ export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
                             /* TODO: use actual symbol! */
                             symbol={transferLeg.instrumentId.id}
                         />
-
                         {transferLeg.sender === party && (
                             <button
                                 onClick={() => {
@@ -55,8 +53,8 @@ export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
                                         allocationSpecification: {
                                             settlement,
                                             transferLegId,
-                                            transferLeg
-                                        }
+                                            transferLeg,
+                                        },
                                     })
                                 }}
                             >
