@@ -275,8 +275,11 @@ async function generateAsyncApiClient(
             outputLines.push(`  version: '${asyncapiDoc.info.version}',`)
 
             if (asyncapiDoc.info.description) {
+                const escapedDescription = asyncapiDoc.info.description
+                    .replace(/\\/g, '\\\\')
+                    .replace(/'/g, "\\'");
                 outputLines.push(
-                    `  description: '${asyncapiDoc.info.description.replace(/'/g, "\\'")}',`
+                    `  description: '${escapedDescription}',`
                 )
             }
 
