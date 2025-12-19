@@ -30,7 +30,7 @@ export const TransferCard: React.FC<TransferCardProps> = ({
             )}
             <AssetCard
                 amount={transfer.amount}
-                symbol={transfer.instrumentId.id}
+                instrument={transfer.instrumentId}
             />
             {transfer.status == 'pending' && transfer.incoming && (
                 <div>
