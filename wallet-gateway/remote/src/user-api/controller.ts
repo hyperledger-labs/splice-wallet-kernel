@@ -203,7 +203,9 @@ export const userController = (
                             const { signature } = await driver.signTransaction({
                                 tx: '',
                                 txHash: hash,
-                                publicKey: key.publicKey,
+                                keyIdentifier: {
+                                    publicKey: key.publicKey,
+                                },
                             })
 
                             return signature
@@ -276,7 +278,9 @@ export const userController = (
                                     transactions.multiHash,
                                     'base64'
                                 ).toString('hex'),
-                                publicKey: key.publicKey,
+                                keyIdentifier: {
+                                    publicKey: key.publicKey,
+                                },
                             })
                         if (status === 'signed') {
                             const { signature } = await driver.getTransaction({
@@ -400,7 +404,9 @@ export const userController = (
                     const signature = await driver.signTransaction({
                         tx: preparedTransaction,
                         txHash: preparedTransactionHash,
-                        publicKey: wallet.publicKey,
+                        keyIdentifier: {
+                            publicKey: wallet.publicKey,
+                        },
                     })
 
                     if (!signature.signature) {

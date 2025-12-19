@@ -68,6 +68,24 @@ export class InternalSigningDriver implements SigningDriverInterface {
         this.store = store
     }
 
+    private async resolveKeyFromIdentifier(
+        userId: string | undefined,
+        keyIdentifier: SignTransactionParams['keyIdentifier']
+    ): Promise<SigningKey | undefined> {
+        if (keyIdentifier.publicKey) {
+            return await this.store.getSigningKeyByPublicKey(
+                keyIdentifier.publicKey
+            )
+        }
+        if (!userId) {
+            return undefined
+        }
+        if (keyIdentifier.id) {
+            return await this.store.getSigningKey(userId, keyIdentifier.id)
+        }
+        return undefined
+    }
+
     public controller = (_userId: AuthContext['userId'] | undefined) =>
         buildController({
             signTransaction: async (
@@ -75,52 +93,60 @@ export class InternalSigningDriver implements SigningDriverInterface {
             ): Promise<SignTransactionResult> => {
                 // TODO: validate transaction here
 
-                const key = await this.store.getSigningKeyByPublicKey(
-                    params.publicKey
-                )
-                if (key?.privateKey && _userId) {
-                    const txId = randomUUID()
-                    const signature = signTransactionHash(
-                        params.txHash,
-                        key.privateKey
-                    )
-
-                    const now = new Date()
-                    const internalTransaction: SigningTransaction = {
-                        id: txId,
-                        hash: params.txHash,
-                        signature,
-                        publicKey: params.publicKey,
-                        createdAt: now,
-                        status: 'signed',
-                        updatedAt: now,
-                        signedAt: now,
-                    }
-
-                    this.store.setSigningTransaction(
-                        _userId,
-                        internalTransaction
-                    )
-
+                if (!_userId) {
                     return Promise.resolve({
-                        txId,
-                        status: 'signed',
-                        signature,
-                    } as SignTransactionResult)
-                } else {
-                    if (!_userId) {
-                        return Promise.resolve({
-                            error: 'userId_not_found',
-                            error_description:
-                                'User ID is required for all signing operations.',
-                        })
-                    }
+                        error: 'userId_not_found',
+                        error_description:
+                            'User ID is required for all signing operations.',
+                    })
+                }
+
+                const key = await this.resolveKeyFromIdentifier(
+                    _userId,
+                    params.keyIdentifier
+                )
+
+                if (!key) {
                     return Promise.resolve({
                         error: 'key_not_found',
                         error_description:
-                            'The provided public key does not exist in the signing.',
+                            'The provided key identifier does not exist in the signing store.',
                     })
                 }
+
+                if (!key.privateKey) {
+                    return Promise.resolve({
+                        error: 'key_not_suitable',
+                        error_description:
+                            'The provided key does not have a private key available for signing.',
+                    })
+                }
+
+                const txId = randomUUID()
+                const signature = signTransactionHash(
+                    params.txHash,
+                    key.privateKey
+                )
+
+                const now = new Date()
+                const internalTransaction: SigningTransaction = {
+                    id: txId,
+                    hash: params.txHash,
+                    signature,
+                    publicKey: key.publicKey,
+                    createdAt: now,
+                    status: 'signed',
+                    updatedAt: now,
+                    signedAt: now,
+                }
+
+                this.store.setSigningTransaction(_userId, internalTransaction)
+
+                return Promise.resolve({
+                    txId,
+                    status: 'signed',
+                    signature,
+                } as SignTransactionResult)
             },
 
             getTransaction: async (
