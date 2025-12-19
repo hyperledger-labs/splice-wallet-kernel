@@ -19,6 +19,7 @@ import { ScanClient, ScanProxyClient } from '@canton-network/core-splice-client'
 
 import { pino } from 'pino'
 import { v4 } from 'uuid'
+import { Decimal } from 'decimal.js'
 import {
     ALLOCATION_FACTORY_INTERFACE_ID,
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
@@ -378,9 +379,10 @@ export class TokenStandardController {
 
                     const inputUtxos = group.slice(start, end)
 
-                    const accumulatedAmount = inputUtxos.reduce((a, b) => {
-                        return a + parseFloat(b.interfaceViewValue.amount)
-                    }, 0)
+                    const accumulatedAmount = inputUtxos.reduce(
+                        (a, b) => a.plus(b.interfaceViewValue.amount),
+                        new Decimal(0)
+                    )
 
                     return this.createTransfer(
                         walletParty,

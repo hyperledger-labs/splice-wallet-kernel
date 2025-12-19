@@ -496,12 +496,24 @@ export const userController = (
                             '/v2/commands/submit-and-wait',
                             prep
                         )
-
-                        notifier.emit('txChanged', {
-                            status: 'executed',
+                        const signedTx: Transaction = {
                             commandId,
+                            status: 'executed',
+                            preparedTransaction:
+                                transaction.preparedTransaction,
+                            preparedTransactionHash:
+                                transaction.preparedTransactionHash,
                             payload: res,
-                        })
+                            origin: transaction.origin ?? null,
+                            ...(transaction.createdAt && {
+                                createdAt: transaction.createdAt,
+                            }),
+                            ...(transaction.signedAt && {
+                                signedAt: transaction.signedAt,
+                            }),
+                        }
+                        store.setTransaction(signedTx)
+                        notifier.emit('txChanged', signedTx)
 
                         return res
                     } catch (error) {
