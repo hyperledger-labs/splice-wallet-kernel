@@ -110,6 +110,7 @@ describe('WalletSyncService - resolveSigningProvider', () => {
         service = new TestableWalletSyncService(
             store,
             ledgerClient,
+            ledgerClient,
             authContext,
             mockLogger,
             {
@@ -200,6 +201,7 @@ describe('WalletSyncService - resolveSigningProvider', () => {
 
         const serviceWithFireblocks = new TestableWalletSyncService(
             store,
+            ledgerClient,
             ledgerClient,
             authContext,
             mockLogger,
