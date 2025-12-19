@@ -24,7 +24,7 @@ export function prompt(question: string): Promise<string> {
 
     logger.info({ prompt: question })
     return new Promise((resolve) => {
-        rl.question("", (answer) => {
+        rl.question('', (answer) => {
             rl.close()
             resolve(answer)
         })
@@ -307,18 +307,3 @@ await sdk.userLedger!.submitCommand(settleCmd, v4(), uniqueDisclosedContracts)
 logger.info(
     'Venue settled the OTCTrade, holdings are transfered to Alice and Bob'
 )
-
-{
-    await sdk.setPartyId(alice)
-    await sdk.tokenStandard?.listHoldingTransactions().then((transactions) => {
-        logger.info(
-            transactions,
-            'Token Standard Holding Transactions (Alice):'
-        )
-    })
-
-    await sdk.setPartyId(bob)
-    await sdk.tokenStandard?.listHoldingTransactions().then((transactions) => {
-        logger.info(transactions, 'Token Standard Holding Transactions (Bob):')
-    })
-}
