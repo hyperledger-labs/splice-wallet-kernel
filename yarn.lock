@@ -2035,6 +2035,7 @@ __metadata:
     "@commander-js/extra-typings": "npm:^14.0.0"
     "@inquirer/prompts": "npm:^8.0.1"
     "@open-rpc/meta-schema": "npm:^1.14.9"
+    "@types/js-yaml": "npm:^4"
     "@types/node": "npm:^24.10.1"
     "@types/tar-fs": "npm:^2.0.4"
     axios: "npm:^1.13.2"
@@ -2042,6 +2043,7 @@ __metadata:
     commander: "npm:^14.0.2"
     diff: "npm:^8.0.2"
     inquirer-select-pro: "npm:^1.0.0-alpha.9"
+    js-yaml: "npm:^4.1.1"
     jsonc-parser: "npm:^3.3.1"
     openapi-typescript: "npm:^7.10.1"
     pm2: "npm:^6.0.14"
@@ -6966,6 +6968,13 @@ __metadata:
     expect: "npm:^30.0.0"
     pretty-format: "npm:^30.0.0"
   checksum: 10c0/20c6ce574154bc16f8dd6a97afacca4b8c4921a819496a3970382031c509ebe87a1b37b152a1b8475089b82d8ca951a9e95beb4b9bf78fbf579b1536f0b65969
+  languageName: node
+  linkType: hard
+
+"@types/js-yaml@npm:^4":
+  version: 4.0.9
+  resolution: "@types/js-yaml@npm:4.0.9"
+  checksum: 10c0/24de857aa8d61526bbfbbaa383aa538283ad17363fcd5bb5148e2c7f604547db36646440e739d78241ed008702a8920665d1add5618687b6743858fae00da211
   languageName: node
   linkType: hard
 
@@ -13551,7 +13560,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:4.1.1, js-yaml@npm:^4.1.0":
+"js-yaml@npm:4.1.1, js-yaml@npm:^4.1.0, js-yaml@npm:^4.1.1":
   version: 4.1.1
   resolution: "js-yaml@npm:4.1.1"
   dependencies:
