@@ -6,6 +6,8 @@ import { PartyId } from '@canton-network/core-types'
 import {
     type Holding,
     type TransferInstructionView,
+    type PrettyContract,
+    type Transaction,
 } from '@canton-network/core-ledger-client'
 import {
     TRANSFER_INSTRUCTION_INTERFACE_ID,
@@ -16,7 +18,6 @@ import {
     resolveTransactionHistoryService,
     resolveAmuletService,
 } from './resolve.js'
-import { type Transfer, toTransfer } from '../models/transfer.js'
 
 // PortfolioService is a fat interface that tries to capture everything our
 // portflio can do.  Separating the interface from the implementation will
@@ -148,19 +149,11 @@ export const listPendingTransfers = async ({
     party,
 }: {
     party: PartyId
-}): Promise<Transfer[]> => {
+}): Promise<PrettyContract<TransferInstructionView>[]> => {
     const tokenStandardService = await resolveTokenStandardService()
-    const contracts =
-        await tokenStandardService.listContractsByInterface<TransferInstructionView>(
-            TRANSFER_INSTRUCTION_INTERFACE_ID,
-            party
-        )
-    return contracts.map((c) =>
-        toTransfer({
-            party,
-            contractId: c.contractId,
-            interfaceViewValue: c.interfaceViewValue,
-        })
+    return await tokenStandardService.listContractsByInterface<TransferInstructionView>(
+        TRANSFER_INSTRUCTION_INTERFACE_ID,
+        party
     )
 }
 
@@ -168,7 +161,7 @@ export const getTransactionHistory = async ({
     party,
 }: {
     party: PartyId
-}): Promise<Transfer[]> => {
+}): Promise<Transaction[]> => {
     const transactionHistoryService = await resolveTransactionHistoryService({
         party,
     })
@@ -179,7 +172,7 @@ export const fetchOlderTransactionHistory = async ({
     party,
 }: {
     party: PartyId
-}): Promise<Transfer[]> => {
+}): Promise<Transaction[]> => {
     const transactionHistoryService = await resolveTransactionHistoryService({
         party,
     })
@@ -190,7 +183,7 @@ export const fetchMoreRecentTransactionHistory = async ({
     party,
 }: {
     party: PartyId
-}): Promise<Transfer[]> => {
+}): Promise<Transaction[]> => {
     const transactionHistoryService = await resolveTransactionHistoryService({
         party,
     })

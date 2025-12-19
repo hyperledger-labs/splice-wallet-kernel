@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { type Holding } from '@canton-network/core-ledger-client'
-import { type Transfer } from '../models/transfer.js'
+import type {
+    Holding,
+    PrettyContract,
+    TransferInstructionView,
+    Transaction,
+} from '@canton-network/core-ledger-client'
 
 // PortfolioService is a fat interface that tries to capture everything our
 // portflio can do.  Separating the interface from the implementation will
@@ -29,14 +33,18 @@ export interface PortfolioService {
         instrumentId: { admin: string; id: string }
         instructionChoice: 'Accept' | 'Reject' | 'Withdraw'
     }) => Promise<void>
-    listPendingTransfers: (_: { party: PartyId }) => Promise<Transfer[]>
+    listPendingTransfers: (_: {
+        party: PartyId
+    }) => Promise<PrettyContract<TransferInstructionView>[]>
 
     // History
-    getTransactionHistory: (_: { party: PartyId }) => Promise<Transfer[]>
-    fetchOlderTransactionHistory: (_: { party: PartyId }) => Promise<Transfer[]>
+    getTransactionHistory: (_: { party: PartyId }) => Promise<Transaction[]>
+    fetchOlderTransactionHistory: (_: {
+        party: PartyId
+    }) => Promise<Transaction[]>
     fetchMoreRecentTransactionHistory: (_: {
         party: PartyId
-    }) => Promise<Transfer[]>
+    }) => Promise<Transaction[]>
 
     // Tap
     tap: (_: {
