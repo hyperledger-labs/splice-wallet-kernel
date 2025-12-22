@@ -8,7 +8,11 @@ import {
     VaultAccount,
 } from '@fireblocks/ts-sdk'
 import { pino } from 'pino'
-import { SigningStatus, CC_COIN_TYPE } from '@canton-network/core-signing-lib'
+import {
+    SigningStatus,
+    CC_COIN_TYPE,
+    KeyIdentifier,
+} from '@canton-network/core-signing-lib'
 import { z } from 'zod'
 
 const RawMessageSchema = z.object({
@@ -315,7 +319,7 @@ export class FireblocksHandler {
     public async signTransaction(
         userId: string | undefined,
         tx: string,
-        keyIdentifier: { publicKey?: string; id?: string },
+        keyIdentifier: KeyIdentifier,
         externalTxId?: string
     ): Promise<FireblocksTransaction> {
         try {

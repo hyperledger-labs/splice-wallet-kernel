@@ -29,14 +29,30 @@ export type PublicKey = string
 export type Id = string
 /**
  *
- * Identifier for the key to use for signing. At least one of publicKey or id must be provided.
+ * Key identifier with publicKey (id is optional).
  *
  */
-export interface KeyIdentifier {
-    publicKey?: PublicKey
+export interface KeyIdentifierWithPublicKey {
+    publicKey: PublicKey
     id?: Id
     [k: string]: any
 }
+/**
+ *
+ * Key identifier with id (publicKey is optional).
+ *
+ */
+export interface KeyIdentifierWithId {
+    publicKey?: PublicKey
+    id: Id
+    [k: string]: any
+}
+/**
+ *
+ * Identifier for the key to use for signing. At least one of publicKey or id must be provided.
+ *
+ */
+export type KeyIdentifier = KeyIdentifierWithPublicKey | KeyIdentifierWithId
 /**
  *
  * Internal txId used by the Wallet Gateway to store the transaction.

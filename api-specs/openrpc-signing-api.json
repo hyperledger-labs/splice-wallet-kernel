@@ -278,8 +278,8 @@
                 "type": "null",
                 "description": "Represents a null value, used in responses where no data is returned."
             },
-            "KeyIdentifier": {
-                "title": "KeyIdentifier",
+            "KeyIdentifierWithPublicKey": {
+                "title": "KeyIdentifierWithPublicKey",
                 "type": "object",
                 "properties": {
                     "publicKey": {
@@ -293,7 +293,37 @@
                         "description": "Unique identifier for the key"
                     }
                 },
-                "minProperties": 1,
+                "required": ["publicKey"],
+                "description": "Key identifier with publicKey (id is optional)."
+            },
+            "KeyIdentifierWithId": {
+                "title": "KeyIdentifierWithId",
+                "type": "object",
+                "properties": {
+                    "publicKey": {
+                        "title": "publicKey",
+                        "type": "string",
+                        "description": "Public key to use to sign the transaction."
+                    },
+                    "id": {
+                        "title": "id",
+                        "type": "string",
+                        "description": "Unique identifier for the key"
+                    }
+                },
+                "required": ["id"],
+                "description": "Key identifier with id (publicKey is optional)."
+            },
+            "KeyIdentifier": {
+                "title": "KeyIdentifier",
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/KeyIdentifierWithPublicKey"
+                    },
+                    {
+                        "$ref": "#/components/schemas/KeyIdentifierWithId"
+                    }
+                ],
                 "description": "Identifier for a key. At least one of publicKey or id must be provided (both can also be provided)."
             },
             "Key": {
