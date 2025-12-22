@@ -13,10 +13,6 @@ export interface SigningDriverStore {
         keyId: string
     ): Promise<SigningKey | undefined>
     getSigningKeyByPublicKey(publicKey: string): Promise<SigningKey | undefined>
-    getSigningKeyByName(
-        userId: string,
-        name: string
-    ): Promise<SigningKey | undefined>
     listSigningTransactionsByTxIdsAndPublicKeys(
         txIds: string[],
         publicKeys: string[]

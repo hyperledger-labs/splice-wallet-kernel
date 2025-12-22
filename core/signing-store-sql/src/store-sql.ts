@@ -75,19 +75,6 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
         return result ? toSigningKey(result) : undefined
     }
 
-    async getSigningKeyByName(
-        userId: string,
-        name: string
-    ): Promise<SigningKey | undefined> {
-        const result = await this.db
-            .selectFrom('signingKeys')
-            .selectAll()
-            .where('userId', '=', userId)
-            .where('name', '=', name)
-            .executeTakeFirst()
-        return result ? toSigningKey(result) : undefined
-    }
-
     async setSigningKey(userId: string, key: SigningKey): Promise<void> {
         const serialized = fromSigningKey(key, userId)
 

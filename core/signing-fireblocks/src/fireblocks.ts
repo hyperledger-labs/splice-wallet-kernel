@@ -54,7 +54,6 @@ export class FireblocksHandler {
 
     private keyInfoByPublicKey: Map<string, FireblocksKey> = new Map()
     private publicKeyByDerivationPath: Map<string, string> = new Map()
-    private keyInfoById: Map<string, FireblocksKey> = new Map()
 
     private getClient = (userId: string | undefined): Fireblocks => {
         if (userId !== undefined && this.clients.has(userId)) {
@@ -133,8 +132,6 @@ export class FireblocksHandler {
                     }
                     keys.push(storedKey)
                     this.keyInfoByPublicKey.set(storedKey.publicKey, storedKey)
-                    const keyId = storedKey.derivationPath.join('-')
-                    this.keyInfoById.set(keyId, storedKey)
                 }
             }
         } catch (error) {
@@ -309,37 +306,9 @@ export class FireblocksHandler {
         }
     }
     /**
-     * Resolve a key identifier to a FireblocksKey
-     * @param userId - The user ID
-     * @param keyIdentifier - The key identifier (publicKey or id)
-     * @return The FireblocksKey if found
-     */
-    private async resolveKey(
-        userId: string | undefined,
-        keyIdentifier: { publicKey?: string; id?: string }
-    ): Promise<FireblocksKey | undefined> {
-        // Refresh cache if needed
-        if (
-            (keyIdentifier.publicKey &&
-                !this.keyInfoByPublicKey.has(keyIdentifier.publicKey)) ||
-            (keyIdentifier.id && !this.keyInfoById.has(keyIdentifier.id))
-        ) {
-            await this.getPublicKeys(userId)
-        }
-
-        if (keyIdentifier.publicKey) {
-            return this.keyInfoByPublicKey.get(keyIdentifier.publicKey)
-        }
-        if (keyIdentifier.id) {
-            return this.keyInfoById.get(keyIdentifier.id)
-        }
-        return undefined
-    }
-
-    /**
-     * Sign a transaction using a key identifier
+     * Sign a transaction using a public key
      * @param tx - The transaction to sign, as a string
-     * @param keyIdentifier - The key identifier (publicKey or id) to use for signing
+     * @param keyIdentifier - The key identifier (must include publicKey)
      * @param externalTxId - The transaction ID assigned by the Wallet Gateway
      * @return The transaction object from Fireblocks
      */
@@ -351,11 +320,19 @@ export class FireblocksHandler {
     ): Promise<FireblocksTransaction> {
         try {
             const client = this.getClient(userId)
-            const key = await this.resolveKey(userId, keyIdentifier)
-            if (!key) {
+            if (!keyIdentifier.publicKey) {
                 throw new Error(
-                    `Key identifier not found in vaults: ${JSON.stringify(keyIdentifier)}`
+                    'Public key is required for Fireblocks signing provider'
                 )
+            }
+            const publicKey = keyIdentifier.publicKey
+            if (!this.keyInfoByPublicKey.has(publicKey)) {
+                // refresh the keycache
+                await this.getPublicKeys(userId)
+            }
+            const key = this.keyInfoByPublicKey.get(publicKey)
+            if (!key) {
+                throw new Error(`Public key ${publicKey} not found in vaults`)
             }
 
             const transaction = await client.transactions.createTransaction({

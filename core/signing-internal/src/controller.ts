@@ -69,19 +69,12 @@ export class InternalSigningDriver implements SigningDriverInterface {
     }
 
     private async resolveKeyFromIdentifier(
-        userId: string | undefined,
         keyIdentifier: SignTransactionParams['keyIdentifier']
     ): Promise<SigningKey | undefined> {
         if (keyIdentifier.publicKey) {
             return await this.store.getSigningKeyByPublicKey(
                 keyIdentifier.publicKey
             )
-        }
-        if (!userId) {
-            return undefined
-        }
-        if (keyIdentifier.id) {
-            return await this.store.getSigningKey(userId, keyIdentifier.id)
         }
         return undefined
     }
@@ -101,8 +94,15 @@ export class InternalSigningDriver implements SigningDriverInterface {
                     })
                 }
 
+                if (!params.keyIdentifier.publicKey) {
+                    return Promise.resolve({
+                        error: 'key_not_found',
+                        error_description:
+                            'The provided key identifier must include a publicKey.',
+                    })
+                }
+
                 const key = await this.resolveKeyFromIdentifier(
-                    _userId,
                     params.keyIdentifier
                 )
 
@@ -110,7 +110,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
                     return Promise.resolve({
                         error: 'key_not_found',
                         error_description:
-                            'The provided key identifier does not exist in the signing store.',
+                            'The provided public key does not exist in the signing store.',
                     })
                 }
 
