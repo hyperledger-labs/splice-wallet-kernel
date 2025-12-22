@@ -67,6 +67,34 @@ async function main(network: Network) {
         ),
         path.join(targetDir, 'openapi.yaml')
     )
+
+    const openApiSpecDir = path.join(
+        cantonDownloadPath,
+        'openapi/json-ledger-api'
+    )
+
+    if (fs.existsSync(openApiSpecDir)) {
+        fs.copyFileSync(
+            path.join(openApiSpecDir, 'openapi.yaml'),
+            path.join(targetDir, 'openapi.yaml')
+        )
+        fs.copyFileSync(
+            path.join(openApiSpecDir, 'asyncapi.yaml'),
+            path.join(targetDir, 'asyncapi.yaml')
+        )
+    } else {
+        /* the 3.3 distributions don't have the openapi directory or the asyncapi.yaml
+        instead they are located under examples/09-json-api/typescript
+         */
+
+        fs.copyFileSync(
+            path.join(
+                cantonDownloadPath,
+                'examples/09-json-api/typescript/openapi.yaml'
+            ),
+            path.join(targetDir, 'openapi.yaml')
+        )
+    }
 }
 
 main(getNetworkArg()).catch((e) => {
