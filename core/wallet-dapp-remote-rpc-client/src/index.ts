@@ -288,6 +288,18 @@ export type ExternalTxId = string
 export type TopologyTransactions = string
 /**
  *
+ * Whether the wallet is disabled. Unmatched parties are disabled, matched and newly created wallets are not disabled.
+ *
+ */
+export type Disabled = boolean
+/**
+ *
+ * Reason for the wallet state, e.g., 'no signing provider matched'.
+ *
+ */
+export type Reason = string
+/**
+ *
  * Structure representing a wallet
  *
  */
@@ -302,6 +314,8 @@ export interface Wallet {
     signingProviderId: SigningProviderId
     externalTxId?: ExternalTxId
     topologyTransactions?: TopologyTransactions
+    disabled?: Disabled
+    reason?: Reason
     [k: string]: any
 }
 /**

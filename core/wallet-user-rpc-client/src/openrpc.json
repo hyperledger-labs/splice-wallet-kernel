@@ -722,6 +722,16 @@
                         "title": "topologyTransactions",
                         "type": "string",
                         "description": "The topology transactions"
+                    },
+                    "disabled": {
+                        "title": "disabled",
+                        "type": "boolean",
+                        "description": "Whether the wallet is disabled. Unmatched parties are disabled, matched and newly created wallets are not disabled."
+                    },
+                    "reason": {
+                        "title": "reason",
+                        "type": "string",
+                        "description": "Reason for the wallet state, e.g., 'no signing provider matched'."
                     }
                 },
                 "required": [

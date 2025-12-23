@@ -42,15 +42,18 @@ export class WalletSyncService {
     }
 
     protected async resolveSigningProvider(namespace: string): Promise<
-        | { signingProviderId: SigningProvider.PARTICIPANT }
+        | {
+              signingProviderId: SigningProvider.PARTICIPANT
+              matched: boolean
+          }
         | {
               signingProviderId: Exclude<
                   SigningProvider,
                   SigningProvider.PARTICIPANT
               >
               publicKey: string
+              matched: boolean
           }
-        | null
     > {
         try {
             // Check if namespace matches participant namespace first
@@ -78,7 +81,10 @@ export class WalletSyncService {
             }
 
             if (participantNamespace && namespace === participantNamespace) {
-                return { signingProviderId: SigningProvider.PARTICIPANT }
+                return {
+                    signingProviderId: SigningProvider.PARTICIPANT,
+                    matched: true,
+                }
             }
 
             // Get keys from signing providers try to match
@@ -137,6 +143,7 @@ export class WalletSyncService {
                                     signingProviderId:
                                         providerId as SigningProvider,
                                     publicKey: key.publicKey,
+                                    matched: true,
                                 }
                             }
                         }
@@ -150,18 +157,25 @@ export class WalletSyncService {
                 }
             }
 
-            // No match found - reject this wallet
+            // No match found - use participant as default provider
             this.logger.warn(
                 { namespace },
-                'No signing provider match found for namespace, rejecting wallet'
+                'No signing provider match found for namespace, using participant as default'
             )
-            return null
+            return {
+                signingProviderId: SigningProvider.PARTICIPANT,
+                matched: false,
+            }
         } catch (err) {
             this.logger.error(
                 { err, namespace },
-                'Error resolving signing provider, rejecting wallet'
+                'Error resolving signing provider, using participant as default'
             )
-            return null
+            // On error, use participant as default but mark as unmatched
+            return {
+                signingProviderId: SigningProvider.PARTICIPANT,
+                matched: false,
+            }
         }
     }
 
@@ -228,38 +242,19 @@ export class WalletSyncService {
                     const resolvedSigningProvider =
                         await this.resolveSigningProvider(namespace)
 
-                    // Reject wallets where no signing provider match was found
-                    if (!resolvedSigningProvider) {
-                        this.logger.warn(
-                            { party, hint, namespace },
-                            'Rejecting wallet - no signing provider match found'
-                        )
-                        return null
-                    }
+                    // resolvedSigningProvider is never null (participant is default)
+                    const isMatched = resolvedSigningProvider.matched
 
                     // Namespace is saved as public key in case of participant
                     const walletPublicKey =
                         resolvedSigningProvider.signingProviderId ===
                         SigningProvider.PARTICIPANT
                             ? namespace
-                            : resolvedSigningProvider.publicKey
+                            : 'publicKey' in resolvedSigningProvider
+                              ? resolvedSigningProvider.publicKey
+                              : namespace
 
-                    this.logger.info(
-                        {
-                            primary: false,
-                            status: 'allocated',
-                            partyId: party,
-                            hint: hint,
-                            publicKey: walletPublicKey,
-                            namespace: namespace,
-                            networkId: network.id,
-                            signingProviderId:
-                                resolvedSigningProvider.signingProviderId,
-                        },
-                        'Wallet sync result'
-                    )
-
-                    return {
+                    const wallet: Wallet = {
                         primary: false,
                         status: 'allocated',
                         partyId: party,
@@ -269,14 +264,24 @@ export class WalletSyncService {
                         networkId: network.id,
                         signingProviderId:
                             resolvedSigningProvider.signingProviderId,
-                    } as Wallet
+                        disabled: !isMatched,
+                        reason: !isMatched
+                            ? 'no signing provider matched'
+                            : undefined,
+                    }
+
+                    this.logger.info(
+                        {
+                            ...wallet,
+                        },
+                        'Wallet sync result'
+                    )
+
+                    return wallet
                 })
             )
 
-            // Filter out rejected wallets
-            const newParticipantWallets: Array<Wallet> = walletResults.filter(
-                (wallet): wallet is Wallet => wallet !== null
-            )
+            const newParticipantWallets: Array<Wallet> = walletResults
 
             await Promise.all(
                 newParticipantWallets.map((wallet) =>
@@ -287,8 +292,9 @@ export class WalletSyncService {
             this.logger.info(
                 {
                     totalProcessed: newParties.length,
-                    rejected: newParties.length - newParticipantWallets.length,
                     added: newParticipantWallets.length,
+                    disabled: newParticipantWallets.filter((w) => w.disabled)
+                        .length,
                 },
                 'Wallet sync summary'
             )
