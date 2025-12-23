@@ -8,6 +8,12 @@ import type {
     TransferInstructionView,
     Transaction,
 } from '@canton-network/core-ledger-client'
+import type {
+    AllocationInstructionView,
+    AllocationRequestView,
+    AllocationSpecification,
+    AllocationView,
+} from '@canton-network/core-token-standard'
 
 // PortfolioService is a fat interface that tries to capture everything our
 // portflio can do.  Separating the interface from the implementation will
@@ -36,6 +42,22 @@ export interface PortfolioService {
     listPendingTransfers: (_: {
         party: PartyId
     }) => Promise<PrettyContract<TransferInstructionView>[]>
+
+    // Allocations
+    createAllocationInstruction: (_: {
+        registryUrls: ReadonlyMap<PartyId, string>
+        party: PartyId // Party creating the allocation, not necessarily the sender or receiver
+        allocationSpecification: AllocationSpecification
+    }) => Promise<void>
+    listPendingAllocationInstructions: (_: {
+        party: PartyId
+    }) => Promise<PrettyContract<AllocationInstructionView>[]>
+    listPendingAllocationRequests: (_: {
+        party: PartyId
+    }) => Promise<PrettyContract<AllocationRequestView>[]>
+    listPendingAllocations: (_: {
+        party: PartyId
+    }) => Promise<PrettyContract<AllocationView>[]>
 
     // History
     getTransactionHistory: (_: { party: PartyId }) => Promise<Transaction[]>
