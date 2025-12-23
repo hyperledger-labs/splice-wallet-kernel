@@ -30,6 +30,7 @@ export const TransferCard: React.FC<TransferCardProps> = ({
             )}
             <AssetCard
                 amount={transfer.amount}
+                /* TODO: use actual symbol! */
                 symbol={transfer.instrumentId.id}
             />
             {transfer.status == 'pending' && transfer.incoming && (

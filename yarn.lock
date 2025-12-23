@@ -1577,6 +1577,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/core-signing-blockdaemon@workspace:^, @canton-network/core-signing-blockdaemon@workspace:core/signing-blockdaemon":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-signing-blockdaemon@workspace:core/signing-blockdaemon"
+  dependencies:
+    "@canton-network/core-signing-lib": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
+    "@types/node": "npm:^24.10.1"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/core-signing-fireblocks@workspace:^, @canton-network/core-signing-fireblocks@workspace:core/signing-fireblocks":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-signing-fireblocks@workspace:core/signing-fireblocks"
@@ -1993,6 +2005,7 @@ __metadata:
     "@canton-network/core-token-standard": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@canton-network/dapp-sdk": "workspace:^"
+    "@canton-network/wallet-sdk": "workspace:^"
     "@eslint/js": "npm:^9.25.0"
     "@playwright/test": "npm:^1.55.0"
     "@types/node": "npm:^24.3.0"
@@ -2006,6 +2019,7 @@ __metadata:
     pino: "npm:^10.0.0"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
+    tsx: "npm:^4.20.6"
     typescript: "npm:~5.8.3"
     typescript-eslint: "npm:^8.30.1"
     uuid: "npm:^11.1.0"
@@ -2079,6 +2093,7 @@ __metadata:
   dependencies:
     "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-rpc-errors": "workspace:^"
+    "@canton-network/core-signing-blockdaemon": "workspace:^"
     "@canton-network/core-signing-fireblocks": "workspace:^"
     "@canton-network/core-signing-internal": "workspace:^"
     "@canton-network/core-signing-lib": "workspace:^"
