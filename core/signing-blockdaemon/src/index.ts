@@ -49,10 +49,19 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                 params: SignTransactionParams
             ): Promise<SignTransactionResult> => {
                 try {
+                    if (!params.keyIdentifier.publicKey) {
+                        return {
+                            error: 'key_not_found',
+                            error_description:
+                                'The provided key identifier must include a publicKey.',
+                        }
+                    }
                     const tx = await this.client.signTransaction({
                         tx: params.tx,
                         txHash: params.txHash,
-                        publicKey: params.publicKey,
+                        keyIdentifier: {
+                            publicKey: params.keyIdentifier.publicKey,
+                        },
                         internalTxId: params.internalTxId,
                     })
                     return {
