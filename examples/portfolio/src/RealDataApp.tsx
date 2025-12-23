@@ -11,6 +11,7 @@ import { PendingTransfersTab } from './oldcomponents/PendingTransfersTab.js'
 import { TwoStepTransferTab } from './oldcomponents/TwoStepTransferTab.js'
 import { TransactionHistoryTab } from './oldcomponents/TransactionHistoryTab.js'
 import { ConnectionCard } from './oldcomponents/ConnectionCard.js'
+import { AllocationsTab } from './oldcomponents/AllocationsTab.js'
 import { Tabs } from './oldcomponents/Tabs.js'
 
 const RealDataApp: React.FC = () => (
@@ -40,6 +41,11 @@ const RealDataApp: React.FC = () => (
                             label: 'Transaction History',
                             value: 'transactionHistory',
                             content: <TransactionHistoryTab />,
+                        },
+                        {
+                            label: 'Allocations',
+                            value: 'allocations',
+                            content: <AllocationsTab />,
                         },
                         {
                             label: 'Registry Settings',
