@@ -28,7 +28,7 @@ test('transaction signature', async () => {
         .signTransaction({
             tx: TEST_TRANSACTION,
             txHash: TEST_TRANSACTION_HASH,
-            publicKey: '',
+            keyIdentifier: { publicKey: '' },
         })
     expect(tx.status).toBe('signed')
 })
