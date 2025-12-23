@@ -15,10 +15,14 @@
                         "type": "object",
                         "title": "SignTransactionParams",
                         "properties": {
-                            "tx": {
-                                "title": "tx",
-                                "type": "string",
-                                "description": "Bytestring of the prepared transaction for verification purposes."
+                            "txs": {
+                                "title": "txs",
+                                "type": "array",
+                                "items": {
+                                    "title": "tx",
+                                    "type": "string"
+                                },
+                                "description": "Bytestring(s) of the prepared transaction(s) for verification purposes."
                             },
                             "txHash": {
                                 "title": "txHash",
@@ -36,7 +40,7 @@
                                 "description": "Internal txId used by the Wallet Gateway to store the transaction."
                             }
                         },
-                        "required": ["tx", "txHash", "publicKey"]
+                        "required": ["txs", "txHash", "publicKey"]
                     }
                 }
             ],

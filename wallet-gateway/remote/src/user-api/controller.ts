@@ -199,9 +199,9 @@ export const userController = (
                         userId,
                         partyHint,
                         key.publicKey,
-                        async (hash) => {
+                        async (hash, txs) => {
                             const { signature } = await driver.signTransaction({
-                                tx: '',
+                                txs: txs || [],
                                 txHash: hash,
                                 publicKey: key.publicKey,
                             })
@@ -371,7 +371,7 @@ export const userController = (
 
                         const { status, txId: id } =
                             await driver.signTransaction({
-                                tx: '',
+                                txs: [],
                                 txHash: Buffer.from(
                                     transactions.multiHash,
                                     'base64'
@@ -498,7 +498,7 @@ export const userController = (
                 }
                 case SigningProvider.WALLET_KERNEL: {
                     const signature = await driver.signTransaction({
-                        tx: preparedTransaction,
+                        txs: [preparedTransaction],
                         txHash: preparedTransactionHash,
                         publicKey: wallet.publicKey,
                     })
