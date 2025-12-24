@@ -6,10 +6,18 @@ import { PartyId } from '@canton-network/core-types'
 import {
     type Holding,
     type TransferInstructionView,
+    type PrettyContract,
 } from '@canton-network/core-ledger-client'
 import {
-    TRANSFER_INSTRUCTION_INTERFACE_ID,
+    ALLOCATION_INSTRUCTION_INTERFACE_ID,
+    ALLOCATION_INTERFACE_ID,
+    ALLOCATION_REQUEST_INTERFACE_ID,
     HOLDING_INTERFACE_ID,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+    type AllocationInstructionView,
+    type AllocationRequestView,
+    type AllocationSpecification,
+    type AllocationView,
 } from '@canton-network/core-token-standard'
 import {
     resolveTokenStandardService,
@@ -162,6 +170,87 @@ export const listPendingTransfers = async ({
             interfaceViewValue: c.interfaceViewValue,
         })
     )
+}
+
+export const createAllocationInstruction = async ({
+    registryUrls,
+    party,
+    allocationSpecification,
+}: {
+    registryUrls: ReadonlyMap<PartyId, string>
+    party: PartyId
+    allocationSpecification: AllocationSpecification
+}): Promise<void> => {
+    const { instrumentId } = allocationSpecification.transferLeg
+    const registryUrl = registryUrls.get(instrumentId.admin)
+    if (!registryUrl)
+        throw new Error(`no registry URL for admin ${instrumentId.admin}`)
+    const tokenStandardService = await resolveTokenStandardService()
+
+    const [command, disclosedContracts] =
+        await tokenStandardService.allocation.createAllocationInstruction(
+            allocationSpecification,
+            instrumentId.admin,
+            registryUrl,
+            undefined, // inputUtxos
+            undefined // requestedAt
+        )
+
+    const request = {
+        commands: [{ ExerciseCommand: command }],
+        commandId: v4(),
+        actAs: [party],
+        disclosedContracts,
+    }
+
+    const provider = window.canton
+    // TODO: check success
+    await provider?.request({
+        method: 'prepareExecute',
+        params: request,
+    })
+}
+
+export const listPendingAllocationInstructions = async ({
+    party,
+}: {
+    party: PartyId
+}): Promise<PrettyContract<AllocationInstructionView>[]> => {
+    const tokenStandardService = await resolveTokenStandardService()
+    const contracts =
+        await tokenStandardService.listContractsByInterface<AllocationInstructionView>(
+            ALLOCATION_INSTRUCTION_INTERFACE_ID,
+            party
+        )
+    return contracts
+}
+
+export const listPendingAllocationRequests = async ({
+    party,
+}: {
+    party: PartyId
+}): Promise<PrettyContract<AllocationRequestView>[]> => {
+    const tokenStandardService = await resolveTokenStandardService()
+    const contracts =
+        await tokenStandardService.listContractsByInterface<AllocationRequestView>(
+            ALLOCATION_REQUEST_INTERFACE_ID,
+            party
+        )
+    return contracts
+}
+
+export const listPendingAllocations = async ({
+    party,
+}: {
+    party: PartyId
+}): Promise<PrettyContract<AllocationView>[]> => {
+    const tokenStandardService = await resolveTokenStandardService()
+    const contracts =
+        await tokenStandardService.listContractsByInterface<AllocationView>(
+            ALLOCATION_INTERFACE_ID,
+            party
+        )
+    return contracts
 }
 
 export const getTransactionHistory = async ({

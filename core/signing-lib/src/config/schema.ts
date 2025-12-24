@@ -7,6 +7,7 @@ export enum SigningProvider {
     WALLET_KERNEL = 'wallet-kernel',
     PARTICIPANT = 'participant',
     FIREBLOCKS = 'fireblocks',
+    BLOCKDAEMON = 'blockdaemon',
 }
 
 // Generic signing driver configuration schema
