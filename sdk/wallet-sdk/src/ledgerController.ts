@@ -1099,6 +1099,9 @@ export class LedgerController {
         return this.client.getCacheStats()
     }
 
+    /**
+     * @returns ParticipantId
+     */
     async getParticipantId(): Promise<PartyId> {
         return (await this.client.getWithRetry('/v2/parties/participant-id'))
             .participantId
