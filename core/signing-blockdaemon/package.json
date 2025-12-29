@@ -32,6 +32,9 @@
     "files": [
         "dist/**"
     ],
+    "publishConfig": {
+        "access": "public"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
