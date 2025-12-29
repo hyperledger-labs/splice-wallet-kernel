@@ -41,8 +41,7 @@ export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
                         <br />
                         <AssetCard
                             amount={transferLeg.amount}
-                            /* TODO: use actual symbol! */
-                            symbol={transferLeg.instrumentId.id}
+                            instrument={transferLeg.instrumentId}
                         />
                         {transferLeg.sender === party && (
                             <button
