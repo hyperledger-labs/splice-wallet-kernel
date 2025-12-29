@@ -1,14 +1,13 @@
 {
-    "name": "@canton-network/core-types",
+    "name": "@canton-network/core-signing-blockdaemon",
     "version": "0.15.0",
     "type": "module",
-    "description": "Types and transport-agnostic parsers for data sent across Wallet components.",
+    "description": "Wallet Gateway signing driver for Blockdaemon",
     "license": "Apache-2.0",
-    "author": "Alex Matson <alex.matson@digitalasset.com>",
     "packageManager": "yarn@4.9.4",
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
@@ -19,27 +18,23 @@
     },
     "scripts": {
         "build": "tsup && tsc -p tsconfig.types.json",
-        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
-        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
-        "clean": "tsc -b --clean; rm -rf dist"
+        "clean": "rm -rf ./dist"
     },
     "dependencies": {
-        "uuid": "^11.1.0",
-        "zod": "^4.1.13"
+        "@canton-network/core-signing-lib": "workspace:^",
+        "@canton-network/core-wallet-auth": "workspace:^"
     },
     "devDependencies": {
+        "@types/node": "^24.10.1",
         "tsup": "^8.5.1",
         "typescript": "^5.9.3"
     },
     "files": [
         "dist/**"
     ],
-    "publishConfig": {
-        "access": "public"
-    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
-        "directory": "core/types"
+        "directory": "core/signing-blockdaemon"
     }
 }

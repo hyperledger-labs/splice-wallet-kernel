@@ -22,6 +22,7 @@
         "script:cleancoding": "tsx ./scripts/src/clean-coding.ts",
         "script:install:daml-sdk": "tsx --eval \"import { installDamlSDK } from './scripts/src/install-daml-sdk.ts'; installDamlSDK()\"",
         "script:generate:openapi": "tsx ./scripts/src/generate-openapi-clients.ts",
+        "script:generate:asyncapi": "tsx ./scripts/src/generate-asyncapi-clients.ts",
         "script:generate:protobufs": "tsx ./scripts/src/generate-protobufs.ts",
         "script:generate:tokenstandard": "tsx ./scripts/src/generate-token-standard.ts",
         "script:fetch:canton": "tsx ./scripts/src/fetch-canton.ts",
