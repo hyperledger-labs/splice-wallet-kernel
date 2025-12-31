@@ -109,6 +109,7 @@ export const deriveKernelUrls = (
     serverConfig: ServerConfig
 ): { dappUrl: string; userUrl: string } => {
     const protocol = serverConfig.tls ? 'https' : 'http'
+
     // Convert 0.0.0.0 to localhost for URL generation since browsers can't use 0.0.0.0
     const urlHost =
         serverConfig.host === '0.0.0.0' ? 'localhost' : serverConfig.host
