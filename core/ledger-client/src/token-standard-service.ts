@@ -35,6 +35,7 @@ import {
     PrettyContract,
     renderTransaction,
     ViewValue,
+    Holding as TxParseHolding,
 } from './txparse/types.js'
 
 import type { PrettyTransactions, Transaction } from './txparse/types.js'
@@ -1517,5 +1518,21 @@ export class TokenStandardService {
             },
             disclosedContracts,
         ]
+    }
+
+    static isHoldingLocked(
+        holding: Holding | TxParseHolding,
+        currentTime?: Date
+    ): boolean {
+        currentTime ??= new Date()
+
+        const lock = holding.lock
+        if (!lock) return false
+
+        const expiresAt = lock.expiresAt
+        if (!expiresAt) return true
+
+        const expiresAtDate = new Date(expiresAt)
+        return currentTime < expiresAtDate
     }
 }

@@ -18,7 +18,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({
     const instrumentInfo = useInstrumentInfo(instrument)
     const tooltip = `${instrument.id} from admin ${instrument.admin}`
     return (
-        <div>
+        <span>
             {name && <span>{name}</span>}
             <strong>{amount}</strong>
             {instrumentInfo ? (
@@ -29,6 +29,6 @@ export const AssetCard: React.FC<AssetCardProps> = ({
                     {instrument.id} (warning: unknown instrument)
                 </span>
             )}
-        </div>
+        </span>
     )
 }
