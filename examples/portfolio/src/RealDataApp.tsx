@@ -3,17 +3,17 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import './App.css'
-import { RegistryServiceProvider } from './contexts/RegistriesServiceProvider.js'
-import { ConnectionProvider } from './contexts/ConnectionProvider.js'
-import { PortfolioProvider } from './contexts/PortfolioProvider.js'
-import { HoldingsTab } from './oldcomponents/HoldingsTab.js'
-import { RegistriesTab } from './oldcomponents/RegistriesTab.js'
-import { PendingTransfersTab } from './oldcomponents/PendingTransfersTab.js'
-import { TwoStepTransferTab } from './oldcomponents/TwoStepTransferTab.js'
-import { TransactionHistoryTab } from './oldcomponents/TransactionHistoryTab.js'
-import { ConnectionCard } from './oldcomponents/ConnectionCard.js'
-import { AllocationsTab } from './oldcomponents/AllocationsTab.js'
-import { Tabs } from './oldcomponents/Tabs.js'
+import { RegistryServiceProvider } from './contexts/RegistriesServiceProvider'
+import { ConnectionProvider } from './contexts/ConnectionProvider'
+import { PortfolioProvider } from './contexts/PortfolioProvider'
+import { HoldingsTab } from './oldcomponents/HoldingsTab'
+import { RegistriesTab } from './oldcomponents/RegistriesTab'
+import { PendingTransfersTab } from './oldcomponents/PendingTransfersTab'
+import { TwoStepTransferTab } from './oldcomponents/TwoStepTransferTab'
+import { TransactionHistoryTab } from './oldcomponents/TransactionHistoryTab'
+import { ConnectionCard } from './oldcomponents/ConnectionCard'
+import { AllocationsTab } from './oldcomponents/AllocationsTab'
+import { Tabs } from './oldcomponents/Tabs'
 
 const queryClient = new QueryClient()
 

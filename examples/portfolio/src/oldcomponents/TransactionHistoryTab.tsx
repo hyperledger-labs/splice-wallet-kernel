@@ -3,9 +3,9 @@
 
 import { useState, useEffect } from 'react'
 import { type Transaction } from '@canton-network/core-ledger-client'
-import { useConnection } from '../contexts/ConnectionContext.js'
-import { usePortfolio } from '../contexts/PortfolioContext.js'
-import { TransferCard } from './TransferCard.js'
+import { useConnection } from '../contexts/ConnectionContext'
+import { usePortfolio } from '../contexts/PortfolioContext'
+import { TransferCard } from './TransferCard'
 
 export const TransactionHistoryTab: React.FC = () => {
     const {

@@ -10,7 +10,7 @@ import {
 import * as sdk from '@canton-network/dapp-sdk'
 import { TokenStandardClient } from '@canton-network/core-token-standard'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
-import { TransactionHistoryService } from './transaction-history-service.js'
+import { TransactionHistoryService } from './transaction-history-service'
 
 // This module allows us to resolve (i.e. get an instance of) the different
 // dependency services used throughout the project.

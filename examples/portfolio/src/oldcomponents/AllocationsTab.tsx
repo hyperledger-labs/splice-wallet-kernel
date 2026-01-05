@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState, useEffect } from 'react'
-import { useConnection } from '../contexts/ConnectionContext.js'
-import { usePortfolio } from '../contexts/PortfolioContext.js'
-import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
-import { useAllocationRequests } from '../hooks/useAllocationRequests.js'
-import { useAllocations } from '../hooks/useAllocations.js'
+import { useConnection } from '../contexts/ConnectionContext'
+import { usePortfolio } from '../contexts/PortfolioContext'
+import { useRegistryUrls } from '../contexts/RegistryServiceContext'
+import { useAllocationRequests } from '../hooks/useAllocationRequests'
+import { useAllocations } from '../hooks/useAllocations'
 import {
     type TransferLegInputFields,
     TransferLegInput,
-} from './TransferLegInput.js'
-import { DateTimePicker } from './DateTimePicker.js'
-import { AllocationCard } from './AllocationCard.js'
-import { AllocationRequestCard } from './AllocationRequestCard.js'
+} from './TransferLegInput'
+import { DateTimePicker } from './DateTimePicker'
+import { AllocationCard } from './AllocationCard'
+import { AllocationRequestCard } from './AllocationRequestCard'
 
 export const AllocationsTab: React.FC = () => {
     const registryUrls = useRegistryUrls()

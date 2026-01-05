@@ -24,7 +24,7 @@ import {
     resolveTokenStandardService,
     resolveTransactionHistoryService,
     resolveAmuletService,
-} from './resolve.js'
+} from './resolve'
 
 // PortfolioService is a fat interface that tries to capture everything our
 // portflio can do.  Separating the interface from the implementation will

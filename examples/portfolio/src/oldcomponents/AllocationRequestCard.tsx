@@ -3,11 +3,11 @@
 
 import type { PartyId } from '@canton-network/core-types'
 import { type AllocationRequestView } from '@canton-network/core-token-standard'
-import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
-import { usePortfolio } from '../contexts/PortfolioContext.js'
-import { useAllocations } from '../hooks/useAllocations.js'
-import { TransferLegCard } from './TransferLegCard.js'
-import { AllocationSettlementCard } from './AllocationSettlementCard.js'
+import { useRegistryUrls } from '../contexts/RegistryServiceContext'
+import { usePortfolio } from '../contexts/PortfolioContext'
+import { useAllocations } from '../hooks/useAllocations'
+import { TransferLegCard } from './TransferLegCard'
+import { AllocationSettlementCard } from './AllocationSettlementCard'
 
 export type AllocationRequestCardProps = {
     party: PartyId
