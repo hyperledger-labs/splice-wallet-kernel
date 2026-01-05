@@ -1,0 +1,85 @@
+name: Post-Release Automation
+run-name: Post-release automation for ${{ github.sha }}
+
+on:
+    push:
+        branches:
+            - main
+
+permissions:
+    contents: write
+    pull-requests: write
+
+jobs:
+    retag-and-pr:
+        runs-on: ubuntu-latest
+        # Only run if the commit message is "chore(release): publish"
+        if: "contains(github.event.head_commit.message, 'chore(release): publish')"
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  fetch-tags: true
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Configure Git
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            - name: Enable Corepack
+              run: corepack enable
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 'v22.16.0'
+                  cache: 'yarn'
+
+            - name: Install dependencies
+              run: yarn install --immutable
+
+            - name: Find old hash before merge
+              id: find_old_hash
+              run: |
+                  # Get the parent commits (before merge)
+                  # For a merge commit, we want the first parent (the branch that was merged from)
+                  OLD_HASH=$(git rev-parse HEAD^2 2>/dev/null || git rev-parse HEAD^1)
+                  echo "old_hash=$OLD_HASH" >> $GITHUB_OUTPUT
+                  echo "Old hash (before merge): $OLD_HASH"
+                  echo "New hash (after merge): ${{ github.sha }}"
+
+            - name: Retag release
+              env:
+                  OLD_HASH: ${{ steps.find_old_hash.outputs.old_hash }}
+                  NEW_HASH: ${{ github.sha }}
+              run: |
+                  echo "Running retag script: yarn script:retag $OLD_HASH $NEW_HASH"
+                  # The script expects manual confirmation, so we pipe 'y' to it
+                  echo "y" | yarn script:retag $OLD_HASH $NEW_HASH
+
+            - name: Create PR from main to latest
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  # Check if a PR already exists
+                  EXISTING_PR=$(gh pr list --base latest --head main --json number --jq '.[0].number' || echo "")
+
+                  if [ -n "$EXISTING_PR" ]; then
+                    echo "PR #$EXISTING_PR already exists from main to latest"
+                    echo "pr_number=$EXISTING_PR" >> $GITHUB_OUTPUT
+                  else
+                    # Create new PR
+                    PR_URL=$(gh pr create \
+                      --base latest \
+                      --head main \
+                      --title "chore: merge release into latest" \
+                      --body "Automated PR to merge release commit from main into latest branch.
+
+                  **Important:** Use 'Create a merge commit' instead of 'Squash and merge' when merging this PR.
+
+                  This PR was automatically created after release tags were retagged to point to the merged commit on main.")
+                    
+                    echo "Created PR: $PR_URL"
+                  fi

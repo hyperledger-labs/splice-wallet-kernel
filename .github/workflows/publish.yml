@@ -2,7 +2,8 @@ name: Publish packages
 run-name: Publishing to npm
 
 on:
-    push:
+    pull_request:
+        types: [closed]
         branches:
             - latest
             - 'backport/**'
@@ -11,6 +12,7 @@ permissions:
 jobs:
     release:
         runs-on: ubuntu-latest
+        if: github.event.pull_request.merged == true
         steps:
             - name: Checkout
               uses: actions/checkout@v4

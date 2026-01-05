@@ -13,13 +13,10 @@ This repository is a monorepo of independently versioned Javascript packages. We
     - create and push new git tags for each package
     - create new GH releases with changelogs
     - create a commit containing the version bumps in all affected package.json's
-8. Merge the version bump PR into `main`
-    - if you squash and merge, the release commit will change when merged in main, leaving the tags pointing to orphaned hashes
-    - to fix this manually, then run `yarn script:retag <oldHash> <newHash>` using the new commit hash found on `main` corresponding to the release
-        - pro-tip: if you use SSH, run `ssh-add` before calling the retag script. This will remember your SSH credentials for the session, so you do not retype your password for every tag being updated.
-9. Open a PR from `main` to `latest`
-10. Ensure you change "Squash and merge" to "Create a merge commit", and then merge the PR
-11. Wait for the `publish.yml` workflow to complete on `latest`. Afterwards, any updated packages should be pushed to NPM
+8. Create new PR to main with title `chore(release): publish`
+    - After this gets merged it will run the `yarn script:retag` and create a new PR from `main` to `latest`
+9. Merge new PR from `main` to `latest`
+10. Wait for the `publish.yml` workflow to complete on `latest`. Afterwards, any updated packages should be pushed to NPM
     - Check the page here to confirm: https://www.npmjs.com/org/canton-network
 
 ## Backporting

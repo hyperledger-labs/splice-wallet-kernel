@@ -25,6 +25,7 @@ export default defineConfig([
             '**/.venv',
             '**/vite-env.d.ts',
             '.yarn/**',
+            '.github/**',
             '.commitlintrc.js',
             '.pnp.*',
             'core/wallet-dapp-rpc-client',
