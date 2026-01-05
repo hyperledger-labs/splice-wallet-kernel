@@ -294,7 +294,6 @@ jobs:
                   echo "Branch: $BRANCH_NAME"
                   echo "Branch version: $BRANCH_VERSION"
                   echo "Expected major version: $BRANCH_MAJOR"
-                  echo ""
 
                   # Get all workspace package versions
                   VERSIONS=$(yarn workspaces list --json --no-private | jq -r '.location' | while read workspace; do
