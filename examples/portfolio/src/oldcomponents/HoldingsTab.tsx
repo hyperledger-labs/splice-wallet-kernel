@@ -65,7 +65,7 @@ export const HoldingsTab: React.FC = () => {
                         <li key={h.contractId}>
                             <AssetCard
                                 amount={h.amount}
-                                symbol={h.instrumentId.id}
+                                instrument={h.instrumentId}
                             />
                         </li>
                     )

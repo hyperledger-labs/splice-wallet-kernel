@@ -48,8 +48,7 @@ export const TransferCard: React.FC<TransferCardProps> = ({
             )}
             <AssetCard
                 amount={transfer.amount}
-                /* TODO: use actual symbol! */
-                symbol={transfer.instrumentId.id}
+                instrument={transfer.instrumentId}
             />
             {tag === 'TransferPendingReceiverAcceptance' &&
                 transfer.receiver === party && (
