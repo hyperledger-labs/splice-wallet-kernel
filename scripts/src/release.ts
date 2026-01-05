@@ -25,12 +25,37 @@ async function cmd(command: string): Promise<void> {
     })
 }
 
+// Helper to execute command and capture output
+async function cmdOutput(command: string): Promise<string> {
+    const [bin, ...args] = command.split(' ')
+    return new Promise((resolve, reject) => {
+        const child = spawn(bin, args, { shell: true })
+        let output = ''
+
+        child.stdout?.on('data', (data) => {
+            output += data.toString()
+        })
+
+        child.on('close', (code) => {
+            if (code !== 0) {
+                reject(new Error(`Command failed: ${command}`))
+            } else {
+                resolve(output.trim())
+            }
+        })
+    })
+}
+
 const options = ['wallet-sdk', 'dapp-sdk', 'wallet-gateway']
 
 program
     .option('--dry-run', 'Perform a dry run (default: true)')
     .option('--no-dry-run', 'Perform a real release')
-    .action(async ({ dryRun = true }) => {
+    .option(
+        '--backport',
+        'Backport release mode (skip main checkout, use current branch)'
+    )
+    .action(async ({ dryRun = true, backport = false }) => {
         const groups = await select({
             canToggleAll: true,
             message: 'Select groups to release',
@@ -42,12 +67,58 @@ program
             process.exit(0)
         }
 
-        await runRelease(dryRun, groups)
+        await runRelease(dryRun, groups, backport)
         process.exit(0)
     })
     .parseAsync(process.argv)
 
-async function runRelease(dryRun: boolean, groups: string[]): Promise<void> {
+async function runRelease(
+    dryRun: boolean,
+    groups: string[],
+    backport: boolean
+): Promise<void> {
+    let baseBranch: string
+
+    if (backport) {
+        // For backport releases, stay on current branch
+        baseBranch = await cmdOutput('git rev-parse --abbrev-ref HEAD')
+        console.log(`Backport mode: Using current branch '${baseBranch}'`)
+
+        // Ensure we're on a backport branch
+        if (!baseBranch.startsWith('backport/')) {
+            const proceed = await confirm({
+                message: `Current branch '${baseBranch}' doesn't look like a backport branch (should start with 'backport/'). Continue anyway?`,
+                default: false,
+            })
+
+            if (!proceed) {
+                console.log('Aborting')
+                process.exit(0)
+            }
+        }
+    } else {
+        // For main releases, checkout main and pull
+        baseBranch = 'main'
+        await cmd('git checkout main')
+        await cmd('git pull')
+    }
+    await cmd('git fetch --tags --force')
+
+    const timestamp = Date.now().toString().slice(0, -3) // Unix timestamp in seconds
+    const branchName = `release/${timestamp}`
+
+    await cmd(`git checkout -b ${branchName}`)
+    await cmd(`git push --set-upstream origin ${branchName}`)
+
+    try {
+        await cmd('gh auth status')
+    } catch (error) {
+        console.error(
+            `\ngh CLI is not authenticated. Please run "gh auth login" and try again. ${error}`
+        )
+        process.exit(1)
+    }
+
     let releaseCmd = `yarn nx release --skip-publish`
 
     if (dryRun === false) {
