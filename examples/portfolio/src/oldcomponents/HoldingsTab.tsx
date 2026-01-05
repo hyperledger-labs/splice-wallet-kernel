@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useCallback, useState, useEffect } from 'react'
-import { type Holding } from '@canton-network/core-ledger-client'
+import {
+    TokenStandardService,
+    type Holding,
+} from '@canton-network/core-ledger-client'
 import { useConnection } from '../contexts/ConnectionContext.js'
 import { usePortfolio } from '../contexts/PortfolioContext.js'
 import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
@@ -20,6 +23,7 @@ export const HoldingsTab: React.FC = () => {
         { admin: string; id: string } | undefined
     >(undefined)
     const [tapAmount, setTapAmount] = useState<number>(10000)
+    const currentTime = new Date()
 
     const refreshHoldings = useCallback(async () => {
         if (primaryParty) {
@@ -63,9 +67,13 @@ export const HoldingsTab: React.FC = () => {
                 {holdings?.map((h) => {
                     return (
                         <li key={h.contractId}>
+                            {TokenStandardService.isHoldingLocked(
+                                h,
+                                currentTime
+                            ) && <span>🔒</span>}
                             <AssetCard
                                 amount={h.amount}
-                                symbol={h.instrumentId.id}
+                                instrument={h.instrumentId}
                             />
                         </li>
                     )

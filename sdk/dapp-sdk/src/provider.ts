@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -96,14 +96,15 @@ export class Provider implements SpliceProvider {
 
 const withTimeout = (
     reject: (reason?: unknown) => void,
+    details: string,
     timeoutMs: number = 10 * 1000 // default to 10 seconds
 ) =>
     setTimeout(() => {
-        console.warn('SDK: Timeout waiting for connection')
+        console.warn(`SDK: ${details}`)
         reject({
             status: 'error',
             error: ErrorCode.Timeout,
-            details: 'Timeout waiting for connection',
+            details,
         })
     }, timeoutMs)
 
@@ -122,7 +123,11 @@ export const dappController = (provider: SpliceProvider) =>
                 const promise = new Promise<dappAPI.StatusEvent>(
                     (resolve, reject) => {
                         // 5 minutes timeout
-                        const timeout = withTimeout(reject, 5 * 60 * 1000)
+                        const timeout = withTimeout(
+                            reject,
+                            'Timeout waiting for connection',
+                            5 * 60 * 1000
+                        )
                         provider.on<dappRemoteAPI.StatusEvent>(
                             'onConnected',
                             (event) => {
@@ -161,10 +166,16 @@ export const dappController = (provider: SpliceProvider) =>
             if (response.userUrl) gatewayUi.open('remote', response.userUrl)
 
             const promise = new Promise<dappAPI.PrepareExecuteResult>(
-                (resolve) => {
+                (resolve, reject) => {
+                    const timeout = withTimeout(
+                        reject,
+                        'Timed out waiting for transaction approval'
+                    )
+
                     const listener = (event: dappRemoteAPI.TxChangedEvent) => {
                         if (event.status === 'executed') {
                             provider.removeListener('txChanged', listener)
+                            clearTimeout(timeout)
                             resolve({
                                 tx: event,
                             })

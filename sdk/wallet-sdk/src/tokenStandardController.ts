@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -19,6 +19,7 @@ import { ScanClient, ScanProxyClient } from '@canton-network/core-splice-client'
 
 import { pino } from 'pino'
 import { v4 } from 'uuid'
+import { Decimal } from 'decimal.js'
 import {
     ALLOCATION_FACTORY_INTERFACE_ID,
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
@@ -308,16 +309,13 @@ export class TokenStandardController {
         if (includeLocked) {
             return utxos
         } else {
-            return utxos.filter((utxo) => {
-                const lock = utxo.interfaceViewValue.lock
-                if (!lock) return true
-
-                const expiresAt = lock.expiresAt
-                if (!expiresAt) return false
-
-                const expiresAtDate = new Date(expiresAt)
-                return expiresAtDate <= currentTime
-            })
+            return utxos.filter(
+                (utxo) =>
+                    !TokenStandardService.isHoldingLocked(
+                        utxo.interfaceViewValue,
+                        currentTime
+                    )
+            )
         }
     }
 
@@ -378,9 +376,10 @@ export class TokenStandardController {
 
                     const inputUtxos = group.slice(start, end)
 
-                    const accumulatedAmount = inputUtxos.reduce((a, b) => {
-                        return a + parseFloat(b.interfaceViewValue.amount)
-                    }, 0)
+                    const accumulatedAmount = inputUtxos.reduce(
+                        (a, b) => a.plus(b.interfaceViewValue.amount),
+                        new Decimal(0)
+                    )
 
                     return this.createTransfer(
                         walletParty,

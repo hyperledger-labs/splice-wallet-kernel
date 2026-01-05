@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -1099,6 +1099,9 @@ export class LedgerController {
         return this.client.getCacheStats()
     }
 
+    /**
+     * @returns ParticipantId
+     */
     async getParticipantId(): Promise<PartyId> {
         return (await this.client.getWithRetry('/v2/parties/participant-id'))
             .participantId

@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { dapp } from './dapp-api/server.js'
@@ -22,6 +22,7 @@ import { SigningProvider } from '@canton-network/core-signing-lib'
 import { ParticipantSigningDriver } from '@canton-network/core-signing-participant'
 import { InternalSigningDriver } from '@canton-network/core-signing-internal'
 import FireblocksSigningProvider from '@canton-network/core-signing-fireblocks'
+import BlockdaemonSigningProvider from '@canton-network/core-signing-blockdaemon'
 import { jwtAuthService } from './auth/jwt-auth-service.js'
 import express from 'express'
 import { CliOptions } from './index.js'
@@ -117,23 +118,11 @@ export async function initialize(opts: CliOptions, logger: Logger) {
 
     const app = express()
 
-    // Don't pass 'localhost' or '0.0.0.0' to listen() - let express default to 0.0.0.0
-    // This ensures Docker compatibility while keeping localhost as the default for URLs
-    const useDefaultListenHost = ['0.0.0.0', 'localhost', '127.0.0.1'].includes(
-        host
-    )
-
-    const server = useDefaultListenHost
-        ? app.listen(port, () => {
-              logger.info(
-                  `Remote Wallet Gateway starting on ${protocol}://${host}:${port} (bound to 0.0.0.0:${port})`
-              )
-          })
-        : app.listen(port, host, () => {
-              logger.info(
-                  `Remote Wallet Gateway starting on ${protocol}://${host}:${port}`
-              )
-          })
+    const server = app.listen(port, () => {
+        logger.info(
+            `Remote Wallet Gateway starting on ${protocol}://${host}:${port} (bound to 0.0.0.0:${port})`
+        )
+    })
 
     app.use('/healthz', rpcRateLimit, (_req, res) => res.status(200).send('OK'))
     app.use('/readyz', rpcRateLimit, (_req, res) => {
@@ -168,6 +157,11 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const keyInfo = { apiKey, apiSecret }
     const userApiKeys = new Map([['user', keyInfo]])
 
+    const blockdaemonApiUrl =
+        process.env.BLOCKDAEMON_API_URL ||
+        'http://localhost:5080/api/cwp/canton'
+    const blockdaemonApiKey = process.env.BLOCKDAEMON_API_KEY || ''
+
     const drivers = {
         [SigningProvider.PARTICIPANT]: new ParticipantSigningDriver(),
         [SigningProvider.WALLET_KERNEL]: new InternalSigningDriver(
@@ -176,6 +170,10 @@ export async function initialize(opts: CliOptions, logger: Logger) {
         [SigningProvider.FIREBLOCKS]: new FireblocksSigningProvider({
             defaultKeyInfo: keyInfo,
             userApiKeys,
+        }),
+        [SigningProvider.BLOCKDAEMON]: new BlockdaemonSigningProvider({
+            baseUrl: blockdaemonApiUrl,
+            apiKey: blockdaemonApiKey,
         }),
     }
 

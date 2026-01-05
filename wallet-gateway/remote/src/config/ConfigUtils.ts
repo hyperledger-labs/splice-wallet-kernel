@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { readFileSync, existsSync } from 'fs'
@@ -109,6 +109,7 @@ export const deriveKernelUrls = (
     serverConfig: ServerConfig
 ): { dappUrl: string; userUrl: string } => {
     const protocol = serverConfig.tls ? 'https' : 'http'
+
     // Convert 0.0.0.0 to localhost for URL generation since browsers can't use 0.0.0.0
     const urlHost =
         serverConfig.host === '0.0.0.0' ? 'localhost' : serverConfig.host

@@ -2,21 +2,33 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React from 'react'
+import { useInstrumentInfo } from '../contexts/RegistryServiceContext.js'
 
 interface AssetCardProps {
     name?: string
     amount: string
-    symbol: string
+    instrument: { admin: string; id: string }
 }
 
 export const AssetCard: React.FC<AssetCardProps> = ({
     name,
     amount,
-    symbol,
+    instrument,
 }: AssetCardProps) => {
+    const instrumentInfo = useInstrumentInfo(instrument)
+    const tooltip = `${instrument.id} from admin ${instrument.admin}`
     return (
-        <div>
-            {name && <span>{name}</span>} <strong>{amount}</strong> {symbol}
-        </div>
+        <span>
+            {name && <span>{name}</span>}
+            <strong>{amount}</strong>
+            {instrumentInfo ? (
+                <span title={tooltip}> {instrumentInfo.instrument.symbol}</span>
+            ) : (
+                <span title={tooltip}>
+                    {' '}
+                    {instrument.id} (warning: unknown instrument)
+                </span>
+            )}
+        </span>
     )
 }
