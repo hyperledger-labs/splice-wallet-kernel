@@ -1,18 +1,19 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { PartyId } from '@canton-network/core-types'
+import { PartyId } from '@canton-network/core-types'
+import type {
+    Holding,
+    PrettyContract,
+    TransferInstructionView,
+    Transaction,
+} from '@canton-network/core-ledger-client'
 import type {
     AllocationInstructionView,
     AllocationRequestView,
     AllocationSpecification,
     AllocationView,
 } from '@canton-network/core-token-standard'
-import type {
-    Holding,
-    PrettyContract,
-} from '@canton-network/core-ledger-client'
-import type { Transfer } from '../models/transfer.js'
 
 // PortfolioService is a fat interface that tries to capture everything our
 // portflio can do.  Separating the interface from the implementation will
@@ -38,7 +39,9 @@ export interface PortfolioService {
         instrumentId: { admin: string; id: string }
         instructionChoice: 'Accept' | 'Reject' | 'Withdraw'
     }) => Promise<void>
-    listPendingTransfers: (_: { party: PartyId }) => Promise<Transfer[]>
+    listPendingTransfers: (_: {
+        party: PartyId
+    }) => Promise<PrettyContract<TransferInstructionView>[]>
 
     // Allocations
     createAllocationInstruction: (_: {
@@ -57,11 +60,13 @@ export interface PortfolioService {
     }) => Promise<PrettyContract<AllocationView>[]>
 
     // History
-    getTransactionHistory: (_: { party: PartyId }) => Promise<Transfer[]>
-    fetchOlderTransactionHistory: (_: { party: PartyId }) => Promise<Transfer[]>
+    getTransactionHistory: (_: { party: PartyId }) => Promise<Transaction[]>
+    fetchOlderTransactionHistory: (_: {
+        party: PartyId
+    }) => Promise<Transaction[]>
     fetchMoreRecentTransactionHistory: (_: {
         party: PartyId
-    }) => Promise<Transfer[]>
+    }) => Promise<Transaction[]>
 
     // Tap
     tap: (_: {

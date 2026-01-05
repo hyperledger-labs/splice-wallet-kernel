@@ -4,22 +4,18 @@
 import { type Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
 import {
-    type TransferInstructionView,
     defaultRetryableOptions,
     LedgerClient,
     type Types,
+    TransactionParser,
+    TokenStandardTransactionInterfaces,
+    type Transaction,
 } from '@canton-network/core-ledger-client'
-import { TRANSFER_INSTRUCTION_INTERFACE_ID } from '@canton-network/core-token-standard'
-import { type Transfer, toTransfer } from '../models/transfer.js'
 
 type FiltersByParty = Types['Map_Filters']
 
 type Update = Types['JsGetUpdatesResponse']
-
-type Event =
-    | { type: 'CreatedEvent'; offset: number; event: Types['CreatedEvent'] }
-    | { type: 'ArchivedEvent'; offset: number; event: Types['ArchivedEvent'] }
-    | { type: 'ExercisedEvent'; offset: number; event: Types['ExercisedEvent'] }
+type JsTransaction = Types['JsTransaction']
 
 const updateOffset = (update: Update): number => {
     if ('OffsetCheckpoint' in update.update)
@@ -51,7 +47,7 @@ const paginateUpdates = async function* ({
     let more = true
     while (more) {
         const updates = await ledgerClient.postWithRetry(
-            '/v2/updates',
+            '/v2/updates/flats',
             {
                 beginExclusive,
                 verbose: false, // deprecated in 3.4
@@ -82,7 +78,6 @@ const paginateUpdates = async function* ({
             const relevantUpdates: Update[] = []
             let latestOffset: number | undefined = undefined
             for (const update of updates) {
-                console.log(update)
                 const offset = updateOffset(update)
                 if (latestOffset !== null || offset >= latestOffset) {
                     latestOffset = offset
@@ -111,13 +106,12 @@ export class TransactionHistoryService {
     private ledgerClient: LedgerClient
     private party: string
 
-    /** Currently we just store relevant transactions in a map by contractId.
-     *   We probably want to move this to a SQLite based format instead. */
-    private transfers: Map<string, Transfer> // By contractId
+    /** We probably want to move this to a SQLite based format instead. */
+    private transactions: Transaction[]
 
     /** Events that we have retrieved from the ledger but not processed yet
      *   (e.g. an exercise on a contract that we don't know about). */
-    private unprocessed: Event[]
+    private unprocessed: JsTransaction[]
 
     /** The oldest and most recent offset we know about.  If both are set, you
      *   can assume we have gathered all updates in this range. */
@@ -136,49 +130,8 @@ export class TransactionHistoryService {
         this.logger = logger
         this.ledgerClient = ledgerClient
         this.party = party
-        this.transfers = new Map()
+        this.transactions = []
         this.unprocessed = []
-    }
-
-    private process(event: Event): boolean {
-        const contractId = event.event.contractId
-        if (event.type === 'CreatedEvent') {
-            for (const interfaceView of event.event.interfaceViews ?? []) {
-                // TODO: check if this is the right interface?
-                if (interfaceView.viewValue) {
-                    const transfer = toTransfer({
-                        party: this.party,
-                        contractId,
-                        interfaceViewValue:
-                            interfaceView.viewValue as TransferInstructionView,
-                    })
-                    this.transfers.set(contractId, transfer)
-                    return true
-                }
-            }
-        }
-
-        if (event.type === 'ExercisedEvent') {
-            const transfer = this.transfers.get(contractId)
-            if (!transfer) return false
-
-            switch (event.event.choice) {
-                case 'TransferInstruction_Accept':
-                    transfer.status = 'accepted'
-                    return true
-                case 'TransferInstruction_Reject':
-                    transfer.status = 'rejected'
-                    return true
-                case 'TransferInstruction_Withdraw':
-                    transfer.status = 'withdrawn'
-                    return true
-                case 'TransferInstruction_Update':
-                    // TODO: update meta?
-                    return false
-            }
-        }
-
-        return true // unrecognized, so skip
     }
 
     private async fetchRange({
@@ -199,57 +152,50 @@ export class TransactionHistoryService {
             filtersByParty: {
                 [this.party]: {
                     cumulative: [
-                        {
-                            identifierFilter: {
-                                InterfaceFilter: {
-                                    value: {
-                                        interfaceId:
-                                            TRANSFER_INSTRUCTION_INTERFACE_ID,
-                                        includeInterfaceView: true,
-                                        includeCreatedEventBlob: true,
+                        ...TokenStandardTransactionInterfaces.map(
+                            (interfaceName) => ({
+                                identifierFilter: {
+                                    InterfaceFilter: {
+                                        value: {
+                                            interfaceId: interfaceName,
+                                            includeInterfaceView: true,
+                                            includeCreatedEventBlob: true,
+                                        },
                                     },
                                 },
-                            },
-                        },
+                            })
+                        ),
                     ],
                 },
             },
         })) {
-            let events: Event[] = []
             fetchedUpdates += updates.length
+
+            const unapplied = [...this.unprocessed]
+
             for (const update of updates) {
                 if ('Transaction' in update.update) {
-                    for (const event of update.update.Transaction?.value
-                        .events ?? []) {
-                        if ('CreatedEvent' in event) {
-                            events.push({
-                                type: 'CreatedEvent',
-                                offset: updateOffset(update),
-                                event: event.CreatedEvent,
-                            })
-                        } else if ('ExercisedEvent' in event) {
-                            events.push({
-                                type: 'ExercisedEvent',
-                                offset: updateOffset(update),
-                                event: event.ExercisedEvent,
-                            })
-                        } else if ('ArchivedEvent' in event) {
-                            events.push({
-                                type: 'ArchivedEvent',
-                                offset: updateOffset(update),
-                                event: event.ArchivedEvent,
-                            })
-                        }
-                    }
+                    unapplied.push(update.update.Transaction.value)
                 }
             }
 
-            events = [...events, ...this.unprocessed]
-            events.sort((e1, e2) => e1.offset - e2.offset)
+            unapplied.sort((e1, e2) => e1.offset - e2.offset)
 
-            const newUnprocessed = []
-            for (const event of events) {
-                if (!this.process(event)) newUnprocessed.push(event)
+            const newUnprocessed: JsTransaction[] = []
+            for (const jsTransaction of unapplied) {
+                const parser = new TransactionParser(
+                    jsTransaction,
+                    this.ledgerClient,
+                    this.party,
+                    false // isMasterUser
+                )
+                try {
+                    const transaction = await parser.parseTransaction()
+                    this.transactions.push(transaction)
+                } catch (error) {
+                    this.logger.info({ error }, 'parsing transaction failed')
+                    newUnprocessed.push(jsTransaction)
+                }
             }
 
             this.unprocessed = newUnprocessed
@@ -282,7 +228,7 @@ export class TransactionHistoryService {
 
     // TODO: instead of fetching more recent history, can we rely on transaction
     // events?  Or can we insert them here as they are purged from the ACS?
-    async fetchMoreRecent(): Promise<Transfer[]> {
+    async fetchMoreRecent(): Promise<Transaction[]> {
         if (this.endInclusive === undefined) {
             // This means we never fetched any transactions.  We want to start
             // with fetching a batch of older ones.
@@ -302,7 +248,7 @@ export class TransactionHistoryService {
     }
 
     // TODO: return bool to determine we are finished?
-    async fetchOlder(): Promise<Transfer[]> {
+    async fetchOlder(): Promise<Transaction[]> {
         // Figure out the end of the range.
         let endInclusive = this.beginExclusive
         if (endInclusive === undefined) {
@@ -340,11 +286,9 @@ export class TransactionHistoryService {
         return this.list()
     }
 
-    list(): Transfer[] {
-        const transfers = [...this.transfers.values()]
-        transfers.sort(
-            (a, b) => b.requestedAt.valueOf() - a.requestedAt.valueOf()
-        )
-        return transfers
+    list(): Transaction[] {
+        const transactions = [...this.transactions]
+        transactions.sort((a, b) => b.offset - a.offset)
+        return transactions
     }
 }
