@@ -309,16 +309,13 @@ export class TokenStandardController {
         if (includeLocked) {
             return utxos
         } else {
-            return utxos.filter((utxo) => {
-                const lock = utxo.interfaceViewValue.lock
-                if (!lock) return true
-
-                const expiresAt = lock.expiresAt
-                if (!expiresAt) return false
-
-                const expiresAtDate = new Date(expiresAt)
-                return expiresAtDate <= currentTime
-            })
+            return utxos.filter(
+                (utxo) =>
+                    !TokenStandardService.isHoldingLocked(
+                        utxo.interfaceViewValue,
+                        currentTime
+                    )
+            )
         }
     }
 
