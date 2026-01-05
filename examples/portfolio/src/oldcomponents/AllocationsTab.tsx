@@ -1,17 +1,18 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState, useEffect } from 'react'
-import { type AllocationRequestView } from '@canton-network/core-token-standard'
-import { type PrettyContract } from '@canton-network/core-ledger-client'
 import { useConnection } from '../contexts/ConnectionContext.js'
 import { usePortfolio } from '../contexts/PortfolioContext.js'
 import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
+import { useAllocationRequests } from '../hooks/useAllocationRequests.js'
+import { useAllocations } from '../hooks/useAllocations.js'
 import {
     type TransferLegInputFields,
     TransferLegInput,
 } from './TransferLegInput.js'
 import { DateTimePicker } from './DateTimePicker.js'
+import { AllocationCard } from './AllocationCard.js'
 import { AllocationRequestCard } from './AllocationRequestCard.js'
 
 export const AllocationsTab: React.FC = () => {
@@ -21,9 +22,8 @@ export const AllocationsTab: React.FC = () => {
         status: { primaryParty },
     } = useConnection()
 
-    const [pendingAllocationRequests, setPendingAllocationRequests] = useState<
-        PrettyContract<AllocationRequestView>[] | undefined
-    >(undefined)
+    const { data: allocationRequests } = useAllocationRequests()
+    const { data: allocations } = useAllocations()
 
     const [executor, setExecutor] = useState('')
     const [settlementRefId, setSettlementRefId] = useState('')
@@ -44,28 +44,11 @@ export const AllocationsTab: React.FC = () => {
     useEffect(() => {
         if (primaryParty) {
             ;(async () => {
-                const pendingAllocationInstructions =
-                    await portfolio.listPendingAllocationInstructions({
+                const allocationInstructions =
+                    await portfolio.listAllocationInstructions({
                         party: primaryParty,
                     })
-                console.log(
-                    'pendingAllocationInstructions',
-                    pendingAllocationInstructions
-                )
-                const pendingAllocationRequests =
-                    await portfolio.listPendingAllocationRequests({
-                        party: primaryParty,
-                    })
-                console.log(
-                    'pendingAllocationRequests',
-                    pendingAllocationRequests
-                )
-                setPendingAllocationRequests(pendingAllocationRequests)
-                const pendingAllocations =
-                    await portfolio.listPendingAllocations({
-                        party: primaryParty,
-                    })
-                console.log('pendingAllocations', pendingAllocations)
+                console.log('allocationInstructions', allocationInstructions)
             })()
         }
     }, [portfolio, primaryParty])
@@ -75,11 +58,24 @@ export const AllocationsTab: React.FC = () => {
             <h2>Allocation requests</h2>
 
             {primaryParty &&
-                pendingAllocationRequests?.map((p) => (
+                allocationRequests?.map((p) => (
                     <div key={p.contractId}>
                         <AllocationRequestCard
                             party={primaryParty!}
                             allocationRequest={p.interfaceViewValue}
+                        />
+                    </div>
+                ))}
+
+            <h2>Allocations</h2>
+
+            {primaryParty &&
+                allocations?.map((p) => (
+                    <div key={p.contractId}>
+                        <AllocationCard
+                            party={primaryParty!}
+                            contractId={p.contractId}
+                            allocation={p.interfaceViewValue}
                         />
                     </div>
                 ))}

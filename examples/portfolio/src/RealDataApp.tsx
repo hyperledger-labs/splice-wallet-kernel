@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import './App.css'
 import { RegistryServiceProvider } from './contexts/RegistriesServiceProvider.js'
 import { ConnectionProvider } from './contexts/ConnectionProvider.js'
@@ -14,49 +15,53 @@ import { ConnectionCard } from './oldcomponents/ConnectionCard.js'
 import { AllocationsTab } from './oldcomponents/AllocationsTab.js'
 import { Tabs } from './oldcomponents/Tabs.js'
 
+const queryClient = new QueryClient()
+
 const RealDataApp: React.FC = () => (
-    <RegistryServiceProvider>
-        <ConnectionProvider>
-            <PortfolioProvider>
-                <h1>dApp Portfolio</h1>
-                <ConnectionCard />
-                <Tabs
-                    tabs={[
-                        {
-                            label: 'Holdings',
-                            value: 'holdings',
-                            content: <HoldingsTab />,
-                        },
-                        {
-                            label: 'Transfer',
-                            value: 'twoStepTransfer',
-                            content: <TwoStepTransferTab />,
-                        },
-                        {
-                            label: 'Pending Transfers',
-                            value: 'pendingTransfers',
-                            content: <PendingTransfersTab />,
-                        },
-                        {
-                            label: 'Transaction History',
-                            value: 'transactionHistory',
-                            content: <TransactionHistoryTab />,
-                        },
-                        {
-                            label: 'Allocations',
-                            value: 'allocations',
-                            content: <AllocationsTab />,
-                        },
-                        {
-                            label: 'Registry Settings',
-                            value: 'registries',
-                            content: <RegistriesTab />,
-                        },
-                    ]}
-                />
-            </PortfolioProvider>
-        </ConnectionProvider>
-    </RegistryServiceProvider>
+    <QueryClientProvider client={queryClient}>
+        <RegistryServiceProvider>
+            <ConnectionProvider>
+                <PortfolioProvider>
+                    <h1>dApp Portfolio</h1>
+                    <ConnectionCard />
+                    <Tabs
+                        tabs={[
+                            {
+                                label: 'Holdings',
+                                value: 'holdings',
+                                content: <HoldingsTab />,
+                            },
+                            {
+                                label: 'Transfer',
+                                value: 'twoStepTransfer',
+                                content: <TwoStepTransferTab />,
+                            },
+                            {
+                                label: 'Pending Transfers',
+                                value: 'pendingTransfers',
+                                content: <PendingTransfersTab />,
+                            },
+                            {
+                                label: 'Transaction History',
+                                value: 'transactionHistory',
+                                content: <TransactionHistoryTab />,
+                            },
+                            {
+                                label: 'Allocations',
+                                value: 'allocations',
+                                content: <AllocationsTab />,
+                            },
+                            {
+                                label: 'Registry Settings',
+                                value: 'registries',
+                                content: <RegistriesTab />,
+                            },
+                        ]}
+                    />
+                </PortfolioProvider>
+            </ConnectionProvider>
+        </RegistryServiceProvider>
+    </QueryClientProvider>
 )
 
 export default RealDataApp

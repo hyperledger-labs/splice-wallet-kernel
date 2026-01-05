@@ -16,6 +16,7 @@
         "@canton-network/core-token-standard": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@canton-network/dapp-sdk": "workspace:^",
+        "@tanstack/react-query": "^5.90.16",
         "pino": "^10.0.0",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",

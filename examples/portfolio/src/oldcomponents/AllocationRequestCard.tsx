@@ -1,11 +1,13 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import type { PartyId } from '@canton-network/core-types'
 import { type AllocationRequestView } from '@canton-network/core-token-standard'
 import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
 import { usePortfolio } from '../contexts/PortfolioContext.js'
-import { AssetCard } from './AssetCard.js'
+import { useAllocations } from '../hooks/useAllocations.js'
+import { TransferLegCard } from './TransferLegCard.js'
+import { AllocationSettlementCard } from './AllocationSettlementCard.js'
 
 export type AllocationRequestCardProps = {
     party: PartyId
@@ -19,34 +21,23 @@ export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
     const { settlement, transferLegs } = allocationRequest
     const registryUrls = useRegistryUrls()
     const { createAllocationInstruction } = usePortfolio()
-
-    // const transferLegIds = Object.entries(transferLegs)
+    const { refetch: refetchAllocations } = useAllocations()
 
     return (
         <div>
-            <h2>Settlement</h2>
-            <strong>executor:</strong> {settlement.executor}
-            <br />
-            <strong>allocateBefore:</strong> {settlement.allocateBefore}
-            {new Date(settlement.allocateBefore) <= new Date() && '(EXPIRED!)'}
-            <br />
-            <h2>Transfer Legs</h2>
+            <AllocationSettlementCard settlementInfo={settlement} />
+            <h3>Transfer Legs</h3>
             {Object.entries(transferLegs).map(
                 ([transferLegId, transferLeg]) => (
                     <div key={transferLegId}>
-                        <h3>Transfer leg {transferLegId}</h3>
-                        <strong>sender:</strong> {transferLeg.sender}
-                        <br />
-                        <strong>receiver:</strong> {transferLeg.receiver}
-                        <br />
-                        <AssetCard
-                            amount={transferLeg.amount}
-                            instrument={transferLeg.instrumentId}
+                        <TransferLegCard
+                            transferLegId={transferLegId}
+                            transferLeg={transferLeg}
                         />
                         {transferLeg.sender === party && (
                             <button
-                                onClick={() => {
-                                    createAllocationInstruction({
+                                onClick={async () => {
+                                    await createAllocationInstruction({
                                         registryUrls,
                                         party,
                                         allocationSpecification: {
@@ -55,6 +46,7 @@ export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
                                             transferLeg,
                                         },
                                     })
+                                    refetchAllocations()
                                 }}
                             >
                                 Accept

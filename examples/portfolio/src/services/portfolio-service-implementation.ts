@@ -164,6 +164,20 @@ export const listPendingTransfers = async ({
     )
 }
 
+export const listAllocationRequests = async ({
+    party,
+}: {
+    party: PartyId
+}): Promise<PrettyContract<AllocationRequestView>[]> => {
+    const tokenStandardService = await resolveTokenStandardService()
+    const contracts =
+        await tokenStandardService.listContractsByInterface<AllocationRequestView>(
+            ALLOCATION_REQUEST_INTERFACE_ID,
+            party
+        )
+    return contracts
+}
+
 export const createAllocationInstruction = async ({
     registryUrls,
     party,
@@ -203,35 +217,7 @@ export const createAllocationInstruction = async ({
     })
 }
 
-export const listPendingAllocationInstructions = async ({
-    party,
-}: {
-    party: PartyId
-}): Promise<PrettyContract<AllocationInstructionView>[]> => {
-    const tokenStandardService = await resolveTokenStandardService()
-    const contracts =
-        await tokenStandardService.listContractsByInterface<AllocationInstructionView>(
-            ALLOCATION_INSTRUCTION_INTERFACE_ID,
-            party
-        )
-    return contracts
-}
-
-export const listPendingAllocationRequests = async ({
-    party,
-}: {
-    party: PartyId
-}): Promise<PrettyContract<AllocationRequestView>[]> => {
-    const tokenStandardService = await resolveTokenStandardService()
-    const contracts =
-        await tokenStandardService.listContractsByInterface<AllocationRequestView>(
-            ALLOCATION_REQUEST_INTERFACE_ID,
-            party
-        )
-    return contracts
-}
-
-export const listPendingAllocations = async ({
+export const listAllocations = async ({
     party,
 }: {
     party: PartyId
@@ -240,6 +226,59 @@ export const listPendingAllocations = async ({
     const contracts =
         await tokenStandardService.listContractsByInterface<AllocationView>(
             ALLOCATION_INTERFACE_ID,
+            party
+        )
+    return contracts
+}
+
+export const withdrawAllocation = async ({
+    registryUrls,
+    party,
+    contractId,
+    instrumentId,
+}: {
+    registryUrls: ReadonlyMap<PartyId, string>
+    party: PartyId
+    contractId: string
+    instrumentId: { admin: string; id: string }
+}) => {
+    // TODO: resolve this BEFORE calling this function so we can gray out the
+    // button?
+    const registryUrl = registryUrls.get(instrumentId.admin)
+    if (!registryUrl)
+        throw new Error(`no registry URL for admin ${instrumentId.admin}`)
+
+    const tokenStandardService = await resolveTokenStandardService()
+    const [acceptCommand, disclosedContracts] =
+        await tokenStandardService.allocation.createWithdrawAllocation(
+            contractId,
+            registryUrl
+        )
+
+    const request = {
+        commands: [{ ExerciseCommand: acceptCommand }],
+        commandId: v4(),
+        actAs: [party],
+        disclosedContracts,
+    }
+
+    const provider = window.canton
+    // TODO: check success
+    await provider?.request({
+        method: 'prepareExecute',
+        params: request,
+    })
+}
+
+export const listAllocationInstructions = async ({
+    party,
+}: {
+    party: PartyId
+}): Promise<PrettyContract<AllocationInstructionView>[]> => {
+    const tokenStandardService = await resolveTokenStandardService()
+    const contracts =
+        await tokenStandardService.listContractsByInterface<AllocationInstructionView>(
+            ALLOCATION_INSTRUCTION_INTERFACE_ID,
             party
         )
     return contracts

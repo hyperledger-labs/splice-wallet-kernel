@@ -44,20 +44,26 @@ export interface PortfolioService {
     }) => Promise<PrettyContract<TransferInstructionView>[]>
 
     // Allocations
+    listAllocationRequests: (_: {
+        party: PartyId
+    }) => Promise<PrettyContract<AllocationRequestView>[]>
     createAllocationInstruction: (_: {
         registryUrls: ReadonlyMap<PartyId, string>
         party: PartyId // Party creating the allocation, not necessarily the sender or receiver
         allocationSpecification: AllocationSpecification
     }) => Promise<void>
-    listPendingAllocationInstructions: (_: {
-        party: PartyId
-    }) => Promise<PrettyContract<AllocationInstructionView>[]>
-    listPendingAllocationRequests: (_: {
-        party: PartyId
-    }) => Promise<PrettyContract<AllocationRequestView>[]>
-    listPendingAllocations: (_: {
+    listAllocations: (_: {
         party: PartyId
     }) => Promise<PrettyContract<AllocationView>[]>
+    withdrawAllocation: (_: {
+        registryUrls: ReadonlyMap<PartyId, string>
+        party: PartyId
+        contractId: string
+        instrumentId: { admin: string; id: string }
+    }) => Promise<void>
+    listAllocationInstructions: (_: {
+        party: PartyId
+    }) => Promise<PrettyContract<AllocationInstructionView>[]>
 
     // History
     getTransactionHistory: (_: { party: PartyId }) => Promise<Transaction[]>
