@@ -1522,10 +1522,8 @@ export class TokenStandardService {
 
     static isHoldingLocked(
         holding: Holding | TxParseHolding,
-        currentTime?: Date
+        currentTime: Date = new Date()
     ): boolean {
-        currentTime ??= new Date()
-
         const lock = holding.lock
         if (!lock) return false
 
