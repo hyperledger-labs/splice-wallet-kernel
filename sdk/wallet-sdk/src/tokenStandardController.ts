@@ -632,9 +632,9 @@ export class TokenStandardController {
 
         const ledgerEnd = await this.client.get('/v2/state/ledger-end')
 
-        const utxos =
-            inputUtxos ??
-            (await this.listHoldingUtxos(true, 100, undefined, walletParty))
+        const utxos = inputUtxos?.length
+            ? inputUtxos
+            : await this.listHoldingUtxos(true, 100, undefined, walletParty)
 
         if (utxos.length < 10) {
             throw new Error(`Utxos are less than 10, found ${utxos.length}`)
