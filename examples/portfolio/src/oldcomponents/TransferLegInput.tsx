@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SelectInstrument } from './SelectInstrument.js'
+import { SelectInstrument } from './SelectInstrument'
 
 export type TransferLegInputFields = {
     transferLegId: string
