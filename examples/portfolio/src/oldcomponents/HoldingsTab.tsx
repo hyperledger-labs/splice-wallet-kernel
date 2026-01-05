@@ -7,7 +7,6 @@ import {
     type Holding,
 } from '@canton-network/core-ledger-client'
 import { useConnection } from '../contexts/ConnectionContext.js'
-import { useCurrentTime } from '../hooks/useCurrentTime.js'
 import { usePortfolio } from '../contexts/PortfolioContext.js'
 import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
 import { AssetCard } from './AssetCard.js'
@@ -24,7 +23,7 @@ export const HoldingsTab: React.FC = () => {
         { admin: string; id: string } | undefined
     >(undefined)
     const [tapAmount, setTapAmount] = useState<number>(10000)
-    const currentTime = useCurrentTime()
+    const currentTime = new Date()
 
     const refreshHoldings = useCallback(async () => {
         if (primaryParty) {
