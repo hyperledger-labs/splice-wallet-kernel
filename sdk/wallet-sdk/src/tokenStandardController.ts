@@ -614,9 +614,17 @@ export class TokenStandardController {
         )
     }
 
+    /**
+     *
+     * @param walletParty partyId for user with holdings
+     * @param nodeLimit json api maximum elements limit per node, default is 200
+     * @param inputUtxos optional utxos to provide as input
+     * @returns ExerciseCommand for merge transfer for a given user if they have multiple holdings and disclosed contracts
+     */
     async useMergeDelegations(
         walletParty: PartyId,
-        nodeLimit: number = 200
+        nodeLimit: number = 200,
+        inputUtxos?: PrettyContract<Holding>[]
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -624,12 +632,9 @@ export class TokenStandardController {
 
         const ledgerEnd = await this.client.get('/v2/state/ledger-end')
 
-        const utxos = await this.listHoldingUtxos(
-            true,
-            100,
-            undefined,
-            walletParty
-        )
+        const utxos =
+            inputUtxos ??
+            (await this.listHoldingUtxos(true, 100, undefined, walletParty))
 
         if (utxos.length < 10) {
             throw new Error(`Utxos are less than 10, found ${utxos.length}`)
