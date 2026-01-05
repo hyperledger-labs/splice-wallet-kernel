@@ -6,9 +6,9 @@ import {
     type TransferInstructionView,
     TokenStandardService,
 } from '@canton-network/core-ledger-client'
-import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
-import { usePortfolio } from '../contexts/PortfolioContext.js'
-import { AssetCard } from './AssetCard.js'
+import { useRegistryUrls } from '../contexts/RegistryServiceContext'
+import { usePortfolio } from '../contexts/PortfolioContext'
+import { AssetCard } from './AssetCard'
 
 export type TransferCardProps = {
     party: PartyId

@@ -4,15 +4,15 @@
 import { useState, useEffect } from 'react'
 import { type AllocationRequestView } from '@canton-network/core-token-standard'
 import { type PrettyContract } from '@canton-network/core-ledger-client'
-import { useConnection } from '../contexts/ConnectionContext.js'
-import { usePortfolio } from '../contexts/PortfolioContext.js'
-import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
+import { useConnection } from '../contexts/ConnectionContext'
+import { usePortfolio } from '../contexts/PortfolioContext'
+import { useRegistryUrls } from '../contexts/RegistryServiceContext'
 import {
     type TransferLegInputFields,
     TransferLegInput,
-} from './TransferLegInput.js'
-import { DateTimePicker } from './DateTimePicker.js'
-import { AllocationRequestCard } from './AllocationRequestCard.js'
+} from './TransferLegInput'
+import { DateTimePicker } from './DateTimePicker'
+import { AllocationRequestCard } from './AllocationRequestCard'
 
 export const AllocationsTab: React.FC = () => {
     const registryUrls = useRegistryUrls()

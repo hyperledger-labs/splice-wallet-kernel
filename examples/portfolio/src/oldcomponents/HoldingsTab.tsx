@@ -6,11 +6,11 @@ import {
     TokenStandardService,
     type Holding,
 } from '@canton-network/core-ledger-client'
-import { useConnection } from '../contexts/ConnectionContext.js'
-import { usePortfolio } from '../contexts/PortfolioContext.js'
-import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
-import { AssetCard } from './AssetCard.js'
-import { SelectInstrument } from './SelectInstrument.js'
+import { useConnection } from '../contexts/ConnectionContext'
+import { usePortfolio } from '../contexts/PortfolioContext'
+import { useRegistryUrls } from '../contexts/RegistryServiceContext'
+import { AssetCard } from './AssetCard'
+import { SelectInstrument } from './SelectInstrument'
 
 export const HoldingsTab: React.FC = () => {
     const {
