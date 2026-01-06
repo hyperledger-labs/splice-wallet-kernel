@@ -71,7 +71,7 @@ export const AllocationsTab: React.FC = () => {
         }
 
         return [groupedAllocations, ungroupedAllocations]
-    }, [allocationRequests, allocations])
+    }, [allocationRequests, allocations, allocationKey])
 
     const [executor, setExecutor] = useState('')
     const [settlementRefId, setSettlementRefId] = useState('')
