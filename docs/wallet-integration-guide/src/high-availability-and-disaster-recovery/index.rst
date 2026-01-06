@@ -55,9 +55,9 @@ Backup Best Practices
 
 For documentation on how to take backups refer to the `Backups section here <https://docs.sync.global/validator_operator/validator_backups.html>`_.
 
------------------
+------------------
 Recovery Scenarios
------------------
+------------------
 
 Loss of a validator
 ~~~~~~~~~~~~~~~~~~~
