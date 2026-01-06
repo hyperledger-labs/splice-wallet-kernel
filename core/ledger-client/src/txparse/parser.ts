@@ -27,11 +27,11 @@ import {
     Label,
     TokenStandardEvent,
     Transaction,
-    EmptyHoldingsChangeSummary,
     TokenStandardChoice,
     TransferInstructionView,
     TransferInstructionCurrentTag,
 } from './types.js'
+import { InstrumentMap } from './instrumentmap.js'
 
 import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
 import { LedgerClient } from '../ledger-client'
@@ -191,8 +191,12 @@ export class TransactionParser {
     ): EventParseResult | null {
         return this.buildRawEvent(create, create.nodeId, (result) => {
             return {
+                // TODO: this code currently only looks at the first instrument
+                // to determine the type of the Event.
                 type:
-                    Number(result.lockedHoldingsChangeSummary.amountChange) > 0
+                    Number(
+                        result.lockedHoldingsChangeSummary[0]?.amountChange
+                    ) > 0
                         ? 'Lock'
                         : 'Create',
                 parentChoice,
@@ -239,17 +243,17 @@ export class TransactionParser {
         nodeId: number,
         buildLabel: (result: {
             payload: any
-            lockedHoldingsChangeSummary: HoldingsChangeSummary
-            unlockedHoldingsChangeSummary: HoldingsChangeSummary
+            lockedHoldingsChangeSummary: HoldingsChangeSummary[]
+            unlockedHoldingsChangeSummary: HoldingsChangeSummary[]
         }) => Label
     ): EventParseResult | null {
         const view = getKnownInterfaceView(originalCreate)
         let result: {
             payload: any
             lockedHoldingsChange: HoldingsChange
-            lockedHoldingsChangeSummary: HoldingsChangeSummary
+            lockedHoldingsChangeSummary: HoldingsChangeSummary[]
             unlockedHoldingsChange: HoldingsChange
-            unlockedHoldingsChangeSummary: HoldingsChangeSummary
+            unlockedHoldingsChangeSummary: HoldingsChangeSummary[]
             transferInstruction: TransferInstructionView | null
         } | null
         switch (view?.type) {
@@ -260,6 +264,7 @@ export class TransactionParser {
                 } else {
                     const isLocked = !!holdingView.lock
                     const summary: HoldingsChangeSummary = {
+                        instrumentId: holdingView.instrumentId,
                         amountChange: holdingView.amount,
                         numInputs: 0,
                         inputAmount: '0',
@@ -276,12 +281,10 @@ export class TransactionParser {
                             creates: isLocked ? [holdingView] : [],
                             archives: [],
                         },
-                        lockedHoldingsChangeSummary: isLocked
-                            ? summary
-                            : EmptyHoldingsChangeSummary,
+                        lockedHoldingsChangeSummary: isLocked ? [summary] : [],
                         unlockedHoldingsChangeSummary: isLocked
-                            ? EmptyHoldingsChangeSummary
-                            : summary,
+                            ? []
+                            : [summary],
                         transferInstruction: null,
                     }
                 }
@@ -318,9 +321,8 @@ export class TransactionParser {
                         },
                         unlockedHoldingsChange: { creates: [], archives: [] },
                         lockedHoldingsChange: { creates: [], archives: [] },
-                        unlockedHoldingsChangeSummary:
-                            EmptyHoldingsChangeSummary,
-                        lockedHoldingsChangeSummary: EmptyHoldingsChangeSummary,
+                        unlockedHoldingsChangeSummary: [],
+                        lockedHoldingsChangeSummary: [],
                     }
                 }
                 break
@@ -411,12 +413,12 @@ export class TransactionParser {
                 event: {
                     label: result.label,
                     lockedHoldingsChange,
-                    lockedHoldingsChangeSummary: computeSummary(
+                    lockedHoldingsChangeSummary: computeSummaries(
                         lockedHoldingsChange,
                         this.partyId
                     ),
                     unlockedHoldingsChange,
-                    unlockedHoldingsChangeSummary: computeSummary(
+                    unlockedHoldingsChangeSummary: computeSummaries(
                         unlockedHoldingsChange,
                         this.partyId
                     ),
@@ -914,6 +916,9 @@ function getNodeIdAndEvent(event: Event): NodeIdAndEvent {
     }
 }
 
+/** sumHoldingsChange sums all the changes over a number of holdings.
+ *  Note that this function currently assumes all holdings use the same
+ *  instrument. */
 function sumHoldingsChange(
     change: HoldingsChange,
     filter: (owner: string, lock: HoldingLock | null) => boolean
@@ -930,6 +935,20 @@ function sumHoldingsChange(
 }
 
 function sumHoldings(holdings: Holding[]): BigNumber {
+    if (holdings.length > 0) {
+        // Sanity check.
+        const instrumentId = holdings[0].instrumentId
+        for (const holding of holdings) {
+            if (
+                holding.instrumentId.admin !== instrumentId.admin ||
+                holding.instrumentId.id !== instrumentId.id
+            ) {
+                throw new Error(
+                    `Attempted to call sumHoldings on heterogeneous instruments: ${JSON.stringify(instrumentId)} != ${JSON.stringify(holding.instrumentId)}`
+                )
+            }
+        }
+    }
     return BigNumber.sum(
         ...holdings.map((h) => h.amount).concat(['0']) // avoid NaN
     )
@@ -959,6 +978,7 @@ function computeAmountChanges(
 }
 
 function computeSummary(
+    instrumentId: { admin: string; id: string },
     changes: HoldingsChange,
     partyId: string
 ): HoldingsChangeSummary {
@@ -969,12 +989,44 @@ function computeSummary(
     const outputAmount = sumHoldings(changes.creates)
     const inputAmount = sumHoldings(changes.archives)
     return {
+        instrumentId,
         amountChange: amountChange.toString(),
         numOutputs: changes.creates.length,
         outputAmount: outputAmount.toString(),
         numInputs: changes.archives.length,
         inputAmount: inputAmount.toString(),
     }
+}
+
+function holdingsChangeByInstrument(
+    changes: HoldingsChange
+): InstrumentMap<HoldingsChange> {
+    const map = new InstrumentMap<{ creates: Holding[]; archives: Holding[] }>()
+    for (const create of changes.creates) {
+        if (map.has(create.instrumentId)) {
+            map.get(create.instrumentId)!.creates.push(create)
+        } else {
+            map.set(create.instrumentId, { creates: [create], archives: [] })
+        }
+    }
+    for (const archive of changes.archives) {
+        if (map.has(archive.instrumentId)) {
+            map.get(archive.instrumentId)!.archives.push(archive)
+        } else {
+            map.set(archive.instrumentId, { creates: [], archives: [archive] })
+        }
+    }
+    return map
+}
+
+function computeSummaries(
+    changes: HoldingsChange,
+    partyId: string
+): HoldingsChangeSummary[] {
+    const byInstrument = holdingsChangeByInstrument(changes)
+    return [...byInstrument.entries()].map(([instrumentId, change]) =>
+        computeSummary(instrumentId, change, partyId)
+    )
 }
 
 function holdingChangesNonEmpty(event: TokenStandardEvent): boolean {

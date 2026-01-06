@@ -19,7 +19,7 @@
                         }
                     },
                     "lockedHoldingsChange": null,
-                    "lockedHoldingsChangeSummary": null,
+                    "lockedHoldingsChangeSummary": [],
                     "unlockedHoldingsChange": {
                         "creates": [
                             {
@@ -39,11 +39,17 @@
                             }
                         ]
                     },
-                    "unlockedHoldingsChangeSummary": {
-                        "numOutputs": 1,
-                        "outputAmount": "1000",
-                        "amountChange": "1000"
-                    },
+                    "unlockedHoldingsChangeSummary": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "1000",
+                            "amountChange": "1000"
+                        }
+                    ],
                     "transferInstruction": null
                 }
             ]
@@ -168,11 +174,17 @@
                             }
                         ]
                     },
-                    "lockedHoldingsChangeSummary": {
-                        "numOutputs": 1,
-                        "outputAmount": "500",
-                        "amountChange": "500"
-                    },
+                    "lockedHoldingsChangeSummary": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "500",
+                            "amountChange": "500"
+                        }
+                    ],
                     "unlockedHoldingsChange": {
                         "creates": [
                             {
@@ -192,11 +204,17 @@
                             }
                         ]
                     },
-                    "unlockedHoldingsChangeSummary": {
-                        "numOutputs": 1,
-                        "outputAmount": "616",
-                        "amountChange": "616"
-                    },
+                    "unlockedHoldingsChangeSummary": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "616",
+                            "amountChange": "616"
+                        }
+                    ],
                     "transferInstruction": {
                         "originalInstructionCid": null,
                         "multiStepCorrelationId": "00b3396b61979e3e6137af0f425898578dbe31eeb09750a7d6df844e2243900d5dca111220a9f9f7b9cc3a75095900463ee57f735177bd6e7d344997c63eec11d5f888cd02",
@@ -288,7 +306,7 @@
                         }
                     },
                     "lockedHoldingsChange": null,
-                    "lockedHoldingsChangeSummary": null,
+                    "lockedHoldingsChangeSummary": [],
                     "unlockedHoldingsChange": {
                         "creates": [
                             {
@@ -308,11 +326,17 @@
                             }
                         ]
                     },
-                    "unlockedHoldingsChangeSummary": {
-                        "numOutputs": 1,
-                        "outputAmount": "400",
-                        "amountChange": "400"
-                    },
+                    "unlockedHoldingsChangeSummary": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "400",
+                            "amountChange": "400"
+                        }
+                    ],
                     "transferInstruction": {
                         "originalInstructionCid": null,
                         "transfer": {
@@ -410,13 +434,19 @@
                             }
                         ]
                     },
-                    "lockedHoldingsChangeSummary": {
-                        "numOutputs": 1,
-                        "outputAmount": "1016.0000000000",
-                        "amountChange": "1016.0000000000"
-                    },
+                    "lockedHoldingsChangeSummary": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "1016.0000000000",
+                            "amountChange": "1016.0000000000"
+                        }
+                    ],
                     "unlockedHoldingsChange": null,
-                    "unlockedHoldingsChangeSummary": null,
+                    "unlockedHoldingsChangeSummary": [],
                     "transferInstruction": null
                 }
             ]
@@ -464,13 +494,19 @@
                             }
                         ]
                     },
-                    "lockedHoldingsChangeSummary": {
-                        "numInputs": 1,
-                        "inputAmount": "1016",
-                        "amountChange": "-1016"
-                    },
+                    "lockedHoldingsChangeSummary": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numInputs": 1,
+                            "inputAmount": "1016",
+                            "amountChange": "-1016"
+                        }
+                    ],
                     "unlockedHoldingsChange": null,
-                    "unlockedHoldingsChangeSummary": null,
+                    "unlockedHoldingsChangeSummary": [],
                     "transferInstruction": null
                 }
             ]

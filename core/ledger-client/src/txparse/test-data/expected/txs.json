@@ -45,13 +45,7 @@
                     "archives": [],
                     "creates": []
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "0",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 0,
-                    "outputAmount": "0"
-                },
+                "lockedHoldingsChangeSummary": [],
                 "transferInstruction": {
                     "meta": null,
                     "originalInstructionCid": null,
@@ -84,13 +78,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "200",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 1,
-                    "outputAmount": "200"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "200",
+                        "inputAmount": "0",
+                        "numInputs": 0,
+                        "numOutputs": 1,
+                        "outputAmount": "200"
+                    }
+                ]
             }
         ],
         "offset": 4,
@@ -176,13 +176,7 @@
                     "archives": [],
                     "creates": []
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "0",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 0,
-                    "outputAmount": "0"
-                },
+                "lockedHoldingsChangeSummary": [],
                 "transferInstruction": {
                     "meta": null,
                     "originalInstructionCid": null,
@@ -247,13 +241,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "-113",
-                    "inputAmount": "200",
-                    "numInputs": 1,
-                    "numOutputs": 1,
-                    "outputAmount": "87"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "-113",
+                        "inputAmount": "200",
+                        "numInputs": 1,
+                        "numOutputs": 1,
+                        "outputAmount": "87"
+                    }
+                ]
             }
         ],
         "offset": 5,
@@ -284,13 +284,7 @@
                     "archives": [],
                     "creates": []
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "0",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 0,
-                    "outputAmount": "0"
-                },
+                "lockedHoldingsChangeSummary": [],
                 "transferInstruction": {
                     "meta": null,
                     "originalInstructionCid": null,
@@ -340,13 +334,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "-22.1",
-                    "inputAmount": "87",
-                    "numInputs": 1,
-                    "numOutputs": 1,
-                    "outputAmount": "64.9"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "-22.1",
+                        "inputAmount": "87",
+                        "numInputs": 1,
+                        "numOutputs": 1,
+                        "outputAmount": "64.9"
+                    }
+                ]
             }
         ],
         "offset": 6,
@@ -371,13 +371,7 @@
                     "archives": [],
                     "creates": []
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "0",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 0,
-                    "outputAmount": "0"
-                },
+                "lockedHoldingsChangeSummary": [],
                 "transferInstruction": null,
                 "unlockedHoldingsChange": {
                     "archives": [],
@@ -400,13 +394,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "6000",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 1,
-                    "outputAmount": "6000"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "6000",
+                        "inputAmount": "0",
+                        "numInputs": 0,
+                        "numOutputs": 1,
+                        "outputAmount": "6000"
+                    }
+                ]
             }
         ],
         "offset": 7,
@@ -504,13 +504,19 @@
                         }
                     ]
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "1064.00152208",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 1,
-                    "outputAmount": "1064.00152208"
-                },
+                "lockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "1064.00152208",
+                        "inputAmount": "0",
+                        "numInputs": 0,
+                        "numOutputs": 1,
+                        "outputAmount": "1064.00152208"
+                    }
+                ],
                 "transferInstruction": {
                     "meta": null,
                     "originalInstructionCid": null,
@@ -592,13 +598,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "-1077.00152208",
-                    "inputAmount": "6064.9",
-                    "numInputs": 2,
-                    "numOutputs": 1,
-                    "outputAmount": "4987.89847792"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "-1077.00152208",
+                        "inputAmount": "6064.9",
+                        "numInputs": 2,
+                        "numOutputs": 1,
+                        "outputAmount": "4987.89847792"
+                    }
+                ]
             }
         ],
         "offset": 8,
@@ -696,13 +708,19 @@
                         }
                     ]
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "1064.00152208",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 1,
-                    "outputAmount": "1064.00152208"
-                },
+                "lockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "1064.00152208",
+                        "inputAmount": "0",
+                        "numInputs": 0,
+                        "numOutputs": 1,
+                        "outputAmount": "1064.00152208"
+                    }
+                ],
                 "transferInstruction": {
                     "meta": null,
                     "originalInstructionCid": null,
@@ -768,13 +786,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "-1077.00152208",
-                    "inputAmount": "4987.89847792",
-                    "numInputs": 1,
-                    "numOutputs": 1,
-                    "outputAmount": "3910.89695584"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "-1077.00152208",
+                        "inputAmount": "4987.89847792",
+                        "numInputs": 1,
+                        "numOutputs": 1,
+                        "outputAmount": "3910.89695584"
+                    }
+                ]
             }
         ],
         "offset": 9,
@@ -872,13 +896,19 @@
                         }
                     ]
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "1064.00152208",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 1,
-                    "outputAmount": "1064.00152208"
-                },
+                "lockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "1064.00152208",
+                        "inputAmount": "0",
+                        "numInputs": 0,
+                        "numOutputs": 1,
+                        "outputAmount": "1064.00152208"
+                    }
+                ],
                 "transferInstruction": {
                     "meta": null,
                     "originalInstructionCid": null,
@@ -944,13 +974,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "-1077.00152208",
-                    "inputAmount": "3910.89695584",
-                    "numInputs": 1,
-                    "numOutputs": 1,
-                    "outputAmount": "2833.89543376"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "-1077.00152208",
+                        "inputAmount": "3910.89695584",
+                        "numInputs": 1,
+                        "numOutputs": 1,
+                        "outputAmount": "2833.89543376"
+                    }
+                ]
             }
         ],
         "offset": 10,
@@ -1048,13 +1084,19 @@
                         }
                     ]
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "1064.00152208",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 1,
-                    "outputAmount": "1064.00152208"
-                },
+                "lockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "1064.00152208",
+                        "inputAmount": "0",
+                        "numInputs": 0,
+                        "numOutputs": 1,
+                        "outputAmount": "1064.00152208"
+                    }
+                ],
                 "transferInstruction": {
                     "meta": null,
                     "originalInstructionCid": null,
@@ -1120,13 +1162,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "-1077.00152208",
-                    "inputAmount": "2833.89543376",
-                    "numInputs": 1,
-                    "numOutputs": 1,
-                    "outputAmount": "1756.89391168"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "-1077.00152208",
+                        "inputAmount": "2833.89543376",
+                        "numInputs": 1,
+                        "numOutputs": 1,
+                        "outputAmount": "1756.89391168"
+                    }
+                ]
             }
         ],
         "offset": 11,
@@ -1224,13 +1272,19 @@
                         }
                     ]
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "1064.03044144",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 1,
-                    "outputAmount": "1064.03044144"
-                },
+                "lockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "1064.03044144",
+                        "inputAmount": "0",
+                        "numInputs": 0,
+                        "numOutputs": 1,
+                        "outputAmount": "1064.03044144"
+                    }
+                ],
                 "transferInstruction": {
                     "meta": null,
                     "originalInstructionCid": null,
@@ -1296,13 +1350,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "-1077.03044144",
-                    "inputAmount": "1756.89391168",
-                    "numInputs": 1,
-                    "numOutputs": 1,
-                    "outputAmount": "679.86347024"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "-1077.03044144",
+                        "inputAmount": "1756.89391168",
+                        "numInputs": 1,
+                        "numOutputs": 1,
+                        "outputAmount": "679.86347024"
+                    }
+                ]
             }
         ],
         "offset": 12,
@@ -1394,13 +1454,19 @@
                     ],
                     "creates": []
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "-1064.00152208",
-                    "inputAmount": "1064.00152208",
-                    "numInputs": 1,
-                    "numOutputs": 0,
-                    "outputAmount": "0"
-                },
+                "lockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "-1064.00152208",
+                        "inputAmount": "1064.00152208",
+                        "numInputs": 1,
+                        "numOutputs": 0,
+                        "outputAmount": "0"
+                    }
+                ],
                 "transferInstruction": {
                     "meta": {
                         "values": {}
@@ -1454,13 +1520,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "42.00152208",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 1,
-                    "outputAmount": "42.00152208"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "42.00152208",
+                        "inputAmount": "0",
+                        "numInputs": 0,
+                        "numOutputs": 1,
+                        "outputAmount": "42.00152208"
+                    }
+                ]
             }
         ],
         "offset": 13,
@@ -1542,13 +1614,19 @@
                     ],
                     "creates": []
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "-1064.00152208",
-                    "inputAmount": "1064.00152208",
-                    "numInputs": 1,
-                    "numOutputs": 0,
-                    "outputAmount": "0"
-                },
+                "lockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "-1064.00152208",
+                        "inputAmount": "1064.00152208",
+                        "numInputs": 1,
+                        "numOutputs": 0,
+                        "outputAmount": "0"
+                    }
+                ],
                 "transferInstruction": {
                     "meta": {
                         "values": {}
@@ -1602,13 +1680,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "1064.00152208",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 1,
-                    "outputAmount": "1064.00152208"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "1064.00152208",
+                        "inputAmount": "0",
+                        "numInputs": 0,
+                        "numOutputs": 1,
+                        "outputAmount": "1064.00152208"
+                    }
+                ]
             }
         ],
         "offset": 14,
@@ -1690,13 +1774,19 @@
                     ],
                     "creates": []
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "-1064.00152208",
-                    "inputAmount": "1064.00152208",
-                    "numInputs": 1,
-                    "numOutputs": 0,
-                    "outputAmount": "0"
-                },
+                "lockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "-1064.00152208",
+                        "inputAmount": "1064.00152208",
+                        "numInputs": 1,
+                        "numOutputs": 0,
+                        "outputAmount": "0"
+                    }
+                ],
                 "transferInstruction": {
                     "meta": {
                         "values": {}
@@ -1750,13 +1840,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "1064.00152208",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 1,
-                    "outputAmount": "1064.00152208"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "1064.00152208",
+                        "inputAmount": "0",
+                        "numInputs": 0,
+                        "numOutputs": 1,
+                        "outputAmount": "1064.00152208"
+                    }
+                ]
             }
         ],
         "offset": 15,
@@ -1856,13 +1952,7 @@
                     "archives": [],
                     "creates": []
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "0",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 0,
-                    "outputAmount": "0"
-                },
+                "lockedHoldingsChangeSummary": [],
                 "transferInstruction": {
                     "meta": {
                         "values": {}
@@ -1916,13 +2006,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "200",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 1,
-                    "outputAmount": "200"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "200",
+                        "inputAmount": "0",
+                        "numInputs": 0,
+                        "numOutputs": 1,
+                        "outputAmount": "200"
+                    }
+                ]
             }
         ],
         "offset": 21,
@@ -2041,13 +2137,19 @@
                     ],
                     "creates": []
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "-1064.00152208",
-                    "inputAmount": "1064.00152208",
-                    "numInputs": 1,
-                    "numOutputs": 0,
-                    "outputAmount": "0"
-                },
+                "lockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "-1064.00152208",
+                        "inputAmount": "1064.00152208",
+                        "numInputs": 1,
+                        "numOutputs": 0,
+                        "outputAmount": "0"
+                    }
+                ],
                 "transferInstruction": {
                     "meta": null,
                     "originalInstructionCid": null,
@@ -2199,13 +2301,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "1052.00152208",
-                    "inputAmount": "3049.86803648",
-                    "numInputs": 5,
-                    "numOutputs": 2,
-                    "outputAmount": "4101.86955856"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "amountChange": "1052.00152208",
+                        "inputAmount": "3049.86803648",
+                        "numInputs": 5,
+                        "numOutputs": 2,
+                        "outputAmount": "4101.86955856"
+                    }
+                ]
             }
         ],
         "offset": 24,
@@ -2252,13 +2360,7 @@
                     "archives": [],
                     "creates": []
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "0",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 0,
-                    "outputAmount": "0"
-                },
+                "lockedHoldingsChangeSummary": [],
                 "transferInstruction": null,
                 "unlockedHoldingsChange": {
                     "archives": [],
@@ -2279,13 +2381,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "30.0000000000",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 1,
-                    "outputAmount": "30.0000000000"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "alice::normalized",
+                            "id": "DummyHolding"
+                        },
+                        "amountChange": "30.0000000000",
+                        "inputAmount": "0",
+                        "numInputs": 0,
+                        "numOutputs": 1,
+                        "outputAmount": "30.0000000000"
+                    }
+                ]
             }
         ],
         "offset": 26,
@@ -2325,13 +2433,7 @@
                     "archives": [],
                     "creates": []
                 },
-                "lockedHoldingsChangeSummary": {
-                    "amountChange": "0",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 0,
-                    "outputAmount": "0"
-                },
+                "lockedHoldingsChangeSummary": [],
                 "transferInstruction": null,
                 "unlockedHoldingsChange": {
                     "archives": [],
@@ -2352,13 +2454,19 @@
                         }
                     ]
                 },
-                "unlockedHoldingsChangeSummary": {
-                    "amountChange": "40.0000000000",
-                    "inputAmount": "0",
-                    "numInputs": 0,
-                    "numOutputs": 1,
-                    "outputAmount": "40.0000000000"
-                }
+                "unlockedHoldingsChangeSummary": [
+                    {
+                        "instrumentId": {
+                            "admin": "alice::normalized",
+                            "id": "DummyHolding"
+                        },
+                        "amountChange": "40.0000000000",
+                        "inputAmount": "0",
+                        "numInputs": 0,
+                        "numOutputs": 1,
+                        "outputAmount": "40.0000000000"
+                    }
+                ]
             }
         ],
         "offset": 27,

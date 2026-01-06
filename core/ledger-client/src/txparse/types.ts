@@ -19,9 +19,11 @@ export interface Transaction {
 export interface TokenStandardEvent {
     label: Label
     lockedHoldingsChange: HoldingsChange
-    lockedHoldingsChangeSummary: HoldingsChangeSummary
+    /** lockedHoldingsChangeSummary will contain one summary per instrument. */
+    lockedHoldingsChangeSummary: HoldingsChangeSummary[]
     unlockedHoldingsChange: HoldingsChange
-    unlockedHoldingsChangeSummary: HoldingsChangeSummary
+    /** lockedHoldingsChangeSummary will contain one summary per instrument. */
+    unlockedHoldingsChangeSummary: HoldingsChangeSummary[]
     transferInstruction: TransferInstructionView | null
 }
 
@@ -48,18 +50,12 @@ export interface HoldingsChange {
 }
 
 export interface HoldingsChangeSummary {
+    instrumentId: { admin: string; id: string }
     numInputs: number
     inputAmount: string
     numOutputs: number
     outputAmount: string
     amountChange: string
-}
-export const EmptyHoldingsChangeSummary: HoldingsChangeSummary = {
-    numInputs: 0,
-    inputAmount: '0',
-    numOutputs: 0,
-    outputAmount: '0',
-    amountChange: '0',
 }
 
 /**
@@ -178,12 +174,14 @@ export const renderTransaction = (t: Transaction): any => {
 }
 
 const renderTransactionEvent = (e: TokenStandardEvent): any => {
-    const lockedHoldingsChangeSummary = renderHoldingsChangeSummary(
-        e.lockedHoldingsChangeSummary
-    )
-    const unlockedHoldingsChangeSummary = renderHoldingsChangeSummary(
-        e.unlockedHoldingsChangeSummary
-    )
+    const lockedHoldingsChangeSummary = e.lockedHoldingsChangeSummary
+        .map(renderHoldingsChangeSummary)
+        .filter((s) => s !== null)
+
+    const unlockedHoldingsChangeSummary = e.unlockedHoldingsChangeSummary
+        .map(renderHoldingsChangeSummary)
+        .filter((s) => s !== null)
+
     const lockedHoldingsChange = renderHoldingsChange(e.lockedHoldingsChange)
     const unlockedHoldingsChange = renderHoldingsChange(
         e.unlockedHoldingsChange
@@ -210,6 +208,7 @@ const renderHoldingsChangeSummary = (
         return null
     }
     return {
+        instrumentId: s.instrumentId,
         ...(s.numInputs !== 0 && { numInputs: s.numInputs }),
         ...(s.inputAmount !== '0' && { inputAmount: s.inputAmount }),
         ...(s.numOutputs !== 0 && { numOutputs: s.numOutputs }),
