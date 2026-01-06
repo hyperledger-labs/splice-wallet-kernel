@@ -51,30 +51,39 @@ export class Provider implements SpliceProvider {
 
         const controller = dappController(this.provider)
         switch (args.method) {
-            case 'status':
+            case 'status': {
                 return controller.status() as Promise<T>
-            case 'connect':
+            }
+            case 'connect': {
                 return controller.connect() as Promise<T>
-            case 'disconnect':
+            }
+            case 'disconnect': {
                 return controller.disconnect() as Promise<T>
-            case 'darsAvailable':
+            }
+            case 'darsAvailable': {
                 return controller.darsAvailable() as Promise<T>
-            case 'ledgerApi':
+            }
+            case 'ledgerApi': {
                 return controller.ledgerApi(
                     args.params as LedgerApiParams
                 ) as Promise<T>
-            case 'prepareExecute':
+            }
+            case 'prepareExecute': {
                 return controller.prepareExecute(
                     args.params as PrepareExecuteParams
                 ) as Promise<T>
-            case 'prepareReturn':
+            }
+            case 'prepareReturn': {
                 return controller.prepareReturn(
                     args.params as dappAPI.PrepareReturnParams
                 ) as Promise<T>
-            case 'requestAccounts':
+            }
+            case 'requestAccounts': {
                 return controller.requestAccounts() as Promise<T>
-            default:
+            }
+            default: {
                 throw new Error('Unsupported method')
+            }
         }
     }
 
