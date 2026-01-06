@@ -19,11 +19,19 @@ export interface Transaction {
 export interface TokenStandardEvent {
     label: Label
     lockedHoldingsChange: HoldingsChange
-    /** lockedHoldingsChangeSummary will contain one summary per instrument. */
-    lockedHoldingsChangeSummary: HoldingsChangeSummary[]
+    /** lockedHoldingsChangeSummaries contains one summary per instrument. */
+    lockedHoldingsChangeSummaries: HoldingsChangeSummary[]
+    /** lockedHoldingsChangeSummary is incorrect in a multi-instrument world.
+     *  It will be removed in a future release, please use
+     *  unlockedHoldingsChangeSummaries instead. */
+    lockedHoldingsChangeSummary: HoldingsChangeSummary
     unlockedHoldingsChange: HoldingsChange
-    /** lockedHoldingsChangeSummary will contain one summary per instrument. */
-    unlockedHoldingsChangeSummary: HoldingsChangeSummary[]
+    /** unlockedHoldingsChangeSummary contains one summary per instrument. */
+    unlockedHoldingsChangeSummaries: HoldingsChangeSummary[]
+    /** unlockedHoldingsChangeSummary is incorrect in a multi-instrument world.
+     *  It will be removed in a future release, please use
+     *  unlockedHoldingsChangeSummaries instead. */
+    unlockedHoldingsChangeSummary: HoldingsChangeSummary
     transferInstruction: TransferInstructionView | null
 }
 
@@ -174,11 +182,11 @@ export const renderTransaction = (t: Transaction): any => {
 }
 
 const renderTransactionEvent = (e: TokenStandardEvent): any => {
-    const lockedHoldingsChangeSummary = e.lockedHoldingsChangeSummary
+    const lockedHoldingsChangeSummaries = e.lockedHoldingsChangeSummaries
         .map(renderHoldingsChangeSummary)
         .filter((s) => s !== null)
 
-    const unlockedHoldingsChangeSummary = e.unlockedHoldingsChangeSummary
+    const unlockedHoldingsChangeSummaries = e.unlockedHoldingsChangeSummaries
         .map(renderHoldingsChangeSummary)
         .filter((s) => s !== null)
 
@@ -190,8 +198,16 @@ const renderTransactionEvent = (e: TokenStandardEvent): any => {
         ...e,
         lockedHoldingsChange,
         unlockedHoldingsChange,
-        lockedHoldingsChangeSummary,
-        unlockedHoldingsChangeSummary,
+        lockedHoldingsChangeSummaries,
+        // Deprecated
+        lockedHoldingsChangeSummary: renderHoldingsChangeSummary(
+            e.lockedHoldingsChangeSummary
+        ),
+        unlockedHoldingsChangeSummaries,
+        // Deprecated
+        unlockedHoldingsChangeSummary: renderHoldingsChangeSummary(
+            e.unlockedHoldingsChangeSummary
+        ),
     }
 }
 
@@ -208,7 +224,9 @@ const renderHoldingsChangeSummary = (
         return null
     }
     return {
-        instrumentId: s.instrumentId,
+        ...((s.instrumentId.admin !== '' || s.instrumentId.id !== '') && {
+            instrumentId: s.instrumentId,
+        }),
         ...(s.numInputs !== 0 && { numInputs: s.numInputs }),
         ...(s.inputAmount !== '0' && { inputAmount: s.inputAmount }),
         ...(s.numOutputs !== 0 && { numOutputs: s.numOutputs }),

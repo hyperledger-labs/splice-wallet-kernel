@@ -195,7 +195,7 @@ export class TransactionParser {
                 // to determine the type of the Event.
                 type:
                     Number(
-                        result.lockedHoldingsChangeSummary[0]?.amountChange
+                        result.lockedHoldingsChangeSummaries[0]?.amountChange
                     ) > 0
                         ? 'Lock'
                         : 'Create',
@@ -243,17 +243,19 @@ export class TransactionParser {
         nodeId: number,
         buildLabel: (result: {
             payload: any
-            lockedHoldingsChangeSummary: HoldingsChangeSummary[]
-            unlockedHoldingsChangeSummary: HoldingsChangeSummary[]
+            lockedHoldingsChangeSummaries: HoldingsChangeSummary[]
+            unlockedHoldingsChangeSummaries: HoldingsChangeSummary[]
         }) => Label
     ): EventParseResult | null {
         const view = getKnownInterfaceView(originalCreate)
         let result: {
             payload: any
             lockedHoldingsChange: HoldingsChange
-            lockedHoldingsChangeSummary: HoldingsChangeSummary[]
+            lockedHoldingsChangeSummaries: HoldingsChangeSummary[]
+            lockedHoldingsChangeSummary: HoldingsChangeSummary
             unlockedHoldingsChange: HoldingsChange
-            unlockedHoldingsChangeSummary: HoldingsChangeSummary[]
+            unlockedHoldingsChangeSummaries: HoldingsChangeSummary[]
+            unlockedHoldingsChangeSummary: HoldingsChangeSummary
             transferInstruction: TransferInstructionView | null
         } | null
         switch (view?.type) {
@@ -271,6 +273,12 @@ export class TransactionParser {
                         numOutputs: 1,
                         outputAmount: holdingView.amount,
                     }
+                    const lockedHoldingsChangeSummaries = isLocked
+                        ? [summary]
+                        : []
+                    const unlockedHoldingsChangeSummaries = isLocked
+                        ? []
+                        : [summary]
                     result = {
                         payload: holdingView,
                         unlockedHoldingsChange: {
@@ -281,10 +289,14 @@ export class TransactionParser {
                             creates: isLocked ? [holdingView] : [],
                             archives: [],
                         },
-                        lockedHoldingsChangeSummary: isLocked ? [summary] : [],
-                        unlockedHoldingsChangeSummary: isLocked
-                            ? []
-                            : [summary],
+                        lockedHoldingsChangeSummaries,
+                        lockedHoldingsChangeSummary:
+                            lockedHoldingsChangeSummaries[0] ??
+                            emptyHoldingsChangeSummary,
+                        unlockedHoldingsChangeSummaries,
+                        unlockedHoldingsChangeSummary:
+                            unlockedHoldingsChangeSummaries[0] ??
+                            emptyHoldingsChangeSummary,
                         transferInstruction: null,
                     }
                 }
@@ -321,8 +333,11 @@ export class TransactionParser {
                         },
                         unlockedHoldingsChange: { creates: [], archives: [] },
                         lockedHoldingsChange: { creates: [], archives: [] },
-                        unlockedHoldingsChangeSummary: [],
-                        lockedHoldingsChangeSummary: [],
+                        unlockedHoldingsChangeSummaries: [],
+                        unlockedHoldingsChangeSummary:
+                            emptyHoldingsChangeSummary,
+                        lockedHoldingsChangeSummaries: [],
+                        lockedHoldingsChangeSummary: emptyHoldingsChangeSummary,
                     }
                 }
                 break
@@ -338,8 +353,12 @@ export class TransactionParser {
                     label: buildLabel(result),
                     unlockedHoldingsChange: result.unlockedHoldingsChange,
                     lockedHoldingsChange: result.lockedHoldingsChange,
+                    lockedHoldingsChangeSummaries:
+                        result.lockedHoldingsChangeSummaries,
                     lockedHoldingsChangeSummary:
                         result.lockedHoldingsChangeSummary,
+                    unlockedHoldingsChangeSummaries:
+                        result.unlockedHoldingsChangeSummaries,
                     unlockedHoldingsChangeSummary:
                         result.unlockedHoldingsChangeSummary,
                     transferInstruction: result.transferInstruction,
@@ -409,19 +428,27 @@ export class TransactionParser {
                     (h) => !h.lock && h.owner === this.partyId
                 ),
             }
+            const lockedHoldingsChangeSummaries = computeSummaries(
+                lockedHoldingsChange,
+                this.partyId
+            )
+            const unlockedHoldingsChangeSummaries = computeSummaries(
+                unlockedHoldingsChange,
+                this.partyId
+            )
             return {
                 event: {
                     label: result.label,
                     lockedHoldingsChange,
-                    lockedHoldingsChangeSummary: computeSummaries(
-                        lockedHoldingsChange,
-                        this.partyId
-                    ),
+                    lockedHoldingsChangeSummaries,
+                    lockedHoldingsChangeSummary:
+                        lockedHoldingsChangeSummaries[0] ??
+                        emptyHoldingsChangeSummary,
                     unlockedHoldingsChange,
-                    unlockedHoldingsChangeSummary: computeSummaries(
-                        unlockedHoldingsChange,
-                        this.partyId
-                    ),
+                    unlockedHoldingsChangeSummaries,
+                    unlockedHoldingsChangeSummary:
+                        unlockedHoldingsChangeSummaries[0] ??
+                        emptyHoldingsChangeSummary,
                     transferInstruction: result.transferInstruction,
                 },
                 continueAfterNodeId: exercise.lastDescendantNodeId,
@@ -1036,4 +1063,17 @@ function holdingChangesNonEmpty(event: TokenStandardEvent): boolean {
         event.lockedHoldingsChange.creates.length > 0 ||
         event.lockedHoldingsChange.archives.length > 0
     )
+}
+
+const emptyHoldingsChangeSummary: HoldingsChangeSummary = {
+    // This is obviously incorrect, but the field was introduced at the same
+    // time at which we introduced the more correct per-instrument summaries,
+    // so we know that old code couldn't use this (broken) field, and new code
+    // should use the correct summaries.
+    instrumentId: { admin: '', id: '' },
+    numInputs: 0,
+    numOutputs: 0,
+    inputAmount: '0',
+    outputAmount: '0',
+    amountChange: '0',
 }

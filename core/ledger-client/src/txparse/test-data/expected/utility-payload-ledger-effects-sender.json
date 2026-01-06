@@ -19,7 +19,7 @@
                         }
                     },
                     "lockedHoldingsChange": null,
-                    "lockedHoldingsChangeSummary": [],
+                    "lockedHoldingsChangeSummary": null,
                     "unlockedHoldingsChange": {
                         "creates": [
                             {
@@ -39,7 +39,18 @@
                             }
                         ]
                     },
-                    "unlockedHoldingsChangeSummary": [
+                    "unlockedHoldingsChangeSummary": {
+                        "instrumentId": {
+                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                            "id": "LOAD"
+                        },
+                        "numOutputs": 1,
+                        "outputAmount": "1000",
+                        "amountChange": "1000"
+                    },
+                    "transferInstruction": null,
+                    "lockedHoldingsChangeSummaries": [],
+                    "unlockedHoldingsChangeSummaries": [
                         {
                             "instrumentId": {
                                 "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
@@ -49,8 +60,7 @@
                             "outputAmount": "1000",
                             "amountChange": "1000"
                         }
-                    ],
-                    "transferInstruction": null
+                    ]
                 }
             ]
         },
@@ -174,17 +184,15 @@
                             }
                         ]
                     },
-                    "lockedHoldingsChangeSummary": [
-                        {
-                            "instrumentId": {
-                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
-                                "id": "LOAD"
-                            },
-                            "numOutputs": 1,
-                            "outputAmount": "500",
-                            "amountChange": "500"
-                        }
-                    ],
+                    "lockedHoldingsChangeSummary": {
+                        "instrumentId": {
+                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                            "id": "LOAD"
+                        },
+                        "numOutputs": 1,
+                        "outputAmount": "500",
+                        "amountChange": "500"
+                    },
                     "unlockedHoldingsChange": {
                         "creates": [
                             {
@@ -204,17 +212,15 @@
                             }
                         ]
                     },
-                    "unlockedHoldingsChangeSummary": [
-                        {
-                            "instrumentId": {
-                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
-                                "id": "LOAD"
-                            },
-                            "numOutputs": 1,
-                            "outputAmount": "616",
-                            "amountChange": "616"
-                        }
-                    ],
+                    "unlockedHoldingsChangeSummary": {
+                        "instrumentId": {
+                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                            "id": "LOAD"
+                        },
+                        "numOutputs": 1,
+                        "outputAmount": "616",
+                        "amountChange": "616"
+                    },
                     "transferInstruction": {
                         "originalInstructionCid": null,
                         "multiStepCorrelationId": "00b3396b61979e3e6137af0f425898578dbe31eeb09750a7d6df844e2243900d5dca111220a9f9f7b9cc3a75095900463ee57f735177bd6e7d344997c63eec11d5f888cd02",
@@ -249,7 +255,29 @@
                             }
                         },
                         "meta": null
-                    }
+                    },
+                    "lockedHoldingsChangeSummaries": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "500",
+                            "amountChange": "500"
+                        }
+                    ],
+                    "unlockedHoldingsChangeSummaries": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "616",
+                            "amountChange": "616"
+                        }
+                    ]
                 }
             ]
         },
@@ -306,7 +334,7 @@
                         }
                     },
                     "lockedHoldingsChange": null,
-                    "lockedHoldingsChangeSummary": [],
+                    "lockedHoldingsChangeSummary": null,
                     "unlockedHoldingsChange": {
                         "creates": [
                             {
@@ -326,17 +354,15 @@
                             }
                         ]
                     },
-                    "unlockedHoldingsChangeSummary": [
-                        {
-                            "instrumentId": {
-                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
-                                "id": "LOAD"
-                            },
-                            "numOutputs": 1,
-                            "outputAmount": "400",
-                            "amountChange": "400"
-                        }
-                    ],
+                    "unlockedHoldingsChangeSummary": {
+                        "instrumentId": {
+                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                            "id": "LOAD"
+                        },
+                        "numOutputs": 1,
+                        "outputAmount": "400",
+                        "amountChange": "400"
+                    },
                     "transferInstruction": {
                         "originalInstructionCid": null,
                         "transfer": {
@@ -366,7 +392,19 @@
                             }
                         },
                         "meta": null
-                    }
+                    },
+                    "lockedHoldingsChangeSummaries": [],
+                    "unlockedHoldingsChangeSummaries": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "400",
+                            "amountChange": "400"
+                        }
+                    ]
                 }
             ]
         },
@@ -434,7 +472,19 @@
                             }
                         ]
                     },
-                    "lockedHoldingsChangeSummary": [
+                    "lockedHoldingsChangeSummary": {
+                        "instrumentId": {
+                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                            "id": "LOAD"
+                        },
+                        "numOutputs": 1,
+                        "outputAmount": "1016.0000000000",
+                        "amountChange": "1016.0000000000"
+                    },
+                    "unlockedHoldingsChange": null,
+                    "unlockedHoldingsChangeSummary": null,
+                    "transferInstruction": null,
+                    "lockedHoldingsChangeSummaries": [
                         {
                             "instrumentId": {
                                 "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
@@ -445,9 +495,7 @@
                             "amountChange": "1016.0000000000"
                         }
                     ],
-                    "unlockedHoldingsChange": null,
-                    "unlockedHoldingsChangeSummary": [],
-                    "transferInstruction": null
+                    "unlockedHoldingsChangeSummaries": []
                 }
             ]
         },
@@ -494,7 +542,19 @@
                             }
                         ]
                     },
-                    "lockedHoldingsChangeSummary": [
+                    "lockedHoldingsChangeSummary": {
+                        "instrumentId": {
+                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                            "id": "LOAD"
+                        },
+                        "numInputs": 1,
+                        "inputAmount": "1016",
+                        "amountChange": "-1016"
+                    },
+                    "unlockedHoldingsChange": null,
+                    "unlockedHoldingsChangeSummary": null,
+                    "transferInstruction": null,
+                    "lockedHoldingsChangeSummaries": [
                         {
                             "instrumentId": {
                                 "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
@@ -505,9 +565,7 @@
                             "amountChange": "-1016"
                         }
                     ],
-                    "unlockedHoldingsChange": null,
-                    "unlockedHoldingsChangeSummary": [],
-                    "transferInstruction": null
+                    "unlockedHoldingsChangeSummaries": []
                 }
             ]
         }
