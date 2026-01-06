@@ -111,16 +111,18 @@ export class Discovery extends HTMLElement {
         super()
         this.attachShadow({ mode: 'open' })
 
-        const styles = document.createElement('style')
-        styles.textContent = Discovery.styles
+        const ctor = this.constructor as typeof HTMLElement & {
+            styles?: string
+        }
+
+        if (ctor.styles) {
+            const style = document.createElement('style')
+            style.textContent = ctor.styles
+            this.shadowRoot!.appendChild(style)
+        }
 
         this.root = document.createElement('div')
         this.root.id = 'discovery-root'
-
-        if (this.shadowRoot) {
-            this.shadowRoot.appendChild(styles)
-            this.shadowRoot.appendChild(this.root)
-        }
 
         if (window.opener) {
             // uses the string literal instead of the WalletEvent enum to avoid bundling issues
