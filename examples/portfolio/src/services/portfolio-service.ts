@@ -47,7 +47,7 @@ export interface PortfolioService {
     listAllocationRequests: (_: {
         party: PartyId
     }) => Promise<PrettyContract<AllocationRequestView>[]>
-    createAllocationInstruction: (_: {
+    createAllocation: (_: {
         registryUrls: ReadonlyMap<PartyId, string>
         party: PartyId // Party creating the allocation, not necessarily the sender or receiver
         allocationSpecification: AllocationSpecification

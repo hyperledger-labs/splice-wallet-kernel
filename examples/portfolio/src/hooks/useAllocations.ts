@@ -16,7 +16,9 @@ export const useAllocations = (): UseQueryResult<
     const { listAllocations } = usePortfolio()
     return useQuery({
         queryKey: ['listAllocations', primaryParty],
-        queryFn: () => listAllocations({ party: primaryParty! }),
-        enabled: !!primaryParty,
+        queryFn: async () =>
+            primaryParty
+                ? listAllocations({ party: primaryParty! })
+                : undefined,
     })
 }

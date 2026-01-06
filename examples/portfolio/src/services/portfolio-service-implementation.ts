@@ -178,7 +178,7 @@ export const listAllocationRequests = async ({
     return contracts
 }
 
-export const createAllocationInstruction = async ({
+export const createAllocation = async ({
     registryUrls,
     party,
     allocationSpecification,

@@ -7,9 +7,8 @@ import {
     type AllocationRequestView,
     type AllocationView,
 } from '@canton-network/core-token-standard'
-import { useRegistryUrls } from '../contexts/RegistryServiceContext'
-import { usePortfolio } from '../contexts/PortfolioContext'
-import { useAllocations } from '../hooks/useAllocations'
+import { useCreateAllocation } from '../hooks/useCreateAllocation'
+import { useWithdrawAllocation } from '../hooks/useWithdrawAllocation'
 import { TransferLegCard } from './TransferLegCard'
 import { AllocationSettlementCard } from './AllocationSettlementCard'
 
@@ -25,9 +24,8 @@ export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
     allocationsByTransferLegId,
 }) => {
     const { settlement, transferLegs } = allocationRequest
-    const registryUrls = useRegistryUrls()
-    const { createAllocationInstruction, withdrawAllocation } = usePortfolio()
-    const { refetch: refetchAllocations } = useAllocations()
+    const { mutate: createAllocation } = useCreateAllocation()
+    const { mutate: withdrawAllocation } = useWithdrawAllocation()
 
     return (
         <div>
@@ -42,9 +40,8 @@ export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
                         />
                         {transferLeg.sender === party && (
                             <button
-                                onClick={async () => {
-                                    await createAllocationInstruction({
-                                        registryUrls,
+                                onClick={() =>
+                                    createAllocation({
                                         party,
                                         allocationSpecification: {
                                             settlement,
@@ -52,8 +49,7 @@ export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
                                             transferLeg,
                                         },
                                     })
-                                    refetchAllocations()
-                                }}
+                                }
                             >
                                 Create Allocation
                             </button>
@@ -65,17 +61,15 @@ export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
                                     <span>Allocation Made</span>
                                     {transferLeg.sender === party && (
                                         <button
-                                            onClick={async () => {
-                                                await withdrawAllocation({
-                                                    registryUrls,
+                                            onClick={() =>
+                                                withdrawAllocation({
                                                     party,
                                                     instrumentId:
                                                         transferLeg.instrumentId,
                                                     contractId:
                                                         allocation.contractId,
                                                 })
-                                                refetchAllocations()
-                                            }}
+                                            }
                                         >
                                             Withdraw Allocation
                                         </button>
