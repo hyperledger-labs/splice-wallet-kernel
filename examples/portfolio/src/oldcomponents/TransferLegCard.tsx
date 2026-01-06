@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type TransferLeg } from '@canton-network/core-token-standard'
-import { AssetCard } from './AssetCard.js'
+import { AssetCard } from './AssetCard'
 
 export type TransferLegCardProps = {
     transferLegId: string

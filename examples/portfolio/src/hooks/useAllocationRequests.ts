@@ -4,8 +4,8 @@
 import { type PrettyContract } from '@canton-network/core-ledger-client'
 import { type AllocationRequestView } from '@canton-network/core-token-standard'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
-import { useConnection } from '../contexts/ConnectionContext.js'
-import { usePortfolio } from '../contexts/PortfolioContext.js'
+import { useConnection } from '../contexts/ConnectionContext'
+import { usePortfolio } from '../contexts/PortfolioContext'
 
 export const useAllocationRequests = (): UseQueryResult<
     PrettyContract<AllocationRequestView>[] | undefined
