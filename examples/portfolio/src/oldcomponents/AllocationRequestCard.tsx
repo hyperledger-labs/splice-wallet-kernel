@@ -62,7 +62,6 @@ export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
                             ?.get(transferLegId)
                             ?.map((allocation) => (
                                 <div key={allocation.contractId}>
-                                    {console.log(allocation)}
                                     <span>Allocation Made</span>
                                     {transferLeg.sender === party && (
                                         <button
