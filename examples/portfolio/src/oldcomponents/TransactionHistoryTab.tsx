@@ -63,7 +63,11 @@ export const TransactionHistoryTab: React.FC = () => {
                                         }
                                     />
                                 ) : (
-                                    <div>TODO: Holdings change view</div>
+                                    <div>
+                                        <strong>{event.label.type}</strong>
+                                        <strong>{JSON.stringify(event.lockedHoldingsChangeSummary)}</strong>
+                                        <strong>{JSON.stringify(event.unlockedHoldingsChangeSummary)}</strong>
+                                    </div>
                                 )}
                             </div>
                         ))}

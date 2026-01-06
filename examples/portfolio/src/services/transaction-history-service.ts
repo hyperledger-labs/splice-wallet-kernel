@@ -193,12 +193,22 @@ export class TransactionHistoryService {
                     const transaction = await parser.parseTransaction()
                     this.transactions.push(transaction)
                 } catch (error) {
+                    // TODO: we should probably only add the transaction to
+                    // unprocessed if we get the error
+                    // CONTRACT_EVENTS_NOT_FOUND, in other cases retrying
+                    // probably won't help.
                     this.logger.info({ error }, 'parsing transaction failed')
                     newUnprocessed.push(jsTransaction)
                 }
             }
 
             this.unprocessed = newUnprocessed
+            if (this.unprocessed.length > 0) {
+                this.logger.debug(
+                    { unprocessed: this.unprocessed.length },
+                    'unprocessed events'
+                )
+            }
         }
 
         // Update the known range.
