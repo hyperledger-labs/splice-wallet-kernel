@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { PartyId } from '@canton-network/core-types'
-import { type AllocationRequestView } from '@canton-network/core-token-standard'
+import { type PrettyContract } from '@canton-network/core-ledger-client'
+import {
+    type AllocationRequestView,
+    type AllocationView,
+} from '@canton-network/core-token-standard'
 import { useRegistryUrls } from '../contexts/RegistryServiceContext'
 import { usePortfolio } from '../contexts/PortfolioContext'
 import { useAllocations } from '../hooks/useAllocations'
@@ -12,15 +16,17 @@ import { AllocationSettlementCard } from './AllocationSettlementCard'
 export type AllocationRequestCardProps = {
     party: PartyId
     allocationRequest: AllocationRequestView
+    allocationsByTransferLegId?: Map<string, PrettyContract<AllocationView>[]>
 }
 
 export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
     party,
     allocationRequest,
+    allocationsByTransferLegId,
 }) => {
     const { settlement, transferLegs } = allocationRequest
     const registryUrls = useRegistryUrls()
-    const { createAllocationInstruction } = usePortfolio()
+    const { createAllocationInstruction, withdrawAllocation } = usePortfolio()
     const { refetch: refetchAllocations } = useAllocations()
 
     return (
@@ -49,9 +55,34 @@ export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
                                     refetchAllocations()
                                 }}
                             >
-                                Accept
+                                Create Allocation
                             </button>
                         )}
+                        {allocationsByTransferLegId
+                            ?.get(transferLegId)
+                            ?.map((allocation) => (
+                                <div key={allocation.contractId}>
+                                    {console.log(allocation)}
+                                    <span>Allocation Made</span>
+                                    {transferLeg.sender === party && (
+                                        <button
+                                            onClick={async () => {
+                                                await withdrawAllocation({
+                                                    registryUrls,
+                                                    party,
+                                                    instrumentId:
+                                                        transferLeg.instrumentId,
+                                                    contractId:
+                                                        allocation.contractId,
+                                                })
+                                                refetchAllocations()
+                                            }}
+                                        >
+                                            Withdraw Allocation
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
                     </div>
                 )
             )}

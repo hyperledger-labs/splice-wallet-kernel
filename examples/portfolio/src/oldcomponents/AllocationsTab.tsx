@@ -1,7 +1,12 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useState, useEffect } from 'react'
+import { useMemo, useCallback, useState, useEffect } from 'react'
+import { type PrettyContract } from '@canton-network/core-ledger-client'
+import {
+    type SettlementInfo,
+    type AllocationView,
+} from '@canton-network/core-token-standard'
 import { useConnection } from '../contexts/ConnectionContext'
 import { usePortfolio } from '../contexts/PortfolioContext'
 import { useRegistryUrls } from '../contexts/RegistryServiceContext'
@@ -24,6 +29,49 @@ export const AllocationsTab: React.FC = () => {
 
     const { data: allocationRequests } = useAllocationRequests()
     const { data: allocations } = useAllocations()
+
+    // Produces a unique key to group allocations by request and transfer leg.
+    const allocationKey = useCallback(
+        (settlement: SettlementInfo, transferLegId: string) =>
+            JSON.stringify([
+                settlement.settlementRef.id,
+                settlement.settlementRef.cid,
+                transferLegId,
+            ]),
+        []
+    )
+
+    // Group allocations by request and transfer leg.
+    const [groupedAllocations, ungroupedAllocations] = useMemo(() => {
+        const groupedAllocations = new Map<
+            string,
+            PrettyContract<AllocationView>[]
+        >()
+        const ungroupedAllocations: PrettyContract<AllocationView>[] = []
+
+        for (const allocationRequest of allocationRequests ?? []) {
+            const { settlement, transferLegs } =
+                allocationRequest.interfaceViewValue
+            for (const transferLegId in transferLegs) {
+                const k = allocationKey(settlement, transferLegId)
+                groupedAllocations.set(k, [])
+            }
+        }
+
+        for (const allocation of allocations ?? []) {
+            const { settlement, transferLegId } =
+                allocation.interfaceViewValue.allocation
+            const k = allocationKey(settlement, transferLegId)
+            if (groupedAllocations.has(k)) {
+                groupedAllocations.get(k)!.push(allocation)
+            } else {
+                console.log(groupedAllocations)
+                ungroupedAllocations.push(allocation)
+            }
+        }
+
+        return [groupedAllocations, ungroupedAllocations]
+    }, [allocationRequests, allocations])
 
     const [executor, setExecutor] = useState('')
     const [settlementRefId, setSettlementRefId] = useState('')
@@ -63,14 +111,29 @@ export const AllocationsTab: React.FC = () => {
                         <AllocationRequestCard
                             party={primaryParty!}
                             allocationRequest={p.interfaceViewValue}
+                            allocationsByTransferLegId={
+                                new Map(
+                                    Object.keys(
+                                        p.interfaceViewValue.transferLegs
+                                    ).map((tlid) => [
+                                        tlid,
+                                        groupedAllocations.get(
+                                            allocationKey(
+                                                p.interfaceViewValue.settlement,
+                                                tlid
+                                            )
+                                        ) ?? [],
+                                    ])
+                                )
+                            }
                         />
                     </div>
                 ))}
 
-            <h2>Allocations</h2>
+            <h2>Unknown Allocations</h2>
 
             {primaryParty &&
-                allocations?.map((p) => (
+                ungroupedAllocations?.map((p) => (
                     <div key={p.contractId}>
                         <AllocationCard
                             party={primaryParty!}
