@@ -2008,6 +2008,7 @@ __metadata:
     "@canton-network/wallet-sdk": "workspace:^"
     "@eslint/js": "npm:^9.25.0"
     "@playwright/test": "npm:^1.55.0"
+    "@tanstack/react-query": "npm:^5.90.16"
     "@tanstack/react-router": "npm:^1.144.0"
     "@tanstack/react-router-devtools": "npm:^1.144.0"
     "@tanstack/router-core": "npm:^1.144.0"
@@ -6849,6 +6850,24 @@ __metadata:
   version: 1.141.0
   resolution: "@tanstack/history@npm:1.141.0"
   checksum: 10c0/b564e6617e612a5b77657ecd9b7ae9c73e6a808f1a5600471aedd4ce878cd3f9b48cc31a1b7e1ac9c1ed9b1f321599ee6023335d8474b1d1c86bb127e78cef28
+  languageName: node
+  linkType: hard
+
+"@tanstack/query-core@npm:5.90.16":
+  version: 5.90.16
+  resolution: "@tanstack/query-core@npm:5.90.16"
+  checksum: 10c0/f6a4827feeed2b4118323056bbda8d5099823202d1f29b538204ae2591be4e80f2946f3311eed30fefe866643f431c04b560457f03415d40caf2f353ba1efac0
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query@npm:^5.90.16":
+  version: 5.90.16
+  resolution: "@tanstack/react-query@npm:5.90.16"
+  dependencies:
+    "@tanstack/query-core": "npm:5.90.16"
+  peerDependencies:
+    react: ^18 || ^19
+  checksum: 10c0/03bd2aa23187003b45dc3d4b465a68f19806369283487a004acd6dd2ad8ba1fa0ec343da616cb1c43c342609202d0776fee68867246caa5ad6915f090539c168
   languageName: node
   linkType: hard
 
