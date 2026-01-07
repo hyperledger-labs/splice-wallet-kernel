@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React from 'react'
-import { useInstrumentInfo } from '../contexts/RegistryServiceContext.js'
+import { useInstrumentInfo } from '../contexts/RegistryServiceContext'
 
 interface AssetCardProps {
     name?: string

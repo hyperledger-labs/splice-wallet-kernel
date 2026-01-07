@@ -1,12 +1,14 @@
 import { StrictMode } from 'react'
 import './index.css'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { routeTree } from './routeTree.gen'
 import ReactDOM from 'react-dom/client'
 
 import { RegistryServiceProvider } from './contexts/RegistriesServiceProvider'
 import { ConnectionProvider } from './contexts/ConnectionProvider'
 import { PortfolioProvider } from './contexts/PortfolioProvider'
+import { AppThemeProvider } from './contexts/theme-provider'
 
 const router = createRouter({
     routeTree,
@@ -24,6 +26,8 @@ declare module '@tanstack/react-router' {
     }
 }
 
+const queryClient = new QueryClient()
+
 // Render the app
 const rootElement = document.getElementById('app')
 
@@ -31,13 +35,17 @@ if (rootElement && !rootElement.innerHTML) {
     const root = ReactDOM.createRoot(rootElement)
     root.render(
         <StrictMode>
-            <RegistryServiceProvider>
-                <ConnectionProvider>
-                    <PortfolioProvider>
-                        <RouterProvider router={router} />
-                    </PortfolioProvider>
-                </ConnectionProvider>
-            </RegistryServiceProvider>
+            <AppThemeProvider>
+                <QueryClientProvider client={queryClient}>
+                    <RegistryServiceProvider>
+                        <ConnectionProvider>
+                            <PortfolioProvider>
+                                <RouterProvider router={router} />
+                            </PortfolioProvider>
+                        </ConnectionProvider>
+                    </RegistryServiceProvider>
+                </QueryClientProvider>
+            </AppThemeProvider>
         </StrictMode>
     )
 }
