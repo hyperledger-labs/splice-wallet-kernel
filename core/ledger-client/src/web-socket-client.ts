@@ -10,7 +10,10 @@ import {
     CompletionStreamResponse,
 } from './generated-clients/asyncapi-3.4.7.js'
 import { Logger } from 'pino'
-import { TransactionFilterBySetup } from './ledger-api-utils.js'
+import {
+    TransactionFilterBySetup,
+    TransactionFilterBySetup2,
+} from './ledger-api-utils.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 export class WebSocketClient {
@@ -54,12 +57,12 @@ export class WebSocketClient {
                 : await this.accessTokenProvider.getUserAccessToken()
         }
 
-        // const authProtocol = `jwt.token.${this.token}, daml.ws.auth)`
-        const authProtocol = [`jwt.token.${this.token}`, 'daml.ws.auth']
-
         this.logger.info(`ACCESS TOKEN IS : ${this.token}`)
-        this.logger.info(`Auth protocol is  : ${authProtocol}`)
-        this.protocol.push(...authProtocol)
+        this.protocol = [`jwt.token.${this.token}`, 'daml.ws.auth']
+
+        this.logger.info(
+            `initializing websocket client with ${this.protocol.length} protocols`
+        )
     }
 
     //TODO: return the subscription, not the ActiveContractsREsponse
@@ -128,89 +131,176 @@ export class WebSocketClient {
         })
     }
 
-    async *subscribeToActiveContractsStreaming(
+    subscribeToActiveContractsStreaming(
         interfaceIds: string[],
-        partyId: PartyId,
+        templateIds: string[],
+        partyId: string,
         offset?: number
     ): AsyncIterableIterator<JsGetActiveContractsResponse> {
-        await this.init()
-        const wsUpdatesUrl = `${this.baseUrl}${CHANNELS.v2_state_active_contracts}`
-
-        const filter = TransactionFilterBySetup(interfaceIds, { partyId })
-        const request = {
-            filter,
-            verbose: false,
-            activeAtOffset: offset ?? 0,
-        }
-
-        // Use a queue to buffer messages between the WS callback and the Generator yield
         const messageQueue: JsGetActiveContractsResponse[] = []
-        let resolveNext: ((value: void) => void) | null = null
+        let resolveNext: (() => void) | null = null
         let isClosed = false
         let streamError: Error | null = null
 
-        const ws = new WebSocket(wsUpdatesUrl, this.protocol)
+        // We create a wrapper generator
+        const generator = async function* (this: WebSocketClient) {
+            await this.init() // Now init happens inside the generator
 
-        ws.onopen = () => {
-            // Send request after small backoff if required by your server
-            setTimeout(
-                () => ws.send(JSON.stringify(request)),
-                this.wsSupportBackOff
-            )
-        }
+            const wsUpdatesUrl = `${this.baseUrl}${CHANNELS.v2_state_active_contracts}`
+            const request = {
+                filter: TransactionFilterBySetup2(interfaceIds, templateIds, {
+                    partyId,
+                }),
+                verbose: false,
+                activeAtOffset: offset ?? 0,
+            }
 
-        ws.onmessage = (event: MessageEvent<string>) => {
+            this.logger.info(request, `DEBUGGING REQUEST`)
+
+            const ws = new WebSocket(wsUpdatesUrl, this.protocol)
+
+            ws.onopen = () => {
+                this.logger.info(
+                    `OPENING WEBSOCKET CONNECTION AND SENDING REQUEST`
+                )
+                ws.send(JSON.stringify(request))
+            }
+            ws.onmessage = (event) => {
+                messageQueue.push(JSON.parse(event.data as string))
+                this.logger.info(`Received event: ${event.data}`)
+                resolveNext?.()
+            }
+            ws.onerror = () => {
+                streamError = new Error('WebSocket Handshake/Connection failed')
+                this.logger.error(`Encountered ws.onError`)
+                isClosed = true
+                resolveNext?.()
+            }
+            ws.onclose = (event: CloseEvent) => {
+                this.logger.error(
+                    `CLOSING WEBSOCKET CONNECTION code: ${event.code}, reason: ${event.reason}`
+                )
+                isClosed = true
+                resolveNext?.()
+            }
+
             try {
-                const data = JSON.parse(event.data)
-                messageQueue.push(data)
-                if (resolveNext) {
-                    resolveNext()
-                    resolveNext = null
+                while (true) {
+                    if (messageQueue.length === 0) {
+                        if (isClosed) break // Exit if closed and queue is empty
+                        await new Promise<void>((r) => (resolveNext = r))
+                    }
+
+                    if (streamError) throw streamError
+
+                    while (messageQueue.length > 0) {
+                        yield messageQueue.shift()!
+                    }
+
+                    if (isClosed && messageQueue.length === 0) break
                 }
-            } catch (err) {
-                this.logger.error(`Invalid JSON: ${err}`)
+            } finally {
+                if (ws.readyState === WebSocket.OPEN) ws.close()
             }
         }
 
-        ws.onerror = () => {
-            streamError = new Error('WebSocket connection error')
-            if (resolveNext) resolveNext()
-        }
+        return generator.call(this)
+    }
 
-        ws.onclose = () => {
-            isClosed = true
-            if (resolveNext) resolveNext()
-        }
+    subscribeToUpdatesStreaming(
+        beginExclusive: number,
+        interfaceIds: string[],
+        templateIds: string[],
+        endInclusive?: number,
+        partyId?: PartyId,
+        verbose: boolean = true
+    ): AsyncIterableIterator<JsGetUpdatesResponse> {
+        const messageQueue: JsGetUpdatesResponse[] = []
+        let resolveNext: (() => void) | null = null
+        let isClosed = false
+        let streamError: Error | null = null
 
-        // The Background Loop: Keep yielding as long as connection is open or queue has items
-        try {
-            while (!isClosed || messageQueue.length > 0) {
-                if (messageQueue.length === 0) {
-                    // Wait for the next message or close event
-                    await new Promise<void>((resolve) => {
-                        resolveNext = resolve
-                    })
+        // We create a wrapper generator
+        const generator = async function* (this: WebSocketClient) {
+            await this.init() // Now init happens inside the generator
+
+            const wsUpdatesUrl = `${this.baseUrl}${CHANNELS.v2_updates}`
+
+            const filter = TransactionFilterBySetup2(
+                interfaceIds,
+                templateIds,
+                {
+                    partyId,
                 }
+            )
 
-                if (streamError) throw streamError
-
-                while (messageQueue.length > 0) {
-                    yield messageQueue.shift()!
-                }
+            const request = {
+                beginExclusive,
+                endInclusive,
+                verbose,
+                filter,
             }
-        } finally {
-            // Ensure cleanup if the consumer breaks the loop early
-            if (ws.readyState === WebSocket.OPEN) {
-                ws.close()
+
+            this.logger.info(request, `DEBUGGING REQUEST`)
+
+            const ws = new WebSocket(wsUpdatesUrl, this.protocol)
+
+            ws.onopen = () => {
+                this.logger.info(
+                    `OPENING WEBSOCKET CONNECTION AND SENDING REQUEST`
+                )
+                ws.send(JSON.stringify(request))
+            }
+            ws.onmessage = (event) => {
+                messageQueue.push(JSON.parse(event.data as string))
+                this.logger.info(`Received event: ${event.data}`)
+                resolveNext?.()
+            }
+            ws.onerror = () => {
+                streamError = new Error('WebSocket Handshake/Connection failed')
+                this.logger.error(`Encountered ws.onError`)
+                isClosed = true
+                resolveNext?.()
+            }
+            ws.onclose = (event: CloseEvent) => {
+                this.logger.error(
+                    `CLOSING WEBSOCKET CONNECTION code: ${event.code}, reason: ${event.reason}`
+                )
+                isClosed = true
+                resolveNext?.()
+            }
+
+            try {
+                while (true) {
+                    if (messageQueue.length === 0) {
+                        if (isClosed) break // Exit if closed and queue is empty
+                        await new Promise<void>((r) => (resolveNext = r))
+                    }
+
+                    if (streamError) throw streamError
+
+                    while (messageQueue.length > 0) {
+                        yield messageQueue.shift()!
+                    }
+
+                    if (isClosed && messageQueue.length === 0) break
+                }
+            } finally {
+                if (ws.readyState === WebSocket.OPEN) ws.close()
             }
         }
+
+        return generator.call(this)
     }
 
     async subscribeToActiveContracts(request: GetActiveContractsRequest) {
         const wsUpdatesUrl = `${this.baseUrl}${CHANNELS.v2_state_active_contracts}`
 
         return new Promise((resolve, reject) => {
-            const ws = new WebSocket(wsUpdatesUrl, this.protocol)
+            const ws = new WebSocket(wsUpdatesUrl, [
+                `jwt.token.${this.token}`,
+                'daml.ws.auth',
+            ])
             const results: JsGetActiveContractsResponse[] = []
             let finished = false
             let error: Error | null = null
