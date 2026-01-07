@@ -1,6 +1,8 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { WindowState } from './discovery'
+
 interface PopupOptions {
     title?: string
     target?: string
@@ -19,14 +21,7 @@ export function popup(
     component: StyledElement,
     options?: PopupOptions
 ): Promise<Window> {
-    const {
-        title = 'Custom Popup',
-        target = 'wallet-popup',
-        width = 400,
-        height = 500,
-        screenX = 200,
-        screenY = 200,
-    } = options || {}
+    const { title = 'Custom Popup' } = options || {}
 
     const sanitizedStyles = component.styles
         .replaceAll('\n', ' ')
@@ -79,42 +74,19 @@ export function popup(
 
     const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }))
 
-    return new Promise((resolve, reject) => {
-        const win = window.open(
-            url,
-            target,
-            `width=${width},height=${height},screenX=${screenX},screenY=${screenY}`
-        )
+    return new Promise((resolve) => {
+        const win = WindowState.getInstance()
+        win.location.href = url
+        win.focus()
 
-        if (win) {
-            win.addEventListener('beforeunload', () => {
-                URL.revokeObjectURL(url) // clean up the URL object to prevent memory leaks
-            })
-            resolve(win)
-        } else {
-            reject(new Error('Failed to open popup window.'))
-        }
+        resolve(win)
     })
 }
 
-export function popupHref(
-    url: URL | string,
-    options?: PopupOptions
-): Promise<Window> {
-    const {
-        target = 'wallet-popup',
-        width = 400,
-        height = 500,
-        screenX = 200,
-        screenY = 200,
-    } = options || {}
-
+export function popupHref(url: URL | string): Promise<Window> {
     return new Promise((resolve, reject) => {
-        const win = window.open(
-            url,
-            target,
-            `width=${width},height=${height},screenX=${screenX},screenY=${screenY}`
-        )
+        const win = WindowState.getInstance()
+        win.location.href = url.toString()
 
         if (win) {
             win.focus()
