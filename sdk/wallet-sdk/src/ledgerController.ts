@@ -86,14 +86,14 @@ export class LedgerController {
             accessTokenProvider,
         })
 
-        const wsUrl = `ws://${baseUrl.host}:${baseUrl.port}`
+        const wsUrl = `ws://${baseUrl.host}`
         this.websocketClient = new WebSocketClient({
             baseUrl: wsUrl,
             isAdmin,
             logger: this.logger,
             accessToken: token,
             accessTokenProvider,
-            wsSupportBackOff: 1000,
+            wsSupportBackOff: 6000,
         })
         this.wsInitPromise = this.websocketClient.init()
         this.initPromise = this.client.init()
@@ -104,6 +104,10 @@ export class LedgerController {
 
     async awaitInit() {
         return this.initPromise
+    }
+
+    async awaitWsInit() {
+        return this.wsInitPromise
     }
     /**
      * Sets the party that the ledgerController will use for requests.
@@ -223,37 +227,41 @@ export class LedgerController {
         }
     }
 
-    async subscribeToUpdates(
-        beginExclusive: number,
-        interfaceIds: string[] | string,
-        endInclusive?: number,
-        verbose: boolean = true
+    async *subscribeToActiveContracts(
+        interfaceIds: string[],
+        templateIds: string[],
+        offset?: number
     ) {
-        this.websocketClient.subscribeToUpdates(
-            beginExclusive,
-            interfaceIds,
-            endInclusive,
-            this.partyId,
-            verbose
-        )
-    }
-
-    async subscribeToActiveContracts(interfaceIds: string[], offset?: number) {
         const endOffset = offset ?? (await this.ledgerEnd()).offset
 
-        this.websocketClient.subscribeToActiveContracts2(
+        const stream = this.websocketClient.subscribeToActiveContractsStreaming(
             interfaceIds,
+            templateIds,
             this.getPartyId(),
             endOffset
         )
+
+        yield* stream
     }
 
-    async subscribeToCompletions(parties: PartyId[], beginOffset: number = 0) {
-        this.websocketClient.subscribetoCompletions(
-            this.userId,
-            parties,
-            beginOffset
+    async *subscribeToUpdates(
+        interfaceIds: string[],
+        templateIds: string[],
+        beginOffset: number = 0,
+        endOffset?: number
+    ) {
+        const endInclusive = endOffset ?? (await this.ledgerEnd()).offset
+
+        const stream = this.websocketClient.subscribeToUpdatesStreaming(
+            beginOffset,
+            interfaceIds,
+            templateIds,
+            endInclusive,
+            this.getPartyId(),
+            true
         )
+
+        yield* stream
     }
 
     /**
