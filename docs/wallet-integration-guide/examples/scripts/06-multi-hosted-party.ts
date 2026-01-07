@@ -67,7 +67,6 @@ const multiHostedParty = await sdk.userLedger?.signAndAllocateExternalParty(
 logger.info(multiHostedParty, 'multi hosted party succeeded!')
 
 await sdk.setPartyId(multiHostedParty?.partyId!)
-const ledgerEnd1 = await sdk.userLedger?.ledgerEnd()
 
 logger.info('Create ping command')
 const createPingCommand = sdk.userLedger?.createPingCommand(
@@ -82,19 +81,6 @@ const pingCommandResponse = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     v4()
 )
 logger.info(pingCommandResponse, 'ping command response')
-
-const ledgerEnd2 = await sdk.userLedger?.ledgerEnd()
-
-const res2 = await sdk.userLedger?.activeContracts({
-    offset: ledgerEnd2?.offset!,
-    filterByParty: true,
-    parties: [multiHostedParty!.partyId!],
-    templateIds: [
-        '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
-    ],
-})
-
-logger.info(res2)
 
 const multiHostedPartyWithObservingParticipant =
     await sdk.userLedger?.signAndAllocateExternalParty(
