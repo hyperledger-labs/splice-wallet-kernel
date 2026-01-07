@@ -4,10 +4,10 @@ import {
     localNetLedgerDefault,
     localNetTopologyDefault,
     localNetTokenStandardDefault,
-    localNetLedgerAppProvider,
     createKeyPair,
     localValidatorDefault,
     localNetStaticConfig,
+    UpdatesResponse,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
@@ -102,7 +102,7 @@ logger.info(
 
 await sdk.setPartyId(multiHostedPartyWithObservingParticipant?.partyId!)
 
-const events: any[] = []
+const events: UpdatesResponse[] = []
 const controller = new AbortController()
 
 const subscribeToPingUpdates = (async () => {
@@ -112,8 +112,7 @@ const subscribeToPingUpdates = (async () => {
             ['#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping']
         )
         for await (const update of stream!) {
-            events.push(update)
-            logger.info('Captured event in background')
+            events.push(update as UpdatesResponse)
             if (controller.signal.aborted) break
         }
     } catch (err) {
