@@ -7,6 +7,7 @@ import {
     GetActiveContractsRequest,
     JsGetUpdatesResponse,
     JsGetActiveContractsResponse,
+    CompletionStreamResponse,
 } from './generated-clients/asyncapi-3.4.7.js'
 import { Logger } from 'pino'
 import { TransactionFilterBySetup } from './ledger-api-utils.js'
@@ -211,6 +212,63 @@ export class WebSocketClient {
         return new Promise((resolve, reject) => {
             const ws = new WebSocket(wsUpdatesUrl, this.protocol)
             const results: JsGetActiveContractsResponse[] = []
+            let finished = false
+            let error: Error | null = null
+            setTimeout(() => {
+                if (!finished && !error && results.length === 0) {
+                    error = Error(
+                        `No data received from WebSocket ${wsUpdatesUrl} within 60ms`
+                    )
+                    reject(error)
+                    ws.close()
+                }
+            }, this.wsSupportBackOff)
+
+            ws.onopen = () => {
+                ws.send(JSON.stringify(request))
+            }
+
+            ws.onmessage = (event: MessageEvent<string>) => {
+                try {
+                    this.logger.info(`received event: ${event.data}`)
+                    results.push(JSON.parse(event.data))
+                } catch (err) {
+                    this.logger.error(`Invalid JSON ${err}`)
+                }
+            }
+
+            ws.onerror = () => {
+                error = new Error(`WebSocket error`)
+                reject(error)
+            }
+
+            ws.onclose = () => {
+                finished = true
+                if (!error) {
+                    resolve({
+                        updates: results,
+                    })
+                }
+            }
+        })
+    }
+
+    async subscribetoCompletions(
+        userId: string,
+        parties: PartyId[],
+        beginExclusive: number
+    ) {
+        const wsUpdatesUrl = `${this.baseUrl}${CHANNELS.v2_commands_completions}`
+
+        const request = {
+            beginExclusive,
+            userId,
+            parties,
+        }
+
+        return new Promise((resolve, reject) => {
+            const ws = new WebSocket(wsUpdatesUrl, this.protocol)
+            const results: CompletionStreamResponse[] = []
             let finished = false
             let error: Error | null = null
             setTimeout(() => {
