@@ -56,6 +56,46 @@ export function TransactionFilterBySetup(
         }
 }
 
+export function TransactionFilterBySetup2(
+    interfaceNames: string[] | string = [],
+    templateIds: string[] | string = [],
+    options: {
+        includeWildcard?: boolean
+        isMasterUser?: boolean
+        partyId?: PartyId | undefined
+    } = { includeWildcard: false, isMasterUser: false }
+): TransactionFilter {
+    const interfaceArrayed = Array.isArray(interfaceNames)
+        ? interfaceNames
+        : [interfaceNames]
+
+    const templateIdsArrayed = Array.isArray(templateIds)
+        ? templateIds
+        : [templateIds]
+    if (options.isMasterUser)
+        return {
+            filtersByParty: {},
+            filtersForAnyParty:
+                filtersForAnyParty2(
+                    interfaceArrayed,
+                    templateIdsArrayed,
+                    options.includeWildcard ?? false
+                ) ?? {},
+        }
+    else if (!options.partyId || options.partyId === undefined)
+        throw new Error('Party must be provided for non-master users')
+    else
+        return {
+            filtersByParty:
+                filtersByParty2(
+                    options.partyId,
+                    templateIdsArrayed,
+                    interfaceArrayed,
+                    options.includeWildcard ?? false
+                ) ?? {},
+        }
+}
+
 export function EventFilterBySetup(
     interfaceNames: string[] | string,
     options: {
@@ -90,6 +130,70 @@ export function EventFilterBySetup(
                 ) ?? {},
             verbose: options.verbose ?? false,
         }
+}
+
+function filtersByParty2(
+    party: PartyId,
+    templateIds: string[],
+    interfaceIds: string[],
+    includeWildcard: boolean
+): TransactionFilter['filtersByParty'] {
+    const wildcardFilter = includeWildcard
+        ? [
+              {
+                  identifierFilter: {
+                      WildcardFilter: {
+                          value: {
+                              includeCreatedEventBlob: true,
+                          },
+                      },
+                  },
+              },
+          ]
+        : []
+
+    if (templateIds.length !== 0) {
+        return {
+            [party]: {
+                cumulative: [
+                    ...templateIds.map((templateId) => {
+                        return {
+                            identifierFilter: {
+                                TemplateFilter: {
+                                    value: {
+                                        templateId,
+                                        includeCreatedEventBlob: true,
+                                    },
+                                },
+                            },
+                        }
+                    }),
+                    ...wildcardFilter,
+                ],
+            },
+        }
+    } else {
+        return {
+            [party]: {
+                cumulative: [
+                    ...interfaceIds.map((interfaceName) => {
+                        return {
+                            identifierFilter: {
+                                InterfaceFilter: {
+                                    value: {
+                                        interfaceId: interfaceName,
+                                        includeInterfaceView: true,
+                                        includeCreatedEventBlob: true,
+                                    },
+                                },
+                            },
+                        }
+                    }),
+                    ...wildcardFilter,
+                ],
+            },
+        }
+    }
 }
 
 function filtersByParty(
@@ -168,6 +272,65 @@ function filtersForAnyParty(
             }),
             ...wildcardFilter,
         ],
+    }
+}
+
+function filtersForAnyParty2(
+    interfaceNames: string[],
+    templateIds: string[],
+    includeWildcard: boolean
+): TransactionFilter['filtersForAnyParty'] {
+    const wildcardFilter = includeWildcard
+        ? [
+              {
+                  identifierFilter: {
+                      WildcardFilter: {
+                          value: {
+                              includeCreatedEventBlob: true,
+                          },
+                      },
+                  },
+              },
+          ]
+        : []
+
+    if (templateIds.length > 0) {
+        return {
+            cumulative: [
+                ...templateIds.map((templateId) => {
+                    return {
+                        identifierFilter: {
+                            TemplateFilter: {
+                                value: {
+                                    templateId: templateId,
+                                    includeCreatedEventBlob: true,
+                                },
+                            },
+                        },
+                    }
+                }),
+                ...wildcardFilter,
+            ],
+        }
+    } else {
+        return {
+            cumulative: [
+                ...interfaceNames.map((interfaceName) => {
+                    return {
+                        identifierFilter: {
+                            InterfaceFilter: {
+                                value: {
+                                    interfaceId: interfaceName,
+                                    includeInterfaceView: true,
+                                    includeCreatedEventBlob: true,
+                                },
+                            },
+                        },
+                    }
+                }),
+                ...wildcardFilter,
+            ],
+        }
     }
 }
 
