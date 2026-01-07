@@ -102,13 +102,22 @@ logger.info(
 
 await sdk.setPartyId(multiHostedPartyWithObservingParticipant?.partyId!)
 
+const events: any[] = []
+const controller = new AbortController()
+
 const subscribeToPingUpdates = (async () => {
-    const stream = sdk.userLedger?.subscribeToUpdates(
-        [],
-        ['#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping']
-    )
-    for await (const data of stream!) {
-        logger.info(data, 'Background Task Received:')
+    try {
+        const stream = sdk.userLedger?.subscribeToUpdates(
+            [],
+            ['#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping']
+        )
+        for await (const update of stream!) {
+            events.push(update)
+            logger.info('Captured event in background')
+            if (controller.signal.aborted) break
+        }
+    } catch (err) {
+        if (!controller.signal.aborted) throw err
     }
 })()
 
@@ -125,15 +134,10 @@ const pingCommandResponse2 = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 )
 logger.info(pingCommandResponse2, 'ping command response')
 
-const ledgerEnd = await sdk.userLedger?.ledgerEnd()
+logger.info(events)
 
-const res = await sdk.userLedger?.activeContracts({
-    offset: ledgerEnd?.offset!,
-    filterByParty: true,
-    parties: [multiHostedPartyWithObservingParticipant!.partyId!],
-    templateIds: [
-        '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
-    ],
-})
+logger.info(events.length)
 
-logger.info(res)
+controller.abort()
+
+process.exit(0)
