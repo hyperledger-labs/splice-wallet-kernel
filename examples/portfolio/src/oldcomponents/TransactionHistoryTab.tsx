@@ -6,6 +6,7 @@ import { type Transaction } from '@canton-network/core-ledger-client'
 import { useConnection } from '../contexts/ConnectionContext'
 import { usePortfolio } from '../contexts/PortfolioContext'
 import { TransferCard } from './TransferCard'
+import { HoldingsChangeSummaryCard } from './HoldingsChangeSummaryCard'
 
 export const TransactionHistoryTab: React.FC = () => {
     const {
@@ -65,8 +66,34 @@ export const TransactionHistoryTab: React.FC = () => {
                                 ) : (
                                     <div>
                                         <strong>{event.label.type}</strong>
-                                        <strong>{JSON.stringify(event.lockedHoldingsChangeSummary)}</strong>
-                                        <strong>{JSON.stringify(event.unlockedHoldingsChangeSummary)}</strong>
+                                        {event.lockedHoldingsChangeSummaries
+                                            .length > 0 && (
+                                            <div>
+                                                <strong>Locked:</strong>
+                                                {event.lockedHoldingsChangeSummaries.map(
+                                                    (c, idx) => (
+                                                        <HoldingsChangeSummaryCard
+                                                            key={idx}
+                                                            change={c}
+                                                        />
+                                                    )
+                                                )}
+                                            </div>
+                                        )}
+                                        {event.unlockedHoldingsChangeSummaries
+                                            .length > 0 && (
+                                            <div>
+                                                <strong>Locked:</strong>
+                                                {event.unlockedHoldingsChangeSummaries.map(
+                                                    (c, idx) => (
+                                                        <HoldingsChangeSummaryCard
+                                                            key={idx}
+                                                            change={c}
+                                                        />
+                                                    )
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
