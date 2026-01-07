@@ -50,8 +50,6 @@ export class WebSocketClient {
                 ? await this.accessTokenProvider.getAdminAccessToken()
                 : await this.accessTokenProvider.getUserAccessToken()
         }
-
-        this.logger.info(`ACCESS TOKEN IS : ${this.token}`)
         this.protocol = [`jwt.token.${this.token}`, 'daml.ws.auth']
 
         this.logger.info(
