@@ -17,14 +17,14 @@ Resilience refers to the ability to continue operations during minor failures, s
 Recommended Architecture
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-* **Redundant Validators**: Run 2 validators behind a single gateway.
+* **Redundant Validators**: Run 2 validators behind a load balancer.
 * **Confirming Rights**: Host parties on both validators with confirming rights.
 * **Threshold Configuration**: Implement a confirming threshold of 1/2. This ensures that if one validator goes offline, the remaining node can still authorize transactions.
 
 Adding Redundancy to an Existing Setup
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you are currently operating with a single validator node and wish to add a second node for Resilience, you must 
+If you are currently operating with a single validator node and wish to add a second node for resilience, you must 
 replicate your existing parties to the new infrastructure. This ensures both nodes have the necessary data and rights to manage your assets.
 
 For technical instructions on moving or duplicating parties between nodes, refer to the documentation on 
