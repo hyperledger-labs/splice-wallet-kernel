@@ -128,7 +128,7 @@ export const dappController = (provider: SpliceProvider) =>
             if (response.session) {
                 return response
             } else {
-                gatewayUi.open('remote', response.userUrl ?? '')
+                gatewayUi.open('remote', response.kernel.userUrl ?? '')
                 const promise = new Promise<dappAPI.StatusEvent>(
                     (resolve, reject) => {
                         // 5 minutes timeout

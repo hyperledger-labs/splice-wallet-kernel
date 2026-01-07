@@ -15,5 +15,5 @@ export async function open(): Promise<void> {
         throw new Error('No previous session found')
     }
 
-    gatewayUi.open(discovery.walletType, session.userUrl ?? '')
+    gatewayUi.open(discovery.walletType, session.kernel.userUrl ?? '')
 }
