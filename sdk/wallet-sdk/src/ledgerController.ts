@@ -223,18 +223,28 @@ export class LedgerController {
         }
     }
 
-    async websocketGetUpdates(
+    async subscribeToUpdates(
         beginExclusive: number,
-        interfaceNames: string[] | string,
+        interfaceIds: string[] | string,
         endInclusive?: number,
         verbose: boolean = true
     ) {
         this.websocketClient.subscribeToUpdates(
             beginExclusive,
-            interfaceNames,
+            interfaceIds,
             endInclusive,
             this.partyId,
             verbose
+        )
+    }
+
+    async subscribeToActiveContracts(interfaceIds: string[], offset?: number) {
+        const beginOffset = offset ?? (await this.ledgerEnd()).offset
+
+        this.websocketClient.subscribeToActiveContracts2(
+            interfaceIds,
+            this.getPartyId(),
+            beginOffset
         )
     }
 
