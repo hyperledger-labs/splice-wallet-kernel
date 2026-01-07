@@ -13,6 +13,7 @@ import {
     JSContractEntry,
     isJsCantonError,
     components,
+    WebSocketClient,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -53,12 +54,14 @@ export type ParticipantEndpointConfig = {
  */
 export class LedgerController {
     private readonly client: LedgerClient
+    private readonly websocketClient: WebSocketClient
     private readonly userId: string
     private readonly isAdmin: boolean
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
     private logger = pino({ name: 'LedgerController', level: 'info' })
     private initPromise: Promise<void>
+    private wsInitPromise: Promise<void>
 
     /** Creates a new instance of the LedgerController.
      *
@@ -82,6 +85,17 @@ export class LedgerController {
             accessToken: token,
             accessTokenProvider,
         })
+
+        const wsUrl = `ws://${baseUrl.host}:${baseUrl.port}`
+        this.websocketClient = new WebSocketClient({
+            baseUrl: wsUrl,
+            isAdmin,
+            logger: this.logger,
+            accessToken: token,
+            accessTokenProvider,
+            wsSupportBackOff: 1000,
+        })
+        this.wsInitPromise = this.websocketClient.init()
         this.initPromise = this.client.init()
         this.userId = userId
         this.isAdmin = isAdmin
@@ -207,6 +221,21 @@ export class LedgerController {
         if ('JsActiveContract' in entry) {
             return entry.JsActiveContract.createdEvent.contractId
         }
+    }
+
+    async websocketGetUpdates(
+        beginExclusive: number,
+        interfaceNames: string[] | string,
+        endInclusive?: number,
+        verbose: boolean = true
+    ) {
+        this.websocketClient.subscribeToUpdates(
+            beginExclusive,
+            interfaceNames,
+            endInclusive,
+            this.partyId,
+            verbose
+        )
     }
 
     /**
