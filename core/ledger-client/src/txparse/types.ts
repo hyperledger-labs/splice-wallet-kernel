@@ -21,16 +21,16 @@ export interface TokenStandardEvent {
     lockedHoldingsChange: HoldingsChange
     /** lockedHoldingsChangeSummaries contains one summary per instrument. */
     lockedHoldingsChangeSummaries: HoldingsChangeSummary[]
-    /** lockedHoldingsChangeSummary is incorrect in a multi-instrument world.
-     *  It will be removed in a future release, please use
-     *  unlockedHoldingsChangeSummaries instead. */
+    /** @deprecated lockedHoldingsChangeSummary is incorrect in a
+     *  multi-instrument world.  It will be removed in a future release, please
+     *  use unlockedHoldingsChangeSummaries instead. */
     lockedHoldingsChangeSummary: HoldingsChangeSummary
     unlockedHoldingsChange: HoldingsChange
     /** unlockedHoldingsChangeSummary contains one summary per instrument. */
     unlockedHoldingsChangeSummaries: HoldingsChangeSummary[]
-    /** unlockedHoldingsChangeSummary is incorrect in a multi-instrument world.
-     *  It will be removed in a future release, please use
-     *  unlockedHoldingsChangeSummaries instead. */
+    /** @deprecated unlockedHoldingsChangeSummary is incorrect in a
+     *  multi-instrument world. It will be removed in a future release, please
+     *  use unlockedHoldingsChangeSummaries instead. */
     unlockedHoldingsChangeSummary: HoldingsChangeSummary
     transferInstruction: TransferInstructionView | null
 }
