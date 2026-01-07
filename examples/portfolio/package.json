@@ -7,7 +7,8 @@
         "dev": "vite",
         "build": "tsc -b && vite build",
         "e2e": "nx playwright:e2e --ui",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "otc-trade": "tsx ./scripts/otc-trade.ts"
     },
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
@@ -15,12 +16,18 @@
         "@canton-network/core-token-standard": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@canton-network/dapp-sdk": "workspace:^",
+        "@tanstack/react-query": "^5.90.16",
+        "@tanstack/react-router": "^1.144.0",
+        "@tanstack/react-router-devtools": "^1.144.0",
+        "@tanstack/router-core": "^1.144.0",
+        "@tanstack/router-plugin": "^1.144.0",
         "pino": "^10.0.0",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
         "uuid": "^11.1.0"
     },
     "devDependencies": {
+        "@canton-network/wallet-sdk": "workspace:^",
         "@eslint/js": "^9.25.0",
         "@playwright/test": "^1.55.0",
         "@types/node": "^24.3.0",
@@ -31,6 +38,7 @@
         "eslint-plugin-react-hooks": "^5.2.0",
         "eslint-plugin-react-refresh": "^0.4.19",
         "globals": "^16.0.0",
+        "tsx": "^4.20.6",
         "typescript": "~5.8.3",
         "typescript-eslint": "^8.30.1",
         "vite": "^6.4.1"

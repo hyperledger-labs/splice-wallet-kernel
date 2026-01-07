@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState } from 'react'
-import { useInstruments } from '../contexts/RegistryServiceContext.js'
+import { useInstruments } from '../contexts/RegistryServiceContext'
 
 export type SelectInstrumentProps = {
     value: { admin: string; id: string } | undefined

@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState } from 'react'
-import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
-import { useConnection } from '../contexts/ConnectionContext.js'
-import { usePortfolio } from '../contexts/PortfolioContext.js'
-import { SelectInstrument } from './SelectInstrument.js'
+import { useRegistryUrls } from '../contexts/RegistryServiceContext'
+import { useConnection } from '../contexts/ConnectionContext'
+import { usePortfolio } from '../contexts/PortfolioContext'
+import { SelectInstrument } from './SelectInstrument'
 
 export const TwoStepTransferTab: React.FC = () => {
     const {
