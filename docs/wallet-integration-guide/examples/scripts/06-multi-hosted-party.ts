@@ -116,6 +116,18 @@ logger.info(
 
 await sdk.setPartyId(multiHostedPartyWithObservingParticipant?.partyId!)
 
+const subscribeToPingUpdates = (async () => {
+    const stream = sdk.userLedger?.subscribeToUpdates(
+        [],
+        ['#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping']
+    )
+    for await (const data of stream!) {
+        logger.info(data, 'Background Task Received:')
+    }
+})()
+
+subscribeToPingUpdates
+
 const createPingCommand2 = sdk.userLedger?.createPingCommand(
     multiHostedPartyWithObservingParticipant!.partyId!
 )
@@ -139,17 +151,3 @@ const res = await sdk.userLedger?.activeContracts({
 })
 
 logger.info(res)
-;(async () => {
-    const stream = sdk.userLedger?.subscribeToUpdates(
-        [],
-        ['#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping'],
-        0,
-        ledgerEnd?.offset!
-    )
-    for await (const data of stream!) {
-        logger.info(data, 'Background Task Received:')
-    }
-})()
-const token = await sdk.auth.getAdminToken()
-
-logger.info(token)

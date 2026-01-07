@@ -93,7 +93,7 @@ export class LedgerController {
             logger: this.logger,
             accessToken: token,
             accessTokenProvider,
-            wsSupportBackOff: 6000,
+            wsSupportBackOff: 6000 * 10,
         })
         this.wsInitPromise = this.websocketClient.init()
         this.initPromise = this.client.init()
@@ -227,36 +227,17 @@ export class LedgerController {
         }
     }
 
-    async *subscribeToActiveContracts(
-        interfaceIds: string[],
-        templateIds: string[],
-        offset?: number
-    ) {
-        const endOffset = offset ?? (await this.ledgerEnd()).offset
-
-        const stream = this.websocketClient.subscribeToActiveContractsStreaming(
-            interfaceIds,
-            templateIds,
-            this.getPartyId(),
-            endOffset
-        )
-
-        yield* stream
-    }
-
     async *subscribeToUpdates(
         interfaceIds: string[],
         templateIds: string[],
         beginOffset: number = 0,
         endOffset?: number
     ) {
-        const endInclusive = endOffset ?? (await this.ledgerEnd()).offset
-
         const stream = this.websocketClient.subscribeToUpdatesStreaming(
             beginOffset,
             interfaceIds,
             templateIds,
-            endInclusive,
+            endOffset,
             this.getPartyId(),
             true
         )
