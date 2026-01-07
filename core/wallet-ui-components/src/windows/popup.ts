@@ -28,17 +28,9 @@ export function popup(
         .replaceAll("'", "\\'")
         .replaceAll('"', '\\"')
 
-    let element = component
+    const elementSource = component
         .toString()
-        .replace('SUBSTITUTABLE_CSS', `'${sanitizedStyles}'`)
-
-    // Ugly hack to workaround the format of the class post-bundling, where static methods are set at runtime for compatibility
-    if (sanitizedStyles && !element.includes('static styles')) {
-        element = element.replace(
-            'constructor() {',
-            `static styles = '${sanitizedStyles}';\nconstructor() {`
-        )
-    }
+        .replace('SUBSTITUTABLE_CSS', `''`)
 
     const html = `<!DOCTYPE html>
     <html>
@@ -61,14 +53,16 @@ export function popup(
         </body>
 
         <script>
-            customElements.define('popup-content', ${element})
+            const Component = (${elementSource});
+            Component.styles = \`${sanitizedStyles}\`;
 
-            const root = document.getElementsByTagName('body')[0]
+            customElements.define('popup-content', Component);
 
-            const content = document.createElement('popup-content')
-            content.setAttribute('style', 'width: 100%; height: 100%;')
+            const content = document.createElement('popup-content');
+            content.style.width = '100%';
+            content.style.height = '100%';
 
-            root.appendChild(content)
+            document.body.appendChild(content)
         </script>
     </html>`
 
