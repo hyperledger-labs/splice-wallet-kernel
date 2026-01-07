@@ -1,18 +1,18 @@
 =======================================
-High Availability and Disaster Recovery
+Resilience and Disaster Recovery
 =======================================
 
 This guide outlines the recommended architecture for Canton Network wallet providers and exchanges to ensure business continuity. 
 While these requirements are not a blocker for initial Canton Coin (CC) listing, they represent the target state for qualified 
 custodians and institutional wallets post-MVP.
 
-This guide explains approaches for High Availability (HA) and Disaster Recovery (DR).
+This guide explains approaches for Resilience and Disaster Recovery (DR).
 
-----------------------------
-High Availability (HA) Setup
-----------------------------
+----------------
+Resilience Setup
+----------------
 
-High Availability refers to the ability to continue operations during minor failures, such as a single node outage.
+Resilience refers to the ability to continue operations during minor failures, such as a single node outage.
 
 Recommended Architecture
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -24,7 +24,7 @@ Recommended Architecture
 Adding Redundancy to an Existing Setup
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you are currently operating with a single validator node and wish to add a second node for high availability, you must 
+If you are currently operating with a single validator node and wish to add a second node for Resilience, you must 
 replicate your existing parties to the new infrastructure. This ensures both nodes have the necessary data and rights to manage your assets.
 
 For technical instructions on moving or duplicating parties between nodes, refer to the documentation on 
