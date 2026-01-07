@@ -8,6 +8,7 @@ import ReactDOM from 'react-dom/client'
 import { RegistryServiceProvider } from './contexts/RegistriesServiceProvider'
 import { ConnectionProvider } from './contexts/ConnectionProvider'
 import { PortfolioProvider } from './contexts/PortfolioProvider'
+import { AppThemeProvider } from './contexts/theme-provider'
 
 const router = createRouter({
     routeTree,
@@ -34,15 +35,17 @@ if (rootElement && !rootElement.innerHTML) {
     const root = ReactDOM.createRoot(rootElement)
     root.render(
         <StrictMode>
-            <QueryClientProvider client={queryClient}>
-                <RegistryServiceProvider>
-                    <ConnectionProvider>
-                        <PortfolioProvider>
-                            <RouterProvider router={router} />
-                        </PortfolioProvider>
-                    </ConnectionProvider>
-                </RegistryServiceProvider>
-            </QueryClientProvider>
+            <AppThemeProvider>
+                <QueryClientProvider client={queryClient}>
+                    <RegistryServiceProvider>
+                        <ConnectionProvider>
+                            <PortfolioProvider>
+                                <RouterProvider router={router} />
+                            </PortfolioProvider>
+                        </ConnectionProvider>
+                    </RegistryServiceProvider>
+                </QueryClientProvider>
+            </AppThemeProvider>
         </StrictMode>
     )
 }
