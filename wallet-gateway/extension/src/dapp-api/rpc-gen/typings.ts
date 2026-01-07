@@ -69,7 +69,6 @@ export interface DisclosedContract {
     contractId?: ContractId
     createdEventBlob: CreatedEventBlob
     synchronizerId?: SynchronizerId
-    [k: string]: any
 }
 /**
  *
@@ -121,7 +120,6 @@ export interface KernelInfo {
     clientType: ClientType
     url?: Url
     userUrl?: UserUrl
-    [k: string]: any
 }
 /**
  *
@@ -160,7 +158,6 @@ export type BaseUrl = string
  */
 export interface LedgerApiConfig {
     baseUrl: BaseUrl
-    [k: string]: any
 }
 /**
  *
@@ -170,7 +167,6 @@ export interface LedgerApiConfig {
 export interface Network {
     networkId: NetworkId
     ledgerApi?: LedgerApiConfig
-    [k: string]: any
 }
 /**
  *
@@ -192,7 +188,6 @@ export type UserId = string
 export interface Session {
     accessToken: AccessToken
     userId: UserId
-    [k: string]: any
 }
 export type Dar = string
 export type Dars = Dar[]
@@ -439,7 +434,6 @@ export interface StatusEvent {
     networkReason?: NetworkReason
     network?: Network
     session?: Session
-    [k: string]: any
 }
 /**
  *
@@ -463,7 +457,6 @@ export interface PrepareExecuteResult {
  */
 export interface LedgerApiResult {
     response: Response
-    [k: string]: any
 }
 /**
  *
