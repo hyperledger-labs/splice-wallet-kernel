@@ -44,4 +44,7 @@ export {
 } from './ledger-api-utils.js'
 
 export * from './web-socket-client.js'
-export { GetUpdatesRequest } from './generated-clients/asyncapi-3.4.7.js'
+export {
+    GetUpdatesRequest,
+    JsGetUpdatesResponse,
+} from './generated-clients/asyncapi-3.4.7.js'

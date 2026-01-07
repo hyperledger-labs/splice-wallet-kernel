@@ -14,6 +14,7 @@ import {
     isJsCantonError,
     components,
     WebSocketClient,
+    JsGetUpdatesResponse,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -30,6 +31,8 @@ import { PartyId } from '@canton-network/core-types'
 import { defaultRetryableOptions } from '@canton-network/core-ledger-client'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { decodeTopologyTransaction } from '@canton-network/core-tx-visualizer'
+
+export type UpdatesResponse = JsGetUpdatesResponse
 
 export type RawCommandMap = {
     ExerciseCommand: Types['ExerciseCommand']
