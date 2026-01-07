@@ -884,9 +884,9 @@ export class LedgerController {
         )
 
         if (rights.rights!.some((r) => 'CanReadAsAnyParty' in r.kind)) {
-            return (
-                await this.client.getWithRetry('/v2/parties')
-            ).partyDetails!.map((p) => p.party)
+            return (await this.client.getWithRetry('/v2/parties'))
+                .partyDetails!.filter((p) => p.isLocal)
+                .map((p) => p.party)
         } else {
             const canReadAsPartyRights =
                 rights.rights?.filter(
