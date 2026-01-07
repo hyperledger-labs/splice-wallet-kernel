@@ -46,7 +46,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
                 setConnectionStatus((c) => ({
                     ...c,
                     connected: result.isConnected,
-                    sessionToken: result.sessionToken,
+                    sessionToken: result.session.accessToken,
                 }))
             )
             .catch((reason) =>
