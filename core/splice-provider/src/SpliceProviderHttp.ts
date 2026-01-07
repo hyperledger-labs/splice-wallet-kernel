@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    HttpTransport,
     isSpliceMessageEvent,
     RequestPayload,
     WalletEvent,
 } from '@canton-network/core-types'
+import { HttpTransport } from '@canton-network/core-rpc-transport'
 import { SpliceProviderBase } from './SpliceProvider'
 import { io, Socket } from 'socket.io-client'
 
