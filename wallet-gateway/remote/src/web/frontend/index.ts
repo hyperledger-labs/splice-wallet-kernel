@@ -14,6 +14,7 @@ import {
     DEFAULT_PAGE_REDIRECT,
     NOT_FOUND_PAGE_REDIRECT,
     LOGIN_PAGE_REDIRECT,
+    TOKEN_EXPIRED_SKEW_MS,
     AllowedRoute,
     isAllowedRoute,
 } from './constants'
@@ -214,7 +215,8 @@ export class UserUIAuthRedirect extends LitElement {
 
         const expirationDate = new Date(stateManager.expirationDate.get() || '')
         const now = new Date()
-        const timeUntilExpiration = expirationDate.getTime() - now.getTime()
+        const timeUntilExpiration =
+            expirationDate.getTime() - now.getTime() - TOKEN_EXPIRED_SKEW_MS
 
         if (timeUntilExpiration > 0) {
             tokenExpirationTimeoutId = setTimeout(async () => {
@@ -228,7 +230,7 @@ export class UserUIAuthRedirect extends LitElement {
 
     private isTokenExpired(): boolean {
         const expirationDate = new Date(stateManager.expirationDate.get() || 0)
-        return expirationDate <= new Date()
+        return Number(expirationDate) - TOKEN_EXPIRED_SKEW_MS <= Date.now()
     }
 }
 
