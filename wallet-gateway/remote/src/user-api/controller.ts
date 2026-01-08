@@ -1,7 +1,7 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
-// Disabled unused vars rule to allow for future implementations
 
+// Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { LedgerClient } from '@canton-network/core-ledger-client'
 import buildController from './rpc-gen/index.js'
@@ -203,13 +203,117 @@ export const userController = (
                             const { signature } = await driver.signTransaction({
                                 tx: '',
                                 txHash: hash,
-                                publicKey: key.publicKey,
+                                keyIdentifier: {
+                                    publicKey: key.publicKey,
+                                },
                             })
 
                             return signature
                         }
                     )
                     publicKey = key.publicKey
+                    break
+                }
+                case SigningProvider.BLOCKDAEMON: {
+                    if (signingProviderContext) {
+                        walletStatus = 'initialized'
+                        const { signature, status } =
+                            await driver.getTransaction({
+                                userId,
+                                txId: signingProviderContext.externalTxId,
+                            })
+
+                        if (!['pending', 'signed'].includes(status)) {
+                            await store.removeWallet(
+                                signingProviderContext.partyId
+                            )
+                        }
+
+                        if (signature) {
+                            await partyAllocator.allocatePartyWithExistingWallet(
+                                signingProviderContext.namespace,
+                                signingProviderContext.topologyTransactions.split(
+                                    ', '
+                                ),
+                                signature,
+                                userId
+                            )
+                            walletStatus = 'allocated'
+                        }
+                        party = {
+                            partyId: signingProviderContext.partyId,
+                            namespace: signingProviderContext.namespace,
+                            hint: partyHint,
+                        }
+                    } else {
+                        const key = await driver.createKey({
+                            name: partyHint,
+                        })
+                        if ('error' in key) {
+                            throw new Error(
+                                `Failed to create key: ${key.error_description}`
+                            )
+                        }
+
+                        const namespace =
+                            partyAllocator.createFingerprintFromKey(
+                                key.publicKey
+                            )
+
+                        const transactions =
+                            await partyAllocator.generateTopologyTransactions(
+                                partyHint,
+                                key.publicKey
+                            )
+                        topologyTransactions =
+                            transactions.topologyTransactions ?? []
+                        topologyTransactions.forEach((tx, idx) => {
+                            logger.info(
+                                `BLOCKDAEMON: topologyTransaction[${idx}] length=${tx.length} preview=${tx.substring(0, 100)}...`
+                            )
+                        })
+                        let partyId = ''
+
+                        const internalTxId = crypto
+                            .randomUUID()
+                            .replace(/-/g, '')
+                            .substring(0, 16)
+                        const txPayload = JSON.stringify(topologyTransactions)
+
+                        const { status, txId: id } =
+                            await driver.signTransaction({
+                                tx: Buffer.from(txPayload).toString('base64'),
+                                txHash: transactions.multiHash,
+                                keyIdentifier: {
+                                    publicKey: key.publicKey,
+                                },
+                                internalTxId,
+                            })
+
+                        if (status === 'signed') {
+                            const { signature } = await driver.getTransaction({
+                                userId,
+                                txId: id,
+                            })
+                            partyId =
+                                await partyAllocator.allocatePartyWithExistingWallet(
+                                    namespace,
+                                    transactions.topologyTransactions ?? [],
+                                    signature,
+                                    userId
+                                )
+                        } else {
+                            txId = id
+                            walletStatus = 'initialized'
+                        }
+
+                        party = {
+                            partyId,
+                            namespace,
+                            hint: partyHint,
+                        }
+                        publicKey = key.publicKey
+                    }
                     break
                 }
                 case SigningProvider.FIREBLOCKS: {
@@ -276,7 +380,9 @@ export const userController = (
                                     transactions.multiHash,
                                     'base64'
                                 ).toString('hex'),
-                                publicKey: key.publicKey,
+                                keyIdentifier: {
+                                    publicKey: key.publicKey,
+                                },
                             })
                         if (status === 'signed') {
                             const { signature } = await driver.getTransaction({
@@ -400,7 +506,9 @@ export const userController = (
                     const signature = await driver.signTransaction({
                         tx: preparedTransaction,
                         txHash: preparedTransactionHash,
-                        publicKey: wallet.publicKey,
+                        keyIdentifier: {
+                            publicKey: wallet.publicKey,
+                        },
                     })
 
                     if (!signature.signature) {
@@ -431,6 +539,62 @@ export const userController = (
 
                     return {
                         signature: signature.signature,
+                        signedBy: wallet.namespace,
+                        partyId: wallet.partyId,
+                    }
+                }
+                case SigningProvider.BLOCKDAEMON: {
+                    const internalTxId = crypto
+                        .randomUUID()
+                        .replace(/-/g, '')
+                        .substring(0, 16)
+                    let result = await driver.signTransaction({
+                        tx: preparedTransaction,
+                        txHash: preparedTransactionHash,
+                        keyIdentifier: {
+                            publicKey: wallet.publicKey,
+                        },
+                        internalTxId,
+                    })
+
+                    if (result.status === 'pending' && result.txId) {
+                        for (let i = 0; i < 60; i++) {
+                            await new Promise((r) => setTimeout(r, 1000))
+                            result = await driver.getTransaction({
+                                userId,
+                                txId: result.txId,
+                            })
+                            if (result.status === 'signed') break
+                        }
+                    }
+
+                    if (!result.signature) {
+                        throw new Error(
+                            'Signing timed out or failed: ' +
+                                JSON.stringify(result)
+                        )
+                    }
+
+                    const existingTx = await store.getTransaction(commandId)
+                    const now = new Date()
+
+                    const signedTx: Transaction = {
+                        commandId,
+                        status: 'signed',
+                        preparedTransaction,
+                        preparedTransactionHash,
+                        origin: existingTx?.origin ?? null,
+                        ...(existingTx?.createdAt && {
+                            createdAt: existingTx.createdAt,
+                        }),
+                        signedAt: now,
+                    }
+
+                    store.setTransaction(signedTx)
+                    notifier.emit('txChanged', signedTx)
+
+                    return {
+                        signature: result.signature,
                         signedBy: wallet.namespace,
                         partyId: wallet.partyId,
                     }
@@ -521,7 +685,8 @@ export const userController = (
                         throw error
                     }
                 }
-                case SigningProvider.WALLET_KERNEL: {
+                case SigningProvider.WALLET_KERNEL:
+                case SigningProvider.BLOCKDAEMON: {
                     const result = await ledgerClient.postWithRetry(
                         '/v2/interactive-submission/execute',
                         {

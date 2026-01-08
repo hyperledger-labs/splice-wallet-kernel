@@ -1,9 +1,19 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { type Holding } from '@canton-network/core-ledger-client'
-import { type Transfer } from '../models/transfer.js'
+import type {
+    Holding,
+    PrettyContract,
+    TransferInstructionView,
+    Transaction,
+} from '@canton-network/core-ledger-client'
+import type {
+    AllocationInstructionView,
+    AllocationRequestView,
+    AllocationSpecification,
+    AllocationView,
+} from '@canton-network/core-token-standard'
 
 // PortfolioService is a fat interface that tries to capture everything our
 // portflio can do.  Separating the interface from the implementation will
@@ -29,14 +39,40 @@ export interface PortfolioService {
         instrumentId: { admin: string; id: string }
         instructionChoice: 'Accept' | 'Reject' | 'Withdraw'
     }) => Promise<void>
-    listPendingTransfers: (_: { party: PartyId }) => Promise<Transfer[]>
+    listPendingTransfers: (_: {
+        party: PartyId
+    }) => Promise<PrettyContract<TransferInstructionView>[]>
+
+    // Allocations
+    listAllocationRequests: (_: {
+        party: PartyId
+    }) => Promise<PrettyContract<AllocationRequestView>[]>
+    createAllocation: (_: {
+        registryUrls: ReadonlyMap<PartyId, string>
+        party: PartyId // Party creating the allocation, not necessarily the sender or receiver
+        allocationSpecification: AllocationSpecification
+    }) => Promise<void>
+    listAllocations: (_: {
+        party: PartyId
+    }) => Promise<PrettyContract<AllocationView>[]>
+    withdrawAllocation: (_: {
+        registryUrls: ReadonlyMap<PartyId, string>
+        party: PartyId
+        contractId: string
+        instrumentId: { admin: string; id: string }
+    }) => Promise<void>
+    listAllocationInstructions: (_: {
+        party: PartyId
+    }) => Promise<PrettyContract<AllocationInstructionView>[]>
 
     // History
-    getTransactionHistory: (_: { party: PartyId }) => Promise<Transfer[]>
-    fetchOlderTransactionHistory: (_: { party: PartyId }) => Promise<Transfer[]>
+    getTransactionHistory: (_: { party: PartyId }) => Promise<Transaction[]>
+    fetchOlderTransactionHistory: (_: {
+        party: PartyId
+    }) => Promise<Transaction[]>
     fetchMoreRecentTransactionHistory: (_: {
         party: PartyId
-    }) => Promise<Transfer[]>
+    }) => Promise<Transaction[]>
 
     // Tap
     tap: (_: {

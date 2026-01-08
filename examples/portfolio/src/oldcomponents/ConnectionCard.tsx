@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useConnection } from '../contexts/ConnectionContext.js'
+import { useConnection } from '../contexts/ConnectionContext'
 
 export const ConnectionCard: React.FC = () => {
     const { status, connect, open, disconnect } = useConnection()

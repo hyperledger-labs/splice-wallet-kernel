@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState, useEffect } from 'react'
-import { useConnection } from '../contexts/ConnectionContext.js'
-import { usePortfolio } from '../contexts/PortfolioContext.js'
-import { type Transfer } from '../models/transfer.js'
-import { TransferCard } from './TransferCard.js'
+import { type Transaction } from '@canton-network/core-ledger-client'
+import { useConnection } from '../contexts/ConnectionContext'
+import { usePortfolio } from '../contexts/PortfolioContext'
+import { TransferCard } from './TransferCard'
 
 export const TransactionHistoryTab: React.FC = () => {
     const {
@@ -20,7 +20,7 @@ export const TransactionHistoryTab: React.FC = () => {
     const [loadingMore, setLoadingMore] = useState(false)
     const [haveInitialHistory, setHaveInitialHistory] = useState(false) // ugly
     const [transactionHistory, setTransactionHistory] = useState<
-        Transfer[] | undefined
+        Transaction[] | undefined
     >(undefined)
 
     useEffect(() => {
@@ -49,15 +49,26 @@ export const TransactionHistoryTab: React.FC = () => {
     return (
         <div>
             <h2>Transaction History</h2>
-            {primaryParty && (
-                <ul>
-                    {transactionHistory?.map((p) => (
-                        <li key={p.contractId}>
-                            <TransferCard party={primaryParty} transfer={p} />
-                        </li>
-                    ))}
-                </ul>
-            )}
+            {primaryParty &&
+                transactionHistory?.map((transaction) => (
+                    <div key={transaction.updateId}>
+                        {/* <TransferCard party={primaryParty} transfer={p} /> */}
+                        {transaction.events.map((event, idx) => (
+                            <div key={idx}>
+                                {event.transferInstruction ? (
+                                    <TransferCard
+                                        party={primaryParty}
+                                        transferInstructionView={
+                                            event.transferInstruction
+                                        }
+                                    />
+                                ) : (
+                                    <div>TODO: Holdings change view</div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                ))}
             {loadingMore ? (
                 <span>⏳</span>
             ) : (

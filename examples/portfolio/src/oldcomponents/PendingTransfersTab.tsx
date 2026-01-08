@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState, useEffect } from 'react'
-import { type Transfer } from '../models/transfer.js'
-import { useConnection } from '../contexts/ConnectionContext.js'
-import { usePortfolio } from '../contexts/PortfolioContext.js'
-import { TransferCard } from './TransferCard.js'
+import type {
+    PrettyContract,
+    TransferInstructionView,
+} from '@canton-network/core-ledger-client'
+import { useConnection } from '../contexts/ConnectionContext'
+import { usePortfolio } from '../contexts/PortfolioContext'
+import { TransferCard } from './TransferCard'
 
 export const PendingTransfersTab: React.FC = () => {
     const {
@@ -13,7 +16,7 @@ export const PendingTransfersTab: React.FC = () => {
     } = useConnection()
     const { listPendingTransfers } = usePortfolio()
     const [pendingTransfers, setPendingTransfers] = useState<
-        Transfer[] | undefined
+        PrettyContract<TransferInstructionView>[] | undefined
     >(undefined)
 
     useEffect(() => {
@@ -29,34 +32,18 @@ export const PendingTransfersTab: React.FC = () => {
 
     return (
         <div>
-            <h2>Incoming</h2>
+            <h2>Pending transfers</h2>
             {primaryParty && (
                 <ul>
-                    {pendingTransfers
-                        ?.filter((p) => p.incoming)
-                        .map((p) => (
-                            <li key={p.contractId}>
-                                <TransferCard
-                                    party={primaryParty}
-                                    transfer={p}
-                                />
-                            </li>
-                        ))}
-                </ul>
-            )}
-            <h2>Outgoing</h2>
-            {primaryParty && (
-                <ul>
-                    {pendingTransfers
-                        ?.filter((p) => !p.incoming)
-                        .map((p) => (
-                            <li key={p.contractId}>
-                                <TransferCard
-                                    party={primaryParty}
-                                    transfer={p}
-                                />
-                            </li>
-                        ))}
+                    {pendingTransfers?.map((p) => (
+                        <li key={p.contractId}>
+                            <TransferCard
+                                party={primaryParty}
+                                contractId={p.contractId}
+                                transferInstructionView={p.interfaceViewValue}
+                            />
+                        </li>
+                    ))}
                 </ul>
             )}
         </div>
