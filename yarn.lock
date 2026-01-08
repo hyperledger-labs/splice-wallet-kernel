@@ -1737,6 +1737,7 @@ __metadata:
   dependencies:
     "@canton-network/core-rpc-transport": "workspace:^"
     "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
     "@canton-network/core-wallet-ui-components": "workspace:^"
     socket.io-client: "npm:^4.8.1"
     tsup: "npm:^8.5.1"
