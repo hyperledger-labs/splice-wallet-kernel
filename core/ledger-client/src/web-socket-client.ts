@@ -75,9 +75,18 @@ export class WebSocketClient {
 
             const wsUpdatesUrl = `${this.baseUrl}${CHANNELS.v2_updates}`
 
-            const filter = TransactionFilterBySetup(interfaceIds, templateIds, {
-                partyId,
-            })
+            // const filter = TransactionFilterBySetup(
+            //     interfaceIds,
+            //     templateIds,
+            //     {
+            //         partyId,
+            //     }
+            // )
+
+            const filter =
+                templateIds !== undefined && templateIds.length > 0
+                    ? TransactionFilterBySetup({ templateIds, partyId })
+                    : TransactionFilterBySetup({ interfaceIds, partyId })
 
             const request = {
                 beginExclusive,
