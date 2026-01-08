@@ -1,10 +1,8 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useState, useEffect } from 'react'
-import { type Transaction } from '@canton-network/core-ledger-client'
 import { useConnection } from '../contexts/ConnectionContext'
-import { usePortfolio } from '../contexts/PortfolioContext'
+import { useTransactionHistory } from '../hooks/useTransactionHistory'
 import { TransferCard } from './TransferCard'
 import { HoldingsChangeSummaryCard } from './HoldingsChangeSummaryCard'
 
@@ -12,46 +10,25 @@ export const TransactionHistoryTab: React.FC = () => {
     const {
         status: { primaryParty },
     } = useConnection()
+
     const {
-        getTransactionHistory,
-        fetchMoreRecentTransactionHistory,
-        fetchOlderTransactionHistory,
-    } = usePortfolio()
+        data: transactionHistory,
+        status,
+        fetchNextPage,
+        isFetchingNextPage,
+        hasNextPage,
+    } = useTransactionHistory()
 
-    const [loadingMore, setLoadingMore] = useState(false)
-    const [haveInitialHistory, setHaveInitialHistory] = useState(false) // ugly
-    const [transactionHistory, setTransactionHistory] = useState<
-        Transaction[] | undefined
-    >(undefined)
-
-    useEffect(() => {
-        ;(async () => {
-            if (primaryParty) {
-                setLoadingMore(true)
-                const th = haveInitialHistory
-                    ? await fetchMoreRecentTransactionHistory({
-                          party: primaryParty,
-                      })
-                    : await getTransactionHistory({ party: primaryParty })
-                setTransactionHistory(th)
-                setHaveInitialHistory(true)
-                setLoadingMore(false)
-            } else {
-                setTransactionHistory(undefined)
-            }
-        })()
-    }, [
-        primaryParty,
-        haveInitialHistory,
-        getTransactionHistory,
-        fetchMoreRecentTransactionHistory,
-    ])
+    const transactions =
+        transactionHistory?.pages.flatMap((page) =>
+            page ? page.transactions : []
+        ) ?? []
 
     return (
         <div>
             <h2>Transaction History</h2>
             {primaryParty &&
-                transactionHistory?.map((transaction) => (
+                transactions.map((transaction) => (
                     <div key={transaction.updateId}>
                         {/* <TransferCard party={primaryParty} transfer={p} /> */}
                         {transaction.events.map((event, idx) => (
@@ -100,19 +77,14 @@ export const TransactionHistoryTab: React.FC = () => {
                         ))}
                     </div>
                 ))}
-            {loadingMore ? (
-                <span>⏳</span>
-            ) : (
+            {!hasNextPage && <span>(end)</span>}
+            {status === 'pending' && <span>⏳</span>}
+            {!isFetchingNextPage && hasNextPage && primaryParty && (
                 <button
-                    disabled={loadingMore || !primaryParty}
-                    onClick={async () => {
-                        setLoadingMore(true)
-                        const th = await fetchOlderTransactionHistory({
-                            party: primaryParty!,
-                        })
-                        setTransactionHistory(th)
-                        setLoadingMore(false)
-                    }}
+                    disabled={
+                        isFetchingNextPage || !hasNextPage || !primaryParty
+                    }
+                    onClick={() => fetchNextPage()}
                 >
                     load more
                 </button>

@@ -7,7 +7,6 @@ import {
     type Holding,
     type TransferInstructionView,
     type PrettyContract,
-    type Transaction,
 } from '@canton-network/core-ledger-client'
 import {
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
@@ -25,6 +24,10 @@ import {
     resolveTransactionHistoryService,
     resolveAmuletService,
 } from './resolve'
+import type {
+    TransactionHistoryRequest,
+    TransactionHistoryResponse,
+} from './transaction-history-service'
 
 // PortfolioService is a fat interface that tries to capture everything our
 // portflio can do.  Separating the interface from the implementation will
@@ -286,35 +289,15 @@ export const listAllocationInstructions = async ({
 
 export const getTransactionHistory = async ({
     party,
+    request,
 }: {
     party: PartyId
-}): Promise<Transaction[]> => {
+    request: TransactionHistoryRequest
+}): Promise<TransactionHistoryResponse> => {
     const transactionHistoryService = await resolveTransactionHistoryService({
         party,
     })
-    return transactionHistoryService.list()
-}
-
-export const fetchOlderTransactionHistory = async ({
-    party,
-}: {
-    party: PartyId
-}): Promise<Transaction[]> => {
-    const transactionHistoryService = await resolveTransactionHistoryService({
-        party,
-    })
-    return transactionHistoryService.fetchOlder()
-}
-
-export const fetchMoreRecentTransactionHistory = async ({
-    party,
-}: {
-    party: PartyId
-}): Promise<Transaction[]> => {
-    const transactionHistoryService = await resolveTransactionHistoryService({
-        party,
-    })
-    return transactionHistoryService.fetchMoreRecent()
+    return transactionHistoryService.query(request)
 }
 
 export const tap = async ({

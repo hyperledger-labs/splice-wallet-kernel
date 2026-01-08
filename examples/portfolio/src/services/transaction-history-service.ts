@@ -29,7 +29,11 @@ const updateOffset = (update: Update): number => {
     throw new Error('Ledger update is missing an offset')
 }
 
-/** Helper function to paginate over all updates in a range. */
+/** Helper function to paginate over all updates in a range.
+ *
+ *  Currently this function may "throw away" some updates after endInclusive,
+ *  we could improve performance and avoid repeated calls by returning and
+ *  saving these. */
 const paginateUpdates = async function* ({
     logger,
     ledgerClient,
@@ -101,6 +105,18 @@ const paginateUpdates = async function* ({
     }
 }
 
+export type TransactionHistoryRequest =
+    | null // Fetch first page
+    | { beginExclusive: number } // Fetch newer transactions
+    | { endInclusive: number } // Fetch older transactions
+
+export type TransactionHistoryResponse = {
+    transactions: Transaction[]
+    beginExclusive: number
+    beginIsLedgerStart: boolean
+    endInclusive: number
+}
+
 export class TransactionHistoryService {
     private logger: Logger
     private ledgerClient: LedgerClient
@@ -117,6 +133,10 @@ export class TransactionHistoryService {
      *   can assume we have gathered all updates in this range. */
     private beginExclusive: number | undefined
     private endInclusive: number | undefined
+
+    /** The ledger start.  This can be used to determine if we have all
+     *  available data.  This value will never decrease, only increase. */
+    private ledgerStartExclusive: number | undefined
 
     constructor({
         logger,
@@ -236,9 +256,69 @@ export class TransactionHistoryService {
         return fetchedUpdates
     }
 
+    async query(
+        request: TransactionHistoryRequest
+    ): Promise<TransactionHistoryResponse> {
+        this.logger.debug({ request }, 'query')
+
+        if (request === null) {
+            this.fetchOlder()
+        } else if ('endInclusive' in request) {
+            this.fetchOlder()
+        } else if ('beginExclusive' in request) {
+            this.fetchMoreRecent()
+        }
+
+        if (this.beginExclusive === undefined) {
+            throw new Error(
+                'TransactionHistoryService: beginExclusive is undefined after fetching'
+            )
+        }
+        if (this.endInclusive === undefined) {
+            throw new Error(
+                'TransactionHistoryService: endInclusive is undefined after fetching'
+            )
+        }
+
+        const transactions = [...this.transactions]
+        transactions.sort((a, b) => b.offset - a.offset)
+        if (request === null) {
+            return {
+                transactions,
+                endInclusive: this.endInclusive,
+                beginExclusive: this.beginExclusive,
+                beginIsLedgerStart:
+                    this.ledgerStartExclusive !== undefined &&
+                    this.beginExclusive <= this.ledgerStartExclusive,
+            }
+        } else if ('endInclusive' in request) {
+            return {
+                transactions: transactions.filter(
+                    (tx) => tx.offset <= request.endInclusive
+                ),
+                endInclusive: request.endInclusive,
+                beginExclusive: this.beginExclusive,
+                beginIsLedgerStart:
+                    this.ledgerStartExclusive !== undefined &&
+                    this.beginExclusive <= this.ledgerStartExclusive,
+            }
+        } else {
+            return {
+                transactions: transactions.filter(
+                    (tx) => tx.offset > request.beginExclusive
+                ),
+                endInclusive: this.endInclusive,
+                beginExclusive: request.beginExclusive,
+                beginIsLedgerStart:
+                    this.ledgerStartExclusive !== undefined &&
+                    request.beginExclusive <= this.ledgerStartExclusive,
+            }
+        }
+    }
+
     // TODO: instead of fetching more recent history, can we rely on transaction
     // events?  Or can we insert them here as they are purged from the ACS?
-    async fetchMoreRecent(): Promise<Transaction[]> {
+    private async fetchMoreRecent(): Promise<void> {
         if (this.endInclusive === undefined) {
             // This means we never fetched any transactions.  We want to start
             // with fetching a batch of older ones.
@@ -253,12 +333,11 @@ export class TransactionHistoryService {
                 beginExclusive: this.endInclusive,
                 endInclusive: ledgerEnd.offset,
             })
-            return this.list()
         }
     }
 
     // TODO: return bool to determine we are finished?
-    async fetchOlder(): Promise<Transaction[]> {
+    private async fetchOlder(): Promise<void> {
         // Figure out the end of the range.
         let endInclusive = this.beginExclusive
         if (endInclusive === undefined) {
@@ -271,7 +350,7 @@ export class TransactionHistoryService {
         // Figure out the start of the ledger; we can't cache this but we could
         // cache the fact that we reached the start of it (since it would only
         // move forwards).
-        const ledgerStartExclusive = (
+        this.ledgerStartExclusive = (
             await this.ledgerClient.get('/v2/state/latest-pruned-offsets')
         ).participantPrunedUpToInclusive
 
@@ -280,25 +359,17 @@ export class TransactionHistoryService {
         // into smaller batches.
         let delta = 256
         let beginExclusive = Math.max(
-            ledgerStartExclusive,
+            this.ledgerStartExclusive,
             endInclusive - delta
         )
         let numUpdates = await this.fetchRange({ beginExclusive, endInclusive })
-        while (numUpdates === 0 && beginExclusive > ledgerStartExclusive) {
+        while (numUpdates === 0 && beginExclusive > this.ledgerStartExclusive) {
             delta *= 2
             beginExclusive = Math.max(
-                ledgerStartExclusive,
+                this.ledgerStartExclusive,
                 endInclusive - delta
             )
             numUpdates = await this.fetchRange({ beginExclusive, endInclusive })
         }
-
-        return this.list()
-    }
-
-    list(): Transaction[] {
-        const transactions = [...this.transactions]
-        transactions.sort((a, b) => b.offset - a.offset)
-        return transactions
     }
 }
