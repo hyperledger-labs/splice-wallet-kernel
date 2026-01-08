@@ -108,8 +108,6 @@ const controller = new AbortController()
 const subscribeToPingUpdates = (async () => {
     try {
         const stream = sdk.userLedger?.subscribeToUpdates({
-            beginOffset: 0,
-            verbose: true,
             templateIds: [
                 '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
             ],
