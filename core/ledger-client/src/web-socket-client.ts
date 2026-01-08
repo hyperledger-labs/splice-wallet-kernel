@@ -20,7 +20,6 @@ export class WebSocketClient {
     private wsSupportBackOff: number
     private accessTokenProvider: AccessTokenProvider | undefined
 
-    //TODO: add websocket options
     constructor({
         baseUrl,
         isAdmin,
@@ -74,15 +73,6 @@ export class WebSocketClient {
             await this.init()
 
             const wsUpdatesUrl = `${this.baseUrl}${CHANNELS.v2_updates}`
-
-            // const filter = TransactionFilterBySetup(
-            //     interfaceIds,
-            //     templateIds,
-            //     {
-            //         partyId,
-            //     }
-            // )
-
             const filter =
                 templateIds !== undefined && templateIds.length > 0
                     ? TransactionFilterBySetup({ templateIds, partyId })
