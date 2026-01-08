@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-store-sql",
-    "version": "0.18.0",
+    "version": "0.19.0",
     "type": "module",
     "description": "SQL implementation of the Store API",
     "license": "Apache-2.0",
