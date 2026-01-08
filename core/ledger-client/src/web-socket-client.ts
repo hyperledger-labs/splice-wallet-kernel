@@ -10,6 +10,16 @@ import { Logger } from 'pino'
 import { TransactionFilterBySetup } from './ledger-api-utils.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
+type UpdateSubscriptionOptions = {
+    beginExclusive: number
+    endInclusive?: number
+    partyId?: PartyId
+    verbose?: boolean
+} & (
+    | { interfaceIds: string[]; templateIds?: never }
+    | { interfaceIds?: never; templateIds: string[] }
+)
+
 export class WebSocketClient {
     private ws: WebSocket | null = null
     private baseUrl: string
@@ -57,26 +67,30 @@ export class WebSocketClient {
     }
 
     subscribeToUpdatesStreaming(
-        beginExclusive: number,
-        interfaceIds: string[],
-        templateIds: string[],
-        endInclusive?: number,
-        partyId?: PartyId,
-        verbose: boolean = true
+        options: UpdateSubscriptionOptions
     ): AsyncIterableIterator<JsGetUpdatesResponse> {
         const messageQueue: JsGetUpdatesResponse[] = []
         let resolveNext: (() => void) | null = null
         let isClosed = false
         let streamError: Error | null = null
 
+        const {
+            beginExclusive,
+            endInclusive,
+            partyId,
+            verbose,
+            interfaceIds,
+            templateIds,
+        } = options
+
         const generator = async function* (this: WebSocketClient) {
             await this.init()
 
             const wsUpdatesUrl = `${this.baseUrl}${CHANNELS.v2_updates}`
-            const filter =
-                templateIds !== undefined && templateIds.length > 0
-                    ? TransactionFilterBySetup({ templateIds, partyId })
-                    : TransactionFilterBySetup({ interfaceIds, partyId })
+
+            const filter = templateIds
+                ? TransactionFilterBySetup({ templateIds, partyId })
+                : TransactionFilterBySetup({ interfaceIds, partyId })
 
             const request = {
                 beginExclusive,
