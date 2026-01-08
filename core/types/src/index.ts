@@ -218,6 +218,19 @@ export class HttpTransport implements RpcTransport {
         private accessToken?: string
     ) {}
 
+    protected async handleErrorResponse(response: Response): Promise<never> {
+        const body = await response.text()
+
+        // if the response uses the RPC error format, throw it as is
+        if (ErrorResponse.safeParse(JSON.parse(body)).success) {
+            throw JSON.parse(body)
+        } else {
+            throw new Error(
+                `HTTP request failed: ${response.status}, text: ${await response.text()} `
+            )
+        }
+    }
+
     async submit(payload: RequestPayload): Promise<ResponsePayload> {
         const request: JsonRpcRequest = {
             jsonrpc: '2.0',
@@ -240,16 +253,7 @@ export class HttpTransport implements RpcTransport {
         })
 
         if (!response.ok) {
-            const body = await response.text()
-
-            // if the response uses the RPC error format, throw it as is
-            if (ErrorResponse.safeParse(JSON.parse(body)).success) {
-                throw JSON.parse(body)
-            } else {
-                throw new Error(
-                    `HTTP request failed: ${response.status}, text: ${await response.text()} `
-                )
-            }
+            return this.handleErrorResponse(response)
         }
 
         const json = await response.json()

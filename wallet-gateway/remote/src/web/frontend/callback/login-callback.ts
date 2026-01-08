@@ -4,7 +4,7 @@
 import { LitElement, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { stateManager } from '../state-manager'
-import { addUserSession, DEFAULT_PAGE_REDIRECT } from '..'
+import { addUserSession, redirectToIntendedOrDefault } from '..'
 
 @customElement('login-callback')
 export class LoginCallback extends LitElement {
@@ -50,7 +50,7 @@ export class LoginCallback extends LitElement {
                     atob(tokenResponse.access_token.split('.')[1])
                 )
                 stateManager.expirationDate.set(
-                    new Date(payload.exp * 1000).toString()
+                    new Date(payload.exp * 1000).toISOString()
                 )
 
                 stateManager.accessToken.set(tokenResponse.access_token)
@@ -59,7 +59,7 @@ export class LoginCallback extends LitElement {
                     tokenResponse.access_token,
                     stateManager.networkId.get() || ''
                 ).then(() => {
-                    window.location.replace(DEFAULT_PAGE_REDIRECT)
+                    redirectToIntendedOrDefault()
                 })
             }
         }
