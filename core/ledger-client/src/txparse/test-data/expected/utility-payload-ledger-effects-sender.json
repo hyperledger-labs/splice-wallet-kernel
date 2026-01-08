@@ -40,11 +40,27 @@
                         ]
                     },
                     "unlockedHoldingsChangeSummary": {
+                        "instrumentId": {
+                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                            "id": "LOAD"
+                        },
                         "numOutputs": 1,
                         "outputAmount": "1000",
                         "amountChange": "1000"
                     },
-                    "transferInstruction": null
+                    "transferInstruction": null,
+                    "lockedHoldingsChangeSummaries": [],
+                    "unlockedHoldingsChangeSummaries": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "1000",
+                            "amountChange": "1000"
+                        }
+                    ]
                 }
             ]
         },
@@ -169,6 +185,10 @@
                         ]
                     },
                     "lockedHoldingsChangeSummary": {
+                        "instrumentId": {
+                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                            "id": "LOAD"
+                        },
                         "numOutputs": 1,
                         "outputAmount": "500",
                         "amountChange": "500"
@@ -193,6 +213,10 @@
                         ]
                     },
                     "unlockedHoldingsChangeSummary": {
+                        "instrumentId": {
+                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                            "id": "LOAD"
+                        },
                         "numOutputs": 1,
                         "outputAmount": "616",
                         "amountChange": "616"
@@ -231,7 +255,29 @@
                             }
                         },
                         "meta": null
-                    }
+                    },
+                    "lockedHoldingsChangeSummaries": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "500",
+                            "amountChange": "500"
+                        }
+                    ],
+                    "unlockedHoldingsChangeSummaries": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "616",
+                            "amountChange": "616"
+                        }
+                    ]
                 }
             ]
         },
@@ -309,6 +355,10 @@
                         ]
                     },
                     "unlockedHoldingsChangeSummary": {
+                        "instrumentId": {
+                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                            "id": "LOAD"
+                        },
                         "numOutputs": 1,
                         "outputAmount": "400",
                         "amountChange": "400"
@@ -342,7 +392,19 @@
                             }
                         },
                         "meta": null
-                    }
+                    },
+                    "lockedHoldingsChangeSummaries": [],
+                    "unlockedHoldingsChangeSummaries": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "400",
+                            "amountChange": "400"
+                        }
+                    ]
                 }
             ]
         },
@@ -411,13 +473,29 @@
                         ]
                     },
                     "lockedHoldingsChangeSummary": {
+                        "instrumentId": {
+                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                            "id": "LOAD"
+                        },
                         "numOutputs": 1,
                         "outputAmount": "1016.0000000000",
                         "amountChange": "1016.0000000000"
                     },
                     "unlockedHoldingsChange": null,
                     "unlockedHoldingsChangeSummary": null,
-                    "transferInstruction": null
+                    "transferInstruction": null,
+                    "lockedHoldingsChangeSummaries": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "1016.0000000000",
+                            "amountChange": "1016.0000000000"
+                        }
+                    ],
+                    "unlockedHoldingsChangeSummaries": []
                 }
             ]
         },
@@ -465,13 +543,29 @@
                         ]
                     },
                     "lockedHoldingsChangeSummary": {
+                        "instrumentId": {
+                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                            "id": "LOAD"
+                        },
                         "numInputs": 1,
                         "inputAmount": "1016",
                         "amountChange": "-1016"
                     },
                     "unlockedHoldingsChange": null,
                     "unlockedHoldingsChangeSummary": null,
-                    "transferInstruction": null
+                    "transferInstruction": null,
+                    "lockedHoldingsChangeSummaries": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numInputs": 1,
+                            "inputAmount": "1016",
+                            "amountChange": "-1016"
+                        }
+                    ],
+                    "unlockedHoldingsChangeSummaries": []
                 }
             ]
         }

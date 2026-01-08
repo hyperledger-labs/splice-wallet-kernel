@@ -1,54 +1,47 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import type { PartyId } from '@canton-network/core-types'
-import { type AllocationRequestView } from '@canton-network/core-token-standard'
-import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
-import { usePortfolio } from '../contexts/PortfolioContext.js'
-import { AssetCard } from './AssetCard.js'
+import { type PrettyContract } from '@canton-network/core-ledger-client'
+import {
+    type AllocationRequestView,
+    type AllocationView,
+} from '@canton-network/core-token-standard'
+import { useCreateAllocation } from '../hooks/useCreateAllocation'
+import { useWithdrawAllocation } from '../hooks/useWithdrawAllocation'
+import { TransferLegCard } from './TransferLegCard'
+import { AllocationSettlementCard } from './AllocationSettlementCard'
 
 export type AllocationRequestCardProps = {
     party: PartyId
     allocationRequest: AllocationRequestView
+    allocationsByTransferLegId?: Map<string, PrettyContract<AllocationView>[]>
 }
 
 export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
     party,
     allocationRequest,
+    allocationsByTransferLegId,
 }) => {
     const { settlement, transferLegs } = allocationRequest
-    const registryUrls = useRegistryUrls()
-    const { createAllocationInstruction } = usePortfolio()
-
-    // const transferLegIds = Object.entries(transferLegs)
+    const { mutate: createAllocation } = useCreateAllocation()
+    const { mutate: withdrawAllocation } = useWithdrawAllocation()
 
     return (
         <div>
-            <h2>Settlement</h2>
-            <strong>executor:</strong> {settlement.executor}
-            <br />
-            <strong>allocateBefore:</strong> {settlement.allocateBefore}
-            {new Date(settlement.allocateBefore) <= new Date() && '(EXPIRED!)'}
-            <br />
-            <h2>Transfer Legs</h2>
+            <AllocationSettlementCard settlementInfo={settlement} />
+            <h3>Transfer Legs</h3>
             {Object.entries(transferLegs).map(
                 ([transferLegId, transferLeg]) => (
                     <div key={transferLegId}>
-                        <h3>Transfer leg {transferLegId}</h3>
-                        <strong>sender:</strong> {transferLeg.sender}
-                        <br />
-                        <strong>receiver:</strong> {transferLeg.receiver}
-                        <br />
-                        <AssetCard
-                            amount={transferLeg.amount}
-                            /* TODO: use actual symbol! */
-                            symbol={transferLeg.instrumentId.id}
+                        <TransferLegCard
+                            transferLegId={transferLegId}
+                            transferLeg={transferLeg}
                         />
                         {transferLeg.sender === party && (
                             <button
-                                onClick={() => {
-                                    createAllocationInstruction({
-                                        registryUrls,
+                                onClick={() =>
+                                    createAllocation({
                                         party,
                                         allocationSpecification: {
                                             settlement,
@@ -56,11 +49,33 @@ export const AllocationRequestCard: React.FC<AllocationRequestCardProps> = ({
                                             transferLeg,
                                         },
                                     })
-                                }}
+                                }
                             >
-                                Accept
+                                Create Allocation
                             </button>
                         )}
+                        {allocationsByTransferLegId
+                            ?.get(transferLegId)
+                            ?.map((allocation) => (
+                                <div key={allocation.contractId}>
+                                    <span>Allocation Made</span>
+                                    {transferLeg.sender === party && (
+                                        <button
+                                            onClick={() =>
+                                                withdrawAllocation({
+                                                    party,
+                                                    instrumentId:
+                                                        transferLeg.instrumentId,
+                                                    contractId:
+                                                        allocation.contractId,
+                                                })
+                                            }
+                                        >
+                                            Withdraw Allocation
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
                     </div>
                 )
             )}

@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { html, css, LitElement } from 'lit'
@@ -13,7 +13,7 @@ import {
     AuthTokenProviderSelfSigned,
     ClientCredentials,
 } from '@canton-network/core-wallet-auth'
-import { addUserSession } from '../index'
+import { redirectToIntendedOrDefault, addUserSession } from '../index'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
@@ -255,9 +255,7 @@ export class LoginUI extends LitElement {
                 scope: this.selectedNetwork.auth.scope,
                 audience: this.selectedNetwork.auth.audience,
             } as ClientCredentials)
-            setTimeout(() => {
-                window.location.replace('/')
-            }, 400)
+            redirectToIntendedOrDefault()
         } else if (idp.type === 'oauth') {
             if (this.selectedNetwork.auth.method === 'authorization_code') {
                 const redirectUri = `${window.origin}/callback/`
@@ -309,8 +307,9 @@ export class LoginUI extends LitElement {
         )
 
         const payload = JSON.parse(atob(access_token.split('.')[1]))
-
-        stateManager.expirationDate.set(new Date(payload.exp * 1000).toString())
+        stateManager.expirationDate.set(
+            new Date(payload.exp * 1000).toISOString()
+        )
         stateManager.accessToken.set(access_token)
 
         const networkId = stateManager.networkId.get() || ''
