@@ -13,7 +13,11 @@ const getUserApiPath = async (): Promise<URL> => {
     if (!userApiPathPromise) {
         userApiPathPromise = fetch('/.well-known/wallet-gateway-config')
             .then((response) => response.json())
-            .then((config) => config.userPath || '/api/v0/user')
+            .then((config) =>
+                config?.userPath
+                    ? new URL(config.userPath)
+                    : new URL(`${window.location.origin}/api/v0/user`)
+            )
             .catch((error) => {
                 console.warn(
                     'Failed to fetch userPath from config, using default',
