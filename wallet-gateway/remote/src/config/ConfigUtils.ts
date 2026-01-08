@@ -111,10 +111,17 @@ interface Urls {
     dappApiUrl: string
 }
 
+// Strips duplicate slashes from a URL, except for the protocol part (e.g., "http://")
+function stripDuplicateSlashes(path: string): string {
+    return path.replace(/(https?:\/\/)|(\/)+/g, '$1$2')
+}
+
 export const deriveUrls = (config: Config, port?: number): Urls => {
     const serviceUrl = `http://localhost:${port || config.server.port}`
     const publicUrl = config.kernel.publicUrl || serviceUrl
 
-    const dappApiUrl = `${publicUrl}${config.server.dappPath}`
+    const dappApiUrl = stripDuplicateSlashes(
+        `${publicUrl}/${config.server.dappPath}`
+    )
     return { dappApiUrl, publicUrl, serviceUrl }
 }
