@@ -70,9 +70,8 @@ export class WebSocketClient {
         let isClosed = false
         let streamError: Error | null = null
 
-        // We create a wrapper generator
         const generator = async function* (this: WebSocketClient) {
-            await this.init() // Now init happens inside the generator
+            await this.init()
 
             const wsUpdatesUrl = `${this.baseUrl}${CHANNELS.v2_updates}`
 
@@ -119,7 +118,6 @@ export class WebSocketClient {
 
             try {
                 while (true) {
-                    // If the queue is empty, we wait
                     if (messageQueue.length === 0) {
                         if (isClosed) break
                         await new Promise<void>((r) => (resolveNext = r))
@@ -127,7 +125,6 @@ export class WebSocketClient {
 
                     if (streamError) throw streamError
 
-                    // Flush the queue to the consumer
                     while (messageQueue.length > 0) {
                         yield messageQueue.shift()!
                     }
