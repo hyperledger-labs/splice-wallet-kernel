@@ -107,10 +107,13 @@ const controller = new AbortController()
 
 const subscribeToPingUpdates = (async () => {
     try {
-        const stream = sdk.userLedger?.subscribeToUpdates(
-            [],
-            ['#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping']
-        )
+        const stream = sdk.userLedger?.subscribeToUpdates({
+            beginOffset: 0,
+            verbose: true,
+            templateIds: [
+                '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
+            ],
+        })
         for await (const update of stream!) {
             events.push(update as UpdatesResponse)
             if (controller.signal.aborted) break

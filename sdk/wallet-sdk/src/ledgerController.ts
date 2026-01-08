@@ -51,6 +51,14 @@ export type ParticipantEndpointConfig = {
     accessTokenProvider?: AccessTokenProvider
 }
 
+export type StreamUpdatesOptions = {
+    beginOffset: number
+    verbose: boolean
+} & (
+    | { interfaceIds: string[]; templateIds?: never }
+    | { interfaceIds?: never; templateIds: string[] }
+)
+
 /**
  * Controller for interacting with the Ledger API, this is the primary interaction point with the validator node
  * using external signing.
@@ -230,20 +238,25 @@ export class LedgerController {
         }
     }
 
-    async *subscribeToUpdates(
-        interfaceIds: string[],
-        templateIds: string[],
-        beginOffset: number = 0,
-        endOffset?: number
-    ) {
-        const stream = this.websocketClient.subscribeToUpdatesStreaming(
-            beginOffset,
-            interfaceIds,
-            templateIds,
-            endOffset,
-            this.getPartyId(),
-            true
-        )
+    async *subscribeToUpdates(options: StreamUpdatesOptions) {
+        const { beginOffset, verbose } = options
+
+        const baseOptions = {
+            beginExclusive: beginOffset,
+            partyId: this.getPartyId(),
+            verbose,
+        }
+
+        const stream =
+            'templateIds' in options
+                ? this.websocketClient.subscribeToUpdatesStreaming({
+                      ...baseOptions,
+                      templateIds: options.templateIds,
+                  })
+                : this.websocketClient.subscribeToUpdatesStreaming({
+                      ...baseOptions,
+                      interfaceIds: options.interfaceIds,
+                  })
 
         yield* stream
     }
