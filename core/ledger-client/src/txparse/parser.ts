@@ -842,15 +842,15 @@ export class TransactionParser {
 
         const basePayload = {
             contractId: archivedEvent.contractId,
-            eventFormat: EventFilterBySetup(
-                [HOLDING_INTERFACE_ID, TRANSFER_INSTRUCTION_INTERFACE_ID],
-                [],
-                {
-                    isMasterUser: this.isMasterUser,
-                    partyId: this.partyId,
-                    verbose: true,
-                }
-            ),
+            eventFormat: EventFilterBySetup({
+                interfaceIds: [
+                    HOLDING_INTERFACE_ID,
+                    TRANSFER_INSTRUCTION_INTERFACE_ID,
+                ],
+                isMasterUser: this.isMasterUser,
+                partyId: this.partyId,
+                verbose: true,
+            }),
         }
 
         const payload =
