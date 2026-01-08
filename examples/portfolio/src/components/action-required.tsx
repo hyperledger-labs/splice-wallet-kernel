@@ -10,14 +10,10 @@ import {
 import type { PartyId } from '@canton-network/core-types'
 import { toast } from 'sonner'
 import { CopyableIdentifier } from './copyable-identifier'
-import { useRegistryUrls } from '../contexts/RegistryServiceContext'
-import { usePortfolio } from '../contexts/PortfolioContext'
-import {
-    ActionRequiredDialog,
-    isReceiver,
-    getCounterparty,
-} from './action-required-dialog'
+import { useExerciseTransfer } from '../hooks/useExerciseTransfer'
+import { ActionRequiredDialog } from './action-required-dialog'
 import type { ActionItem } from './types'
+import { getCounterparty, isReceiver } from './utils'
 
 interface ActionRequiredProps {
     items: ActionItem[]
@@ -28,8 +24,7 @@ export const ActionRequired: React.FC<ActionRequiredProps> = ({ items }) => {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [loadingItemId, setLoadingItemId] = useState<string | null>(null)
 
-    const registryUrls = useRegistryUrls()
-    const { exerciseTransfer } = usePortfolio()
+    const exerciseTransferMutation = useExerciseTransfer()
 
     const handleCardClick = (item: ActionItem) => {
         setSelectedItem(item)
@@ -41,64 +36,27 @@ export const ActionRequired: React.FC<ActionRequiredProps> = ({ items }) => {
         setSelectedItem(null)
     }
 
-    const handleAccept = async (item: ActionItem) => {
+    const handleAction = (
+        item: ActionItem,
+        action: 'Accept' | 'Reject' | 'Withdraw'
+    ) => {
         setLoadingItemId(item.id)
-        try {
-            await exerciseTransfer({
-                registryUrls,
+        exerciseTransferMutation.mutate(
+            {
                 party: item.currentPartyId as PartyId,
                 contractId: item.id,
                 instrumentId: item.instrumentId,
-                instructionChoice: 'Accept',
-            })
-            handleCloseDialog()
-        } catch (error) {
-            toast.error(
-                `Failed to accept transfer: ${error instanceof Error ? error.message : 'Unknown error'}`
-            )
-        } finally {
-            setLoadingItemId(null)
-        }
-    }
-
-    const handleReject = async (item: ActionItem) => {
-        setLoadingItemId(item.id)
-        try {
-            await exerciseTransfer({
-                registryUrls,
-                party: item.currentPartyId as PartyId,
-                contractId: item.id,
-                instrumentId: item.instrumentId,
-                instructionChoice: 'Reject',
-            })
-            handleCloseDialog()
-        } catch (error) {
-            toast.error(
-                `Failed to reject transfer: ${error instanceof Error ? error.message : 'Unknown error'}`
-            )
-        } finally {
-            setLoadingItemId(null)
-        }
-    }
-
-    const handleWithdraw = async (item: ActionItem) => {
-        setLoadingItemId(item.id)
-        try {
-            await exerciseTransfer({
-                registryUrls,
-                party: item.currentPartyId as PartyId,
-                contractId: item.id,
-                instrumentId: item.instrumentId,
-                instructionChoice: 'Withdraw',
-            })
-            handleCloseDialog()
-        } catch (error) {
-            toast.error(
-                `Failed to withdraw transfer: ${error instanceof Error ? error.message : 'Unknown error'}`
-            )
-        } finally {
-            setLoadingItemId(null)
-        }
+                instructionChoice: action,
+            },
+            {
+                onSuccess: () => handleCloseDialog(),
+                onError: (error) =>
+                    toast.error(
+                        `Failed to ${action.toLowerCase()} transfer: ${error instanceof Error ? error.message : 'Unknown error'}`
+                    ),
+                onSettled: () => setLoadingItemId(null),
+            }
+        )
     }
 
     if (items.length === 0) return null
@@ -231,7 +189,7 @@ export const ActionRequired: React.FC<ActionRequiredProps> = ({ items }) => {
                                             disabled={isItemLoading}
                                             onClick={(e) => {
                                                 e.stopPropagation()
-                                                handleAccept(item)
+                                                handleAction(item, 'Accept')
                                             }}
                                         >
                                             {isItemLoading ? (
@@ -250,7 +208,7 @@ export const ActionRequired: React.FC<ActionRequiredProps> = ({ items }) => {
                                             disabled={isItemLoading}
                                             onClick={(e) => {
                                                 e.stopPropagation()
-                                                handleReject(item)
+                                                handleAction(item, 'Reject')
                                             }}
                                         >
                                             {isItemLoading ? (
@@ -272,7 +230,7 @@ export const ActionRequired: React.FC<ActionRequiredProps> = ({ items }) => {
                                         disabled={isItemLoading}
                                         onClick={(e) => {
                                             e.stopPropagation()
-                                            handleWithdraw(item)
+                                            handleAction(item, 'Withdraw')
                                         }}
                                     >
                                         {isItemLoading ? (
@@ -296,9 +254,15 @@ export const ActionRequired: React.FC<ActionRequiredProps> = ({ items }) => {
                 open={isDialogOpen}
                 isLoading={loadingItemId !== null}
                 onClose={handleCloseDialog}
-                onAccept={handleAccept}
-                onReject={handleReject}
-                onWithdraw={handleWithdraw}
+                onAccept={(selectedItem) =>
+                    handleAction(selectedItem, 'Accept')
+                }
+                onReject={(selectedItem) =>
+                    handleAction(selectedItem, 'Reject')
+                }
+                onWithdraw={(selectedItem) =>
+                    handleAction(selectedItem, 'Withdraw')
+                }
             />
         </Box>
     )

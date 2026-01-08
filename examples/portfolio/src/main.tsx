@@ -11,7 +11,14 @@ import { PortfolioProvider } from './contexts/PortfolioProvider'
 import { AppThemeProvider } from './contexts/theme-provider'
 import { Toaster } from 'sonner'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 30_000, // data stays fresh for 30 seconds
+            refetchInterval: 60_000, // Poll every 60 seconds
+        },
+    },
+})
 
 const router = createRouter({
     routeTree,
