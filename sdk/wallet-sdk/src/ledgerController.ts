@@ -238,6 +238,10 @@ export class LedgerController {
         }
     }
 
+    /**
+     *
+     * @param options pass in the templateIds or interfaceIds, and optionally can pass in the beginExclusive (default: 0 ) or verbose (default: true)
+     */
     async *subscribeToUpdates(options: StreamUpdatesOptions) {
         const baseOptions = {
             beginExclusive: options.beginOffset ?? 0,
