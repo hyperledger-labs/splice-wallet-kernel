@@ -112,97 +112,97 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
-            # - uses: ./.github/actions/setup_yarn
+            - uses: ./.github/actions/setup_yarn
 
-            # - name: Download Canton
-            #   run: yarn script:fetch:canton
+            - name: Download Canton
+              run: yarn script:fetch:canton
 
-            # - name: Start Canton
-            #   run: |
-            #       set -e
-            #       timeout 5m bash -c '
-            #         LOGFILE=canton_start.log
-            #         yarn start:canton > "$LOGFILE" 2>&1 &
-            #         pid=$!
-            #         for i in {1..60}; do
-            #           if grep -q "Bootstrap script successfully executed." "$LOGFILE"; then
-            #             echo "Canton started successfully."
-            #             exit 0
-            #           fi
-            #           if ! kill -0 $pid 2>/dev/null; then
-            #             echo "Canton process exited unexpectedly."
-            #             cat "$LOGFILE"
-            #             exit 1
-            #           fi
-            #           sleep 5
-            #         done
-            #         echo "Timeout: 'Bootstrap script successfully executed.' not found in 5 minutes."
-            #         cat "$LOGFILE"
-            #         exit 1
-            #       '
+            - name: Start Canton
+              run: |
+                  set -e
+                  timeout 5m bash -c '
+                    LOGFILE=canton_start.log
+                    yarn start:canton > "$LOGFILE" 2>&1 &
+                    pid=$!
+                    for i in {1..60}; do
+                      if grep -q "Bootstrap script successfully executed." "$LOGFILE"; then
+                        echo "Canton started successfully."
+                        exit 0
+                      fi
+                      if ! kill -0 $pid 2>/dev/null; then
+                        echo "Canton process exited unexpectedly."
+                        cat "$LOGFILE"
+                        exit 1
+                      fi
+                      sleep 5
+                    done
+                    echo "Timeout: 'Bootstrap script successfully executed.' not found in 5 minutes."
+                    cat "$LOGFILE"
+                    exit 1
+                  '
 
-            # - name: Start remote WK
-            #   run: yarn nx run @canton-network/wallet-gateway-remote:start &
+            - name: Start remote WK
+              run: yarn nx run @canton-network/wallet-gateway-remote:start &
 
-            # - run: yarn nx run @canton-network/example-ping:dev &
+            - run: yarn nx run @canton-network/example-ping:dev &
 
-            # - run: yarn nx run @canton-network/mock-oauth2:start &
+            - run: yarn nx run @canton-network/mock-oauth2:start &
 
-            # # Figures out the version of playwright that's installed.
-            # # 1. Because we don't know what version yarn will resolve it to, we have
-            # #    to use `yarn why` to get the actually installed version.
-            # # 2. Because we're in a workspace, we need to make sure we get the version
-            # #    for the root and not any children, hence the `grep`. If not using
-            # #    workspaces, this can be skipped.
-            # # 3. jq comes pre-installed in the Ubuntu runner, so we use that to get
-            # #    the correct version string.
-            # # 4. Finally, we use sed to extract just the version number (eg; '1.22.0')
-            # # The result is stored in steps.playwright-version.outputs.version
-            # - name: Get installed Playwright version
-            #   id: playwright-version
-            #   run: echo "::set-output name=version::$(yarn why --json @playwright/test | grep -h 'workspace:.' | jq --raw-output '.children[].locator' | sed -e 's/@playwright\/test@.*://')"
+            # Figures out the version of playwright that's installed.
+            # 1. Because we don't know what version yarn will resolve it to, we have
+            #    to use `yarn why` to get the actually installed version.
+            # 2. Because we're in a workspace, we need to make sure we get the version
+            #    for the root and not any children, hence the `grep`. If not using
+            #    workspaces, this can be skipped.
+            # 3. jq comes pre-installed in the Ubuntu runner, so we use that to get
+            #    the correct version string.
+            # 4. Finally, we use sed to extract just the version number (eg; '1.22.0')
+            # The result is stored in steps.playwright-version.outputs.version
+            - name: Get installed Playwright version
+              id: playwright-version
+              run: echo "::set-output name=version::$(yarn why --json @playwright/test | grep -h 'workspace:.' | jq --raw-output '.children[].locator' | sed -e 's/@playwright\/test@.*://')"
 
-            # # Attempt to restore the correct Playwright browser binaries based on the
-            # # currently installed version of Playwright (The browser binary versions
-            # # may change with Playwright versions).
-            # # Note: Playwright's cache directory is hard coded because that's what it
-            # # says to do in the docs. There doesn't appear to be a command that prints
-            # # it out for us.
-            # - name: Load Playwright browser cache
-            #   uses: actions/cache@v4
-            #   id: playwright-cache
-            #   with:
-            #       path: '~/.cache/ms-playwright'
-            #       key: '${{ runner.os }}-0-playwright-${{ steps.playwright-version.outputs.version }}'
-            #       # As a fallback, if the Playwright version has changed, try use the
-            #       # most recently cached version. There's a good chance that at least one
-            #       # of the browser binary versions haven't been updated, so Playwright can
-            #       # skip installing that in the next step.
-            #       # Note: When falling back to an old cache, `cache-hit` (used below)
-            #       # will be `false`. This allows us to restore the potentially out of
-            #       # date cache, but still let Playwright decide if it needs to download
-            #       # new binaries or not.
-            #       restore-keys: |
-            #           ${{ runner.os }}-0-playwright-
+            # Attempt to restore the correct Playwright browser binaries based on the
+            # currently installed version of Playwright (The browser binary versions
+            # may change with Playwright versions).
+            # Note: Playwright's cache directory is hard coded because that's what it
+            # says to do in the docs. There doesn't appear to be a command that prints
+            # it out for us.
+            - name: Load Playwright browser cache
+              uses: actions/cache@v4
+              id: playwright-cache
+              with:
+                  path: '~/.cache/ms-playwright'
+                  key: '${{ runner.os }}-0-playwright-${{ steps.playwright-version.outputs.version }}'
+                  # As a fallback, if the Playwright version has changed, try use the
+                  # most recently cached version. There's a good chance that at least one
+                  # of the browser binary versions haven't been updated, so Playwright can
+                  # skip installing that in the next step.
+                  # Note: When falling back to an old cache, `cache-hit` (used below)
+                  # will be `false`. This allows us to restore the potentially out of
+                  # date cache, but still let Playwright decide if it needs to download
+                  # new binaries or not.
+                  restore-keys: |
+                      ${{ runner.os }}-0-playwright-
 
-            # # If the Playwright browser binaries weren't able to be restored, we tell
-            # # playwright to install everything for us.
-            # - name: Install Playwright's dependencies
-            #   if: steps.playwright-cache.outputs.cache-hit != 'true'
-            #   run: yarn workspace @canton-network/example-ping run playwright install --with-deps
+            # If the Playwright browser binaries weren't able to be restored, we tell
+            # playwright to install everything for us.
+            - name: Install Playwright's dependencies
+              if: steps.playwright-cache.outputs.cache-hit != 'true'
+              run: yarn workspace @canton-network/example-ping run playwright install --with-deps
 
-            # - name: Build project
-            #   run: yarn build:all
+            - name: Build project
+              run: yarn build:all
 
-            # - name: Run example e2e
-            #   run: yarn nx playwright:e2e @canton-network/example-ping
+            - name: Run example e2e
+              run: yarn nx playwright:e2e @canton-network/example-ping
 
-            # - uses: actions/upload-artifact@v4
-            #   if: ${{ !cancelled() }}
-            #   with:
-            #       name: playwright-report
-            #       path: examples/ping/playwright-report/
-            #       retention-days: 30
+            - uses: actions/upload-artifact@v4
+              if: ${{ !cancelled() }}
+              with:
+                  name: playwright-report
+                  path: examples/ping/playwright-report/
+                  retention-days: 30
 
     sdk-e2e:
         name: sdk-e2e (${{ matrix.network }})
