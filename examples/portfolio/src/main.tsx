@@ -9,6 +9,7 @@ import { RegistryServiceProvider } from './contexts/RegistriesServiceProvider'
 import { ConnectionProvider } from './contexts/ConnectionProvider'
 import { PortfolioProvider } from './contexts/PortfolioProvider'
 import { AppThemeProvider } from './contexts/theme-provider'
+import { Toaster } from 'sonner'
 
 const router = createRouter({
     routeTree,
@@ -41,6 +42,7 @@ if (rootElement && !rootElement.innerHTML) {
                         <ConnectionProvider>
                             <PortfolioProvider>
                                 <RouterProvider router={router} />
+                                <Toaster richColors />
                             </PortfolioProvider>
                         </ConnectionProvider>
                     </RegistryServiceProvider>
