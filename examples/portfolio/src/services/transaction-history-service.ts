@@ -225,7 +225,7 @@ export class TransactionHistoryService {
             this.unprocessed = newUnprocessed
             if (this.unprocessed.length > 0) {
                 this.logger.debug(
-                    { unprocessed: this.unprocessed.length },
+                    { unprocessed: this.unprocessed },
                     'unprocessed events'
                 )
             }

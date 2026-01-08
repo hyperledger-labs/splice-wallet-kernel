@@ -20,9 +20,9 @@ export const TransactionHistoryTab: React.FC = () => {
     } = useTransactionHistory()
 
     const transactions =
-        transactionHistory?.pages.flatMap((page) =>
-            page ? page.transactions : []
-        ) ?? []
+        transactionHistory?.pages
+            .flatMap((page) => (page ? page.transactions : []))
+            .filter((tx) => tx.events.length > 0) ?? []
 
     return (
         <div>
@@ -30,6 +30,10 @@ export const TransactionHistoryTab: React.FC = () => {
             {primaryParty &&
                 transactions.map((transaction) => (
                     <div key={transaction.updateId}>
+                        <code>
+                            At {transaction.offset} ({transaction.recordTime})
+                        </code>
+                        <br />
                         {/* <TransferCard party={primaryParty} transfer={p} /> */}
                         {transaction.events.map((event, idx) => (
                             <div key={idx}>
