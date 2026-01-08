@@ -24,39 +24,6 @@ export type JSContractEntry = Types['JsContractEntry']
 export type JsCantonError = Types['JsCantonError']
 
 export function TransactionFilterBySetup(
-    interfaceNames: string[] | string,
-    options: {
-        includeWildcard?: boolean
-        isMasterUser?: boolean
-        partyId?: PartyId | undefined
-    } = { includeWildcard: false, isMasterUser: false }
-): TransactionFilter {
-    const interfaceArrayed = Array.isArray(interfaceNames)
-        ? interfaceNames
-        : [interfaceNames]
-    if (options.isMasterUser)
-        return {
-            filtersByParty: {},
-            filtersForAnyParty:
-                filtersForAnyParty(
-                    interfaceArrayed,
-                    options.includeWildcard ?? false
-                ) ?? {},
-        }
-    else if (!options.partyId || options.partyId === undefined)
-        throw new Error('Party must be provided for non-master users')
-    else
-        return {
-            filtersByParty:
-                filtersByParty(
-                    options.partyId,
-                    interfaceArrayed,
-                    options.includeWildcard ?? false
-                ) ?? {},
-        }
-}
-
-export function TransactionFilterBySetup2(
     interfaceNames: string[] | string = [],
     templateIds: string[] | string = [],
     options: {
@@ -76,7 +43,7 @@ export function TransactionFilterBySetup2(
         return {
             filtersByParty: {},
             filtersForAnyParty:
-                filtersForAnyParty2(
+                filtersForAnyParty(
                     interfaceArrayed,
                     templateIdsArrayed,
                     options.includeWildcard ?? false
@@ -87,7 +54,7 @@ export function TransactionFilterBySetup2(
     else
         return {
             filtersByParty:
-                filtersByParty2(
+                filtersByParty(
                     options.partyId,
                     templateIdsArrayed,
                     interfaceArrayed,
@@ -98,6 +65,7 @@ export function TransactionFilterBySetup2(
 
 export function EventFilterBySetup(
     interfaceNames: string[] | string,
+    templateIds: string[] | string = [],
     options: {
         verbose?: boolean
         includeWildcard?: boolean
@@ -108,12 +76,17 @@ export function EventFilterBySetup(
     const interfaceArrayed = Array.isArray(interfaceNames)
         ? interfaceNames
         : [interfaceNames]
+
+    const templateIdsArrayed = Array.isArray(templateIds)
+        ? templateIds
+        : [templateIds]
     if (options.isMasterUser)
         return {
             filtersByParty: {},
             filtersForAnyParty:
                 filtersForAnyParty(
                     interfaceArrayed,
+                    templateIdsArrayed,
                     options.includeWildcard ?? false
                 ) ?? {},
             verbose: options.verbose ?? false,
@@ -125,6 +98,7 @@ export function EventFilterBySetup(
             filtersByParty:
                 filtersByParty(
                     options.partyId,
+                    templateIdsArrayed,
                     interfaceArrayed,
                     options.includeWildcard ?? false
                 ) ?? {},
@@ -132,7 +106,7 @@ export function EventFilterBySetup(
         }
 }
 
-function filtersByParty2(
+function filtersByParty(
     party: PartyId,
     templateIds: string[],
     interfaceIds: string[],
@@ -196,86 +170,45 @@ function filtersByParty2(
     }
 }
 
-function filtersByParty(
-    party: PartyId,
-    interfaceNames: string[],
-    includeWildcard: boolean
-): TransactionFilter['filtersByParty'] {
-    const wildcardFilter = includeWildcard
-        ? [
-              {
-                  identifierFilter: {
-                      WildcardFilter: {
-                          value: {
-                              includeCreatedEventBlob: true,
-                          },
-                      },
-                  },
-              },
-          ]
-        : []
+// function filtersForAnyParty(
+//     interfaceNames: string[],
+//     includeWildcard: boolean
+// ): TransactionFilter['filtersForAnyParty'] {
+//     const wildcardFilter = includeWildcard
+//         ? [
+//               {
+//                   identifierFilter: {
+//                       WildcardFilter: {
+//                           value: {
+//                               includeCreatedEventBlob: true,
+//                           },
+//                       },
+//                   },
+//               },
+//           ]
+//         : []
 
-    return {
-        [party]: {
-            cumulative: [
-                ...interfaceNames.map((interfaceName) => {
-                    return {
-                        identifierFilter: {
-                            InterfaceFilter: {
-                                value: {
-                                    interfaceId: interfaceName,
-                                    includeInterfaceView: true,
-                                    includeCreatedEventBlob: true,
-                                },
-                            },
-                        },
-                    }
-                }),
-                ...wildcardFilter,
-            ],
-        },
-    }
-}
+//     return {
+//         cumulative: [
+//             ...interfaceNames.map((interfaceName) => {
+//                 return {
+//                     identifierFilter: {
+//                         InterfaceFilter: {
+//                             value: {
+//                                 interfaceId: interfaceName,
+//                                 includeInterfaceView: true,
+//                                 includeCreatedEventBlob: true,
+//                             },
+//                         },
+//                     },
+//                 }
+//             }),
+//             ...wildcardFilter,
+//         ],
+//     }
+// }
 
 function filtersForAnyParty(
-    interfaceNames: string[],
-    includeWildcard: boolean
-): TransactionFilter['filtersForAnyParty'] {
-    const wildcardFilter = includeWildcard
-        ? [
-              {
-                  identifierFilter: {
-                      WildcardFilter: {
-                          value: {
-                              includeCreatedEventBlob: true,
-                          },
-                      },
-                  },
-              },
-          ]
-        : []
-
-    return {
-        cumulative: [
-            ...interfaceNames.map((interfaceName) => {
-                return {
-                    identifierFilter: {
-                        InterfaceFilter: {
-                            value: {
-                                interfaceId: interfaceName,
-                                includeInterfaceView: true,
-                                includeCreatedEventBlob: true,
-                            },
-                        },
-                    },
-                }
-            }),
-            ...wildcardFilter,
-        ],
-    }
-}
-
-function filtersForAnyParty2(
     interfaceNames: string[],
     templateIds: string[],
     includeWildcard: boolean

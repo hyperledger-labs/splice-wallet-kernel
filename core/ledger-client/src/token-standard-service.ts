@@ -1359,6 +1359,7 @@ export class TokenStandardService {
                         includeTransactions: {
                             eventFormat: EventFilterBySetup(
                                 TokenStandardTransactionInterfaces,
+                                [],
                                 {
                                     includeWildcard: true,
                                     isMasterUser: this.isMasterUser,
@@ -1392,6 +1393,7 @@ export class TokenStandardService {
         const transactionFormat: TransactionFormat = {
             eventFormat: EventFilterBySetup(
                 TokenStandardTransactionInterfaces,
+                [],
                 {
                     includeWildcard: true,
                     isMasterUser: this.isMasterUser,
