@@ -134,7 +134,7 @@ export interface Transaction {
  *
  */
 export type Transactions = Transaction[]
-export interface ObjectOfTransactionsUOtaZpXE {
+export interface TransactionsResult {
     transactions?: Transactions
     [k: string]: any
 }
@@ -184,7 +184,7 @@ export interface SubscribeTransactionsParams {
 }
 export type SignTransactionResult = Error | Transaction
 export type GetTransactionResult = Error | Transaction
-export type GetTransactionsResult = Error | ObjectOfTransactionsUOtaZpXE
+export type GetTransactionsResult = Error | TransactionsResult
 export interface GetKeysResult {
     keys?: Keys
     [k: string]: any
