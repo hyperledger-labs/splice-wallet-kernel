@@ -844,6 +844,7 @@ export class TransactionParser {
             contractId: archivedEvent.contractId,
             eventFormat: EventFilterBySetup(
                 [HOLDING_INTERFACE_ID, TRANSFER_INSTRUCTION_INTERFACE_ID],
+                [],
                 {
                     isMasterUser: this.isMasterUser,
                     partyId: this.partyId,

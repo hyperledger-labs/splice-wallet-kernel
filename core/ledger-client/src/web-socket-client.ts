@@ -7,7 +7,7 @@ import {
     JsGetUpdatesResponse,
 } from './generated-clients/asyncapi-3.4.7.js'
 import { Logger } from 'pino'
-import { TransactionFilterBySetup2 } from './ledger-api-utils.js'
+import { TransactionFilterBySetup } from './ledger-api-utils.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 export class WebSocketClient {
@@ -75,13 +75,9 @@ export class WebSocketClient {
 
             const wsUpdatesUrl = `${this.baseUrl}${CHANNELS.v2_updates}`
 
-            const filter = TransactionFilterBySetup2(
-                interfaceIds,
-                templateIds,
-                {
-                    partyId,
-                }
-            )
+            const filter = TransactionFilterBySetup(interfaceIds, templateIds, {
+                partyId,
+            })
 
             const request = {
                 beginExclusive,
