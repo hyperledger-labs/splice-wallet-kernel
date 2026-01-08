@@ -42,7 +42,7 @@ function Index() {
                 message: memo,
                 sender: transfer.sender,
                 receiver: transfer.receiver,
-                instrumentId: transfer.instrumentId.id ?? '-',
+                instrumentId: transfer.instrumentId,
                 amount: transfer?.amount,
             }
         })

@@ -5,26 +5,19 @@ import {
     Typography,
     Button,
     Badge,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
+    CircularProgress,
 } from '@mui/material'
+import type { PartyId } from '@canton-network/core-types'
+import { toast } from 'sonner'
 import { CopyableIdentifier } from './copyable-identifier'
-
-interface ActionItem {
-    id: string
-    tag: string
-    type: string
-    date: string
-    expiry: string
-    message: string
-    sender: string
-    receiver: string
-    currentPartyId: string
-    instrumentId: string
-    amount: string
-}
+import { useRegistryUrls } from '../contexts/RegistryServiceContext'
+import { usePortfolio } from '../contexts/PortfolioContext'
+import {
+    ActionRequiredDialog,
+    isReceiver,
+    getCounterparty,
+} from './action-required-dialog'
+import type { ActionItem } from './types'
 
 interface ActionRequiredProps {
     items: ActionItem[]
@@ -33,6 +26,10 @@ interface ActionRequiredProps {
 export const ActionRequired: React.FC<ActionRequiredProps> = ({ items }) => {
     const [selectedItem, setSelectedItem] = useState<ActionItem | null>(null)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [loadingItemId, setLoadingItemId] = useState<string | null>(null)
+
+    const registryUrls = useRegistryUrls()
+    const { exerciseTransfer } = usePortfolio()
 
     const handleCardClick = (item: ActionItem) => {
         setSelectedItem(item)
@@ -44,15 +41,64 @@ export const ActionRequired: React.FC<ActionRequiredProps> = ({ items }) => {
         setSelectedItem(null)
     }
 
-    const isReceiver = (item: ActionItem) => {
-        return item.currentPartyId === item.receiver
+    const handleAccept = async (item: ActionItem) => {
+        setLoadingItemId(item.id)
+        try {
+            await exerciseTransfer({
+                registryUrls,
+                party: item.currentPartyId as PartyId,
+                contractId: item.id,
+                instrumentId: item.instrumentId,
+                instructionChoice: 'Accept',
+            })
+            handleCloseDialog()
+        } catch (error) {
+            toast.error(
+                `Failed to accept transfer: ${error instanceof Error ? error.message : 'Unknown error'}`
+            )
+        } finally {
+            setLoadingItemId(null)
+        }
     }
 
-    const getCounterparty = (item: ActionItem) => {
-        if (isReceiver(item)) {
-            return { label: 'Sender', value: item.sender }
+    const handleReject = async (item: ActionItem) => {
+        setLoadingItemId(item.id)
+        try {
+            await exerciseTransfer({
+                registryUrls,
+                party: item.currentPartyId as PartyId,
+                contractId: item.id,
+                instrumentId: item.instrumentId,
+                instructionChoice: 'Reject',
+            })
+            handleCloseDialog()
+        } catch (error) {
+            toast.error(
+                `Failed to reject transfer: ${error instanceof Error ? error.message : 'Unknown error'}`
+            )
+        } finally {
+            setLoadingItemId(null)
         }
-        return { label: 'Receiver', value: item.receiver }
+    }
+
+    const handleWithdraw = async (item: ActionItem) => {
+        setLoadingItemId(item.id)
+        try {
+            await exerciseTransfer({
+                registryUrls,
+                party: item.currentPartyId as PartyId,
+                contractId: item.id,
+                instrumentId: item.instrumentId,
+                instructionChoice: 'Withdraw',
+            })
+            handleCloseDialog()
+        } catch (error) {
+            toast.error(
+                `Failed to withdraw transfer: ${error instanceof Error ? error.message : 'Unknown error'}`
+            )
+        } finally {
+            setLoadingItemId(null)
+        }
     }
 
     if (items.length === 0) return null
@@ -74,416 +120,186 @@ export const ActionRequired: React.FC<ActionRequiredProps> = ({ items }) => {
                 />
             </Box>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {items.map((item) => (
-                    <Paper
-                        key={item.id}
-                        elevation={1}
-                        variant="elevation"
-                        sx={{
-                            p: 2,
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            borderRadius: 0,
-                            gap: 2,
-                            cursor: 'pointer',
-                            '&:hover': {
-                                backgroundColor: 'action.hover',
-                            },
-                        }}
-                        onClick={() => handleCardClick(item)}
-                    >
-                        <Box
+                {items.map((item) => {
+                    const isItemLoading = loadingItemId === item.id
+
+                    return (
+                        <Paper
+                            key={item.id}
+                            elevation={1}
+                            variant="elevation"
                             sx={{
+                                p: 2,
                                 display: 'flex',
+                                justifyContent: 'space-between',
                                 alignItems: 'center',
-                                gap: 3,
+                                borderRadius: 0,
+                                gap: 2,
+                                cursor: isItemLoading ? 'default' : 'pointer',
+                                opacity: isItemLoading ? 0.7 : 1,
+                                '&:hover': {
+                                    backgroundColor: isItemLoading
+                                        ? 'inherit'
+                                        : 'action.hover',
+                                },
                             }}
-                        >
-                            <Box sx={{ minWidth: 120, flexShrink: 0 }}>
-                                <Typography
-                                    variant="body2"
-                                    color="textSecondary"
-                                >
-                                    Type
-                                </Typography>
-                                <Typography variant="body1" fontWeight="medium">
-                                    {item.type}
-                                </Typography>
-                            </Box>
-
-                            <Box sx={{ minWidth: 80, flexShrink: 0 }}>
-                                <Typography
-                                    variant="body2"
-                                    color="textSecondary"
-                                >
-                                    Amount
-                                </Typography>
-                                <Typography variant="body1">
-                                    {item.amount} {item.instrumentId}
-                                </Typography>
-                            </Box>
-
-                            <Box sx={{ minWidth: 100, flexShrink: 0 }}>
-                                <Typography
-                                    variant="body2"
-                                    color="textSecondary"
-                                >
-                                    Expires
-                                </Typography>
-                                <Typography variant="body1">
-                                    {item.expiry}
-                                </Typography>
-                            </Box>
-
-                            <Box sx={{ minWidth: 100, flexShrink: 0 }}>
-                                <Typography
-                                    variant="body2"
-                                    color="textSecondary"
-                                >
-                                    {getCounterparty(item).label}
-                                </Typography>
-                                {/* <Typography variant="body1"> */}
-                                <CopyableIdentifier
-                                    value={getCounterparty(item).value}
-                                />
-                                {/* </Typography> */}
-                            </Box>
-
-                            <Box sx={{ flex: 1, minWidth: 150 }}>
-                                <Typography
-                                    variant="body2"
-                                    color="textSecondary"
-                                >
-                                    Message
-                                </Typography>
-                                <Typography
-                                    variant="body1"
-                                    sx={{ wordBreak: 'break-word' }}
-                                >
-                                    {item.message.slice(0, 30) + '...'}
-                                </Typography>
-                            </Box>
-                        </Box>
-
-                        <Box sx={{ display: 'flex', gap: 2 }}>
-                            {isReceiver(item) ? (
-                                <>
-                                    <Button
-                                        variant="contained"
-                                        size="small"
-                                        sx={{ minWidth: 80 }}
-                                    >
-                                        Accept
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        size="small"
-                                        sx={{ minWidth: 80 }}
-                                    >
-                                        Reject
-                                    </Button>
-                                </>
-                            ) : (
-                                <Button
-                                    variant="outlined"
-                                    color="warning"
-                                    size="small"
-                                    sx={{ minWidth: 80 }}
-                                >
-                                    Withdraw
-                                </Button>
-                            )}
-                        </Box>
-                    </Paper>
-                ))}
-            </Box>
-
-            <Dialog
-                open={isDialogOpen}
-                onClose={handleCloseDialog}
-                maxWidth="md"
-                fullWidth
-            >
-                <DialogTitle sx={{ pb: 1 }}>
-                    <Typography variant="h6" component="div" fontWeight="bold">
-                        Action Details
-                    </Typography>
-                    {/* <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}> */}
-                    {/*   {selectedItem?.type} */}
-                    {/* </Typography> */}
-                </DialogTitle>
-                <DialogContent sx={{ py: 2 }}>
-                    {selectedItem && (
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 3,
-                            }}
+                            onClick={() =>
+                                !isItemLoading && handleCardClick(item)
+                            }
                         >
                             <Box
                                 sx={{
                                     display: 'flex',
+                                    alignItems: 'center',
                                     gap: 3,
-                                    p: 2,
-                                    borderRadius: 2,
-                                    border: '1px solid',
-                                    borderColor: 'divider',
                                 }}
                             >
-                                <Box sx={{ flex: 1 }}>
+                                <Box sx={{ minWidth: 120, flexShrink: 0 }}>
                                     <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{
-                                            fontWeight: 500,
-                                            textTransform: 'uppercase',
-                                            letterSpacing: 0.5,
-                                        }}
-                                    >
-                                        Amount
-                                    </Typography>
-                                    <Typography variant="h6" fontWeight="bold">
-                                        {selectedItem.amount}{' '}
-                                        {selectedItem.instrumentId}
-                                    </Typography>
-                                </Box>
-                                <Box sx={{ flex: 1 }}>
-                                    <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{
-                                            fontWeight: 500,
-                                            textTransform: 'uppercase',
-                                            letterSpacing: 0.5,
-                                        }}
+                                        variant="body2"
+                                        color="textSecondary"
                                     >
                                         Type
                                     </Typography>
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 1,
-                                        }}
-                                    >
-                                        <Typography
-                                            variant="body2"
-                                            fontWeight="medium"
-                                        >
-                                            Transfer Offer
-                                        </Typography>
-                                    </Box>
-                                </Box>
-                            </Box>
-
-                            <Box
-                                sx={{
-                                    display: 'grid',
-                                    gridTemplateColumns: '1fr 1fr',
-                                    gap: 3,
-                                }}
-                            >
-                                <Box
-                                    sx={{
-                                        p: 2,
-                                        borderRadius: 1,
-                                        border: '1px solid',
-                                        borderColor: 'divider',
-                                    }}
-                                >
-                                    <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{
-                                            fontWeight: 500,
-                                            textTransform: 'uppercase',
-                                            letterSpacing: 0.5,
-                                            mb: 1,
-                                            display: 'block',
-                                        }}
-                                    >
-                                        Created
-                                    </Typography>
                                     <Typography
                                         variant="body1"
                                         fontWeight="medium"
                                     >
-                                        {selectedItem.date}
+                                        {item.type}
                                     </Typography>
                                 </Box>
-                                <Box
-                                    sx={{
-                                        p: 2,
-                                        borderRadius: 1,
-                                        border: '1px solid',
-                                        borderColor: 'divider',
-                                    }}
-                                >
+
+                                <Box sx={{ minWidth: 80, flexShrink: 0 }}>
                                     <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{
-                                            fontWeight: 500,
-                                            textTransform: 'uppercase',
-                                            letterSpacing: 0.5,
-                                            mb: 1,
-                                            display: 'block',
-                                        }}
+                                        variant="body2"
+                                        color="textSecondary"
+                                    >
+                                        Amount
+                                    </Typography>
+                                    <Typography variant="body1">
+                                        {item.amount} {item.instrumentId.id}
+                                    </Typography>
+                                </Box>
+
+                                <Box sx={{ minWidth: 100, flexShrink: 0 }}>
+                                    <Typography
+                                        variant="body2"
+                                        color="textSecondary"
                                     >
                                         Expires
                                     </Typography>
+                                    <Typography variant="body1">
+                                        {item.expiry}
+                                    </Typography>
+                                </Box>
+
+                                <Box sx={{ minWidth: 100, flexShrink: 0 }}>
+                                    <Typography
+                                        variant="body2"
+                                        color="textSecondary"
+                                    >
+                                        {getCounterparty(item).label}
+                                    </Typography>
+                                    <CopyableIdentifier
+                                        value={getCounterparty(item).value}
+                                    />
+                                </Box>
+
+                                <Box sx={{ flex: 1, minWidth: 150 }}>
+                                    <Typography
+                                        variant="body2"
+                                        color="textSecondary"
+                                    >
+                                        Message
+                                    </Typography>
                                     <Typography
                                         variant="body1"
-                                        fontWeight="medium"
+                                        sx={{ wordBreak: 'break-word' }}
                                     >
-                                        {selectedItem.expiry}
+                                        {item.message.slice(0, 30) + '...'}
                                     </Typography>
                                 </Box>
                             </Box>
 
-                            <Box
-                                sx={{
-                                    p: 2,
-                                    borderRadius: 1,
-                                    border: '1px solid',
-                                    borderColor: 'divider',
-                                }}
-                            >
-                                <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{
-                                        fontWeight: 500,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: 0.5,
-                                        mb: 1,
-                                        display: 'block',
-                                    }}
-                                >
-                                    {getCounterparty(selectedItem).label}
-                                </Typography>
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 1,
-                                    }}
-                                >
-                                    <CopyableIdentifier
-                                        value={
-                                            getCounterparty(selectedItem).value
-                                        }
-                                        maxLength={60}
-                                    />
-                                </Box>
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                {isReceiver(item) ? (
+                                    <>
+                                        <Button
+                                            variant="contained"
+                                            size="small"
+                                            sx={{ minWidth: 80 }}
+                                            disabled={isItemLoading}
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                handleAccept(item)
+                                            }}
+                                        >
+                                            {isItemLoading ? (
+                                                <CircularProgress
+                                                    size={16}
+                                                    color="inherit"
+                                                />
+                                            ) : (
+                                                'Accept'
+                                            )}
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{ minWidth: 80 }}
+                                            disabled={isItemLoading}
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                handleReject(item)
+                                            }}
+                                        >
+                                            {isItemLoading ? (
+                                                <CircularProgress
+                                                    size={16}
+                                                    color="inherit"
+                                                />
+                                            ) : (
+                                                'Reject'
+                                            )}
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <Button
+                                        variant="outlined"
+                                        color="warning"
+                                        size="small"
+                                        sx={{ minWidth: 80 }}
+                                        disabled={isItemLoading}
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleWithdraw(item)
+                                        }}
+                                    >
+                                        {isItemLoading ? (
+                                            <CircularProgress
+                                                size={16}
+                                                color="inherit"
+                                            />
+                                        ) : (
+                                            'Withdraw'
+                                        )}
+                                    </Button>
+                                )}
                             </Box>
+                        </Paper>
+                    )
+                })}
+            </Box>
 
-                            <Box
-                                sx={{
-                                    p: 2,
-                                    borderRadius: 1,
-                                    border: '1px solid',
-                                    borderColor: 'divider',
-                                }}
-                            >
-                                <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{
-                                        fontWeight: 500,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: 0.5,
-                                        mb: 1,
-                                        display: 'block',
-                                    }}
-                                >
-                                    Message
-                                </Typography>
-                                <Typography
-                                    variant="body1"
-                                    sx={{
-                                        wordBreak: 'break-word',
-                                        lineHeight: 1.6,
-                                        color: 'text.primary',
-                                    }}
-                                >
-                                    {selectedItem.message}
-                                </Typography>
-                            </Box>
-
-                            <Box
-                                sx={{
-                                    p: 2,
-                                    borderRadius: 1,
-                                    border: '1px solid',
-                                    borderColor: 'divider',
-                                }}
-                            >
-                                <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{
-                                        fontWeight: 500,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: 0.5,
-                                        mb: 1,
-                                        display: 'block',
-                                    }}
-                                >
-                                    Contract ID
-                                </Typography>
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 1,
-                                    }}
-                                >
-                                    <CopyableIdentifier
-                                        value={selectedItem.id}
-                                        maxLength={60}
-                                    />
-                                </Box>
-                            </Box>
-                        </Box>
-                    )}
-                </DialogContent>
-                <DialogActions sx={{ px: 3, pb: 3, gap: 2 }}>
-                    <Button
-                        onClick={handleCloseDialog}
-                        variant="outlined"
-                        color="inherit"
-                        sx={{ minWidth: 100 }}
-                    >
-                        Cancel
-                    </Button>
-                    <Box sx={{ flex: 1 }} />
-                    {selectedItem && isReceiver(selectedItem) ? (
-                        <>
-                            <Button
-                                variant="outlined"
-                                color="error"
-                                sx={{ minWidth: 100 }}
-                            >
-                                Reject
-                            </Button>
-                            <Button variant="contained" sx={{ minWidth: 100 }}>
-                                Accept
-                            </Button>
-                        </>
-                    ) : (
-                        <Button
-                            variant="outlined"
-                            color="warning"
-                            sx={{ minWidth: 100 }}
-                        >
-                            Withdraw
-                        </Button>
-                    )}
-                </DialogActions>
-            </Dialog>
+            <ActionRequiredDialog
+                item={selectedItem}
+                open={isDialogOpen}
+                isLoading={loadingItemId !== null}
+                onClose={handleCloseDialog}
+                onAccept={handleAccept}
+                onReject={handleReject}
+                onWithdraw={handleWithdraw}
+            />
         </Box>
     )
 }
