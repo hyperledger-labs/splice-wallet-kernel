@@ -23,87 +23,149 @@ type Completion = Types['Completion']['value']
 export type JSContractEntry = Types['JsContractEntry']
 export type JsCantonError = Types['JsCantonError']
 
-export function TransactionFilterBySetup(
-    interfaceNames: string[] | string = [],
-    templateIds: string[] | string = [],
-    options: {
-        includeWildcard?: boolean
-        isMasterUser?: boolean
-        partyId?: PartyId | undefined
-    } = { includeWildcard: false, isMasterUser: false }
-): TransactionFilter {
-    const interfaceArrayed = Array.isArray(interfaceNames)
-        ? interfaceNames
-        : [interfaceNames]
-
-    const templateIdsArrayed = Array.isArray(templateIds)
-        ? templateIds
-        : [templateIds]
-    if (options.isMasterUser)
-        return {
-            filtersByParty: {},
-            filtersForAnyParty:
-                filtersForAnyParty(
-                    interfaceArrayed,
-                    templateIdsArrayed,
-                    options.includeWildcard ?? false
-                ) ?? {},
-        }
-    else if (!options.partyId || options.partyId === undefined)
-        throw new Error('Party must be provided for non-master users')
-    else
-        return {
-            filtersByParty:
-                filtersByParty(
-                    options.partyId,
-                    templateIdsArrayed,
-                    interfaceArrayed,
-                    options.includeWildcard ?? false
-                ) ?? {},
-        }
+type BaseFilterOptions = {
+    includeWildcard?: boolean
+    isMasterUser?: boolean
+    partyId?: PartyId | undefined
 }
 
-export function EventFilterBySetup(
-    interfaceNames: string[] | string,
-    templateIds: string[] | string = [],
-    options: {
-        verbose?: boolean
-        includeWildcard?: boolean
-        isMasterUser?: boolean
-        partyId?: PartyId | undefined
-    } = { includeWildcard: false, isMasterUser: false }
-): EventFormat {
-    const interfaceArrayed = Array.isArray(interfaceNames)
-        ? interfaceNames
-        : [interfaceNames]
+type FilterIdentifiers =
+    | {
+          templateIds: string[] | string
+          interfaceIds?: never
+      }
+    | {
+          interfaceIds: string[] | string
+          templateIds?: never
+      }
 
-    const templateIdsArrayed = Array.isArray(templateIds)
-        ? templateIds
-        : [templateIds]
-    if (options.isMasterUser)
+type TransactionFilterOptions = BaseFilterOptions & FilterIdentifiers
+
+type EventFilterOptions = TransactionFilterOptions & { verbose?: boolean }
+
+function createIdentiferFilter(type: 'Template' | 'Interface', id: string) {
+    if (type === 'Template') {
+        return {
+            identifierFilter: {
+                TemplateFilter: {
+                    value: {
+                        templateId: id,
+                        includeCreatedEventBlob: true,
+                    },
+                },
+            },
+        }
+    } else {
+        return {
+            identifierFilter: {
+                InterfaceFilter: {
+                    value: {
+                        interfaceId: id,
+                        includeInterfaceView: true,
+                        includeCreatedEventBlob: true,
+                    },
+                },
+            },
+        }
+    }
+}
+
+function createWildcardFilter() {
+    return {
+        identifierFilter: {
+            WildcardFilter: {
+                value: {
+                    includeCreatedEventBlob: true,
+                },
+            },
+        },
+    }
+}
+
+function buildCumulativeFilters(
+    templateIds: string[],
+    interfaceIds: string[],
+    includeWildcard: boolean
+) {
+    if (templateIds.length > 0) {
+        return [
+            ...templateIds.map((templateId) =>
+                createIdentiferFilter('Template', templateId)
+            ),
+            ...(includeWildcard ? [createWildcardFilter()] : []),
+        ]
+    } else {
+        return [
+            ...interfaceIds.map((interfaceId) =>
+                createIdentiferFilter('Interface', interfaceId)
+            ),
+            ...(includeWildcard ? [createWildcardFilter()] : []),
+        ]
+    }
+}
+
+function buildFilter<
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    T extends { filtersByParty?: any; filtersForAnyParty?: any },
+>(
+    templateIds: string[],
+    interfaceIds: string[],
+    options: BaseFilterOptions,
+    additionalProps?: Partial<T>
+): T {
+    const { isMasterUser = false, partyId, includeWildcard = false } = options
+
+    if (isMasterUser) {
         return {
             filtersByParty: {},
-            filtersForAnyParty:
-                filtersForAnyParty(
-                    interfaceArrayed,
-                    templateIdsArrayed,
-                    options.includeWildcard ?? false
-                ) ?? {},
-            verbose: options.verbose ?? false,
-        }
-    else if (!options.partyId || options.partyId === undefined)
+            filtersForAnyParty: filtersForAnyParty(
+                templateIds,
+                interfaceIds,
+                includeWildcard
+            ),
+            ...additionalProps,
+        } as T
+    }
+
+    if (!partyId) {
         throw new Error('Party must be provided for non-master users')
-    else
-        return {
-            filtersByParty:
-                filtersByParty(
-                    options.partyId,
-                    templateIdsArrayed,
-                    interfaceArrayed,
-                    options.includeWildcard ?? false
-                ) ?? {},
-            verbose: options.verbose ?? false,
-        }
+    }
+
+    return {
+        filtersByParty: filtersByParty(
+            partyId,
+            templateIds,
+            interfaceIds,
+            includeWildcard
+        ),
+        ...additionalProps,
+    } as T
+}
+
+export function TransactionFilterBySetup(
+    options: TransactionFilterOptions
+): TransactionFilter {
+    const { templateIds, interfaceIds, ...baseOptions } = options
+    return buildFilter<TransactionFilter>(
+        normalizeToArray(templateIds || []),
+        normalizeToArray(interfaceIds || []),
+        baseOptions
+    )
+}
+
+export function EventFilterBySetup(options: EventFilterOptions): EventFormat {
+    const {
+        templateIds,
+        interfaceIds,
+        verbose = false,
+        ...baseOptions
+    } = options
+    return buildFilter<EventFormat>(
+        normalizeToArray(templateIds || []),
+        normalizeToArray(interfaceIds || []),
+        baseOptions,
+        { verbose }
+    )
 }
 
 function filtersByParty(
@@ -112,159 +174,33 @@ function filtersByParty(
     interfaceIds: string[],
     includeWildcard: boolean
 ): TransactionFilter['filtersByParty'] {
-    const wildcardFilter = includeWildcard
-        ? [
-              {
-                  identifierFilter: {
-                      WildcardFilter: {
-                          value: {
-                              includeCreatedEventBlob: true,
-                          },
-                      },
-                  },
-              },
-          ]
-        : []
-
-    if (templateIds.length !== 0) {
-        return {
-            [party]: {
-                cumulative: [
-                    ...templateIds.map((templateId) => {
-                        return {
-                            identifierFilter: {
-                                TemplateFilter: {
-                                    value: {
-                                        templateId,
-                                        includeCreatedEventBlob: true,
-                                    },
-                                },
-                            },
-                        }
-                    }),
-                    ...wildcardFilter,
-                ],
-            },
-        }
-    } else {
-        return {
-            [party]: {
-                cumulative: [
-                    ...interfaceIds.map((interfaceName) => {
-                        return {
-                            identifierFilter: {
-                                InterfaceFilter: {
-                                    value: {
-                                        interfaceId: interfaceName,
-                                        includeInterfaceView: true,
-                                        includeCreatedEventBlob: true,
-                                    },
-                                },
-                            },
-                        }
-                    }),
-                    ...wildcardFilter,
-                ],
-            },
-        }
+    return {
+        [party]: {
+            cumulative: buildCumulativeFilters(
+                templateIds,
+                interfaceIds,
+                includeWildcard
+            ),
+        },
     }
 }
-
-// function filtersForAnyParty(
-//     interfaceNames: string[],
-//     includeWildcard: boolean
-// ): TransactionFilter['filtersForAnyParty'] {
-//     const wildcardFilter = includeWildcard
-//         ? [
-//               {
-//                   identifierFilter: {
-//                       WildcardFilter: {
-//                           value: {
-//                               includeCreatedEventBlob: true,
-//                           },
-//                       },
-//                   },
-//               },
-//           ]
-//         : []
-
-//     return {
-//         cumulative: [
-//             ...interfaceNames.map((interfaceName) => {
-//                 return {
-//                     identifierFilter: {
-//                         InterfaceFilter: {
-//                             value: {
-//                                 interfaceId: interfaceName,
-//                                 includeInterfaceView: true,
-//                                 includeCreatedEventBlob: true,
-//                             },
-//                         },
-//                     },
-//                 }
-//             }),
-//             ...wildcardFilter,
-//         ],
-//     }
-// }
 
 function filtersForAnyParty(
     interfaceNames: string[],
     templateIds: string[],
     includeWildcard: boolean
 ): TransactionFilter['filtersForAnyParty'] {
-    const wildcardFilter = includeWildcard
-        ? [
-              {
-                  identifierFilter: {
-                      WildcardFilter: {
-                          value: {
-                              includeCreatedEventBlob: true,
-                          },
-                      },
-                  },
-              },
-          ]
-        : []
-
-    if (templateIds.length > 0) {
-        return {
-            cumulative: [
-                ...templateIds.map((templateId) => {
-                    return {
-                        identifierFilter: {
-                            TemplateFilter: {
-                                value: {
-                                    templateId: templateId,
-                                    includeCreatedEventBlob: true,
-                                },
-                            },
-                        },
-                    }
-                }),
-                ...wildcardFilter,
-            ],
-        }
-    } else {
-        return {
-            cumulative: [
-                ...interfaceNames.map((interfaceName) => {
-                    return {
-                        identifierFilter: {
-                            InterfaceFilter: {
-                                value: {
-                                    interfaceId: interfaceName,
-                                    includeInterfaceView: true,
-                                    includeCreatedEventBlob: true,
-                                },
-                            },
-                        },
-                    }
-                }),
-                ...wildcardFilter,
-            ],
-        }
+    return {
+        cumulative: buildCumulativeFilters(
+            templateIds,
+            interfaceNames,
+            includeWildcard
+        ),
     }
+}
+
+function normalizeToArray<T>(value: T | T[]): T[] {
+    return Array.isArray(value) ? value : [value]
 }
 
 export function hasInterface(
