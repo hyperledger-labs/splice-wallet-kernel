@@ -11,9 +11,11 @@ import { PortfolioProvider } from './contexts/PortfolioProvider'
 import { AppThemeProvider } from './contexts/theme-provider'
 import { Toaster } from 'sonner'
 
+const queryClient = new QueryClient()
+
 const router = createRouter({
     routeTree,
-    context: {},
+    context: { queryClient },
     defaultPreload: 'intent',
     scrollRestoration: true,
     defaultStructuralSharing: true,
@@ -26,8 +28,6 @@ declare module '@tanstack/react-router' {
         router: typeof router
     }
 }
-
-const queryClient = new QueryClient()
 
 // Render the app
 const rootElement = document.getElementById('app')
