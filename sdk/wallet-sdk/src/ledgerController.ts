@@ -52,8 +52,8 @@ export type ParticipantEndpointConfig = {
 }
 
 export type StreamUpdatesOptions = {
-    beginOffset: number
-    verbose: boolean
+    beginOffset?: number
+    verbose?: boolean
 } & (
     | { interfaceIds: string[]; templateIds?: never }
     | { interfaceIds?: never; templateIds: string[] }
@@ -239,12 +239,10 @@ export class LedgerController {
     }
 
     async *subscribeToUpdates(options: StreamUpdatesOptions) {
-        const { beginOffset, verbose } = options
-
         const baseOptions = {
-            beginExclusive: beginOffset,
+            beginExclusive: options.beginOffset ?? 0,
             partyId: this.getPartyId(),
-            verbose,
+            verbose: options.verbose ?? true,
         }
 
         const stream =
