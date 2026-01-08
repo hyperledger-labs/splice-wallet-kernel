@@ -1,8 +1,8 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { readFileSync, existsSync } from 'fs'
-import { Config, configSchema, ServerConfig } from './Config.js'
+import { Config, configSchema } from './Config.js'
 
 export class ConfigUtils {
     static loadConfigFile(filePath: string): Config {
@@ -105,17 +105,29 @@ function validateNetworkAuthMethods(
     }
 }
 
-export const deriveKernelUrls = (
-    serverConfig: ServerConfig
-): { dappUrl: string; userUrl: string } => {
-    const protocol = serverConfig.tls ? 'https' : 'http'
+interface Urls {
+    serviceUrl: string
+    publicUrl: string
+    dappApiUrl: string
+    userApiUrl: string
+}
 
-    // Convert 0.0.0.0 to localhost for URL generation since browsers can't use 0.0.0.0
-    const urlHost =
-        serverConfig.host === '0.0.0.0' ? 'localhost' : serverConfig.host
-    const dappUrl = `${protocol}://${urlHost}:${serverConfig.port}${serverConfig.dappPath}`
-    // userUrl is the base URL for the web frontend (no path)
-    const userUrl = `${protocol}://${urlHost}:${serverConfig.port}`
+// Strips duplicate slashes from a URL, except for the protocol part (e.g., "http://")
+function stripDuplicateSlashes(path: string): string {
+    return path.replace(/(https?:\/\/)|(\/)+/g, '$1$2')
+}
 
-    return { dappUrl, userUrl }
+export const deriveUrls = (config: Config, port?: number): Urls => {
+    const serviceUrl = `http://localhost:${port || config.server.port}`
+    const publicUrl = config.kernel.publicUrl || serviceUrl
+
+    const dappApiUrl = stripDuplicateSlashes(
+        `${publicUrl}/${config.server.dappPath}`
+    )
+
+    const userApiUrl = stripDuplicateSlashes(
+        `${publicUrl}/${config.server.userPath}`
+    )
+
+    return { dappApiUrl, userApiUrl, publicUrl, serviceUrl }
 }

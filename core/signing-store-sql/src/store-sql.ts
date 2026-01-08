@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logger } from 'pino'
@@ -71,6 +71,19 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
             .selectFrom('signingKeys')
             .selectAll()
             .where('publicKey', '=', publicKey)
+            .executeTakeFirst()
+        return result ? toSigningKey(result) : undefined
+    }
+
+    async getSigningKeyByName(
+        userId: string,
+        name: string
+    ): Promise<SigningKey | undefined> {
+        const result = await this.db
+            .selectFrom('signingKeys')
+            .selectAll()
+            .where('userId', '=', userId)
+            .where('name', '=', name)
             .executeTakeFirst()
         return result ? toSigningKey(result) : undefined
     }

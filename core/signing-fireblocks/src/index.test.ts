@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@jest/globals'
@@ -197,7 +197,9 @@ test('transaction signature', async () => {
     const tx = await controller.signTransaction({
         tx: TEST_TRANSACTION,
         txHash: TEST_TRANSACTION_HASH,
-        publicKey: key.publicKey,
+        keyIdentifier: {
+            publicKey: key.publicKey,
+        },
     })
 
     throwWhenRpcError(tx)

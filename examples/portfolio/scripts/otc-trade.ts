@@ -1,3 +1,6 @@
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import {
     WalletSDKImpl,
     localNetAuthDefault,
@@ -96,30 +99,6 @@ sdk.tokenStandard?.setTransferFactoryRegistryUrl(
 )
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
-
-// Mint holdings for Alice
-logger.info(`Minting holdings for Alice...`)
-await sdk.setPartyId(alice)
-const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
-    alice,
-    '2000000',
-    {
-        instrumentId: 'Amulet',
-        instrumentAdmin: instrumentAdminPartyId,
-    }
-)
-
-await sdk.userLedger?.submitCommand(tapCommand, v4(), disclosedContracts)
-
-// Mint holdings for Bob
-logger.info(`Minting holdings for Bob...`)
-await sdk.setPartyId(bob)
-const [tapCmdBob, tapDiscBob] = await sdk.tokenStandard!.createTap(
-    bob,
-    '2000000',
-    { instrumentId: 'Amulet', instrumentAdmin: instrumentAdminPartyId }
-)
-await sdk.userLedger!.submitCommand(tapCmdBob, v4(), tapDiscBob)
 
 // Alice creates OTCTradeProposal
 await sdk.setPartyId(alice)

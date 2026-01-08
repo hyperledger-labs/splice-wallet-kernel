@@ -1,5 +1,7 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
+
+import { WindowState } from './discovery'
 
 interface PopupOptions {
     title?: string
@@ -19,31 +21,16 @@ export function popup(
     component: StyledElement,
     options?: PopupOptions
 ): Promise<Window> {
-    const {
-        title = 'Custom Popup',
-        target = 'wallet-popup',
-        width = 400,
-        height = 500,
-        screenX = 200,
-        screenY = 200,
-    } = options || {}
+    const { title = 'Custom Popup' } = options || {}
 
     const sanitizedStyles = component.styles
         .replaceAll('\n', ' ')
         .replaceAll("'", "\\'")
         .replaceAll('"', '\\"')
 
-    let element = component
+    const elementSource = component
         .toString()
-        .replace('SUBSTITUTABLE_CSS', `'${sanitizedStyles}'`)
-
-    // Ugly hack to workaround the format of the class post-bundling, where static methods are set at runtime for compatibility
-    if (sanitizedStyles && !element.includes('static styles')) {
-        element = element.replace(
-            'constructor() {',
-            `static styles = '${sanitizedStyles}';\nconstructor() {`
-        )
-    }
+        .replace('SUBSTITUTABLE_CSS', `''`)
 
     const html = `<!DOCTYPE html>
     <html>
@@ -66,55 +53,34 @@ export function popup(
         </body>
 
         <script>
-            customElements.define('popup-content', ${element})
+            const Component = (${elementSource});
+            Component.styles = \`${sanitizedStyles}\`;
 
-            const root = document.getElementsByTagName('body')[0]
+            customElements.define('popup-content', Component);
 
-            const content = document.createElement('popup-content')
-            content.setAttribute('style', 'width: 100%; height: 100%;')
+            const content = document.createElement('popup-content');
+            content.style.width = '100%';
+            content.style.height = '100%';
 
-            root.appendChild(content)
+            document.body.appendChild(content)
         </script>
     </html>`
 
     const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }))
 
-    return new Promise((resolve, reject) => {
-        const win = window.open(
-            url,
-            target,
-            `width=${width},height=${height},screenX=${screenX},screenY=${screenY}`
-        )
+    return new Promise((resolve) => {
+        const win = WindowState.getInstance()
+        win.location.href = url
+        win.focus()
 
-        if (win) {
-            win.addEventListener('beforeunload', () => {
-                URL.revokeObjectURL(url) // clean up the URL object to prevent memory leaks
-            })
-            resolve(win)
-        } else {
-            reject(new Error('Failed to open popup window.'))
-        }
+        resolve(win)
     })
 }
 
-export function popupHref(
-    url: URL | string,
-    options?: PopupOptions
-): Promise<Window> {
-    const {
-        target = 'wallet-popup',
-        width = 400,
-        height = 500,
-        screenX = 200,
-        screenY = 200,
-    } = options || {}
-
+export function popupHref(url: URL | string): Promise<Window> {
     return new Promise((resolve, reject) => {
-        const win = window.open(
-            url,
-            target,
-            `width=${width},height=${height},screenX=${screenX},screenY=${screenY}`
-        )
+        const win = WindowState.getInstance()
+        win.location.href = url.toString()
 
         if (win) {
             win.focus()
