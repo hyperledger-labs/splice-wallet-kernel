@@ -113,7 +113,10 @@ export async function initialize(opts: CliOptions, logger: Logger) {
 
     // Use CLI port override or config port
     const port = opts.port ? Number(opts.port) : config.server.port
-    const { dappApiUrl, serviceUrl, publicUrl } = deriveUrls(config, port)
+    const { serviceUrl, publicUrl, dappApiUrl, userApiUrl } = deriveUrls(
+        config,
+        port
+    )
 
     const app = express()
 
@@ -223,7 +226,7 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     )
 
     // register web handler
-    web(app, server, config.server.userPath)
+    web(app, server, userApiUrl)
     isReady = true
 
     logger.info(
