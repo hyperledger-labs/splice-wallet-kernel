@@ -9,9 +9,7 @@ export default {
         clientType: 'remote',
     },
     server: {
-        host: 'localhost',
         port: 3030,
-        tls: false,
         dappPath: '/api/v0/dapp',
         userPath: '/api/v0/user',
         allowedOrigins: '*',
