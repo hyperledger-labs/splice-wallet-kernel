@@ -197,7 +197,9 @@ test('transaction signature', async () => {
     const tx = await controller.signTransaction({
         tx: TEST_TRANSACTION,
         txHash: TEST_TRANSACTION_HASH,
-        publicKey: key.publicKey,
+        keyIdentifier: {
+            publicKey: key.publicKey,
+        },
     })
 
     throwWhenRpcError(tx)
