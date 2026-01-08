@@ -78,10 +78,10 @@ export function popup(
 }
 
 export function popupHref(url: URL | string): Promise<Window> {
-    return new Promise((resolve, reject) => {
-        const win = WindowState.getInstance()
-        win.location.href = url.toString()
+    const win = WindowState.getInstance()
+    win.location.href = url.toString()
 
+    return new Promise((resolve, reject) => {
         if (win) {
             win.focus()
             resolve(win)

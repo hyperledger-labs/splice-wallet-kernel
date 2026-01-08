@@ -10,7 +10,6 @@ import { popupHref } from '@canton-network/core-wallet-ui-components'
 
 class GatewayUi {
     private popup: WindowProxy | undefined = undefined
-    private lastUrl: string | undefined = undefined
 
     constructor() {
         // close the existing popup if the main window is closed (or refreshed)
@@ -26,18 +25,9 @@ class GatewayUi {
         switch (walletType) {
             case 'remote':
                 // Focus the existing popup if it's already open
-                if (
-                    this.popup === undefined ||
-                    this.popup.closed ||
-                    this.lastUrl !== userUrl
-                ) {
-                    popupHref(new URL(userUrl)).then((window) => {
-                        this.popup = window
-                        this.lastUrl = userUrl
-                    })
-                } else {
-                    this.popup.focus()
-                }
+                popupHref(new URL(userUrl)).then((window) => {
+                    this.popup = window
+                })
 
                 return this.popup
             case 'extension': {
