@@ -49,7 +49,10 @@ export const ActionRequired: React.FC<ActionRequiredProps> = ({ items }) => {
                 instructionChoice: action,
             },
             {
-                onSuccess: () => handleCloseDialog(),
+                onSuccess: () => {
+                    toast.success(`${action} transfer successful`)
+                    handleCloseDialog()
+                },
                 onError: (error) =>
                     toast.error(
                         `Failed to ${action.toLowerCase()} transfer: ${error instanceof Error ? error.message : 'Unknown error'}`
