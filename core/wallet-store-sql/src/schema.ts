@@ -47,7 +47,7 @@ interface WalletTable {
     externalTxId?: string
     topologyTransactions?: string
     status?: string
-    disabled?: number | null
+    disabled?: boolean | null
     reason?: string | null
 }
 
@@ -160,8 +160,7 @@ export const fromWallet = (wallet: Wallet, userId: UserId): WalletTable => {
         ...wallet,
         primary: wallet.primary ? 1 : 0,
         userId: userId,
-        disabled:
-            wallet.disabled !== undefined ? (wallet.disabled ? 1 : 0) : null,
+        disabled: wallet.disabled ?? null,
         reason: wallet.reason ?? null,
     }
 }
@@ -172,16 +171,32 @@ export const toWalletStatus = (status?: string): WalletStatus => {
 }
 
 export const toWallet = (table: WalletTable): Wallet => {
-    return {
-        ...table,
+    const wallet: Wallet = {
         primary: table.primary === 1,
         status: toWalletStatus(table.status),
-        disabled:
-            table.disabled !== null && table.disabled !== undefined
-                ? table.disabled === 1
-                : undefined,
-        reason: table.reason ?? undefined,
+        partyId: table.partyId,
+        hint: table.hint,
+        publicKey: table.publicKey,
+        namespace: table.namespace,
+        networkId: table.networkId,
+        signingProviderId: table.signingProviderId,
+        ...(table.externalTxId !== undefined && {
+            externalTxId: table.externalTxId,
+        }),
+        ...(table.topologyTransactions !== undefined && {
+            topologyTransactions: table.topologyTransactions,
+        }),
     }
+
+    if (table.disabled !== null && table.disabled !== undefined) {
+        wallet.disabled = table.disabled
+    }
+
+    if (table.reason !== null && table.reason !== undefined) {
+        wallet.reason = table.reason
+    }
+
+    return wallet
 }
 
 export const fromTransaction = (

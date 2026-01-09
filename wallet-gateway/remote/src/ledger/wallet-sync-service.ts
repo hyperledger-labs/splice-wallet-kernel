@@ -265,9 +265,9 @@ export class WalletSyncService {
                         signingProviderId:
                             resolvedSigningProvider.signingProviderId,
                         disabled: !isMatched,
-                        reason: !isMatched
-                            ? 'no signing provider matched'
-                            : undefined,
+                        ...(!isMatched && {
+                            reason: 'no signing provider matched',
+                        }),
                     }
 
                     this.logger.info(
