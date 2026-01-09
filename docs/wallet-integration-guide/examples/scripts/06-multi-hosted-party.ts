@@ -135,9 +135,13 @@ const pingCommandResponse2 = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 logger.info(pingCommandResponse2, 'ping command response')
 
 logger.info(events)
-
-logger.info(events.length)
-
+if (events.length === 0) {
+    logger.error(
+        'No events received, something went wrong with the subscription'
+    )
+    controller.abort()
+    process.exit(1)
+}
 controller.abort()
 
 process.exit(0)
