@@ -55,7 +55,6 @@ Import successful.class {
       false
     );
     await this.userLedger.awaitInit();
-    await this.userLedger.awaitWsInit();
     this.tokenStandard = this.tokenStandardFactory(
       userId,
       this._authTokenProvider,
