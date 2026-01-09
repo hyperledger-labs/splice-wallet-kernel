@@ -29,18 +29,18 @@
         "@canton-network/core-signing-lib": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
         "@canton-network/core-wallet-store": "workspace:^",
-        "better-sqlite3": "^12.4.6",
+        "better-sqlite3": "^12.5.0",
         "commander": "^14.0.2",
-        "kysely": "^0.28.8",
+        "kysely": "^0.28.9",
         "pino": "^10.1.0",
         "umzug": "^3.8.2",
-        "zod": "^4.1.13"
+        "zod": "^4.3.5"
     },
     "devDependencies": {
-        "@swc/core": "^1.15.3",
+        "@swc/core": "^1.15.8",
         "@types/better-sqlite3": "^7.6.13",
         "tsup": "^8.5.1",
-        "tsx": "^4.20.6",
+        "tsx": "^4.21.0",
         "typescript": "^5.9.3"
     },
     "files": [

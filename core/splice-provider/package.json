@@ -30,7 +30,7 @@
     "dependencies": {
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-ui-components": "workspace:^",
-        "socket.io-client": "^4.8.1"
+        "socket.io-client": "^4.8.3"
     },
     "files": [
         "dist/**"
