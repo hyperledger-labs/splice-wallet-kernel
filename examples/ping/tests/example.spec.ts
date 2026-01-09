@@ -84,13 +84,15 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
             .getByRole('button', { name: 'create Ping contract' })
             .click()
 
+        const popup2 = await dappPage.waitForEvent('popup')
+
         await expect(
-            popup.getByRole('heading', { name: 'Pending Transaction Request' })
+            popup2.getByRole('heading', { name: 'Pending Transaction Request' })
         ).toBeVisible()
 
-        const id = new URL(popup.url()).searchParams.get('commandId')
+        const id = new URL(popup2.url()).searchParams.get('commandId')
 
-        await popup.getByRole('button', { name: 'Approve' }).click()
+        await popup2.getByRole('button', { name: 'Approve' }).click()
 
         // Wait for command to have fully executed
         await expect(dappPage.getByText(id || '')).toHaveCount(3)
