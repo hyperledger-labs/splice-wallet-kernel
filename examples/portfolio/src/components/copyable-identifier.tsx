@@ -24,14 +24,28 @@ export const CopyableIdentifier: React.FC<CopyableIdentifierProps> = ({
         }
     }
 
-    const parts = value.split('::')
-    const prefix = parts[0] || ''
-    const suffix = parts[1] || ''
+    const truncate = (str: string, len: number) => {
+        if (str.length <= len) {
+            return str
+        }
+        return `${str.slice(0, len)}...`
+    }
 
-    const displayValue =
-        suffix.length > maxLength
-            ? `${prefix}::${suffix.slice(0, maxLength)}...`
-            : value
+    const formatPartyId = (val: string) => {
+        const parts = val.split('::')
+        const prefix = parts[0] || ''
+        const suffix = parts[1] || ''
+        return `${prefix}::${truncate(suffix, maxLength)}`
+    }
+
+    const getDisplayValue = () => {
+        if (value.includes('::')) {
+            return formatPartyId(value)
+        }
+        return truncate(value, maxLength)
+    }
+
+    const displayValue = getDisplayValue()
 
     return (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
