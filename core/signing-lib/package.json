@@ -24,16 +24,16 @@
     },
     "dependencies": {
         "@canton-network/core-wallet-auth": "workspace:^",
-        "fs-extra": "^11.3.2",
+        "fs-extra": "^11.3.3",
         "lodash": "^4.17.21",
         "tweetnacl": "^1.0.3",
         "tweetnacl-util": "^0.15.1",
-        "zod": "^4.1.13"
+        "zod": "^4.3.5"
     },
     "devDependencies": {
         "@types/fs-extra": "^11.0.4",
         "@types/lodash": "^4.17.21",
-        "@types/node": "^24.10.1",
+        "@types/node": "^24.10.4",
         "tsup": "^8.5.1",
         "typescript": "^5.9.3"
     },
