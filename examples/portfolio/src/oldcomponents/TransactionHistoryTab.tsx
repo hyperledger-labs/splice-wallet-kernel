@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useConnection } from '../contexts/ConnectionContext'
-import { useTransactionHistory } from '../hooks/useTransactionHistory'
+import {
+    useTransactionHistory,
+    useDeduplicatedTransactionHistory,
+} from '../hooks/useTransactionHistory'
 import { TransferCard } from './TransferCard'
 import { HoldingsChangeSummaryCard } from './HoldingsChangeSummaryCard'
 
@@ -11,18 +14,10 @@ export const TransactionHistoryTab: React.FC = () => {
         status: { primaryParty },
     } = useConnection()
 
-    const {
-        data: transactionHistory,
-        status,
-        fetchNextPage,
-        isFetchingNextPage,
-        hasNextPage,
-    } = useTransactionHistory()
+    const { status, fetchNextPage, isFetchingNextPage, hasNextPage } =
+        useTransactionHistory()
 
-    const transactions =
-        transactionHistory?.pages
-            .flatMap((page) => (page ? page.transactions : []))
-            .filter((tx) => tx.events.length > 0) ?? []
+    const transactions = useDeduplicatedTransactionHistory()
 
     return (
         <div>
@@ -34,7 +29,6 @@ export const TransactionHistoryTab: React.FC = () => {
                             At {transaction.offset} ({transaction.recordTime})
                         </code>
                         <br />
-                        {/* <TransferCard party={primaryParty} transfer={p} /> */}
                         {transaction.events.map((event, idx) => (
                             <div key={idx}>
                                 {event.transferInstruction ? (
