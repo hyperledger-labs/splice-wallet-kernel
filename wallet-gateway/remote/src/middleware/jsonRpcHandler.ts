@@ -12,8 +12,8 @@ import {
     ErrorResponse,
     JsonRpcRequest,
     JsonRpcResponse,
-    jsonRpcResponse,
 } from '@canton-network/core-types'
+import { jsonRpcResponse } from '@canton-network/core-rpc-transport'
 import { isJsCantonError } from '@canton-network/core-ledger-client'
 
 interface JsonRpcHttpOptions<T> {

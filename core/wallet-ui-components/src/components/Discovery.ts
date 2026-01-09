@@ -107,6 +107,24 @@ export class Discovery extends HTMLElement {
     private verifiedKernels?: KernelType[]
     private lastUsed?: KernelType | undefined
 
+    private getVerifiedGateways(): KernelType[] {
+        const stored = localStorage.getItem('splice_wallet_verified_gateways')
+        if (!stored) return []
+        try {
+            const gateways = JSON.parse(stored) as GatewaysConfig[]
+            return gateways.map((gateway) => ({
+                ...gateway,
+                walletType: 'remote',
+            }))
+        } catch (e) {
+            console.error(
+                'Failed to parse verified gateways from localStorage',
+                e
+            )
+            return []
+        }
+    }
+
     constructor() {
         super()
         this.attachShadow({ mode: 'open' })
@@ -149,16 +167,11 @@ export class Discovery extends HTMLElement {
             }
         }
 
-        window.addEventListener('message', (event) => {
-            if (event.data.type === 'SPLICE_WALLET_CONFIG_LOAD') {
-                this.verifiedKernels = event.data.payload.map(
-                    (kernel: GatewaysConfig) => ({
-                        ...kernel,
-                        walletType: 'remote',
-                    })
-                )
-                this.render()
-            }
+        this.verifiedKernels = this.getVerifiedGateways()
+
+        window.addEventListener('storage', () => {
+            this.verifiedKernels = this.getVerifiedGateways()
+            this.render()
         })
     }
 
