@@ -176,3 +176,12 @@ Configuring Signing Store
 -------------------------
 Signing Store is a secondary database that can be configured (it is optional). This is used for storing the private key in the case
 where the wallet gateway is used as the signing provider. It has the exact same configuration as the store (:ref:`configuring-store`).
+
+
+Configuring for different environments
+--------------------------------------
+It is recommended to keep separate config files per environment. This allow to handle them contained and have different
+security level of settings on them. Additionally some of the variables here can be considered sensitive (like the adminAuth).
+It is worth nothing that any user with access to one of the predefined ledger will be able to see network and idp values, in
+addition of the config files are stored in a github repo or another place with multiple people having read access, it is recommended
+to use environment variables to override parts of the config instead.
