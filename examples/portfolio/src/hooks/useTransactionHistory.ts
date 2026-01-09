@@ -3,6 +3,7 @@
 
 import { useMemo } from 'react'
 import {
+    skipToken,
     useInfiniteQuery,
     type UseInfiniteQueryResult,
     type InfiniteData,
@@ -13,7 +14,7 @@ import { useConnection } from '../contexts/ConnectionContext'
 import type { TransactionHistoryResponse } from '../services/transaction-history-service'
 
 export const useTransactionHistory = (): UseInfiniteQueryResult<
-    InfiniteData<TransactionHistoryResponse | undefined>,
+    InfiniteData<TransactionHistoryResponse>,
     Error
 > => {
     const {
@@ -29,11 +30,11 @@ export const useTransactionHistory = (): UseInfiniteQueryResult<
                       party: primaryParty,
                       request: pageParam,
                   })
-                : undefined,
+                : skipToken,
         getNextPageParam: (
-            lastPage: TransactionHistoryResponse | undefined
+            lastPage: TransactionHistoryResponse | typeof skipToken
         ) => {
-            if (lastPage === undefined) return undefined
+            if (lastPage === skipToken) return undefined
             if (lastPage.beginIsLedgerStart) return undefined
             return { endInclusive: lastPage.beginExclusive }
         },
