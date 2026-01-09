@@ -1584,6 +1584,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/core-rpc-transport@workspace:^, @canton-network/core-rpc-transport@workspace:core/rpc-transport":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-rpc-transport@workspace:core/rpc-transport"
+  dependencies:
+    "@canton-network/core-types": "workspace:^"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
+    uuid: "npm:^11.1.0"
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/core-signing-blockdaemon@workspace:^, @canton-network/core-signing-blockdaemon@workspace:core/signing-blockdaemon":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-signing-blockdaemon@workspace:core/signing-blockdaemon"
@@ -1731,7 +1742,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-splice-provider@workspace:core/splice-provider"
   dependencies:
+    "@canton-network/core-rpc-transport": "workspace:^"
     "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
     "@canton-network/core-wallet-ui-components": "workspace:^"
     socket.io-client: "npm:^4.8.3"
     tsup: "npm:^8.5.1"
@@ -1819,6 +1832,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-dapp-remote-rpc-client@workspace:core/wallet-dapp-remote-rpc-client"
   dependencies:
+    "@canton-network/core-rpc-transport": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^30.0.0"
@@ -1838,6 +1852,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-dapp-rpc-client@workspace:core/wallet-dapp-rpc-client"
   dependencies:
+    "@canton-network/core-rpc-transport": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^30.0.0"
@@ -1951,6 +1966,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-user-rpc-client@workspace:core/wallet-user-rpc-client"
   dependencies:
+    "@canton-network/core-rpc-transport": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^30.0.0"
@@ -2115,6 +2131,7 @@ __metadata:
   dependencies:
     "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-rpc-errors": "workspace:^"
+    "@canton-network/core-rpc-transport": "workspace:^"
     "@canton-network/core-signing-blockdaemon": "workspace:^"
     "@canton-network/core-signing-fireblocks": "workspace:^"
     "@canton-network/core-signing-internal": "workspace:^"

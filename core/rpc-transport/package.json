@@ -1,10 +1,10 @@
 {
-    "name": "@canton-network/core-splice-provider",
-    "version": "0.18.1",
+    "name": "@canton-network/core-rpc-transport",
+    "version": "0.1.0",
     "type": "module",
-    "description": "A JavaScript Splice Provider API (EIP-1193 compliant).",
+    "description": "RPC transport implementations",
     "license": "Apache-2.0",
-    "author": "Marc Juchli <marc.juchli@digitalasset.com>",
+    "author": "Digital Asset (Switzerland) GmbH and/or its affiliates",
     "packageManager": "yarn@4.9.4",
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
@@ -23,16 +23,13 @@
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist"
     },
+    "dependencies": {
+        "@canton-network/core-types": "workspace:^",
+        "uuid": "^11.1.0"
+    },
     "devDependencies": {
         "tsup": "^8.5.1",
         "typescript": "^5.9.3"
-    },
-    "dependencies": {
-        "@canton-network/core-rpc-transport": "workspace:^",
-        "@canton-network/core-types": "workspace:^",
-        "@canton-network/core-wallet-dapp-rpc-client": "workspace:^",
-        "@canton-network/core-wallet-ui-components": "workspace:^",
-        "socket.io-client": "^4.8.3"
     },
     "files": [
         "dist/**"
@@ -43,6 +40,6 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
-        "directory": "core/splice-provider"
+        "directory": "core/rpc-transport"
     }
 }
