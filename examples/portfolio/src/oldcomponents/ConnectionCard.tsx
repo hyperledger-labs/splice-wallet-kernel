@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useConnection } from '../contexts/ConnectionContext'
+import { usePrimaryAccount } from '../hooks/useAccounts'
 
 export const ConnectionCard: React.FC = () => {
     const { status, connect, open, disconnect } = useConnection()
-    const { error, connected, primaryParty, sessionToken } = status
+    const { error, connected, sessionToken } = status
+    const primaryParty = usePrimaryAccount()?.partyId
 
     return (
         <div className="card">

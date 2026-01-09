@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useConnection } from '../contexts/ConnectionContext'
+import { usePrimaryAccount } from '../hooks/useAccounts'
 import {
     useTransactionHistory,
     useDeduplicatedTransactionHistory,
@@ -10,9 +10,7 @@ import { TransferCard } from './TransferCard'
 import { HoldingsChangeSummaryCard } from './HoldingsChangeSummaryCard'
 
 export const TransactionHistoryTab: React.FC = () => {
-    const {
-        status: { primaryParty },
-    } = useConnection()
+    const primaryParty = usePrimaryAccount()?.partyId
 
     const { status, fetchNextPage, isFetchingNextPage, hasNextPage } =
         useTransactionHistory()
