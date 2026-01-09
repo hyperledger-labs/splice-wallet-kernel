@@ -105,7 +105,6 @@ jobs:
             - name: Run unit tests
               run: yarn test:all
 
-    ## TODO: Re-enable kernel-e2e later
     test-kernel-e2e:
         runs-on: ubuntu-latest
         needs: build
@@ -144,7 +143,7 @@ jobs:
             - name: Start remote WK
               run: yarn nx run @canton-network/wallet-gateway-remote:start &
 
-            - run: yarn nx run @canton-network/example-ping:dev &
+            - run: yarn nx run @canton-network/example-ping:dev > "example-ping.log" 2>&1 &
 
             - run: yarn nx run @canton-network/mock-oauth2:start &
 
@@ -202,7 +201,14 @@ jobs:
               with:
                   name: playwright-report
                   path: examples/ping/playwright-report/
-                  retention-days: 30
+                  retention-days: 5
+
+            - uses: actions/upload-artifact@v4
+              if: ${{ failure() }}
+              with:
+                  name: example-ping-logs
+                  path: example-ping.log
+                  retention-days: 5
 
     sdk-e2e:
         name: sdk-e2e (${{ matrix.network }})
