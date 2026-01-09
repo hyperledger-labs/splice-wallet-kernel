@@ -43,13 +43,14 @@ Configuring Basics
 
 **Kernel:**
     - *id:* The unique identifier used by the kernel.
+    - *publicUrl:* (optional) The baseURL used for redirecting clients, if nothing is provided it iwll be based on host & port in server config.
     - *clientType:* The type of client, for a remote wallet kernel this should always be set to 'remote'.
 
 "**Server**" information is used for handling network binding. It is worth noting here that default is localhost will not work if you are running this
 outside of your own machine (like a kubernetes cluster).
 
 **Server:**
-    - *host:* (default: 'localhost') The URL which the node server will bind against, this is also the value that will be used when generating popups for dApp.
+    - *host:* (default: 'localhost') The URL which the node server will bind against locally.
     - *port:* (default: '3030') The port which the node server will bind against, this is also used for generating popups.
     - *tls:*  (default: false) If tls should be enabled, this will prefix the URL (for popups) with https:// instead of http://.
     - *dAppPath:* (default: '/api/v0/dapp') customizable redirect path for dapps.
