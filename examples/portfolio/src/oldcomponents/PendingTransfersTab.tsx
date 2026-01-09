@@ -6,14 +6,12 @@ import type {
     PrettyContract,
     TransferInstructionView,
 } from '@canton-network/core-ledger-client'
-import { useConnection } from '../contexts/ConnectionContext'
 import { usePortfolio } from '../contexts/PortfolioContext'
+import { usePrimaryAccount } from '../hooks/useAccounts'
 import { TransferCard } from './TransferCard'
 
 export const PendingTransfersTab: React.FC = () => {
-    const {
-        status: { primaryParty },
-    } = useConnection()
+    const primaryParty = usePrimaryAccount()?.partyId
     const { listPendingTransfers } = usePortfolio()
     const [pendingTransfers, setPendingTransfers] = useState<
         PrettyContract<TransferInstructionView>[] | undefined

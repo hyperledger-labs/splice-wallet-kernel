@@ -10,6 +10,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
     const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({
         connected: false,
+        accounts: [],
     })
 
     const connect = () => {
@@ -19,10 +20,15 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
                     connected: status.isConnected,
                     sessionToken: status.session?.accessToken,
                     error: undefined,
+                    accounts: [],
                 })
             })
             .catch((err) => {
-                setConnectionStatus({ connected: false, error: err.details })
+                setConnectionStatus({
+                    connected: false,
+                    error: err.details,
+                    accounts: [],
+                })
             })
     }
 
@@ -32,6 +38,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
         sdk.disconnect().then(() =>
             setConnectionStatus({
                 connected: false,
+                accounts: [],
             })
         )
     }
@@ -84,21 +91,10 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
             .then((wallets) => {
                 const requestedAccounts =
                     wallets as sdk.dappAPI.RequestAccountsResult
-                if (requestedAccounts?.length > 0) {
-                    const primaryWallet = requestedAccounts.find(
-                        (w) => w.primary
-                    )
-                    if (primaryWallet) {
-                        setConnectionStatus((c) => ({
-                            ...c,
-                            primaryParty: primaryWallet.partyId,
-                        }))
-                    } else {
-                        // TODO: Throw error
-                    }
-                } else {
-                    // TODO: Throw error
-                }
+                setConnectionStatus((c) => ({
+                    ...c,
+                    accounts: requestedAccounts,
+                }))
             })
             .catch((err) => {
                 console.error('Error requesting wallets:', err)
@@ -112,23 +108,10 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
         const onAccountsChanged = (
             wallets: sdk.dappAPI.AccountsChangedEvent
         ) => {
-            let primaryWallet = undefined
-            if (wallets.length > 0) {
-                primaryWallet = wallets.find((w) => w.primary)
-            }
-
-            if (primaryWallet) {
-                setConnectionStatus((c) => ({
-                    ...c,
-                    primaryParty: primaryWallet!.partyId,
-                }))
-            } else {
-                setConnectionStatus((c) => {
-                    const noParty = { ...c }
-                    delete noParty.primaryParty
-                    return noParty
-                })
-            }
+            setConnectionStatus((c) => ({
+                ...c,
+                accounts: wallets,
+            }))
         }
         provider.on<sdk.dappAPI.TxChangedEvent>('txChanged', messageListener)
         provider.on<sdk.dappAPI.AccountsChangedEvent>(
