@@ -23,7 +23,7 @@ import {
     PublicKey,
     verifySignedTxHash,
 } from '@canton-network/core-signing-lib'
-import { WebSocketManager } from './WebSocketManger.js'
+import { WebSocketManager } from './webSocketManger.js'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-proto'
@@ -52,7 +52,7 @@ export type ParticipantEndpointConfig = {
     accessTokenProvider?: AccessTokenProvider
 }
 
-export type StreamUpdatesOptions = {
+export type SubscribeToUpdateOptions = {
     beginOffset: number
     verbose: boolean
 } & (
@@ -111,10 +111,12 @@ export class LedgerController {
 
         this.webSocketManager = new WebSocketManager({
             wsClient,
-            logger: this.logger,
+            logger: pino({
+                name: 'WebSocketManager-LedgerController',
+                level: 'info',
+            }),
         })
 
-        // this.wsInitPromise = this.websocketClient.init()
         this.initPromise = this.client.init()
         this.userId = userId
         this.isAdmin = isAdmin
@@ -125,9 +127,6 @@ export class LedgerController {
         return this.initPromise
     }
 
-    // async awaitWsInit() {
-    //     return this.wsInitPromise
-    // }
     /**
      * Sets the party that the ledgerController will use for requests.
      * @param partyId
@@ -252,7 +251,7 @@ export class LedgerController {
      * @throws InvalidSubscriptionOptionsError if the options is invalid
      * @throws WebSocketConnectionError if connection fails
      */
-    async *subscribeToUpdates(options: StreamUpdatesOptions) {
+    async *subscribeToUpdates(options: SubscribeToUpdateOptions) {
         const { beginOffset, verbose } = options
 
         const baseOptions = {
