@@ -50,9 +50,9 @@ Configuring Basics
 outside of your own machine (like a kubernetes cluster).
 
 **Server:**
-    - *host:* (default: 'localhost') The URL which the node server will bind against locally.
+    - *host:* Deprecated.
     - *port:* (default: '3030') The port which the node server will bind against, this is also used for generating popups.
-    - *tls:*  (default: false) If tls should be enabled, this will prefix the URL (for popups) with https:// instead of http://.
+    - *tls:*  Deprecated.
     - *dAppPath:* (default: '/api/v0/dapp') customizable redirect path for dapps.
     - *userPath:* (default: '/api/v0/user') customizable redirect path for user actions.
     - *allowedOrigins:* (default: ['*']) configure allowedOrigins as an array
