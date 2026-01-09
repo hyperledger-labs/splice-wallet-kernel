@@ -1,13 +1,14 @@
 {
-    "name": "@canton-network/core-signing-blockdaemon",
-    "version": "0.16.0",
+    "name": "@canton-network/core-rpc-transport",
+    "version": "0.1.0",
     "type": "module",
-    "description": "Wallet Gateway signing driver for Blockdaemon",
+    "description": "RPC transport implementations",
     "license": "Apache-2.0",
+    "author": "Digital Asset (Switzerland) GmbH and/or its affiliates",
     "packageManager": "yarn@4.9.4",
-    "main": "dist/index.cjs",
-    "module": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
@@ -18,14 +19,15 @@
     },
     "scripts": {
         "build": "tsup && tsc -p tsconfig.types.json",
-        "clean": "rm -rf ./dist"
+        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
+        "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
-        "@canton-network/core-signing-lib": "workspace:^",
-        "@canton-network/core-wallet-auth": "workspace:^"
+        "@canton-network/core-types": "workspace:^",
+        "uuid": "^11.1.0"
     },
     "devDependencies": {
-        "@types/node": "^24.10.4",
         "tsup": "^8.5.1",
         "typescript": "^5.9.3"
     },
@@ -38,6 +40,6 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
-        "directory": "core/signing-blockdaemon"
+        "directory": "core/rpc-transport"
     }
 }

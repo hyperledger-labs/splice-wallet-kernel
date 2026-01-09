@@ -134,6 +134,7 @@
                         },
                         {
                             "type": "object",
+                            "title": "TransactionsResult",
                             "properties": {
                                 "transactions": {
                                     "title": "transactions",

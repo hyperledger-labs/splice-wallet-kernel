@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-store",
-    "version": "0.18.0",
+    "version": "0.18.1",
     "type": "module",
     "description": "The Store API provides persistency for the Wallet Gateway",
     "license": "Apache-2.0",
@@ -17,15 +17,15 @@
     },
     "dependencies": {
         "@canton-network/core-wallet-auth": "workspace:^",
-        "zod": "^4.1.13"
+        "zod": "^4.3.5"
     },
     "devDependencies": {
         "@jest/globals": "^30.2.0",
-        "@swc/core": "^1.15.3",
+        "@swc/core": "^1.15.8",
         "@swc/jest": "^0.2.39",
         "@types/jest": "^30.0.0",
         "jest": "^30.2.0",
-        "ts-jest": "^29.4.5",
+        "ts-jest": "^29.4.6",
         "ts-jest-resolver": "^2.0.1",
         "tsup": "^8.5.1",
         "typescript": "^5.9.3"
