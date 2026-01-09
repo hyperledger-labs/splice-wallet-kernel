@@ -73,13 +73,26 @@ const createLedgerClient = async (options: {
             body = await url.text()
         }
 
-        const response = await sdk.ledgerApi({
-            requestMethod,
-            resource,
-            body,
-        })
+        try {
+            const response = await sdk.ledgerApi({
+                requestMethod,
+                resource,
+                body,
+            })
 
-        return new Response(response.response)
+            return new Response(response.response)
+        } catch (err: unknown) {
+            // Mimic errors that come directly from the ledger API.
+            // Catches in the codebase assume that e.g. 'err.code' is set.
+            if (typeof err === 'object' && err !== null && 'error' in err) {
+                const typedErr = err as { error?: { data?: unknown } }
+                if (typedErr.error?.data) {
+                    throw typedErr.error.data
+                }
+            }
+
+            throw err
+        }
     }
 
     const ledgerClient = new LedgerClient({
