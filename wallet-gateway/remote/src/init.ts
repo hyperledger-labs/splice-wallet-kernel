@@ -29,7 +29,7 @@ import { CliOptions } from './index.js'
 import { jwtAuth } from './middleware/jwtAuth.js'
 import { rpcRateLimit } from './middleware/rateLimit.js'
 import { Config } from './config/Config.js'
-import { deriveKernelUrls } from './config/ConfigUtils.js'
+import { deriveUrls } from './config/ConfigUtils.js'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 import { GATEWAY_VERSION } from './version.js'
@@ -113,15 +113,15 @@ export async function initialize(opts: CliOptions, logger: Logger) {
 
     // Use CLI port override or config port
     const port = opts.port ? Number(opts.port) : config.server.port
-    const host = config.server.host
-    const protocol = config.server.tls ? 'https' : 'http'
+    const { serviceUrl, publicUrl, dappApiUrl, userApiUrl } = deriveUrls(
+        config,
+        port
+    )
 
     const app = express()
 
     const server = app.listen(port, () => {
-        logger.info(
-            `Remote Wallet Gateway starting on ${protocol}://${host}:${port} (bound to 0.0.0.0:${port})`
-        )
+        logger.info(`Remote Wallet Gateway starting on ${serviceUrl})`)
     })
 
     app.use('/healthz', rpcRateLimit, (_req, res) => res.status(200).send('OK'))
@@ -194,26 +194,7 @@ export async function initialize(opts: CliOptions, logger: Logger) {
         )
     )
 
-    // Override config port with CLI parameter port if provided, then derive URLs
-    const serverConfigWithOverride = {
-        ...config.server,
-        port, // Use the actual port we're listening on
-    }
-    const { dappUrl, userUrl } = deriveKernelUrls(serverConfigWithOverride)
-
-    logger.info(
-        {
-            host: serverConfigWithOverride.host,
-            port: serverConfigWithOverride.port,
-            tls: serverConfigWithOverride.tls,
-            dappPath: serverConfigWithOverride.dappPath,
-            userPath: serverConfigWithOverride.userPath,
-            allowedOrigins: serverConfigWithOverride.allowedOrigins,
-            dappUrl,
-            userUrl,
-        },
-        'Server configuration'
-    )
+    logger.info({ ...config.server, port }, 'Server configuration')
 
     const kernelInfo = config.kernel
 
@@ -224,8 +205,8 @@ export async function initialize(opts: CliOptions, logger: Logger) {
         logger,
         server,
         kernelInfo,
-        dappUrl,
-        userUrl,
+        dappApiUrl,
+        publicUrl,
         config.server,
         notificationService,
         authService,
@@ -238,17 +219,19 @@ export async function initialize(opts: CliOptions, logger: Logger) {
         app,
         logger,
         kernelInfo,
-        userUrl,
+        publicUrl,
         notificationService,
         drivers,
         store
     )
 
     // register web handler
-    web(app, server, config.server.userPath)
+    web(app, server, userApiUrl)
     isReady = true
 
     logger.info(
         `Wallet Gateway (version: ${GATEWAY_VERSION}) initialization complete`
     )
+    logger.info(`Wallet Gateway UI available on ${publicUrl}`)
+    logger.info(`dApp API available on ${dappApiUrl}`)
 }
