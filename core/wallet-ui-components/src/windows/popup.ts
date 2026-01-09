@@ -33,9 +33,6 @@ class PopupInstance {
     }
 
     constructor() {
-        // TODO: remove this, b/c we cannot distinguish between page closed vs page reloaded.
-        // A possible solution is to send a periodic heartbeat message from the parent to the popup,
-        // and close the popup if it doesn't respond within a certain time frame.
         window.addEventListener('beforeunload', () => {
             if (globalPopupInstance) {
                 console.log('[PopupInstance] Closing popup instance on unload')
