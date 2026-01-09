@@ -1357,14 +1357,13 @@ export class TokenStandardService {
                 await this.ledgerClient.postWithRetry('/v2/updates/flats', {
                     updateFormat: {
                         includeTransactions: {
-                            eventFormat: EventFilterBySetup(
-                                TokenStandardTransactionInterfaces,
-                                {
-                                    includeWildcard: true,
-                                    isMasterUser: this.isMasterUser,
-                                    partyId: partyId,
-                                }
-                            ),
+                            eventFormat: EventFilterBySetup({
+                                interfaceIds:
+                                    TokenStandardTransactionInterfaces,
+                                isMasterUser: this.isMasterUser,
+                                partyId: partyId,
+                                includeWildcard: true,
+                            }),
                             transactionShape:
                                 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
                         },
@@ -1390,14 +1389,12 @@ export class TokenStandardService {
         partyId: PartyId
     ): Promise<Transaction> {
         const transactionFormat: TransactionFormat = {
-            eventFormat: EventFilterBySetup(
-                TokenStandardTransactionInterfaces,
-                {
-                    includeWildcard: true,
-                    isMasterUser: this.isMasterUser,
-                    partyId: partyId,
-                }
-            ),
+            eventFormat: EventFilterBySetup({
+                interfaceIds: TokenStandardTransactionInterfaces,
+                isMasterUser: this.isMasterUser,
+                partyId: partyId,
+                includeWildcard: true,
+            }),
             transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
         }
 

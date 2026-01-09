@@ -4,10 +4,10 @@ import {
     localNetLedgerDefault,
     localNetTopologyDefault,
     localNetTokenStandardDefault,
-    localNetLedgerAppProvider,
     createKeyPair,
     localValidatorDefault,
     localNetStaticConfig,
+    UpdatesResponse,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
@@ -102,6 +102,27 @@ logger.info(
 
 await sdk.setPartyId(multiHostedPartyWithObservingParticipant?.partyId!)
 
+const events: UpdatesResponse[] = []
+const controller = new AbortController()
+
+const subscribeToPingUpdates = (async () => {
+    try {
+        const stream = sdk.userLedger?.subscribeToUpdates({
+            templateIds: [
+                '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
+            ],
+        })
+        for await (const update of stream!) {
+            events.push(update as UpdatesResponse)
+            if (controller.signal.aborted) break
+        }
+    } catch (err) {
+        if (!controller.signal.aborted) throw err
+    }
+})()
+
+subscribeToPingUpdates
+
 const createPingCommand2 = sdk.userLedger?.createPingCommand(
     multiHostedPartyWithObservingParticipant!.partyId!
 )
@@ -112,3 +133,15 @@ const pingCommandResponse2 = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     v4()
 )
 logger.info(pingCommandResponse2, 'ping command response')
+
+logger.info(events)
+if (events.length === 0) {
+    logger.error(
+        'No events received, something went wrong with the subscription'
+    )
+    controller.abort()
+    process.exit(1)
+}
+controller.abort()
+
+process.exit(0)
