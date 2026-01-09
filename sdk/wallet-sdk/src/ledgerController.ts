@@ -246,6 +246,12 @@ export class LedgerController {
         }
     }
 
+    /**
+     * @param options update filter options (templateIds or interfaceIds, beginOffset, verbose)
+     * @returns AsyncIterableIterator of Updates
+     * @throws InvalidSubscriptionOptionsError if the options is invalid
+     * @throws WebSocketConnectionError if connection fails
+     */
     async *subscribeToUpdates(options: StreamUpdatesOptions) {
         const { beginOffset, verbose } = options
 
