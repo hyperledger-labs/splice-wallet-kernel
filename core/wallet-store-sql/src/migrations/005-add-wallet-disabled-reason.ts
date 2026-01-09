@@ -7,7 +7,7 @@ import { DB } from '../schema.js'
 export async function up(db: Kysely<DB>): Promise<void> {
     await db.schema
         .alterTable('wallets')
-        .addColumn('disabled', 'boolean')
+        .addColumn('disabled', 'integer')
         .execute()
 
     await db.schema.alterTable('wallets').addColumn('reason', 'text').execute()

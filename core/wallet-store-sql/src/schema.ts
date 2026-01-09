@@ -47,7 +47,7 @@ interface WalletTable {
     externalTxId?: string
     topologyTransactions?: string
     status?: string
-    disabled?: boolean | null
+    disabled?: number | null
     reason?: string | null
 }
 
@@ -160,7 +160,8 @@ export const fromWallet = (wallet: Wallet, userId: UserId): WalletTable => {
         ...wallet,
         primary: wallet.primary ? 1 : 0,
         userId: userId,
-        disabled: wallet.disabled ?? null,
+        disabled:
+            wallet.disabled !== undefined ? (wallet.disabled ? 1 : 0) : null,
         reason: wallet.reason ?? null,
     }
 }
@@ -189,7 +190,7 @@ export const toWallet = (table: WalletTable): Wallet => {
     }
 
     if (table.disabled !== null && table.disabled !== undefined) {
-        wallet.disabled = table.disabled
+        wallet.disabled = table.disabled === 1
     }
 
     if (table.reason !== null && table.reason !== undefined) {
