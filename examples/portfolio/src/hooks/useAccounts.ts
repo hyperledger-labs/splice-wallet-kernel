@@ -12,11 +12,7 @@ export const useAccounts = (): sdk.dappAPI.Wallet[] => {
     return accounts
 }
 
-export const usePrimaryAccount = (): sdk.dappAPI.Wallet | undefined => {
+export const usePrimaryAccount = (): sdk.dappAPI.Wallet | null => {
     const accounts = useAccounts()
-    return useMemo(() => {
-        for (const account of accounts) {
-            if (account.primary) return account
-        }
-    }, [accounts])
+    return useMemo(() => accounts.find((a) => a.primary) ?? null, [accounts])
 }
