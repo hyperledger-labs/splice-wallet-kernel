@@ -17,6 +17,20 @@ The mock auth is only there to showcase how an idp configuration could look like
     :language: json
     :dedent:
 
+you can easily create a similar config by running:
+
+.. code-block:: bash
+
+    npx @canton-network/wallet-gateway-remote@latest --config-example
+
+or
+
+.. code-block:: bash
+
+    npx @canton-network/wallet-gateway-remote@latest --config-schema
+
+to get the schema version.
+
 The configuration has four basic sections:
 - Kernel: contains basic information about the wallet gateway.
 - Host: Sets up url binding and handles
