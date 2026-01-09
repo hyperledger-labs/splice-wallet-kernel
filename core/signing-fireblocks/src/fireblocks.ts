@@ -8,7 +8,11 @@ import {
     VaultAccount,
 } from '@fireblocks/ts-sdk'
 import { pino } from 'pino'
-import { SigningStatus, CC_COIN_TYPE } from '@canton-network/core-signing-lib'
+import {
+    SigningStatus,
+    CC_COIN_TYPE,
+    KeyIdentifier,
+} from '@canton-network/core-signing-lib'
 import { z } from 'zod'
 
 const RawMessageSchema = z.object({
@@ -307,19 +311,26 @@ export class FireblocksHandler {
     }
     /**
      * Sign a transaction using a public key
-     * @param tx - The transaction to sign, as a string
-     * @param publicKey - The public key to use for signing
+     * @param userId - id of a user to get respective client and keys
+     * @param txHash - Hash of the transaction to sign
+     * @param keyIdentifier - The key identifier (must include publicKey)
      * @param externalTxId - The transaction ID assigned by the Wallet Gateway
      * @return The transaction object from Fireblocks
      */
     public async signTransaction(
         userId: string | undefined,
-        tx: string,
-        publicKey: string,
+        txHash: string,
+        keyIdentifier: KeyIdentifier,
         externalTxId?: string
     ): Promise<FireblocksTransaction> {
         try {
             const client = this.getClient(userId)
+            if (!keyIdentifier.publicKey) {
+                throw new Error(
+                    'Public key is required for Fireblocks signing provider'
+                )
+            }
+            const publicKey = keyIdentifier.publicKey
             if (!this.keyInfoByPublicKey.has(publicKey)) {
                 // refresh the keycache
                 await this.getPublicKeys(userId)
@@ -338,7 +349,7 @@ export class FireblocksHandler {
                         rawMessageData: {
                             messages: [
                                 {
-                                    content: tx,
+                                    content: txHash,
                                     derivationPath: key.derivationPath,
                                 },
                             ],

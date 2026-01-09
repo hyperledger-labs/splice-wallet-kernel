@@ -197,7 +197,7 @@ export interface StatusEvent {
     network?: Network
     session?: Session
 }
-export interface ObjectOfUserUrlMkZ1IR2Z {
+export interface ConnectResult {
     userUrl: UserUrl
     [k: string]: any
 }
@@ -439,7 +439,7 @@ export interface LedgerApiParams {
     body?: Body
     [k: string]: any
 }
-export type StatusEventAsync = StatusEvent & ObjectOfUserUrlMkZ1IR2Z
+export type StatusEventAsync = StatusEvent & ConnectResult
 /**
  *
  * Represents a null value, used in responses where no data is returned.

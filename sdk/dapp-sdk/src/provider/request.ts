@@ -10,9 +10,23 @@ import { GatewaysConfig } from '@canton-network/core-types'
 import gateways from '../gateways.json'
 import { clearAllLocalState } from '../util'
 
-export async function connect(): Promise<dappAPI.StatusEvent> {
-    const config: GatewaysConfig[] = gateways
-    return discover(config)
+interface ConnectOptions {
+    defaultGateways?: GatewaysConfig[]
+    additionalGateways?: GatewaysConfig[]
+}
+
+export async function connect(
+    options?: ConnectOptions
+): Promise<dappAPI.StatusEvent> {
+    const { defaultGateways = gateways, additionalGateways = [] } =
+        options || {}
+
+    const verifiedGateways: GatewaysConfig[] = [
+        ...defaultGateways,
+        ...additionalGateways,
+    ]
+
+    return discover(verifiedGateways)
         .then(async (result) => {
             // Store discovery result and remove previous session
             clearAllLocalState()
@@ -62,7 +76,7 @@ export async function disconnect(): Promise<dappAPI.Null> {
             method: 'disconnect',
         })
     } finally {
-        clearAllLocalState()
+        clearAllLocalState({ closePopup: true })
     }
 
     return null

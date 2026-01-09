@@ -1,0 +1,66 @@
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+import { useMemo } from 'react'
+import {
+    skipToken,
+    useInfiniteQuery,
+    type UseInfiniteQueryResult,
+    type InfiniteData,
+} from '@tanstack/react-query'
+import { type Transaction } from '@canton-network/core-ledger-client'
+import { usePortfolio } from '../contexts/PortfolioContext'
+import { useConnection } from '../contexts/ConnectionContext'
+import type { TransactionHistoryResponse } from '../services/transaction-history-service'
+
+export const useTransactionHistory = (): UseInfiniteQueryResult<
+    InfiniteData<TransactionHistoryResponse>,
+    Error
+> => {
+    const {
+        status: { primaryParty },
+    } = useConnection()
+    const { getTransactionHistory } = usePortfolio()
+    return useInfiniteQuery({
+        initialPageParam: null,
+        queryKey: ['getTransactionHistory', primaryParty],
+        queryFn: ({ pageParam }) =>
+            primaryParty
+                ? getTransactionHistory({
+                      party: primaryParty,
+                      request: pageParam,
+                  })
+                : skipToken,
+        getNextPageParam: (
+            lastPage: TransactionHistoryResponse | typeof skipToken
+        ) => {
+            if (lastPage === skipToken) return undefined
+            if (lastPage.beginIsLedgerStart) return undefined
+            return { endInclusive: lastPage.beginExclusive }
+        },
+        staleTime: Infinity,
+    })
+}
+
+/** Deduplicate transactions.  We don't have stable pagination, this concerns
+ *  in particular the the first page, for which the cursor doesn't have any
+ *  offset or limit info. */
+export const useDeduplicatedTransactionHistory = (): Transaction[] => {
+    const { data } = useTransactionHistory()
+
+    return useMemo(() => {
+        const ids = new Set<number>()
+        const transactions = []
+        for (const page of data?.pages ?? []) {
+            for (const transaction of page?.transactions ?? []) {
+                if (!ids.has(transaction.offset)) {
+                    ids.add(transaction.offset)
+                    if (transaction.events.length > 0) {
+                        transactions.push(transaction)
+                    }
+                }
+            }
+        }
+        return transactions
+    }, [data])
+}

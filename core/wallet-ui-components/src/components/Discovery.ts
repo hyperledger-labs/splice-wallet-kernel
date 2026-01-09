@@ -107,20 +107,40 @@ export class Discovery extends HTMLElement {
     private verifiedKernels?: KernelType[]
     private lastUsed?: KernelType | undefined
 
+    private getVerifiedGateways(): KernelType[] {
+        const stored = localStorage.getItem('splice_wallet_verified_gateways')
+        if (!stored) return []
+        try {
+            const gateways = JSON.parse(stored) as GatewaysConfig[]
+            return gateways.map((gateway) => ({
+                ...gateway,
+                walletType: 'remote',
+            }))
+        } catch (e) {
+            console.error(
+                'Failed to parse verified gateways from localStorage',
+                e
+            )
+            return []
+        }
+    }
+
     constructor() {
         super()
         this.attachShadow({ mode: 'open' })
 
-        const styles = document.createElement('style')
-        styles.textContent = Discovery.styles
+        const ctor = this.constructor as typeof HTMLElement & {
+            styles?: string
+        }
+
+        if (ctor.styles) {
+            const style = document.createElement('style')
+            style.textContent = ctor.styles
+            this.shadowRoot!.appendChild(style)
+        }
 
         this.root = document.createElement('div')
         this.root.id = 'discovery-root'
-
-        if (this.shadowRoot) {
-            this.shadowRoot.appendChild(styles)
-            this.shadowRoot.appendChild(this.root)
-        }
 
         if (window.opener) {
             // uses the string literal instead of the WalletEvent enum to avoid bundling issues
@@ -147,16 +167,11 @@ export class Discovery extends HTMLElement {
             }
         }
 
-        window.addEventListener('message', (event) => {
-            if (event.data.type === 'SPLICE_WALLET_CONFIG_LOAD') {
-                this.verifiedKernels = event.data.payload.map(
-                    (kernel: GatewaysConfig) => ({
-                        ...kernel,
-                        walletType: 'remote',
-                    })
-                )
-                this.render()
-            }
+        this.verifiedKernels = this.getVerifiedGateways()
+
+        window.addEventListener('storage', () => {
+            this.verifiedKernels = this.getVerifiedGateways()
+            this.render()
         })
     }
 
@@ -244,6 +259,7 @@ export class Discovery extends HTMLElement {
 
     private selectKernel(kernel: DiscoverResult) {
         if (window.opener) {
+            console.debug('Posting selected kernel to opener', kernel)
             window.opener.postMessage(kernel, '*')
         } else {
             console.warn('no window opener...')

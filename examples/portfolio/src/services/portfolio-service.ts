@@ -6,7 +6,6 @@ import type {
     Holding,
     PrettyContract,
     TransferInstructionView,
-    Transaction,
 } from '@canton-network/core-ledger-client'
 import type {
     AllocationInstructionView,
@@ -14,6 +13,10 @@ import type {
     AllocationSpecification,
     AllocationView,
 } from '@canton-network/core-token-standard'
+import type {
+    TransactionHistoryRequest,
+    TransactionHistoryResponse,
+} from './transaction-history-service'
 
 // PortfolioService is a fat interface that tries to capture everything our
 // portflio can do.  Separating the interface from the implementation will
@@ -66,13 +69,10 @@ export interface PortfolioService {
     }) => Promise<PrettyContract<AllocationInstructionView>[]>
 
     // History
-    getTransactionHistory: (_: { party: PartyId }) => Promise<Transaction[]>
-    fetchOlderTransactionHistory: (_: {
+    getTransactionHistory: (_: {
         party: PartyId
-    }) => Promise<Transaction[]>
-    fetchMoreRecentTransactionHistory: (_: {
-        party: PartyId
-    }) => Promise<Transaction[]>
+        request: TransactionHistoryRequest
+    }) => Promise<TransactionHistoryResponse>
 
     // Tap
     tap: (_: {

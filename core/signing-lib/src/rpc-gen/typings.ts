@@ -23,6 +23,38 @@ export type TxHash = string
 export type PublicKey = string
 /**
  *
+ * Unique identifier for the key
+ *
+ */
+export type Id = string
+/**
+ *
+ * Key identifier with publicKey (id is optional).
+ *
+ */
+export interface KeyIdentifierWithPublicKey {
+    publicKey: PublicKey
+    id?: Id
+    [k: string]: any
+}
+/**
+ *
+ * Key identifier with id (publicKey is optional).
+ *
+ */
+export interface KeyIdentifierWithId {
+    publicKey?: PublicKey
+    id: Id
+    [k: string]: any
+}
+/**
+ *
+ * Identifier for the key to use for signing. At least one of publicKey or id must be provided.
+ *
+ */
+export type KeyIdentifier = KeyIdentifierWithPublicKey | KeyIdentifierWithId
+/**
+ *
  * Internal txId used by the Wallet Gateway to store the transaction.
  *
  */
@@ -102,16 +134,10 @@ export interface Transaction {
  *
  */
 export type Transactions = Transaction[]
-export interface ObjectOfTransactionsUOtaZpXE {
+export interface TransactionsResult {
     transactions?: Transactions
     [k: string]: any
 }
-/**
- *
- * Unique identifier for the key
- *
- */
-export type Id = string
 export interface Key {
     id: Id
     name: Name
@@ -127,7 +153,7 @@ export type Keys = Key[]
 export interface SignTransactionParams {
     tx: Tx
     txHash: TxHash
-    publicKey: PublicKey
+    keyIdentifier: KeyIdentifier
     internalTxId?: InternalTxId
     [k: string]: any
 }
@@ -158,7 +184,7 @@ export interface SubscribeTransactionsParams {
 }
 export type SignTransactionResult = Error | Transaction
 export type GetTransactionResult = Error | Transaction
-export type GetTransactionsResult = Error | ObjectOfTransactionsUOtaZpXE
+export type GetTransactionsResult = Error | TransactionsResult
 export interface GetKeysResult {
     keys?: Keys
     [k: string]: any

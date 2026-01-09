@@ -9,10 +9,20 @@ import { RegistryServiceProvider } from './contexts/RegistriesServiceProvider'
 import { ConnectionProvider } from './contexts/ConnectionProvider'
 import { PortfolioProvider } from './contexts/PortfolioProvider'
 import { AppThemeProvider } from './contexts/theme-provider'
+import { Toaster } from 'sonner'
+
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 30_000, // data stays fresh for 30 seconds
+            refetchInterval: 60_000, // Poll every 60 seconds
+        },
+    },
+})
 
 const router = createRouter({
     routeTree,
-    context: {},
+    context: { queryClient },
     defaultPreload: 'intent',
     scrollRestoration: true,
     defaultStructuralSharing: true,
@@ -25,8 +35,6 @@ declare module '@tanstack/react-router' {
         router: typeof router
     }
 }
-
-const queryClient = new QueryClient()
 
 // Render the app
 const rootElement = document.getElementById('app')
@@ -41,6 +49,7 @@ if (rootElement && !rootElement.innerHTML) {
                         <ConnectionProvider>
                             <PortfolioProvider>
                                 <RouterProvider router={router} />
+                                <Toaster richColors />
                             </PortfolioProvider>
                         </ConnectionProvider>
                     </RegistryServiceProvider>

@@ -1,8 +1,9 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { gatewayUi } from '../ui'
 import * as storage from '../storage'
+import { popup } from '@canton-network/core-wallet-ui-components'
+import { SpliceMessage, WalletEvent } from '@canton-network/core-types'
 
 export async function open(): Promise<void> {
     const discovery = storage.getKernelDiscovery()
@@ -15,5 +16,15 @@ export async function open(): Promise<void> {
         throw new Error('No previous session found')
     }
 
-    gatewayUi.open(discovery.walletType, session.kernel.userUrl ?? '')
+    const userUrl = session.userUrl ?? ''
+
+    if (discovery.walletType === 'remote') {
+        popup.open(userUrl)
+    } else if (discovery.walletType === 'extension') {
+        const msg: SpliceMessage = {
+            type: WalletEvent.SPLICE_WALLET_EXT_OPEN,
+            url: userUrl,
+        }
+        window.postMessage(msg, '*')
+    }
 }

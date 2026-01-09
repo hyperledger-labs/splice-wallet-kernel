@@ -8,7 +8,7 @@ if (window.canton) {
     // Clean up session on disconnect
     onStatusChanged(async (event) => {
         if (!event.isConnected) {
-            clearAllLocalState()
+            clearAllLocalState({ closePopup: true })
         }
     })
 }

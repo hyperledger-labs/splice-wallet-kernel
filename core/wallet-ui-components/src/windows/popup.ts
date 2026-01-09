@@ -1,8 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { WindowState } from './discovery'
-
 interface PopupOptions {
     title?: string
     target?: string
@@ -17,30 +15,77 @@ interface StyledElement {
     styles: string
 }
 
-export function popup(
-    component: StyledElement,
-    options?: PopupOptions
-): Promise<Window> {
-    const { title = 'Custom Popup' } = options || {}
+let globalPopupInstance: WindowProxy | undefined
 
-    const sanitizedStyles = component.styles
-        .replaceAll('\n', ' ')
-        .replaceAll("'", "\\'")
-        .replaceAll('"', '\\"')
-
-    let element = component
-        .toString()
-        .replace('SUBSTITUTABLE_CSS', `'${sanitizedStyles}'`)
-
-    // Ugly hack to workaround the format of the class post-bundling, where static methods are set at runtime for compatibility
-    if (sanitizedStyles && !element.includes('static styles')) {
-        element = element.replace(
-            'constructor() {',
-            `static styles = '${sanitizedStyles}';\nconstructor() {`
-        )
+class PopupInstance {
+    static getInstance() {
+        if (!globalPopupInstance || globalPopupInstance.closed) {
+            console.log('[PopupInstance] Creating new global popup instance')
+            const win = window.open(
+                '',
+                'wallet-popup',
+                `width=400,height=500,screenX=200,screenY=200`
+            )
+            if (!win) throw new Error('Failed to open popup window')
+            globalPopupInstance = win
+        }
+        return globalPopupInstance
     }
 
-    const html = `<!DOCTYPE html>
+    constructor() {
+        window.addEventListener('beforeunload', () => {
+            if (globalPopupInstance) {
+                console.log('[PopupInstance] Closing popup instance on unload')
+                globalPopupInstance.close()
+                globalPopupInstance = undefined
+            }
+        })
+    }
+
+    open(url: string | URL): WindowProxy
+    open(component: StyledElement, options?: PopupOptions): WindowProxy
+    open(
+        urlOrComponent: string | URL | StyledElement,
+        options?: PopupOptions
+    ): WindowProxy {
+        if (
+            typeof urlOrComponent === 'string' ||
+            urlOrComponent instanceof URL
+        ) {
+            const win = PopupInstance.getInstance()
+            win.location.href = urlOrComponent.toString()
+            win.focus()
+            return win
+        } else {
+            const componentUrl = this.getComponentUrl(urlOrComponent, options)
+            const win = PopupInstance.getInstance()
+            win.location.href = componentUrl
+            win.focus()
+            return win
+        }
+    }
+
+    close() {
+        console.log('[PopupInstance] Closing popup instance')
+        if (globalPopupInstance) globalPopupInstance.close()
+    }
+
+    private getComponentUrl(
+        component: StyledElement,
+        options?: PopupOptions
+    ): string {
+        const { title = 'Custom Popup' } = options || {}
+
+        const sanitizedStyles = component.styles
+            .replaceAll('\n', ' ')
+            .replaceAll("'", "\\'")
+            .replaceAll('"', '\\"')
+
+        const elementSource = component
+            .toString()
+            .replace('SUBSTITUTABLE_CSS', `''`)
+
+        const html = `<!DOCTYPE html>
     <html>
         <head>
             <title>${title}</title>
@@ -61,38 +106,23 @@ export function popup(
         </body>
 
         <script>
-            customElements.define('popup-content', ${element})
+            const Component = (${elementSource});
+            Component.styles = \`${sanitizedStyles}\`;
 
-            const root = document.getElementsByTagName('body')[0]
+            customElements.define('popup-content', Component);
 
-            const content = document.createElement('popup-content')
-            content.setAttribute('style', 'width: 100%; height: 100%;')
+            const content = document.createElement('popup-content');
+            content.style.width = '100%';
+            content.style.height = '100%';
 
-            root.appendChild(content)
+            document.body.appendChild(content)
+
+            URL.revokeObjectURL(window.location.href)
         </script>
     </html>`
 
-    const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }))
-
-    return new Promise((resolve) => {
-        const win = WindowState.getInstance()
-        win.location.href = url
-        win.focus()
-
-        resolve(win)
-    })
+        return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
+    }
 }
 
-export function popupHref(url: URL | string): Promise<Window> {
-    return new Promise((resolve, reject) => {
-        const win = WindowState.getInstance()
-        win.location.href = url.toString()
-
-        if (win) {
-            win.focus()
-            resolve(win)
-        } else {
-            reject(new Error('Failed to open popup window.'))
-        }
-    })
-}
+export const popup = new PopupInstance()

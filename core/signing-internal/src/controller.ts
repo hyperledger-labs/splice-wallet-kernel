@@ -75,9 +75,18 @@ export class InternalSigningDriver implements SigningDriverInterface {
             ): Promise<SignTransactionResult> => {
                 // TODO: validate transaction here
 
+                if (!params.keyIdentifier.publicKey) {
+                    return Promise.resolve({
+                        error: 'key_not_found',
+                        error_description:
+                            'The provided key identifier must include a publicKey.',
+                    })
+                }
+
                 const key = await this.store.getSigningKeyByPublicKey(
-                    params.publicKey
+                    params.keyIdentifier.publicKey
                 )
+
                 if (key?.privateKey && _userId) {
                     const txId = randomUUID()
                     const signature = signTransactionHash(
@@ -90,7 +99,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
                         id: txId,
                         hash: params.txHash,
                         signature,
-                        publicKey: params.publicKey,
+                        publicKey: params.keyIdentifier.publicKey,
                         createdAt: now,
                         status: 'signed',
                         updatedAt: now,

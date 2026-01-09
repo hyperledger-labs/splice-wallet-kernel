@@ -82,4 +82,9 @@ export const apps = [
         script: 'yarn workspace @canton-network/core-types dev',
         env_development: sharedEnvDevelopment,
     },
+    {
+        name: 'core-rpc-transport',
+        script: 'yarn workspace @canton-network/core-rpc-transport dev',
+        env_development: sharedEnvDevelopment,
+    },
 ]
