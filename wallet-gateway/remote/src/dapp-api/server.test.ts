@@ -9,7 +9,7 @@ import express from 'express'
 import { dapp } from './server.js'
 import { StoreInternal } from '@canton-network/core-wallet-store-inmemory'
 import { AuthService } from '@canton-network/core-wallet-auth'
-import { ConfigUtils, deriveKernelUrls } from '../config/ConfigUtils.js'
+import { ConfigUtils, deriveUrls } from '../config/ConfigUtils.js'
 import { NotificationService } from '../notification/NotificationService.js'
 import { pino } from 'pino'
 import { sink } from 'pino-test'
@@ -35,7 +35,7 @@ test('call connect rpc', async () => {
     app.use(cors())
     app.use(express.json())
     const server = createServer(app)
-    const { dappUrl, userUrl } = deriveKernelUrls(config.server)
+    const { dappApiUrl, publicUrl } = deriveUrls(config)
     const response = await request(
         dapp(
             '/api/v0/dapp',
@@ -43,8 +43,8 @@ test('call connect rpc', async () => {
             pino(sink()),
             server,
             config.kernel,
-            dappUrl,
-            userUrl,
+            dappApiUrl,
+            publicUrl,
             config.server,
             notificationService,
             authService,

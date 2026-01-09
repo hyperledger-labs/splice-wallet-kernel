@@ -24,16 +24,14 @@ export class WindowState {
 }
 
 export async function discover(
-    config: GatewaysConfig[]
+    verifiedGateways: GatewaysConfig[]
 ): Promise<DiscoverResult> {
-    const win = await popup(Discovery)
+    const win = await popup(Discovery, { title: 'Connect to a Wallet Gateway' })
 
-    win.onload = () => {
-        win.postMessage(
-            { type: 'SPLICE_WALLET_CONFIG_LOAD', payload: config },
-            '*'
-        )
-    }
+    localStorage.setItem(
+        'splice_wallet_verified_gateways',
+        JSON.stringify(verifiedGateways)
+    )
 
     return new Promise((resolve, reject) => {
         let response: DiscoverResult | undefined = undefined

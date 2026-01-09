@@ -1,7 +1,7 @@
 {
     "name": "@canton-network/dapp-sdk",
     "type": "module",
-    "version": "0.17.2",
+    "version": "0.18.0",
     "description": "Browser SDK for dApp development on the Canton Network",
     "license": "Apache-2.0",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
