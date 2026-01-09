@@ -9,13 +9,15 @@ import {
 import { useConnection } from '../contexts/ConnectionContext'
 import { usePortfolio } from '../contexts/PortfolioContext'
 import { useRegistryUrls } from '../contexts/RegistryServiceContext'
+import { usePrimaryAccount } from '../hooks/useAccounts'
 import { AssetCard } from './AssetCard'
 import { SelectInstrument } from './SelectInstrument'
 
 export const HoldingsTab: React.FC = () => {
     const {
-        status: { primaryParty, sessionToken },
+        status: { sessionToken },
     } = useConnection()
+    const primaryParty = usePrimaryAccount()?.partyId
     const { listHoldings, tap } = usePortfolio()
     const registryUrls = useRegistryUrls()
     const [holdings, setHoldings] = useState<Holding[] | undefined>(undefined)

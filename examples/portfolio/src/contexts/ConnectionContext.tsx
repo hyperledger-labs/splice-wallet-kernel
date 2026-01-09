@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { createContext, useContext } from 'react'
+import * as sdk from '@canton-network/dapp-sdk'
 
 export type ConnectionStatus = {
     connected: boolean
     sessionToken?: string
     primaryParty?: string
+    accounts: sdk.dappAPI.Wallet[]
     error?: string
 }
 

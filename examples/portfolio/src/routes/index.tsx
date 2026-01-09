@@ -3,7 +3,7 @@ import { Box, Typography } from '@mui/material'
 import { createFileRoute } from '@tanstack/react-router'
 import { TokenStandardService } from '@canton-network/core-ledger-client'
 import { ActionRequired } from '../components/action-required'
-import { useConnection } from '../contexts/ConnectionContext'
+import { usePrimaryAccount } from '../hooks/useAccounts'
 import { getPendingTransfersQueryOptions } from '../hooks/query-options'
 import { useSuspenseQuery } from '@tanstack/react-query'
 
@@ -12,8 +12,7 @@ export const Route = createFileRoute('/')({
 })
 
 function Index() {
-    const { status } = useConnection()
-    const { primaryParty } = status
+    const primaryParty = usePrimaryAccount()?.partyId
     const pendingTransfers = useSuspenseQuery(
         getPendingTransfersQueryOptions(primaryParty)
     )

@@ -3,14 +3,12 @@
 
 import { useState, useEffect } from 'react'
 import { type Transaction } from '@canton-network/core-ledger-client'
-import { useConnection } from '../contexts/ConnectionContext'
 import { usePortfolio } from '../contexts/PortfolioContext'
+import { usePrimaryAccount } from '../hooks/useAccounts'
 import { TransferCard } from './TransferCard'
 
 export const TransactionHistoryTab: React.FC = () => {
-    const {
-        status: { primaryParty },
-    } = useConnection()
+    const primaryParty = usePrimaryAccount()?.partyId
     const {
         getTransactionHistory,
         fetchMoreRecentTransactionHistory,
