@@ -76,7 +76,7 @@ export async function disconnect(): Promise<dappAPI.Null> {
             method: 'disconnect',
         })
     } finally {
-        clearAllLocalState()
+        clearAllLocalState({ closePopup: true })
     }
 
     return null

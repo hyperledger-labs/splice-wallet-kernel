@@ -259,6 +259,7 @@ export class Discovery extends HTMLElement {
 
     private selectKernel(kernel: DiscoverResult) {
         if (window.opener) {
+            console.debug('Posting selected kernel to opener', kernel)
             window.opener.postMessage(kernel, '*')
         } else {
             console.warn('no window opener...')

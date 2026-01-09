@@ -20,7 +20,7 @@ import {
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { ErrorCode } from './error.js'
 import { Session, StatusEvent } from './dapp-api/rpc-gen/typings'
-import { gatewayUi } from './ui'
+import { popup } from '@canton-network/core-wallet-ui-components'
 
 /**
  * The Provider class abstracts over the different types of SpliceProviders (Window and HTTP).
@@ -119,7 +119,7 @@ export const dappController = (provider: SpliceProvider) =>
             if (response.session) {
                 return response
             } else {
-                gatewayUi.open('remote', response.userUrl ?? '')
+                popup.open(response.userUrl ?? '')
                 const promise = new Promise<dappAPI.StatusEvent>(
                     (resolve, reject) => {
                         // 5 minutes timeout
@@ -163,7 +163,7 @@ export const dappController = (provider: SpliceProvider) =>
                     params,
                 })
 
-            if (response.userUrl) gatewayUi.open('remote', response.userUrl)
+            if (response.userUrl) popup.open(response.userUrl)
 
             const promise = new Promise<dappAPI.PrepareExecuteResult>(
                 (resolve, reject) => {
