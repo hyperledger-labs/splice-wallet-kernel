@@ -27,8 +27,8 @@
         "access": "public"
     },
     "dependencies": {
-        "@canton-network/core-types": "workspace:^",
         "@canton-network/core-rpc-transport": "workspace:^",
+        "@canton-network/core-types": "workspace:^",
         "lodash": "^4.17.21"
     },
     "devDependencies": {

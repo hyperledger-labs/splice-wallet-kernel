@@ -127,6 +127,12 @@ export class HttpTransport implements RpcTransport {
         }
 
         const json = await response.json()
-        return ResponsePayload.parse(json)
+        const parsed = ResponsePayload.parse(json)
+
+        if ('error' in parsed) {
+            throw parsed
+        }
+
+        return parsed
     }
 }
