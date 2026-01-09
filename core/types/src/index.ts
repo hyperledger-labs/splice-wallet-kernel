@@ -19,9 +19,7 @@ export type PartyId = z.infer<typeof PartyId>
  */
 export const RequestPayload = z.object({
     method: z.string(),
-    params: z.optional(
-        z.union([z.array(z.unknown()), z.record(z.string(), z.unknown())])
-    ),
+    params: z.optional(z.union([z.array(z.unknown()), z.looseObject({})])),
 })
 export type RequestPayload = z.infer<typeof RequestPayload>
 

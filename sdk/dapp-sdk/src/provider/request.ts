@@ -34,9 +34,7 @@ export async function connect(
             storage.setKernelDiscovery(result)
             const provider = injectProvider(result)
 
-            const response = await provider.request<dappAPI.StatusEvent>({
-                method: 'connect',
-            })
+            const response = await provider.request('connect')
 
             if (response.session) {
                 storage.setKernelSession(response)
@@ -72,9 +70,7 @@ export async function connect(
 export async function disconnect(): Promise<dappAPI.Null> {
     try {
         const provider = assertProvider()
-        await provider.request<dappAPI.Null>({
-            method: 'disconnect',
-        })
+        await provider.request('disconnect')
     } finally {
         clearAllLocalState({ closePopup: true })
     }
@@ -83,37 +79,25 @@ export async function disconnect(): Promise<dappAPI.Null> {
 }
 
 export async function status(): Promise<dappAPI.StatusEvent> {
-    return await assertProvider().request<dappAPI.StatusEvent>({
-        method: 'status',
-    })
+    return await assertProvider().request('status')
 }
 
 export async function darsAvailable(): Promise<dappAPI.DarsAvailableResult> {
-    return await assertProvider().request<dappAPI.DarsAvailableResult>({
-        method: 'darsAvailable',
-    })
+    return await assertProvider().request('darsAvailable')
 }
 
 export async function requestAccounts(): Promise<dappAPI.RequestAccountsResult> {
-    return await assertProvider().request<dappAPI.RequestAccountsResult>({
-        method: 'requestAccounts',
-    })
+    return await assertProvider().request('requestAccounts')
 }
 
 export async function prepareExecute(
     params: dappAPI.PrepareExecuteParams
 ): Promise<dappAPI.PrepareExecuteResult> {
-    return await assertProvider().request<dappAPI.PrepareExecuteResult>({
-        method: 'prepareExecute',
-        params,
-    })
+    return await assertProvider().request('prepareExecute', params)
 }
 
 export async function ledgerApi(
     params: dappAPI.LedgerApiParams
 ): Promise<dappAPI.LedgerApiResult> {
-    return await assertProvider().request<dappAPI.LedgerApiResult>({
-        method: 'ledgerApi',
-        params,
-    })
+    return await assertProvider().request('ledgerApi', params)
 }

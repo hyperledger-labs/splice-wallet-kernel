@@ -1,12 +1,17 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { RequestPayload } from '@canton-network/core-types'
+import SpliceWalletJSONRPCDAppAPI, {
+    RpcMethods,
+} from '@canton-network/core-wallet-dapp-rpc-client'
 
 export type EventListener<T> = (...args: T[]) => void
 
 export interface SpliceProvider {
-    request<T>(args: RequestPayload): Promise<T>
+    request<M extends keyof RpcMethods>(
+        method: M,
+        params?: RpcMethods[M]['params'][0]
+    ): Promise<RpcMethods[M]['result']>
     on<T>(event: string, listener: EventListener<T>): SpliceProvider
     emit<T>(event: string, ...args: T[]): boolean
     removeListener<T>(
@@ -17,12 +22,19 @@ export interface SpliceProvider {
 
 export abstract class SpliceProviderBase implements SpliceProvider {
     listeners: { [event: string]: EventListener<unknown>[] }
+    _client: SpliceWalletJSONRPCDAppAPI
 
-    constructor() {
+    constructor(client: SpliceWalletJSONRPCDAppAPI) {
         this.listeners = {} // Event listeners
+        this._client = client
     }
 
-    abstract request<T>(args: RequestPayload): Promise<T>
+    public async request(
+        method: keyof RpcMethods,
+        params?: RpcMethods[typeof method]['params'][0]
+    ): Promise<RpcMethods[typeof method]['result']> {
+        return this._client.request(method, params)
+    }
 
     // Event handling
     public on<T>(event: string, listener: EventListener<T>): SpliceProvider {

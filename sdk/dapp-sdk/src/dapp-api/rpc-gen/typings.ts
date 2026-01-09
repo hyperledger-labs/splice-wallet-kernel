@@ -399,7 +399,6 @@ export interface PrepareReturnParams {
     disclosedContracts?: DisclosedContracts
     synchronizerId?: SynchronizerId
     packageIdSelectionPreference?: PackageIdSelectionPreference
-    [k: string]: any
 }
 /**
  *
@@ -414,7 +413,6 @@ export interface PrepareExecuteParams {
     disclosedContracts?: DisclosedContracts
     synchronizerId?: SynchronizerId
     packageIdSelectionPreference?: PackageIdSelectionPreference
-    [k: string]: any
 }
 /**
  *

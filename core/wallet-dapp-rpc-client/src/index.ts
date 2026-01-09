@@ -400,7 +400,6 @@ export interface PrepareReturnParams {
     disclosedContracts?: DisclosedContracts
     synchronizerId?: SynchronizerId
     packageIdSelectionPreference?: PackageIdSelectionPreference
-    [k: string]: any
 }
 /**
  *
@@ -415,7 +414,6 @@ export interface PrepareExecuteParams {
     disclosedContracts?: DisclosedContracts
     synchronizerId?: SynchronizerId
     packageIdSelectionPreference?: PackageIdSelectionPreference
-    [k: string]: any
 }
 /**
  *
@@ -502,6 +500,67 @@ export type OnAccountsChanged = () => Promise<AccountsChangedEvent>
 export type RequestAccounts = () => Promise<RequestAccountsResult>
 export type OnTxChanged = () => Promise<TxChangedEvent>
 
+type AsyncReturnType<T> = T extends (...args: any[]) => Promise<infer R>
+    ? R
+    : never
+
+export type RpcMethods = {
+    status: {
+        params: Parameters<Status>
+        result: AsyncReturnType<Status>
+    }
+
+    connect: {
+        params: Parameters<Connect>
+        result: AsyncReturnType<Connect>
+    }
+
+    disconnect: {
+        params: Parameters<Disconnect>
+        result: AsyncReturnType<Disconnect>
+    }
+
+    darsAvailable: {
+        params: Parameters<DarsAvailable>
+        result: AsyncReturnType<DarsAvailable>
+    }
+
+    prepareReturn: {
+        params: Parameters<PrepareReturn>
+        result: AsyncReturnType<PrepareReturn>
+    }
+
+    prepareExecute: {
+        params: Parameters<PrepareExecute>
+        result: AsyncReturnType<PrepareExecute>
+    }
+
+    ledgerApi: {
+        params: Parameters<LedgerApi>
+        result: AsyncReturnType<LedgerApi>
+    }
+
+    onAccountsChanged: {
+        params: Parameters<OnAccountsChanged>
+        result: AsyncReturnType<OnAccountsChanged>
+    }
+
+    requestAccounts: {
+        params: Parameters<RequestAccounts>
+        result: AsyncReturnType<RequestAccounts>
+    }
+
+    onTxChanged: {
+        params: Parameters<OnTxChanged>
+        result: AsyncReturnType<OnTxChanged>
+    }
+}
+
+export type RpcClientRequest<M extends keyof RpcMethods> = (
+    method: M,
+    params?: RpcMethods[M]['params']
+) => Promise<RpcMethods[M]['result']>
+
 export class SpliceWalletJSONRPCDAppAPI {
     public transport: RpcTransport
 
@@ -513,97 +572,72 @@ export class SpliceWalletJSONRPCDAppAPI {
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'status',
-        ...params: Parameters<Status>
-    ): ReturnType<Status>
+    // public async request(method: "status", ...params: Parameters<Status>): ReturnType<Status>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'connect',
-        ...params: Parameters<Connect>
-    ): ReturnType<Connect>
+    // public async request(method: "connect", ...params: Parameters<Connect>): ReturnType<Connect>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'disconnect',
-        ...params: Parameters<Disconnect>
-    ): ReturnType<Disconnect>
+    // public async request(method: "disconnect", ...params: Parameters<Disconnect>): ReturnType<Disconnect>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'darsAvailable',
-        ...params: Parameters<DarsAvailable>
-    ): ReturnType<DarsAvailable>
+    // public async request(method: "darsAvailable", ...params: Parameters<DarsAvailable>): ReturnType<DarsAvailable>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'prepareReturn',
-        ...params: Parameters<PrepareReturn>
-    ): ReturnType<PrepareReturn>
+    // public async request(method: "prepareReturn", ...params: Parameters<PrepareReturn>): ReturnType<PrepareReturn>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'prepareExecute',
-        ...params: Parameters<PrepareExecute>
-    ): ReturnType<PrepareExecute>
+    // public async request(method: "prepareExecute", ...params: Parameters<PrepareExecute>): ReturnType<PrepareExecute>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'ledgerApi',
-        ...params: Parameters<LedgerApi>
-    ): ReturnType<LedgerApi>
+    // public async request(method: "ledgerApi", ...params: Parameters<LedgerApi>): ReturnType<LedgerApi>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'onAccountsChanged',
-        ...params: Parameters<OnAccountsChanged>
-    ): ReturnType<OnAccountsChanged>
+    // public async request(method: "onAccountsChanged", ...params: Parameters<OnAccountsChanged>): ReturnType<OnAccountsChanged>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'requestAccounts',
-        ...params: Parameters<RequestAccounts>
-    ): ReturnType<RequestAccounts>
+    // public async request(method: "requestAccounts", ...params: Parameters<RequestAccounts>): ReturnType<RequestAccounts>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'onTxChanged',
-        ...params: Parameters<OnTxChanged>
-    ): ReturnType<OnTxChanged>
+    // public async request(method: "onTxChanged", ...params: Parameters<OnTxChanged>): ReturnType<OnTxChanged>
 
-    public async request(
-        method: string,
-        params?: RequestPayload['params']
-    ): Promise<unknown> {
-        const response = await this.transport.submit({ method, params })
+    public async request<M extends keyof RpcMethods>(
+        method: M,
+        params?: RpcMethods[M]['params'][0]
+    ): Promise<RpcMethods[M]['result']> {
+        const submitParams = params ? { method, params } : { method }
+
+        const response = await this.transport.submit({
+            method,
+            params: submitParams,
+        })
 
         if ('error' in response) {
             throw new Error(
@@ -613,7 +647,7 @@ export class SpliceWalletJSONRPCDAppAPI {
                     response.error.message
             )
         } else {
-            return response.result
+            return response.result as RpcMethods[M]['result']
         }
     }
 }

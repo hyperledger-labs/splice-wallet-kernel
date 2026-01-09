@@ -222,6 +222,7 @@
                 "title": "JsPrepareSubmissionRequest",
                 "type": "object",
                 "description": "Structure representing the request for prepare and execute calls",
+                "additionalProperties": false,
                 "properties": {
                     "commandId": {
                         "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"

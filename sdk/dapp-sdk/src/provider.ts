@@ -6,7 +6,7 @@ import {
     SpliceProvider,
     EventListener,
 } from '@canton-network/core-splice-provider'
-import { DiscoverResult, RequestPayload } from '@canton-network/core-types'
+import { DiscoverResult } from '@canton-network/core-types'
 import {
     SpliceProviderHttp,
     SpliceProviderWindow,
@@ -17,10 +17,20 @@ import * as dappRemoteAPI from '@canton-network/core-wallet-dapp-remote-rpc-clie
 import {
     LedgerApiParams,
     PrepareExecuteParams,
+    RpcMethods,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { ErrorCode } from './error.js'
-import { Session, StatusEvent } from './dapp-api/rpc-gen/typings'
+import {
+    PrepareReturnParams,
+    Session,
+    StatusEvent,
+} from './dapp-api/rpc-gen/typings'
 import { popup } from '@canton-network/core-wallet-ui-components'
+import {
+    HttpTransport,
+    WindowTransport,
+} from '@canton-network/core-rpc-transport'
+import SpliceWalletJSONRPCDAppAPI from '@canton-network/core-wallet-dapp-rpc-client'
 
 /**
  * The Provider class abstracts over the different types of SpliceProviders (Window and HTTP).
@@ -32,11 +42,21 @@ export class Provider implements SpliceProvider {
 
     constructor({ walletType, url }: DiscoverResult, session?: Session) {
         if (walletType == 'extension') {
+            const windowTransport = new WindowTransport(window)
+            const windowClient = new SpliceWalletJSONRPCDAppAPI(windowTransport)
+
             this.providerType = ProviderType.WINDOW
-            this.provider = new SpliceProviderWindow()
+            this.provider = new SpliceProviderWindow(windowClient)
         } else if (walletType == 'remote') {
+            const remoteTransport = new HttpTransport(
+                new URL(url),
+                session?.accessToken
+            )
+            const remoteClient = new SpliceWalletJSONRPCDAppAPI(remoteTransport)
+
             this.providerType = ProviderType.HTTP
             this.provider = new SpliceProviderHttp(
+                remoteClient,
                 new URL(url),
                 session?.accessToken
             )
@@ -45,41 +65,48 @@ export class Provider implements SpliceProvider {
         }
     }
 
-    request<T>(args: RequestPayload): Promise<T> {
+    request<M extends keyof RpcMethods>(
+        method: M,
+        params: RpcMethods[M]['params'][0]
+    ) {
         if (this.providerType === ProviderType.WINDOW)
-            return this.provider.request(args)
+            return this.provider.request(method, params)
 
         const controller = dappController(this.provider)
-        switch (args.method) {
+
+        switch (method) {
             case 'status': {
-                return controller.status() as Promise<T>
+                return controller.status()
             }
             case 'connect': {
-                return controller.connect() as Promise<T>
+                return controller.connect()
             }
             case 'disconnect': {
-                return controller.disconnect() as Promise<T>
+                return controller.disconnect()
             }
             case 'darsAvailable': {
-                return controller.darsAvailable() as Promise<T>
+                return controller.darsAvailable()
             }
             case 'ledgerApi': {
-                return controller.ledgerApi(
-                    args.params as LedgerApiParams
-                ) as Promise<T>
+                if (!params) {
+                    throw new Error('Missing parameters for ledgerApi')
+                }
+                return controller.ledgerApi(params as LedgerApiParams)
             }
             case 'prepareExecute': {
-                return controller.prepareExecute(
-                    args.params as PrepareExecuteParams
-                ) as Promise<T>
+                if (!params) {
+                    throw new Error('Missing parameters for prepareExecute')
+                }
+                return controller.prepareExecute(params as PrepareExecuteParams)
             }
             case 'prepareReturn': {
-                return controller.prepareReturn(
-                    args.params as dappAPI.PrepareReturnParams
-                ) as Promise<T>
+                if (!params) {
+                    throw new Error('Missing parameters for prepareReturn')
+                }
+                return controller.prepareReturn(params as PrepareReturnParams)
             }
             case 'requestAccounts': {
-                return controller.requestAccounts() as Promise<T>
+                return controller.requestAccounts()
             }
             default: {
                 throw new Error('Unsupported method')
@@ -121,14 +148,12 @@ const withTimeout = (
 export const dappController = (provider: SpliceProvider) =>
     buildController({
         connect: async (): Promise<StatusEvent> => {
-            const response = await provider.request<dappRemoteAPI.StatusEvent>({
-                method: 'connect',
-            })
+            const response = await provider.request('connect')
 
             if (response.session) {
                 return response
             } else {
-                popup.open(response.userUrl ?? '')
+                popup.open(response.kernel.userUrl ?? '')
                 const promise = new Promise<dappAPI.StatusEvent>(
                     (resolve, reject) => {
                         // 5 minutes timeout
@@ -150,27 +175,12 @@ export const dappController = (provider: SpliceProvider) =>
                 return promise
             }
         },
-        disconnect: async () => {
-            return await provider.request<dappRemoteAPI.Null>({
-                method: 'disconnect',
-            })
-        },
-        darsAvailable: async () => {
-            return provider.request<dappRemoteAPI.DarsAvailableResult>({
-                method: 'darsAvailable',
-            })
-        },
+        disconnect: async () => provider.request('disconnect'),
+        darsAvailable: async () => provider.request('darsAvailable'),
         ledgerApi: async (params: LedgerApiParams) =>
-            provider.request<dappRemoteAPI.LedgerApiResult>({
-                method: 'ledgerApi',
-                params,
-            }),
+            provider.request('ledgerApi', params),
         prepareExecute: async (params: PrepareExecuteParams) => {
-            const response =
-                await provider.request<dappRemoteAPI.PrepareExecuteResult>({
-                    method: 'prepareExecute',
-                    params,
-                })
+            const response = await provider.request('prepareExecute', params)
 
             if (response.userUrl) popup.open(response.userUrl)
 
@@ -200,18 +210,10 @@ export const dappController = (provider: SpliceProvider) =>
 
             return promise
         },
-        prepareReturn: async (params: dappAPI.PrepareReturnParams) =>
-            provider.request<dappAPI.PrepareReturnResult>({
-                method: 'prepareReturn',
-                params,
-            }),
-        status: async () => {
-            return provider.request<dappAPI.StatusEvent>({ method: 'status' })
-        },
-        requestAccounts: async () =>
-            provider.request<dappRemoteAPI.RequestAccountsResult>({
-                method: 'requestAccounts',
-            }),
+        prepareReturn: async (params: PrepareReturnParams) =>
+            provider.request('prepareReturn', params),
+        status: async () => provider.request('status'),
+        requestAccounts: async () => provider.request('requestAccounts'),
         onAccountsChanged: async () => {
             throw new Error('Only for events.')
         },

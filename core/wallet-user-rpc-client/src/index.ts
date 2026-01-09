@@ -466,6 +466,107 @@ export type GetTransaction = (
 ) => Promise<GetTransactionResult>
 export type ListTransactions = () => Promise<ListTransactionsResult>
 
+type AsyncReturnType<T> = T extends (...args: any[]) => Promise<infer R>
+    ? R
+    : never
+
+export type RpcMethods = {
+    addNetwork: {
+        params: Parameters<AddNetwork>
+        result: AsyncReturnType<AddNetwork>
+    }
+
+    removeNetwork: {
+        params: Parameters<RemoveNetwork>
+        result: AsyncReturnType<RemoveNetwork>
+    }
+
+    listNetworks: {
+        params: Parameters<ListNetworks>
+        result: AsyncReturnType<ListNetworks>
+    }
+
+    addIdp: {
+        params: Parameters<AddIdp>
+        result: AsyncReturnType<AddIdp>
+    }
+
+    removeIdp: {
+        params: Parameters<RemoveIdp>
+        result: AsyncReturnType<RemoveIdp>
+    }
+
+    listIdps: {
+        params: Parameters<ListIdps>
+        result: AsyncReturnType<ListIdps>
+    }
+
+    createWallet: {
+        params: Parameters<CreateWallet>
+        result: AsyncReturnType<CreateWallet>
+    }
+
+    setPrimaryWallet: {
+        params: Parameters<SetPrimaryWallet>
+        result: AsyncReturnType<SetPrimaryWallet>
+    }
+
+    removeWallet: {
+        params: Parameters<RemoveWallet>
+        result: AsyncReturnType<RemoveWallet>
+    }
+
+    listWallets: {
+        params: Parameters<ListWallets>
+        result: AsyncReturnType<ListWallets>
+    }
+
+    syncWallets: {
+        params: Parameters<SyncWallets>
+        result: AsyncReturnType<SyncWallets>
+    }
+
+    sign: {
+        params: Parameters<Sign>
+        result: AsyncReturnType<Sign>
+    }
+
+    execute: {
+        params: Parameters<Execute>
+        result: AsyncReturnType<Execute>
+    }
+
+    addSession: {
+        params: Parameters<AddSession>
+        result: AsyncReturnType<AddSession>
+    }
+
+    removeSession: {
+        params: Parameters<RemoveSession>
+        result: AsyncReturnType<RemoveSession>
+    }
+
+    listSessions: {
+        params: Parameters<ListSessions>
+        result: AsyncReturnType<ListSessions>
+    }
+
+    getTransaction: {
+        params: Parameters<GetTransaction>
+        result: AsyncReturnType<GetTransaction>
+    }
+
+    listTransactions: {
+        params: Parameters<ListTransactions>
+        result: AsyncReturnType<ListTransactions>
+    }
+}
+
+export type RpcClientRequest<M extends keyof RpcMethods> = (
+    method: M,
+    params?: RpcMethods[M]['params']
+) => Promise<RpcMethods[M]['result']>
+
 export class SpliceWalletJSONRPCUserAPI {
     public transport: RpcTransport
 
@@ -477,169 +578,120 @@ export class SpliceWalletJSONRPCUserAPI {
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'addNetwork',
-        ...params: Parameters<AddNetwork>
-    ): ReturnType<AddNetwork>
+    // public async request(method: "addNetwork", ...params: Parameters<AddNetwork>): ReturnType<AddNetwork>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'removeNetwork',
-        ...params: Parameters<RemoveNetwork>
-    ): ReturnType<RemoveNetwork>
+    // public async request(method: "removeNetwork", ...params: Parameters<RemoveNetwork>): ReturnType<RemoveNetwork>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'listNetworks',
-        ...params: Parameters<ListNetworks>
-    ): ReturnType<ListNetworks>
+    // public async request(method: "listNetworks", ...params: Parameters<ListNetworks>): ReturnType<ListNetworks>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'addIdp',
-        ...params: Parameters<AddIdp>
-    ): ReturnType<AddIdp>
+    // public async request(method: "addIdp", ...params: Parameters<AddIdp>): ReturnType<AddIdp>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'removeIdp',
-        ...params: Parameters<RemoveIdp>
-    ): ReturnType<RemoveIdp>
+    // public async request(method: "removeIdp", ...params: Parameters<RemoveIdp>): ReturnType<RemoveIdp>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'listIdps',
-        ...params: Parameters<ListIdps>
-    ): ReturnType<ListIdps>
+    // public async request(method: "listIdps", ...params: Parameters<ListIdps>): ReturnType<ListIdps>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'createWallet',
-        ...params: Parameters<CreateWallet>
-    ): ReturnType<CreateWallet>
+    // public async request(method: "createWallet", ...params: Parameters<CreateWallet>): ReturnType<CreateWallet>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'setPrimaryWallet',
-        ...params: Parameters<SetPrimaryWallet>
-    ): ReturnType<SetPrimaryWallet>
+    // public async request(method: "setPrimaryWallet", ...params: Parameters<SetPrimaryWallet>): ReturnType<SetPrimaryWallet>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'removeWallet',
-        ...params: Parameters<RemoveWallet>
-    ): ReturnType<RemoveWallet>
+    // public async request(method: "removeWallet", ...params: Parameters<RemoveWallet>): ReturnType<RemoveWallet>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'listWallets',
-        ...params: Parameters<ListWallets>
-    ): ReturnType<ListWallets>
+    // public async request(method: "listWallets", ...params: Parameters<ListWallets>): ReturnType<ListWallets>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'syncWallets',
-        ...params: Parameters<SyncWallets>
-    ): ReturnType<SyncWallets>
+    // public async request(method: "syncWallets", ...params: Parameters<SyncWallets>): ReturnType<SyncWallets>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'sign',
-        ...params: Parameters<Sign>
-    ): ReturnType<Sign>
+    // public async request(method: "sign", ...params: Parameters<Sign>): ReturnType<Sign>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'execute',
-        ...params: Parameters<Execute>
-    ): ReturnType<Execute>
+    // public async request(method: "execute", ...params: Parameters<Execute>): ReturnType<Execute>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'addSession',
-        ...params: Parameters<AddSession>
-    ): ReturnType<AddSession>
+    // public async request(method: "addSession", ...params: Parameters<AddSession>): ReturnType<AddSession>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'removeSession',
-        ...params: Parameters<RemoveSession>
-    ): ReturnType<RemoveSession>
+    // public async request(method: "removeSession", ...params: Parameters<RemoveSession>): ReturnType<RemoveSession>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'listSessions',
-        ...params: Parameters<ListSessions>
-    ): ReturnType<ListSessions>
+    // public async request(method: "listSessions", ...params: Parameters<ListSessions>): ReturnType<ListSessions>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'getTransaction',
-        ...params: Parameters<GetTransaction>
-    ): ReturnType<GetTransaction>
+    // public async request(method: "getTransaction", ...params: Parameters<GetTransaction>): ReturnType<GetTransaction>
 
     /**
      *
      */
     // tslint:disable-next-line:max-line-length
-    public async request(
-        method: 'listTransactions',
-        ...params: Parameters<ListTransactions>
-    ): ReturnType<ListTransactions>
+    // public async request(method: "listTransactions", ...params: Parameters<ListTransactions>): ReturnType<ListTransactions>
 
-    public async request(
-        method: string,
-        params?: RequestPayload['params']
-    ): Promise<unknown> {
-        const response = await this.transport.submit({ method, params })
+    public async request<M extends keyof RpcMethods>(
+        method: M,
+        params?: RpcMethods[M]['params'][0]
+    ): Promise<RpcMethods[M]['result']> {
+        const submitParams = params ? { method, params } : { method }
+
+        const response = await this.transport.submit({
+            method,
+            params: submitParams,
+        })
 
         if ('error' in response) {
             throw new Error(
@@ -649,7 +701,7 @@ export class SpliceWalletJSONRPCUserAPI {
                     response.error.message
             )
         } else {
-            return response.result
+            return response.result as RpcMethods[M]['result']
         }
     }
 }
