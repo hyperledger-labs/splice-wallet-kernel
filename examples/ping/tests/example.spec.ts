@@ -1,9 +1,32 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { test, expect } from '@playwright/test'
+import { test, expect, BrowserContext, Page } from '@playwright/test'
 
 const dappApiPort = 3030
+
+async function findPopupByContent(
+    context: BrowserContext,
+    text: RegExp | string,
+    timeout = 5000
+): Promise<Page> {
+    const start = Date.now()
+
+    while (Date.now() - start < timeout) {
+        for (const page of context.pages()) {
+            try {
+                if (await page.getByText(text).isVisible({ timeout: 500 })) {
+                    return page
+                }
+            } catch {
+                // Page not ready / not matching yet
+            }
+        }
+        await new Promise((r) => setTimeout(r, 100))
+    }
+
+    throw new Error(`Popup containing ${text} not found`)
+}
 
 test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
     await dappPage.goto('http://localhost:8080/')
@@ -84,15 +107,14 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
             .getByRole('button', { name: 'create Ping contract' })
             .click()
 
-        const popup2 = await dappPage.waitForEvent('popup')
+        const transactionPopup = await findPopupByContent(
+            dappPage.context(),
+            /Pending Transaction Request/
+        )
 
-        await expect(
-            popup2.getByRole('heading', { name: 'Pending Transaction Request' })
-        ).toBeVisible()
+        const id = new URL(transactionPopup.url()).searchParams.get('commandId')
 
-        const id = new URL(popup2.url()).searchParams.get('commandId')
-
-        await popup2.getByRole('button', { name: 'Approve' }).click()
+        await transactionPopup.getByRole('button', { name: 'Approve' }).click()
 
         // Wait for command to have fully executed
         await expect(dappPage.getByText(id || '')).toHaveCount(3)
