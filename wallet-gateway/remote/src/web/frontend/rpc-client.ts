@@ -1,40 +1,43 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { HttpTransport } from '@canton-network/core-types'
+import { HttpTransport } from '@canton-network/core-rpc-transport'
 import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from './state-manager'
 import { LOGIN_PAGE_REDIRECT } from './constants'
 
 let isLoggingOut = false
-let userPathPromise: Promise<string> | null = null
+let userApiPathPromise: Promise<URL> | null = null
 
-const getUserPath = async (): Promise<string> => {
-    if (!userPathPromise) {
-        userPathPromise = fetch('/.well-known/wallet-gateway-config')
+const getUserApiPath = async (): Promise<URL> => {
+    if (!userApiPathPromise) {
+        userApiPathPromise = fetch('/.well-known/wallet-gateway-config')
             .then((response) => response.json())
-            .then((config) => config.userPath || '/api/v0/user')
+            .then((config) =>
+                config?.userPath
+                    ? new URL(config.userPath)
+                    : new URL(`${window.location.origin}/api/v0/user`)
+            )
             .catch((error) => {
                 console.warn(
                     'Failed to fetch userPath from config, using default',
                     error
                 )
-                return '/api/v0/user' // Fallback to default
+                return new URL(`${window.location.origin}/api/v0/user`) // Fallback to default
             })
     }
-    return userPathPromise
+    return userApiPathPromise
 }
 
 export const attemptRemoveSession = async (
     accessToken: string
 ): Promise<void> => {
     try {
-        const userPath = await getUserPath()
-        const url = new URL(`${window.location.origin}${userPath}`)
+        const userApiPath = await getUserApiPath()
         // Use HttpTransport directly (not HttpTransportWithAuthInterceptor)
         // to avoid infinite loops if removeSession itself returns 401
         const userApiClient = new UserApiClient(
-            new HttpTransport(url, accessToken)
+            new HttpTransport(userApiPath, accessToken)
         )
         await userApiClient.request('removeSession')
     } catch (error) {
@@ -79,7 +82,8 @@ class HttpTransportWithAuthInterceptor extends HttpTransport {
 export const createUserClient = async (
     token?: string
 ): Promise<UserApiClient> => {
-    const userPath = await getUserPath()
-    const url = new URL(`${window.location.origin}${userPath}`)
-    return new UserApiClient(new HttpTransportWithAuthInterceptor(url, token))
+    const userApiPath = await getUserApiPath()
+    return new UserApiClient(
+        new HttpTransportWithAuthInterceptor(userApiPath, token)
+    )
 }

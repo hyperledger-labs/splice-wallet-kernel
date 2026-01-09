@@ -30,6 +30,7 @@
                         },
                         {
                             "type": "object",
+                            "title": "ConnectResult",
                             "properties": {
                                 "userUrl": {
                                     "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/UserUrl"
