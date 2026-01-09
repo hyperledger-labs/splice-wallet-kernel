@@ -48,7 +48,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
         const provider = window.canton
         if (!provider) return
         provider
-            .request<sdk.dappAPI.StatusEvent>({ method: 'status' })
+            .request('status')
             .then((result) =>
                 setConnectionStatus((c) => ({
                     ...c,
@@ -85,9 +85,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
         const provider = window.canton
         if (!provider || !connectionStatus.connected) return
         provider
-            .request({
-                method: 'requestAccounts',
-            })
+            .request('requestAccounts')
             .then((wallets) => {
                 const requestedAccounts =
                     wallets as sdk.dappAPI.RequestAccountsResult
