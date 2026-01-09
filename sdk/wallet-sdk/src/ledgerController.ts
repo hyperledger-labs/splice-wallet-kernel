@@ -23,6 +23,7 @@ import {
     PublicKey,
     verifySignedTxHash,
 } from '@canton-network/core-signing-lib'
+import { WebSocketManager } from './WebSocketManger.js'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-proto'
@@ -52,8 +53,8 @@ export type ParticipantEndpointConfig = {
 }
 
 export type StreamUpdatesOptions = {
-    beginOffset?: number
-    verbose?: boolean
+    beginOffset: number
+    verbose: boolean
 } & (
     | { interfaceIds: string[]; templateIds?: never }
     | { interfaceIds?: never; templateIds: string[] }
@@ -65,14 +66,15 @@ export type StreamUpdatesOptions = {
  */
 export class LedgerController {
     private readonly client: LedgerClient
-    private readonly websocketClient: WebSocketClient
+    // private readonly websocketClient: WebSocketClient
+    private readonly webSocketManager: WebSocketManager
     private readonly userId: string
     private readonly isAdmin: boolean
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
     private logger = pino({ name: 'LedgerController', level: 'info' })
     private initPromise: Promise<void>
-    private wsInitPromise: Promise<void>
+    // private wsInitPromise: Promise<void>
 
     /** Creates a new instance of the LedgerController.
      *
@@ -98,7 +100,7 @@ export class LedgerController {
         })
 
         const wsUrl = `ws://${baseUrl.host}`
-        this.websocketClient = new WebSocketClient({
+        const wsClient = new WebSocketClient({
             baseUrl: wsUrl,
             isAdmin,
             logger: this.logger,
@@ -106,7 +108,13 @@ export class LedgerController {
             accessTokenProvider,
             wsSupportBackOff: 6000 * 10,
         })
-        this.wsInitPromise = this.websocketClient.init()
+
+        this.webSocketManager = new WebSocketManager({
+            wsClient,
+            logger: this.logger,
+        })
+
+        // this.wsInitPromise = this.websocketClient.init()
         this.initPromise = this.client.init()
         this.userId = userId
         this.isAdmin = isAdmin
@@ -117,9 +125,9 @@ export class LedgerController {
         return this.initPromise
     }
 
-    async awaitWsInit() {
-        return this.wsInitPromise
-    }
+    // async awaitWsInit() {
+    //     return this.wsInitPromise
+    // }
     /**
      * Sets the party that the ledgerController will use for requests.
      * @param partyId
@@ -238,24 +246,22 @@ export class LedgerController {
         }
     }
 
-    /**
-     *
-     * @param options pass in the templateIds or interfaceIds, and optionally can pass in the beginExclusive (default: 0 ) or verbose (default: true)
-     */
     async *subscribeToUpdates(options: StreamUpdatesOptions) {
+        const { beginOffset, verbose } = options
+
         const baseOptions = {
-            beginExclusive: options.beginOffset ?? 0,
+            beginExclusive: beginOffset,
             partyId: this.getPartyId(),
-            verbose: options.verbose ?? true,
+            verbose,
         }
 
         const stream =
             'templateIds' in options
-                ? this.websocketClient.subscribeToUpdatesStreaming({
+                ? this.webSocketManager.subscribe({
                       ...baseOptions,
                       templateIds: options.templateIds,
                   })
-                : this.websocketClient.subscribeToUpdatesStreaming({
+                : this.webSocketManager.subscribe({
                       ...baseOptions,
                       interfaceIds: options.interfaceIds,
                   })
