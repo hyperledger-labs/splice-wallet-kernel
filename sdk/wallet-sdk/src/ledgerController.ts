@@ -53,8 +53,8 @@ export type ParticipantEndpointConfig = {
 }
 
 export type SubscribeToUpdateOptions = {
-    beginOffset: number
-    verbose: boolean
+    beginOffset?: number
+    verbose?: boolean
 } & (
     | { interfaceIds: string[]; templateIds?: never }
     | { interfaceIds?: never; templateIds: string[] }
@@ -252,12 +252,12 @@ export class LedgerController {
      * @throws WebSocketConnectionError if connection fails
      */
     async *subscribeToUpdates(options: SubscribeToUpdateOptions) {
-        const { beginOffset, verbose } = options
+        const { beginOffset } = options
 
         const baseOptions = {
-            beginExclusive: beginOffset,
+            beginExclusive: beginOffset ?? 0,
             partyId: this.getPartyId(),
-            verbose,
+            verbose: options.verbose ?? true,
         }
 
         const stream =
