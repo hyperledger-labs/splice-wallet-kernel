@@ -5,12 +5,7 @@ import { useMemo } from 'react'
 import * as sdk from '@canton-network/dapp-sdk'
 import { useConnection } from '../contexts/ConnectionContext'
 
-export const useAccounts = (): sdk.dappAPI.Wallet[] => {
-    const {
-        status: { accounts },
-    } = useConnection()
-    return accounts
-}
+export const useAccounts = (): sdk.dappAPI.Wallet[] => useConnection().accounts
 
 export const usePrimaryAccount = (): sdk.dappAPI.Wallet | null => {
     const accounts = useAccounts()

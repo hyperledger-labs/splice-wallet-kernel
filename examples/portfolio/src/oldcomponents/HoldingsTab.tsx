@@ -14,9 +14,7 @@ import { AssetCard } from './AssetCard'
 import { SelectInstrument } from './SelectInstrument'
 
 export const HoldingsTab: React.FC = () => {
-    const {
-        status: { sessionToken },
-    } = useConnection()
+    const sessionToken = useConnection().status?.session?.accessToken
     const primaryParty = usePrimaryAccount()?.partyId
     const { listHoldings, tap } = usePortfolio()
     const registryUrls = useRegistryUrls()
