@@ -32,6 +32,7 @@ import {
     toNetwork,
     toTransaction,
     toWallet,
+    WalletTable,
 } from './schema.js'
 
 export class StoreSql implements BaseStore, AuthAware<StoreSql> {
@@ -80,16 +81,26 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                     : true
                 return matchedNetworkIds && matchedSigningProviderIds
             })
-            .map((table) =>
-                toWallet({
-                    ...table,
+            .map((table) => {
+                const walletTable: WalletTable = {
+                    primary: table.primary,
+                    partyId: table.partyId,
+                    hint: table.hint,
+                    publicKey: table.publicKey,
+                    namespace: table.namespace,
+                    networkId: table.networkId,
+                    signingProviderId: table.signingProviderId,
+                    userId: table.userId,
                     externalTxId: table.externalTxId ?? '',
                     topologyTransactions: table.topologyTransactions ?? '',
                     status: table.status ?? '',
-                    disabled: table.disabled ?? null,
-                    reason: table.reason ?? null,
-                })
-            )
+                    disabled: table.disabled ?? 0,
+                }
+                if (table.reason !== undefined) {
+                    walletTable.reason = table.reason
+                }
+                return toWallet(walletTable)
+            })
     }
 
     async getPrimaryWallet(): Promise<Wallet | undefined> {

@@ -35,7 +35,7 @@ interface NetworkTable {
     adminAuth: string | undefined // json stringified
 }
 
-interface WalletTable {
+export interface WalletTable {
     primary: number
     partyId: string
     hint: string
@@ -47,8 +47,8 @@ interface WalletTable {
     externalTxId?: string
     topologyTransactions?: string
     status?: string
-    disabled?: number | null
-    reason?: string | null
+    disabled: number
+    reason?: string
 }
 
 interface TransactionTable {
@@ -160,9 +160,8 @@ export const fromWallet = (wallet: Wallet, userId: UserId): WalletTable => {
         ...wallet,
         primary: wallet.primary ? 1 : 0,
         userId: userId,
-        disabled:
-            wallet.disabled !== undefined ? (wallet.disabled ? 1 : 0) : null,
-        reason: wallet.reason ?? null,
+        disabled: wallet.disabled !== undefined && wallet.disabled ? 1 : 0,
+        ...(wallet.reason !== undefined && { reason: wallet.reason }),
     }
 }
 
@@ -189,11 +188,9 @@ export const toWallet = (table: WalletTable): Wallet => {
         }),
     }
 
-    if (table.disabled !== null && table.disabled !== undefined) {
-        wallet.disabled = table.disabled === 1
-    }
+    wallet.disabled = table.disabled === 1
 
-    if (table.reason !== null && table.reason !== undefined) {
+    if (table.reason !== undefined) {
         wallet.reason = table.reason
     }
 
