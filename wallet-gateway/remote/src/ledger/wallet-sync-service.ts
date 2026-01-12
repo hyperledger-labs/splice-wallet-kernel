@@ -225,8 +225,14 @@ export class WalletSyncService {
             // Add new Wallets given the found parties
             const existingWallets = await this.store.getWallets()
             this.logger.info(existingWallets, 'Existing wallets')
+            // Treat disabled wallets as if they don't exist, so they can be re-synced
+            const enabledWallets = existingWallets.filter((w) => !w.disabled)
             const existingPartyIdToSigningProvider = new Map(
-                existingWallets.map((w) => [w.partyId, w.signingProviderId])
+                enabledWallets.map((w) => [w.partyId, w.signingProviderId])
+            )
+
+            const disabledPartyIds = new Set(
+                existingWallets.filter((w) => w.disabled).map((w) => w.partyId)
             )
 
             // Resolve signing providers for all new parties
@@ -282,6 +288,19 @@ export class WalletSyncService {
             )
 
             const newParticipantWallets: Array<Wallet> = walletResults
+
+            // Remove disabled wallets that are being re-synced before adding them back
+            await Promise.all(
+                newParticipantWallets
+                    .filter((wallet) => disabledPartyIds.has(wallet.partyId))
+                    .map((wallet) => {
+                        this.logger.info(
+                            { partyId: wallet.partyId },
+                            'Removing disabled wallet for re-sync'
+                        )
+                        return this.store.removeWallet(wallet.partyId)
+                    })
+            )
 
             await Promise.all(
                 newParticipantWallets.map((wallet) =>
