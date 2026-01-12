@@ -241,7 +241,7 @@ export class WalletSyncService {
                 // todo: filter on idp id
             )
 
-            const walletResults = await Promise.all(
+            const newParticipantWallets: Wallet[] = await Promise.all(
                 newParties.map(async (party) => {
                     const [hint, namespace] = party.split('::')
 
@@ -286,8 +286,6 @@ export class WalletSyncService {
                     return wallet
                 })
             )
-
-            const newParticipantWallets: Array<Wallet> = walletResults
 
             // Remove disabled wallets that are being re-synced before adding them back
             await Promise.all(
