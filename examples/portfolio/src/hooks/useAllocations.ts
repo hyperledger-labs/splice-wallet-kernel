@@ -4,15 +4,13 @@
 import { type PrettyContract } from '@canton-network/core-ledger-client'
 import { type AllocationView } from '@canton-network/core-token-standard'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
-import { useConnection } from '../contexts/ConnectionContext'
+import { usePrimaryAccount } from './useAccounts'
 import { usePortfolio } from '../contexts/PortfolioContext'
 
 export const useAllocations = (): UseQueryResult<
     PrettyContract<AllocationView>[] | undefined
 > => {
-    const {
-        status: { primaryParty },
-    } = useConnection()
+    const primaryParty = usePrimaryAccount()?.partyId
     const { listAllocations } = usePortfolio()
     return useQuery({
         queryKey: ['listAllocations', primaryParty],

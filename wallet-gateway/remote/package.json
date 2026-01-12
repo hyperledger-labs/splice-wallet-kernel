@@ -10,7 +10,7 @@
     "type": "module",
     "scripts": {
         "build": "vite build && tsc -b && tsc -b tsconfig.frontend.json",
-        "clean": "tsc -b --clean && rm -rf ./dist && rm ./store.sqlite || true",
+        "clean": "tsc -b --clean && rm -rf ./dist && rm ./*.sqlite || true",
         "dev": "NODE_ENV=development tsx watch src/index.ts -f pretty -c ../test/config.json",
         "test": "yarn node --trace-warnings --experimental-vm-modules $(yarn bin jest)",
         "start": "yarn node dist/index.js -c ../test/config.json",
