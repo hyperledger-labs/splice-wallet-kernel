@@ -24,6 +24,7 @@
         "test": "echo \"Warning: no test specified\""
     },
     "dependencies": {
+        "@canton-network/core-rpc-transport": "workspace:^",
         "@canton-network/core-splice-provider": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^",

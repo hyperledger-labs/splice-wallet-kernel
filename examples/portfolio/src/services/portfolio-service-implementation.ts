@@ -107,10 +107,7 @@ export const createTransfer = async ({
 
     const provider = window.canton
     // TODO: check success
-    await provider?.request({
-        method: 'prepareExecute',
-        params: request,
-    })
+    await provider?.request('prepareExecute', request)
 }
 
 export const exerciseTransfer = async ({
@@ -149,10 +146,7 @@ export const exerciseTransfer = async ({
 
     const provider = window.canton
     // TODO: check success
-    await provider?.request({
-        method: 'prepareExecute',
-        params: request,
-    })
+    await provider?.request('prepareExecute', request)
 }
 
 export const listPendingTransfers = async ({
@@ -214,10 +208,7 @@ export const createAllocation = async ({
 
     const provider = window.canton
     // TODO: check success
-    await provider?.request({
-        method: 'prepareExecute',
-        params: request,
-    })
+    await provider?.request('prepareExecute', request)
 }
 
 export const listAllocations = async ({
@@ -267,10 +258,7 @@ export const withdrawAllocation = async ({
 
     const provider = window.canton
     // TODO: check success
-    await provider?.request({
-        method: 'prepareExecute',
-        params: request,
-    })
+    await provider?.request('prepareExecute', request)
 }
 
 export const listAllocationInstructions = async ({
@@ -339,8 +327,5 @@ export const tap = async ({
 
     const provider = window.canton
     // TODO: check success
-    await provider?.request({
-        method: 'prepareExecute',
-        params: request,
-    })
+    await provider?.request('prepareExecute', request)
 }

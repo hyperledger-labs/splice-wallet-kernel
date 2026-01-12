@@ -21,6 +21,21 @@ import { RpcTransport } from '@canton-network/core-rpc-transport'
 
 <%= methodTypings.toString("typescript").replace(/export type AnyOf[A-Za-z0-9]+ =(?:[\\r\\n]|.)*?;/gm, "") %>
 
+type AsyncReturnType<T> = T extends (...args: any[]) => Promise<infer R>
+    ? R
+    : never
+
+export type RpcMethods = {
+  <% openrpcDocument.methods.forEach((method) => { %>
+    <%= method.name %>: {
+        params: Parameters<<%= _.upperFirst(method.name) %>>
+        result: AsyncReturnType<<%= _.upperFirst(method.name) %>>
+    }
+  <% }); %>
+}
+
+export type RpcClientRequest<M extends keyof RpcMethods> = (method: M, params?: RpcMethods[M]['params']) => Promise<RpcMethods[M]['result']>
+
 export class <%= className %> {
   public transport: RpcTransport;
 
@@ -33,15 +48,21 @@ export class <%= className %> {
    * <%= method.summary %>
    */
   // tslint:disable-next-line:max-line-length
-  public async request(method: "<%= method.name %>", ...params: Parameters<<%= _.upperFirst(method.name) %>>): ReturnType<<%= _.upperFirst(method.name) %>>
+  // public async request(method: "<%= method.name %>", ...params: Parameters<<%= _.upperFirst(method.name) %>>): ReturnType<<%= _.upperFirst(method.name) %>>
   <% }); %>
-  public async request(method: string, params?: RequestPayload['params']): Promise<unknown> {
-    const response = await this.transport.submit({ method, params });
+
+  public async request<M extends keyof RpcMethods>(method: M, params?: RpcMethods[M]['params'][0]): Promise<RpcMethods[M]['result']> {
+    const submitParams = params ? { method, params } : { method }
+
+    const response = await this.transport.submit({
+        method,
+        params: submitParams,
+    })
 
     if ('error' in response) {
         throw new Error('RPC error: ' + response.error.code + ' - ' + response.error.message);
     } else {
-        return response.result;
+        return response.result as RpcMethods[M]['result'];
     }
   }
 }

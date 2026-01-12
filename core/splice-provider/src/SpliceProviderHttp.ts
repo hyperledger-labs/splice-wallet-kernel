@@ -1,11 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    isSpliceMessageEvent,
-    RequestPayload,
-    WalletEvent,
-} from '@canton-network/core-types'
+import { isSpliceMessageEvent, WalletEvent } from '@canton-network/core-types'
 import { HttpTransport } from '@canton-network/core-rpc-transport'
 import SpliceWalletJSONRPCDAppAPI from '@canton-network/core-wallet-dapp-rpc-client'
 import { SpliceProviderBase } from './SpliceProvider'
@@ -23,7 +19,6 @@ let connection: GatewaySocket = null
 
 export class SpliceProviderHttp extends SpliceProviderBase {
     private sessionToken?: string
-    private client: SpliceWalletJSONRPCDAppAPI
 
     private createClient(sessionToken?: string): SpliceWalletJSONRPCDAppAPI {
         const transport = new HttpTransport(this.url, sessionToken)
@@ -61,17 +56,16 @@ export class SpliceProviderHttp extends SpliceProviderBase {
     }
 
     constructor(
+        client: SpliceWalletJSONRPCDAppAPI,
         private url: URL,
         sessionToken?: string
     ) {
-        super()
+        super(client)
 
         if (sessionToken) {
             this.sessionToken = sessionToken
             this.openSocket(url, sessionToken)
         }
-
-        this.client = this.createClient(sessionToken)
 
         // Listen for the auth success event sent from the WK UI popup to the SDK running in the parent window.
         window.addEventListener('message', async (event) => {
@@ -81,13 +75,13 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 event.data.type === WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS
             ) {
                 this.sessionToken = event.data.token
-                this.client = this.createClient(this.sessionToken)
+                this._client = this.createClient(this.sessionToken)
                 this.openSocket(this.url, event.data.token)
 
                 // We requery the status explicitly here, as it's not guaranteed that the socket will be open & authenticated
                 // before the `onConnected` event is fired from the `addSession` RPC call. The dappApi.StatusResult and
                 // dappApi.OnConnectedEvent are mapped manually to avoid dependency.
-                this.request({ method: 'status' })
+                this.request('status')
                     .then((status) => {
                         this.emit('onConnected', status)
                     })
@@ -99,14 +93,5 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                     })
             }
         })
-    }
-
-    public async request<T>({ method, params }: RequestPayload): Promise<T> {
-        return (await (
-            this.client.request as (
-                method: string,
-                params?: RequestPayload['params']
-            ) => Promise<unknown>
-        )(method, params)) as T
     }
 }

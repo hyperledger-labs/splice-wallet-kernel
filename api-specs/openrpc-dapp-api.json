@@ -175,6 +175,7 @@
                 "title": "KernelInfo",
                 "type": "object",
                 "description": "Represents a Wallet Gateway.",
+                "additionalProperties": false,
                 "properties": {
                     "id": {
                         "title": "id",
@@ -202,6 +203,7 @@
                 "title": "LedgerApiResult",
                 "type": "object",
                 "description": "Ledger Api configuration options",
+                "additionalProperties": false,
                 "properties": {
                     "response": {
                         "title": "response",
@@ -220,6 +222,7 @@
                 "title": "JsPrepareSubmissionRequest",
                 "type": "object",
                 "description": "Structure representing the request for prepare and execute calls",
+                "additionalProperties": false,
                 "properties": {
                     "commandId": {
                         "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
@@ -274,6 +277,7 @@
                 "title": "DisclosedContract",
                 "type": "object",
                 "description": "Structure representing a disclosed contract for transaction execution",
+                "additionalProperties": false,
                 "properties": {
                     "templateId": {
                         "title": "templateId",
@@ -503,6 +507,7 @@
             "StatusEvent": {
                 "title": "StatusEvent",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                     "kernel": {
                         "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/KernelInfo"
@@ -525,6 +530,7 @@
                     "network": {
                         "title": "network",
                         "type": "object",
+                        "additionalProperties": false,
                         "description": "Network information, if connected to a network.",
                         "properties": {
                             "networkId": {
@@ -536,6 +542,7 @@
                                 "title": "LedgerApiConfig",
                                 "type": "object",
                                 "description": "Ledger API configuration.",
+                                "additionalProperties": false,
                                 "properties": {
                                     "baseUrl": {
                                         "title": "baseUrl",
@@ -553,6 +560,7 @@
                         "title": "session",
                         "type": "object",
                         "description": "Session information, if authenticated.",
+                        "additionalProperties": false,
                         "properties": {
                             "accessToken": {
                                 "title": "accessToken",

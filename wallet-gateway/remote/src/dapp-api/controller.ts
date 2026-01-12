@@ -268,7 +268,7 @@ async function prepareSubmission(
     userId: string,
     partyId: string,
     synchronizerId: string,
-    params: PrepareExecuteParams | PrepareReturnParams,
+    params: PrepareReturnParams,
     ledgerClient: LedgerClient
 ): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
     return await ledgerClient.postWithRetry(
