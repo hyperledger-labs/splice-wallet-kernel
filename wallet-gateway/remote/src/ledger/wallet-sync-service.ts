@@ -160,7 +160,7 @@ export class WalletSyncService {
             // No match found - use participant as default provider
             this.logger.warn(
                 { namespace },
-                'No signing provider match found for namespace, using participant as default'
+                'No signing provider match found for namespace, using participant as default and marking wallet as unmatched (disabled)'
             )
             return {
                 signingProviderId: SigningProvider.PARTICIPANT,
@@ -169,7 +169,7 @@ export class WalletSyncService {
         } catch (err) {
             this.logger.error(
                 { err, namespace },
-                'Error resolving signing provider, using participant as default'
+                'Error resolving signing provider, using participant as default and marking wallet as unmatched (disabled)'
             )
             // On error, use participant as default but mark as unmatched
             return {
