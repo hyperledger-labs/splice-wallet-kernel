@@ -726,7 +726,7 @@
                     "disabled": {
                         "title": "disabled",
                         "type": "boolean",
-                        "description": "Whether the wallet is disabled. Unmatched parties are disabled, matched and newly created wallets are not disabled."
+                        "description": "Whether the wallet is disabled. Wallets are disabled when no signing provider matches the party's namespace during sync. Disabled wallets use participant as the default signing provider."
                     },
                     "reason": {
                         "title": "reason",

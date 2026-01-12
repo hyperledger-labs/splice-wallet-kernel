@@ -308,7 +308,7 @@ export type ExternalTxId = string
 export type TopologyTransactions = string
 /**
  *
- * Whether the wallet is disabled. Unmatched parties are disabled, matched and newly created wallets are not disabled.
+ * Whether the wallet is disabled. Wallets are disabled when no signing provider matches the party's namespace during sync. Disabled wallets use participant as the default signing provider.
  *
  */
 export type Disabled = boolean
