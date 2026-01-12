@@ -3,14 +3,12 @@
 
 import { useState } from 'react'
 import { useRegistryUrls } from '../contexts/RegistryServiceContext'
-import { useConnection } from '../contexts/ConnectionContext'
+import { usePrimaryAccount } from '../hooks/useAccounts'
 import { usePortfolio } from '../contexts/PortfolioContext'
 import { SelectInstrument } from './SelectInstrument'
 
 export const TwoStepTransferTab: React.FC = () => {
-    const {
-        status: { primaryParty },
-    } = useConnection()
+    const primaryParty = usePrimaryAccount()?.partyId
     const registryUrls = useRegistryUrls()
     const { createTransfer } = usePortfolio()
     const [receiver, setReceiver] = useState<string>('')

@@ -7,18 +7,16 @@ import {
     type SettlementInfo,
     type AllocationView,
 } from '@canton-network/core-token-standard'
-import { useConnection } from '../contexts/ConnectionContext'
 import { usePortfolio } from '../contexts/PortfolioContext'
 import { useAllocationRequests } from '../hooks/useAllocationRequests'
 import { useAllocations } from '../hooks/useAllocations'
+import { usePrimaryAccount } from '../hooks/useAccounts'
 import { AllocationCard } from './AllocationCard'
 import { AllocationRequestCard } from './AllocationRequestCard'
 
 export const AllocationsTab: React.FC = () => {
     const portfolio = usePortfolio()
-    const {
-        status: { primaryParty },
-    } = useConnection()
+    const primaryParty = usePrimaryAccount()?.partyId
 
     const { data: allocationRequests } = useAllocationRequests()
     const { data: allocations } = useAllocations()

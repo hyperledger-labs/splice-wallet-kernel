@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    HttpTransport,
     isSpliceMessageEvent,
     RequestPayload,
     WalletEvent,
 } from '@canton-network/core-types'
+import { HttpTransport } from '@canton-network/core-rpc-transport'
+import SpliceWalletJSONRPCDAppAPI from '@canton-network/core-wallet-dapp-rpc-client'
 import { SpliceProviderBase } from './SpliceProvider'
 import { io, Socket } from 'socket.io-client'
 
@@ -22,7 +23,12 @@ let connection: GatewaySocket = null
 
 export class SpliceProviderHttp extends SpliceProviderBase {
     private sessionToken?: string
-    private transport: HttpTransport
+    private client: SpliceWalletJSONRPCDAppAPI
+
+    private createClient(sessionToken?: string): SpliceWalletJSONRPCDAppAPI {
+        const transport = new HttpTransport(this.url, sessionToken)
+        return new SpliceWalletJSONRPCDAppAPI(transport)
+    }
 
     private openSocket(url: URL, token: string): void {
         // Assumes the socket URI is accessed directly on the host w/o the API path.
@@ -65,7 +71,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
             this.openSocket(url, sessionToken)
         }
 
-        this.transport = new HttpTransport(url, sessionToken)
+        this.client = this.createClient(sessionToken)
 
         // Listen for the auth success event sent from the WK UI popup to the SDK running in the parent window.
         window.addEventListener('message', async (event) => {
@@ -75,7 +81,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 event.data.type === WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS
             ) {
                 this.sessionToken = event.data.token
-                this.transport = new HttpTransport(url, this.sessionToken)
+                this.client = this.createClient(this.sessionToken)
                 this.openSocket(this.url, event.data.token)
 
                 // We requery the status explicitly here, as it's not guaranteed that the socket will be open & authenticated
@@ -96,10 +102,11 @@ export class SpliceProviderHttp extends SpliceProviderBase {
     }
 
     public async request<T>({ method, params }: RequestPayload): Promise<T> {
-        const response = await this.transport.submit({ method, params })
-
-        if ('error' in response) throw new Error(response.error.message)
-
-        return response.result as T
+        return (await (
+            this.client.request as (
+                method: string,
+                params?: RequestPayload['params']
+            ) => Promise<unknown>
+        )(method, params)) as T
     }
 }

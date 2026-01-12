@@ -162,8 +162,17 @@ export class LedgerClient {
 
     public async init() {
         if (!this.initialized) {
+            this.logger.debug(
+                'Initializing LedgerClient with version %s for url %s',
+                this.clientVersion,
+                this.baseUrl.href
+            )
+
             const versionFromClient =
                 await this.currentClient.GET('/v2/version')
+
+            this.logger.debug(versionFromClient, 'getV2Version response')
+
             this.clientVersion = this.parseSupportedVersions(
                 versionFromClient.data?.version
             )

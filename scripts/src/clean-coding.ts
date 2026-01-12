@@ -28,9 +28,18 @@ function checkPackageJson(packageJsonPath: string): number {
         folderPath.includes('.yarn') ||
         folderPath.includes('.vite') ||
         folderPath.includes('.canton') ||
+        folderPath.includes('.cache') ||
         folderPath.includes('rpc-generator') ||
         folderPath == ''
     ) {
+        return 0
+    }
+
+    if (!packageName) {
+        console.error(
+            'skipping: package.json missing "name" field in workspace',
+            folderPath
+        )
         return 0
     }
 
@@ -109,7 +118,7 @@ function checkTsconfigJson(tsconfigJsonPath: string): number {
     const relativePath = path.relative(getRepoRoot(), tsconfigJsonPath)
 
     if (
-        tsconfigJsonPath.includes('example/') ||
+        tsconfigJsonPath.includes('examples/') ||
         tsconfigJsonPath.includes('damljs/')
     ) {
         return 0 // Skip example tsconfig files
