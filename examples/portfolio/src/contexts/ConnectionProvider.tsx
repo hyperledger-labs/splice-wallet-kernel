@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import * as sdk from '@canton-network/dapp-sdk'
 import { ConnectionContext } from './ConnectionContext'
 
@@ -14,7 +14,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
     const [accounts, setAccounts] = useState<sdk.dappAPI.Wallet[]>([])
     const [error, setError] = useState<string | undefined>()
 
-    const connect = () => {
+    const connect = useCallback(() => {
         sdk.connect()
             .then((status) => {
                 setConnectionStatus(status)
@@ -25,17 +25,17 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
                 setError(err.details)
                 setAccounts([])
             })
-    }
+    }, [])
 
-    const open = () => sdk.open()
+    const open = useCallback(() => sdk.open(), [])
 
-    const disconnect = () => {
+    const disconnect = useCallback(() => {
         sdk.disconnect().then(() => {
             setConnectionStatus(undefined)
             setAccounts([])
             setError(undefined)
         })
-    }
+    }, [])
 
     // First effect: fetch status on mount
     useEffect(() => {
