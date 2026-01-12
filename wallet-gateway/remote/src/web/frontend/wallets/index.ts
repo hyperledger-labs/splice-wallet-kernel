@@ -114,8 +114,12 @@ export class UserUiWallets extends LitElement {
             cursor: pointer;
             transition: background 0.2s;
         }
-        .buttons:hover {
+        .buttons:hover:not(:disabled) {
             background: #e2e6ea;
+        }
+        .buttons:disabled {
+            opacity: 0.75;
+            cursor: not-allowed;
         }
         .wallet-title {
             font-size: 1.1rem;
@@ -134,6 +138,14 @@ export class UserUiWallets extends LitElement {
             display: flex;
             gap: 0.5rem;
             margin-top: 0.5rem;
+        }
+        .wallet-badge-success {
+            font-size: 0.95rem;
+            color: #009900;
+        }
+        .wallet-badge-error {
+            font-size: 0.95rem;
+            color: #cc0000;
         }
         @media (max-width: 600px) {
             .header h1 {
@@ -262,19 +274,32 @@ export class UserUiWallets extends LitElement {
                             <div class="wallet-title">
                                 ${wallet.hint || wallet.partyId}
                                 ${wallet.primary
-                                    ? html`<span
-                                          style="font-size:0.95rem; color:#009900;"
+                                    ? html`<span class="wallet-badge-success"
                                           >(Primary)</span
+                                      >`
+                                    : ''}
+                                ${wallet.disabled
+                                    ? html`<span class="wallet-badge-error"
+                                          >(Disabled)</span
                                       >`
                                     : ''}
                             </div>
                             <div class="wallet-meta">
-                                <strong>Transaction ID:</strong>
-                                ${wallet.externalTxId}<br />
+                                <strong>Party ID:</strong>
+                                ${wallet.partyId}<br />
                                 <strong>Network:</strong>
                                 ${wallet.networkId}<br />
                                 <strong>Signing Provider:</strong>
                                 ${wallet.signingProviderId}
+                                ${wallet.disabled
+                                    ? html`<br /><strong>Disabled:</strong> Yes`
+                                    : ''}
+                                ${wallet.reason
+                                    ? html`</br> <div>
+                                        <strong>Reason:</strong>
+                                        ${wallet.reason}
+                                    </div>`
+                                    : ''}
                             </div>
                             <div class="wallet-actions">
                                 <button
@@ -296,9 +321,13 @@ export class UserUiWallets extends LitElement {
                             <div class="wallet-title">
                                 ${wallet.hint || wallet.partyId}
                                 ${wallet.primary
-                                    ? html`<span
-                                          style="font-size:0.95rem; color:#009900;"
+                                    ? html`<span class="wallet-badge-success"
                                           >(Primary)</span
+                                      >`
+                                    : ''}
+                                ${wallet.disabled
+                                    ? html`<span class="wallet-badge-error"
+                                          >(Disabled)</span
                                       >`
                                     : ''}
                             </div>
@@ -309,10 +338,20 @@ export class UserUiWallets extends LitElement {
                                 ${wallet.networkId}<br />
                                 <strong>Signing Provider:</strong>
                                 ${wallet.signingProviderId}
+                                ${wallet.disabled
+                                    ? html`<br /><strong>Disabled:</strong> Yes`
+                                    : ''}
+                                ${wallet.reason
+                                    ? html`</br> <div>
+                                          <strong>Reason:</strong>
+                                          ${wallet.reason}
+                                      </div>`
+                                    : ''}
                             </div>
                             <div class="wallet-actions">
                                 <button
                                     class="buttons"
+                                    ?disabled=${wallet.disabled}
                                     @click=${() => this._setPrimary(wallet)}
                                 >
                                     Set Primary
