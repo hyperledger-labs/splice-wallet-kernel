@@ -41,7 +41,7 @@ export const TwoStepTransferTab: React.FC = () => {
                 onChange={(e) => setAmount(Number(e.target.value))}
             />
             <br />
-            <label htmlFor="amount">Message for receiver:&nbsp;</label>
+            <label htmlFor="memo">Message for receiver:&nbsp;</label>
             <input
                 id="memo"
                 value={memo}
