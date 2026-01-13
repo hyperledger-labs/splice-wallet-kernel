@@ -28,25 +28,34 @@ async function connectToLocalNet(dappPage: Page): Promise<Page> {
     return popup
 }
 
-async function createWallet(popup: Page, partyHint: string): Promise<void> {
+async function createWalletIfNotExists(
+    popup: Page,
+    partyHint: string
+): Promise<string> {
+    // Make sure we're on the right page.
     await popup.getByRole('button', { name: 'Toggle menu' }).click()
     await popup.getByRole('button', { name: 'Wallets' }).click()
+    await expect(popup.getByText('Loading wallets…')).not.toBeVisible()
 
-    await expect(popup.getByText('Loading wallets…')).not.toBeVisible();
+    // Check for existing user with that party hint.
+    const pattern = new RegExp(`${partyHint}::[0-9a-f]+`)
+    const wallets = popup.getByText(pattern)
+    const walletsCount = await wallets.count()
+    if (walletsCount > 0) {
+        const card = await wallets.first().elementHandle()
+        return (await card.innerText()).match(pattern)[0]
+    }
 
-    const walletCards = popup
-        .locator('.wallet-card')
-        .filter({ hasText: `${partyHint}::` })
-
-    const walletCardsCount = await walletCards.count()
-    if (walletCardsCount > 0) return // Wallet already exists
-
+    // Create if necessary.
     await popup.getByRole('button', { name: 'Create New' }).click()
-    await popup.getByRole('textbox', { name: 'Party ID hint:' }).fill('alice')
+    await popup.getByRole('textbox', { name: 'Party ID hint:' }).fill(partyHint)
     await popup.getByLabel('Signing Provider:').selectOption('participant')
     await popup.getByLabel('Network:').selectOption('canton:localnet')
     await popup.getByRole('button', { name: 'Create' }).click()
     await popup.getByRole('button', { name: 'Close' }).click()
+
+    const element = await popup.getByText(pattern).first().elementHandle()
+    return (await element.innerText()).match(pattern)[0]
 }
 
 async function setupRegistry(page: Page): Promise<void> {
@@ -63,7 +72,11 @@ test('portfolio: tap', async ({ page: dappPage }) => {
     await expect(dappPage).toHaveTitle(/dApp Portfolio/)
 
     const popup = await connectToLocalNet(dappPage)
-    await createWallet(popup, 'alice')
+    const alice = await createWalletIfNotExists(popup, 'alice')
+    console.log('aliceParty', alice)
+    const bob = await createWalletIfNotExists(popup, 'bob')
+    console.log('bobParty', bob)
+
     await setupRegistry(dappPage)
 
     await dappPage.getByRole('tab', { name: 'Holdings' }).click()
@@ -83,5 +96,5 @@ test('portfolio: tap', async ({ page: dappPage }) => {
     await popup.getByRole('button', { name: 'Approve' }).click()
     await expect(
         dappPage.locator('li').filter({ hasText: '1234' })
-    ).not.toHaveCount(0)  // Use not.toHaveCount to help successive tests.
+    ).not.toHaveCount(0) // Use not.toHaveCount to help successive tests.
 })
