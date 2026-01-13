@@ -123,6 +123,7 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const server = app.listen(port, () => {
         logger.info(`Remote Wallet Gateway starting on ${serviceUrl})`)
     })
+    app.use(express.json({ limit: config.server.requestSizeLimit }))
 
     app.use('/healthz', rpcRateLimit, (_req, res) => res.status(200).send('OK'))
     app.use('/readyz', rpcRateLimit, (_req, res) => {

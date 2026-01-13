@@ -32,7 +32,7 @@ export function handleErrorToast(e: unknown, fallback?: FallbackType) {
         code = parsed.error.code
         message = parsed.error.message
     }
-
+    console.log(code)
     switch (code) {
         case -32600:
             toast.title = 'Invalid Request'
@@ -45,6 +45,9 @@ export function handleErrorToast(e: unknown, fallback?: FallbackType) {
             break
         case -32603:
             toast.title = 'Internal Error'
+            break
+        case 413:
+            toast.title = 'Payload Too Large'
             break
         default:
             toast.title = fallback?.title || 'Unexpected Error'
