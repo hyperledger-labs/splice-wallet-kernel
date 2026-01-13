@@ -201,7 +201,7 @@ jobs:
             - uses: actions/upload-artifact@v4
               if: ${{ !cancelled() }}
               with:
-                  name: playwright-report
+                  name: example-portfolio-playwright-report
                   path: examples/portfolio/playwright-report/
                   retention-days: 5
 
