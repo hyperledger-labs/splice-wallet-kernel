@@ -318,7 +318,6 @@ export interface RemoveIdpParams {
 export interface CreateWalletParams {
     primary?: Primary
     partyHint: PartyHint
-    networkId: NetworkId
     signingProviderId: SigningProviderId
     signingProviderContext?: SigningProviderContext
     [k: string]: any
