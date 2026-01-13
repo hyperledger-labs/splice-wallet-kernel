@@ -227,6 +227,18 @@ export type Hint = string
 export type PublicKey = string
 /**
  *
+ * Whether the wallet is disabled. Wallets are disabled when no signing provider matches the party's namespace during sync. Disabled wallets use participant as the default signing provider.
+ *
+ */
+export type Disabled = boolean
+/**
+ *
+ * The reason for the current status.
+ *
+ */
+export type Reason = string
+/**
+ *
  * Structure representing a wallet
  *
  */
@@ -241,6 +253,8 @@ export interface Wallet {
     signingProviderId: SigningProviderId
     externalTxId?: ExternalTxId
     topologyTransactions?: TopologyTransactions
+    disabled?: Disabled
+    reason?: Reason
     [k: string]: any
 }
 export type Added = Wallet[]
@@ -257,12 +271,6 @@ export type AccessToken = string
  *
  */
 export type Status = string
-/**
- *
- * The reason for the current status.
- *
- */
-export type Reason = string
 /**
  *
  * Structure representing the connected network session
