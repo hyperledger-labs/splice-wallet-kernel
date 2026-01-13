@@ -51,10 +51,11 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
         .getByRole('textbox', { name: 'RPC URL' })
         .fill(`http://localhost:${dappApiPort}/api/v0/dapp`)
 
+    await popup.getByRole('button', { name: 'Connect' }).click()
+
     try {
-        await popup
-            .getByRole('button', { name: 'Connect', exact: true })
-            .click()
+        await popup.locator('#network').selectOption('0')
+        await popup.getByRole('button', { name: 'Connect' }).click()
 
         await expect(dappPage.getByText('Loading...')).toHaveCount(0)
 
@@ -71,7 +72,6 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
             .getByRole('textbox', { name: 'Party ID hint:' })
             .fill(party1)
         await popup.getByLabel('Signing Provider:').selectOption('participant')
-        await popup.getByLabel('Network:').selectOption('canton:local-oauth')
 
         await popup.getByRole('button', { name: 'Create' }).click()
 
