@@ -184,7 +184,7 @@ jobs:
               run: yarn start:localnet
 
             - name: Build project
-              run: yarn build:all
+              run: yarn install && yarn build:all
 
             - name: Start remote WK
               run: yarn nx run @canton-network/wallet-gateway-remote:start &
