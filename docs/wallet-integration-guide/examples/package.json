@@ -59,7 +59,7 @@
         "@canton-network/core-wallet-auth": "workspace:^",
         "@canton-network/wallet-sdk": "workspace:^",
         "pino": "10.1.1",
-        "uuid": "^13.0.0"
+        "uuid": "^11.0.0"
     },
     "nx": {
         "targets": {
