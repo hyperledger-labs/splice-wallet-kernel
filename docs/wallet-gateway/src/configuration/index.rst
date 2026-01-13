@@ -55,7 +55,8 @@ outside of your own machine (like a kubernetes cluster).
     - *tls:*  Deprecated.
     - *dAppPath:* (default: '/api/v0/dapp') customizable redirect path for dapps.
     - *userPath:* (default: '/api/v0/user') customizable redirect path for user actions.
-    - *allowedOrigins:* (default: ['*']) configure allowedOrigins as an array
+    - *allowedOrigins:* (default: ['*']) configure allowedOrigins as an array.
+    - *requestSizeLimit:* (default: '1mb') configure the maximum request size the server will accept.
 
 **Store:**
     - *connection:* Configures the connection to a database, see :ref:`configuring-store` for details.
