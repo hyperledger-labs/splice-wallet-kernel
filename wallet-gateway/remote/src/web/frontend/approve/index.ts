@@ -319,7 +319,7 @@ export class ApproveUi extends LitElement {
                     <h3>Base64 Transaction</h3>
                     <button
                         class="copy-btn"
-                        @click=${() => this._copyBase64(this.tx)}
+                        @click=${() => this._copyToClipboard(this.tx)}
                         title="Copy to clipboard"
                     >
                         📋 Copy
@@ -332,7 +332,9 @@ export class ApproveUi extends LitElement {
                     <button
                         class="copy-btn"
                         @click=${() =>
-                            this._copyDecoded(this.txParsed?.jsonString || '')}
+                            this._copyToClipboard(
+                                this.txParsed?.jsonString || ''
+                            )}
                         title="Copy to clipboard"
                     >
                         📋 Copy
@@ -359,11 +361,7 @@ export class ApproveUi extends LitElement {
         `
     }
 
-    private _copyBase64(base64: string) {
-        navigator.clipboard.writeText(base64)
-    }
-
-    private _copyDecoded(decoded: string) {
-        navigator.clipboard.writeText(decoded)
+    private _copyToClipboard(text: string) {
+        navigator.clipboard.writeText(text)
     }
 }
