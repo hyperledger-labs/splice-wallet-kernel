@@ -171,27 +171,32 @@ export const toWalletStatus = (status?: string): WalletStatus => {
     return 'initialized'
 }
 
-export const toWallet = (table: WalletTable): Wallet => ({
-    primary: table.primary === 1,
-    status: toWalletStatus(table.status),
-    partyId: table.partyId,
-    hint: table.hint,
-    publicKey: table.publicKey,
-    namespace: table.namespace,
-    networkId: table.networkId,
-    signingProviderId: table.signingProviderId,
-    disabled: table.disabled === 1,
-    ...(table.externalTxId !== undefined && {
-        externalTxId: table.externalTxId,
-    }),
-    ...(table.topologyTransactions !== undefined && {
-        topologyTransactions: table.topologyTransactions,
-    }),
-    ...(table.disabled === 1 &&
-        table.reason !== undefined && {
-            reason: table.reason,
+export const toWallet = (table: WalletTable): Wallet => {
+    if (table.disabled === 1 && table.reason === undefined) {
+        throw new Error(`Missing wallet disabled reason: ${table.partyId}`)
+    }
+    return {
+        primary: table.primary === 1,
+        status: toWalletStatus(table.status),
+        partyId: table.partyId,
+        hint: table.hint,
+        publicKey: table.publicKey,
+        namespace: table.namespace,
+        networkId: table.networkId,
+        signingProviderId: table.signingProviderId,
+        disabled: table.disabled === 1,
+        ...(table.externalTxId !== undefined && {
+            externalTxId: table.externalTxId,
         }),
-})
+        ...(table.topologyTransactions !== undefined && {
+            topologyTransactions: table.topologyTransactions,
+        }),
+        ...(table.disabled === 1 &&
+            table.reason !== undefined && {
+                reason: table.reason,
+            }),
+    }
+}
 
 export const fromTransaction = (
     transaction: Transaction,
