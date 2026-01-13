@@ -111,6 +111,30 @@ export class ApproveUi extends LitElement {
             word-break: break-word;
         }
 
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-color);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--button-bg);
+            border-color: var(--button-bg);
+            color: white;
+        }
+
         button {
             padding: 0.75rem;
             border-radius: 8px;
@@ -291,10 +315,29 @@ export class ApproveUi extends LitElement {
                 <h3>Transaction Hash</h3>
                 <p>${this.txHash}</p>
 
-                <h3>Base64 Transaction</h3>
+                <div class="section-header">
+                    <h3>Base64 Transaction</h3>
+                    <button
+                        class="copy-btn"
+                        @click=${() => this._copyBase64(this.tx)}
+                        title="Copy to clipboard"
+                    >
+                        📋 Copy
+                    </button>
+                </div>
                 <div class="tx-box">${this.tx}</div>
 
-                <h3>Decoded Transaction</h3>
+                <div class="section-header">
+                    <h3>Decoded Transaction</h3>
+                    <button
+                        class="copy-btn"
+                        @click=${() =>
+                            this._copyDecoded(this.txParsed?.jsonString || '')}
+                        title="Copy to clipboard"
+                    >
+                        📋 Copy
+                    </button>
+                </div>
                 <div class="tx-box">${this.txParsed?.jsonString || 'N/A'}</div>
 
                 ${this.status === 'executed'
@@ -314,5 +357,13 @@ export class ApproveUi extends LitElement {
                     : null}
             </div>
         `
+    }
+
+    private _copyBase64(base64: string) {
+        navigator.clipboard.writeText(base64)
+    }
+
+    private _copyDecoded(decoded: string) {
+        navigator.clipboard.writeText(decoded)
     }
 }
