@@ -35,7 +35,7 @@ interface NetworkTable {
     adminAuth: string | undefined // json stringified
 }
 
-export interface WalletTable {
+interface WalletTable {
     primary: number
     partyId: string
     hint: string
@@ -161,7 +161,8 @@ export const fromWallet = (wallet: Wallet, userId: UserId): WalletTable => {
         primary: wallet.primary ? 1 : 0,
         userId: userId,
         disabled: wallet.disabled !== undefined && wallet.disabled ? 1 : 0,
-        ...(wallet.reason !== undefined && { reason: wallet.reason }),
+        ...(wallet.disabled === true &&
+            wallet.reason !== undefined && { reason: wallet.reason }),
     }
 }
 
@@ -170,32 +171,27 @@ export const toWalletStatus = (status?: string): WalletStatus => {
     return 'initialized'
 }
 
-export const toWallet = (table: WalletTable): Wallet => {
-    const wallet: Wallet = {
-        primary: table.primary === 1,
-        status: toWalletStatus(table.status),
-        partyId: table.partyId,
-        hint: table.hint,
-        publicKey: table.publicKey,
-        namespace: table.namespace,
-        networkId: table.networkId,
-        signingProviderId: table.signingProviderId,
-        ...(table.externalTxId !== undefined && {
-            externalTxId: table.externalTxId,
+export const toWallet = (table: WalletTable): Wallet => ({
+    primary: table.primary === 1,
+    status: toWalletStatus(table.status),
+    partyId: table.partyId,
+    hint: table.hint,
+    publicKey: table.publicKey,
+    namespace: table.namespace,
+    networkId: table.networkId,
+    signingProviderId: table.signingProviderId,
+    disabled: table.disabled === 1,
+    ...(table.externalTxId !== undefined && {
+        externalTxId: table.externalTxId,
+    }),
+    ...(table.topologyTransactions !== undefined && {
+        topologyTransactions: table.topologyTransactions,
+    }),
+    ...(table.disabled === 1 &&
+        table.reason !== undefined && {
+            reason: table.reason,
         }),
-        ...(table.topologyTransactions !== undefined && {
-            topologyTransactions: table.topologyTransactions,
-        }),
-    }
-
-    wallet.disabled = table.disabled === 1
-
-    if (table.reason !== undefined) {
-        wallet.reason = table.reason
-    }
-
-    return wallet
-}
+})
 
 export const fromTransaction = (
     transaction: Transaction,

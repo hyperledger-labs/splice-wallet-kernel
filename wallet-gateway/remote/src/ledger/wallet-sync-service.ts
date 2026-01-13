@@ -18,6 +18,11 @@ export type WalletSyncReport = {
     added: Wallet[]
     removed: Wallet[]
 }
+
+export const WALLET_DISABLED_REASON = {
+    NO_SIGNING_PROVIDER_MATCHED: 'no signing provider matched',
+}
+
 export class WalletSyncService {
     constructor(
         private store: Store,
@@ -272,7 +277,7 @@ export class WalletSyncService {
                             resolvedSigningProvider.signingProviderId,
                         disabled: !isMatched,
                         ...(!isMatched && {
-                            reason: 'no signing provider matched',
+                            reason: WALLET_DISABLED_REASON.NO_SIGNING_PROVIDER_MATCHED,
                         }),
                     }
 
