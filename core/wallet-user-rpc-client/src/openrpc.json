@@ -171,11 +171,6 @@
                                 "type": "string",
                                 "description": "The party hint and name of the wallet."
                             },
-                            "networkId": {
-                                "title": "networkId",
-                                "type": "string",
-                                "description": "The network ID the wallet corresponds to."
-                            },
                             "signingProviderId": {
                                 "title": "signingProviderId",
                                 "type": "string",
@@ -187,11 +182,7 @@
                                 "$ref": "#/components/schemas/SigningProviderContext"
                             }
                         },
-                        "required": [
-                            "partyHint",
-                            "networkId",
-                            "signingProviderId"
-                        ]
+                        "required": ["partyHint", "signingProviderId"]
                     }
                 }
             ],
