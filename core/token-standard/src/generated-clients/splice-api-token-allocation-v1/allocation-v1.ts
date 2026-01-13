@@ -66,6 +66,11 @@ export interface components {
             meta?: {
                 [key: string]: string
             }
+            /**
+             * @description If set to true, the response will not include fields prefixed with 'debug'. Useful to save bandwidth.
+             * @default false
+             */
+            excludeDebugFields: boolean
         }
         /**
          * @description The context required to exercise a choice on a contract via an interface.
