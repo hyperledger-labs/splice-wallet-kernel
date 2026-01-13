@@ -23,7 +23,7 @@ type UpdateSubscriptionOptions = {
 export class WebSocketClient {
     private ws: WebSocket | null = null
     private baseUrl: string
-    private token: string
+    private token: string = ''
     private isAdmin: boolean
     private protocol: string[] = []
     private readonly logger: Logger
@@ -45,7 +45,6 @@ export class WebSocketClient {
     }) {
         this.logger = logger.child({ component: 'WebSocketClient' })
         this.baseUrl = baseUrl
-        this.token = ''
         this.wsSupportBackOff = wsSupportBackOff
         this.accessTokenProvider = accessTokenProvider
         this.isAdmin = isAdmin ?? false
