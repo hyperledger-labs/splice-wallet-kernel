@@ -23,7 +23,7 @@ import {
     PublicKey,
     verifySignedTxHash,
 } from '@canton-network/core-signing-lib'
-import { WebSocketManager } from './webSocketManger.js'
+import { WebSocketManager } from './webSocketManager.js'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-proto'
@@ -66,7 +66,7 @@ export type SubscribeToUpdateOptions = {
  */
 export class LedgerController {
     private readonly client: LedgerClient
-    private readonly webSocketManager: WebSocketManager
+    private readonly webSocketManager: WebSocketManager | undefined
     private readonly userId: string
     private readonly isAdmin: boolean
     private partyId: PartyId | undefined
@@ -97,23 +97,24 @@ export class LedgerController {
             accessTokenProvider,
         })
 
-        const wsUrl = `ws://${baseUrl.host}`
-        const wsClient = new WebSocketClient({
-            baseUrl: wsUrl,
-            isAdmin,
-            logger: this.logger,
-            accessToken: token,
-            accessTokenProvider,
-            wsSupportBackOff: 6000 * 10,
-        })
+        if (accessTokenProvider) {
+            const wsUrl = `ws://${baseUrl.host}`
+            const wsClient = new WebSocketClient({
+                baseUrl: wsUrl,
+                isAdmin,
+                logger: this.logger,
+                accessTokenProvider,
+                wsSupportBackOff: 6000 * 10,
+            })
 
-        this.webSocketManager = new WebSocketManager({
-            wsClient,
-            logger: pino({
-                name: 'WebSocketManager-LedgerController',
-                level: 'info',
-            }),
-        })
+            this.webSocketManager = new WebSocketManager({
+                wsClient,
+                logger: pino({
+                    name: 'WebSocketManager-LedgerController',
+                    level: 'info',
+                }),
+            })
+        }
 
         this.initPromise = this.client.init()
         this.userId = userId
@@ -250,6 +251,11 @@ export class LedgerController {
      * @throws WebSocketConnectionError if connection fails
      */
     async *subscribeToUpdates(options: SubscribeToUpdateOptions) {
+        if (!this.webSocketManager) {
+            throw new Error(
+                'WebSocketManager not initialized. Please provide an accessTokenProvider in the constructor to enable WebSocket support.'
+            )
+        }
         const { beginOffset } = options
 
         const baseOptions = {

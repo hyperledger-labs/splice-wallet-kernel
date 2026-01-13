@@ -28,37 +28,37 @@ export class WebSocketClient {
     private protocol: string[] = []
     private readonly logger: Logger
     private wsSupportBackOff: number
-    private accessTokenProvider: AccessTokenProvider | undefined
+    private accessTokenProvider: AccessTokenProvider
 
     constructor({
         baseUrl,
         isAdmin,
-        accessToken,
+        // accessToken,
         accessTokenProvider,
         logger,
         wsSupportBackOff,
     }: {
         baseUrl: string
         isAdmin?: boolean
-        accessToken?: string | undefined
-        accessTokenProvider?: AccessTokenProvider | undefined
+        // accessToken?: string | undefined
+        accessTokenProvider: AccessTokenProvider
         logger: Logger
         wsSupportBackOff: number
     }) {
         this.logger = logger.child({ component: 'WebSocketClient' })
         this.baseUrl = baseUrl
-        this.token = accessToken ?? ''
+        this.token = ''
         this.wsSupportBackOff = wsSupportBackOff
         this.accessTokenProvider = accessTokenProvider
         this.isAdmin = isAdmin ?? false
+
+        this.init()
     }
 
     async init() {
-        if (this.accessTokenProvider) {
-            this.token = this.isAdmin
-                ? await this.accessTokenProvider.getAdminAccessToken()
-                : await this.accessTokenProvider.getUserAccessToken()
-        }
+        this.token = this.isAdmin
+            ? await this.accessTokenProvider.getAdminAccessToken()
+            : await this.accessTokenProvider.getUserAccessToken()
         this.protocol = [`jwt.token.${this.token}`, 'daml.ws.auth']
 
         this.logger.info(
