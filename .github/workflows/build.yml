@@ -183,6 +183,9 @@ jobs:
             - name: Start LocalNet
               run: yarn start:localnet
 
+            - name: Build project
+              run: yarn build:all
+
             - name: Start remote WK
               run: yarn nx run @canton-network/wallet-gateway-remote:start &
 
@@ -191,9 +194,6 @@ jobs:
             - run: yarn nx run @canton-network/mock-oauth2:start &
 
             - uses: ./.github/actions/setup_playwright
-
-            - name: Build project
-              run: yarn build:all
 
             - name: Run example e2e
               run: yarn nx playwright:e2e @canton-network/example-portfolio
