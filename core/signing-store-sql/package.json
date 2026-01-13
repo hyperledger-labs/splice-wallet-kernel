@@ -29,10 +29,10 @@
         "@canton-network/core-signing-lib": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
         "@canton-network/core-wallet-store": "workspace:^",
-        "better-sqlite3": "^12.5.0",
+        "better-sqlite3": "^12.6.0",
         "commander": "^14.0.2",
         "kysely": "^0.28.9",
-        "pino": "^10.1.0",
+        "pino": "^10.1.1",
         "umzug": "^3.8.2",
         "zod": "^4.3.5"
     },
