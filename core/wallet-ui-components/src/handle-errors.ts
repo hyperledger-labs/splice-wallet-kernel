@@ -32,7 +32,7 @@ export function handleErrorToast(e: unknown, fallback?: FallbackType) {
         code = parsed.error.code
         message = parsed.error.message
     }
-    console.log(code)
+
     switch (code) {
         case -32600:
             toast.title = 'Invalid Request'
