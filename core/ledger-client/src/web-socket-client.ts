@@ -33,14 +33,12 @@ export class WebSocketClient {
     constructor({
         baseUrl,
         isAdmin,
-        // accessToken,
         accessTokenProvider,
         logger,
         wsSupportBackOff,
     }: {
         baseUrl: string
         isAdmin?: boolean
-        // accessToken?: string | undefined
         accessTokenProvider: AccessTokenProvider
         logger: Logger
         wsSupportBackOff: number
@@ -51,8 +49,6 @@ export class WebSocketClient {
         this.wsSupportBackOff = wsSupportBackOff
         this.accessTokenProvider = accessTokenProvider
         this.isAdmin = isAdmin ?? false
-
-        this.init()
     }
 
     async init() {
