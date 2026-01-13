@@ -523,7 +523,9 @@ class AllocationService {
     ) {
         return this.core.getTokenStandardClient(registryUrl).post(
             '/registry/allocations/v1/{allocationId}/choice-contexts/execute-transfer',
-            {},
+            {
+                excludeDebugFields: true,
+            },
             {
                 path: {
                     allocationId,
@@ -569,13 +571,13 @@ class AllocationService {
         allocationCid: string,
         registryUrl: string
     ): Promise<allocationInstructionRegistryTypes['schemas']['ChoiceContext']> {
-        return this.core
-            .getTokenStandardClient(registryUrl)
-            .post(
-                '/registry/allocations/v1/{allocationId}/choice-contexts/withdraw',
-                {},
-                { path: { allocationId: allocationCid } }
-            )
+        return this.core.getTokenStandardClient(registryUrl).post(
+            '/registry/allocations/v1/{allocationId}/choice-contexts/withdraw',
+            {
+                excludeDebugFields: true,
+            },
+            { path: { allocationId: allocationCid } }
+        )
     }
 
     createWithdrawAllocationFromContext(
@@ -615,13 +617,13 @@ class AllocationService {
         allocationCid: string,
         registryUrl: string
     ): Promise<allocationInstructionRegistryTypes['schemas']['ChoiceContext']> {
-        return this.core
-            .getTokenStandardClient(registryUrl)
-            .post(
-                '/registry/allocations/v1/{allocationId}/choice-contexts/cancel',
-                {},
-                { path: { allocationId: allocationCid } }
-            )
+        return this.core.getTokenStandardClient(registryUrl).post(
+            '/registry/allocations/v1/{allocationId}/choice-contexts/cancel',
+            {
+                excludeDebugFields: true,
+            },
+            { path: { allocationId: allocationCid } }
+        )
     }
 
     createCancelAllocationFromContext(
@@ -883,7 +885,9 @@ class TransferService {
         const client = this.core.getTokenStandardClient(registryUrl)
         const choiceContext = await client.post(
             '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/accept',
-            {},
+            {
+                excludeDebugFields: true,
+            },
             {
                 path: {
                     transferInstructionId: transferInstructionCid,
@@ -1070,7 +1074,9 @@ class TransferService {
         const client = this.core.getTokenStandardClient(registryUrl)
         const choiceContext = await client.post(
             '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/reject',
-            {},
+            {
+                excludeDebugFields: true,
+            },
             {
                 path: {
                     transferInstructionId: transferInstructionCid,
@@ -1150,7 +1156,9 @@ class TransferService {
 
         const choiceContext = await client.post(
             '/registry/transfer-instruction/v1/{transferInstructionId}/choice-contexts/withdraw',
-            {},
+            {
+                excludeDebugFields: true,
+            },
             {
                 path: {
                     transferInstructionId: transferInstructionCid,

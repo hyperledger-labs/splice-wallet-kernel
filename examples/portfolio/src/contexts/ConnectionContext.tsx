@@ -4,16 +4,11 @@
 import { createContext, useContext } from 'react'
 import * as sdk from '@canton-network/dapp-sdk'
 
-export type ConnectionStatus = {
-    connected: boolean
-    sessionToken?: string
-    primaryParty?: string
+type Connection = {
+    status?: sdk.dappAPI.StatusEvent
     accounts: sdk.dappAPI.Wallet[]
     error?: string
-}
 
-type Connection = {
-    status: ConnectionStatus
     connect: () => void
     open: () => void
     disconnect: () => void

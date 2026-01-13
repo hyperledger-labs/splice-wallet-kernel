@@ -13,6 +13,7 @@ export default {
         dappPath: '/api/v0/dapp',
         userPath: '/api/v0/user',
         allowedOrigins: '*',
+        requestSizeLimit: '5mb',
     },
     signingStore: {
         connection: {
