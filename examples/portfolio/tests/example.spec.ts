@@ -3,40 +3,7 @@
 
 import { test, expect, Page } from '@playwright/test'
 
-async function setupRegistry(page: Page): Promise<void> {
-    await page.getByRole('tab', { name: 'Registry Settings' }).click()
-    await page
-        .getByRole('textbox', { name: 'url' })
-        .fill('http://scan.localhost:4000')
-    await page.getByRole('button', { name: 'Add registry' }).click()
-    await expect(page.getByText('DSO::')).toBeVisible()
-}
-
-async function createWallet(popup: Page, partyHint: string): Promise<void> {
-    const walletCard = await popup
-        .locator('.wallet-card')
-        .filter({ hasText: partyHint })
-        .first()
-        .elementHandle()
-
-    if (walletCard) return // Wallet already exists
-
-    await popup.getByRole('button', { name: 'Create New' }).click()
-    await popup.getByRole('textbox', { name: 'Party ID hint:' }).fill('alice')
-    await popup.getByLabel('Signing Provider:').selectOption('participant')
-    await popup.getByLabel('Network:').selectOption('canton:localnet')
-    await popup.getByRole('button', { name: 'Create' }).click()
-
-    // aliceWalletCard.getByRole('button', { name: 'Set Primary' }).click()
-}
-
-test('portfolio: view holdings', async ({ page: dappPage }) => {
-    await dappPage.goto('http://localhost:8081/old')
-
-    await expect(dappPage).toHaveTitle(/dApp Portfolio/)
-
-    await setupRegistry(dappPage)
-
+async function connectToLocalNet(dappPage: Page): Promise<Page> {
     const connectButton = dappPage.getByRole('button', {
         name: 'connect to Wallet Gateway',
     })
@@ -56,15 +23,52 @@ test('portfolio: view holdings', async ({ page: dappPage }) => {
         .filter({ hasText: 'LocalNet' })
         .first()
         .getAttribute('value')
-
     await selectNetwork.selectOption(localNetOption)
-
     await popup.getByRole('button', { name: 'Connect' }).click()
+    return popup
+}
 
+async function createWallet(popup: Page, partyHint: string): Promise<void> {
+    await popup.getByRole('button', { name: 'Toggle menu' }).click()
+    await popup.getByRole('button', { name: 'Wallets' }).click()
+
+    await expect(popup.getByText('Loading wallets…')).not.toBeVisible();
+
+    const walletCards = popup
+        .locator('.wallet-card')
+        .filter({ hasText: `${partyHint}::` })
+
+    const walletCardsCount = await walletCards.count()
+    if (walletCardsCount > 0) return // Wallet already exists
+
+    await popup.getByRole('button', { name: 'Create New' }).click()
+    await popup.getByRole('textbox', { name: 'Party ID hint:' }).fill('alice')
+    await popup.getByLabel('Signing Provider:').selectOption('participant')
+    await popup.getByLabel('Network:').selectOption('canton:localnet')
+    await popup.getByRole('button', { name: 'Create' }).click()
+    await popup.getByRole('button', { name: 'Close' }).click()
+}
+
+async function setupRegistry(page: Page): Promise<void> {
+    await page.getByRole('tab', { name: 'Registry Settings' }).click()
+    await page
+        .getByRole('textbox', { name: 'url' })
+        .fill('http://scan.localhost:4000')
+    await page.getByRole('button', { name: 'Add registry' }).click()
+    await expect(page.getByText('DSO::')).toBeVisible()
+}
+
+test('portfolio: tap', async ({ page: dappPage }) => {
+    await dappPage.goto('http://localhost:8081/old')
+    await expect(dappPage).toHaveTitle(/dApp Portfolio/)
+
+    const popup = await connectToLocalNet(dappPage)
     await createWallet(popup, 'alice')
+    await setupRegistry(dappPage)
 
     await dappPage.getByRole('tab', { name: 'Holdings' }).click()
-    const selectTapInstrument = dappPage.getByRole('combobox', {
+    const tapForm = await dappPage.locator('form.tap')
+    const selectTapInstrument = tapForm.getByRole('combobox', {
         className: 'select-instrument',
     })
     const amtOption = await selectTapInstrument
@@ -73,10 +77,11 @@ test('portfolio: view holdings', async ({ page: dappPage }) => {
         .first()
         .getAttribute('value')
     selectTapInstrument.selectOption(amtOption)
+    await tapForm.getByRole('spinbutton').fill('1234')
     await dappPage.getByRole('button', { name: 'TAP' }).click()
 
     await popup.getByRole('button', { name: 'Approve' }).click()
     await expect(
-        dappPage.locator('li').filter({ hasText: '10000' }).first()
-    ).toBeVisible()
+        dappPage.locator('li').filter({ hasText: '1234' })
+    ).not.toHaveCount(0)  // Use not.toHaveCount to help successive tests.
 })
