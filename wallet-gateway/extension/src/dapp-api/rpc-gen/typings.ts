@@ -307,6 +307,18 @@ export type ExternalTxId = string
 export type TopologyTransactions = string
 /**
  *
+ * Whether the wallet is disabled. Wallets are disabled when no signing provider matches the party's namespace during sync. Disabled wallets use participant as the default signing provider.
+ *
+ */
+export type Disabled = boolean
+/**
+ *
+ * Reason for the wallet state, e.g., 'no signing provider matched'.
+ *
+ */
+export type Reason = string
+/**
+ *
  * Structure representing a wallet
  *
  */
@@ -321,6 +333,8 @@ export interface Wallet {
     signingProviderId: SigningProviderId
     externalTxId?: ExternalTxId
     topologyTransactions?: TopologyTransactions
+    disabled?: Disabled
+    reason?: Reason
     [k: string]: any
 }
 /**

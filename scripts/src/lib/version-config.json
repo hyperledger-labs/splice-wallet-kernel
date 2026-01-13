@@ -1,17 +1,17 @@
 {
-    "DAML_RELEASE_VERSION": "3.4.7",
+    "DAML_RELEASE_VERSION": "3.4.9",
     "SUPPORTED_VERSIONS": {
         "devnet": {
             "canton": {
-                "version": "3.4.7",
-                "hash": "520a582a3d390c8abf02c421e9bb5063e95c2fdc3c775f08e295986d8919b533"
+                "version": "3.4.9",
+                "hash": "c0dc46caee5e96198239737765f7874346c3f311ec1b2f4a6cbea4bbea66d8e8"
             },
             "splice": {
-                "version": "0.5.1",
+                "version": "0.5.5",
                 "hashes": {
-                    "localnet": "20809a6f1ba01ca7da67b88962c29afb564bd11a119ebfd24376cff347ba1c33",
-                    "splice": "7412d98b9da4c196d86dbcd4185e2829939906604c2bb5271d0ccee353bafc87",
-                    "spliceSpec": "8db50e2beab05f2ba6784f6732cad3758e100e39a721c5665fa566aaa43e2d2b"
+                    "localnet": "48e599922e0ca8ef365c08dc08be056a5f57966ad8f064e174015da7e54f8dc2",
+                    "splice": "7092592c00a8e141c7da3266f5d8cd04573c8bee608edd805b62c11a57cb65d8",
+                    "spliceSpec": "cc0f9cb29371e6f1c1263f29564d744ee068b654950228149aec2e86521aa231"
                 }
             }
         },
@@ -21,11 +21,11 @@
                 "hash": "9ed27b4ebf74dd9f9fa8be5a8d46737e4e1700c7de5fd5ed8918cde9ca6a7a6c"
             },
             "splice": {
-                "version": "0.4.22",
+                "version": "0.5.4",
                 "hashes": {
-                    "localnet": "49c40f4caaeb46e03839a9da93343e6e3e13f7611705066e77ce8d02ffb62665",
-                    "splice": "368e0ea676b7bf2490d3f0003ce7ff58caddab78756057100977695a57170f50",
-                    "spliceSpec": "f17b553a29ea58f184a67998e08bd9062cdaff7faa2ed11609adc71934566c2e"
+                    "localnet": "fc69e66e95fe5d9f3c7908e91883e985511a3da6fc05b8dedae7312129326074",
+                    "splice": "93691d7b12d0014b413453ce1f227adfbc0e9a4ea0675c12e975d3a4d538b331",
+                    "spliceSpec": "6941a5dd1d58cc9c961771c2027c38eac5856aafbd78d5b8ed8f7f9965f4dcfa"
                 }
             }
         }
