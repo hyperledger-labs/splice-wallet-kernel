@@ -51,10 +51,10 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
         .getByRole('textbox', { name: 'RPC URL' })
         .fill(`http://localhost:${dappApiPort}/api/v0/dapp`)
 
-    await popup.getByRole('button', { name: 'Connect' }).click()
-
     try {
-        await popup.getByRole('button', { name: 'Connect' }).click()
+        await popup
+            .getByRole('button', { name: 'Connect', exact: true })
+            .click()
 
         await expect(dappPage.getByText('Loading...')).toHaveCount(0)
 
