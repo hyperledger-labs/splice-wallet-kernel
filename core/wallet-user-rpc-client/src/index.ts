@@ -261,6 +261,12 @@ export type Added = Wallet[]
 export type Removed = Wallet[]
 /**
  *
+ * Whether wallet sync is needed. Returns true if there are disabled wallets or parties on the ledger that aren't in the store.
+ *
+ */
+export type WalletSyncNeeded = boolean
+/**
+ *
  * The access token for the session.
  *
  */
@@ -402,6 +408,10 @@ export interface SyncWalletsResult {
     removed: Removed
     [k: string]: any
 }
+export interface IsWalletSyncNeededResult {
+    walletSyncNeeded: WalletSyncNeeded
+    [k: string]: any
+}
 export interface SignResult {
     signature: Signature
     partyId: PartyId
@@ -464,6 +474,7 @@ export type ListWallets = (
     params: ListWalletsParams
 ) => Promise<ListWalletsResult>
 export type SyncWallets = () => Promise<SyncWalletsResult>
+export type IsWalletSyncNeeded = () => Promise<IsWalletSyncNeededResult>
 export type Sign = (params: SignParams) => Promise<SignResult>
 export type Execute = (params: ExecuteParams) => Promise<ExecuteResult>
 export type AddSession = (params: AddSessionParams) => Promise<AddSessionResult>
@@ -579,6 +590,15 @@ export class SpliceWalletJSONRPCUserAPI {
         method: 'syncWallets',
         ...params: Parameters<SyncWallets>
     ): ReturnType<SyncWallets>
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public async request(
+        method: 'isWalletSyncNeeded',
+        ...params: Parameters<IsWalletSyncNeeded>
+    ): ReturnType<IsWalletSyncNeeded>
 
     /**
      *

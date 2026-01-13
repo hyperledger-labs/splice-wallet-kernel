@@ -331,6 +331,26 @@
             "description": "Synchronizes wallets with the connected network."
         },
         {
+            "name": "isWalletSyncNeeded",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "IsWalletSyncNeededResult",
+                    "type": "object",
+                    "properties": {
+                        "walletSyncNeeded": {
+                            "title": "walletSyncNeeded",
+                            "type": "boolean",
+                            "description": "Whether wallet sync is needed. Returns true if there are disabled wallets or parties on the ledger that aren't in the store."
+                        }
+                    },
+                    "required": ["walletSyncNeeded"]
+                }
+            },
+            "description": "Checks if wallet sync is needed (disabled wallets or new parties on ledger)."
+        },
+        {
             "name": "sign",
             "params": [
                 {

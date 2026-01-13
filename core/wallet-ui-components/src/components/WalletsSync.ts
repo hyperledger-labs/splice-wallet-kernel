@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { html, css } from 'lit'
-import { customElement, property } from 'lit/decorators.js'
+import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/BaseElement'
 import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 import { infoCircleFillIcon } from '../icons'
@@ -23,22 +23,59 @@ export class WgWalletsSync extends BaseElement {
 
     @property({ attribute: false }) client: UserApiClient | null = null
 
-    syncWallets = async () => {
-        try {
-            const result = await this.client?.request('syncWallets')
-            alert(
-                `Wallet sync completed:\n ➕ ${result?.added.length} new wallets. \n ➖ ${result?.removed.length} old wallets.`
-            )
-        } catch (e) {
-            handleErrorToast(e)
-        }
-    }
+    @state() accessor isSyncNeeded = false
+    @state() accessor isSyncing = false
 
     connectedCallback(): void {
         super.connectedCallback()
+        this.checkWalletSyncNeeded()
+    }
+
+    updated(changedProperties: Map<string | number | symbol, unknown>): void {
+        super.updated(changedProperties)
+        // Re-check when client changes
+        if (changedProperties.has('client')) {
+            this.checkWalletSyncNeeded()
+        }
+    }
+
+    private async checkWalletSyncNeeded() {
+        if (!this.client) return
+
+        try {
+            const result = await this.client.request('isWalletSyncNeeded')
+            this.isSyncNeeded = result?.walletSyncNeeded === true
+        } catch {
+            // Silently fail - if we can't check, we'll just not show the component
+            this.isSyncNeeded = false
+        }
+    }
+
+    syncWallets = async () => {
+        if (!this.client || this.isSyncing) return
+
+        this.isSyncing = true
+        try {
+            const result = await this.client.request('syncWallets')
+            // TODO maybe let's add something about disabled ones
+            alert(
+                `Wallet sync completed:\n ➕ ${result?.added.length} new wallets. \n ➖ ${result?.removed.length} old wallets.`
+            )
+            // Re-check if sync is needed after sync
+            await this.checkWalletSyncNeeded()
+        } catch (e) {
+            handleErrorToast(e)
+        } finally {
+            this.isSyncing = false
+        }
     }
 
     protected render() {
+        // Only show if sync is needed (disabled wallets or new parties on ledger)
+        if (!this.isSyncNeeded) {
+            return html``
+        }
+
         return html`
             <div class="mb-5">
                 <div class="header"><h1>Wallets</h1></div>
@@ -51,10 +88,10 @@ export class WgWalletsSync extends BaseElement {
                 </div>
                 <button
                     class="btn btn-primary"
-                    .disabled=${!this.client}
+                    .disabled=${!this.client || this.isSyncing}
                     @click=${this.syncWallets}
                 >
-                    Sync Wallets
+                    ${this.isSyncing ? 'Syncing...' : 'Sync Wallets'}
                 </button>
             </div>
         `
