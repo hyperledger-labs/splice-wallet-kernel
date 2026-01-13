@@ -8,7 +8,7 @@ import {
 } from '@canton-network/core-ledger-client'
 import type { Instruments } from '../services/registry-service'
 
-export interface AggregatedInstrument {
+export interface AggregatedHolding {
     instrumentId: { admin: string; id: string }
     totalAmount: string
     lockedAmount: string
@@ -24,8 +24,8 @@ export interface AggregatedInstrument {
 export function aggregateHoldings(
     holdings: Holding[],
     currentTime: Date = new Date()
-): Map<string, AggregatedInstrument> {
-    const aggregated = new Map<string, AggregatedInstrument>()
+): Map<string, AggregatedHolding> {
+    const aggregated = new Map<string, AggregatedHolding>()
 
     for (const holding of holdings) {
         const key = `${holding.instrumentId.admin}::${holding.instrumentId.id}`
@@ -62,9 +62,9 @@ export function aggregateHoldings(
 }
 
 export function enrichWithInstrumentInfo(
-    aggregated: Map<string, AggregatedInstrument>,
+    aggregated: Map<string, AggregatedHolding>,
     instruments: Instruments
-): AggregatedInstrument[] {
+): AggregatedHolding[] {
     return Array.from(aggregated.values(), (item) => {
         const instrumentInfo = instruments
             .get(item.instrumentId.admin)

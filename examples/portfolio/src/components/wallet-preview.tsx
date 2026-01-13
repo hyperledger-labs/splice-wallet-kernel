@@ -1,7 +1,7 @@
 import { Box, Avatar, Typography, Paper, Skeleton } from '@mui/material'
 import {
-    useWalletInstruments,
-    type AggregatedInstrument,
+    useAggregatedHoldings,
+    type AggregatedHolding,
 } from '../hooks/useWalletInstruments'
 
 interface WalletPreviewProps {
@@ -13,7 +13,7 @@ export const WalletPreview: React.FC<WalletPreviewProps> = ({
     partyId,
     walletName,
 }) => {
-    const { instruments, isLoading } = useWalletInstruments(partyId)
+    const { instruments, isLoading } = useAggregatedHoldings(partyId)
     const hasInstruments = instruments.length > 0
 
     const noInstruments = (
@@ -95,7 +95,7 @@ export const WalletPreview: React.FC<WalletPreviewProps> = ({
 }
 
 interface InstrumentRowProps {
-    item: AggregatedInstrument
+    item: AggregatedHolding
 }
 
 const InstrumentRow: React.FC<InstrumentRowProps> = ({ item }) => {

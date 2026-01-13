@@ -7,13 +7,13 @@ import { useInstruments } from '../contexts/RegistryServiceContext'
 import {
     aggregateHoldings,
     enrichWithInstrumentInfo,
-    type AggregatedInstrument,
+    type AggregatedHolding,
 } from '../utils/aggregate-holdings'
 import { queryKeys } from './query-keys'
 
-export type { AggregatedInstrument }
+export type { AggregatedHolding }
 
-export const useWalletInstruments = (partyId: string | undefined) => {
+export const useAggregatedHoldings = (partyId: string | undefined) => {
     const instruments = useInstruments()
 
     const holdingsQuery = useQuery({
