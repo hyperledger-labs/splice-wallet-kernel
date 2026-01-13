@@ -54,7 +54,6 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
     await popup.getByRole('button', { name: 'Connect' }).click()
 
     try {
-        await popup.locator('#network').selectOption('0')
         await popup.getByRole('button', { name: 'Connect' }).click()
 
         await expect(dappPage.getByText('Loading...')).toHaveCount(0)
