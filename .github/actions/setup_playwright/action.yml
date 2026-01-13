@@ -15,6 +15,7 @@ runs:
         - name: Get installed Playwright version
           id: playwright-version
           run: echo "::set-output name=version::$(yarn why --json @playwright/test | grep -h 'workspace:.' | jq --raw-output '.children[].locator' | sed -e 's/@playwright\/test@.*://')"
+          shell: bash
 
         # Attempt to restore the correct Playwright browser binaries based on the
         # currently installed version of Playwright (The browser binary versions
@@ -44,3 +45,4 @@ runs:
         - name: Install Playwright's dependencies
           if: steps.playwright-cache.outputs.cache-hit != 'true'
           run: yarn workspace @canton-network/example-ping run playwright install --with-deps
+          shell: bash
