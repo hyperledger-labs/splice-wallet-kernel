@@ -198,7 +198,6 @@ export class WalletSDKImpl implements WalletSDK {
             false
         )
         await this.userLedger.awaitInit()
-        // await this.userLedger.awaitWsInit()
 
         this.tokenStandard = this.tokenStandardFactory(
             userId,

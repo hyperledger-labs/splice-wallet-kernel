@@ -66,7 +66,6 @@ export type SubscribeToUpdateOptions = {
  */
 export class LedgerController {
     private readonly client: LedgerClient
-    // private readonly websocketClient: WebSocketClient
     private readonly webSocketManager: WebSocketManager
     private readonly userId: string
     private readonly isAdmin: boolean
@@ -74,7 +73,6 @@ export class LedgerController {
     private synchronizerId: PartyId | undefined
     private logger = pino({ name: 'LedgerController', level: 'info' })
     private initPromise: Promise<void>
-    // private wsInitPromise: Promise<void>
 
     /** Creates a new instance of the LedgerController.
      *
