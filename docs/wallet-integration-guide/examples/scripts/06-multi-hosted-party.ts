@@ -9,7 +9,7 @@ import {
     localNetStaticConfig,
     UpdatesResponse,
 } from '@canton-network/wallet-sdk'
-import { pino } from 'pino'
+import { LogFnFields, pino } from 'pino'
 import { v4 } from 'uuid'
 
 const logger = pino({ name: '06-external-party-setup', level: 'info' })
@@ -67,6 +67,28 @@ const multiHostedParty = await sdk.userLedger?.signAndAllocateExternalParty(
 logger.info(multiHostedParty, 'multi hosted party succeeded!')
 
 await sdk.setPartyId(multiHostedParty?.partyId!)
+
+const commandsCompletionsEvents: any[] & LogFnFields = []
+const commandsCompletionsController = new AbortController()
+const subscribeToCommandsMultiHostedParty = (async () => {
+    try {
+        const stream = sdk.userLedger?.subscribeToCompletions({
+            beginOffset: 0,
+        })
+        for await (const completion of stream!) {
+            logger.info(
+                completion,
+                'received command completion update for multi hosted party'
+            )
+            commandsCompletionsEvents.push(completion)
+            if (commandsCompletionsController.signal.aborted) break
+        }
+    } catch (err) {
+        if (!commandsCompletionsController.signal.aborted) throw err
+    }
+})()
+
+subscribeToCommandsMultiHostedParty
 
 logger.info('Create ping command')
 const createPingCommand = sdk.userLedger?.createPingCommand(
@@ -134,6 +156,16 @@ const pingCommandResponse2 = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 )
 logger.info(pingCommandResponse2, 'ping command response')
 
+logger.info(commandsCompletionsEvents, 'commands completions events')
+
+if (commandsCompletionsEvents.length === 0) {
+    logger.error(
+        'No command completion events received, something went wrong with the subscription'
+    )
+    commandsCompletionsController.abort()
+    process.exit(1)
+}
+
 logger.info(events)
 if (events.length === 0) {
     logger.error(
@@ -143,5 +175,6 @@ if (events.length === 0) {
     process.exit(1)
 }
 controller.abort()
+commandsCompletionsController.abort()
 
 process.exit(0)

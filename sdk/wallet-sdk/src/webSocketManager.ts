@@ -17,6 +17,12 @@ export type SubscribeOptions = {
     | { interfaceIds?: never; templateIds: string[] }
 )
 
+export type CompletionOptions = {
+    beginOffset?: number
+    parties: PartyId[]
+    userId: string
+}
+
 export class WebSocketSubscriptionError extends Error {
     constructor(message: string) {
         super(message)
@@ -134,6 +140,19 @@ export class WebSocketManager {
                 }
             }
         }
+    }
+
+    async *subscribeToCompletions(
+        options: CompletionOptions
+    ): AsyncIterableIterator<JsGetUpdatesResponse> {
+        this.logger.info('Subscribing to command completions...')
+
+        const request = {
+            beginExclusive: options.beginOffset ?? 0,
+            userId: options.userId,
+            parties: options.parties,
+        }
+        yield* this.wsClient.subscribeToCompletions(request)
     }
 
     /**

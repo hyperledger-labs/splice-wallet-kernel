@@ -278,6 +278,25 @@ export class LedgerController {
         yield* stream
     }
 
+    async *subscribeToCompletions(options: {
+        beginOffset?: number
+        parties?: PartyId[]
+    }) {
+        if (!this.webSocketManager) {
+            throw new Error(
+                'WebSocketManager not initialized. Please provide an accessTokenProvider in the constructor to enable WebSocket support.'
+            )
+        }
+
+        const request = {
+            beginOffset: options.beginOffset ?? 0,
+            userId: this.userId,
+            parties: options.parties ?? [this.getPartyId()],
+        }
+
+        yield* this.webSocketManager.subscribeToCompletions(request)
+    }
+
     /**
      * Prepares, signs and executes a transaction on the ledger (using interactive submission).
      * @param commands the commands to be executed.
