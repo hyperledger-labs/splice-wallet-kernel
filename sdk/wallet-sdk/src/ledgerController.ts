@@ -269,11 +269,11 @@ export class LedgerController {
 
         const stream =
             'templateIds' in options
-                ? this.webSocketManager.subscribe({
+                ? this.webSocketManager.subscribeToUpdates({
                       ...baseOptions,
                       templateIds: options.templateIds,
                   })
-                : this.webSocketManager.subscribe({
+                : this.webSocketManager.subscribeToUpdates({
                       ...baseOptions,
                       interfaceIds: options.interfaceIds,
                   })

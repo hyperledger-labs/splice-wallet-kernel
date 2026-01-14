@@ -8,7 +8,7 @@ import {
 import { PartyId } from '@canton-network/core-types'
 import { Logger } from 'pino'
 
-export type SubscribeOptions = {
+export type UpdatesOptions = {
     beginOffset?: number
     verbose?: boolean
     partyId: PartyId
@@ -59,7 +59,7 @@ export class WebSocketManager {
         this.logger = logger.child({ component: 'WebSocketManager' })
     }
 
-    private validateOptions(options: SubscribeOptions): void {
+    private validateUpdatesOptions(options: UpdatesOptions): void {
         if ('templateIds' in options) {
             const templateIds = Array.isArray(options.templateIds)
                 ? options.templateIds
@@ -118,7 +118,7 @@ export class WebSocketManager {
         }
     }
 
-    private normalizeOptions(options: SubscribeOptions) {
+    private normalizeUpdatesOptions(options: UpdatesOptions) {
         {
             if ('templateIds' in options && options.templateIds) {
                 return {
@@ -162,12 +162,12 @@ export class WebSocketManager {
      * @throws InvalidSubscriptionOptionsError if the options is invalid
      * @throws WebSocketConnectionError if connection fails
      */
-    async *subscribe(
-        options: SubscribeOptions
+    async *subscribeToUpdates(
+        options: UpdatesOptions
     ): AsyncIterableIterator<JsGetUpdatesResponse> {
         try {
-            this.validateOptions(options)
-            const normalizedOptions = this.normalizeOptions(options)
+            this.validateUpdatesOptions(options)
+            const normalizedOptions = this.normalizeUpdatesOptions(options)
             this.logger.info(
                 { options: normalizedOptions },
                 'Starting WebSocket subscription with options'
