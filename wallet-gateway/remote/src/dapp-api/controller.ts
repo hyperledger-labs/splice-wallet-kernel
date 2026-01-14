@@ -5,10 +5,12 @@ import { assertConnected, AuthContext } from '@canton-network/core-wallet-auth'
 import buildController from './rpc-gen/index.js'
 import {
     LedgerApiParams,
+    Network,
     PrepareExecuteParams,
-    PrepareReturnParams,
+    SignMessageResult,
     StatusEvent,
     StatusEventAsync,
+    Wallet,
 } from './rpc-gen/typings.js'
 import { Store, Transaction } from '@canton-network/core-wallet-store'
 import {
@@ -180,33 +182,6 @@ export const dappController = (
                 userUrl: `${userUrl}/approve/index.html?commandId=${commandId}`,
             }
         },
-        prepareReturn: async (params: PrepareReturnParams) => {
-            const wallet = await store.getPrimaryWallet()
-            const network = await store.getCurrentNetwork()
-
-            if (context === undefined) {
-                throw new Error('Unauthenticated context')
-            }
-
-            if (wallet === undefined) {
-                throw new Error('No primary wallet found')
-            }
-
-            const ledgerClient = new LedgerClient({
-                baseUrl: new URL(network.ledgerApi.baseUrl),
-                logger,
-                isAdmin: false,
-                accessToken: context.accessToken,
-            })
-
-            return prepareSubmission(
-                context.userId,
-                wallet.partyId,
-                network.synchronizerId,
-                params,
-                ledgerClient
-            )
-        },
         status: async () => {
             if (!context || !(await store.getSession())) {
                 return {
@@ -245,21 +220,34 @@ export const dappController = (
                 userUrl: `${userUrl}/login/`,
             } as StatusEventAsync
         },
-        onConnected: async () => {
+        connected: async () => {
             throw new Error('Only for events.')
         },
         onStatusChanged: async () => {
             throw new Error('Only for events.')
         },
-        onAccountsChanged: async () => {
+        accountsChanged: async () => {
             throw new Error('Only for events.')
         },
-        requestAccounts: async () => {
+        listAccounts: async () => {
             const wallets = await store.getWallets()
             return wallets
         },
-        onTxChanged: async () => {
+        txChanged: async () => {
             throw new Error('Only for events.')
+        },
+        getActiveNetwork: function (): Promise<Network> {
+            throw new Error('Function not implemented.')
+        },
+        signMessage: function (): Promise<SignMessageResult> {
+            throw new Error('Function not implemented.')
+        },
+        getPrimaryAccount: async function (): Promise<Wallet> {
+            const wallet = await store.getPrimaryWallet()
+            if (!wallet) {
+                throw new Error('No primary wallet found')
+            }
+            return wallet
         },
     })
 }
@@ -268,7 +256,7 @@ async function prepareSubmission(
     userId: string,
     partyId: string,
     synchronizerId: string,
-    params: PrepareExecuteParams | PrepareReturnParams,
+    params: PrepareExecuteParams,
     ledgerClient: LedgerClient
 ): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
     return await ledgerClient.postWithRetry(

@@ -86,11 +86,11 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
         if (!provider || !connectionStatus.connected) return
         provider
             .request({
-                method: 'requestAccounts',
+                method: 'listAccounts',
             })
             .then((wallets) => {
                 const requestedAccounts =
-                    wallets as sdk.dappAPI.RequestAccountsResult
+                    wallets as sdk.dappAPI.ListAccountsResult
                 setConnectionStatus((c) => ({
                     ...c,
                     accounts: requestedAccounts,

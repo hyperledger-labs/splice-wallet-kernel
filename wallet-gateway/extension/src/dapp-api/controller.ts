@@ -9,8 +9,11 @@ import buildController from './rpc-gen'
 import {
     KernelInfo,
     LedgerApiParams,
+    Network,
     PrepareExecuteParams,
-    PrepareReturnParams,
+    SignMessageParams,
+    SignMessageResult,
+    Wallet,
 } from './rpc-gen/typings.js'
 
 import { Store } from '@canton-network/core-wallet-store'
@@ -42,25 +45,33 @@ export const dappController = (store?: Store) =>
                 },
             }),
         disconnect: async () => Promise.resolve(null),
-        darsAvailable: async () => Promise.resolve({ dars: ['default-dar'] }),
         ledgerApi: async (params: LedgerApiParams) =>
             Promise.resolve({ response: 'default-response' }),
         prepareExecute: async (params: PrepareExecuteParams) => {
             throw new Error('Function not implemented.')
         },
-        prepareReturn: async (params: PrepareReturnParams) =>
-            Promise.resolve({}),
         status: async () => {
             throw new Error('Function not implemented.')
         },
-        requestAccounts: async () => {
+        listAccounts: async () => {
             const wallets = await store!.getWallets()
             return wallets
         },
-        onAccountsChanged: async () => {
+        accountsChanged: async () => {
             throw new Error('Only for events.')
         },
-        onTxChanged: async () => {
+        txChanged: async () => {
             throw new Error('Only for events.')
+        },
+        getActiveNetwork: function (): Promise<Network> {
+            throw new Error('Function not implemented.')
+        },
+        signMessage: function (
+            params: SignMessageParams
+        ): Promise<SignMessageResult> {
+            throw new Error('Function not implemented.')
+        },
+        getPrimaryAccount: async function (): Promise<Wallet> {
+            throw new Error('Function not implemented.')
         },
     })

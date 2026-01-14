@@ -12,9 +12,9 @@ export function useAccounts(status?: sdk.dappAPI.StatusEvent) {
 
     useEffect(() => {
         if (status?.isConnected) {
-            sdk.requestAccounts()
-                .then((wallets) => {
-                    setAccounts(wallets)
+            sdk.listAccounts()
+                .then((accounts) => {
+                    setAccounts(accounts)
                 })
                 .catch((err) => {
                     console.error('Error requesting wallets:', err)
