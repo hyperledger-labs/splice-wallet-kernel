@@ -59,16 +59,14 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                     const tx = await this.client.signTransaction({
                         tx: params.tx,
                         txHash: params.txHash,
-                        keyIdentifier: {
-                            publicKey: params.keyIdentifier.publicKey,
-                        },
-                        internalTxId: params.internalTxId,
+                        keyIdentifier: params.keyIdentifier,
+                        internalTxId: params.internalTxId!,
                     })
                     return {
                         txId: tx.txId,
                         status: tx.status,
-                        signature: tx.signature,
-                        publicKey: tx.publicKey,
+                        signature: tx.signature!,
+                        publicKey: tx.publicKey!,
                     }
                 } catch (error) {
                     return {
@@ -88,8 +86,8 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                     return {
                         txId: tx.txId,
                         status: tx.status,
-                        signature: tx.signature,
-                        publicKey: tx.publicKey,
+                        signature: tx.signature!,
+                        publicKey: tx.publicKey!,
                     }
                 } catch (error) {
                     return {
@@ -105,15 +103,15 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                 if (params.publicKeys || params.txIds) {
                     try {
                         const transactions = await this.client.getTransactions({
-                            txIds: params.txIds,
-                            publicKeys: params.publicKeys,
+                            txIds: params.txIds!,
+                            publicKeys: params.publicKeys!,
                         })
                         return {
                             transactions: transactions.map((tx) => ({
                                 txId: tx.txId,
                                 status: tx.status,
-                                signature: tx.signature,
-                                publicKey: tx.publicKey,
+                                signature: tx.signature!,
+                                publicKey: tx.publicKey!,
                             })),
                         }
                     } catch (error) {
@@ -182,10 +180,10 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                 params: SetConfigurationParams
             ): Promise<SetConfigurationResult> => {
                 this.client.setConfiguration({
-                    BaseURL: params['BaseURL'] as string | undefined,
-                    ApiKey: params['ApiKey'] as string | undefined,
-                    MasterKey: params['MasterKey'] as string | undefined,
-                    TestNetwork: params['TestNetwork'] as boolean | undefined,
+                    BaseURL: params['BaseURL'] as string,
+                    ApiKey: params['ApiKey'] as string,
+                    MasterKey: params['MasterKey'] as string,
+                    TestNetwork: params['TestNetwork'] as boolean,
                 })
                 return params
             },

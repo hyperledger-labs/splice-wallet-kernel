@@ -8,6 +8,11 @@ import type {
     GetTransactionParams,
     GetTransactionsParams,
     CreateKeyParams,
+    Tx,
+    TxHash,
+    KeyIdentifier,
+    InternalTxId,
+    PublicKey,
 } from '@canton-network/core-signing-lib'
 
 /**
@@ -46,14 +51,22 @@ export class SigningAPIClient {
             headers['Authorization'] = `Bearer ${this.apiKey}`
         }
 
+        console.log(
+            'blockdeamon request to:',
+            url,
+            'with body:',
+            JSON.stringify(bodyToSend)
+        )
         const response = await fetch(url, {
             method: 'POST',
             headers,
             body: JSON.stringify(bodyToSend),
         })
 
+        console.log('blockdeamon response status:', response.status)
         if (!response.ok) {
             const errorText = await response.text()
+            console.log('blockdeamon response error text:', errorText)
             throw new Error(
                 `API call to ${endpoint} failed (${response.status}): ${errorText}`
             )
@@ -78,9 +91,13 @@ export class SigningAPIClient {
     public async signTransaction(
         params: SignTransactionParams
     ): Promise<Transaction> {
-        return this.post<SignTransactionParams, Transaction>(
+        console.log('blockdeamon signTransaction called with params')
+        return this.post<BlockDaemonSignTransactionParams, Transaction>(
             '/signTransaction',
-            params
+            {
+                publicKey: params.keyIdentifier.publicKey!,
+                ...params,
+            }
         )
     }
 
@@ -167,4 +184,15 @@ export class SigningAPIClient {
         }
         return this.getConfiguration()
     }
+}
+
+//todo: remove once blockdaemon supports keyIdentifier instead of publicKey
+interface BlockDaemonSignTransactionParams {
+    tx: Tx
+    txHash: TxHash
+    publicKey: PublicKey
+    keyIdentifier: KeyIdentifier
+    internalTxId?: InternalTxId
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    [k: string]: any
 }

@@ -167,13 +167,17 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         })
     }
 
-    async updateWallet({ status, partyId }: UpdateWallet): Promise<void> {
+    async updateWallet({
+        status,
+        partyId,
+        externalTxId,
+    }: UpdateWallet): Promise<void> {
         this.logger.info('Updating wallet')
 
         await this.db.transaction().execute(async (trx) => {
             await trx
                 .updateTable('wallets')
-                .set({ status })
+                .set({ status, externalTxId })
                 .where('partyId', '=', partyId)
                 .execute()
         })
