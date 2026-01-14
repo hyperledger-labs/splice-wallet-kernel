@@ -247,7 +247,7 @@ export class WalletSyncService {
         } catch (err) {
             this.logger.error({ err }, 'Error checking if sync is needed')
             // On error, return false to avoid showing sync button unnecessarily
-            return false
+            throw err
         }
     }
     async syncWallets(): Promise<WalletSyncReport> {
