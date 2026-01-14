@@ -91,7 +91,9 @@ export class WgWalletsSync extends BaseElement {
                               .disabled=${!this.client || this.isSyncing}
                               @click=${this.syncWallets}
                           >
-                              ${this.isSyncing ? 'Syncing...' : 'Sync Wallets'}
+                              ${this.isSyncing
+                                  ? 'Syncing Wallets...'
+                                  : 'Sync Wallets'}
                           </button>
                       `
                     : html`
