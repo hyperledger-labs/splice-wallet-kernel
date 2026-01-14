@@ -281,6 +281,10 @@ export class LedgerController {
         yield* stream
     }
 
+    /**
+     * Subscribes to command completions for the party and user defined in the ledger controller, with an optional begin offset.
+     * @param options options for the subscription, including an optional begin offset and an optional list of parties to filter for (defaults to the party defined in the ledger controller)
+     */
     async *subscribeToCompletions(options: {
         beginOffset?: number
         parties?: PartyId[]
