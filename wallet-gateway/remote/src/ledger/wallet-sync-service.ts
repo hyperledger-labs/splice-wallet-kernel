@@ -258,11 +258,6 @@ export class WalletSyncService {
 
             // Get existing parties from participant
             const partiesWithRights = await this.getPartiesRightsMap()
-            // TODO those are just parties, doesn't determine at this point if there are any to sync
-            this.logger.info(
-                [...partiesWithRights],
-                'Found new parties to sync with Wallet Gateway'
-            )
 
             // Add new Wallets given the found parties
             const existingWallets = await this.store.getWallets()
@@ -281,6 +276,11 @@ export class WalletSyncService {
             const newParties = Array.from(partiesWithRights.keys()).filter(
                 (party) => !existingPartyIdToSigningProvider.has(party)
                 // todo: filter on idp id
+            )
+
+            this.logger.info(
+                { newParties },
+                'Found new parties to sync with Wallet Gateway'
             )
 
             const newParticipantWallets: Wallet[] = await Promise.all(
