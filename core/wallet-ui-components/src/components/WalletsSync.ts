@@ -57,10 +57,18 @@ export class WgWalletsSync extends BaseElement {
         this.isSyncing = true
         try {
             const result = await this.client.request('syncWallets')
-            // TODO maybe let's add something about disabled ones
-            alert(
-                `Wallet sync completed:\n ➕ ${result?.added.length} new wallets. \n ➖ ${result?.removed.length} old wallets.`
-            )
+            const added = result?.added || []
+            const removed = result?.removed || []
+            const disabledAdded = added.filter((w) => w.disabled === true)
+
+            let message = `Wallet sync completed:\n`
+            message += ` ➕ ${added.length} new wallet${added.length !== 1 ? 's' : ''}.\n`
+            if (disabledAdded.length > 0) {
+                message += `⚠️ Of which ${disabledAdded.length} ${disabledAdded.length === 1 ? 'is' : 'are'} disabled.\n`
+            }
+            message += ` ➖ ${removed.length} old wallet${removed.length !== 1 ? 's' : ''}.`
+
+            alert(message)
             // Re-check if sync is needed after sync
             await this.checkWalletSyncNeeded()
         } catch (e) {
@@ -71,28 +79,40 @@ export class WgWalletsSync extends BaseElement {
     }
 
     protected render() {
-        // Only show if sync is needed (disabled wallets or new parties on ledger)
-        if (!this.isSyncNeeded) {
-            return html``
-        }
-
         return html`
             <div class="mb-5">
                 <div class="header"><h1>Wallets</h1></div>
-                <div
-                    class="alert alert-primary d-flex align-items-center py-2"
-                    role="alert"
-                >
-                    <span class="icon me-2">${infoCircleFillIcon}</span>
-                    Keep your wallets in sync with the connected network.
-                </div>
-                <button
-                    class="btn btn-primary"
-                    .disabled=${!this.client || this.isSyncing}
-                    @click=${this.syncWallets}
-                >
-                    ${this.isSyncing ? 'Syncing...' : 'Sync Wallets'}
-                </button>
+                ${this.isSyncNeeded
+                    ? html`
+                          <div
+                              class="alert alert-primary d-flex align-items-center py-2"
+                              role="alert"
+                          >
+                              <span class="icon me-2"
+                                  >${infoCircleFillIcon}</span
+                              >
+                              Keep your wallets in sync with the connected
+                              network.
+                          </div>
+                          <button
+                              class="btn btn-primary"
+                              .disabled=${!this.client || this.isSyncing}
+                              @click=${this.syncWallets}
+                          >
+                              ${this.isSyncing ? 'Syncing...' : 'Sync Wallets'}
+                          </button>
+                      `
+                    : html`
+                          <div
+                              class="alert alert-success d-flex align-items-center py-2"
+                              role="alert"
+                          >
+                              <span class="icon me-2"
+                                  >${infoCircleFillIcon}</span
+                              >
+                              Wallets are in sync with the connected network.
+                          </div>
+                      `}
             </div>
         `
     }
