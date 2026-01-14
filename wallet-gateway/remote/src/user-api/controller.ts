@@ -613,6 +613,8 @@ export const userController = (
             const wallet = await store.getPrimaryWallet()
             const network = await store.getCurrentNetwork()
             const transaction = await store.getTransaction(commandId)
+            console.log('loaded transaction for commandId', commandId)
+            console.log('resulting transaction loaded', transaction)
 
             if (wallet === undefined) {
                 throw new Error('No primary wallet found')
@@ -655,6 +657,7 @@ export const userController = (
                             synchronizerId,
                             transaction.payload as PrepareParams
                         )
+                        console.log('ledgerPrepareParams result', prep)
                         const res = await ledgerClient.postWithRetry(
                             '/v2/commands/submit-and-wait',
                             prep
@@ -675,6 +678,7 @@ export const userController = (
                                 signedAt: transaction.signedAt,
                             }),
                         }
+                        console.log('stored signedTx', signedTx)
                         store.setTransaction(signedTx)
                         notifier.emit('txChanged', signedTx)
 
