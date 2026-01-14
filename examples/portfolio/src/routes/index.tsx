@@ -6,6 +6,7 @@ import { ActionRequired } from '../components/action-required'
 import { usePrimaryAccount } from '../hooks/useAccounts'
 import { usePendingTransfersQueryOptions } from '../hooks/query-options'
 import { useSuspenseQuery } from '@tanstack/react-query'
+import { WalletsPreview } from '../components/wallets-preview'
 
 export const Route = createFileRoute('/')({
     component: Index,
@@ -53,7 +54,7 @@ function Index() {
                 Dashboard
             </Typography>
             <ActionRequired items={actionItems} />
-            {/* <WalletsPreview /> */}
+            <WalletsPreview />
         </Box>
     )
 }
