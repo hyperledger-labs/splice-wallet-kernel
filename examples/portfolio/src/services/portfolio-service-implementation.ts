@@ -161,10 +161,19 @@ export const listPendingTransfers = async ({
     party: PartyId
 }): Promise<PrettyContract<TransferInstructionView>[]> => {
     const tokenStandardService = await resolveTokenStandardService()
-    return await tokenStandardService.listContractsByInterface<TransferInstructionView>(
-        TRANSFER_INSTRUCTION_INTERFACE_ID,
-        party
-    )
+    try {
+        const txs =  await tokenStandardService.listContractsByInterface<TransferInstructionView>(
+            TRANSFER_INSTRUCTION_INTERFACE_ID,
+            party
+        )
+        console.log("Successfully listed transfers")
+        return txs
+    } catch(err) {
+        console.log("Error while listing tranfers", err)
+        console.log("full err dump", JSON.stringify(err))
+        throw err
+    }
+
 }
 
 export const listAllocationRequests = async ({
