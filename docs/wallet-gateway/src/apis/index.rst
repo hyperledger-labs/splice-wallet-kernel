@@ -3,7 +3,7 @@
 APIs
 ====
 
-The Wallet Gateway exposes two JSON-RPC 2.0 APIs: one for dApps and one for user interactions. Both APIs use the same base URL but different paths.
+The Wallet Gateway exposes two JSON-RPC 2.0 APIs: one for dApps interactions and one for user interactions. Both APIs use the same base URL but different paths.
 
 API Endpoints
 -------------

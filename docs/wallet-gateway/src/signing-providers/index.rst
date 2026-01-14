@@ -25,7 +25,9 @@ This provider is automatically available when a ``signingStore`` is configured i
 
 **Security Considerations:**
 
-⚠️ **Warning**: Private keys are stored in the database. If the database is compromised, all keys are at risk. Use only in non-production environments.
+.. important::
+
+   Private keys are stored in the database. If the database is compromised, all keys are at risk. Use only in non-production environments.
 
 Participant-Based Signing
 -------------------------

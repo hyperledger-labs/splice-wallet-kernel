@@ -8,17 +8,33 @@ This guide will help you get the Wallet Gateway up and running quickly.
 Installation
 ------------
 
-Install the Wallet Gateway globally using npm:
+Choose your preferred installation method:
 
-.. code-block:: bash
+.. tabs::
 
-    npm install -g @canton-network/wallet-gateway-remote
+   .. tab:: Global Installation (npm)
 
-Alternatively, you can run it directly through npx (tested with Node.js v24):
+      Install the Wallet Gateway globally using npm:
 
-.. code-block:: bash
+      .. code-block:: bash
 
-    npx @canton-network/wallet-gateway-remote -c ./config.json
+          npm install -g @canton-network/wallet-gateway-remote
+
+      After installation, you can run it from anywhere:
+
+      .. code-block:: bash
+
+          wallet-gateway -c ./config.json
+
+   .. tab:: Run with npx (No Installation)
+
+      Run the Wallet Gateway directly through npx without installing (tested with Node.js v24):
+
+      .. code-block:: bash
+
+          npx @canton-network/wallet-gateway-remote -c ./config.json
+
+      This downloads and runs the latest version each time, useful for testing or one-off runs.
 
 Quick Start
 -----------
@@ -27,15 +43,19 @@ Quick Start
 
    First, generate an example configuration file:
 
-   .. code-block:: bash
+   .. tabs::
 
-       wallet-gateway --config-example > config.json
+      .. tab:: Global Installation
 
-   Or, if using npx:
+         .. code-block:: bash
 
-   .. code-block:: bash
+             wallet-gateway --config-example > config.json
 
-       npx @canton-network/wallet-gateway-remote --config-example > config.json
+      .. tab:: npx
+
+         .. code-block:: bash
+
+             npx @canton-network/wallet-gateway-remote --config-example > config.json
 
 2. **Edit the Configuration**
 
@@ -49,15 +69,31 @@ Quick Start
 
 3. **Start the Gateway**
 
-   .. code-block:: bash
+   .. tabs::
 
-       wallet-gateway -c ./config.json
+      .. tab:: Global Installation
 
-   Or with a custom port:
+         .. code-block:: bash
 
-   .. code-block:: bash
+             wallet-gateway -c ./config.json
 
-       wallet-gateway -c ./config.json -p 8080
+         Or with a custom port:
+
+         .. code-block:: bash
+
+             wallet-gateway -c ./config.json -p 8080
+
+      .. tab:: npx
+
+         .. code-block:: bash
+
+             npx @canton-network/wallet-gateway-remote -c ./config.json
+
+         Or with a custom port:
+
+         .. code-block:: bash
+
+             npx @canton-network/wallet-gateway-remote -c ./config.json -p 8080
 
 4. **Verify it's Running**
 
@@ -84,22 +120,46 @@ The Wallet Gateway supports the following command-line options:
 
 Example:
 
-.. code-block:: bash
+.. tabs::
 
-    # Generate config schema
-    wallet-gateway --config-schema
+   .. tab:: Global Installation
 
-    # Run with JSON logging
-    wallet-gateway -c ./config.json -f json
+      .. code-block:: bash
+
+          # Generate config schema
+          wallet-gateway --config-schema
+
+          # Run with JSON logging
+          wallet-gateway -c ./config.json -f json
+
+   .. tab:: npx
+
+      .. code-block:: bash
+
+          # Generate config schema
+          npx @canton-network/wallet-gateway-remote --config-schema
+
+          # Run with JSON logging
+          npx @canton-network/wallet-gateway-remote -c ./config.json -f json
 
 Configuration Schema
 --------------------
 
 To see the full JSON Schema for the configuration file, run:
 
-.. code-block:: bash
+.. tabs::
 
-    wallet-gateway --config-schema
+   .. tab:: Global Installation
+
+      .. code-block:: bash
+
+          wallet-gateway --config-schema
+
+   .. tab:: npx
+
+      .. code-block:: bash
+
+          npx @canton-network/wallet-gateway-remote --config-schema
 
 This outputs a complete JSON Schema that can be used for validation and IDE autocomplete support.
 

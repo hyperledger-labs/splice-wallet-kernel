@@ -75,7 +75,9 @@ Configuring Server Settings
 
 The **server** section configures network binding, ports, and API paths.
 
-⚠️ **Important**: If you're running the Gateway outside of your local machine (e.g., in Docker, Kubernetes, or on a remote server), you should set ``host`` to ``"0.0.0.0"`` to allow external connections. By default, using ``"localhost"`` will only allow connections from the same machine.
+.. important::
+
+   If you're running the Gateway outside of your local machine (e.g., in Docker, Kubernetes, or on a remote server), you should set ``host`` to ``"0.0.0.0"`` to allow external connections. By default, using ``"localhost"`` will only allow connections from the same machine.
 
 **server:**
     - *host* (deprecated): Previously used for binding address. Current behavior binds to all interfaces when not in localhost-only mode.
@@ -122,9 +124,11 @@ Three storage backends are available: **memory**, **sqlite**, and **postgres**.
 
 - **Production/Test Environments**: Use **postgres** for reliability, scalability, and backup capabilities
 - **Local Development**: Use **sqlite** for simplicity and persistence across restarts
-- **Quick Testing**: Use **memory** for temporary setups (⚠️ all data is lost on restart)
+- **Quick Testing**: Use **memory** for temporary setups (all data is lost on restart)
 
-⚠️ **Important**: If using Docker or Kubernetes with the memory store, all data will be lost when the container/pod is recreated. SQLite will persist only if the database file is stored on a persistent volume.
+.. important::
+
+   If using Docker or Kubernetes with the memory store, all data will be lost when the container/pod is recreated. SQLite will persist only if the database file is stored on a persistent volume.
 
 **PostgreSQL Configuration:**
 
@@ -242,7 +246,9 @@ Identity Providers (IDPs) are used for generating JWT tokens that authenticate a
 
 The Wallet Gateway supports two types of identity providers: **self_signed** and **oauth**.
 
-⚠️ **Security Recommendation**: For production environments, it is **highly recommended** to use an **oauth** IDP provider. Self-signed tokens should only be used for development and testing.
+.. important::
+
+   For production environments, it is **highly recommended** to use an **oauth** IDP provider. Self-signed tokens should only be used for development and testing.
 
 **Self-Signed IDP:**
 
@@ -438,7 +444,9 @@ Configuring Signing Store
 
 The signing store is an optional secondary database used for storing private keys when the Wallet Gateway is configured to act as a signing provider (using the ``wallet-kernel`` signing provider).
 
-⚠️ **Security Warning**: If you use the Wallet Gateway as a signing provider, private keys will be stored in the signing store database. This is **not recommended** for production environments with valuable assets. Use external signing providers (Fireblocks, Blockdaemon, or Participant-based) for production.
+.. important::
+
+   If you use the Wallet Gateway as a signing provider, private keys will be stored in the signing store database. This is **not recommended** for production environments with valuable assets. Use external signing providers (Fireblocks, Blockdaemon, or Participant-based) for production.
 
 **Configuration:**
 
