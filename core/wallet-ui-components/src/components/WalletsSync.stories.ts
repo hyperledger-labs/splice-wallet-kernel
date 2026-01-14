@@ -10,13 +10,13 @@ const meta: Meta = {
 
 export default meta
 
-export const SyncNeeded: StoryObj = {
+export const Default: StoryObj = {
     render: () =>
         html`<wg-wallets-sync
             .client=${{
                 request: async (method: string) => {
                     if (method === 'isWalletSyncNeeded') {
-                        return { walletSyncNeeded: true }
+                        return { walletSyncNeeded: false }
                     }
                     if (method === 'syncWallets') {
                         return {
@@ -29,13 +29,13 @@ export const SyncNeeded: StoryObj = {
         ></wg-wallets-sync>`,
 }
 
-export const SyncNotNeeded: StoryObj = {
+export const SyncNeeded: StoryObj = {
     render: () =>
         html`<wg-wallets-sync
             .client=${{
                 request: async (method: string) => {
                     if (method === 'isWalletSyncNeeded') {
-                        return { walletSyncNeeded: false }
+                        return { walletSyncNeeded: true }
                     }
                     if (method === 'syncWallets') {
                         return {
