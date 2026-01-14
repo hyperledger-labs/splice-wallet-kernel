@@ -72,7 +72,6 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
             .getByRole('textbox', { name: 'Party ID hint:' })
             .fill(party1)
         await popup.getByLabel('Signing Provider:').selectOption('participant')
-        await popup.getByLabel('Network:').selectOption('canton:local-oauth')
 
         await popup.getByRole('button', { name: 'Create' }).click()
 

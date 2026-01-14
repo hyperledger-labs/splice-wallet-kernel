@@ -6,4 +6,5 @@ export const queryKeys = {
         'listPendingTransfers',
         party,
     ],
+    listHoldings: (party: string | undefined) => ['holdings', party],
 }

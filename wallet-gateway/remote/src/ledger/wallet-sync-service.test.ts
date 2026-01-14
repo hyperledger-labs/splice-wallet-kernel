@@ -138,6 +138,7 @@ describe('WalletSyncService - resolveSigningProvider', () => {
 
         expect(result).not.toBeNull()
         expect(result).toEqual({
+            matched: true,
             signingProviderId: SigningProvider.PARTICIPANT,
         })
         if (result) {
@@ -227,7 +228,7 @@ describe('WalletSyncService - resolveSigningProvider', () => {
         }
     })
 
-    it('returns null when no signing provider match is found', async () => {
+    it('returns unmatched na defaults ot participant when no signing provider match is found', async () => {
         const unknownNamespace = 'unknown-namespace-123'
         mockLedgerGet.mockResolvedValueOnce({
             participantId: 'participant1::different-participant-namespace',
@@ -235,6 +236,9 @@ describe('WalletSyncService - resolveSigningProvider', () => {
 
         const result = await service.resolveSigningProvider(unknownNamespace)
 
-        expect(result).toBeNull()
+        expect(result).toEqual({
+            matched: false,
+            signingProviderId: SigningProvider.PARTICIPANT,
+        })
     })
 })
