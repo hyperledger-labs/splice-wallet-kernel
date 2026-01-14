@@ -31,14 +31,6 @@ export class WgWalletsSync extends BaseElement {
         this.checkWalletSyncNeeded()
     }
 
-    updated(changedProperties: Map<string | number | symbol, unknown>): void {
-        super.updated(changedProperties)
-        // Re-check when client changes
-        if (changedProperties.has('client')) {
-            this.checkWalletSyncNeeded()
-        }
-    }
-
     private async checkWalletSyncNeeded() {
         if (!this.client) return
 
@@ -46,8 +38,8 @@ export class WgWalletsSync extends BaseElement {
             const result = await this.client.request('isWalletSyncNeeded')
             this.isSyncNeeded = result?.walletSyncNeeded === true
         } catch {
-            // Silently fail - if we can't check, we'll just not show the component
-            this.isSyncNeeded = false
+            // Check failed, assume we need sync and render button to allow state recovery
+            this.isSyncNeeded = true
         }
     }
 
