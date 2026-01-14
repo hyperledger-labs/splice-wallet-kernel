@@ -20,6 +20,12 @@ type UpdateSubscriptionOptions = {
     | { interfaceIds?: never; templateIds: string[] }
 )
 
+type CommandsCompletionsOptions = {
+    beginExclusive: number
+    userId: string
+    parties: PartyId[]
+}
+
 export class WebSocketClient {
     private ws: WebSocket | null = null
     private baseUrl: string
@@ -61,42 +67,21 @@ export class WebSocketClient {
         )
     }
 
-    subscribeToUpdatesStreaming(
-        options: UpdateSubscriptionOptions
+    generate(
+        wsUrl: string,
+        request: object
     ): AsyncIterableIterator<JsGetUpdatesResponse> {
         const messageQueue: JsGetUpdatesResponse[] = []
         let resolveNext: (() => void) | null = null
         let isClosed = false
         let streamError: Error | null = null
 
-        const {
-            beginExclusive,
-            endInclusive,
-            partyId,
-            verbose,
-            interfaceIds,
-            templateIds,
-        } = options
-
         const generator = async function* (this: WebSocketClient) {
             await this.init()
 
-            const wsUpdatesUrl = `${this.baseUrl}${CHANNELS.v2_updates}`
+            this.logger.debug(request)
 
-            const filter = templateIds
-                ? TransactionFilterBySetup({ templateIds, partyId })
-                : TransactionFilterBySetup({ interfaceIds, partyId })
-
-            const request = {
-                beginExclusive,
-                endInclusive,
-                verbose,
-                filter,
-            }
-
-            this.logger.debug(request, `v2/updates request`)
-
-            const ws = new WebSocket(wsUpdatesUrl, this.protocol)
+            const ws = new WebSocket(wsUrl, this.protocol)
 
             ws.onopen = () => {
                 ws.send(JSON.stringify(request))
@@ -142,5 +127,44 @@ export class WebSocketClient {
         }
 
         return generator.call(this)
+    }
+
+    subscribeToUpdatesStreaming(
+        options: UpdateSubscriptionOptions
+    ): AsyncIterableIterator<JsGetUpdatesResponse> {
+        const wsUpdatesUrl = `${this.baseUrl}${CHANNELS.v2_updates}`
+
+        const filter = options.templateIds
+            ? TransactionFilterBySetup({
+                  templateIds: options.templateIds,
+                  partyId: options.partyId,
+              })
+            : TransactionFilterBySetup({
+                  interfaceIds: options.interfaceIds!,
+                  partyId: options.partyId,
+              })
+
+        const request = {
+            beginExclusive: options.beginExclusive,
+            endInclusive: options.endInclusive,
+            verbose: options.verbose ?? true,
+            filter,
+        }
+
+        return this.generate(wsUpdatesUrl, request)
+    }
+
+    subscribeToCompletions(
+        options: CommandsCompletionsOptions
+    ): AsyncIterableIterator<JsGetUpdatesResponse> {
+        const wsCompletionsUrl = `${this.baseUrl}${CHANNELS.v2_commands_completions}`
+
+        const request = {
+            beginExclusive: options.beginExclusive,
+            userId: options.userId,
+            parties: options.parties,
+        }
+
+        return this.generate(wsCompletionsUrl, request)
     }
 }
