@@ -127,6 +127,7 @@ test('portfolio: tap', async ({ page: dappPage }) => {
     await dappPage.getByRole('button', { name: 'TAP' }).click()
 
     await popup.getByRole('button', { name: 'Approve' }).click()
+    await expect(popup.getByText("Transaction executed successfully")).toBeVisible()
     await expect(
         dappPage.locator('li').filter({ hasText: '1234' })
     ).not.toHaveCount(0) // Use not.toHaveCount to help successive tests.
@@ -149,6 +150,7 @@ test('portfolio: tap', async ({ page: dappPage }) => {
 
     await dappPage.getByRole('button', { name: 'Transfer' }).click()
     await popup.getByRole('button', { name: 'Approve' }).click()
+    await expect(popup.getByText("Transaction executed successfully")).toBeVisible()
     await openTab(dappPage, 'Pending Transfers')
     await expect(dappPage.getByText(message)).not.toHaveCount(0)
     await expect(
@@ -158,6 +160,7 @@ test('portfolio: tap', async ({ page: dappPage }) => {
     await setPrimaryWallet(popup, bob)
     await dappPage.getByRole('button', { name: 'Accept' }).first().click()
     await popup.getByRole('button', { name: 'Approve' }).click()
+    await expect(popup.getByText("Transaction executed successfully")).toBeVisible()
     await openTab(dappPage, 'Transaction History')
     await expect(dappPage.getByText('Completed')).not.toHaveCount(0)
     await expect(dappPage.getByText(message)).not.toHaveCount(0)
