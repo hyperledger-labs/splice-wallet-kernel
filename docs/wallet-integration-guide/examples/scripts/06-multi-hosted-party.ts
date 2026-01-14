@@ -10,7 +10,7 @@ import {
     UpdatesResponse,
     CommandsCompletionsStreamResponse,
 } from '@canton-network/wallet-sdk'
-import { LogFnFields, pino } from 'pino'
+import { pino } from 'pino'
 import { v4 } from 'uuid'
 
 const logger = pino({ name: '06-external-party-setup', level: 'info' })
