@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useCallback, useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import * as sdk from '@canton-network/dapp-sdk'
 import { ConnectionContext } from './ConnectionContext'
 
 export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
     children,
 }) => {
+    const queryClient = useQueryClient()
     const [connectionStatus, setConnectionStatus] = useState<
         sdk.dappAPI.StatusEvent | undefined
     >()
@@ -74,8 +76,16 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
                 setError(msg)
             })
 
-        const messageListener = (event: sdk.dappAPI.TxChangedEvent) => {
+        const messageListener = async (event: sdk.dappAPI.TxChangedEvent) => {
             console.log('incoming event', event)
+            if (event.status === 'executed') {
+                await queryClient.invalidateQueries({
+                    queryKey: ['listPendingTransfers'],
+                })
+                await queryClient.invalidateQueries({
+                    queryKey: ['getTransactionHistory'],
+                })
+            }
         }
         const onAccountsChanged = (wallets: sdk.dappAPI.AccountsChangedEvent) =>
             setAccounts(wallets)
@@ -88,7 +98,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
             provider.removeListener('txChanged', messageListener)
             provider.removeListener('accountsChanged', onAccountsChanged)
         }
-    }, [connectionStatus?.isConnected])
+    }, [connectionStatus?.isConnected, queryClient])
 
     return (
         <ConnectionContext.Provider

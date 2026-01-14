@@ -113,6 +113,7 @@ test('portfolio: tap', async ({ page: dappPage }) => {
 
     await setupRegistry(dappPage)
 
+    await setPrimaryWallet(popup, alice)
     await openTab(dappPage, 'Holdings')
     const tapForm = dappPage.locator('form.tap')
     const selectTapInstrument = tapForm.getByRole('combobox')

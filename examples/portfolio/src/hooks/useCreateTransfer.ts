@@ -13,7 +13,7 @@ export const useCreateTransfer = () => {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: async (args: {
+        mutationFn: (args: {
             sender: PartyId
             receiver: PartyId
             instrumentId: { admin: string; id: string }
