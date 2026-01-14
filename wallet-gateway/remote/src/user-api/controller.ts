@@ -907,7 +907,7 @@ export const userController = (
         },
         isWalletSyncNeeded: async (): Promise<IsWalletSyncNeededResult> => {
             const network = await store.getCurrentNetwork()
-            const { userId } = assertConnected(authContext)
+            assertConnected(authContext)
 
             const userAccessTokenProvider: AccessTokenProvider = {
                 getUserAccessToken: async () => authContext!.accessToken,
