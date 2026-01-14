@@ -25,7 +25,7 @@
     },
     "dependencies": {
         "@canton-network/core-types": "workspace:^",
-        "uuid": "^11.0.0"
+        "uuid": "^11.1.0"
     },
     "devDependencies": {
         "tsup": "^8.5.1",

@@ -37,10 +37,10 @@
         "decimal.js": "^10.6.0",
         "jose": "^6.1.3",
         "pino": "^10.1.1",
-        "uuid": "^11.0.0"
+        "uuid": "^11.1.0"
     },
     "devDependencies": {
-        "@types/node": "^25.0.7",
+        "@types/node": "^25.0.8",
         "tsup": "^8.5.1",
         "typescript": "^5.9.3"
     },

@@ -37,7 +37,7 @@
     },
     "dependencies": {
         "@canton-network/core-ledger-proto": "workspace:^",
-        "@types/node": "^25.0.7",
+        "@types/node": "^25.0.8",
         "camelcase-keys": "^10.0.1"
     },
     "files": [
