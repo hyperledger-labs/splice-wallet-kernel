@@ -29,6 +29,7 @@
         "@tanstack/react-router-devtools": "^1.146.2",
         "@tanstack/router-core": "^1.146.2",
         "@tanstack/router-plugin": "^1.146.3",
+        "decimal.js": "^10.5.0",
         "pino": "^10.1.0",
         "react": "^19.2.3",
         "react-dom": "^19.2.3",

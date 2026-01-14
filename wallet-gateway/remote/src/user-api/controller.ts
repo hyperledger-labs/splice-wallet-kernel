@@ -140,7 +140,6 @@ export const userController = (
                 signingProviderId,
                 signingProviderContext,
                 primary,
-                networkId,
                 partyHint,
             } = params
 
@@ -423,7 +422,7 @@ export const userController = (
 
             const wallet = {
                 signingProviderId,
-                networkId,
+                networkId: network.id,
                 status: walletStatus,
                 primary: primary ?? false,
                 publicKey: publicKey || partyArgs.namespace,

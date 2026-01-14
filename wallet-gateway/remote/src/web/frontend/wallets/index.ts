@@ -230,19 +230,6 @@ export class UserUiWallets extends LitElement {
                                       )}
                                   </select>
 
-                                  <label for="network-id">Network:</label>
-                                  <select class="form-control" id="network-id">
-                                      <option disabled value="">
-                                          Select a network
-                                      </option>
-                                      ${this.networks.map(
-                                          (networkId) =>
-                                              html`<option value=${networkId}>
-                                                  ${networkId}
-                                              </option>`
-                                      )}
-                                  </select>
-
                                   <div class="inline">
                                       <label for="primary"
                                           >Set as primary wallet:</label
@@ -374,16 +361,6 @@ export class UserUiWallets extends LitElement {
     connectedCallback(): void {
         super.connectedCallback()
         this.updateWallets()
-        this.updateNetworks()
-    }
-
-    private async updateNetworks() {
-        const userClient = await createUserClient(
-            stateManager.accessToken.get()
-        )
-        userClient.request('listNetworks').then(({ networks }) => {
-            this.networks = networks.map((network) => network.id)
-        })
     }
 
     private async updateWallets() {
