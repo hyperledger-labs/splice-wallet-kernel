@@ -212,8 +212,6 @@ export class CoreService {
                 (await this.ledgerClient.getWithRetry('/v2/state/ledger-end'))
                     .offset
 
-            console.log('found ledger end: ', ledgerEnd)
-
             const options: {
                 offset: number
                 interfaceIds: string[]

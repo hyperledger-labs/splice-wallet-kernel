@@ -57,9 +57,6 @@ export function ledgerPrepareParams(
                 synchronizerId: d.synchronizerId || '',
             }
         }) || []
-    if (!params.commands) {
-        console.log('warning: params has no commands', params)
-    }
     return {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
         commands: params.commands as any,

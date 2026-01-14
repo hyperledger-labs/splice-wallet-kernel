@@ -187,7 +187,7 @@ jobs:
               run: yarn install && yarn build:all
 
             - name: Start remote WK
-              run: yarn nx run @canton-network/wallet-gateway-remote:start > "example-portfolio-wk.log" 2>&1 &
+              run: yarn nx run @canton-network/wallet-gateway-remote:start &
 
             - run: yarn nx run @canton-network/example-portfolio:dev > "example-portfolio.log" 2>&1 &
 
@@ -206,10 +206,10 @@ jobs:
                   retention-days: 5
 
             - uses: actions/upload-artifact@v4
-              # if: ${{ failure() }}
+              if: ${{ failure() }}
               with:
                   name: example-portfolio-logs
-                  path: example-*.log
+                  path: example-portfolio.log
                   retention-days: 5
 
     sdk-e2e:
