@@ -101,10 +101,6 @@ export class WebSocketManager {
                         ', '
                     )}`
                 )
-            } else {
-                throw new InvalidSubscriptionOptionsError(
-                    'Subscription options must include either templateIds or interfaceIds.'
-                )
             }
         }
 

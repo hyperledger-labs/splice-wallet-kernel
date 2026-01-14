@@ -14,7 +14,9 @@ import {
     Holding,
     ExerciseCommand,
     DisclosedContract,
+    WebSocketClient,
 } from '@canton-network/core-ledger-client'
+import { WebSocketManager } from './webSocketManager.js'
 import { ScanClient, ScanProxyClient } from '@canton-network/core-splice-client'
 
 import { pino } from 'pino'
@@ -89,6 +91,7 @@ export class TokenStandardController {
     private synchronizerId: PartyId | undefined
     private transferFactoryRegistryUrl: URL | undefined
     private readonly accessTokenProvider: AccessTokenProvider
+    private readonly webSocketManager: WebSocketManager | undefined
 
     /** Creates a new instance of the LedgerController.
      *
@@ -142,6 +145,25 @@ export class TokenStandardController {
             scanClient
         )
         this.userId = userId
+
+        if (accessTokenProvider) {
+            const wsUrl = `ws://${baseUrl.host}`
+            const wsClient = new WebSocketClient({
+                baseUrl: wsUrl,
+                isAdmin,
+                logger: this.logger,
+                accessTokenProvider,
+                wsSupportBackOff: 6000 * 10,
+            })
+
+            this.webSocketManager = new WebSocketManager({
+                wsClient,
+                logger: pino({
+                    name: 'WebSocketManager-LedgerController',
+                    level: 'info',
+                }),
+            })
+        }
     }
 
     /**
@@ -281,6 +303,27 @@ export class TokenStandardController {
             interfaceId,
             this.getPartyId()
         )
+    }
+    /**
+     * Subscribes to holding UTXO updates for the current party. This method will keep the websocket connection open and yield updates as they come in.
+     * @param beginOffset optional ledger offset to start from, default is current ledger end
+     * @param verbose optional flag to include verbose contract information, default is true
+     */
+    async *subscribeToHoldingUtxos(beginOffset?: number, verbose?: boolean) {
+        if (!this.webSocketManager) {
+            throw new Error(
+                'WebSocketManager not initialized. Please provide an accessTokenProvider in the constructor to enable WebSocket support.'
+            )
+        }
+
+        const stream = this.webSocketManager.subscribeToUpdates({
+            beginOffset: beginOffset ?? 0,
+            partyId: this.getPartyId(),
+            verbose: verbose ?? true,
+            interfaceIds: [HOLDING_INTERFACE_ID],
+        })
+
+        yield* stream
     }
 
     /**
