@@ -162,6 +162,7 @@ export class LedgerClient {
 
     public async init() {
         if (!this.initialized) {
+            this.initialized = true
             this.logger.debug(
                 'Initializing LedgerClient with version %s for url %s',
                 this.clientVersion,
@@ -177,7 +178,6 @@ export class LedgerClient {
                 versionFromClient.data?.version
             )
             this.currentClient = this.clients[this.clientVersion]
-            this.initialized = true
         }
     }
 
