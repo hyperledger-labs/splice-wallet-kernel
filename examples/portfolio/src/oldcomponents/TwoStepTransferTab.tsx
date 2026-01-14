@@ -2,15 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState } from 'react'
-import { useRegistryUrls } from '../contexts/RegistryServiceContext'
 import { usePrimaryAccount } from '../hooks/useAccounts'
-import { usePortfolio } from '../contexts/PortfolioContext'
+import { useCreateTransfer } from '../hooks/useCreateTransfer'
 import { SelectInstrument } from './SelectInstrument'
 
 export const TwoStepTransferTab: React.FC = () => {
     const primaryParty = usePrimaryAccount()?.partyId
-    const registryUrls = useRegistryUrls()
-    const { createTransfer } = usePortfolio()
+    const { mutate: createTransfer } = useCreateTransfer()
     const [receiver, setReceiver] = useState<string>('')
     const [amount, setAmount] = useState<number>(100)
     const [memo, setMemo] = useState<string>('')
@@ -53,11 +51,10 @@ export const TwoStepTransferTab: React.FC = () => {
                 disabled={!primaryParty || !selectedInstrument}
                 onClick={() => {
                     createTransfer({
-                        registryUrls,
                         instrumentId: selectedInstrument!,
                         sender: primaryParty!,
                         receiver,
-                        amount,
+                        amount: `${amount}`,
                         memo: memo ? memo : undefined,
                     })
                 }}

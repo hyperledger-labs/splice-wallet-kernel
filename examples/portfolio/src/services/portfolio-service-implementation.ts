@@ -75,7 +75,7 @@ export const createTransfer = async ({
     sender: PartyId
     receiver: PartyId
     instrumentId: { admin: PartyId; id: string }
-    amount: number
+    amount: string
     memo?: string
 }) => {
     const registryUrl = registryUrls.get(instrumentId.admin)
@@ -87,7 +87,7 @@ export const createTransfer = async ({
         await tokenStandardService.transfer.createTransfer(
             sender,
             receiver,
-            `${amount}`,
+            amount,
             instrumentId.admin,
             instrumentId.id,
             registryUrl,
