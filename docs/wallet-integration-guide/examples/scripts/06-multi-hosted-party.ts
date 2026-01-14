@@ -8,6 +8,7 @@ import {
     localValidatorDefault,
     localNetStaticConfig,
     UpdatesResponse,
+    CommandsCompletionsStreamResponse,
 } from '@canton-network/wallet-sdk'
 import { LogFnFields, pino } from 'pino'
 import { v4 } from 'uuid'
@@ -68,7 +69,7 @@ logger.info(multiHostedParty, 'multi hosted party succeeded!')
 
 await sdk.setPartyId(multiHostedParty?.partyId!)
 
-const commandsCompletionsEvents: any[] & LogFnFields = []
+const commandsCompletionsEvents: CommandsCompletionsStreamResponse = []
 const commandsCompletionsController = new AbortController()
 const subscribeToCommandsMultiHostedParty = (async () => {
     try {
@@ -76,11 +77,13 @@ const subscribeToCommandsMultiHostedParty = (async () => {
             beginOffset: 0,
         })
         for await (const completion of stream!) {
-            logger.info(
+            logger.debug(
                 completion,
                 'received command completion update for multi hosted party'
             )
-            commandsCompletionsEvents.push(completion)
+            commandsCompletionsEvents.push(
+                completion as CommandsCompletionsStreamResponse
+            )
             if (commandsCompletionsController.signal.aborted) break
         }
     } catch (err) {

@@ -15,6 +15,7 @@ import {
     components,
     WebSocketClient,
     JsGetUpdatesResponse,
+    CompletionResponse,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -34,6 +35,8 @@ import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { decodeTopologyTransaction } from '@canton-network/core-tx-visualizer'
 
 export type UpdatesResponse = JsGetUpdatesResponse
+
+export type CommandsCompletionsStreamResponse = CompletionResponse
 
 export type RawCommandMap = {
     ExerciseCommand: Types['ExerciseCommand']
