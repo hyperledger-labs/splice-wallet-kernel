@@ -79,6 +79,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
         const messageListener = async (event: sdk.dappAPI.TxChangedEvent) => {
             console.log('incoming event', event)
             if (event.status === 'executed') {
+                console.log("invalidating caches, offset: ", event.payload.completionOffset)
                 await queryClient.invalidateQueries({
                     queryKey: ['listPendingTransfers'],
                 })
