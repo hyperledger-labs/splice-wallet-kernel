@@ -152,7 +152,7 @@ export class WebSocketManager {
             userId: options.userId,
             parties: options.parties,
         }
-        yield* this.wsClient.subscribeToCompletions(request)
+        yield* this.wsClient.streamCompletions(request)
     }
 
     /**
@@ -172,7 +172,7 @@ export class WebSocketManager {
                 { options: normalizedOptions },
                 'Starting WebSocket subscription with options'
             )
-            yield* this.wsClient.subscribeToUpdatesStreaming(normalizedOptions)
+            yield* this.wsClient.streamUpdates(normalizedOptions)
         } catch (error) {
             if (error instanceof InvalidSubscriptionOptionsError) {
                 this.logger.error(

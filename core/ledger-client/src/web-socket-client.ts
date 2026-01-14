@@ -129,7 +129,7 @@ export class WebSocketClient {
         return generator.call(this)
     }
 
-    subscribeToUpdatesStreaming(
+    streamUpdates(
         options: UpdateSubscriptionOptions
     ): AsyncIterableIterator<JsGetUpdatesResponse> {
         const wsUpdatesUrl = `${this.baseUrl}${CHANNELS.v2_updates}`
@@ -154,7 +154,7 @@ export class WebSocketClient {
         return this.generate(wsUpdatesUrl, request)
     }
 
-    subscribeToCompletions(
+    streamCompletions(
         options: CommandsCompletionsOptions
     ): AsyncIterableIterator<JsGetUpdatesResponse> {
         const wsCompletionsUrl = `${this.baseUrl}${CHANNELS.v2_commands_completions}`
