@@ -114,7 +114,7 @@ test('two step transfer', async ({ page: dappPage }) => {
     console.log('bobParty', bob)
 
     // Refresh the popup reference whenever a new popup appears.
-    dappPage.on('popup', (p) => popup = p);
+    dappPage.on('popup', (p) => (popup = p))
 
     await setPrimaryWallet(popup, alice)
     await openTab(dappPage, 'Holdings')
