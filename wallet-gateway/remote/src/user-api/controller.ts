@@ -214,7 +214,7 @@ export const userController = (
                     break
                 }
                 case SigningProvider.BLOCKDAEMON: {
-                    if (signingProviderContext?.externalTxId ) {
+                    if (signingProviderContext?.externalTxId) {
                         walletStatus = 'initialized'
                         const { signature, status } =
                             await driver.getTransaction({

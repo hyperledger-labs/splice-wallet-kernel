@@ -60,13 +60,19 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                         tx: params.tx,
                         txHash: params.txHash,
                         keyIdentifier: params.keyIdentifier,
-                        ...(params.internalTxId !== undefined && { internalTxId: params.internalTxId }),
+                        ...(params.internalTxId !== undefined && {
+                            internalTxId: params.internalTxId,
+                        }),
                     })
                     return {
                         txId: tx.txId,
                         status: tx.status,
-                        ...(tx.signature !== undefined && { signature: tx.signature }),
-                        ...(tx.publicKey !== undefined && { publicKey: tx.publicKey }),
+                        ...(tx.signature !== undefined && {
+                            signature: tx.signature,
+                        }),
+                        ...(tx.publicKey !== undefined && {
+                            publicKey: tx.publicKey,
+                        }),
                     }
                 } catch (error) {
                     return {
@@ -86,8 +92,12 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                     return {
                         txId: tx.txId,
                         status: tx.status,
-                        ...(tx.signature !== undefined && { signature: tx.signature }),
-                        ...(tx.publicKey !== undefined && { publicKey: tx.publicKey }),
+                        ...(tx.signature !== undefined && {
+                            signature: tx.signature,
+                        }),
+                        ...(tx.publicKey !== undefined && {
+                            publicKey: tx.publicKey,
+                        }),
                     }
                 } catch (error) {
                     return {
