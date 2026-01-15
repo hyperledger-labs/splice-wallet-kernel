@@ -15,6 +15,7 @@ import {
     components,
     WebSocketClient,
     JsGetUpdatesResponse,
+    CompletionResponse,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -34,6 +35,8 @@ import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { decodeTopologyTransaction } from '@canton-network/core-tx-visualizer'
 
 export type UpdatesResponse = JsGetUpdatesResponse
+
+export type CommandsCompletionsStreamResponse = CompletionResponse
 
 export type RawCommandMap = {
     ExerciseCommand: Types['ExerciseCommand']
@@ -266,16 +269,39 @@ export class LedgerController {
 
         const stream =
             'templateIds' in options
-                ? this.webSocketManager.subscribe({
+                ? this.webSocketManager.subscribeToUpdates({
                       ...baseOptions,
                       templateIds: options.templateIds,
                   })
-                : this.webSocketManager.subscribe({
+                : this.webSocketManager.subscribeToUpdates({
                       ...baseOptions,
                       interfaceIds: options.interfaceIds,
                   })
 
         yield* stream
+    }
+
+    /**
+     * Subscribes to command completions for the party and user defined in the ledger controller, with an optional begin offset.
+     * @param options options for the subscription, including an optional begin offset and an optional list of parties to filter for (defaults to the party defined in the ledger controller)
+     */
+    async *subscribeToCompletions(options: {
+        beginOffset?: number
+        parties?: PartyId[]
+    }) {
+        if (!this.webSocketManager) {
+            throw new Error(
+                'WebSocketManager not initialized. Please provide an accessTokenProvider in the constructor to enable WebSocket support.'
+            )
+        }
+
+        const request = {
+            beginOffset: options.beginOffset ?? 0,
+            userId: this.userId,
+            parties: options.parties ?? [this.getPartyId()],
+        }
+
+        yield* this.webSocketManager.subscribeToCompletions(request)
     }
 
     /**
