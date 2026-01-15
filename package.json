@@ -50,7 +50,6 @@
         "docs/wallet-integration-guide/examples",
         "damljs/**",
         "examples/*",
-        "example-scripts",
         "sdk/**",
         "sdk-support/**",
         "scripts",
