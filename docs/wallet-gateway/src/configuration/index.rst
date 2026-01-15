@@ -3,65 +3,109 @@
 Configuring a Remote Wallet Gateway
 ===================================
 
-This section will cover the different ways the wallet gateway can be
-configured to support a variety of cases and setup.
+This section covers the different ways the Wallet Gateway can be configured to support a variety of use cases and deployment scenarios.
 
-Default configuration example against a localnet
-------------------------------------------------
+Overview
+--------
 
-Here is a minimalistic configuration example that can be used against a
-splice localnet using in-memory stores and an unneeded mock auth setup.
-The mock auth is only there to showcase how an idp configuration could look like.
+The Wallet Gateway configuration is a JSON file that defines:
+
+- **Kernel Settings**: Identity and client type information
+- **Server Settings**: Network binding, ports, and API paths
+- **Store Configuration**: Database connection and persistence settings
+- **Identity Providers**: Authentication providers for JWT token generation
+- **Network Definitions**: Canton validator networks and their settings
+- **Signing Store**: Optional database for key storage (when using internal signing)
+
+Default Configuration Example
+------------------------------
+
+Here is a minimalistic configuration example that can be used against a Splice localnet using SQLite storage and a mock OAuth setup. The mock OAuth configuration showcases how an IDP configuration would look.
 
 .. literalinclude:: ../../examples/json/default-config.json
     :language: json
     :dedent:
 
-you can easily create a similar config by running:
+You can easily create a similar configuration file by running:
 
 .. code-block:: bash
 
-    npx @canton-network/wallet-gateway-remote@latest --config-example
+    wallet-gateway --config-example > config.json
 
-or
+Or to see the JSON Schema for validation:
 
 .. code-block:: bash
 
-    npx @canton-network/wallet-gateway-remote@latest --config-schema
+    wallet-gateway --config-schema > schema.json
 
-to get the schema version.
+Configuration Structure
+-----------------------
 
-The configuration has four basic sections:
-- Kernel: contains basic information about the wallet gateway.
-- Host: Sets up url binding and handles
+The configuration file has the following main sections:
 
-.. TODO: Rename as part of renaming Kernel to Gateway
+- **kernel**: Basic information about the Wallet Gateway identity
+- **server**: Network binding, ports, and API endpoint configuration
+- **store**: Database connection, identity providers, and network definitions
+- **signingStore**: (optional) Secondary database for key storage when using internal signing
 
-Configuring Basics
-------------------
-"**Kernel**" information is served to a dApp and used to uniquely identify and quantify the connection.
+Configuring Kernel Settings
+----------------------------
 
-**Kernel:**
-    - *id:* The unique identifier used by the kernel.
-    - *publicUrl:* (optional) The baseURL used for redirecting clients, if nothing is provided it iwll be based on host & port in server config.
-    - *clientType:* The type of client, for a remote wallet kernel this should always be set to 'remote'.
+The **kernel** section contains information that is served to dApps and used to uniquely identify the Gateway instance.
 
-"**Server**" information is used for handling network binding. It is worth noting here that default is localhost will not work if you are running this
-outside of your own machine (like a kubernetes cluster).
+**kernel:**
+    - *id* (required): A unique identifier for this Gateway instance. This should be a stable, unique string (e.g., ``"my-gateway-prod"`` or ``"remote-da"``).
+    - *publicUrl* (optional): The base URL used for redirecting clients. If not provided, it will be automatically derived from the server host and port settings. This is particularly important when running behind a reverse proxy or load balancer.
+    - *clientType* (required): The type of client. For a remote Wallet Gateway, this should always be set to ``'remote'``.
 
-**Server:**
-    - *host:* Deprecated.
-    - *port:* (default: '3030') The port which the node server will bind against, this is also used for generating popups.
-    - *tls:*  Deprecated.
-    - *dAppPath:* (default: '/api/v0/dapp') customizable redirect path for dapps.
-    - *userPath:* (default: '/api/v0/user') customizable redirect path for user actions.
-    - *allowedOrigins:* (default: ['*']) configure allowedOrigins as an array.
-    - *requestSizeLimit:* (default: '1mb') configure the maximum request size the server will accept.
+**Example:**
 
-**Store:**
-    - *connection:* Configures the connection to a database, see :ref:`configuring-store` for details.
-    - *idps:* Configures all idps used by the wallet gateway, see :ref:`configuring-idps` for details.
-    - *networks:* Configures all networks used by the wallte gateway, see :ref:`configuring-networks` for details.
+.. code-block:: json
+
+    {
+        "kernel": {
+            "id": "my-production-gateway",
+            "clientType": "remote",
+            "publicUrl": "https://wallet.example.com"
+        }
+    }
+
+Configuring Server Settings
+----------------------------
+
+The **server** section configures network binding, ports, and API paths.
+
+.. important::
+
+   If you're running the Gateway outside of your local machine (e.g., in Docker, Kubernetes, or on a remote server), you should set ``host`` to ``"0.0.0.0"`` to allow external connections. By default, using ``"localhost"`` will only allow connections from the same machine.
+
+**server:**
+    - *host* (deprecated): Previously used for binding address. Current behavior binds to all interfaces when not in localhost-only mode.
+    - *port* (optional, default: ``3030``): The port on which the Node.js server will bind. This port is also used for generating popup URLs in the discovery flow.
+    - *tls* (deprecated): TLS configuration is no longer handled in this section.
+    - *dAppPath* (optional, default: ``'/api/v0/dapp'``): The API path for dApp JSON-RPC requests. This is where dApps connect to interact with wallets.
+    - *userPath* (optional, default: ``'/api/v0/user'``): The API path for user JSON-RPC requests. This is used by the web UI and user-facing applications.
+    - *allowedOrigins* (optional, default: ``['*']``): CORS allowed origins. For production, specify exact origins instead of ``'*'`` for better security. Example: ``["https://my-dapp.com", "https://another-dapp.com"]``.
+    - *requestSizeLimit* (optional, default: ``'1mb'``): Maximum request body size the server will accept. Use standard size notation (e.g., ``'1mb'``, ``'10mb'``, ``'50kb'``).
+
+**Example:**
+
+.. code-block:: json
+
+    {
+        "server": {
+            "port": 3030,
+            "dAppPath": "/api/v0/dapp",
+            "userPath": "/api/v0/user",
+            "allowedOrigins": ["https://my-dapp.example.com"],
+            "requestSizeLimit": "10mb"
+        }
+    }
+
+**store:**
+    - *connection:* Configures the database connection. See :ref:`configuring-store` for details.
+    - *idps:* Configures all identity providers (IDPs) used by the Wallet Gateway. See :ref:`configuring-idps` for details.
+    - *networks:* Configures all networks used by the Wallet Gateway. See :ref:`configuring-networks` for details.
 
 
 
@@ -70,36 +114,120 @@ outside of your own machine (like a kubernetes cluster).
 Configuring Store
 -----------------
 
-For connection there is currently three options available: **memory**, **sqlite** & **postgres**.
+The store connection determines where the Wallet Gateway persists its data, including sessions, wallet configurations, networks, and identity providers.
 
-The recommendation for any persisted setup (like test environment or prod environment) is to use **postgres**.
-For local development sqlite or memory be used, but be wary if using docker or kubernetes that memory will be deleted on pod recreation.
-sqlite will persist, but only if volume with the database file is persisted as well.
+**Available Storage Options:**
+
+Three storage backends are available: **memory**, **sqlite**, and **postgres**.
+
+**Recommendations:**
+
+- **Production/Test Environments**: Use **postgres** for reliability, scalability, and backup capabilities
+- **Local Development**: Use **sqlite** for simplicity and persistence across restarts
+- **Quick Testing**: Use **memory** for temporary setups (all data is lost on restart)
+
+.. important::
+
+   If using Docker or Kubernetes with the memory store, all data will be lost when the container/pod is recreated. SQLite will persist only if the database file is stored on a persistent volume.
+
+**PostgreSQL Configuration:**
+
+For production deployments, PostgreSQL is recommended due to its robustness, concurrent access support, and backup/restore capabilities.
 
 **postgres:**
-    - *type:* 'postgres'
-    - *host:* The host url of the postgres.
-    - *port:* The port to use in combination with the url.
-    - *user:* The user to connect with.
-    - *password:* The password to connect with.
-    - *database:* The database within postgres to use.
+    - *type* (required): Must be ``'postgres'``
+    - *host* (required): The hostname or IP address of the PostgreSQL server
+    - *port* (optional, default: ``5432``): The port on which PostgreSQL is listening
+    - *user* (required): The database user to connect with
+    - *password* (required): The password for the database user
+    - *database* (required): The name of the database to use (must exist)
+
+**Example:**
+
+.. code-block:: json
+
+    {
+        "store": {
+            "connection": {
+                "type": "postgres",
+                "host": "db.example.com",
+                "port": 5432,
+                "user": "wallet_gateway",
+                "password": "secure-password",
+                "database": "wallet_gateway_db"
+            }
+        }
+    }
+
+**SQLite Configuration:**
+
+SQLite is suitable for single-instance deployments and local development. It stores all data in a single file.
 
 **sqlite:**
-    - *type:* 'sqlite'
-    - *database:* the database-file to use.
+    - *type* (required): Must be ``'sqlite'``
+    - *database* (required): Path to the SQLite database file (e.g., ``'store.sqlite'`` or ``'/var/lib/wallet-gateway/store.sqlite'``)
+
+**Example:**
+
+.. code-block:: json
+
+    {
+        "store": {
+            "connection": {
+                "type": "sqlite",
+                "database": "store.sqlite"
+            }
+        }
+    }
+
+**Memory Store Configuration:**
+
+The memory store keeps all data in RAM. Useful for testing but not suitable for any production use.
 
 **memory:**
-    - *type:* 'memory'
+    - *type* (required): Must be ``'memory'``
+
+**Example:**
+
+.. code-block:: json
+
+    {
+        "store": {
+            "connection": {
+                "type": "memory"
+            }
+        }
+    }
 
 
-Database recovery
-^^^^^^^^^^^^^^^^^
+Database Recovery and Backups
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For production and sensitive environment it is recommended to do backups to allow to restoring. If unable to restore
-things that will be lost are:
-- Any custom idp or network that an user have configured.
-- Any inflight transactions (things pending signing or have been signed, but not submitted).
-- Any active sessions (users would have to login again).
+For production and sensitive environments, regular database backups are **strongly recommended**.
+
+**What's Stored in the Database:**
+
+The store database contains:
+- User sessions and authentication state
+- Custom networks and identity providers added by users
+- Wallet configurations and party mappings
+- In-flight transactions (pending signing or signed but not yet submitted)
+- User preferences and settings
+
+**What Happens Without Backups:**
+
+If the database is lost and cannot be restored:
+- All user sessions will be invalidated (users must log in again)
+- Custom networks and IDPs added by users will be lost
+- In-flight transactions will be lost (may require manual intervention)
+- Wallet configurations referencing lost networks may need to be reconfigured
+
+**Backup Recommendations:**
+
+- **PostgreSQL**: Use ``pg_dump`` or automated backup solutions (e.g., pgBackRest, WAL-E)
+- **SQLite**: Copy the database file regularly, ensuring no writes occur during the copy
+- Set up automated daily backups with retention policies
+- Test restore procedures regularly
 
 
 .. important::
@@ -109,80 +237,312 @@ things that will be lost are:
 
 .. _configuring-idps:
 
-Configuring idps
-----------------
-Identity Providers (idps) are used for generating JWT token that can be used against a given network, therefore a network must define
-an associated IDP who providers or generates the token needed.
+Configuring Identity Providers
+-------------------------------
 
-The Wallet gateway supports two kinds of IDP: **self_signed** and **oauth**.
-For production environment it is **highly** recommended to use an **oauth** idp provider.
+Identity Providers (IDPs) are used for generating JWT tokens that authenticate against Canton validator networks. Each network must reference an IDP that provides or generates the required authentication tokens.
+
+**Supported IDP Types:**
+
+The Wallet Gateway supports two types of identity providers: **self_signed** and **oauth**.
+
+.. important::
+
+   For production environments, it is **highly recommended** to use an **oauth** IDP provider. Self-signed tokens should only be used for development and testing.
+
+**Self-Signed IDP:**
+
+Self-signed IDPs generate JWT tokens locally using a secret key. This is convenient for development but less secure for production.
 
 **self_signed:**
-    - *id:* Unique identifier, that should be matched against in the networks configuration.
-    - *type:* 'self_signed'
-    - *issuer:* The issuer of the token will be bound to 'iss' of the JWT token, should match expected issuer from the server.
+    - *id* (required): Unique identifier that must match the ``identityProviderId`` referenced in network configurations
+    - *type* (required): Must be ``'self_signed'``
+    - *issuer* (required): The issuer value that will be set in the JWT token's ``iss`` claim. This must match the issuer expected by the validator node
+
+**Example:**
+
+.. code-block:: json
+
+    {
+        "store": {
+            "idps": [
+                {
+                    "id": "idp-self-signed",
+                    "type": "self_signed",
+                    "issuer": "self-signed"
+                }
+            ]
+        }
+    }
+
+**OAuth IDP:**
+
+OAuth IDPs integrate with external OAuth 2.0 / OpenID Connect providers to obtain authentication tokens. This is the recommended approach for production.
 
 **oauth:**
-    - *id:* Unique identifier, that should be matched against in the networks configuration.
-    - *type:* 'oauth'
-    - *issuer:* The issuer of the token will be bound to 'iss' of the JWT token, should match expected issuer from the server.
-    - *configUrl:* The configuration endpoint of the OAUTH, usually looks like '${URL}/.well-known/openid-configuration'.
+    - *id* (required): Unique identifier that must match the ``identityProviderId`` referenced in network configurations
+    - *type* (required): Must be ``'oauth'``
+    - *issuer* (required): The issuer value that will be set in the JWT token's ``iss`` claim. This should match the issuer from your OAuth provider's configuration
+    - *configUrl* (required): The OpenID Connect discovery endpoint URL. Typically follows the pattern: ``${OAuthServerURL}/.well-known/openid-configuration``
+
+**Example:**
+
+.. code-block:: json
+
+    {
+        "store": {
+            "idps": [
+                {
+                    "id": "idp-production",
+                    "type": "oauth",
+                    "issuer": "https://auth.example.com",
+                    "configUrl": "https://auth.example.com/.well-known/openid-configuration"
+                }
+            ]
+        }
+    }
 
 
 .. _configuring-networks:
 
 Configuring Networks
 --------------------
-Networks represent different validators that a client for the wallet gateway can use the connect. Those defined here is the default
-networks that will be populated and available for all users. It is worth nothing that users are able to add other networks themselves.
 
-**networks:** (this is an array)
-    - *id:* Unique identifier for the network.
-    - *name:* User friendly name for the sign in flow.
-    - *description:* User friendly description.
-    - *synchronizerId:* Which synchronizerId will be used on the validator, for multiple synchronizers multiple network configs are needed.
-    - *identityProviderId:* Id correlating to and idp defined in the idps section.
-    - *ledgerApi:* An object containing information about the ledgerApi, currently only holds the baseURL pointing to the ledger api.
-    - *auth:* An object containing auth information.
-    - *adminAuth:* (optional) AN object containing auth information using an admin user.
+Networks represent different Canton validator nodes that clients can connect to through the Wallet Gateway. Networks defined in the configuration are the default networks available to all users. Users can also add additional networks themselves through the User API or web UI.
 
-for *auth* and *adminAuth* the wallet gateway will use *auth* for all ledger interactions, except the rare occasions that requires admin access.
+**Network Configuration:**
 
-for **auth** configuration we currently support three different types of schema definitions: **authorization_code**, **client_credentials** & **self_signed**.
-It is recommended to use **client_credentials** for any production setup. **self-signed** can be used for testing and local development.
+Networks is an array, so you can define multiple networks in a single configuration:
+
+**networks** (array):
+    - *id* (required): Unique identifier for the network. Should follow CAIP-2 format (e.g., ``"canton:localnet"`` or ``"canton:production"``)
+    - *name* (required): User-friendly name displayed in the UI (e.g., ``"Local Network"`` or ``"Production Network"``)
+    - *description* (optional): A description of the network shown to users
+    - *synchronizerId* (required): The synchronizer ID used on the validator. If your validator has multiple synchronizers, create separate network configurations for each
+    - *identityProviderId* (required): Must match the ``id`` of an IDP defined in the ``idps`` section
+    - *ledgerApi* (required): Configuration object for the Ledger API:
+        - *baseUrl* (required): The base URL of the Canton validator's Ledger API (e.g., ``"http://localhost:2975"`` or ``"https://ledger.example.com"``)
+    - *auth* (required): Authentication configuration for normal ledger operations
+    - *adminAuth* (optional): Authentication configuration for admin operations. Only needed for operations requiring elevated privileges
+
+**Authentication Methods:**
+
+The Wallet Gateway supports three authentication methods for network access: **authorization_code**, **client_credentials**, and **self_signed**.
+
+**Recommendations:**
+- **Production**: Use **client_credentials** for machine-to-machine authentication
+- **Interactive/User-facing**: Use **authorization_code** for user-initiated flows
+- **Development/Testing**: Use **self_signed** for local development
+
+**Authorization Code:**
+
+Used for interactive authentication flows where users grant authorization through their browser.
 
 **authorization_code:**
-    - *method:* 'authorization_code'
-    - *audience:* The audience to be bound on the 'aud' of the JWT token, should match expected audience from server.
-    - *scope:* The scope definition of the JWT token, should match features the clients have access to on the server.
-    - *clientId:* Id of the client authorizing.
+    - *method* (required): Must be ``'authorization_code'``
+    - *audience* (required): The audience claim (``aud``) in the JWT token. Must match the audience expected by the validator
+    - *scope* (required): Space-separated list of OAuth scopes. Typically includes ``'openid daml_ledger_api offline_access'``
+    - *clientId* (required): The OAuth client ID registered with the identity provider
+
+**Example:**
+
+.. code-block:: json
+
+    {
+        "auth": {
+            "method": "authorization_code",
+            "audience": "https://canton.network.global",
+            "scope": "openid daml_ledger_api offline_access",
+            "clientId": "my-client-id"
+        }
+    }
+
+**Client Credentials:**
+
+Used for machine-to-machine authentication. Recommended for production server deployments.
 
 **client_credentials:**
-    - *method:* 'client_credentials'.
-    - *audience:* The audience to be bound on the 'aud' of the JWT token, should match expected audience from server.
-    - *scope:* The scope definition of the JWT token, should match features the clients have access to on the server.
-    - *clientId:* Id of the client authorizing.
-    - *clientSecret:* Secret used by the client to authenticate against the IDP.
+    - *method* (required): Must be ``'client_credentials'``
+    - *audience* (required): The audience claim (``aud``) in the JWT token. Must match the audience expected by the validator
+    - *scope* (required): Space-separated list of OAuth scopes. Typically includes ``'openid daml_ledger_api offline_access'``
+    - *clientId* (required): The OAuth client ID registered with the identity provider
+    - *clientSecret* (required): The OAuth client secret for authenticating with the IDP
+
+**Example:**
+
+.. code-block:: json
+
+    {
+        "auth": {
+            "method": "client_credentials",
+            "audience": "https://canton.network.global",
+            "scope": "openid daml_ledger_api offline_access",
+            "clientId": "my-service-client",
+            "clientSecret": "my-secure-secret"
+        }
+    }
+
+**Self-Signed:**
+
+Used for development and testing. The Gateway generates and signs JWT tokens locally.
 
 **self_signed:**
-    - *method:* 'self_signed'.
-    - *issuer:* The issuer of the token will be bound to 'iss' of the JWT token, should match expected issuer from the server.
-    - *audience:* The audience to be bound on the 'aud' of the JWT token, should match expected audience from server.
-    - *scope:* The scope definition of the JWT token, should match features the clients have access to on the server.
-    - *clientId:* Id of the client authorizing.
-    - *clientSecret:* Secret that will be used to sign the JWT token with.
+    - *method* (required): Must be ``'self_signed'``
+    - *issuer* (required): The issuer claim (``iss``) in the JWT token. Must match the issuer expected by the validator
+    - *audience* (required): The audience claim (``aud``) in the JWT token. Must match the audience expected by the validator
+    - *scope* (required): Space-separated list of scopes. Typically includes ``'openid daml_ledger_api offline_access'``
+    - *clientId* (required): The client identifier used in the token
+    - *clientSecret* (required): The secret used to sign the JWT token. Must match the secret expected by the validator
+
+**Example:**
+
+.. code-block:: json
+
+    {
+        "auth": {
+            "method": "self_signed",
+            "issuer": "self-signed",
+            "audience": "https://canton.network.global",
+            "scope": "openid daml_ledger_api offline_access",
+            "clientId": "ledger-api-user",
+            "clientSecret": "unsafe-secret-for-development"
+        }
+    }
+
+**Complete Network Configuration Example:**
+
+.. code-block:: json
+
+    {
+        "store": {
+            "networks": [
+                {
+                    "id": "canton:localnet",
+                    "name": "Local Network",
+                    "description": "Local development network",
+                    "synchronizerId": "local",
+                    "identityProviderId": "idp-self-signed",
+                    "auth": {
+                        "method": "self_signed",
+                        "issuer": "self-signed",
+                        "audience": "https://canton.network.global",
+                        "scope": "openid daml_ledger_api offline_access",
+                        "clientId": "ledger-api-user",
+                        "clientSecret": "unsafe"
+                    },
+                    "ledgerApi": {
+                        "baseUrl": "http://localhost:2975"
+                    }
+                }
+            ]
+        }
+    }
 
 
 Configuring Signing Store
 -------------------------
-Signing Store is a secondary database that can be configured (it is optional). This is used for storing the private key in the case
-where the wallet gateway is used as the signing provider. It has the exact same configuration as the store (:ref:`configuring-store`).
+
+The signing store is an optional secondary database used for storing private keys when the Wallet Gateway is configured to act as a signing provider (using the ``wallet-kernel`` signing provider).
+
+.. important::
+
+   If you use the Wallet Gateway as a signing provider, private keys will be stored in the signing store database. This is **not recommended** for production environments with valuable assets. Use external signing providers (Fireblocks, Blockdaemon, or Participant-based) for production.
+
+**Configuration:**
+
+The signing store uses the same connection configuration options as the main store. See :ref:`configuring-store` for available options (memory, sqlite, postgres).
+
+**When is Signing Store Required?**
+
+The signing store is only needed if:
+- You're using the ``wallet-kernel`` signing provider (internal signing)
+- You want to store keys managed by the Wallet Gateway itself
+
+If you're using external signing providers (Fireblocks, Blockdaemon, Participant), you can omit the ``signingStore`` configuration entirely.
+
+**Example:**
+
+.. code-block:: json
+
+    {
+        "signingStore": {
+            "connection": {
+                "type": "sqlite",
+                "database": "signingStore.sqlite"
+            }
+        }
+    }
+
+**Security Considerations:**
+
+- Store the signing store database file in a secure location with restricted access
+- Use strong filesystem permissions (e.g., ``chmod 600`` for SQLite files)
+- For PostgreSQL, use separate credentials with minimal privileges
+- Consider encrypting the database at rest
+- Regularly backup the signing store if it contains production keys
+- Never commit signing store files to version control
 
 
-Configuring for different environments
---------------------------------------
-It is recommended to keep separate config files per environment. This allow to handle them contained and have different
-security level of settings on them. Additionally some of the variables here can be considered sensitive (like the adminAuth).
-It is worth nothing that any user with access to one of the predefined ledger will be able to see network and idp values, in
-addition of the config files are stored in a github repo or another place with multiple people having read access, it is recommended
-to use environment variables to override parts of the config instead.
+Configuring for Different Environments
+---------------------------------------
+
+**Environment-Specific Configuration Files**
+
+It is recommended to maintain separate configuration files for each environment (development, staging, production). This allows you to:
+
+- Isolate settings per environment
+- Apply different security levels and policies
+- Prevent accidental use of production credentials in development
+- Simplify environment-specific deployments
+
+**Best Practices:**
+
+1. **Use separate files**: Create ``config.dev.json``, ``config.staging.json``, ``config.prod.json``
+
+2. **Sensitive data**: Never commit sensitive values (passwords, secrets, API keys) directly in configuration files, especially if stored in version control
+
+3. **Environment variables**: Use environment variables to override sensitive configuration values:
+
+   .. code-block:: json
+
+       {
+           "store": {
+               "networks": [{
+                   "auth": {
+                       "clientSecret": "${OAUTH_CLIENT_SECRET}"
+                   }
+               }]
+           }
+       }
+
+   Then set the environment variable when running:
+
+   .. code-block:: bash
+
+       export OAUTH_CLIENT_SECRET="my-secret"
+       wallet-gateway -c ./config.json
+
+4. **Access control**: Be aware that:
+   - Network and IDP configurations (excluding secrets) are visible to users with ledger access
+   - If configuration files are stored in shared repositories, anyone with read access can see non-secret configuration
+   - Use environment variables or secret management systems (e.g., HashiCorp Vault, AWS Secrets Manager) for sensitive values
+
+5. **Admin authentication**: The ``adminAuth`` configuration contains sensitive credentials and should be:
+   - Stored securely (not in version control)
+   - Rotated regularly
+   - Restricted to production environments where truly needed
+
+**Example Environment Setup:**
+
+**Development (config.dev.json):**
+- SQLite or memory store
+- Self-signed authentication
+- Localhost network endpoints
+- Permissive CORS settings
+
+**Production (config.prod.json):**
+- PostgreSQL store
+- OAuth authentication
+- Production network endpoints
+- Restricted CORS settings
+- Secrets via environment variables
