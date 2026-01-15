@@ -192,7 +192,7 @@ jobs:
                   mv /tmp/e2e-wk-config.json wallet-gateway/test/config.json
 
             - name: Start remote WK
-              run: yarn nx run @canton-network/wallet-gateway-remote:start &
+              run: yarn nx run @canton-network/wallet-gateway-remote:start > "wallet-gateway-remote.log" 2>&1 &
 
             - run: yarn nx run @canton-network/example-portfolio:dev > "example-portfolio.log" 2>&1 &
 
@@ -214,7 +214,7 @@ jobs:
               if: ${{ failure() }}
               with:
                   name: example-portfolio-logs
-                  path: example-portfolio.log
+                  path: '*.log'
                   retention-days: 5
 
     sdk-e2e:
