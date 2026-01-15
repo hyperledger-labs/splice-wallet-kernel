@@ -116,6 +116,12 @@ jobs:
             - name: Download Canton
               run: yarn script:fetch:canton
 
+            - name: Build project
+              run: yarn build:all
+
+            - name: Start remote WK
+              run: yarn nx run @canton-network/wallet-gateway-remote:start &
+
             - name: Start Canton
               run: |
                   set -e
@@ -139,12 +145,6 @@ jobs:
                     cat "$LOGFILE"
                     exit 1
                   '
-
-            - name: Build project
-              run: yarn build:all
-
-            - name: Start remote WK
-              run: yarn nx run @canton-network/wallet-gateway-remote:start &
 
             - run: yarn nx run @canton-network/example-ping:dev > "example-ping.log" 2>&1 &
 

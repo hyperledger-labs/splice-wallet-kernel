@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useMemo, useEffect, useState, createContext, useContext } from 'react'
+import { useEffect, useState, createContext, useContext } from 'react'
 import type {
     RegistryService,
     Instrument,
@@ -63,16 +63,14 @@ export const useInstrumentInfo = ({
     | undefined => {
     const registryUrls = useRegistryUrls()
     const instruments = useInstruments()
-    return useMemo(() => {
-        const registryUrl = registryUrls.get(admin)
-        if (!registryUrl) {
-            return undefined
-        }
-        for (const instrument of instruments.get(admin) ?? []) {
-            if (instrument.id === id) {
-                return { registryUrl, instrument }
-            }
-        }
+    const registryUrl = registryUrls.get(admin)
+    if (!registryUrl) {
         return undefined
-    }, [registryUrls, instruments, admin, id])
+    }
+    for (const instrument of instruments.get(admin) ?? []) {
+        if (instrument.id === id) {
+            return { registryUrl, instrument }
+        }
+    }
+    return undefined
 }

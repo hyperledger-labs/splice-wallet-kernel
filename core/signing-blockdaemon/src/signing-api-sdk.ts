@@ -8,6 +8,11 @@ import type {
     GetTransactionParams,
     GetTransactionsParams,
     CreateKeyParams,
+    Tx,
+    TxHash,
+    KeyIdentifier,
+    InternalTxId,
+    PublicKey,
 } from '@canton-network/core-signing-lib'
 
 /**
@@ -78,9 +83,12 @@ export class SigningAPIClient {
     public async signTransaction(
         params: SignTransactionParams
     ): Promise<Transaction> {
-        return this.post<SignTransactionParams, Transaction>(
+        return this.post<BlockDaemonSignTransactionParams, Transaction>(
             '/signTransaction',
-            params
+            {
+                publicKey: params.keyIdentifier.publicKey!,
+                ...params,
+            }
         )
     }
 
@@ -167,4 +175,15 @@ export class SigningAPIClient {
         }
         return this.getConfiguration()
     }
+}
+
+//todo: remove once blockdaemon supports keyIdentifier instead of publicKey
+interface BlockDaemonSignTransactionParams {
+    tx: Tx
+    txHash: TxHash
+    publicKey: PublicKey
+    keyIdentifier: KeyIdentifier
+    internalTxId?: InternalTxId
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    [k: string]: any
 }

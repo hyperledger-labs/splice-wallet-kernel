@@ -25,7 +25,7 @@
         "@canton-network/core-wallet-auth": "workspace:^"
     },
     "devDependencies": {
-        "@types/node": "^24.10.4",
+        "@types/node": "^25.0.8",
         "tsup": "^8.5.1",
         "typescript": "^5.9.3"
     },
