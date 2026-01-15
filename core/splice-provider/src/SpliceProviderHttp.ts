@@ -89,7 +89,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 // dappApi.ConnectedEvent are mapped manually to avoid dependency.
                 this.request({ method: 'status' })
                     .then((status) => {
-                        this.emit('onConnected', status)
+                        this.emit('connected', status)
                     })
                     .catch((err) => {
                         console.error(
