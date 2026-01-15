@@ -186,10 +186,13 @@ jobs:
             - name: Build project
               run: yarn build:all
 
-            - name: Start remote WK
+            - name: Increase rate limit in wallet gateway config
               run: |
-                  jq -i '.server.requestRateLimit = 10000' wallet-gateway/test/config.json
-                  yarn nx run @canton-network/wallet-gateway-remote:start &
+                  jq '.server.requestRateLimit = 10000' wallet-gateway/test/config.json >/tmp/e2e-wk-config.json
+                  mv /tmp/e2e-wk-config.json wallet-gateway/test/config.json
+
+            - name: Start remote WK
+              run: yarn nx run @canton-network/wallet-gateway-remote:start &
 
             - run: yarn nx run @canton-network/example-portfolio:dev > "example-portfolio.log" 2>&1 &
 
