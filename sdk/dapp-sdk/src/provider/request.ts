@@ -102,8 +102,8 @@ export async function requestAccounts(): Promise<dappAPI.RequestAccountsResult> 
 
 export async function prepareExecute(
     params: dappAPI.PrepareExecuteParams
-): Promise<dappAPI.PrepareExecuteResult> {
-    return await assertProvider().request<dappAPI.PrepareExecuteResult>({
+): Promise<null> {
+    return await assertProvider().request({
         method: 'prepareExecute',
         params,
     })

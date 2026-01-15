@@ -83,6 +83,7 @@ export class Provider implements SpliceProvider {
     }
 
     emit<T>(event: string, ...args: T[]): boolean {
+        console.log('[Provider] Emitting event:', event, args)
         return this.provider.emit(event, args)
     }
 
@@ -165,31 +166,7 @@ export const dappController = (provider: SpliceProvider) =>
 
             if (response.userUrl) popup.open(response.userUrl)
 
-            const promise = new Promise<dappAPI.PrepareExecuteResult>(
-                (resolve, reject) => {
-                    const timeout = withTimeout(
-                        reject,
-                        'Timed out waiting for transaction approval'
-                    )
-
-                    const listener = (event: dappRemoteAPI.TxChangedEvent) => {
-                        if (event.status === 'executed') {
-                            provider.removeListener('txChanged', listener)
-                            clearTimeout(timeout)
-                            resolve({
-                                tx: event,
-                            })
-                        }
-                    }
-
-                    provider.on<dappRemoteAPI.TxChangedEvent>(
-                        'txChanged',
-                        listener
-                    )
-                }
-            )
-
-            return promise
+            return null
         },
         prepareReturn: async (params: dappAPI.PrepareReturnParams) =>
             provider.request<dappAPI.PrepareReturnResult>({
