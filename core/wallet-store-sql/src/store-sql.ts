@@ -82,10 +82,21 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             })
             .map((table) =>
                 toWallet({
-                    ...table,
+                    primary: table.primary,
+                    partyId: table.partyId,
+                    hint: table.hint,
+                    publicKey: table.publicKey,
+                    namespace: table.namespace,
+                    networkId: table.networkId,
+                    signingProviderId: table.signingProviderId,
+                    userId: table.userId,
                     externalTxId: table.externalTxId ?? '',
                     topologyTransactions: table.topologyTransactions ?? '',
                     status: table.status ?? '',
+                    disabled: table.disabled ?? 0,
+                    ...(table.reason !== undefined && {
+                        reason: table.reason,
+                    }),
                 })
             )
     }
@@ -156,13 +167,17 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         })
     }
 
-    async updateWallet({ status, partyId }: UpdateWallet): Promise<void> {
+    async updateWallet({
+        status,
+        partyId,
+        externalTxId,
+    }: UpdateWallet): Promise<void> {
         this.logger.info('Updating wallet')
 
         await this.db.transaction().execute(async (trx) => {
             await trx
                 .updateTable('wallets')
-                .set({ status })
+                .set({ status, externalTxId })
                 .where('partyId', '=', partyId)
                 .execute()
         })

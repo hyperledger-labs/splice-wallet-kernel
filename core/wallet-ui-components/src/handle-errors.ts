@@ -46,6 +46,9 @@ export function handleErrorToast(e: unknown, fallback?: FallbackType) {
         case -32603:
             toast.title = 'Internal Error'
             break
+        case 413:
+            toast.title = 'Payload Too Large'
+            break
         default:
             toast.title = fallback?.title || 'Unexpected Error'
             break

@@ -116,6 +116,12 @@ jobs:
             - name: Download Canton
               run: yarn script:fetch:canton
 
+            - name: Build project
+              run: yarn build:all
+
+            - name: Start remote WK
+              run: yarn nx run @canton-network/wallet-gateway-remote:start &
+
             - name: Start Canton
               run: |
                   set -e
@@ -139,9 +145,6 @@ jobs:
                     cat "$LOGFILE"
                     exit 1
                   '
-
-            - name: Start remote WK
-              run: yarn nx run @canton-network/wallet-gateway-remote:start &
 
             - run: yarn nx run @canton-network/example-ping:dev > "example-ping.log" 2>&1 &
 
@@ -189,9 +192,6 @@ jobs:
             - name: Install Playwright's dependencies
               if: steps.playwright-cache.outputs.cache-hit != 'true'
               run: yarn workspace @canton-network/example-ping run playwright install --with-deps
-
-            - name: Build project
-              run: yarn build:all
 
             - name: Run example e2e
               run: yarn nx playwright:e2e @canton-network/example-ping

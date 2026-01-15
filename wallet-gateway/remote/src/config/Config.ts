@@ -50,6 +50,13 @@ export const serverConfigSchema = z.object({
         description:
             'Deprecated, this option no longer has any effect. Will be removed in a future release.',
     }),
+    requestSizeLimit: z.string().default('1mb').meta({
+        description: 'The maximum size of incoming requests. Defaults to 1mb.',
+    }),
+    requestRateLimit: z.number().default(100).meta({
+        description:
+            'The maximum number of requests per minute from a single IP address. Defaults to 100.',
+    }),
 })
 
 export const configSchema = z.object({

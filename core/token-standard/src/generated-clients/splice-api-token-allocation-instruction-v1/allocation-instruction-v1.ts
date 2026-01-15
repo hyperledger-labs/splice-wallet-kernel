@@ -35,7 +35,7 @@ export interface components {
              */
             choiceArguments: Record<string, never>
             /**
-             * @description If set to true, the response will not include debug fields.
+             * @description If set to true, the response will not include fields prefixed with 'debug'. Useful to save bandwidth.
              * @default false
              */
             excludeDebugFields: boolean

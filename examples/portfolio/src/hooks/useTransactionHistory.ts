@@ -10,16 +10,14 @@ import {
 } from '@tanstack/react-query'
 import { type Transaction } from '@canton-network/core-ledger-client'
 import { usePortfolio } from '../contexts/PortfolioContext'
-import { useConnection } from '../contexts/ConnectionContext'
+import { usePrimaryAccount } from '../hooks/useAccounts'
 import type { TransactionHistoryResponse } from '../services/transaction-history-service'
 
 export const useTransactionHistory = (): UseInfiniteQueryResult<
     InfiniteData<TransactionHistoryResponse>,
     Error
 > => {
-    const {
-        status: { primaryParty },
-    } = useConnection()
+    const primaryParty = usePrimaryAccount()?.partyId
     const { getTransactionHistory } = usePortfolio()
     return useInfiniteQuery({
         initialPageParam: null,

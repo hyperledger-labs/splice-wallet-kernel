@@ -171,11 +171,6 @@
                                 "type": "string",
                                 "description": "The party hint and name of the wallet."
                             },
-                            "networkId": {
-                                "title": "networkId",
-                                "type": "string",
-                                "description": "The network ID the wallet corresponds to."
-                            },
                             "signingProviderId": {
                                 "title": "signingProviderId",
                                 "type": "string",
@@ -187,11 +182,7 @@
                                 "$ref": "#/components/schemas/SigningProviderContext"
                             }
                         },
-                        "required": [
-                            "partyHint",
-                            "networkId",
-                            "signingProviderId"
-                        ]
+                        "required": ["partyHint", "signingProviderId"]
                     }
                 }
             ],
@@ -722,6 +713,16 @@
                         "title": "topologyTransactions",
                         "type": "string",
                         "description": "The topology transactions"
+                    },
+                    "disabled": {
+                        "title": "disabled",
+                        "type": "boolean",
+                        "description": "Whether the wallet is disabled. Wallets are disabled when no signing provider matches the party's namespace during sync. Disabled wallets use participant as the default signing provider."
+                    },
+                    "reason": {
+                        "title": "reason",
+                        "type": "string",
+                        "description": "Reason for the wallet state, e.g., 'no signing provider matched'."
                     }
                 },
                 "required": [

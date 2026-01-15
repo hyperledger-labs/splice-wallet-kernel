@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-tx-visualizer",
-    "version": "0.16.1",
+    "version": "0.17.0",
     "type": "module",
     "description": "Decode and visualize prepared transactions from Canton",
     "license": "Apache-2.0",
@@ -28,7 +28,7 @@
         "@swc/core": "^1.15.8",
         "@swc/jest": "^0.2.39",
         "@types/jest": "^30.0.0",
-        "globals": "^16.5.0",
+        "globals": "^17.0.0",
         "jest": "^30.2.0",
         "ts-jest": "^29.4.6",
         "ts-jest-resolver": "^2.0.1",
@@ -37,7 +37,7 @@
     },
     "dependencies": {
         "@canton-network/core-ledger-proto": "workspace:^",
-        "@types/node": "^24.10.4",
+        "@types/node": "^25.0.8",
         "camelcase-keys": "^10.0.1"
     },
     "files": [

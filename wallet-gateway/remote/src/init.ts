@@ -27,7 +27,7 @@ import { jwtAuthService } from './auth/jwt-auth-service.js'
 import express from 'express'
 import { CliOptions } from './index.js'
 import { jwtAuth } from './middleware/jwtAuth.js'
-import { rpcRateLimit } from './middleware/rateLimit.js'
+import { rateLimiter } from './middleware/rateLimit.js'
 import { Config } from './config/Config.js'
 import { deriveUrls } from './config/ConfigUtils.js'
 import { existsSync, readFileSync } from 'fs'
@@ -123,9 +123,15 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const server = app.listen(port, () => {
         logger.info(`Remote Wallet Gateway starting on ${serviceUrl})`)
     })
+    app.use(express.json({ limit: config.server.requestSizeLimit }))
 
-    app.use('/healthz', rpcRateLimit, (_req, res) => res.status(200).send('OK'))
-    app.use('/readyz', rpcRateLimit, (_req, res) => {
+    const rpcRateLimit = rateLimiter(config.server.requestRateLimit)
+    const healthCheckRateLimit = rateLimiter(1000) // Allow more requests for health checks
+
+    app.use('/healthz', healthCheckRateLimit, (_req, res) =>
+        res.status(200).send('OK')
+    )
+    app.use('/readyz', healthCheckRateLimit, (_req, res) => {
         if (isReady) {
             res.status(200).send('OK')
         } else {

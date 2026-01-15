@@ -14,9 +14,7 @@ import { AssetCard } from './AssetCard'
 import { SelectInstrument } from './SelectInstrument'
 
 export const HoldingsTab: React.FC = () => {
-    const {
-        status: { sessionToken },
-    } = useConnection()
+    const sessionToken = useConnection().status?.session?.accessToken
     const primaryParty = usePrimaryAccount()?.partyId
     const { listHoldings, tap } = usePortfolio()
     const registryUrls = useRegistryUrls()
@@ -37,8 +35,25 @@ export const HoldingsTab: React.FC = () => {
     }, [primaryParty, listHoldings])
 
     useEffect(() => {
-        refreshHoldings()
-    }, [primaryParty, refreshHoldings])
+        let cancelled = false
+
+        const fetchHoldings = async () => {
+            if (primaryParty) {
+                const hs = await listHoldings({ party: primaryParty })
+                if (!cancelled) {
+                    setHoldings(hs)
+                }
+            } else {
+                setHoldings(undefined)
+            }
+        }
+
+        void fetchHoldings()
+
+        return () => {
+            cancelled = true
+        }
+    }, [primaryParty, listHoldings])
 
     return (
         <div>

@@ -13,6 +13,9 @@ import {
     JSContractEntry,
     isJsCantonError,
     components,
+    WebSocketClient,
+    JsGetUpdatesResponse,
+    CompletionResponse,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -21,6 +24,7 @@ import {
     PublicKey,
     verifySignedTxHash,
 } from '@canton-network/core-signing-lib'
+import { WebSocketManager } from './webSocketManager.js'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-proto'
@@ -29,6 +33,10 @@ import { PartyId } from '@canton-network/core-types'
 import { defaultRetryableOptions } from '@canton-network/core-ledger-client'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { decodeTopologyTransaction } from '@canton-network/core-tx-visualizer'
+
+export type UpdatesResponse = JsGetUpdatesResponse
+
+export type CommandsCompletionsStreamResponse = CompletionResponse
 
 export type RawCommandMap = {
     ExerciseCommand: Types['ExerciseCommand']
@@ -47,12 +55,21 @@ export type ParticipantEndpointConfig = {
     accessTokenProvider?: AccessTokenProvider
 }
 
+export type SubscribeToUpdateOptions = {
+    beginOffset?: number
+    verbose?: boolean
+} & (
+    | { interfaceIds: string[]; templateIds?: never }
+    | { interfaceIds?: never; templateIds: string[] }
+)
+
 /**
  * Controller for interacting with the Ledger API, this is the primary interaction point with the validator node
  * using external signing.
  */
 export class LedgerController {
     private readonly client: LedgerClient
+    private readonly webSocketManager: WebSocketManager | undefined
     private readonly userId: string
     private readonly isAdmin: boolean
     private partyId: PartyId | undefined
@@ -82,6 +99,26 @@ export class LedgerController {
             accessToken: token,
             accessTokenProvider,
         })
+
+        if (accessTokenProvider) {
+            const wsUrl = `ws://${baseUrl.host}`
+            const wsClient = new WebSocketClient({
+                baseUrl: wsUrl,
+                isAdmin,
+                logger: this.logger,
+                accessTokenProvider,
+                wsSupportBackOff: 6000 * 10,
+            })
+
+            this.webSocketManager = new WebSocketManager({
+                wsClient,
+                logger: pino({
+                    name: 'WebSocketManager-LedgerController',
+                    level: 'info',
+                }),
+            })
+        }
+
         this.initPromise = this.client.init()
         this.userId = userId
         this.isAdmin = isAdmin
@@ -91,6 +128,7 @@ export class LedgerController {
     async awaitInit() {
         return this.initPromise
     }
+
     /**
      * Sets the party that the ledgerController will use for requests.
      * @param partyId
@@ -207,6 +245,63 @@ export class LedgerController {
         if ('JsActiveContract' in entry) {
             return entry.JsActiveContract.createdEvent.contractId
         }
+    }
+
+    /**
+     * @param options update filter options (templateIds or interfaceIds, beginOffset, verbose)
+     * @returns AsyncIterableIterator of Updates
+     * @throws InvalidSubscriptionOptionsError if the options is invalid
+     * @throws WebSocketConnectionError if connection fails
+     */
+    async *subscribeToUpdates(options: SubscribeToUpdateOptions) {
+        if (!this.webSocketManager) {
+            throw new Error(
+                'WebSocketManager not initialized. Please provide an accessTokenProvider in the constructor to enable WebSocket support.'
+            )
+        }
+        const { beginOffset } = options
+
+        const baseOptions = {
+            beginExclusive: beginOffset ?? 0,
+            partyId: this.getPartyId(),
+            verbose: options.verbose ?? true,
+        }
+
+        const stream =
+            'templateIds' in options
+                ? this.webSocketManager.subscribeToUpdates({
+                      ...baseOptions,
+                      templateIds: options.templateIds,
+                  })
+                : this.webSocketManager.subscribeToUpdates({
+                      ...baseOptions,
+                      interfaceIds: options.interfaceIds,
+                  })
+
+        yield* stream
+    }
+
+    /**
+     * Subscribes to command completions for the party and user defined in the ledger controller, with an optional begin offset.
+     * @param options options for the subscription, including an optional begin offset and an optional list of parties to filter for (defaults to the party defined in the ledger controller)
+     */
+    async *subscribeToCompletions(options: {
+        beginOffset?: number
+        parties?: PartyId[]
+    }) {
+        if (!this.webSocketManager) {
+            throw new Error(
+                'WebSocketManager not initialized. Please provide an accessTokenProvider in the constructor to enable WebSocket support.'
+            )
+        }
+
+        const request = {
+            beginOffset: options.beginOffset ?? 0,
+            userId: this.userId,
+            parties: options.parties ?? [this.getPartyId()],
+        }
+
+        yield* this.webSocketManager.subscribeToCompletions(request)
     }
 
     /**
