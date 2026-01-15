@@ -214,7 +214,7 @@ export const userController = (
                     break
                 }
                 case SigningProvider.BLOCKDAEMON: {
-                    if (signingProviderContext) {
+                    if (signingProviderContext?.externalTxId) {
                         walletStatus = 'initialized'
                         const { signature, status } =
                             await driver.getTransaction({
@@ -434,10 +434,14 @@ export const userController = (
                 ...partyArgs,
             } as Wallet
 
-            if (signingProviderContext && walletStatus === 'allocated') {
+            if (
+                signingProviderContext &&
+                (walletStatus === 'allocated' || walletStatus === 'initialized')
+            ) {
                 await store.updateWallet({
                     partyId: wallet.partyId,
                     status: wallet.status,
+                    externalTxId: wallet.externalTxId!,
                 })
             } else if (!signingProviderContext) {
                 await store.addWallet(wallet)
