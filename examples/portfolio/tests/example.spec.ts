@@ -101,17 +101,20 @@ const setupRegistry = async (page: Page): Promise<void> => {
     await expect(page.getByText('DSO::')).toBeVisible()
 }
 
-test('portfolio: tap', async ({ page: dappPage }) => {
+test('two step transfer', async ({ page: dappPage }) => {
     await dappPage.goto('http://localhost:8081/old')
     await expect(dappPage).toHaveTitle(/dApp Portfolio/)
 
-    const popup = await connectToLocalNet(dappPage)
+    await setupRegistry(dappPage)
+
+    let popup = await connectToLocalNet(dappPage)
     const alice = await createWalletIfNotExists(popup, 'alice')
     console.log('aliceParty', alice)
     const bob = await createWalletIfNotExists(popup, 'bob')
     console.log('bobParty', bob)
 
-    await setupRegistry(dappPage)
+    // Refresh the popup reference whenever a new popup appears.
+    dappPage.on('popup', (p) => popup = p);
 
     await setPrimaryWallet(popup, alice)
     await openTab(dappPage, 'Holdings')
@@ -160,6 +163,12 @@ test('portfolio: tap', async ({ page: dappPage }) => {
     await expect(
         dappPage.getByText('TransferPendingReceiverAcceptance')
     ).not.toHaveCount(0)
+
+    const openButton = dappPage.getByRole('button', {
+        name: 'open Wallet Gateway',
+    })
+    await expect(openButton).toBeVisible()
+    await openButton.click()
 
     await setPrimaryWallet(popup, bob)
     await dappPage.getByRole('button', { name: 'Accept' }).first().click()
