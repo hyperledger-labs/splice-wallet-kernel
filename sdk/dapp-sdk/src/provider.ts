@@ -83,7 +83,6 @@ export class Provider implements SpliceProvider {
     }
 
     emit<T>(event: string, ...args: T[]): boolean {
-        console.log('[Provider] Emitting event:', event, args)
         return this.provider.emit(event, args)
     }
 

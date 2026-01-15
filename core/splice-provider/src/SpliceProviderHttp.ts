@@ -55,10 +55,6 @@ export class SpliceProviderHttp extends SpliceProviderBase {
             }
 
             connection.socket.onAny((event, ...args) => {
-                console.debug(
-                    `[SpliceProviderHttp] Received event: ${event}`,
-                    args
-                )
                 this.emit(event, ...args)
             })
         }
