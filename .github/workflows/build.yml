@@ -187,7 +187,9 @@ jobs:
               run: yarn build:all
 
             - name: Start remote WK
-              run: yarn nx run @canton-network/wallet-gateway-remote:start &
+              run: |
+                  jq -i '.server.requestRateLimit = 10000' wallet-gateway/test/config.json
+                  yarn nx run @canton-network/wallet-gateway-remote:start &
 
             - run: yarn nx run @canton-network/example-portfolio:dev > "example-portfolio.log" 2>&1 &
 
