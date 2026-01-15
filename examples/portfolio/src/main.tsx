@@ -14,8 +14,7 @@ import { Toaster } from 'sonner'
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            staleTime: 30_000, // data stays fresh for 30 seconds
-            refetchInterval: 60_000, // Poll every 60 seconds
+            refetchInterval: 15_000, // Poll every 15 seconds
         },
     },
 })
