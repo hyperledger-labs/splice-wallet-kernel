@@ -21,7 +21,7 @@
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
         "@canton-network/core-wallet-store": "workspace:^",
-        "pino": "^10.1.0",
+        "pino": "^10.1.1",
         "zod": "^4.3.5"
     },
     "devDependencies": {

@@ -32,8 +32,8 @@
     },
     "devDependencies": {
         "@types/fs-extra": "^11.0.4",
-        "@types/lodash": "^4.17.21",
-        "@types/node": "^24.10.4",
+        "@types/lodash": "^4.17.23",
+        "@types/node": "^25.0.8",
         "tsup": "^8.5.1",
         "typescript": "^5.9.3"
     },
