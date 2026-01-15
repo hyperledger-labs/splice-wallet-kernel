@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import * as sdk from '@canton-network/dapp-sdk'
+import { queryKeys } from '../hooks/query-keys'
 import { ConnectionContext } from './ConnectionContext'
 
 export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -80,10 +81,10 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
             console.log('incoming event', event)
             if (event.status === 'executed') {
                 await queryClient.invalidateQueries({
-                    queryKey: ['listPendingTransfers'],
+                    queryKey: queryKeys.listPendingTransfers.all,
                 })
                 await queryClient.invalidateQueries({
-                    queryKey: ['getTransactionHistory'],
+                    queryKey: queryKeys.getTransactionHistory.all,
                 })
             }
         }

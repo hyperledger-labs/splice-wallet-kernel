@@ -2,9 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export const queryKeys = {
-    listPendingTransfers: (party: string | undefined) => [
-        'listPendingTransfers',
-        party,
-    ],
+    getTransactionHistory: {
+        all: ['getTransactionHistory'],
+        forParty: (party: string | undefined) => [
+            'getTransactionHistory',
+            party,
+        ],
+    },
+    listPendingTransfers: {
+        all: ['listPendingTransfers'],
+        forParty: (party: string | undefined) => [
+            'listPendingTransfers',
+            party,
+        ],
+    },
     listHoldings: (party: string | undefined) => ['holdings', party],
 }

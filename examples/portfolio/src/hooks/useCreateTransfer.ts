@@ -26,10 +26,12 @@ export const useCreateTransfer = () => {
             }),
         onSuccess: async (_, args) => {
             await queryClient.invalidateQueries({
-                queryKey: queryKeys.listPendingTransfers(args.sender),
+                queryKey: queryKeys.listPendingTransfers.forParty(args.sender),
             })
             await queryClient.invalidateQueries({
-                queryKey: queryKeys.listPendingTransfers(args.receiver),
+                queryKey: queryKeys.listPendingTransfers.forParty(
+                    args.receiver
+                ),
             })
         },
     })

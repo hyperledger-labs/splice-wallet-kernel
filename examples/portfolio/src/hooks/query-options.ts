@@ -9,7 +9,7 @@ export const usePendingTransfersQueryOptions = (party: string | undefined) => {
     const { listPendingTransfers } = usePortfolio()
     return queryOptions({
         retry: 10,
-        queryKey: queryKeys.listPendingTransfers(party),
+        queryKey: queryKeys.listPendingTransfers.forParty(party),
         queryFn: async () =>
             party ? listPendingTransfers({ party: party! }) : [],
     })
