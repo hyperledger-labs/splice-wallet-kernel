@@ -1,7 +1,7 @@
-project = "Wallet Gateway"
+project = "dApp Building"
 
 extensions = [
-    'sphinx_copybutton',
-    'sphinx_tabs.tabs',
-    'sphinx.ext.todo',
+    "sphinx_copybutton",
+    "sphinx_tabs.tabs",
+    "sphinx.ext.todo",
 ]

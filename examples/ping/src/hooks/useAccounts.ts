@@ -28,6 +28,7 @@ export function useAccounts(status?: sdk.dappAPI.StatusEvent) {
     useEffect(() => {
         if (status?.isConnected) {
             const listener = (event: sdk.dappAPI.AccountsChangedEvent) => {
+                console.log('[use-accounts] Accounts changed:', event)
                 setAccounts(event)
             }
 

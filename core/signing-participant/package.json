@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-participant",
-    "version": "0.19.0",
+    "version": "0.20.0",
     "packageManager": "yarn@4.9.4",
     "type": "module",
     "description": "Wallet Gateway driver for Canton participant internal parties",
@@ -34,8 +34,8 @@
         "@swc/jest": "^0.2.39",
         "@types/fs-extra": "^11.0.4",
         "@types/jest": "^30.0.0",
-        "@types/lodash": "^4.17.21",
-        "@types/node": "^24.10.4",
+        "@types/lodash": "^4.17.23",
+        "@types/node": "^25.0.8",
         "jest": "^30.2.0",
         "ts-jest-resolver": "^2.0.1",
         "tsup": "^8.5.1",
