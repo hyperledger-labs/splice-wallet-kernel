@@ -1,26 +1,19 @@
 dApp SDK
 ========
 
-This section will help you use the dApp SDK in your project.
+This SDK is for 3rd-party dApps developed against the Canton Network.
+It's intended to be used in a browser to securely connect users to Canton Network wallets.
+Once connected, the SDK provides a dApp UI with permissions to read a user's selected Canton party and request transaction signatures.
 
-Canton has privacy:
-Confidential data resides on the validator node that hosts the user's party
-Authentication and authorization in place to protect confidentiality
-dApp standard:
-Explains how to authorize and authenticate apps to access confidential data
-Compatible:
-Builds on top of Ledger API
-Daml Javascript bindings can be used to form Commands
+The dApp SDK builds on the reference dApp API defined in CIP-TBD.
+This extension to the Ledger API establishes a standard interface for decentralized applications (dApps) on the Canton Network,
+enabling dApp developers to interact with any Canton Network–compatible Web3 wallet through a unified API and SDK.
 
+**Additional features of the dApp SDK:**
 
-A single standard for decentralized applications (dApps) in the Canton Network, enabling:
-Wallet Providers: to build compatible web3/dApp Wallets for the Canton Network
-dApp Builders: Universal API and SDK to interact with any kind of Canton Network web3 Wallet
-Additional properties:
-Transport agnostic: enabling any kind of Wallet (Remote, Browser, Mobile, Desktop, …)
-Developer friendly: Typescript dApp SDK provides convenience
-Compatible: EIP-1193 provider [window.canton]
-(methods vary from other ecosystems)
+- Multi-Transport Support: `postMessage` (Browser Extension Wallets), `HTTP` (Remote Wallets)
+
+- EIP-1193 provider: `window.canton`
 
 
 .. toctree::
