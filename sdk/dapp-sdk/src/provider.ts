@@ -187,6 +187,15 @@ export const dappController = (provider: SpliceProvider) =>
 
                     // TODO: ensure that the event corresponds to the correct transaction
                     const listener = (event: dappRemoteAPI.TxChangedEvent) => {
+                        if (event.status === 'failed') {
+                            provider.removeListener('txChanged', listener)
+                            clearTimeout(timeout)
+                            reject({
+                                status: 'error',
+                                error: ErrorCode.TransactionFailed,
+                                details: `Transaction with commandId ${event.commandId} failed to execute.`,
+                            })
+                        }
                         if (event.status === 'executed') {
                             provider.removeListener('txChanged', listener)
                             clearTimeout(timeout)
