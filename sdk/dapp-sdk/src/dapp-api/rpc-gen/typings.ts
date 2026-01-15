@@ -218,6 +218,38 @@ export interface JsPrepareSubmissionResponse {
     preparedTransactionHash?: PreparedTransactionHash
     [k: string]: any
 }
+/**
+ *
+ * The status of the transaction.
+ *
+ */
+export type StatusExecuted = 'executed'
+/**
+ *
+ * The update ID corresponding to the transaction.
+ *
+ */
+export type UpdateId = string
+export type CompletionOffset = number
+/**
+ *
+ * Payload for the TxChangedExecutedEvent.
+ *
+ */
+export interface TxChangedExecutedPayload {
+    updateId: UpdateId
+    completionOffset: CompletionOffset
+}
+/**
+ *
+ * Event emitted when a transaction is executed against the participant.
+ *
+ */
+export interface TxChangedExecutedEvent {
+    status: StatusExecuted
+    commandId: CommandId
+    payload: TxChangedExecutedPayload
+}
 export type Response = string
 /**
  *
@@ -363,38 +395,6 @@ export interface TxChangedSignedEvent {
  * The status of the transaction.
  *
  */
-export type StatusExecuted = 'executed'
-/**
- *
- * The update ID corresponding to the transaction.
- *
- */
-export type UpdateId = string
-export type CompletionOffset = number
-/**
- *
- * Payload for the TxChangedExecutedEvent.
- *
- */
-export interface TxChangedExecutedPayload {
-    updateId: UpdateId
-    completionOffset: CompletionOffset
-}
-/**
- *
- * Event emitted when a transaction is executed against the participant.
- *
- */
-export interface TxChangedExecutedEvent {
-    status: StatusExecuted
-    commandId: CommandId
-    payload: TxChangedExecutedPayload
-}
-/**
- *
- * The status of the transaction.
- *
- */
 export type StatusFailed = 'failed'
 /**
  *
@@ -466,6 +466,10 @@ export interface DarsAvailableResult {
     [k: string]: any
 }
 export type PrepareReturnResult = any
+export interface PrepareExecuteAndWaitResult {
+    tx: TxChangedExecutedEvent
+    [k: string]: any
+}
 /**
  *
  * Ledger Api configuration options
@@ -511,6 +515,9 @@ export type PrepareReturn = (
     params: PrepareReturnParams
 ) => Promise<PrepareReturnResult>
 export type PrepareExecute = (params: PrepareExecuteParams) => Promise<Null>
+export type PrepareExecuteAndWait = (
+    params: PrepareExecuteParams
+) => Promise<PrepareExecuteAndWaitResult>
 export type LedgerApi = (params: LedgerApiParams) => Promise<LedgerApiResult>
 export type OnAccountsChanged = () => Promise<AccountsChangedEvent>
 export type RequestAccounts = () => Promise<RequestAccountsResult>

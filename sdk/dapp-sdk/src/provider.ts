@@ -167,6 +167,44 @@ export const dappController = (provider: SpliceProvider) =>
 
             return null
         },
+        prepareExecuteAndWait: async (
+            params: PrepareExecuteParams
+        ): Promise<dappAPI.PrepareExecuteAndWaitResult> => {
+            const response =
+                await provider.request<dappRemoteAPI.PrepareExecuteResult>({
+                    method: 'prepareExecute',
+                    params,
+                })
+
+            if (response.userUrl) popup.open(response.userUrl)
+
+            const promise = new Promise<dappAPI.PrepareExecuteAndWaitResult>(
+                (resolve, reject) => {
+                    const timeout = withTimeout(
+                        reject,
+                        'Timed out waiting for transaction approval'
+                    )
+
+                    // TODO: ensure that the event corresponds to the correct transaction
+                    const listener = (event: dappRemoteAPI.TxChangedEvent) => {
+                        if (event.status === 'executed') {
+                            provider.removeListener('txChanged', listener)
+                            clearTimeout(timeout)
+                            resolve({
+                                tx: event,
+                            })
+                        }
+                    }
+
+                    provider.on<dappRemoteAPI.TxChangedEvent>(
+                        'txChanged',
+                        listener
+                    )
+                }
+            )
+
+            return promise
+        },
         prepareReturn: async (params: dappAPI.PrepareReturnParams) =>
             provider.request<dappAPI.PrepareReturnResult>({
                 method: 'prepareReturn',

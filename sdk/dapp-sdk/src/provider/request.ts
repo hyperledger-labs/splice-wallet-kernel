@@ -109,6 +109,15 @@ export async function prepareExecute(
     })
 }
 
+export async function prepareExecuteAndWait(
+    params: dappAPI.PrepareExecuteParams
+): Promise<dappAPI.PrepareExecuteAndWaitResult> {
+    return await assertProvider().request<dappAPI.PrepareExecuteAndWaitResult>({
+        method: 'prepareExecuteAndWait',
+        params,
+    })
+}
+
 export async function ledgerApi(
     params: dappAPI.LedgerApiParams
 ): Promise<dappAPI.LedgerApiResult> {
