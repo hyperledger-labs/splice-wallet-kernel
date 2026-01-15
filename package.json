@@ -45,7 +45,6 @@
         "docs/wallet-integration-guide/examples",
         "damljs/**",
         "examples/*",
-        "example-scripts",
         "sdk/**",
         "scripts",
         "mock-oauth2",
