@@ -251,6 +251,8 @@ export class ApproveUi extends LitElement {
 
             this.message = 'Transaction executed successfully ✅'
             this.messageType = 'info'
+            // This prevents folks from clicking approve twice
+            this.status = 'executed'
 
             if (window.opener) {
                 setTimeout(() => window.close(), 1000)

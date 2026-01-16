@@ -11,7 +11,6 @@ export const ConnectionCard: React.FC = () => {
 
     return (
         <div className="card">
-            {JSON.stringify(status)}
             {!connected && (
                 <button onClick={() => connect()}>
                     connect to Wallet Gateway

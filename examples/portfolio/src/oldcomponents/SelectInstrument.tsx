@@ -38,6 +38,7 @@ export const SelectInstrument: React.FC<SelectInstrumentProps> = ({
 
     return (
         <select
+            className="select-instrument"
             value={selectedSymbol}
             onChange={(e) => {
                 setSelectedSymbol(e.target.value)
