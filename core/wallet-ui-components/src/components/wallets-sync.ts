@@ -3,7 +3,7 @@
 
 import { html, css } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import { BaseElement } from '../internal/BaseElement'
+import { BaseElement } from '../internal/base-element'
 import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 import { infoCircleFillIcon } from '../icons'
 import { handleErrorToast } from '../handle-errors'

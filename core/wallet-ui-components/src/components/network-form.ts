@@ -4,7 +4,7 @@
 import { Network, networkSchema } from '@canton-network/core-wallet-store'
 import { html } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import { BaseElement } from '../internal/BaseElement.js'
+import { BaseElement } from '../internal/base-element'
 import { FormInputChangedEvent } from './form-input.js'
 import {
     AuthorizationCodeAuth,

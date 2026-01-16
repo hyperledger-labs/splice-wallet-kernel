@@ -5,7 +5,7 @@ import { html } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { Idp, Session } from '@canton-network/core-wallet-user-rpc-client'
 
-import { BaseElement } from '../internal/BaseElement'
+import { BaseElement } from '../internal/base-element'
 import { modalStyles } from '../styles/modal'
 import { FormInputChangedEvent } from './form-input'
 
