@@ -7,17 +7,14 @@ import { useInstruments } from '../contexts/RegistryServiceContext'
 import {
     aggregateHoldings,
     enrichWithInstrumentInfo,
-    type AggregatedHolding,
 } from '../utils/aggregate-holdings'
 import { queryKeys } from './query-keys'
-
-export type { AggregatedHolding }
 
 export const useAggregatedHoldings = (partyId: string | undefined) => {
     const instruments = useInstruments()
 
     const holdingsQuery = useQuery({
-        queryKey: queryKeys.listHoldings(partyId),
+        queryKey: queryKeys.listHoldings.forParty(partyId),
         queryFn: () => listHoldings({ party: partyId as string }),
         enabled: !!partyId,
         select: (holdings) =>

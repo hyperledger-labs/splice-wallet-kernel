@@ -31,7 +31,7 @@ export class UserUiWallets extends LitElement {
     accessor networks: string[] = []
 
     @state()
-    accessor wallets: Wallet[] = []
+    accessor wallets: Wallet[] | undefined = undefined
 
     @state()
     accessor createdParty = undefined
@@ -166,20 +166,17 @@ export class UserUiWallets extends LitElement {
     `
 
     protected render() {
-        const shownWallets = this.wallets.reduce(
-            (acc, w) => {
-                if (w.status === 'allocated') {
-                    acc.verifiedWallets.push(w)
-                } else {
-                    acc.unverifiedWallets.push(w)
-                }
-                return acc
-            },
-            {
-                verifiedWallets: [] as Wallet[],
-                unverifiedWallets: [] as Wallet[],
+        const shownWallets = {
+            verifiedWallets: [] as Wallet[],
+            unverifiedWallets: [] as Wallet[],
+        }
+        this.wallets?.forEach((w) => {
+            if (w.status === 'allocated') {
+                shownWallets.verifiedWallets.push(w)
+            } else {
+                shownWallets.unverifiedWallets.push(w)
             }
-        )
+        })
         return html`
             <div class="header">
                 <h1>Wallets</h1>
@@ -191,6 +188,8 @@ export class UserUiWallets extends LitElement {
                     ${this.showCreateCard ? 'Close' : 'Create New'}
                 </button>
             </div>
+
+            ${this.wallets === undefined ? 'Loading wallets…' : ''}
 
             <div class="card-list">
                 ${this.showCreateCard

@@ -1,32 +1,13 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useState, useEffect } from 'react'
-import type {
-    PrettyContract,
-    TransferInstructionView,
-} from '@canton-network/core-ledger-client'
-import { usePortfolio } from '../contexts/PortfolioContext'
 import { usePrimaryAccount } from '../hooks/useAccounts'
+import { usePendingTransfers } from '../hooks/usePendingTransfers'
 import { TransferCard } from './TransferCard'
 
 export const PendingTransfersTab: React.FC = () => {
     const primaryParty = usePrimaryAccount()?.partyId
-    const { listPendingTransfers } = usePortfolio()
-    const [pendingTransfers, setPendingTransfers] = useState<
-        PrettyContract<TransferInstructionView>[] | undefined
-    >(undefined)
-
-    useEffect(() => {
-        ;(async () => {
-            if (primaryParty) {
-                const hs = await listPendingTransfers({ party: primaryParty })
-                setPendingTransfers(hs)
-            } else {
-                setPendingTransfers(undefined)
-            }
-        })()
-    }, [primaryParty, listPendingTransfers])
+    const { data: pendingTransfers } = usePendingTransfers()
 
     return (
         <div>

@@ -2053,6 +2053,7 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^7.0.1"
     eslint-plugin-react-refresh: "npm:^0.4.26"
     globals: "npm:^17.0.0"
+    nx: "npm:^22.3.3"
     pino: "npm:^10.1.1"
     react: "npm:^19.2.3"
     react-dom: "npm:^19.2.3"
