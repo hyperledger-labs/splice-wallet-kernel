@@ -40,52 +40,15 @@
             "description": "Invoke a disconnect of the wallet gateway session."
         },
         {
-            "name": "darsAvailable",
+            "name": "getActiveNetwork",
             "params": [],
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "darsAvailableResult",
-                    "type": "object",
-                    "properties": {
-                        "dars": {
-                            "title": "dars",
-                            "type": "array",
-                            "items": {
-                                "title": "dar",
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "required": ["dars"]
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/Network"
                 }
             },
-            "description": "Lists DARs currently available to the connected Validator node, such that dApp can verify whether the app is installed."
-        },
-        {
-            "name": "prepareReturn",
-            "params": [
-                {
-                    "name": "params",
-                    "schema": {
-                        "title": "prepareReturnParams",
-                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/JsPrepareSubmissionRequest"
-                    }
-                }
-            ],
-            "result": {
-                "name": "result",
-                "schema": {
-                    "title": "prepareReturnResult",
-                    "properties": {
-                        "response": {
-                            "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/JsPrepareSubmissionResponse"
-                        }
-                    },
-                    "required": ["response"]
-                }
-            },
-            "description": "Processes the prepare step and returns the data to sign."
+            "description": "Returns the active network."
         },
         {
             "name": "prepareExecute",
@@ -133,6 +96,25 @@
             "description": "Like prepareExecute, but waits for the transaction to be executed on the ledger."
         },
         {
+            "name": "signMessage",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "signMessageParams",
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/SignMessageRequest"
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/SignMessageResult"
+                }
+            },
+            "description": "Signs a message."
+        },
+        {
             "name": "ledgerApi",
             "params": [
                 {
@@ -152,7 +134,7 @@
             "description": "Proxy for the JSON-API endpoints. Injects authorization headers automatically."
         },
         {
-            "name": "onAccountsChanged",
+            "name": "accountsChanged",
             "params": [],
             "result": {
                 "name": "result",
@@ -162,18 +144,29 @@
             }
         },
         {
-            "name": "requestAccounts",
+            "name": "getPrimaryAccount",
             "params": [],
             "result": {
                 "name": "result",
                 "schema": {
-                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/RequestAccountsResult"
+                    "$ref": "api-specs/openrpc-user-api.json#/components/schemas/Wallet"
+                }
+            },
+            "description": "Returns the primary account."
+        },
+        {
+            "name": "listAccounts",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/ListAccountsResult"
                 }
             },
             "description": "Lists the addresses (wallets) with their properties; including which network they are associated to and with signing provider is used."
         },
         {
-            "name": "onTxChanged",
+            "name": "txChanged",
             "params": [],
             "result": {
                 "name": "result",
@@ -368,8 +361,8 @@
                     "$ref": "api-specs/openrpc-user-api.json#/components/schemas/Wallet"
                 }
             },
-            "RequestAccountsResult": {
-                "title": "RequestAccountsResult",
+            "ListAccountsResult": {
+                "title": "ListAccountsResult",
                 "type": "array",
                 "description": "An array of accounts that the user has authorized the dapp to access..",
                 "items": {
@@ -542,31 +535,7 @@
                         "description": "If not connected to a network, the reason why."
                     },
                     "network": {
-                        "title": "network",
-                        "type": "object",
-                        "description": "Network information, if connected to a network.",
-                        "properties": {
-                            "networkId": {
-                                "title": "networkId",
-                                "type": "string",
-                                "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
-                            },
-                            "ledgerApi": {
-                                "title": "LedgerApiConfig",
-                                "type": "object",
-                                "description": "Ledger API configuration.",
-                                "properties": {
-                                    "baseUrl": {
-                                        "title": "baseUrl",
-                                        "type": "string",
-                                        "format": "uri",
-                                        "description": "The base URL of the ledger API."
-                                    }
-                                },
-                                "required": ["baseUrl"]
-                            }
-                        },
-                        "required": ["networkId"]
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/Network"
                     },
                     "session": {
                         "title": "session",
@@ -588,6 +557,59 @@
                     }
                 },
                 "required": ["kernel", "isConnected", "isNetworkConnected"]
+            },
+            "SignMessageRequest": {
+                "title": "SignMessageRequest",
+                "type": "object",
+                "description": "Request to sign a message.",
+                "properties": {
+                    "message": {
+                        "title": "message",
+                        "type": "string",
+                        "description": "The message to sign."
+                    }
+                },
+                "required": ["message"]
+            },
+            "SignMessageResult": {
+                "title": "SignMessageResult",
+                "type": "object",
+                "description": "Result of signing a message.",
+                "properties": {
+                    "signature": {
+                        "title": "signature",
+                        "type": "string",
+                        "description": "The signature of the message."
+                    }
+                },
+                "required": ["signature"]
+            },
+            "Network": {
+                "title": "network",
+                "type": "object",
+                "description": "Network information, if connected to a network.",
+                "properties": {
+                    "networkId": {
+                        "title": "networkId",
+                        "type": "string",
+                        "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
+                    },
+                    "ledgerApi": {
+                        "title": "LedgerApiConfig",
+                        "type": "object",
+                        "description": "Ledger API configuration.",
+                        "properties": {
+                            "baseUrl": {
+                                "title": "baseUrl",
+                                "type": "string",
+                                "format": "uri",
+                                "description": "The base URL of the ledger API."
+                            }
+                        },
+                        "required": ["baseUrl"]
+                    }
+                },
+                "required": ["networkId"]
             }
         }
     }

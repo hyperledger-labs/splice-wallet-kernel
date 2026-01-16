@@ -88,14 +88,14 @@ export const dapp = (
                 io.to(sessionId).emit('statusChanged', ...event)
             }
             const onConnected = (...event: unknown[]) => {
-                io.to(sessionId).emit('onConnected', ...event)
+                io.to(sessionId).emit('connected', ...event)
             }
             const onTxChanged = (...event: unknown[]) => {
                 io.to(sessionId).emit('txChanged', ...event)
             }
 
             notifier.on('accountsChanged', onAccountsChanged)
-            notifier.on('onConnected', onConnected)
+            notifier.on('connected', onConnected)
             notifier.on('statusChanged', onStatusChanged)
             notifier.on('txChanged', onTxChanged)
 
@@ -103,7 +103,7 @@ export const dapp = (
                 logger.debug('Socket.io client disconnected')
 
                 notifier.removeListener('accountsChanged', onAccountsChanged)
-                notifier.removeListener('onConnected', onConnected)
+                notifier.removeListener('connected', onConnected)
                 notifier.removeListener('statusChanged', onStatusChanged)
                 notifier.removeListener('txChanged', onTxChanged)
             })

@@ -85,11 +85,11 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 this.openSocket(this.url, event.data.token)
 
                 // We requery the status explicitly here, as it's not guaranteed that the socket will be open & authenticated
-                // before the `onConnected` event is fired from the `addSession` RPC call. The dappApi.StatusResult and
-                // dappApi.OnConnectedEvent are mapped manually to avoid dependency.
+                // before the `connected` event is fired from the `addSession` RPC call. The dappApi.StatusResult and
+                // dappApi.ConnectedEvent are mapped manually to avoid dependency.
                 this.request({ method: 'status' })
                     .then((status) => {
-                        this.emit('onConnected', status)
+                        this.emit('connected', status)
                     })
                     .catch((err) => {
                         console.error(

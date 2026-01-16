@@ -88,15 +88,9 @@ export async function status(): Promise<dappAPI.StatusEvent> {
     })
 }
 
-export async function darsAvailable(): Promise<dappAPI.DarsAvailableResult> {
-    return await assertProvider().request<dappAPI.DarsAvailableResult>({
-        method: 'darsAvailable',
-    })
-}
-
-export async function requestAccounts(): Promise<dappAPI.RequestAccountsResult> {
-    return await assertProvider().request<dappAPI.RequestAccountsResult>({
-        method: 'requestAccounts',
+export async function listAccounts(): Promise<dappAPI.ListAccountsResult> {
+    return await assertProvider().request<dappAPI.ListAccountsResult>({
+        method: 'listAccounts',
     })
 }
 
