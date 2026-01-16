@@ -534,7 +534,7 @@ export class TokenStandardController {
      */
     async buyMemberTraffic(
         buyer: PartyId,
-        ccAmount: Decimal,
+        ccAmount: number,
         memberId: string,
         inputUtxos: string[],
         migrationId: number = 0

@@ -57,7 +57,7 @@ export class AmuletService {
     async buyMemberTraffic(
         dso: PartyId,
         provider: PartyId,
-        trafficAmount: Decimal,
+        trafficAmount: number,
         synchronizerId: string,
         memberId: string,
         migrationId: number,
@@ -70,7 +70,7 @@ export class AmuletService {
         const inputHoldings = await this.tokenStandard.getInputHoldingsCids(
             provider,
             inputUtxos,
-            trafficAmount
+            new Decimal(trafficAmount)
         )
 
         if (!amuletRules) {
