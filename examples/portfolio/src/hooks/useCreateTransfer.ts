@@ -7,25 +7,31 @@ import { usePortfolio } from '../contexts/PortfolioContext'
 import { useRegistryUrls } from '../contexts/RegistryServiceContext'
 import { queryKeys } from './query-keys'
 
-export const useExerciseTransfer = () => {
-    const { exerciseTransfer } = usePortfolio()
+export interface CreateTransferArgs {
+    sender: string
+    receiver: string
+    instrumentId: { admin: PartyId; id: string }
+    amount: string
+    memo?: string
+}
+
+export const useCreateTransfer = () => {
+    const { createTransfer } = usePortfolio()
     const registryUrls = useRegistryUrls()
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: async (args: {
-            party: PartyId
-            contractId: string
-            instrumentId: { admin: string; id: string }
-            instructionChoice: 'Accept' | 'Reject' | 'Withdraw'
-        }) =>
-            exerciseTransfer({
+        mutationFn: (args: CreateTransferArgs) =>
+            createTransfer({
                 registryUrls,
                 ...args,
             }),
-        onSuccess: async (_, args) => {
+        onSuccess: async () => {
             await queryClient.invalidateQueries({
-                queryKey: queryKeys.listPendingTransfers.forParty(args.party),
+                queryKey: queryKeys.listPendingTransfers.all,
+            })
+            await queryClient.invalidateQueries({
+                queryKey: queryKeys.listHoldings.all,
             })
         },
     })

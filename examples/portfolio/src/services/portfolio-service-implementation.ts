@@ -75,7 +75,7 @@ export const createTransfer = async ({
     sender: PartyId
     receiver: PartyId
     instrumentId: { admin: PartyId; id: string }
-    amount: number
+    amount: string
     memo?: string
 }) => {
     const registryUrl = registryUrls.get(instrumentId.admin)
@@ -87,7 +87,7 @@ export const createTransfer = async ({
         await tokenStandardService.transfer.createTransfer(
             sender,
             receiver,
-            `${amount}`,
+            amount,
             instrumentId.admin,
             instrumentId.id,
             registryUrl,
@@ -108,7 +108,7 @@ export const createTransfer = async ({
     const provider = window.canton
     // TODO: check success
     await provider?.request({
-        method: 'prepareExecute',
+        method: 'prepareExecuteAndWait',
         params: request,
     })
 }
@@ -150,7 +150,7 @@ export const exerciseTransfer = async ({
     const provider = window.canton
     // TODO: check success
     await provider?.request({
-        method: 'prepareExecute',
+        method: 'prepareExecuteAndWait',
         params: request,
     })
 }
@@ -215,7 +215,7 @@ export const createAllocation = async ({
     const provider = window.canton
     // TODO: check success
     await provider?.request({
-        method: 'prepareExecute',
+        method: 'prepareExecuteAndWait',
         params: request,
     })
 }
@@ -268,7 +268,7 @@ export const withdrawAllocation = async ({
     const provider = window.canton
     // TODO: check success
     await provider?.request({
-        method: 'prepareExecute',
+        method: 'prepareExecuteAndWait',
         params: request,
     })
 }
@@ -340,7 +340,7 @@ export const tap = async ({
     const provider = window.canton
     // TODO: check success
     await provider?.request({
-        method: 'prepareExecute',
+        method: 'prepareExecuteAndWait',
         params: request,
     })
 }
