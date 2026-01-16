@@ -6,6 +6,7 @@ import { Connect } from './typings.js'
 import { Disconnect } from './typings.js'
 import { GetActiveNetwork } from './typings.js'
 import { PrepareExecute } from './typings.js'
+import { PrepareExecuteAndWait } from './typings.js'
 import { SignMessage } from './typings.js'
 import { LedgerApi } from './typings.js'
 import { AccountsChanged } from './typings.js'
@@ -19,6 +20,7 @@ export type Methods = {
     disconnect: Disconnect
     getActiveNetwork: GetActiveNetwork
     prepareExecute: PrepareExecute
+    prepareExecuteAndWait: PrepareExecuteAndWait
     signMessage: SignMessage
     ledgerApi: LedgerApi
     accountsChanged: AccountsChanged
@@ -34,6 +36,7 @@ function buildController(methods: Methods) {
         disconnect: methods.disconnect,
         getActiveNetwork: methods.getActiveNetwork,
         prepareExecute: methods.prepareExecute,
+        prepareExecuteAndWait: methods.prepareExecuteAndWait,
         signMessage: methods.signMessage,
         ledgerApi: methods.ledgerApi,
         accountsChanged: methods.accountsChanged,

@@ -96,9 +96,18 @@ export async function listAccounts(): Promise<dappAPI.ListAccountsResult> {
 
 export async function prepareExecute(
     params: dappAPI.PrepareExecuteParams
-): Promise<dappAPI.PrepareExecuteResult> {
-    return await assertProvider().request<dappAPI.PrepareExecuteResult>({
+): Promise<null> {
+    return await assertProvider().request({
         method: 'prepareExecute',
+        params,
+    })
+}
+
+export async function prepareExecuteAndWait(
+    params: dappAPI.PrepareExecuteParams
+): Promise<dappAPI.PrepareExecuteAndWaitResult> {
+    return await assertProvider().request<dappAPI.PrepareExecuteAndWaitResult>({
+        method: 'prepareExecuteAndWait',
         params,
     })
 }

@@ -64,7 +64,26 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "prepareExecuteResult",
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/Null"
+                }
+            },
+            "description": "Prepares a transaction for subsequent signing & execution."
+        },
+        {
+            "name": "prepareExecuteAndWait",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "prepareExecuteParams",
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/JsPrepareSubmissionRequest"
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "prepareExecuteAndWaitResult",
                     "type": "object",
                     "properties": {
                         "tx": {
@@ -74,7 +93,7 @@
                     "required": ["tx"]
                 }
             },
-            "description": "Prepares, signs, and executes a transaction."
+            "description": "Like prepareExecute, but waits for the transaction to be executed on the ledger."
         },
         {
             "name": "signMessage",

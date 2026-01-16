@@ -438,7 +438,7 @@ export interface StatusEvent {
  *
  */
 export type Null = null
-export interface PrepareExecuteResult {
+export interface PrepareExecuteAndWaitResult {
     tx: TxChangedExecutedEvent
     [k: string]: any
 }
@@ -492,9 +492,10 @@ export type Status = () => Promise<StatusEvent>
 export type Connect = () => Promise<StatusEvent>
 export type Disconnect = () => Promise<Null>
 export type GetActiveNetwork = () => Promise<Network>
-export type PrepareExecute = (
+export type PrepareExecute = (params: PrepareExecuteParams) => Promise<Null>
+export type PrepareExecuteAndWait = (
     params: PrepareExecuteParams
-) => Promise<PrepareExecuteResult>
+) => Promise<PrepareExecuteAndWaitResult>
 export type SignMessage = (
     params: SignMessageParams
 ) => Promise<SignMessageResult>
@@ -555,6 +556,15 @@ export class SpliceWalletJSONRPCDAppAPI {
         method: 'prepareExecute',
         ...params: Parameters<PrepareExecute>
     ): ReturnType<PrepareExecute>
+
+    /**
+     *
+     */
+    // tslint:disable-next-line:max-line-length
+    public async request(
+        method: 'prepareExecuteAndWait',
+        ...params: Parameters<PrepareExecuteAndWait>
+    ): ReturnType<PrepareExecuteAndWait>
 
     /**
      *
