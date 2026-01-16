@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-splice-provider",
-    "version": "0.19.1",
+    "version": "0.20.0",
     "type": "module",
     "description": "A JavaScript Splice Provider API (EIP-1193 compliant).",
     "license": "Apache-2.0",

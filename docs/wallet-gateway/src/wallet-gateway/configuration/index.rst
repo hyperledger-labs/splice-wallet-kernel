@@ -22,7 +22,7 @@ Default Configuration Example
 
 Here is a minimalistic configuration example that can be used against a Splice localnet using SQLite storage and a mock OAuth setup. The mock OAuth configuration showcases how an IDP configuration would look.
 
-.. literalinclude:: ../../examples/json/default-config.json
+.. literalinclude:: ../../../examples/json/default-config.json
     :language: json
     :dedent:
 

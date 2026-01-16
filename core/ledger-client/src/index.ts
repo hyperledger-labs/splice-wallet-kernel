@@ -47,4 +47,5 @@ export * from './web-socket-client.js'
 export {
     GetUpdatesRequest,
     JsGetUpdatesResponse,
+    CompletionResponse,
 } from './generated-clients/asyncapi-3.4.7.js'
