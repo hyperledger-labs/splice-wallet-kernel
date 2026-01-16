@@ -191,7 +191,7 @@ export class CoreService {
 
         if (currentSum < amount) {
             throw new Error(
-                `Sender doesn't have sufficient funds for this transfer. Missing amount: ${amount - currentSum}`
+                `Sender doesn't have sufficient funds for this transfer. Missing amount: ${amount.minus(currentSum)}`
             )
         }
 
@@ -758,7 +758,7 @@ class TransferService {
         const inputHoldingCids: string[] = await this.core.getInputHoldingsCids(
             sender,
             inputUtxos,
-            parseFloat(amount)
+            new Decimal(amount)
         )
 
         return {
@@ -1428,7 +1428,7 @@ export class TokenStandardService {
     async getInputHoldingsCids(
         sender: PartyId,
         inputUtxos?: string[],
-        amount?: number
+        amount?: Decimal
     ) {
         return this.core.getInputHoldingsCids(sender, inputUtxos, amount)
     }

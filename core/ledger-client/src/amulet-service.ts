@@ -8,6 +8,7 @@ import {
     DisclosedContract,
     TokenStandardService,
 } from './token-standard-service.js'
+import Decimal from 'decimal.js'
 
 // TODO: This appears in a couple of places, either move it somewhere more
 // central, or as part of the Service class hierarchy
@@ -56,7 +57,7 @@ export class AmuletService {
     async buyMemberTraffic(
         dso: PartyId,
         provider: PartyId,
-        trafficAmount: number,
+        trafficAmount: Decimal,
         synchronizerId: string,
         memberId: string,
         migrationId: number,
