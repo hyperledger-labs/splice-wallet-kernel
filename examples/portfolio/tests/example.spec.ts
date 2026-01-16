@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { test, expect, Page } from '@playwright/test'
-import {
-    connectToLocalNet,
-    setPrimaryWallet,
-    createWalletIfNotExists,
-} from '@canton-network/core-wallet-test-utils'
+import { WalletGateway } from '@canton-network/core-wallet-test-utils'
 
 const openTab = (
     page: Page,
@@ -28,21 +24,29 @@ const setupRegistry = async (page: Page): Promise<void> => {
 }
 
 test('two step transfer', async ({ page: dappPage }) => {
+    const wg = new WalletGateway({
+        dappPage,
+        openButton: (page) =>
+            page.getByRole('button', {
+                name: 'open Wallet Gateway',
+            }),
+        connectButton: (page) =>
+            page.getByRole('button', {
+                name: 'connect to Wallet Gateway',
+            }),
+    })
     await dappPage.goto('http://localhost:8081/old')
     await expect(dappPage).toHaveTitle(/dApp Portfolio/)
 
     await setupRegistry(dappPage)
 
-    let popup = await connectToLocalNet(dappPage)
-    const alice = await createWalletIfNotExists(popup, 'alice')
+    await wg.connectToLocalNet()
+    const alice = await wg.createWalletIfNotExists('alice')
     console.log('aliceParty', alice)
-    const bob = await createWalletIfNotExists(popup, 'bob')
+    const bob = await wg.createWalletIfNotExists('bob')
     console.log('bobParty', bob)
 
-    // Refresh the popup reference whenever a new popup appears.
-    dappPage.on('popup', (p) => (popup = p))
-
-    await setPrimaryWallet(popup, alice)
+    await wg.setPrimaryWallet(alice)
     await openTab(dappPage, 'Holdings')
     const tapForm = dappPage.locator('form.tap')
     const selectTapInstrument = tapForm.getByRole('combobox')
@@ -55,10 +59,7 @@ test('two step transfer', async ({ page: dappPage }) => {
     await tapForm.getByRole('spinbutton').fill('1234')
     await dappPage.getByRole('button', { name: 'TAP' }).click()
 
-    await popup.getByRole('button', { name: 'Approve' }).click()
-    await expect(
-        popup.getByText('Transaction executed successfully')
-    ).toBeVisible()
+    await wg.approveTransaction()
     await expect(
         dappPage.locator('li').filter({ hasText: '1234' })
     ).not.toHaveCount(0) // Use not.toHaveCount to help successive tests.
@@ -80,10 +81,7 @@ test('two step transfer', async ({ page: dappPage }) => {
     await transferForm.getByLabel('Message').fill(message)
 
     await dappPage.getByRole('button', { name: 'Transfer' }).click()
-    await popup.getByRole('button', { name: 'Approve' }).click()
-    await expect(
-        popup.getByText('Transaction executed successfully')
-    ).toBeVisible()
+    await wg.approveTransaction()
     await openTab(dappPage, 'Pending Transfers')
     await expect(dappPage.getByText(message)).not.toHaveCount(0)
     await expect(
@@ -96,12 +94,9 @@ test('two step transfer', async ({ page: dappPage }) => {
     await expect(openButton).toBeVisible()
     await openButton.click()
 
-    await setPrimaryWallet(popup, bob)
+    await wg.setPrimaryWallet(bob)
     await dappPage.getByRole('button', { name: 'Accept' }).first().click()
-    await popup.getByRole('button', { name: 'Approve' }).click()
-    await expect(
-        popup.getByText('Transaction executed successfully')
-    ).toBeVisible()
+    await wg.approveTransaction()
     await openTab(dappPage, 'Transaction History')
     await expect(dappPage.getByText('Completed')).not.toHaveCount(0)
     await expect(dappPage.getByText(message)).not.toHaveCount(0)
