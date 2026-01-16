@@ -73,7 +73,7 @@ export const TransferDialog: React.FC<TransferDialogProps> = ({
                     sender: primaryParty,
                     receiver: formData.recipient,
                     instrumentId: formData.instrumentId,
-                    amount: parseFloat(formData.amount),
+                    amount: formData.amount,
                     expiry: formData.expiry,
                     memo: formData.memo?.trim() || undefined,
                 },

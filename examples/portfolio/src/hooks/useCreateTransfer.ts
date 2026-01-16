@@ -11,7 +11,7 @@ export interface CreateTransferArgs {
     sender: string
     receiver: string
     instrumentId: { admin: PartyId; id: string }
-    amount: number
+    amount: string
     expiry: Date
     memo?: string
 }
@@ -22,25 +22,17 @@ export const useCreateTransfer = () => {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: async (args: CreateTransferArgs) =>
+        mutationFn: (args: CreateTransferArgs) =>
             createTransfer({
                 registryUrls,
-                sender: args.sender,
-                receiver: args.receiver,
-                instrumentId: args.instrumentId,
-                amount: args.amount,
-                expiry: args.expiry,
-                memo: args.memo,
+                ...args,
             }),
         onSuccess: async () => {
             await queryClient.invalidateQueries({
-                queryKey: queryKeys.allHoldings,
-                refetchType: 'all',
+                queryKey: queryKeys.listPendingTransfers.all,
             })
-
             await queryClient.invalidateQueries({
-                queryKey: queryKeys.allPendingTransfers,
-                refetchType: 'all',
+                queryKey: queryKeys.listHoldings.all,
             })
         },
     })

@@ -32,7 +32,7 @@ export interface PortfolioService {
         sender: PartyId
         receiver: PartyId
         instrumentId: { admin: PartyId; id: string }
-        amount: number
+        amount: string
         expiry: Date
         memo?: string
     }) => Promise<void>

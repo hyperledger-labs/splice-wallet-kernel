@@ -4,7 +4,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { TokenStandardService } from '@canton-network/core-ledger-client'
 import { ActionRequired } from '../components/action-required'
 import { usePrimaryAccount } from '../hooks/useAccounts'
-import { getPendingTransfersQueryOptions } from '../hooks/query-options'
+import { usePendingTransfersQueryOptions } from '../hooks/query-options'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { WalletsPreview } from '../components/wallets-preview'
 
@@ -15,7 +15,7 @@ export const Route = createFileRoute('/')({
 function Index() {
     const primaryParty = usePrimaryAccount()?.partyId
     const pendingTransfers = useSuspenseQuery(
-        getPendingTransfersQueryOptions(primaryParty)
+        usePendingTransfersQueryOptions(primaryParty)
     )
 
     const actionItems = useMemo(() => {
