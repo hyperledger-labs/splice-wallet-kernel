@@ -86,15 +86,6 @@ export class WgWalletsSync extends BaseElement {
                               Keep your wallets in sync with the connected
                               network.
                           </div>
-                          <button
-                              class="btn btn-primary"
-                              .disabled=${!this.client || this.isSyncing}
-                              @click=${this.syncWallets}
-                          >
-                              ${this.isSyncing
-                                  ? 'Syncing Wallets...'
-                                  : 'Sync Wallets'}
-                          </button>
                       `
                     : html`
                           <div
@@ -107,6 +98,15 @@ export class WgWalletsSync extends BaseElement {
                               Wallets are in sync with the connected network.
                           </div>
                       `}
+                <button
+                    class="btn btn-primary"
+                    .disabled=${!this.client ||
+                    this.isSyncing ||
+                    !this.isSyncNeeded}
+                    @click=${this.syncWallets}
+                >
+                    ${this.isSyncing ? 'Syncing Wallets...' : 'Sync Wallets'}
+                </button>
             </div>
         `
     }

@@ -7,7 +7,7 @@ import { Idp, Session } from '@canton-network/core-wallet-user-rpc-client'
 
 import { BaseElement } from '../internal/BaseElement'
 import { modalStyles } from '../styles/modal'
-import { FormInputChangedEvent } from './FormInput'
+import { FormInputChangedEvent } from './form-input'
 
 /** Emitted when the user Saves a Identity Provider */
 export class IdpAddEvent extends Event {
