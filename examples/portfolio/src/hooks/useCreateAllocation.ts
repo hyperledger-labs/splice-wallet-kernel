@@ -13,7 +13,7 @@ export const useCreateAllocation = () => {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: async (args: {
+        mutationFn: (args: {
             party: PartyId
             allocationSpecification: AllocationSpecification
         }) =>
