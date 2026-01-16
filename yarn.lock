@@ -1531,6 +1531,7 @@ __metadata:
     "@types/node": "npm:^25.0.8"
     bignumber.js: "npm:^9.3.1"
     dayjs: "npm:^1.11.19"
+    decimal.js: "npm:^10.6.0"
     jest: "npm:^30.2.0"
     openapi-fetch: "npm:^0.15.0"
     openapi-typescript: "npm:^7.10.1"

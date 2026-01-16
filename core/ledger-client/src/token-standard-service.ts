@@ -23,6 +23,7 @@ import {
     ContractId,
     Beneficiaries,
 } from '@canton-network/core-token-standard'
+import { Decimal } from 'decimal.js'
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
 import { TokenStandardTransactionInterfaces } from './constants.js'
@@ -100,7 +101,7 @@ export class CoreService {
     async getInputHoldingsCids(
         sender: PartyId,
         inputUtxos?: string[],
-        amount?: number
+        amount?: Decimal
     ) {
         const now = new Date()
         if (inputUtxos && inputUtxos.length > 0) {
@@ -143,13 +144,13 @@ export class CoreService {
     }
 
     static async getInputHoldingsCidsForAmount(
-        amount: number,
+        amount: Decimal,
         unlockedSenderHoldings: PrettyContract<HoldingView>[]
     ) {
         //find holding that is the exact amount if possible
         const exactAmount = unlockedSenderHoldings.find(
             (holding) =>
-                parseFloat(holding.interfaceViewValue.amount) === amount
+                new Decimal(holding.interfaceViewValue.amount) === amount
         )
 
         if (exactAmount) {
@@ -159,8 +160,9 @@ export class CoreService {
         //sort holdings from smallest to largest
         const sortedUnlockedSenderHoldings = unlockedSenderHoldings.toSorted(
             (a, b) =>
-                parseFloat(a.interfaceViewValue.amount) -
-                parseFloat(b.interfaceViewValue.amount)
+                new Decimal(a.interfaceViewValue.amount).comparedTo(
+                    new Decimal(b.interfaceViewValue.amount)
+                )
         )
 
         const largestHoldingAmount = sortedUnlockedSenderHoldings.pop()
@@ -169,7 +171,7 @@ export class CoreService {
             throw new Error(`Sender doesn't have any unlocked holdings`)
         }
 
-        let currentSum = parseFloat(
+        let currentSum = new Decimal(
             largestHoldingAmount.interfaceViewValue.amount
         )
         const cIds = [largestHoldingAmount.contractId]
@@ -179,9 +181,11 @@ export class CoreService {
                 break
             }
 
-            const currentHoldingAmount = parseFloat(h.interfaceViewValue.amount)
+            const currentHoldingAmount = new Decimal(
+                h.interfaceViewValue.amount
+            )
 
-            currentSum += currentHoldingAmount
+            currentSum = currentSum.plus(currentHoldingAmount)
             cIds.push(h.contractId)
         }
 
