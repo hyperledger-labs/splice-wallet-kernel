@@ -16,5 +16,8 @@ export const queryKeys = {
             party,
         ],
     },
-    listHoldings: (party: string | undefined) => ['holdings', party],
+    listHoldings: {
+        all: ['holdings'],
+        forParty: (party: string | undefined) => ['holdings', party],
+    },
 }
