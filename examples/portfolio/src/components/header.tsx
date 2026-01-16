@@ -19,17 +19,25 @@ import Brightness4Icon from '@mui/icons-material/Brightness4'
 import Brightness7Icon from '@mui/icons-material/Brightness7'
 import { useConnection } from '../contexts/ConnectionContext'
 import { useTheme } from '../contexts/theme-context'
+import { TransferDialogButton } from './transfer-dialog-button'
+import { TransferDialog } from './transfer-dialog'
 
 const RouterLink = createLink(MuiLink)
 
 export const Header = () => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+    const [transferDialogOpen, setTransferDialogOpen] = useState(false)
     const menuOpen = Boolean(anchorEl)
     const { isDarkMode, toggleTheme } = useTheme()
     const { status, connect, open: openGateway, disconnect } = useConnection()
     const connected = status?.isConnected
 
     const action = connected ? disconnect : connect
+
+    const handleTransferClick = () => {
+        setAnchorEl(null)
+        setTransferDialogOpen(true)
+    }
 
     return (
         <AppBar
@@ -53,7 +61,6 @@ export const Header = () => {
                     variant="h6"
                     sx={{
                         fontWeight: 600,
-                        // color: 'primary.main',
                         textDecoration: 'none',
                     }}
                 >
@@ -98,15 +105,6 @@ export const Header = () => {
                         </Button>
                     )}
 
-                    {/* <DialogButton */}
-                    {/*     variant="outlined" */}
-                    {/*     renderDialog={({ onClose }) => ( */}
-                    {/*         <TransferDialog onClose={onClose} /> */}
-                    {/*     )} */}
-                    {/* > */}
-                    {/*     Make Transfer */}
-                    {/* </DialogButton> */}
-
                     <IconButton
                         onClick={(e) => setAnchorEl(e.currentTarget)}
                         size="small"
@@ -138,6 +136,12 @@ export const Header = () => {
                             },
                         }}
                     >
+                        {connected && (
+                            <TransferDialogButton
+                                onClick={handleTransferClick}
+                            />
+                        )}
+
                         <MenuItem
                             component={RouterLink}
                             to="/notifications"
@@ -146,6 +150,7 @@ export const Header = () => {
                             <NotificationsIcon sx={{ mr: 2, fontSize: 20 }} />
                             Notifications
                         </MenuItem>
+
                         <MenuItem
                             component={RouterLink}
                             to="/settings"
@@ -154,6 +159,7 @@ export const Header = () => {
                             <SettingsIcon sx={{ mr: 2, fontSize: 20 }} />
                             Settings
                         </MenuItem>
+
                         {connected && (
                             <MenuItem sx={{ py: 1.5 }} onClick={() => action()}>
                                 <LogoutIcon sx={{ mr: 2, fontSize: 20 }} />
@@ -163,6 +169,13 @@ export const Header = () => {
                     </Menu>
                 </Box>
             </Toolbar>
+
+            {transferDialogOpen && (
+                <TransferDialog
+                    open={transferDialogOpen}
+                    onClose={() => setTransferDialogOpen(false)}
+                />
+            )}
         </AppBar>
     )
 }
