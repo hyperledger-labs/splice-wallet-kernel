@@ -7,6 +7,7 @@ export enum ErrorCode {
     ProviderNotFound,
     UserCancelled,
     Timeout,
+    TransactionFailed,
     Other,
 }
 

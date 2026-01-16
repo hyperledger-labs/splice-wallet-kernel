@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-store-inmemory",
-    "version": "0.20.0",
+    "version": "0.21.0",
     "type": "module",
     "description": "In-memory implementation of the Store API",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",

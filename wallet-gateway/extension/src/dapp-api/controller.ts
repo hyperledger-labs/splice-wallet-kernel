@@ -48,6 +48,9 @@ export const dappController = (store?: Store) =>
         prepareExecute: async (params: PrepareExecuteParams) => {
             throw new Error('Function not implemented.')
         },
+        prepareExecuteAndWait: async (params: PrepareExecuteParams) => {
+            throw new Error('Function not implemented.')
+        },
         prepareReturn: async (params: PrepareReturnParams) =>
             Promise.resolve({}),
         status: async () => {
