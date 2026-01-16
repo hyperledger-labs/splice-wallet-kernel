@@ -1,12 +1,14 @@
-Wallet Gateway
+dApp Building
 ==============
 
-.. important::
-
-   This guide is under active development, not all sections are complete and sections will be added and adjusted over time.
+This section will help you build dApps that use the Wallet Gateway to interact with the Canton Network.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
-   configuration/index
+   overview/index
+   dapp-sdk/index
+   wallet-gateway/index
+   examples/index
+

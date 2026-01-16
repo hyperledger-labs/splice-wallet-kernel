@@ -466,7 +466,7 @@ export interface DarsAvailableResult {
     [k: string]: any
 }
 export type PrepareReturnResult = any
-export interface PrepareExecuteResult {
+export interface PrepareExecuteAndWaitResult {
     tx: TxChangedExecutedEvent
     [k: string]: any
 }
@@ -514,9 +514,10 @@ export type DarsAvailable = () => Promise<DarsAvailableResult>
 export type PrepareReturn = (
     params: PrepareReturnParams
 ) => Promise<PrepareReturnResult>
-export type PrepareExecute = (
+export type PrepareExecute = (params: PrepareExecuteParams) => Promise<Null>
+export type PrepareExecuteAndWait = (
     params: PrepareExecuteParams
-) => Promise<PrepareExecuteResult>
+) => Promise<PrepareExecuteAndWaitResult>
 export type LedgerApi = (params: LedgerApiParams) => Promise<LedgerApiResult>
 export type OnAccountsChanged = () => Promise<AccountsChangedEvent>
 export type RequestAccounts = () => Promise<RequestAccountsResult>

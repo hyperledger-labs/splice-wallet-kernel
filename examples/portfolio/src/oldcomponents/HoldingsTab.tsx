@@ -35,8 +35,25 @@ export const HoldingsTab: React.FC = () => {
     }, [primaryParty, listHoldings])
 
     useEffect(() => {
-        refreshHoldings()
-    }, [primaryParty, refreshHoldings])
+        let cancelled = false
+
+        const fetchHoldings = async () => {
+            if (primaryParty) {
+                const hs = await listHoldings({ party: primaryParty })
+                if (!cancelled) {
+                    setHoldings(hs)
+                }
+            } else {
+                setHoldings(undefined)
+            }
+        }
+
+        void fetchHoldings()
+
+        return () => {
+            cancelled = true
+        }
+    }, [primaryParty, listHoldings])
 
     return (
         <div>

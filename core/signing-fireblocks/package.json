@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-fireblocks",
-    "version": "0.18.0",
+    "version": "0.18.1",
     "type": "module",
     "description": "Wallet Gateway signing driver for Fireblocks",
     "license": "Apache-2.0",
@@ -26,11 +26,11 @@
     "dependencies": {
         "@canton-network/core-signing-lib": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
-        "@fireblocks/ts-sdk": "^10.4.0",
+        "@fireblocks/ts-sdk": "^13.0.0",
         "async-mutex": "^0.5.0",
         "fs-extra": "^11.3.3",
         "lodash": "^4.17.21",
-        "pino": "^10.1.0",
+        "pino": "^10.1.1",
         "tweetnacl": "^1.0.3",
         "tweetnacl-util": "^0.15.1",
         "zod": "^4.3.5"
@@ -41,8 +41,8 @@
         "@swc/jest": "^0.2.39",
         "@types/fs-extra": "^11.0.4",
         "@types/jest": "^30.0.0",
-        "@types/lodash": "^4.17.21",
-        "@types/node": "^24.10.4",
+        "@types/lodash": "^4.17.23",
+        "@types/node": "^25.0.8",
         "jest": "^30.2.0",
         "ts-jest-resolver": "^2.0.1",
         "tsup": "^8.5.1",
