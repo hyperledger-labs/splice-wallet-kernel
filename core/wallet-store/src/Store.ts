@@ -29,6 +29,7 @@ export interface WalletFilter {
 export interface UpdateWallet {
     status: WalletStatus
     partyId: PartyId
+    networkId?: string // Optional: if not provided, uses current network from session
     externalTxId: string
 }
 

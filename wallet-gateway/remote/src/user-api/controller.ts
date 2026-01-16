@@ -440,6 +440,7 @@ export const userController = (
             ) {
                 await store.updateWallet({
                     partyId: wallet.partyId,
+                    networkId: wallet.networkId,
                     status: wallet.status,
                     externalTxId: wallet.externalTxId!,
                 })
@@ -474,10 +475,12 @@ export const userController = (
             partyId,
             commandId,
         }: SignParams) => {
-            const wallets = await store.getWallets()
-            const wallet = wallets.find((w) => w.partyId === partyId)
-
             const network = await store.getCurrentNetwork()
+            // Filter wallets by current network to avoid matching wallets from other networks
+            const wallets = await store.getWallets({
+                networkIds: [network.id],
+            })
+            const wallet = wallets.find((w) => w.partyId === partyId)
 
             if (wallet === undefined) {
                 throw new Error('No primary wallet found')

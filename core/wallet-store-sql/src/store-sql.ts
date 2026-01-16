@@ -102,30 +102,52 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     }
 
     async getPrimaryWallet(): Promise<Wallet | undefined> {
-        const wallets = await this.getWallets()
+        // Get primary wallet for current network
+        const network = await this.getCurrentNetwork()
+        const wallets = await this.getWallets({ networkIds: [network.id] })
         return wallets.find((w) => w.primary === true)
     }
 
     async setPrimaryWallet(partyId: PartyId): Promise<void> {
-        const wallets = await this.getWallets()
+        // Set primary wallet for current network only (per-network primary)
+        const network = await this.getCurrentNetwork()
+        const userId = this.assertConnected()
+        const wallets = await this.getWallets({ networkIds: [network.id] })
+
         if (!wallets.some((w) => w.partyId === partyId)) {
-            throw new Error(`Wallet with partyId "${partyId}" not found`)
+            throw new Error(
+                `Wallet with partyId "${partyId}" not found in network "${network.id}"`
+            )
         }
 
         const primary = wallets.find((w) => w.primary === true)
 
         await this.db.transaction().execute(async (trx) => {
             if (primary) {
+                // Unset primary for current network only
                 await trx
                     .updateTable('wallets')
                     .set({ primary: 0 })
-                    .where('partyId', '=', primary.partyId)
+                    .where((eb) =>
+                        eb.and([
+                            eb('partyId', '=', primary.partyId),
+                            eb('networkId', '=', network.id),
+                            eb('userId', '=', userId),
+                        ])
+                    )
                     .execute()
             }
+            // Set new primary for current network
             await trx
                 .updateTable('wallets')
                 .set({ primary: 1 })
-                .where('partyId', '=', partyId)
+                .where((eb) =>
+                    eb.and([
+                        eb('partyId', '=', partyId),
+                        eb('networkId', '=', network.id),
+                        eb('userId', '=', userId),
+                    ])
+                )
                 .execute()
         })
     }
@@ -134,27 +156,37 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         this.logger.info('Adding wallet')
         const userId = this.assertConnected()
 
-        const wallets = await this.getWallets()
-        if (wallets.some((w) => w.partyId === wallet.partyId)) {
+        // Check for duplicate by (partyId, networkId) combination
+        const wallets = await this.getWallets({
+            networkIds: [wallet.networkId],
+        })
+        if (
+            wallets.some(
+                (w) =>
+                    w.partyId === wallet.partyId &&
+                    w.networkId === wallet.networkId
+            )
+        ) {
             throw new Error(
-                `Wallet with partyId "${wallet.partyId}" already exists`
+                `Wallet with partyId "${wallet.partyId}" already exists in network "${wallet.networkId}"`
             )
         }
 
+        // If this is the first wallet in this network, set it as primary automatically
         if (wallets.length === 0) {
-            // If this is the first wallet, set it as primary automatically
             wallet.primary = true
         }
 
         await this.db.transaction().execute(async (trx) => {
             if (wallet.primary) {
-                // If the new wallet is primary, set all others to non-primary
+                // If the new wallet is primary, set all others in the same network to non-primary
                 await trx
                     .updateTable('wallets')
                     .set({ primary: 0 })
                     .where((eb) =>
                         eb.and([
                             eb('primary', '=', 1),
+                            eb('networkId', '=', wallet.networkId),
                             eb('userId', '=', userId),
                         ])
                     )
@@ -170,26 +202,47 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     async updateWallet({
         status,
         partyId,
+        networkId,
         externalTxId,
     }: UpdateWallet): Promise<void> {
         this.logger.info('Updating wallet')
+        const userId = this.assertConnected()
+
+        // Use provided networkId or get current network from session
+        const targetNetworkId = networkId ?? (await this.getCurrentNetwork()).id
 
         await this.db.transaction().execute(async (trx) => {
             await trx
                 .updateTable('wallets')
                 .set({ status, externalTxId })
-                .where('partyId', '=', partyId)
+                .where((eb) =>
+                    eb.and([
+                        eb('partyId', '=', partyId),
+                        eb('networkId', '=', targetNetworkId),
+                        eb('userId', '=', userId),
+                    ])
+                )
                 .execute()
         })
     }
 
     async removeWallet(partyId: PartyId): Promise<void> {
         this.logger.info('Removing wallet')
+        const userId = this.assertConnected()
+
+        // Remove wallet from current network only
+        const network = await this.getCurrentNetwork()
 
         await this.db.transaction().execute(async (trx) => {
             await trx
                 .deleteFrom('wallets')
-                .where('partyId', '=', partyId)
+                .where((eb) =>
+                    eb.and([
+                        eb('partyId', '=', partyId),
+                        eb('networkId', '=', network.id),
+                        eb('userId', '=', userId),
+                    ])
+                )
                 .execute()
         })
     }

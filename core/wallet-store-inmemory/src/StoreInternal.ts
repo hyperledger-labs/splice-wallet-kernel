@@ -129,15 +129,20 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                     throw new Error('Unexpected right kind')
                 })
 
-            // Merge Wallets
-            const existingWallets = await this.getWallets()
-            const existingPartyIds = new Set(
-                existingWallets.map((w) => w.partyId)
+            // Merge Wallets - check for duplicates by (partyId, networkId)
+            const existingWallets = await this.getWallets({
+                networkIds: [network.id],
+            })
+            const existingPartyNetworkPairs = new Set(
+                existingWallets.map((w) => `${w.partyId}:${w.networkId}`)
             )
             const participantWallets: Array<Wallet> =
                 parties
                     ?.filter(
-                        (party) => !existingPartyIds.has(party)
+                        (party) =>
+                            !existingPartyNetworkPairs.has(
+                                `${party}:${network.id}`
+                            )
                         // todo: filter on idp id
                     )
                     .map((party) => {
@@ -156,10 +161,13 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             const storage = this.getStorage()
             const wallets = [...storage.wallets, ...participantWallets]
 
-            // Set primary wallet if none exists
-            const hasPrimary = wallets.some((w) => w.primary)
-            if (!hasPrimary && wallets.length > 0) {
-                wallets[0].primary = true
+            // Set primary wallet if none exists in this network
+            const networkWallets = wallets.filter(
+                (w) => w.networkId === network.id
+            )
+            const hasPrimary = networkWallets.some((w) => w.primary)
+            if (!hasPrimary && networkWallets.length > 0) {
+                networkWallets[0].primary = true
             }
 
             this.logger.debug(wallets, 'Wallets synchronized')
@@ -191,20 +199,34 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     async getPrimaryWallet(): Promise<Wallet | undefined> {
-        const wallets = await this.getWallets()
+        // Get primary wallet for current network
+        const network = await this.getCurrentNetwork()
+        const wallets = await this.getWallets({ networkIds: [network.id] })
         return wallets.find((w) => w.primary === true)
     }
 
     async setPrimaryWallet(partyId: PartyId): Promise<void> {
+        // Set primary wallet for current network only (per-network primary)
+        const network = await this.getCurrentNetwork()
         const storage = this.getStorage()
-        if (!storage.wallets.some((w) => w.partyId === partyId)) {
-            throw new Error(`Wallet with partyId "${partyId}" not found`)
+        const networkWallets = storage.wallets.filter(
+            (w) => w.networkId === network.id
+        )
+
+        if (!networkWallets.some((w) => w.partyId === partyId)) {
+            throw new Error(
+                `Wallet with partyId "${partyId}" not found in network "${network.id}"`
+            )
         }
+
+        // Set primary only for wallets in current network
         const wallets = storage.wallets.map((w) => {
-            if (w.partyId === partyId) {
-                w.primary = true
-            } else {
-                w.primary = false
+            if (w.networkId === network.id) {
+                if (w.partyId === partyId) {
+                    w.primary = true
+                } else {
+                    w.primary = false
+                }
             }
             return w
         })
@@ -214,35 +236,49 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
 
     async addWallet(wallet: Wallet): Promise<void> {
         const storage = this.getStorage()
-        if (storage.wallets.some((w) => w.partyId === wallet.partyId)) {
+        // Check for duplicate by (partyId, networkId) combination
+        if (
+            storage.wallets.some(
+                (w) =>
+                    w.partyId === wallet.partyId &&
+                    w.networkId === wallet.networkId
+            )
+        ) {
             throw new Error(
-                `Wallet with partyId "${wallet.partyId}" already exists`
+                `Wallet with partyId "${wallet.partyId}" already exists in network "${wallet.networkId}"`
             )
         }
-        const wallets = await this.getWallets()
+        const networkWallets = await this.getWallets({
+            networkIds: [wallet.networkId],
+        })
 
-        if (wallets.length === 0) {
-            // If this is the first wallet, set it as primary automatically
+        // If this is the first wallet in this network, set it as primary automatically
+        if (networkWallets.length === 0) {
             wallet.primary = true
         }
 
         if (wallet.primary) {
-            // If the new wallet is primary, set all others to non-primary
-            storage.wallets.map((w) => (w.primary = false))
+            // If the new wallet is primary, set all others in the same network to non-primary
+            storage.wallets
+                .filter((w) => w.networkId === wallet.networkId)
+                .map((w) => (w.primary = false))
         }
-        wallets.push(wallet)
-        storage.wallets = wallets
+        storage.wallets.push(wallet)
         this.updateStorage(storage)
     }
 
     async updateWallet({
         status,
         partyId,
+        networkId,
         externalTxId,
     }: UpdateWallet): Promise<void> {
         const storage = this.getStorage()
-        const wallets = (await this.getWallets()).map((wallet) =>
-            wallet.partyId === partyId
+        // Use provided networkId or get current network from session
+        const targetNetworkId = networkId ?? (await this.getCurrentNetwork()).id
+
+        const wallets = storage.wallets.map((wallet) =>
+            wallet.partyId === partyId && wallet.networkId === targetNetworkId
                 ? { ...wallet, status, externalTxId }
                 : wallet
         )
@@ -252,9 +288,11 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     async removeWallet(partyId: PartyId): Promise<void> {
+        // Remove wallet from current network only
+        const network = await this.getCurrentNetwork()
         const storage = this.getStorage()
-        const wallets = (await this.getWallets()).filter(
-            (w) => w.partyId !== partyId
+        const wallets = storage.wallets.filter(
+            (w) => !(w.partyId === partyId && w.networkId === network.id)
         )
 
         storage.wallets = wallets
