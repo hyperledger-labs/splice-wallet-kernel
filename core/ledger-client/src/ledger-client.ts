@@ -656,21 +656,16 @@ export class LedgerClient {
             options.parties.length > 0
         ) {
             // Filter by party: set filtersByParty for each party
-            if (options?.templateIds && !options?.interfaceIds) {
-                for (const party of options.parties) {
-                    filter.filter!.filtersByParty[party] = {
-                        cumulative: options.templateIds
-                            ? buildTemplateFilter(options.templateIds)
-                            : [],
-                    }
-                }
-            } else if (options?.interfaceIds && !options?.templateIds) {
-                for (const party of options.parties) {
-                    filter.filter!.filtersByParty[party] = {
-                        cumulative: options.interfaceIds
-                            ? buildInterfaceFilter(options.interfaceIds)
-                            : [],
-                    }
+            const cumulativeFilter =
+                options?.templateIds && !options?.interfaceIds
+                    ? buildTemplateFilter(options.templateIds)
+                    : options?.interfaceIds && !options?.templateIds
+                      ? buildInterfaceFilter(options.interfaceIds)
+                      : []
+
+            for (const party of options.parties) {
+                filter.filter!.filtersByParty[party] = {
+                    cumulative: cumulativeFilter,
                 }
             }
         } else if (options?.templateIds) {
