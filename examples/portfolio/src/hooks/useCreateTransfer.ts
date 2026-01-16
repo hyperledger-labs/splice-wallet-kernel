@@ -12,6 +12,7 @@ export interface CreateTransferArgs {
     receiver: string
     instrumentId: { admin: PartyId; id: string }
     amount: number
+    expiry: Date
     memo?: string
 }
 
@@ -28,6 +29,7 @@ export const useCreateTransfer = () => {
                 receiver: args.receiver,
                 instrumentId: args.instrumentId,
                 amount: args.amount,
+                expiry: args.expiry,
                 memo: args.memo,
             }),
         onSuccess: async () => {

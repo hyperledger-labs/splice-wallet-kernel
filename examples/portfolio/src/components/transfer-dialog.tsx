@@ -12,6 +12,7 @@ import {
     CircularProgress,
     Typography,
 } from '@mui/material'
+import { DateTimePicker } from '@mui/x-date-pickers'
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
 import { toast } from 'sonner'
@@ -27,6 +28,7 @@ interface TransferFormData {
     amount: string
     recipient: string
     memo: string
+    expiry: Date
 }
 
 const instrumentValidator = z
@@ -38,23 +40,25 @@ const instrumentValidator = z
     .refine((val) => val !== null, 'Please select an instrument')
 
 interface TransferDialogProps {
+    initialValues?: TransferFormData
     open: boolean
     onClose: () => void
 }
 
 export const TransferDialog: React.FC<TransferDialogProps> = ({
+    initialValues = {
+        instrumentId: null,
+        amount: '',
+        recipient: '',
+        memo: '',
+        expiry: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    },
     open,
     onClose,
 }) => {
     const primaryAccount = usePrimaryAccount()
     const primaryParty = primaryAccount?.partyId
     const createTransferMutation = useCreateTransfer()
-    const initialValues: TransferFormData = {
-        instrumentId: null,
-        amount: '',
-        recipient: '',
-        memo: '',
-    }
 
     const form = useForm({
         defaultValues: initialValues,
@@ -70,6 +74,7 @@ export const TransferDialog: React.FC<TransferDialogProps> = ({
                     receiver: formData.recipient,
                     instrumentId: formData.instrumentId,
                     amount: parseFloat(formData.amount),
+                    expiry: formData.expiry,
                     memo: formData.memo?.trim() || undefined,
                 },
                 {
@@ -175,6 +180,17 @@ export const TransferDialog: React.FC<TransferDialogProps> = ({
                                     onBlur={field.handleBlur}
                                     disabled={createTransferMutation.isPending}
                                     fullWidth
+                                />
+                            )}
+                        </form.Field>
+
+                        <form.Field name="expiry">
+                            {(field) => (
+                                <DateTimePicker
+                                    label="Expiry"
+                                    value={field.state.value}
+                                    onChange={(d) => d && field.handleChange(d)}
+                                    disabled={createTransferMutation.isPending}
                                 />
                             )}
                         </form.Field>
