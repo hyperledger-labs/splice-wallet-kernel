@@ -1,6 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { pino } from 'pino'
 import { test, expect, Page } from '@playwright/test'
 import { WalletGateway, OTCTrade } from '@canton-network/core-wallet-test-utils'
 
@@ -24,7 +25,11 @@ const setupRegistry = async (page: Page): Promise<void> => {
     await expect(page.getByText('DSO::')).toBeVisible()
 }
 
-const tap = async (dappPage: Page, wg: WalletGateway,amount: string): Promise<void> => {
+const tap = async (
+    dappPage: Page,
+    wg: WalletGateway,
+    amount: string
+): Promise<void> => {
     await openTab(dappPage, 'Holdings')
     const tapForm = dappPage.locator('form.tap')
     const selectTapInstrument = tapForm.getByRole('combobox')
@@ -35,8 +40,8 @@ const tap = async (dappPage: Page, wg: WalletGateway,amount: string): Promise<vo
         .getAttribute('value')
     selectTapInstrument.selectOption(amtOption)
     await tapForm.getByRole('spinbutton').fill(amount)
-    await wg.approveTransaction(
-        () => dappPage.getByRole('button', { name: 'TAP' }).click()
+    await wg.approveTransaction(() =>
+        dappPage.getByRole('button', { name: 'TAP' }).click()
     )
 }
 
@@ -85,8 +90,8 @@ test('two step transfer', async ({ page: dappPage }) => {
         .fill(bob)
     await transferForm.getByLabel('Message').fill(message)
 
-    await wg.approveTransaction(
-        () => dappPage.getByRole('button', { name: 'Transfer' }).click()
+    await wg.approveTransaction(() =>
+        dappPage.getByRole('button', { name: 'Transfer' }).click()
     )
     await openTab(dappPage, 'Pending Transfers')
     await expect(dappPage.getByText(message)).not.toHaveCount(0)
@@ -101,8 +106,8 @@ test('two step transfer', async ({ page: dappPage }) => {
     await openButton.click()
 
     await wg.setPrimaryWallet(bob)
-    await wg.approveTransaction(
-        () => dappPage.getByRole('button', { name: 'Accept' }).first().click()
+    await wg.approveTransaction(() =>
+        dappPage.getByRole('button', { name: 'Accept' }).first().click()
     )
     await openTab(dappPage, 'Transaction History')
     await expect(dappPage.getByText('Completed')).not.toHaveCount(0)
@@ -131,7 +136,9 @@ test('allocation', async ({ page: dappPage }) => {
     const alice = await wg.createWalletIfNotExists('alice')
     const bob = await wg.createWalletIfNotExists('bob')
 
+    const logger = pino({ name: 'otc-trade', level: 'info' })
     const otcTrade = new OTCTrade({
+        logger,
         venue,
         alice,
         bob,
@@ -141,19 +148,21 @@ test('allocation', async ({ page: dappPage }) => {
     await wg.setPrimaryWallet(alice)
     await tap(dappPage, wg, '1000')
     await openTab(dappPage, 'Allocations')
-    await wg.approveTransaction(() => dappPage
-        .getByRole('button', { name: 'Create Allocation' })
-        .first()
-        .click()
+    await wg.approveTransaction(() =>
+        dappPage
+            .getByRole('button', { name: 'Create Allocation' })
+            .first()
+            .click()
     )
 
     await wg.setPrimaryWallet(bob)
     await tap(dappPage, wg, '1000')
     await openTab(dappPage, 'Allocations')
-    await wg.approveTransaction(() => dappPage
-        .getByRole('button', { name: 'Create Allocation' })
-        .first()
-        .click()
+    await wg.approveTransaction(() =>
+        dappPage
+            .getByRole('button', { name: 'Create Allocation' })
+            .first()
+            .click()
     )
 
     await otcTrade.settle(otcTradeDetails)

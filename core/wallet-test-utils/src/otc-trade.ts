@@ -5,7 +5,7 @@ import fs from 'fs/promises'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { v4 } from 'uuid'
-import { type Logger, pino } from 'pino'
+import { type Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
 import {
     WalletSDK,
@@ -33,11 +33,16 @@ export class OTCTrade {
     private logger: Logger
     private sdk: WalletSDK
 
-    constructor(args: { venue: PartyId; alice: PartyId; bob: PartyId }) {
+    constructor(args: {
+        logger: Logger
+        venue: PartyId
+        alice: PartyId
+        bob: PartyId
+    }) {
         this.venue = args.venue
         this.alice = args.alice
         this.bob = args.bob
-        this.logger = pino({ name: 'otc-trade', level: 'info' })
+        this.logger = args.logger
         this.sdk = new WalletSDKImpl().configure({
             logger: this.logger,
             authFactory: localNetAuthDefault,
