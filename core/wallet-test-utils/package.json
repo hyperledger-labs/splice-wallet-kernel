@@ -1,0 +1,38 @@
+{
+    "name": "@canton-network/core-wallet-test-utils",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "description": "Utilities for writing (E2E) tests for the wallet gateway",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "default": "./dist/index.js"
+        }
+    },
+    "dependencies": {
+        "@canton-network/core-types": "workspace:^",
+        "@canton-network/wallet-sdk": "workspace:^",
+        "@playwright/test": "^1.57.0",
+        "pino": "^10.1.1",
+        "uuid": "^11.1.0"
+    },
+    "devDependencies": {
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3"
+    },
+    "scripts": {
+        "build": "tsup && tsc -p tsconfig.types.json",
+        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
+        "clean": "tsc -b --clean; rm -rf dist",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\""
+    },
+    "files": [
+        "dist/**"
+    ]
+}
