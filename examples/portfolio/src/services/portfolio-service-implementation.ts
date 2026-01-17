@@ -69,6 +69,7 @@ export const createTransfer = async ({
     receiver,
     instrumentId,
     amount,
+    expiry,
     memo,
 }: {
     registryUrls: ReadonlyMap<PartyId, string>
@@ -76,6 +77,7 @@ export const createTransfer = async ({
     receiver: PartyId
     instrumentId: { admin: PartyId; id: string }
     amount: string
+    expiry: Date
     memo?: string
 }) => {
     const registryUrl = registryUrls.get(instrumentId.admin)
@@ -93,7 +95,7 @@ export const createTransfer = async ({
             registryUrl,
             undefined, // inputUtxos
             memo,
-            undefined, // expiryDate
+            expiry, // expiryDate
             undefined, // Metadata
             undefined // prefetchedRegistryChoiceContext
         )

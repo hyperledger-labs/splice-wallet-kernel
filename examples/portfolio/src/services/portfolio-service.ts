@@ -33,6 +33,7 @@ export interface PortfolioService {
         receiver: PartyId
         instrumentId: { admin: PartyId; id: string }
         amount: string
+        expiry: Date
         memo?: string
     }) => Promise<void>
     exerciseTransfer: (_: {

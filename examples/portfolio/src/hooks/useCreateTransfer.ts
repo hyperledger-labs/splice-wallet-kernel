@@ -12,6 +12,7 @@ export interface CreateTransferArgs {
     receiver: string
     instrumentId: { admin: PartyId; id: string }
     amount: string
+    expiry: Date
     memo?: string
 }
 
