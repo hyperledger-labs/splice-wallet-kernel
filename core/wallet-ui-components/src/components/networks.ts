@@ -5,7 +5,7 @@ import { html, css } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { Network, Session } from '@canton-network/core-wallet-user-rpc-client'
 
-import { BaseElement } from '../internal/BaseElement'
+import { BaseElement } from '../internal/base-element'
 import { modalStyles } from '../styles/modal'
 
 @customElement('wg-networks')

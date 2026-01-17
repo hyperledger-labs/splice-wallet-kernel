@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { DiscoverResult, GatewaysConfig } from '@canton-network/core-types'
-import { Discovery } from '../components/Discovery.js'
+import { Discovery } from '../components/discovery.js'
 import { popup } from './popup.js'
 
 export async function discover(

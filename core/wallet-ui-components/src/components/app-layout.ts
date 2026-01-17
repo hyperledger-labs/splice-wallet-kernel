@@ -4,7 +4,7 @@
 import { html, unsafeCSS } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import defaultTheme from '../../themes/default.css?inline'
-import { BaseElement } from '../internal/BaseElement.js'
+import { BaseElement } from '../internal/base-element'
 
 @customElement('app-layout')
 export class AppLayout extends BaseElement {

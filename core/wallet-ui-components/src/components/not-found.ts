@@ -3,7 +3,7 @@
 
 import { html, css } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
-import { BaseElement } from '../internal/BaseElement.js'
+import { BaseElement } from '../internal/base-element'
 
 @customElement('not-found')
 export class NotFound extends BaseElement {

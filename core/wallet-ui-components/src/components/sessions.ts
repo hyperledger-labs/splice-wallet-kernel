@@ -3,7 +3,7 @@
 
 import { html, css } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
-import { BaseElement } from '../internal/BaseElement'
+import { BaseElement } from '../internal/base-element'
 import { Session } from '@canton-network/core-wallet-user-rpc-client'
 
 @customElement('wg-sessions')

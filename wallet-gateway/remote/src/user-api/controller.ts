@@ -15,6 +15,7 @@ import {
     ListSessionsResult,
     SetPrimaryWalletParams,
     SyncWalletsResult,
+    IsWalletSyncNeededResult,
     AddIdpParams,
     RemoveIdpParams,
     CreateWalletParams,
@@ -906,6 +907,55 @@ export const userController = (
             const wallets = await store.getWallets()
             notifier?.emit('accountsChanged', wallets)
             return result
+        },
+        isWalletSyncNeeded: async (): Promise<IsWalletSyncNeededResult> => {
+            const network = await store.getCurrentNetwork()
+            assertConnected(authContext)
+
+            const userAccessTokenProvider: AccessTokenProvider = {
+                getUserAccessToken: async () => authContext!.accessToken,
+                getAdminAccessToken: async () => authContext!.accessToken,
+            }
+
+            const idp = await store.getIdp(network.identityProviderId)
+            const adminAccessTokenProvider = new AuthTokenProvider(
+                idp,
+                network.auth,
+                network.adminAuth,
+                logger
+            )
+
+            const partyAllocator = new PartyAllocationService({
+                synchronizerId: network.synchronizerId,
+                accessTokenProvider: adminAccessTokenProvider,
+                httpLedgerUrl: network.ledgerApi.baseUrl,
+                logger,
+            })
+
+            const userLedger = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
+                logger,
+                accessTokenProvider: userAccessTokenProvider,
+            })
+
+            const adminLedger = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
+                logger,
+                isAdmin: true,
+                accessTokenProvider: adminAccessTokenProvider,
+            })
+
+            const service = new WalletSyncService(
+                store,
+                userLedger,
+                adminLedger,
+                authContext!,
+                logger,
+                drivers,
+                partyAllocator
+            )
+            const walletSyncNeeded = await service.isWalletSyncNeeded()
+            return { walletSyncNeeded }
         },
         getTransaction: async (
             params: GetTransactionParams

@@ -7,7 +7,7 @@ import {
     GatewaysConfig,
 } from '@canton-network/core-types'
 import { css } from 'lit'
-import { BaseElement } from '../internal/BaseElement'
+import { BaseElement } from '../internal/base-element'
 import { cssToString } from '../utils'
 
 type KernelType = GatewaysConfig & { walletType: 'remote' }
