@@ -86,8 +86,10 @@ const createLedgerClient = async (options: {
             // Catches in the codebase assume that e.g. 'err.code' is set.
             if (typeof err === 'object' && err !== null && 'error' in err) {
                 const typedErr = err as { error?: { data?: unknown } }
-                if (typedErr.error?.data) {
+                if (typeof typedErr.error?.data === 'object') {
                     throw typedErr.error.data
+                } else if (typeof typedErr.error?.data === 'string') {
+                    throw JSON.parse(typedErr.error.data).error.data
                 }
             }
 

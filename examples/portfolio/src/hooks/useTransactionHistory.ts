@@ -12,6 +12,7 @@ import { type Transaction } from '@canton-network/core-ledger-client'
 import { usePortfolio } from '../contexts/PortfolioContext'
 import { usePrimaryAccount } from '../hooks/useAccounts'
 import type { TransactionHistoryResponse } from '../services/transaction-history-service'
+import { queryKeys } from './query-keys'
 
 export const useTransactionHistory = (): UseInfiniteQueryResult<
     InfiniteData<TransactionHistoryResponse>,
@@ -21,7 +22,7 @@ export const useTransactionHistory = (): UseInfiniteQueryResult<
     const { getTransactionHistory } = usePortfolio()
     return useInfiniteQuery({
         initialPageParam: null,
-        queryKey: ['getTransactionHistory', primaryParty],
+        queryKey: queryKeys.getTransactionHistory.forParty(primaryParty),
         queryFn: ({ pageParam }) =>
             primaryParty
                 ? getTransactionHistory({
