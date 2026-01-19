@@ -28,7 +28,10 @@ export class WalletGateway {
         })
     }
 
-    async connectToLocalNet(): Promise<void> {
+    async connect(args: {
+        network: 'LocalNet' | 'Local (OAuth IDP)'
+        customURL?: string
+    }): Promise<void> {
         const connectButton = this.connectButton(this.dappPage)
         await expect(connectButton).toBeVisible()
 
@@ -36,15 +39,29 @@ export class WalletGateway {
         await connectButton.click()
         const popup = await discoverPopupPromise
 
+        if (args.customURL !== undefined) {
+            await popup
+                .getByRole('listitem')
+                .filter({ hasText: 'Custom url' })
+                .click()
+            await popup
+                .getByRole('textbox', { name: 'RPC URL' })
+                .fill(args.customURL as string)
+        }
         await popup.getByRole('button', { name: 'Connect' }).click()
+
         const selectNetwork = popup.locator('select#network')
-        const localNetOption = await selectNetwork
+        const networkOption = await selectNetwork
             .locator('option')
-            .filter({ hasText: 'LocalNet' })
+            .filter({ hasText: args.network })
             .first()
             .getAttribute('value')
-        await selectNetwork.selectOption(localNetOption)
-        await popup.getByRole('button', { name: 'Connect' }).click()
+        await selectNetwork.selectOption(networkOption)
+        const confirmConnectButton = popup.getByRole('button', {
+            name: 'Connect',
+        })
+        await confirmConnectButton.click()
+        await expect(confirmConnectButton).not.toBeVisible()
     }
 
     async openPopup(): Promise<void> {
@@ -85,7 +102,11 @@ export class WalletGateway {
         await wallet.getByRole('button', { name: 'Set Primary' }).click()
     }
 
-    async createWalletIfNotExists(partyHint: string): Promise<string> {
+    async createWalletIfNotExists(args: {
+        partyHint: string
+        signingProvider: 'participant' | 'wallet-kernel'
+        primary?: boolean
+    }): Promise<string> {
         // Make sure we're on the right page.
         await (await this.popup())
             .getByRole('button', { name: 'Toggle menu' })
@@ -98,7 +119,7 @@ export class WalletGateway {
         ).not.toBeVisible()
 
         // Check for existing user with that party hint.
-        const pattern = new RegExp(`${partyHint}::[0-9a-f]+`)
+        const pattern = new RegExp(`${args.partyHint}::[0-9a-f]+`)
         const wallets = (await this.popup()).getByText(pattern)
         const walletsCount = await wallets.count()
         if (walletsCount > 0) {
@@ -106,7 +127,7 @@ export class WalletGateway {
                 pattern
             )?.[0]
             if (partyId === undefined) {
-                throw new Error(`did not find partyID for ${partyHint}`)
+                throw new Error(`did not find partyID for ${args.partyHint}`)
             }
             return partyId
         }
@@ -117,10 +138,15 @@ export class WalletGateway {
             .click()
         await (await this.popup())
             .getByRole('textbox', { name: 'Party ID hint:' })
-            .fill(partyHint)
+            .fill(args.partyHint)
         await (await this.popup())
             .getByLabel('Signing Provider:')
-            .selectOption('participant')
+            .selectOption(args.signingProvider)
+        if (args.primary) {
+            await (await this.popup())
+                .getByRole('checkbox', { name: 'primary' })
+                .check()
+        }
         await (await this.popup())
             .getByRole('button', { name: 'Create' })
             .click()
@@ -132,18 +158,28 @@ export class WalletGateway {
             await (await this.popup()).getByText(pattern).first().innerText()
         ).match(pattern)?.[0]
         if (partyId === undefined) {
-            throw new Error(`did not find partyID for ${partyHint}`)
+            throw new Error(`did not find partyID for ${args.partyHint}`)
         }
         return partyId
     }
 
-    async approveTransaction(start: () => Promise<void>): Promise<void> {
+    async approveTransaction(start: () => Promise<void>): Promise<{
+        commandId: string
+    }> {
         await start()
+        await expect(
+            (await this.popup()).getByText(/Pending Transaction Request/)
+        ).toBeVisible()
+        const commandId = new URL((await this.popup()).url()).searchParams.get(
+            'commandId'
+        )
+        if (!commandId) throw new Error('Approve popup has no commandId in URL')
         await (await this.popup())
             .getByRole('button', { name: 'Approve' })
             .click()
         await expect(
             (await this.popup()).getByText('Transaction executed successfully')
         ).toBeVisible()
+        return { commandId }
     }
 }

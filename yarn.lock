@@ -2014,6 +2014,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/example-ping@workspace:examples/ping"
   dependencies:
+    "@canton-network/core-wallet-test-utils": "workspace:^"
     "@canton-network/dapp-sdk": "workspace:^"
     "@eslint/js": "npm:^9.39.2"
     "@playwright/test": "npm:^1.57.0"
@@ -2025,6 +2026,7 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^7.0.1"
     eslint-plugin-react-refresh: "npm:^0.4.26"
     globals: "npm:^17.0.0"
+    nx: "npm:^22.3.3"
     react: "npm:^19.2.3"
     react-dom: "npm:^19.2.3"
     typescript: "npm:~5.9.3"

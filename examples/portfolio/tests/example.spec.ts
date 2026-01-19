@@ -62,7 +62,7 @@ test('two step transfer', async ({ page: dappPage }) => {
 
     await setupRegistry(dappPage)
 
-    await wg.connectToLocalNet()
+    await wg.connect({ network: 'LocalNet' })
     const alice = await wg.createWalletIfNotExists('alice')
     console.log('aliceParty', alice)
     const bob = await wg.createWalletIfNotExists('bob')
@@ -131,7 +131,7 @@ test('allocation', async ({ page: dappPage }) => {
 
     await setupRegistry(dappPage)
 
-    await wg.connectToLocalNet()
+    await wg.connect({ network: 'LocalNet' })
     const venue = await wg.createWalletIfNotExists('venue')
     const alice = await wg.createWalletIfNotExists('alice')
     const bob = await wg.createWalletIfNotExists('bob')
