@@ -48,7 +48,7 @@ By default an **Ed25519** encryption is used. There exists many libraries that c
    :dedent:
 
 Generating Keys from a Mnemonic Phrase (BIP-0039)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Canton Network supports the generation of cryptographic keys using a mnemonic code or mnemonic sentence, 
 following the `BIP-0039 standard <https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki>`_. 
