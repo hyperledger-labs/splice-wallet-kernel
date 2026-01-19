@@ -63,9 +63,9 @@ test('two step transfer', async ({ page: dappPage }) => {
     await setupRegistry(dappPage)
 
     await wg.connect({ network: 'LocalNet' })
-    const alice = await wg.createWalletIfNotExists('alice')
+    const alice = await wg.createWalletIfNotExists({ partyHint: 'alice' })
     console.log('aliceParty', alice)
-    const bob = await wg.createWalletIfNotExists('bob')
+    const bob = await wg.createWalletIfNotExists({ partyHint: 'bob' })
     console.log('bobParty', bob)
 
     await wg.setPrimaryWallet(alice)
@@ -132,9 +132,9 @@ test('allocation', async ({ page: dappPage }) => {
     await setupRegistry(dappPage)
 
     await wg.connect({ network: 'LocalNet' })
-    const venue = await wg.createWalletIfNotExists('venue')
-    const alice = await wg.createWalletIfNotExists('alice')
-    const bob = await wg.createWalletIfNotExists('bob')
+    const venue = await wg.createWalletIfNotExists({ partyHint: 'venue' })
+    const alice = await wg.createWalletIfNotExists({ partyHint: 'alice' })
+    const bob = await wg.createWalletIfNotExists({ partyHint: 'bob' })
 
     const logger = pino({ name: 'otc-trade', level: 'info' })
     const otcTrade = new OTCTrade({
