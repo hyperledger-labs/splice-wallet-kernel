@@ -67,6 +67,10 @@ export class Provider implements SpliceProvider {
                 return controller.prepareExecute(
                     args.params as PrepareExecuteParams
                 ) as Promise<T>
+            case 'prepareExecuteAndWait':
+                return controller.prepareExecuteAndWait(
+                    args.params as PrepareExecuteParams
+                ) as Promise<T>
             case 'prepareReturn':
                 return controller.prepareReturn(
                     args.params as dappAPI.PrepareReturnParams
