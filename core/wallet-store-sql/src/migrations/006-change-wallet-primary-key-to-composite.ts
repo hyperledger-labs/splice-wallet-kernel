@@ -11,6 +11,34 @@ export async function up(db: Kysely<DB>): Promise<void> {
     // 3. Drop old table
     // 4. Rename new table
 
+    // TODO let's try to make it more straightforward
+    // Clean up any leftover temporary table from previous failed migration
+    await db.schema.dropTable('wallets_new').ifExists().execute()
+
+    // Check if wallets table exists - if not, migration might have been partially applied
+    const tableInfo = await sql`
+        SELECT name FROM sqlite_master
+        WHERE type='table' AND name IN ('wallets', 'wallets_new')
+    `.execute(db)
+
+    const tableNames = (tableInfo.rows as Array<{ name: string }>).map(
+        (row) => row.name
+    )
+    const hasWallets = tableNames.includes('wallets')
+    const hasWalletsNew = tableNames.includes('wallets_new')
+
+    // If wallets_new exists but wallets doesn't, migration was partially complete
+    // Just rename wallets_new to wallets
+    if (!hasWallets && hasWalletsNew) {
+        await db.schema.alterTable('wallets_new').renameTo('wallets').execute()
+        return
+    }
+
+    // If wallets doesn't exist, something is wrong
+    if (!hasWallets) {
+        throw new Error('wallets table does not exist - cannot migrate')
+    }
+
     // Create new wallets table with composite primary key
     await db.schema
         .createTable('wallets_new')
@@ -35,6 +63,7 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .execute()
 
     // Copy data from old table to new table using raw SQL
+    // Use COALESCE to handle potential NULL values in disabled column
     // (wallets_new is not in the DB type, so we use raw SQL)
     await sql`
         INSERT INTO wallets_new (
@@ -42,10 +71,20 @@ export async function up(db: Kysely<DB>): Promise<void> {
             user_id, signing_provider_id, status, external_tx_id,
             topology_transactions, disabled, reason
         )
-        SELECT 
-            party_id, network_id, "primary", hint, public_key, namespace,
-            user_id, signing_provider_id, status, external_tx_id,
-            topology_transactions, disabled, reason
+        SELECT
+            party_id,
+            network_id,
+            "primary",
+            hint,
+            public_key,
+            namespace,
+            user_id,
+            signing_provider_id,
+            status,
+            external_tx_id,
+            topology_transactions,
+            COALESCE(disabled, 0) as disabled,
+            reason
         FROM wallets
     `.execute(db)
 
@@ -91,7 +130,7 @@ export async function down(db: Kysely<DB>): Promise<void> {
             user_id, signing_provider_id, status, external_tx_id,
             topology_transactions, disabled, reason
         )
-        SELECT 
+        SELECT
             w.party_id, w.network_id, w."primary", w.hint, w.public_key, w.namespace,
             w.user_id, w.signing_provider_id, w.status, w.external_tx_id,
             w.topology_transactions, w.disabled, w.reason
