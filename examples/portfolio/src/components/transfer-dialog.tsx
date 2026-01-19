@@ -45,13 +45,15 @@ interface TransferDialogProps {
     onClose: () => void
 }
 
+const ONE_DAY_MS = 24 * 60 * 60 * 1000
+
 export const TransferDialog: React.FC<TransferDialogProps> = ({
     initialValues = {
         instrumentId: null,
         amount: '',
         recipient: '',
         memo: '',
-        expiry: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        expiry: new Date(Date.now() + ONE_DAY_MS),
     },
     open,
     onClose,
