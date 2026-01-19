@@ -466,8 +466,7 @@ export const userController = (
         listWallets: async (params: {
             filter?: { networkIds?: string[]; signingProviderIds?: string[] }
         }) => {
-            // TODO: support filters
-            return await store.getWallets()
+            return await store.getWallets(params.filter)
         },
         sign: async ({
             preparedTransaction,
@@ -476,7 +475,10 @@ export const userController = (
             commandId,
         }: SignParams) => {
             const network = await store.getCurrentNetwork()
-            // Filter wallets by current network to avoid matching wallets from other networks
+            if (network === undefined) {
+                throw new Error('No network session found')
+            }
+
             const wallets = await store.getWallets({
                 networkIds: [network.id],
             })
@@ -487,10 +489,6 @@ export const userController = (
             }
 
             const userId = assertConnected(authContext).userId
-
-            if (network === undefined) {
-                throw new Error('No network session found')
-            }
 
             const notifier = notificationService.getNotifier(userId)
             const signingProvider = wallet.signingProviderId as SigningProvider
