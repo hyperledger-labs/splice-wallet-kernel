@@ -184,6 +184,72 @@ export class WalletSyncService {
         }
     }
 
+    private async getPartiesRightsMap(): Promise<Map<string, string>> {
+        const rights = await this.ledgerClient.getWithRetry(
+            '/v2/users/{user-id}/rights',
+            defaultRetryableOptions,
+            {
+                path: {
+                    'user-id': this.authContext!.userId,
+                },
+            }
+        )
+
+        const partiesWithRights = new Map<string, string>()
+
+        rights.rights?.forEach((right) => {
+            let party: string | undefined
+            let rightType: string | undefined
+            if ('CanActAs' in right.kind) {
+                party = right.kind.CanActAs.value.party
+                rightType = 'CanActAs'
+            } else if ('CanExecuteAs' in right.kind) {
+                party = right.kind.CanExecuteAs.value.party
+                rightType = 'CanExecuteAs'
+            } else if ('CanReadAs' in right.kind) {
+                party = right.kind.CanReadAs.value.party
+                rightType = 'CanReadAs'
+            }
+            if (
+                party !== undefined &&
+                rightType !== undefined &&
+                !partiesWithRights.has(party)
+            )
+                partiesWithRights.set(party, rightType)
+        })
+
+        return partiesWithRights
+    }
+
+    async isWalletSyncNeeded(): Promise<boolean> {
+        try {
+            const existingWallets = await this.store.getWallets()
+
+            // Check if there are any disabled wallets
+            const hasDisabledWallets = existingWallets.some((w) => w.disabled)
+            if (hasDisabledWallets) {
+                return true
+            }
+
+            // Check if there are parties on ledger that aren't in store
+            const partiesWithRights = await this.getPartiesRightsMap()
+
+            // Treat disabled wallets as if they don't exist, so they can be re-synced
+            const enabledWallets = existingWallets.filter((w) => !w.disabled)
+            const existingPartyIds = new Set(
+                enabledWallets.map((w) => w.partyId)
+            )
+
+            // Check if there are parties on ledger that aren't in store
+            return partiesWithRights
+                .keys()
+                .some((party) => !existingPartyIds.has(party))
+        } catch (err) {
+            this.logger.error({ err }, 'Error checking if sync is needed')
+            // On error, return false to avoid showing sync button unnecessarily
+            throw err
+        }
+    }
     async syncWallets(): Promise<WalletSyncReport> {
         this.logger.info('Starting wallet sync...')
         try {
@@ -191,41 +257,7 @@ export class WalletSyncService {
             this.logger.info(network, 'Current network')
 
             // Get existing parties from participant
-            const rights = await this.ledgerClient.getWithRetry(
-                '/v2/users/{user-id}/rights',
-                defaultRetryableOptions,
-                {
-                    path: {
-                        'user-id': this.authContext!.userId,
-                    },
-                }
-            )
-            const partiesWithRights = new Map<string, string>()
-
-            rights.rights?.forEach((right) => {
-                let party: string | undefined
-                let rightType: string | undefined
-                if ('CanActAs' in right.kind) {
-                    party = right.kind.CanActAs.value.party
-                    rightType = 'CanActAs'
-                } else if ('CanExecuteAs' in right.kind) {
-                    party = right.kind.CanExecuteAs.value.party
-                    rightType = 'CanExecuteAs'
-                } else if ('CanReadAs' in right.kind) {
-                    party = right.kind.CanReadAs.value.party
-                    rightType = 'CanReadAs'
-                }
-                if (
-                    party !== undefined &&
-                    rightType !== undefined &&
-                    !partiesWithRights.has(party)
-                )
-                    partiesWithRights.set(party, rightType)
-            })
-            this.logger.info(
-                [...partiesWithRights],
-                'Found new parties to sync with Wallet Gateway'
-            )
+            const partiesWithRights = await this.getPartiesRightsMap()
 
             // Add new Wallets given the found parties
             const existingWallets = await this.store.getWallets()
@@ -244,6 +276,11 @@ export class WalletSyncService {
             const newParties = Array.from(partiesWithRights.keys()).filter(
                 (party) => !existingPartyIdToSigningProvider.has(party)
                 // todo: filter on idp id
+            )
+
+            this.logger.info(
+                { newParties },
+                'Found new parties to sync with Wallet Gateway'
             )
 
             const newParticipantWallets: Wallet[] = await Promise.all(

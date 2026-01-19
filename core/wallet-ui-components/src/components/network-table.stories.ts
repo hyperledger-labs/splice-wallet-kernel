@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite'
 import { html } from 'lit'
 import { Network } from '@canton-network/core-wallet-store'
 
-import { NetworkEditSaveEvent } from './NetworkForm'
+import { NetworkEditSaveEvent } from './network-form'
 
 const meta: Meta = {
     title: 'NetworkTable',
