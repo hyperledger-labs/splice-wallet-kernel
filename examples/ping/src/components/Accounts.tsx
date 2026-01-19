@@ -3,7 +3,10 @@ import { useAccounts } from '../hooks/useAccounts'
 
 export function Accounts(props: { status?: sdk.dappAPI.StatusEvent }) {
     const accounts = useAccounts(props.status)
-    const primaryParty = accounts?.find((ac) => ac.primary)
+    const currentNetworkId = props.status?.network?.networkId
+    const primaryParty = accounts?.find(
+        (ac) => ac.primary && ac.networkId === currentNetworkId
+    )
 
     const connected = props.status?.isConnected ?? false
 
