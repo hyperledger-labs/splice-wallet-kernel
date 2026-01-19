@@ -5,17 +5,9 @@ import { Kysely, sql } from 'kysely'
 import { DB } from '../schema.js'
 
 export async function up(db: Kysely<DB>): Promise<void> {
-    // SQLite doesn't support altering primary keys directly, so we need to:
-    // 1. Create a new table with the composite primary key
-    // 2. Copy data from old table
-    // 3. Drop old table
-    // 4. Rename new table
-
-    // TODO let's try to make it more straightforward
-    // Clean up any leftover temporary table from previous failed migration
+    // SQLite doesn't support altering primary keys, so recreate table
     await db.schema.dropTable('wallets_new').ifExists().execute()
 
-    // Check if wallets table exists - if not, migration might have been partially applied
     const tableInfo = await sql`
         SELECT name FROM sqlite_master
         WHERE type='table' AND name IN ('wallets', 'wallets_new')
@@ -27,19 +19,15 @@ export async function up(db: Kysely<DB>): Promise<void> {
     const hasWallets = tableNames.includes('wallets')
     const hasWalletsNew = tableNames.includes('wallets_new')
 
-    // If wallets_new exists but wallets doesn't, migration was partially complete
-    // Just rename wallets_new to wallets
     if (!hasWallets && hasWalletsNew) {
         await db.schema.alterTable('wallets_new').renameTo('wallets').execute()
         return
     }
 
-    // If wallets doesn't exist, something is wrong
     if (!hasWallets) {
         throw new Error('wallets table does not exist - cannot migrate')
     }
 
-    // Create new wallets table with composite primary key
     await db.schema
         .createTable('wallets_new')
         .addColumn('party_id', 'text', (col) => col.notNull())
@@ -62,9 +50,6 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .addPrimaryKeyConstraint('wallets_pk', ['party_id', 'network_id'])
         .execute()
 
-    // Copy data from old table to new table using raw SQL
-    // Use COALESCE to handle potential NULL values in disabled column
-    // (wallets_new is not in the DB type, so we use raw SQL)
     await sql`
         INSERT INTO wallets_new (
             party_id, network_id, "primary", hint, public_key, namespace,
@@ -72,33 +57,17 @@ export async function up(db: Kysely<DB>): Promise<void> {
             topology_transactions, disabled, reason
         )
         SELECT
-            party_id,
-            network_id,
-            "primary",
-            hint,
-            public_key,
-            namespace,
-            user_id,
-            signing_provider_id,
-            status,
-            external_tx_id,
-            topology_transactions,
-            COALESCE(disabled, 0) as disabled,
-            reason
+            party_id, network_id, "primary", hint, public_key, namespace,
+            user_id, signing_provider_id, status, external_tx_id,
+            topology_transactions, COALESCE(disabled, 0) as disabled, reason
         FROM wallets
     `.execute(db)
 
-    // Drop old table
     await db.schema.dropTable('wallets').execute()
-
-    // Rename new table to wallets
     await db.schema.alterTable('wallets_new').renameTo('wallets').execute()
 }
 
 export async function down(db: Kysely<DB>): Promise<void> {
-    // Reverse the migration: change back to single-column primary key
-
-    // Create new wallets table with single-column primary key
     await db.schema
         .createTable('wallets_new')
         .addColumn('party_id', 'text', (col) => col.primaryKey())
@@ -120,10 +89,7 @@ export async function down(db: Kysely<DB>): Promise<void> {
         .addColumn('reason', 'text')
         .execute()
 
-    // Copy data from composite key table to single key table
-    // Note: If there are duplicate party_ids across networks, we'll only keep one
-    // This is a data loss scenario, but necessary for rollback
-    // We use raw SQL to select one row per party_id (the one with minimum rowid)
+    // Keep only one wallet per party_id (data loss if duplicates exist)
     await sql`
         INSERT INTO wallets_new (
             party_id, network_id, "primary", hint, public_key, namespace,
@@ -142,9 +108,6 @@ export async function down(db: Kysely<DB>): Promise<void> {
         ) ranked ON w.party_id = ranked.party_id AND w.rowid = ranked.min_rowid
     `.execute(db)
 
-    // Drop composite key table
     await db.schema.dropTable('wallets').execute()
-
-    // Rename new table to wallets
     await db.schema.alterTable('wallets_new').renameTo('wallets').execute()
 }
