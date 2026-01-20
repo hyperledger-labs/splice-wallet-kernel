@@ -73,6 +73,11 @@ export class WalletGateway {
     }
 
     private async popup(): Promise<Page> {
+        // NOTE(jaspervdj): Yes, having `(await this.popup())....` everywhere
+        // is a bit ugly, but unfortunately the popup can be closed at any time
+        // (in particular, a few seconds after approving a transaction), so
+        // having popup async allows us to work around that (even if the popup
+        // behaviour would change).
         if (!this._popup) {
             await new Promise((resolve) => setTimeout(resolve, 1000))
             if (!this._popup) {
@@ -166,6 +171,12 @@ export class WalletGateway {
     async approveTransaction(start: () => Promise<void>): Promise<{
         commandId: string
     }> {
+        // NOTE(jaspervdj): I am passing in start (which is an async function
+        // starting the transaction in the dApp, like clicking a button) as a
+        // parameter here. The reason for that is that I was first doing some
+        // setup work (like installing something to wait for a popup). This
+        // turned out not to be necessary, but I think this API is more
+        // forward-proof, since we may change how the popup behaves.
         await start()
         await expect(
             (await this.popup()).getByText(/Pending Transaction Request/)
