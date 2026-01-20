@@ -88,8 +88,6 @@ const createLedgerClient = async (options: {
                 const typedErr = err as { error?: { data?: unknown } }
                 if (typeof typedErr.error?.data === 'object') {
                     throw typedErr.error.data
-                } else if (typeof typedErr.error?.data === 'string') {
-                    throw JSON.parse(typedErr.error.data).error.data
                 }
             }
 
