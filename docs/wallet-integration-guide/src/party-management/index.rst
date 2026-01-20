@@ -57,6 +57,12 @@ Using a mnemonic phrase allows for deterministic key generation, which simplifie
 Instead of managing individual private key files, you can recreate your keys across different environments using a 
 human-readable sequence of words.
 
+A typescript example of generating an Ed25519 key pair with a BIP-0039 mnemonic phrase using the libraries bip39 and ed25519 as dependencies is shown below:
+
+.. literalinclude:: ../../examples/snippets/create-key-from-mnemonic-phrase.ts
+   :language: typescript
+   :dedent:
+
 Choosing a party hint
 ---------------------
 The unique party id is defined as **${partyHint}::${fingerprint}**. The partyHint is a user friendly name and can be anything that is unique for the fingerprint, e.g. "alice", "bob" or "my-wallet-1".
