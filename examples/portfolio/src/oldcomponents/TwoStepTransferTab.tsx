@@ -55,6 +55,7 @@ export const TwoStepTransferTab: React.FC = () => {
                         sender: primaryParty!,
                         receiver,
                         amount: `${amount}`,
+                        expiry: new Date(Date.now() + 24 * 60 * 60 * 1000),
                         memo: memo ? memo : undefined,
                     })
                 }}
