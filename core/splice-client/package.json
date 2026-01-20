@@ -1,9 +1,8 @@
 {
     "name": "@canton-network/core-splice-client",
-    "version": "0.13.0",
+    "version": "0.19.2",
     "type": "module",
     "description": "Typescript Client for the multiple Canton Network APIs",
-    "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
     "main": "dist/index.cjs",
     "module": "dist/index.js",
@@ -26,18 +25,23 @@
     "dependencies": {
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
-        "openapi-fetch": "^0.14.0",
+        "openapi-fetch": "^0.15.0",
         "uuid": "^11.1.0",
-        "zod": "^3.25.67"
+        "zod": "^4.3.5"
     },
     "devDependencies": {
-        "tsup": "^8.5.0",
-        "typescript": "^5.8.3"
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3"
     },
     "files": [
         "dist/**"
     ],
     "publishConfig": {
         "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
+        "directory": "core/splice-client"
     }
 }

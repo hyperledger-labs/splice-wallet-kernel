@@ -1,10 +1,10 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { LitElement, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { stateManager } from '../state-manager'
-import { authenticate } from '..'
+import { addUserSession, redirectToIntendedOrDefault } from '..'
 
 @customElement('login-callback')
 export class LoginCallback extends LitElement {
@@ -50,16 +50,16 @@ export class LoginCallback extends LitElement {
                     atob(tokenResponse.access_token.split('.')[1])
                 )
                 stateManager.expirationDate.set(
-                    new Date(payload.exp * 1000).toString()
+                    new Date(payload.exp * 1000).toISOString()
                 )
 
                 stateManager.accessToken.set(tokenResponse.access_token)
 
-                authenticate(
+                addUserSession(
                     tokenResponse.access_token,
                     stateManager.networkId.get() || ''
                 ).then(() => {
-                    window.location.replace('/')
+                    redirectToIntendedOrDefault()
                 })
             }
         }

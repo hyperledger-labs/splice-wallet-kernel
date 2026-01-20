@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { NextFunction, Request, Response } from 'express'
@@ -12,8 +12,9 @@ import {
     ErrorResponse,
     JsonRpcRequest,
     JsonRpcResponse,
-    jsonRpcResponse,
 } from '@canton-network/core-types'
+import { jsonRpcResponse } from '@canton-network/core-rpc-transport'
+import { isJsCantonError } from '@canton-network/core-ledger-client'
 
 interface JsonRpcHttpOptions<T> {
     logger: Logger
@@ -50,6 +51,14 @@ const handleRpcError = (
         response.error = error
         const httpCode = toHttpErrorCode(error.code)
         return [httpCode, jsonRpcResponse(id, response)]
+    }
+
+    if (isJsCantonError(error)) {
+        response.error = {
+            code: rpcErrors.internal().code,
+            message: error.cause,
+            data: error,
+        }
     }
 
     if (error instanceof Error) {

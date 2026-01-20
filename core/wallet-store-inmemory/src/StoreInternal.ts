@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logger } from 'pino'
@@ -106,13 +106,11 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                 getAdminAccessToken: async () => this.authContext!.accessToken,
             }
 
-            const ledgerClient = new LedgerClient(
-                new URL(network.ledgerApi.baseUrl),
-                this.logger,
-                false,
-                undefined,
-                userAccessTokenProvider
-            )
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
+                logger: this.logger,
+                accessTokenProvider: userAccessTokenProvider,
+            })
             const rights = await ledgerClient.getWithRetry(
                 '/v2/users/{user-id}/rights',
                 defaultRetryableOptions,
@@ -147,6 +145,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                         return {
                             primary: false,
                             partyId: party,
+                            status: 'allocated',
                             hint: hint,
                             publicKey: namespace,
                             namespace: namespace,
@@ -236,10 +235,16 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         this.updateStorage(storage)
     }
 
-    async updateWallet({ status, partyId }: UpdateWallet): Promise<void> {
+    async updateWallet({
+        status,
+        partyId,
+        externalTxId,
+    }: UpdateWallet): Promise<void> {
         const storage = this.getStorage()
         const wallets = (await this.getWallets()).map((wallet) =>
-            wallet.partyId === partyId ? { ...wallet, status } : wallet
+            wallet.partyId === partyId
+                ? { ...wallet, status, externalTxId }
+                : wallet
         )
 
         storage.wallets = wallets
@@ -389,5 +394,12 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         const storage = this.getStorage()
 
         return storage.transactions.get(commandId)
+    }
+
+    async listTransactions(): Promise<Array<Transaction>> {
+        this.assertConnected()
+        const storage = this.getStorage()
+
+        return Array.from(storage.transactions.values())
     }
 }

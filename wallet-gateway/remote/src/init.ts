@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { dapp } from './dapp-api/server.js'
@@ -18,50 +18,26 @@ import {
     migrator as signingMigrator,
 } from '@canton-network/core-signing-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
-import { Notifier } from './notification/NotificationService.js'
-import EventEmitter from 'events'
 import { SigningProvider } from '@canton-network/core-signing-lib'
 import { ParticipantSigningDriver } from '@canton-network/core-signing-participant'
 import { InternalSigningDriver } from '@canton-network/core-signing-internal'
 import FireblocksSigningProvider from '@canton-network/core-signing-fireblocks'
+import BlockdaemonSigningProvider from '@canton-network/core-signing-blockdaemon'
 import { jwtAuthService } from './auth/jwt-auth-service.js'
 import express from 'express'
 import { CliOptions } from './index.js'
 import { jwtAuth } from './middleware/jwtAuth.js'
-import { rpcRateLimit } from './middleware/rateLimit.js'
+import { rateLimiter } from './middleware/rateLimit.js'
 import { Config } from './config/Config.js'
+import { deriveUrls } from './config/ConfigUtils.js'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
+import { GATEWAY_VERSION } from './version.js'
+import { sessionHandler } from './middleware/sessionHandler.js'
+import { NotificationService } from './notification/NotificationService.js'
 import { sql } from 'kysely'
 
 let isReady = false
-
-class NotificationService implements NotificationService {
-    private notifiers: Map<string, Notifier> = new Map()
-
-    constructor(private logger: Logger) {}
-
-    getNotifier(notifierId: string): Notifier {
-        const logger = this.logger
-        let notifier = this.notifiers.get(notifierId)
-
-        if (!notifier) {
-            notifier = new EventEmitter()
-            // Wrap all events to log with pino
-            const originalEmit = notifier.emit
-            notifier.emit = function (event: string, ...args: unknown[]) {
-                logger.debug(
-                    { event, args },
-                    `Notifier emitted event: ${event}`
-                )
-                return originalEmit.apply(this, [event, ...args])
-            }
-            this.notifiers.set(notifierId, notifier)
-        }
-
-        return notifier
-    }
-}
 
 async function initializeDatabase(
     config: Config,
@@ -82,7 +58,9 @@ async function initializeDatabase(
         const result = await sql
             .raw<{
                 '?column?': number
-            }>(`select 1 from pg_database where datname='${config.store.connection.database}';`)
+            }>(
+                `select 1 from pg_database where datname='${config.store.connection.database}';`
+            )
             .execute(db)
         const databaseExist = result.rows.length > 0
         if (!databaseExist) {
@@ -142,7 +120,9 @@ async function initializeSigningDatabase(
         const result = await sql
             .raw<{
                 '?column?': number
-            }>(`select 1 from pg_database where datname='${config.signingStore.connection.database}';`)
+            }>(
+                `select 1 from pg_database where datname='${config.signingStore.connection.database}';`
+            )
             .execute(db)
         const databaseExist = result.rows.length > 0
         if (!databaseExist) {
@@ -183,17 +163,29 @@ async function initializeSigningDatabase(
 }
 
 export async function initialize(opts: CliOptions, logger: Logger) {
-    const port = opts.port ? Number(opts.port) : 3030
+    const config = ConfigUtils.loadConfigFile(opts.config)
+
+    // Use CLI port override or config port
+    const port = opts.port ? Number(opts.port) : config.server.port
+    const { serviceUrl, publicUrl, dappApiUrl, userApiUrl } = deriveUrls(
+        config,
+        port
+    )
 
     const app = express()
-    const server = app.listen(port, () => {
-        logger.info(
-            `Remote Wallet Gateway starting on http://localhost:${port}`
-        )
-    })
 
-    app.use('/healthz', rpcRateLimit, (_req, res) => res.status(200).send('OK'))
-    app.use('/readyz', rpcRateLimit, (_req, res) => {
+    const server = app.listen(port, () => {
+        logger.info(`Remote Wallet Gateway starting on ${serviceUrl})`)
+    })
+    app.use(express.json({ limit: config.server.requestSizeLimit }))
+
+    const rpcRateLimit = rateLimiter(config.server.requestRateLimit)
+    const healthCheckRateLimit = rateLimiter(1000) // Allow more requests for health checks
+
+    app.use('/healthz', healthCheckRateLimit, (_req, res) =>
+        res.status(200).send('OK')
+    )
+    app.use('/readyz', healthCheckRateLimit, (_req, res) => {
         if (isReady) {
             res.status(200).send('OK')
         } else {
@@ -202,8 +194,6 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     })
 
     const notificationService = new NotificationService(logger)
-
-    const config = ConfigUtils.loadConfigFile(opts.config)
 
     const store = await initializeDatabase(config, logger)
     const signingStore = await initializeSigningDatabase(config, logger)
@@ -227,6 +217,11 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const keyInfo = { apiKey, apiSecret }
     const userApiKeys = new Map([['user', keyInfo]])
 
+    const blockdaemonApiUrl =
+        process.env.BLOCKDAEMON_API_URL ||
+        'http://localhost:5080/api/cwp/canton'
+    const blockdaemonApiKey = process.env.BLOCKDAEMON_API_KEY || ''
+
     const drivers = {
         [SigningProvider.PARTICIPANT]: new ParticipantSigningDriver(),
         [SigningProvider.WALLET_KERNEL]: new InternalSigningDriver(
@@ -236,19 +231,43 @@ export async function initialize(opts: CliOptions, logger: Logger) {
             defaultKeyInfo: keyInfo,
             userApiKeys,
         }),
+        [SigningProvider.BLOCKDAEMON]: new BlockdaemonSigningProvider({
+            baseUrl: blockdaemonApiUrl,
+            apiKey: blockdaemonApiKey,
+        }),
+    }
+
+    const allowedPaths = {
+        [config.server.dappPath]: ['*'],
+        [config.server.userPath]: ['addSession', 'listNetworks', 'listIdps'],
     }
 
     app.use('/api/*splat', express.json())
     app.use('/api/*splat', rpcRateLimit)
-    app.use('/api/*splat', jwtAuth(authService, logger))
+    app.use(
+        '/api/*splat',
+        jwtAuth(authService, logger.child({ component: 'JwtHandler' })),
+        sessionHandler(
+            store,
+            allowedPaths,
+            logger.child({ component: 'SessionHandler' })
+        )
+    )
+
+    logger.info({ ...config.server, port }, 'Server configuration')
+
+    const kernelInfo = config.kernel
 
     // register dapp API handlers
     dapp(
-        '/api/v0/dapp',
+        config.server.dappPath,
         app,
         logger,
         server,
-        config.kernel,
+        kernelInfo,
+        dappApiUrl,
+        publicUrl,
+        config.server,
         notificationService,
         authService,
         store
@@ -256,18 +275,23 @@ export async function initialize(opts: CliOptions, logger: Logger) {
 
     // register user API handlers
     user(
-        '/api/v0/user',
+        config.server.userPath,
         app,
         logger,
-        config.kernel,
+        kernelInfo,
+        publicUrl,
         notificationService,
         drivers,
         store
     )
 
     // register web handler
-    web(app, server)
+    web(app, server, userApiUrl)
     isReady = true
 
-    logger.info('Wallet Gateway initialization complete')
+    logger.info(
+        `Wallet Gateway (version: ${GATEWAY_VERSION}) initialization complete`
+    )
+    logger.info(`Wallet Gateway UI available on ${publicUrl}`)
+    logger.info(`dApp API available on ${dappApiUrl}`)
 }

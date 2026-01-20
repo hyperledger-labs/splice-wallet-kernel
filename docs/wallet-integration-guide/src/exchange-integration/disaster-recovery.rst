@@ -63,31 +63,64 @@ affects:
 * **Ledger API offsets**: offsets assigned to transactions received from the Ledger API may
   change. This only affects the Tx History Ingestion component of the integration.
 
-  We recommend to handle this by implementing the Tx History Ingestion component such that
-  it skips reingesting transactions that it has already ingested before the backup.
-  It can do so by skipping ingesting transactions with a record time less than
-  or equal to the record time of the last ingested transaction.
-  Make sure that it still updates the last ingested offset
-  even when skipping reingestion of such transactions.
+Runbook
+^^^^^^^
 
-  With that change you can handle restoring from a backup as follows:
+Follow these steps to restore the Exchange Validator Node from a backup:
 
-    1. Stop Tx History Ingestion before restoring the Exchange Validator Node from a backup.
-    2. Retrieve the record time ``tRecovery`` and ``synchronizerId`` of the last ingested transaction from the Canton Integration DB.
-    3. Restore the Exchange Validator Node from the backup.
-    4. Reupload all ``.dar`` files that were uploaded after the backup.
-    5. Log into the `Canton Console of your validator node <https://docs.dev.sync.global/deployment/console_access.html>`__
-       and query the offset ``offRecovery`` assigned to ``tRecovery`` using
+1. Stop Tx History Ingestion before restoring the Exchange Validator Node from a backup.
+2. Retrieve the record time ``tRecovery`` and ``synchronizerId`` of the last ingested transaction from the Canton Integration DB.
+3. Restore the Exchange Validator Node from the backup.
+4. Reupload all ``.dar`` files that were uploaded after the backup.
+5. Log into the `Canton Console of your validator node <https://docs.dev.sync.global/deployment/console_access.html>`__
+   and query the offset ``offRecovery`` assigned to ``tRecovery`` using
 
-       .. code-block:: bash
+   .. code-block:: scala
 
-          $ participantX.parties.find_highest_offset_by_timestamp(synchronizerId, tRecovery)
+     def parseTimestamp(t: String) = {
+       val isoFormat = java.time.format.DateTimeFormatter.ISO_INSTANT.withZone(java.time.ZoneId.of("Z"))
+       isoFormat.parse(t, java.time.Instant.from(_))
+     }
+     val synchronizerId = SynchronizerId.tryFromString("example::1220b1431ef217342db44d516bb9befde802be7d8899637d290895fa58880f19accc") // example
+     val tRecovery = parseTimestamp("2024-05-01T12:34:56.789Z") // example
+     val offRecovery = participant.parties.find_highest_offset_by_timestamp(synchronizerId, tRecovery)
 
-    6. Configure the Tx History Ingestion component to start ingesting from offset ``offRecovery``.
-    7. Restart the Tx History Ingestion component.
+   Alternatively, you can use ``grpcurl`` to query the offset ``offRecovery`` from the command line as shown in the
+   example below:
 
-  Once Tx History Ingestion has caught up, the integration workflows will continue
-  as before the disaster.
+   .. code-block:: bash
+
+      grpcurl -plaintext -d \
+        '{"synchronizerId" : "example::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a",
+          "timestamp": "2025-11-27T06:50:00.000Z"}' \
+        localhost:5002 \
+        com.digitalasset.canton.admin.participant.v30.PartyManagementService.GetHighestOffsetByTimestamp
+
+   If you use authentication for the Canton Admin gRPC API, then you need to add the appropriate
+   authentication flags to the ``grpcurl`` command above.
+
+6. Configure the Tx History Ingestion component to start ingesting from offset ``offRecovery``.
+7. Restart the Tx History Ingestion component.
+
+Once Tx History Ingestion has caught up, the integration workflows will continue
+as before the disaster.
+
+.. note::
+
+  These steps assume that record times assigned to transactions are unique,
+  which is the case unless you are using participant-local operations that modify the
+  transaction history. These are ACS imports, party migrations, party replication,
+  or `repair commands <https://docs.digitalasset.com/operate/3.4/explanations/repairing.html>`__.
+  Multi-hosting a party from the start does not lead to non-unique record times.
+
+  If your are using participant-local operations that modify the transaction history,
+  then you we recommend adjusting Step 5 as follows to deal with the rare case of
+  a partial ingestion of transactions with the same record time:
+
+    1. Lookup the recovery offset ``offRecovery`` as of ``tRecovery - 1 microsecond``.
+    2. Start ingesting from offset ``offRecovery``, but filter out all transactions
+       whose update-id is already known in the Canton Integration DB because they
+       have been ingested before Tx History Ingestion was stopped in Step 1.
 
 
 .. _restore-canton-integration-db:

@@ -25,7 +25,8 @@ It's suggested that the Wallet SDK is used to simplify the majority of workflows
    traffic/index
    tokenomics-and-rewards/index
    user-management/index
-   canton-coin-rewards/index
+   canton-coin-specific-considerations/index
    deposits-into-exchanges/index
+   usdcx-support/index
    exchange-integration/index
    release-notes/index

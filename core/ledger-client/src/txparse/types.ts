@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -19,8 +19,18 @@ export interface Transaction {
 export interface TokenStandardEvent {
     label: Label
     lockedHoldingsChange: HoldingsChange
+    /** lockedHoldingsChangeSummaries contains one summary per instrument. */
+    lockedHoldingsChangeSummaries: HoldingsChangeSummary[]
+    /** @deprecated lockedHoldingsChangeSummary is incorrect in a
+     *  multi-instrument world.  It will be removed in a future release, please
+     *  use unlockedHoldingsChangeSummaries instead. */
     lockedHoldingsChangeSummary: HoldingsChangeSummary
     unlockedHoldingsChange: HoldingsChange
+    /** unlockedHoldingsChangeSummary contains one summary per instrument. */
+    unlockedHoldingsChangeSummaries: HoldingsChangeSummary[]
+    /** @deprecated unlockedHoldingsChangeSummary is incorrect in a
+     *  multi-instrument world. It will be removed in a future release, please
+     *  use unlockedHoldingsChangeSummaries instead. */
     unlockedHoldingsChangeSummary: HoldingsChangeSummary
     transferInstruction: TransferInstructionView | null
 }
@@ -48,18 +58,12 @@ export interface HoldingsChange {
 }
 
 export interface HoldingsChangeSummary {
+    instrumentId: { admin: string; id: string }
     numInputs: number
     inputAmount: string
     numOutputs: number
     outputAmount: string
     amountChange: string
-}
-export const EmptyHoldingsChangeSummary: HoldingsChangeSummary = {
-    numInputs: 0,
-    inputAmount: '0',
-    numOutputs: 0,
-    outputAmount: '0',
-    amountChange: '0',
 }
 
 /**
@@ -178,12 +182,14 @@ export const renderTransaction = (t: Transaction): any => {
 }
 
 const renderTransactionEvent = (e: TokenStandardEvent): any => {
-    const lockedHoldingsChangeSummary = renderHoldingsChangeSummary(
-        e.lockedHoldingsChangeSummary
-    )
-    const unlockedHoldingsChangeSummary = renderHoldingsChangeSummary(
-        e.unlockedHoldingsChangeSummary
-    )
+    const lockedHoldingsChangeSummaries = e.lockedHoldingsChangeSummaries
+        .map(renderHoldingsChangeSummary)
+        .filter((s) => s !== null)
+
+    const unlockedHoldingsChangeSummaries = e.unlockedHoldingsChangeSummaries
+        .map(renderHoldingsChangeSummary)
+        .filter((s) => s !== null)
+
     const lockedHoldingsChange = renderHoldingsChange(e.lockedHoldingsChange)
     const unlockedHoldingsChange = renderHoldingsChange(
         e.unlockedHoldingsChange
@@ -192,8 +198,16 @@ const renderTransactionEvent = (e: TokenStandardEvent): any => {
         ...e,
         lockedHoldingsChange,
         unlockedHoldingsChange,
-        lockedHoldingsChangeSummary,
-        unlockedHoldingsChangeSummary,
+        lockedHoldingsChangeSummaries,
+        // Deprecated
+        lockedHoldingsChangeSummary: renderHoldingsChangeSummary(
+            e.lockedHoldingsChangeSummary
+        ),
+        unlockedHoldingsChangeSummaries,
+        // Deprecated
+        unlockedHoldingsChangeSummary: renderHoldingsChangeSummary(
+            e.unlockedHoldingsChangeSummary
+        ),
     }
 }
 
@@ -210,6 +224,9 @@ const renderHoldingsChangeSummary = (
         return null
     }
     return {
+        ...((s.instrumentId.admin !== '' || s.instrumentId.id !== '') && {
+            instrumentId: s.instrumentId,
+        }),
         ...(s.numInputs !== 0 && { numInputs: s.numInputs }),
         ...(s.inputAmount !== '0' && { inputAmount: s.inputAmount }),
         ...(s.numOutputs !== 0 && { numOutputs: s.numOutputs }),
@@ -239,4 +256,5 @@ export interface PrettyContract<T = ViewValue> {
     contractId: string
     interfaceViewValue: T
     activeContract: JsActiveContract
+    fetchedAtOffset?: number | undefined
 }

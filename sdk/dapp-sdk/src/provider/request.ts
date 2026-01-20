@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'
@@ -8,44 +8,59 @@ import * as storage from '../storage'
 import { injectProvider } from './index'
 import { GatewaysConfig } from '@canton-network/core-types'
 import gateways from '../gateways.json'
-import { removeKernelDiscovery, removeKernelSession } from '../storage'
-import { closeKernelUserUI } from '../provider.js'
+import { clearAllLocalState } from '../util'
 
-export async function connect(): Promise<dappAPI.ConnectResult> {
-    const config: GatewaysConfig[] = gateways
-    return discover(config)
+interface ConnectOptions {
+    defaultGateways?: GatewaysConfig[]
+    additionalGateways?: GatewaysConfig[]
+}
+
+export async function connect(
+    options?: ConnectOptions
+): Promise<dappAPI.StatusEvent> {
+    const { defaultGateways = gateways, additionalGateways = [] } =
+        options || {}
+
+    const verifiedGateways: GatewaysConfig[] = [
+        ...defaultGateways,
+        ...additionalGateways,
+    ]
+
+    return discover(verifiedGateways)
         .then(async (result) => {
             // Store discovery result and remove previous session
+            clearAllLocalState()
+
             storage.setKernelDiscovery(result)
-            storage.removeKernelSession()
             const provider = injectProvider(result)
 
-            const response = await provider.request<dappAPI.ConnectResult>({
+            const response = await provider.request<dappAPI.StatusEvent>({
                 method: 'connect',
             })
 
-            if (!response.status.isConnected) {
-                // TODO: error dialog
-                console.error('SDK: Not connected', response)
-                // openKernelUserUI(result.walletType, response.userUrl)
-            } else {
-                console.log('SDK: Store connection', response)
+            if (response.session) {
                 storage.setKernelSession(response)
+            } else {
+                console.warn('SDK: Connected without session', response)
             }
 
             return response
         })
         .catch((err) => {
-            let details = JSON.stringify(err)
+            let details = ''
+            if (typeof err === 'string') {
+                details = err
+            } else {
+                details = JSON.stringify(err)
 
-            if (err instanceof Error) {
-                details = err.message
+                if (err instanceof Error) {
+                    details = err.message
+                }
+
+                if ('message' in err) {
+                    details = err.message
+                }
             }
-
-            if ('message' in err) {
-                details = err.message
-            }
-
             throw {
                 status: 'error',
                 error: ErrorCode.Other,
@@ -55,17 +70,16 @@ export async function connect(): Promise<dappAPI.ConnectResult> {
 }
 
 export async function disconnect(): Promise<dappAPI.Null> {
-    return await assertProvider()
-        .request<dappAPI.Null>({
+    try {
+        const provider = assertProvider()
+        await provider.request<dappAPI.Null>({
             method: 'disconnect',
         })
-        .then(() => {
-            removeKernelSession()
-            removeKernelDiscovery()
-            closeKernelUserUI()
+    } finally {
+        clearAllLocalState({ closePopup: true })
+    }
 
-            return null
-        })
+    return null
 }
 
 export async function status(): Promise<dappAPI.StatusEvent> {
@@ -88,9 +102,18 @@ export async function requestAccounts(): Promise<dappAPI.RequestAccountsResult> 
 
 export async function prepareExecute(
     params: dappAPI.PrepareExecuteParams
-): Promise<dappAPI.PrepareExecuteResult> {
-    return await assertProvider().request<dappAPI.PrepareExecuteResult>({
+): Promise<null> {
+    return await assertProvider().request({
         method: 'prepareExecute',
+        params,
+    })
+}
+
+export async function prepareExecuteAndWait(
+    params: dappAPI.PrepareExecuteParams
+): Promise<dappAPI.PrepareExecuteAndWaitResult> {
+    return await assertProvider().request<dappAPI.PrepareExecuteAndWaitResult>({
+        method: 'prepareExecuteAndWait',
         params,
     })
 }

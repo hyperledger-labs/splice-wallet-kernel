@@ -1,9 +1,9 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import * as v3_3 from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 
-import * as v3_4 from './generated-clients/openapi-3.4.0-SNAPSHOT.js'
+import * as v3_4 from './generated-clients/openapi-3.4.7.js'
 import createClient, { Client, FetchOptions } from 'openapi-fetch'
 import { Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
@@ -22,7 +22,6 @@ export const supportedVersions = ['3.3', '3.4'] as const
 export type SupportedVersions = (typeof supportedVersions)[number]
 
 export type Types = v3_3.components['schemas'] | v3_4.components['schemas']
-
 type paths = v3_3.paths | v3_4.paths
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional
@@ -66,17 +65,20 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
 
 // Explicitly use the 3.3 schema here, as there has not been a 3.4 snapshot containing these yet
 export type GenerateTransactionResponse =
-    v3_3.components['schemas']['GenerateExternalPartyTopologyResponse']
+    | v3_3.components['schemas']['GenerateExternalPartyTopologyResponse']
+    | v3_4.components['schemas']['GenerateExternalPartyTopologyResponse']
 
 export type AllocateExternalPartyResponse =
-    v3_3.components['schemas']['AllocateExternalPartyResponse']
-
+    | v3_3.components['schemas']['AllocateExternalPartyResponse']
+    | v3_4.components['schemas']['AllocateExternalPartyResponse']
 export type OnboardingTransactions = NonNullable<
-    v3_3.components['schemas']['AllocateExternalPartyRequest']['onboardingTransactions']
+    | v3_3.components['schemas']['AllocateExternalPartyRequest']['onboardingTransactions']
+    | v3_4.components['schemas']['AllocateExternalPartyRequest']['onboardingTransactions']
 >
 
 export type MultiHashSignatures = NonNullable<
-    v3_3.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
+    | v3_3.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
+    | v3_4.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
 >
 // Any options the client accepts besides body/params
 type ExtraPostOpts = Omit<FetchOptions<paths>, 'body' | 'params'>
@@ -84,60 +86,66 @@ type ExtraPostOpts = Omit<FetchOptions<paths>, 'body' | 'params'>
 export class LedgerClient {
     // privately manage the active connected version and associated client codegen
     private readonly clients: Record<SupportedVersions, Client<paths>>
-    private clientVersion: SupportedVersions = '3.3' // default to 3.3 if not provided
+    private clientVersion: SupportedVersions = '3.4' // default to 3.4 if not provided
     private currentClient: Client<paths>
     private initialized: boolean = false
     private accessTokenProvider: AccessTokenProvider | undefined
     private acsHelper: ACSHelper
     private readonly logger: Logger
+    private synchronizerId: string | undefined
     baseUrl: URL
 
-    constructor(
-        baseUrl: URL,
-        _logger: Logger,
-        isAdmin: boolean = false,
-        accessToken?: string,
-        accessTokenProvider?: AccessTokenProvider,
-        version?: SupportedVersions,
+    constructor({
+        baseUrl,
+        logger,
+        isAdmin,
+        accessToken,
+        accessTokenProvider,
+        version,
+        acsHelperOptions,
+        ...options
+    }: {
+        baseUrl: URL
+        logger: Logger
+        isAdmin?: boolean
+        accessToken?: string | undefined
+        accessTokenProvider?: AccessTokenProvider | undefined
+        version?: SupportedVersions
         acsHelperOptions?: AcsHelperOptions
-    ) {
-        this.logger = _logger.child({ component: 'LedgerClient' })
+        fetch?: (url: RequestInfo, options: RequestInit) => Promise<Response>
+    }) {
+        this.logger = logger.child({ component: 'LedgerClient' })
         this.accessTokenProvider = accessTokenProvider
+
+        const baseFetch = options.fetch ?? fetch
+        const authenticatedFetch = async (
+            url: RequestInfo,
+            options: RequestInit = {}
+        ) => {
+            let token = accessToken
+            if (this.accessTokenProvider) {
+                token =
+                    (isAdmin ?? false)
+                        ? await this.accessTokenProvider.getAdminAccessToken()
+                        : await this.accessTokenProvider.getUserAccessToken()
+            }
+            return baseFetch(url, {
+                ...options,
+                headers: {
+                    ...(options.headers || {}),
+                    ...(token && { Authorization: `Bearer ${token}` }),
+                },
+            })
+        }
 
         this.clients = {
             '3.3': createClient<v3_3.paths>({
                 baseUrl: baseUrl.href,
-                fetch: async (url: RequestInfo, options: RequestInit = {}) => {
-                    if (this.accessTokenProvider) {
-                        accessToken = isAdmin
-                            ? await this.accessTokenProvider.getAdminAccessToken()
-                            : await this.accessTokenProvider.getUserAccessToken()
-                    }
-                    return fetch(url, {
-                        ...options,
-                        headers: {
-                            ...(options.headers || {}),
-                            Authorization: `Bearer ${accessToken}`,
-                        },
-                    })
-                },
+                fetch: authenticatedFetch,
             }),
             '3.4': createClient<v3_4.paths>({
                 baseUrl: baseUrl.href,
-                fetch: async (url: RequestInfo, options: RequestInit = {}) => {
-                    if (this.accessTokenProvider) {
-                        accessToken = isAdmin
-                            ? await this.accessTokenProvider.getAdminAccessToken()
-                            : await this.accessTokenProvider.getUserAccessToken()
-                    }
-                    return fetch(url, {
-                        ...options,
-                        headers: {
-                            ...(options.headers || {}),
-                            Authorization: `Bearer ${accessToken}`,
-                        },
-                    })
-                },
+                fetch: authenticatedFetch,
             }),
         }
 
@@ -146,7 +154,7 @@ export class LedgerClient {
         this.baseUrl = baseUrl
         this.acsHelper = new ACSHelper(
             this,
-            _logger,
+            logger,
             acsHelperOptions,
             SharedACSCache
         )
@@ -154,11 +162,21 @@ export class LedgerClient {
 
     public async init() {
         if (!this.initialized) {
+            this.logger.debug(
+                'Initializing LedgerClient with version %s for url %s',
+                this.clientVersion,
+                this.baseUrl.href
+            )
+
             const versionFromClient =
                 await this.currentClient.GET('/v2/version')
+
+            this.logger.debug(versionFromClient, 'getV2Version response')
+
             this.clientVersion = this.parseSupportedVersions(
                 versionFromClient.data?.version
             )
+            this.currentClient = this.clients[this.clientVersion]
             this.initialized = true
         }
     }
@@ -302,27 +320,32 @@ export class LedgerClient {
      *
      * @param userId The ID of the user to grant rights to.
      * @param partyId The ID of the party to grant rights for.
+     * @param maxTries Optional max number of retries with default 30. May be increased if expecting heavy load.
+     * @param retryIntervalMs Optional interval between retries to verify that party exists with default 2000ms. May be increased if expecting heavy load.
      * @returns A promise that resolves when the rights have been granted.
      */
     public async waitForPartyAndGrantUserRights(
         userId: string,
-        partyId: PartyId
+        partyId: PartyId,
+        maxTries: number = 30,
+        retryIntervalMs: number = 2000
     ) {
         await this.init()
         // Wait for party to appear on participant
         let partyFound = false
         let tries = 0
-        const maxTries = 30
 
         while (!partyFound && tries < maxTries) {
             partyFound = await this.checkIfPartyExists(partyId)
 
-            await new Promise((resolve) => setTimeout(resolve, 2000))
+            await new Promise((resolve) => setTimeout(resolve, retryIntervalMs))
             tries++
         }
 
         if (tries >= maxTries) {
-            throw new Error('timed out waiting for new party to appear')
+            throw new Error(
+                `timed out waiting for new party to appear after ${maxTries} tries`
+            )
         }
 
         const result = await this.grantRights(userId, {
@@ -418,24 +441,33 @@ export class LedgerClient {
     ): Promise<AllocateExternalPartyResponse> {
         await this.init()
 
-        if (this.clientVersion !== '3.3') {
-            throw new Error(
-                'allocateExternalParty is only supported on 3.3 clients'
-            )
+        if (this.clientVersion == '3.3') {
+            const client: Client<v3_3.paths> = this.clients['3.3']
+
+            const resp = await client.POST('/v2/parties/external/allocate', {
+                body: {
+                    synchronizer: synchronizerId,
+                    identityProviderId: '',
+                    onboardingTransactions,
+                    multiHashSignatures,
+                },
+            })
+
+            return this.valueOrError(resp)
+        } else {
+            const client: Client<v3_4.paths> = this.clients['3.4']
+
+            const resp = await client.POST('/v2/parties/external/allocate', {
+                body: {
+                    synchronizer: synchronizerId,
+                    identityProviderId: '',
+                    onboardingTransactions,
+                    multiHashSignatures,
+                },
+            })
+
+            return this.valueOrError(resp)
         }
-
-        const client: Client<v3_3.paths> = this.clients['3.3']
-
-        const resp = await client.POST('/v2/parties/external/allocate', {
-            body: {
-                synchronizer: synchronizerId,
-                identityProviderId: '',
-                onboardingTransactions,
-                multiHashSignatures,
-            },
-        })
-
-        return this.valueOrError(resp)
     }
 
     /** TODO: simplify once 3.4 snapshot contains this endpoint  */
@@ -450,38 +482,65 @@ export class LedgerClient {
     ): Promise<GenerateTransactionResponse> {
         await this.init()
 
-        if (this.clientVersion !== '3.3') {
-            throw new Error(
-                'allocateExternalParty is only supported on 3.3 clients'
+        if (this.clientVersion == '3.3') {
+            const client: Client<v3_3.paths> = this.clients['3.3']
+
+            const body = {
+                synchronizer: synchronizerId,
+                partyHint,
+                publicKey: {
+                    format: 'CRYPTO_KEY_FORMAT_RAW',
+                    keyData: publicKey,
+                    keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
+                },
+                localParticipantObservationOnly,
+                confirmationThreshold,
+                otherConfirmingParticipantUids,
+                observingParticipantUids,
+            }
+
+            this.logger.debug(body, 'generateTopology request body')
+
+            const resp = await client.POST(
+                '/v2/parties/external/generate-topology',
+                { body }
             )
+
+            return this.valueOrError(resp)
+        } else {
+            const client: Client<v3_4.paths> = this.clients['3.4']
+
+            const body = {
+                synchronizer: synchronizerId,
+                partyHint,
+                publicKey: {
+                    format: 'CRYPTO_KEY_FORMAT_RAW',
+                    keyData: publicKey,
+                    keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
+                },
+                localParticipantObservationOnly,
+                confirmationThreshold,
+                otherConfirmingParticipantUids,
+                observingParticipantUids,
+            }
+
+            this.logger.debug(body, 'generateTopology request body')
+
+            const resp = await client.POST(
+                '/v2/parties/external/generate-topology',
+                { body }
+            )
+
+            return this.valueOrError(resp)
         }
-
-        const client: Client<v3_3.paths> = this.clients['3.3']
-
-        const body = {
-            synchronizer: synchronizerId,
-            partyHint,
-            publicKey: {
-                format: 'CRYPTO_KEY_FORMAT_RAW',
-                keyData: publicKey,
-                keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
-            },
-            localParticipantObservationOnly,
-            confirmationThreshold,
-            otherConfirmingParticipantUids,
-            observingParticipantUids,
-        }
-
-        this.logger.debug(body, 'generateTopology request body')
-
-        const resp = await client.POST(
-            '/v2/parties/external/generate-topology',
-            { body }
-        )
-
-        return this.valueOrError(resp)
     }
 
+    /*
+    if limit is provided, this function performs a one-time query
+    if limit is omitted, results may be served from the ACS cache
+    current cache design doesn't support limiting queries because updates/deltas for the acs at offset x will be incorrect
+    TODO: expose query mode vs subscribe mode to call queryActiveContracts vs subscribeActiveContracts
+    */
     async activeContracts(options: {
         offset: number
         templateIds?: string[]
@@ -490,62 +549,53 @@ export class LedgerClient {
         interfaceIds?: string[]
         limit?: number
     }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
-        const {
-            offset,
-            templateIds,
-            parties,
-            filterByParty,
-            interfaceIds,
-            limit,
-        } = options
+        const { offset, templateIds, parties, interfaceIds, limit } = options
+
+        const hasLimit = typeof limit === 'number'
+
+        //Query-mode:  if limit it set, perform one off http query
+
+        if (hasLimit) {
+            const filter = this.buildActiveContractFilter(options)
+            return await this.postWithRetry(
+                '/v2/state/active-contracts',
+                filter,
+                defaultRetryableOptions,
+                {
+                    query: limit ? { limit: limit.toString() } : {},
+                }
+            )
+        }
 
         this.logger.debug(options, 'options for active contracts')
 
-        if (templateIds?.length === 1 && parties?.length === 1) {
-            const party = parties[0]
-            const templateId = templateIds[0]
-            return this.acsHelper.activeContractsForTemplate(
+        const hasParties = Array.isArray(parties) && parties.length > 0
+
+        //subscribe mode: no limit set and fits the cache requirements, back this by the acs subscription
+        if (templateIds?.length && hasParties) {
+            return this.acsHelper.activeContractsForTemplates(
                 offset,
-                party,
-                templateId
+                parties!,
+                templateIds!
             )
         }
 
-        if (interfaceIds?.length === 1 && parties?.length === 1) {
-            const party = parties[0]
-            const interfaceId = interfaceIds[0]
-            return this.acsHelper.activeContractsForInterface(
+        if (interfaceIds?.length && hasParties) {
+            return this.acsHelper.activeContractsForInterfaces(
                 offset,
-                party,
-                interfaceId
+                parties!,
+                interfaceIds!
             )
         }
 
-        if (
-            filterByParty &&
-            !templateIds?.length &&
-            !interfaceIds?.length &&
-            parties?.length === 1
-        ) {
-            const party = parties[0]
-            const r = this.acsHelper.activeContractsForInterface(
-                offset,
-                party,
-                ''
-            )
-            return r
-        }
-
+        //fallback to generic query without template/interface filter (doesn't use cache)
         const filter = this.buildActiveContractFilter(options)
         this.logger.debug('falling back to post request')
 
         return await this.postWithRetry(
             '/v2/state/active-contracts',
             filter,
-            defaultRetryableOptions,
-            {
-                query: limit ? { limit: limit.toString() } : {},
-            }
+            defaultRetryableOptions
         )
     }
 
@@ -606,21 +656,16 @@ export class LedgerClient {
             options.parties.length > 0
         ) {
             // Filter by party: set filtersByParty for each party
-            if (options?.templateIds && !options?.interfaceIds) {
-                for (const party of options.parties) {
-                    filter.filter!.filtersByParty[party] = {
-                        cumulative: options.templateIds
-                            ? buildTemplateFilter(options.templateIds)
-                            : [],
-                    }
-                }
-            } else if (options?.interfaceIds && !options?.templateIds) {
-                for (const party of options.parties) {
-                    filter.filter!.filtersByParty[party] = {
-                        cumulative: options.interfaceIds
-                            ? buildInterfaceFilter(options.interfaceIds)
-                            : [],
-                    }
+            const cumulativeFilter =
+                options?.templateIds && !options?.interfaceIds
+                    ? buildTemplateFilter(options.templateIds)
+                    : options?.interfaceIds && !options?.templateIds
+                      ? buildInterfaceFilter(options.interfaceIds)
+                      : []
+
+            for (const party of options.parties) {
+                filter.filter!.filtersByParty[party] = {
+                    cumulative: cumulativeFilter,
                 }
             }
         } else if (options?.templateIds) {
@@ -636,6 +681,27 @@ export class LedgerClient {
 
         return filter
     }
+
+    // Retrieve an (arbitrary) synchronizer id from the validator.
+    // This synchronizer id is cached for the remainder of this object's life.
+    public async getSynchronizerId(): Promise<string> {
+        if (this.synchronizerId) return this.synchronizerId
+        const response = await this.getWithRetry(
+            '/v2/state/connected-synchronizers'
+        )
+        if (!response.connectedSynchronizers?.[0]) {
+            throw new Error('No connected synchronizers found')
+        }
+        const synchronizerId = response.connectedSynchronizers[0].synchronizerId
+        if (response.connectedSynchronizers.length > 1) {
+            this.logger.warn(
+                `Found ${response.connectedSynchronizers.length} synchronizers, defaulting to ${synchronizerId}`
+            )
+        }
+        this.synchronizerId = synchronizerId
+        return synchronizerId
+    }
+
     public async postWithRetry<Path extends PostEndpoint>(
         path: Path,
         body: PostRequest<Path>,
@@ -676,10 +742,7 @@ export class LedgerClient {
         return this.acsHelper.getCacheStats()
     }
 
-    /**
-     * @deprecated use postWithRetry instead, should be made private
-     */
-    private async post<Path extends PostEndpoint>(
+    public async post<Path extends PostEndpoint>(
         path: Path,
         body: PostRequest<Path>,
         params?: {
@@ -696,10 +759,7 @@ export class LedgerClient {
         return this.valueOrError(resp)
     }
 
-    /**
-     * @deprecated use getWithRetry instead, should be made private
-     */
-    private async get<Path extends GetEndpoint>(
+    public async get<Path extends GetEndpoint>(
         path: Path,
         params?: {
             path?: Record<string, string>

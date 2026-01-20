@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -10,8 +10,12 @@ import {
     promiseWithTimeout,
     GenerateTransactionResponse,
     AllocateExternalPartyResponse,
+    JSContractEntry,
     isJsCantonError,
     components,
+    WebSocketClient,
+    JsGetUpdatesResponse,
+    CompletionResponse,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -20,6 +24,7 @@ import {
     PublicKey,
     verifySignedTxHash,
 } from '@canton-network/core-signing-lib'
+import { WebSocketManager } from './webSocketManager.js'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-proto'
@@ -28,6 +33,10 @@ import { PartyId } from '@canton-network/core-types'
 import { defaultRetryableOptions } from '@canton-network/core-ledger-client'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { decodeTopologyTransaction } from '@canton-network/core-tx-visualizer'
+
+export type UpdatesResponse = JsGetUpdatesResponse
+
+export type CommandsCompletionsStreamResponse = CompletionResponse
 
 export type RawCommandMap = {
     ExerciseCommand: Types['ExerciseCommand']
@@ -46,17 +55,27 @@ export type ParticipantEndpointConfig = {
     accessTokenProvider?: AccessTokenProvider
 }
 
+export type SubscribeToUpdateOptions = {
+    beginOffset?: number
+    verbose?: boolean
+} & (
+    | { interfaceIds: string[]; templateIds?: never }
+    | { interfaceIds?: never; templateIds: string[] }
+)
+
 /**
  * Controller for interacting with the Ledger API, this is the primary interaction point with the validator node
  * using external signing.
  */
 export class LedgerController {
     private readonly client: LedgerClient
+    private readonly webSocketManager: WebSocketManager | undefined
     private readonly userId: string
     private readonly isAdmin: boolean
     private partyId: PartyId | undefined
     private synchronizerId: PartyId | undefined
     private logger = pino({ name: 'LedgerController', level: 'info' })
+    private initPromise: Promise<void>
 
     /** Creates a new instance of the LedgerController.
      *
@@ -73,17 +92,41 @@ export class LedgerController {
         isAdmin: boolean = false,
         accessTokenProvider?: AccessTokenProvider
     ) {
-        this.client = new LedgerClient(
+        this.client = new LedgerClient({
             baseUrl,
-            this.logger,
+            logger: this.logger,
             isAdmin,
-            token,
-            accessTokenProvider
-        )
-        this.client.init()
+            accessToken: token,
+            accessTokenProvider,
+        })
+
+        if (accessTokenProvider) {
+            const wsUrl = `ws://${baseUrl.host}`
+            const wsClient = new WebSocketClient({
+                baseUrl: wsUrl,
+                isAdmin,
+                logger: this.logger,
+                accessTokenProvider,
+                wsSupportBackOff: 6000 * 10,
+            })
+
+            this.webSocketManager = new WebSocketManager({
+                wsClient,
+                logger: pino({
+                    name: 'WebSocketManager-LedgerController',
+                    level: 'info',
+                }),
+            })
+        }
+
+        this.initPromise = this.client.init()
         this.userId = userId
         this.isAdmin = isAdmin
         return this
+    }
+
+    async awaitInit() {
+        return this.initPromise
     }
 
     /**
@@ -187,6 +230,78 @@ export class LedgerController {
         return LedgerController.toDecodedTopologyTransaction(
             preparedTopologyTransaction
         )
+    }
+
+    /**
+     * For a contract there could be multiple contract_entry-s in the entire snapshot. These together define
+     *     the state of one contract in the snapshot.
+     *     A contract_entry is included in the result, if and only if there is at least one stakeholder party of the contract
+     *     that is hosted on the synchronizer at the time of the event and the party satisfies the
+     *     ``TransactionFilter`` in the query.
+     * This function extracts the contractId from a contractEntry is if it's an ActiveContract
+     * @param For
+     */
+    static getActiveContractCid(entry: JSContractEntry) {
+        if ('JsActiveContract' in entry) {
+            return entry.JsActiveContract.createdEvent.contractId
+        }
+    }
+
+    /**
+     * @param options update filter options (templateIds or interfaceIds, beginOffset, verbose)
+     * @returns AsyncIterableIterator of Updates
+     * @throws InvalidSubscriptionOptionsError if the options is invalid
+     * @throws WebSocketConnectionError if connection fails
+     */
+    async *subscribeToUpdates(options: SubscribeToUpdateOptions) {
+        if (!this.webSocketManager) {
+            throw new Error(
+                'WebSocketManager not initialized. Please provide an accessTokenProvider in the constructor to enable WebSocket support.'
+            )
+        }
+        const { beginOffset } = options
+
+        const baseOptions = {
+            beginExclusive: beginOffset ?? 0,
+            partyId: this.getPartyId(),
+            verbose: options.verbose ?? true,
+        }
+
+        const stream =
+            'templateIds' in options
+                ? this.webSocketManager.subscribeToUpdates({
+                      ...baseOptions,
+                      templateIds: options.templateIds,
+                  })
+                : this.webSocketManager.subscribeToUpdates({
+                      ...baseOptions,
+                      interfaceIds: options.interfaceIds,
+                  })
+
+        yield* stream
+    }
+
+    /**
+     * Subscribes to command completions for the party and user defined in the ledger controller, with an optional begin offset.
+     * @param options options for the subscription, including an optional begin offset and an optional list of parties to filter for (defaults to the party defined in the ledger controller)
+     */
+    async *subscribeToCompletions(options: {
+        beginOffset?: number
+        parties?: PartyId[]
+    }) {
+        if (!this.webSocketManager) {
+            throw new Error(
+                'WebSocketManager not initialized. Please provide an accessTokenProvider in the constructor to enable WebSocket support.'
+            )
+        }
+
+        const request = {
+            beginOffset: options.beginOffset ?? 0,
+            userId: this.userId,
+            parties: options.parties ?? [this.getPartyId()],
+        }
+
+        yield* this.webSocketManager.subscribeToCompletions(request)
     }
 
     /**
@@ -420,13 +535,69 @@ export class LedgerController {
         }
 
         if (grantUserRights) {
+            const HEAVY_LOAD_MAX_RETRIES = 100
+            const HEAVY_LOAD_RETRY_INTERVAL = 5000
             await this.client.waitForPartyAndGrantUserRights(
                 this.userId,
-                partyId
+                partyId,
+                expectHeavyLoad ? HEAVY_LOAD_MAX_RETRIES : undefined,
+                expectHeavyLoad ? HEAVY_LOAD_RETRY_INTERVAL : undefined
             )
         }
 
         return { partyId }
+    }
+
+    /** Prepares, signs and submits a new external party topology in one step.
+     * This will also authorize the new party to the participant and grant the user rights to the party.
+     * @param privateKey The private key of the new external party, used to sign the topology transactions.
+     * @param providerParty providing party retrieved through the getValidatorUser call
+     * @param dsoParty Party that the sender expects to represent the DSO party of the AmuletRules contract they are calling
+     * @param partyHint Optional hint to use for the partyId, if not provided the publicKey will be used.
+     * @param confirmingThreshold optional parameter for multi-hosted parties (default is 1).
+     * @param confirmingParticipantEndpoints optional list of connection details for other participants to multi-host this party with confirming permissions.
+     * @param observingParticipantEndpoints optional list of connection details for other participants to multi-host this party with observing permissions.
+     * @param grantUserRights Defines if the transaction should also grant user right to current user, defaults to true if undefined
+     * @returns An AllocatedParty object containing the partyId of the new party.
+     */
+    async signAndAllocateExternalPartyWithPreapproval(
+        privateKey: PrivateKey,
+        providerParty: PartyId,
+        dsoParty: PartyId,
+        partyHint?: string,
+        confirmingThreshold?: number,
+        confirmingParticipantEndpoints?: ParticipantEndpointConfig[],
+        observingParticipantEndpoints?: ParticipantEndpointConfig[],
+        grantUserRights?: boolean
+    ) {
+        const allocatedParty = await this.signAndAllocateExternalParty(
+            privateKey,
+            partyHint,
+            confirmingThreshold,
+            confirmingParticipantEndpoints,
+            observingParticipantEndpoints,
+            grantUserRights
+        )
+
+        const oldPartyId = this.getPartyId()
+
+        this.setPartyId(allocatedParty.partyId)
+
+        const transferPreApprovalProposal =
+            await this.createTransferPreapprovalCommand(
+                providerParty,
+                allocatedParty.partyId,
+                dsoParty
+            )
+
+        await this.prepareSignExecuteAndWaitFor(
+            [transferPreApprovalProposal],
+            privateKey,
+            v4()
+        )
+
+        this.setPartyId(oldPartyId)
+        return allocatedParty
     }
 
     /**
@@ -444,13 +615,13 @@ export class LedgerController {
         publicKeyFingerprint: string
     ) {
         for (const endpoint of endpointConfig) {
-            const lc = new LedgerClient(
-                endpoint.url,
-                this.logger,
-                this.isAdmin,
-                endpoint.accessToken,
-                endpoint.accessTokenProvider
-            )
+            const lc = new LedgerClient({
+                baseUrl: endpoint.url,
+                logger: this.logger,
+                isAdmin: this.isAdmin,
+                accessToken: endpoint.accessToken,
+                accessTokenProvider: endpoint.accessTokenProvider,
+            })
 
             await lc.allocateExternalParty(
                 this.getSynchronizerId(),
@@ -530,13 +701,13 @@ export class LedgerController {
             hostingParticipantConfigs
                 ?.map(
                     (endpoint) =>
-                        new LedgerClient(
-                            endpoint.url,
-                            this.logger,
-                            this.isAdmin,
-                            endpoint.accessToken,
-                            endpoint.accessTokenProvider
-                        )
+                        new LedgerClient({
+                            baseUrl: endpoint.url,
+                            logger: this.logger,
+                            isAdmin: this.isAdmin,
+                            accessToken: endpoint.accessToken,
+                            accessTokenProvider: endpoint.accessTokenProvider,
+                        })
                 )
                 .map((client) =>
                     client
@@ -721,23 +892,44 @@ export class LedgerController {
         )
     }
 
+    getCurrentClientVersion() {
+        return this.client.getCurrentClientVersion()
+    }
+
     /**
      * This creates a simple Ping command, useful for testing signing and onboarding
      * @param partyId the party to receive the ping
      */
     createPingCommand(partyId: PartyId) {
-        return [
-            {
-                CreateCommand: {
-                    templateId: '#AdminWorkflows:Canton.Internal.Ping:Ping',
-                    createArguments: {
-                        id: v4(),
-                        initiator: this.getPartyId(),
-                        responder: partyId,
+        const version = this.client.getCurrentClientVersion()
+        if (version === '3.4') {
+            return [
+                {
+                    CreateCommand: {
+                        templateId:
+                            '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
+                        createArguments: {
+                            id: v4(),
+                            initiator: this.getPartyId(),
+                            responder: partyId,
+                        },
                     },
                 },
-            },
-        ]
+            ]
+        } else {
+            return [
+                {
+                    CreateCommand: {
+                        templateId: '#AdminWorkflows:Canton.Internal.Ping:Ping',
+                        createArguments: {
+                            id: v4(),
+                            initiator: this.getPartyId(),
+                            responder: partyId,
+                        },
+                    },
+                },
+            ]
+        }
     }
 
     /**
@@ -787,9 +979,9 @@ export class LedgerController {
         )
 
         if (rights.rights!.some((r) => 'CanReadAsAnyParty' in r.kind)) {
-            return (
-                await this.client.getWithRetry('/v2/parties')
-            ).partyDetails!.map((p) => p.party)
+            return (await this.client.getWithRetry('/v2/parties'))
+                .partyDetails!.filter((p) => p.isLocal)
+                .map((p) => p.party)
         } else {
             const canReadAsPartyRights =
                 rights.rights?.filter(
@@ -1002,6 +1194,9 @@ export class LedgerController {
         return this.client.getCacheStats()
     }
 
+    /**
+     * @returns ParticipantId
+     */
     async getParticipantId(): Promise<PartyId> {
         return (await this.client.getWithRetry('/v2/parties/participant-id'))
             .participantId
@@ -1118,6 +1313,138 @@ export class LedgerController {
             throw new Error('Use adminLedger to call createUser')
         }
         return await this.client.createUser(userId, primaryParty)
+    }
+
+    /**
+     * Gets all raw events from a transaction by updateId, showing what types of events occurred.
+     * Use this method when you need raw ledger events (CreatedEvent, ExercisedEvent, ArchivedEvent).
+     * @param updateId The update ID to look up
+     * @param options Optional filtering options
+     * @param options.templateIds Optional array of template IDs to filter
+     * @param options.interfaceIds Optional array of interface IDs to filter by
+     * @returns Raw events array
+     * @throws Error if the update is not a Transaction
+     */
+    async getEventsByUpdateId(
+        updateId: string,
+        options?: {
+            templateIds?: string[]
+            interfaceIds?: string[]
+        }
+    ): Promise<Types['Event'][]> {
+        const cumulativeFilters = []
+
+        if (options?.templateIds?.length) {
+            for (const templateId of options.templateIds) {
+                cumulativeFilters.push({
+                    identifierFilter: {
+                        TemplateFilter: {
+                            value: {
+                                templateId,
+                                includeCreatedEventBlob: true,
+                            },
+                        },
+                    },
+                })
+            }
+        }
+
+        if (options?.interfaceIds?.length) {
+            for (const interfaceId of options.interfaceIds) {
+                cumulativeFilters.push({
+                    identifierFilter: {
+                        InterfaceFilter: {
+                            value: {
+                                interfaceId,
+                                includeInterfaceView: true,
+                                includeCreatedEventBlob: true,
+                            },
+                        },
+                    },
+                })
+            }
+        }
+
+        if (cumulativeFilters.length === 0) {
+            cumulativeFilters.push({
+                identifierFilter: {
+                    WildcardFilter: {
+                        value: {
+                            includeCreatedEventBlob: true,
+                        },
+                    },
+                },
+            })
+        }
+
+        const updateFormat: Types['UpdateFormat'] = {
+            includeTransactions: {
+                eventFormat: {
+                    filtersByParty: {
+                        [this.getPartyId()]: {
+                            cumulative: cumulativeFilters,
+                        },
+                    },
+                    verbose: true,
+                },
+                transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
+            },
+        }
+
+        const updateResponse =
+            await this.client.postWithRetry<'/v2/updates/update-by-id'>(
+                '/v2/updates/update-by-id',
+                {
+                    updateId,
+                    updateFormat,
+                }
+            )
+
+        const update = updateResponse.update
+
+        if (!('Transaction' in update)) {
+            throw new Error(
+                `Update ${updateId} is not a Transaction. Update type: ${Object.keys(update)[0]}`
+            )
+        }
+
+        return update.Transaction.value.events ?? []
+    }
+
+    /**
+     * Gets the contract that was created in the specified transaction.
+     * Returns the contract as it was at creation time from the CreatedEvent.
+     * @param updateId The update ID where the contract was created
+     * @param options Optional filtering options to narrow down which contracts to consider
+     * @param options.templateIds Optional array of template IDs to filter by
+     * @param options.interfaceIds Optional array of interface IDs to filter by
+     * @returns Contract creation details from the CreatedEvent
+     * @throws Error if the update is not a Transaction or if none or more than one contract was created
+     */
+    async getCreatedContractByUpdateId(
+        updateId: string,
+        options?: {
+            templateIds?: string[]
+            interfaceIds?: string[]
+        }
+    ): Promise<Types['CreatedEvent']> {
+        const events = await this.getEventsByUpdateId(updateId, options)
+
+        const createdEvents = events
+            .filter((event) => 'CreatedEvent' in event)
+            .map((event) => event.CreatedEvent as Types['CreatedEvent'])
+
+        if (createdEvents.length === 0) {
+            throw new Error(`No CreatedEvent found in transaction ${updateId}`)
+        }
+
+        if (createdEvents.length > 1) {
+            throw new Error(
+                `Multiple CreatedEvents found in transaction ${updateId}. Use getEventsByUpdateId() to see all contracts created in the transaction`
+            )
+        }
+
+        return createdEvents[0]
     }
 }
 

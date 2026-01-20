@@ -26,7 +26,17 @@ By default, the service runs on port `3030`, but this can be overridden via the 
 
 ## Configuration
 
-A configuration file is required to start up the Gateway. See [config.json](https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/wallet-gateway/test/config.json) for an example.
+A configuration file is required to start up the Gateway. Create an example config to edit as a starting point:
+
+```bash
+wallet-gateway --config-example > config.json
+```
+
+To show the full [JSON Schema](https://json-schema.org/) representation of the configuration file:
+
+```bash
+wallet-gateway --config-schema
+```
 
 # Developing
 
@@ -40,7 +50,7 @@ The JSON-RPC API specs from `api-specs/` are generated into strongly-typed metho
 
 2. Place the `fireblocks_secret.key` file at the path `/splice-wallet-kernel/wallet-gateway/remote`
 
-3. Create a file named `fireblocks_api.key` at the path `/splice-wallet-kernel/wallet-gateway/remote` and insert your Fireblocks API key into it
+3. Create a file named `fireblocks_api.key` at the path `/splice-wallet-kernel/wallet-gateway/remote` and insert your Fireblocks API key into it (get it from `API User (ID)` column in fireblocks api users table). Make sure file doesn't end with new line character.
 
 ## Postgres connection
 

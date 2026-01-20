@@ -1661,7 +1661,6 @@ class FileDescriptorProto$Type extends MessageType<FileDescriptorProto> {
                         for (
                             let e = reader.int32() + reader.pos;
                             reader.pos < e;
-
                         )
                             message.publicDependency.push(reader.int32())
                     else message.publicDependency.push(reader.int32())
@@ -1671,7 +1670,6 @@ class FileDescriptorProto$Type extends MessageType<FileDescriptorProto> {
                         for (
                             let e = reader.int32() + reader.pos;
                             reader.pos < e;
-
                         )
                             message.weakDependency.push(reader.int32())
                     else message.weakDependency.push(reader.int32())
@@ -4934,7 +4932,6 @@ class SourceCodeInfo_Location$Type extends MessageType<SourceCodeInfo_Location> 
                         for (
                             let e = reader.int32() + reader.pos;
                             reader.pos < e;
-
                         )
                             message.path.push(reader.int32())
                     else message.path.push(reader.int32())
@@ -4944,7 +4941,6 @@ class SourceCodeInfo_Location$Type extends MessageType<SourceCodeInfo_Location> 
                         for (
                             let e = reader.int32() + reader.pos;
                             reader.pos < e;
-
                         )
                             message.span.push(reader.int32())
                     else message.span.push(reader.int32())
@@ -5173,7 +5169,6 @@ class GeneratedCodeInfo_Annotation$Type extends MessageType<GeneratedCodeInfo_An
                         for (
                             let e = reader.int32() + reader.pos;
                             reader.pos < e;
-
                         )
                             message.path.push(reader.int32())
                     else message.path.push(reader.int32())

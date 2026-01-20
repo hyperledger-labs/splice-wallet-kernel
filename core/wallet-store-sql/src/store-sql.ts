@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logger } from 'pino'
@@ -45,8 +45,6 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     ) {
         this.logger = logger.child({ component: 'StoreSql' })
         this.authContext = authContext
-
-        // this.syncWallets()
     }
 
     withAuthContext(context?: AuthContext): StoreSql {
@@ -85,10 +83,21 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             })
             .map((table) =>
                 toWallet({
-                    ...table,
+                    primary: table.primary,
+                    partyId: table.partyId,
+                    hint: table.hint,
+                    publicKey: table.publicKey,
+                    namespace: table.namespace,
+                    networkId: table.networkId,
+                    signingProviderId: table.signingProviderId,
+                    userId: table.userId,
                     externalTxId: table.externalTxId ?? '',
                     topologyTransactions: table.topologyTransactions ?? '',
                     status: table.status ?? '',
+                    disabled: table.disabled ?? 0,
+                    ...(table.reason !== undefined && {
+                        reason: table.reason,
+                    }),
                 })
             )
     }
@@ -159,13 +168,17 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         })
     }
 
-    async updateWallet({ status, partyId }: UpdateWallet): Promise<void> {
+    async updateWallet({
+        status,
+        partyId,
+        externalTxId,
+    }: UpdateWallet): Promise<void> {
         this.logger.info('Updating wallet')
 
         await this.db.transaction().execute(async (trx) => {
             await trx
                 .updateTable('wallets')
-                .set({ status })
+                .set({ status, externalTxId })
                 .where('partyId', '=', partyId)
                 .execute()
         })
@@ -267,6 +280,13 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     }
 
     async removeIdp(idpId: string): Promise<void> {
+        const networks = await this.listNetworks()
+        if (networks.some((n) => n.identityProviderId === idpId)) {
+            throw new Error(
+                `Cannot delete IDP ${idpId} as it is in use by existing networks`
+            )
+        }
+
         await this.db.transaction().execute(async (trx) => {
             const idp = await trx
                 .selectFrom('idps')
@@ -429,6 +449,16 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             )
             .executeTakeFirst()
         return transaction ? toTransaction(transaction) : undefined
+    }
+
+    async listTransactions(): Promise<Array<Transaction>> {
+        const userId = this.assertConnected()
+        const transactions = await this.db
+            .selectFrom('transactions')
+            .selectAll()
+            .where('userId', '=', userId)
+            .execute()
+        return transactions.map((table) => toTransaction(table))
     }
 }
 

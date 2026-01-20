@@ -1,6 +1,6 @@
 const proc = require('child_process')
 
-const scopes = ['release']
+const scopes = ['release', 'deps', 'deps-dev']
 
 const getScopes = () => {
     const projects = JSON.parse(

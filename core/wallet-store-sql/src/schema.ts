@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { authSchema, Idp, UserId } from '@canton-network/core-wallet-auth'
@@ -7,6 +7,7 @@ import {
     Transaction,
     Session,
     Network,
+    WalletStatus,
 } from '@canton-network/core-wallet-store'
 
 interface MigrationTable {
@@ -24,7 +25,7 @@ interface IdpTable {
 interface NetworkTable {
     id: string
     name: string
-    synchronizerId: string
+    synchronizerId: string | null // retrieved at runtime if null
     description: string
     ledgerApiBaseUrl: string
     identityProviderId: string
@@ -46,6 +47,8 @@ interface WalletTable {
     externalTxId?: string
     topologyTransactions?: string
     status?: string
+    disabled: number
+    reason?: string
 }
 
 interface TransactionTable {
@@ -54,10 +57,14 @@ interface TransactionTable {
     preparedTransaction: string
     preparedTransactionHash: string
     payload: string | undefined
+    origin: string | null
     userId: UserId
+    createdAt: string | null
+    signedAt: string | null
 }
 
 interface SessionTable extends Session {
+    id: string
     userId: UserId
 }
 
@@ -116,7 +123,7 @@ export const toNetwork = (table: NetworkTable): Network => {
     return {
         name: table.name,
         id: table.id,
-        synchronizerId: table.synchronizerId,
+        synchronizerId: table.synchronizerId ?? undefined,
         identityProviderId: table.identityProviderId,
         description: table.description,
         ledgerApi: {
@@ -142,7 +149,7 @@ export const fromNetwork = (
     return {
         name: network.name,
         id: network.id,
-        synchronizerId: network.synchronizerId,
+        synchronizerId: network.synchronizerId ?? null,
         description: network.description,
         ledgerApiBaseUrl: network.ledgerApi.baseUrl,
         userId: userId,
@@ -159,13 +166,41 @@ export const fromWallet = (wallet: Wallet, userId: UserId): WalletTable => {
         ...wallet,
         primary: wallet.primary ? 1 : 0,
         userId: userId,
+        disabled: wallet.disabled !== undefined && wallet.disabled ? 1 : 0,
+        ...(wallet.disabled === true &&
+            wallet.reason !== undefined && { reason: wallet.reason }),
     }
 }
 
+export const toWalletStatus = (status?: string): WalletStatus => {
+    if (status === 'allocated') return 'allocated'
+    return 'initialized'
+}
+
 export const toWallet = (table: WalletTable): Wallet => {
+    if (table.disabled === 1 && table.reason === undefined) {
+        throw new Error(`Missing wallet disabled reason: ${table.partyId}`)
+    }
     return {
-        ...table,
         primary: Boolean(table.primary),
+        status: toWalletStatus(table.status),
+        partyId: table.partyId,
+        hint: table.hint,
+        publicKey: table.publicKey,
+        namespace: table.namespace,
+        networkId: table.networkId,
+        signingProviderId: table.signingProviderId,
+        disabled: table.disabled === 1,
+        ...(table.externalTxId !== undefined && {
+            externalTxId: table.externalTxId,
+        }),
+        ...(table.topologyTransactions !== undefined && {
+            topologyTransactions: table.topologyTransactions,
+        }),
+        ...(table.disabled === 1 &&
+            table.reason !== undefined && {
+                reason: table.reason,
+            }),
     }
 }
 
@@ -178,14 +213,30 @@ export const fromTransaction = (
         payload: transaction.payload
             ? JSON.stringify(transaction.payload)
             : undefined,
+        origin: transaction.origin || null,
         userId: userId,
+        createdAt: transaction.createdAt?.toISOString() || null,
+        signedAt: transaction.signedAt?.toISOString() || null,
     }
 }
 
 export const toTransaction = (table: TransactionTable): Transaction => {
-    return {
-        ...table,
+    const result: Transaction = {
+        commandId: table.commandId,
         status: table.status as 'pending' | 'signed' | 'executed' | 'failed',
+        preparedTransaction: table.preparedTransaction,
+        preparedTransactionHash: table.preparedTransactionHash,
         payload: table.payload ? JSON.parse(table.payload) : undefined,
+        origin: table.origin || null,
     }
+
+    if (table.createdAt) {
+        result.createdAt = new Date(table.createdAt)
+    }
+
+    if (table.signedAt) {
+        result.signedAt = new Date(table.signedAt)
+    }
+
+    return result
 }

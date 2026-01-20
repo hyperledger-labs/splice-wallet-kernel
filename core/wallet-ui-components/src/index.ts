@@ -1,15 +1,22 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-export * from './components/AppHeader.js'
-export * from './components/AppLayout.js'
-export * from './components/CustomToast.js'
-export * from './components/Discovery.js'
-export * from './components/NetworkTable.js'
-export * from './components/NetworkCard.js'
-export * from './components/NetworkForm.js'
-export * from './components/NetworkFormInput.js'
-export * from './components/NotFound.js'
+export * from './components/app-header.js'
+export * from './components/app-layout.js'
+export * from './components/custom-toast.js'
+export * from './components/discovery.js'
+export * from './components/form-input.js'
+export * from './components/idp-card.js'
+export * from './components/idps.js'
+export * from './components/network-table.js'
+export * from './components/network-card.js'
+export * from './components/network-form.js'
+export * from './components/networks.js'
+export * from './components/not-found.js'
+export * from './components/sessions.js'
+export * from './components/wallets-sync.js'
 
 export * from './windows/discovery.js'
 export * from './windows/popup.js'
+
+export * from './handle-errors.js'

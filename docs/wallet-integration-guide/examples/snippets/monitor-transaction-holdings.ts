@@ -24,7 +24,7 @@ export default async function () {
     await sdk.setPartyId(myParty)
 
     let startLedger = 0
-    let step = 100
+    let step = 10
 
     const holdings = await sdk.tokenStandard!.listHoldingTransactions(
         startLedger,

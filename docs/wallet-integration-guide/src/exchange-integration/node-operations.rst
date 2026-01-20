@@ -239,9 +239,14 @@ From an integration perspective, there are a few things to keep in mind:
    the Ledger API of the newly deployed validator node.
 2. Offsets on the upgraded validator node start from ``0`` again.
 3. The update history will include special import transactions for the
-   contracts imported from the old synchronizer.
+   contracts imported from the old synchronizer. They all have record time
+   ``0001-01-01T00:00:00.000000Z``, and represent the creation of the imported
+   contracts.
 
-We recommend to handle the upgrade as follows:
+Runbook
+^^^^^^^
+
+We recommend to roll-out the upgrade as follows:
 
 1. Wait for the synchronizer to be paused and your node to have
    written the migration dump as described in the `Splice docs
@@ -251,13 +256,41 @@ We recommend to handle the upgrade as follows:
 3. Wait for your Tx History Ingestion to have caught up to record time
    ``acs_timestamp`` or higher. Note that you must consume :ref:`offset checkpoints <offset-checkpoints>`
    to guarantee that your Tx History Ingestion advances past ``acs_timestamp``.
-
-4. Upgrade your validator and connect it to the new synchronizer following the
+4. Stop your Tx History Ingestion component.
+5. Upgrade your validator and connect it to the new synchronizer following the
    `Splice docs <https://docs.dev.sync.global/validator_operator/validator_major_upgrades.html#deploying-the-validator-app-and-participant-docker-compose>`__.
-5. Resume your Tx History Ingestion from offset ``0``.
-6. Ignore transactions with record time
-   ``0001-01-01T00:00:00.000000Z``. These are the special import
-   transactions for contracts imported from the old synchronizer so
-   you have already processed them on the old synchronizer. Note that you can reuse the :ref:`infrastructure <validator_backup_restore>` used to ignore duplicate transactions after a
-   backup restore to ignore the transactions here.
-7. After the initial import transactions, continue ingestion as usual.
+6. Follow the shortened version below of the
+   :ref:`procedure for restoring a validator node from a backup <validator_backup_restore>`
+   to determine the offset from which to restart your Tx History Ingestion:
+
+    1. Retrieve the ``synchronizerId`` of the last ingested transaction from the Canton Integration DB.
+    2. Log into the `Canton Console of your validator node <https://docs.dev.sync.global/deployment/console_access.html>`__ and query the offset ``offRecovery`` assigned to the ACS import transactions at time ``0001-01-01T00:00:00.000000Z`` using
+
+       .. code-block:: scala
+
+         def parseTimestamp(t: String) = {
+            val isoFormat = java.time.format.DateTimeFormatter.ISO_INSTANT.withZone(java.time.ZoneId.of("Z"))
+            isoFormat.parse(t, java.time.Instant.from(_))
+         }
+         val synchronizerId = SynchronizerId.tryFromString("example::1220b1431ef217342db44d516bb9befde802be7d8899637d290895fa58880f19accc") // example
+         val tRecovery = parseTimestamp("0001-01-01T00:00:00.000000Z")
+         val offRecovery = participant.parties.find_highest_offset_by_timestamp(synchronizerId, tRecovery)
+
+       Alternatively, you can use ``grpcurl`` to query the offset ``offRecovery`` from the command line as shown in the
+       example below:
+
+       .. code-block:: bash
+
+          grpcurl -plaintext -d \
+            '{"synchronizerId" : "example::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a",
+               "timestamp": "0001-01-01T00:00:00.000000Z"}' \
+            localhost:5002 \
+            com.digitalasset.canton.admin.participant.v30.PartyManagementService.GetHighestOffsetByTimestamp
+
+       If you use authentication for the Canton Admin gRPC API, then you need to add the appropriate
+       authentication flags to the ``grpcurl`` command above.
+
+    3. Configure the Tx History Ingestion component to start ingesting from offset ``offRecovery``.
+    4. Restart the Tx History Ingestion component.
+
+Once you have completed these steps, the integration workflows will continue.

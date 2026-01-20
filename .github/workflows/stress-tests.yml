@@ -1,0 +1,66 @@
+name: Stress Tests
+permissions:
+    contents: read
+
+on:
+    workflow_dispatch:
+        inputs:
+            ref:
+                description: 'Branch/commit/PR to test (e.g. your-branch-name, main, or refs/pull/123/head). Leave empty to use default branch.'
+                default: ''
+            network:
+                description: 'Localnet version'
+                type: choice
+                options: [devnet, mainnet]
+                default: devnet
+jobs:
+    stress-tests:
+        runs-on: ubuntu-latest
+        timeout-minutes: 120
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event.inputs.ref || github.ref }}
+
+            - uses: ./.github/actions/setup_yarn
+
+            - name: run codegen
+              run: yarn generate:all
+
+            - name: Build project
+              run: yarn build:all
+
+            - name: Download localnet (${{ github.event.inputs.network || 'devnet' }})
+              run: yarn script:fetch:localnet -- --network=${{ github.event.inputs.network || 'devnet' }}
+
+            - name: Start localnet (${{ github.event.inputs.network || 'devnet' }})
+              run: yarn start:localnet -- --network=${{ github.event.inputs.network || 'devnet' }}
+
+            - uses: ./.github/actions/check_resources
+
+            - name: Run stress scripts sequentially
+              run: yarn script:test:stress-scripts
+
+            - uses: ./.github/actions/check_resources
+
+            - name: Stop localnet (${{ github.event.inputs.network || 'devnet' }})
+              if: always()
+              run: yarn stop:localnet -- --network=${{ github.event.inputs.network || 'devnet' }}
+
+            - name: Save container logs (on failure)
+              if: failure()
+              run: |
+                  set -euo pipefail
+                  mkdir -p logs
+                  for c in $(docker ps -a --format '{{.Names}}'); do
+                    docker logs "$c" &> "logs/$c.log" || true
+                  done
+
+            - name: Upload logs as artifacts
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: docker-logs-${{ github.event.inputs.network || 'devnet' }}
+                  path: logs/

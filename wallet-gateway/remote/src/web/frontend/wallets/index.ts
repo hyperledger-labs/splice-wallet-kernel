@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { css, html, LitElement } from 'lit'
@@ -13,7 +13,7 @@ import { SigningProvider } from '@canton-network/core-signing-lib'
 
 import '../index'
 import { stateManager } from '../state-manager'
-import { handleErrorToast } from '../handle-errors'
+import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
 
 export interface ToastElement extends HTMLElement {
     title: string
@@ -31,7 +31,7 @@ export class UserUiWallets extends LitElement {
     accessor networks: string[] = []
 
     @state()
-    accessor wallets: Wallet[] = []
+    accessor wallets: Wallet[] | undefined = undefined
 
     @state()
     accessor createdParty = undefined
@@ -64,6 +64,9 @@ export class UserUiWallets extends LitElement {
         }
         .header {
             margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
         .card-list {
             display: grid;
@@ -111,8 +114,12 @@ export class UserUiWallets extends LitElement {
             cursor: pointer;
             transition: background 0.2s;
         }
-        .buttons:hover {
+        .buttons:hover:not(:disabled) {
             background: #e2e6ea;
+        }
+        .buttons:disabled {
+            opacity: 0.75;
+            cursor: not-allowed;
         }
         .wallet-title {
             font-size: 1.1rem;
@@ -131,6 +138,14 @@ export class UserUiWallets extends LitElement {
             display: flex;
             gap: 0.5rem;
             margin-top: 0.5rem;
+        }
+        .wallet-badge-success {
+            font-size: 0.95rem;
+            color: #009900;
+        }
+        .wallet-badge-error {
+            font-size: 0.95rem;
+            color: #cc0000;
         }
         @media (max-width: 600px) {
             .header h1 {
@@ -151,20 +166,17 @@ export class UserUiWallets extends LitElement {
     `
 
     protected render() {
-        const shownWallets = this.wallets.reduce(
-            (acc, w) => {
-                if (w.status === 'allocated') {
-                    acc.verifiedWallets.push(w)
-                } else {
-                    acc.unverifiedWallets.push(w)
-                }
-                return acc
-            },
-            {
-                verifiedWallets: [] as Wallet[],
-                unverifiedWallets: [] as Wallet[],
+        const shownWallets = {
+            verifiedWallets: [] as Wallet[],
+            unverifiedWallets: [] as Wallet[],
+        }
+        this.wallets?.forEach((w) => {
+            if (w.status === 'allocated') {
+                shownWallets.verifiedWallets.push(w)
+            } else {
+                shownWallets.unverifiedWallets.push(w)
             }
-        )
+        })
         return html`
             <div class="header">
                 <h1>Wallets</h1>
@@ -176,6 +188,8 @@ export class UserUiWallets extends LitElement {
                     ${this.showCreateCard ? 'Close' : 'Create New'}
                 </button>
             </div>
+
+            ${this.wallets === undefined ? 'Loading wallets…' : ''}
 
             <div class="card-list">
                 ${this.showCreateCard
@@ -194,6 +208,7 @@ export class UserUiWallets extends LitElement {
                                       id="party-id-hint"
                                       type="text"
                                       placeholder="Enter party ID hint"
+                                      required
                                   />
 
                                   <label for="signing-provider-id"
@@ -210,19 +225,6 @@ export class UserUiWallets extends LitElement {
                                           (providerId) =>
                                               html`<option value=${providerId}>
                                                   ${providerId}
-                                              </option>`
-                                      )}
-                                  </select>
-
-                                  <label for="network-id">Network:</label>
-                                  <select class="form-control" id="network-id">
-                                      <option disabled value="">
-                                          Select a network
-                                      </option>
-                                      ${this.networks.map(
-                                          (networkId) =>
-                                              html`<option value=${networkId}>
-                                                  ${networkId}
                                               </option>`
                                       )}
                                   </select>
@@ -258,19 +260,32 @@ export class UserUiWallets extends LitElement {
                             <div class="wallet-title">
                                 ${wallet.hint || wallet.partyId}
                                 ${wallet.primary
-                                    ? html`<span
-                                          style="font-size:0.95rem; color:#009900;"
+                                    ? html`<span class="wallet-badge-success"
                                           >(Primary)</span
+                                      >`
+                                    : ''}
+                                ${wallet.disabled
+                                    ? html`<span class="wallet-badge-error"
+                                          >(Disabled)</span
                                       >`
                                     : ''}
                             </div>
                             <div class="wallet-meta">
-                                <strong>Transaction ID:</strong>
-                                ${wallet.externalTxId}<br />
+                                <strong>Party ID:</strong>
+                                ${wallet.partyId}<br />
                                 <strong>Network:</strong>
                                 ${wallet.networkId}<br />
                                 <strong>Signing Provider:</strong>
                                 ${wallet.signingProviderId}
+                                ${wallet.disabled
+                                    ? html`<br /><strong>Disabled:</strong> Yes`
+                                    : ''}
+                                ${wallet.reason
+                                    ? html`</br> <div>
+                                        <strong>Reason:</strong>
+                                        ${wallet.reason}
+                                    </div>`
+                                    : ''}
                             </div>
                             <div class="wallet-actions">
                                 <button
@@ -292,9 +307,13 @@ export class UserUiWallets extends LitElement {
                             <div class="wallet-title">
                                 ${wallet.hint || wallet.partyId}
                                 ${wallet.primary
-                                    ? html`<span
-                                          style="font-size:0.95rem; color:#009900;"
+                                    ? html`<span class="wallet-badge-success"
                                           >(Primary)</span
+                                      >`
+                                    : ''}
+                                ${wallet.disabled
+                                    ? html`<span class="wallet-badge-error"
+                                          >(Disabled)</span
                                       >`
                                     : ''}
                             </div>
@@ -305,10 +324,20 @@ export class UserUiWallets extends LitElement {
                                 ${wallet.networkId}<br />
                                 <strong>Signing Provider:</strong>
                                 ${wallet.signingProviderId}
+                                ${wallet.disabled
+                                    ? html`<br /><strong>Disabled:</strong> Yes`
+                                    : ''}
+                                ${wallet.reason
+                                    ? html`</br> <div>
+                                          <strong>Reason:</strong>
+                                          ${wallet.reason}
+                                      </div>`
+                                    : ''}
                             </div>
                             <div class="wallet-actions">
                                 <button
                                     class="buttons"
+                                    ?disabled=${wallet.disabled}
                                     @click=${() => this._setPrimary(wallet)}
                                 >
                                     Set Primary
@@ -331,25 +360,21 @@ export class UserUiWallets extends LitElement {
     connectedCallback(): void {
         super.connectedCallback()
         this.updateWallets()
-        this.updateNetworks()
-    }
-
-    private async updateNetworks() {
-        const userClient = createUserClient(stateManager.accessToken.get())
-        userClient.request('listNetworks').then(({ networks }) => {
-            this.networks = networks.map((network) => network.id)
-        })
     }
 
     private async updateWallets() {
-        const userClient = createUserClient(stateManager.accessToken.get())
+        const userClient = await createUserClient(
+            stateManager.accessToken.get()
+        )
         userClient.request('listWallets', []).then((wallets) => {
             this.wallets = wallets || []
         })
     }
 
     private async _setPrimary(wallet: Wallet) {
-        const userClient = createUserClient(stateManager.accessToken.get())
+        const userClient = await createUserClient(
+            stateManager.accessToken.get()
+        )
         await userClient.request('setPrimaryWallet', {
             partyId: wallet.partyId,
         })
@@ -377,7 +402,9 @@ export class UserUiWallets extends LitElement {
                 signingProviderId,
             }
 
-            const userClient = createUserClient(stateManager.accessToken.get())
+            const userClient = await createUserClient(
+                stateManager.accessToken.get()
+            )
             await userClient.request('createWallet', body)
         } catch (e) {
             handleErrorToast(e)
@@ -394,7 +421,9 @@ export class UserUiWallets extends LitElement {
     private async _allocateParty(wallet: Wallet) {
         this.loading = true
         try {
-            const userClient = createUserClient(stateManager.accessToken.get())
+            const userClient = await createUserClient(
+                stateManager.accessToken.get()
+            )
             await userClient.request('createWallet', {
                 primary: wallet.primary,
                 partyHint: wallet.hint,

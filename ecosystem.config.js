@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 const sharedEnvDevelopment = {
@@ -23,13 +23,23 @@ export const apps = [
         env_development: sharedEnvDevelopment,
     },
     {
-        name: 'example',
-        script: 'yarn workspace @canton-network/example dev',
+        name: 'example-ping',
+        script: 'yarn workspace @canton-network/example-ping dev',
+        env_development: sharedEnvDevelopment,
+    },
+    {
+        name: 'example-porfolio',
+        script: 'yarn workspace @canton-network/example-portfolio dev',
         env_development: sharedEnvDevelopment,
     },
     {
         name: 'splice-wallet-sdk',
         script: 'yarn workspace @canton-network/wallet-sdk dev',
+        env_development: sharedEnvDevelopment,
+    },
+    {
+        name: 'splice-dapp-sdk',
+        script: 'yarn workspace @canton-network/dapp-sdk dev',
         env_development: sharedEnvDevelopment,
     },
     {
@@ -70,6 +80,11 @@ export const apps = [
     {
         name: 'core-types',
         script: 'yarn workspace @canton-network/core-types dev',
+        env_development: sharedEnvDevelopment,
+    },
+    {
+        name: 'core-rpc-transport',
+        script: 'yarn workspace @canton-network/core-rpc-transport dev',
         env_development: sharedEnvDevelopment,
     },
 ]

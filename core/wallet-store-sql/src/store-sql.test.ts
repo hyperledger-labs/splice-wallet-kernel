@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, test } from '@jest/globals'
@@ -91,6 +91,7 @@ implementations.forEach(([name, StoreImpl]) => {
             const wallet: Wallet = {
                 primary: false,
                 partyId: 'party1',
+                status: 'allocated',
                 hint: 'hint',
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
@@ -124,6 +125,7 @@ implementations.forEach(([name, StoreImpl]) => {
             const wallet1: Wallet = {
                 primary: false,
                 partyId: 'party1',
+                status: 'allocated',
                 hint: 'hint1',
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
@@ -133,6 +135,7 @@ implementations.forEach(([name, StoreImpl]) => {
             const wallet2: Wallet = {
                 primary: false,
                 partyId: 'party2',
+                status: 'allocated',
                 hint: 'hint2',
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
@@ -142,6 +145,7 @@ implementations.forEach(([name, StoreImpl]) => {
             const wallet3: Wallet = {
                 primary: false,
                 partyId: 'party3',
+                status: 'allocated',
                 hint: 'hint3',
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
@@ -178,6 +182,7 @@ implementations.forEach(([name, StoreImpl]) => {
             const wallet1: Wallet = {
                 primary: false,
                 partyId: 'party1',
+                status: 'allocated',
                 hint: 'hint1',
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
@@ -187,6 +192,7 @@ implementations.forEach(([name, StoreImpl]) => {
             const wallet2: Wallet = {
                 primary: false,
                 partyId: 'party2',
+                status: 'allocated',
                 hint: 'hint2',
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
@@ -209,6 +215,7 @@ implementations.forEach(([name, StoreImpl]) => {
             await store.addIdp(idp)
             await store.addNetwork(network)
             const session: Session = {
+                id: 'sess-123',
                 network: 'network1',
                 accessToken: 'token',
             }

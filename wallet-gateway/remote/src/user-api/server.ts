@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -20,6 +20,7 @@ export const user = (
     app: express.Express,
     logger: Logger,
     kernelInfo: KernelInfo,
+    userUrl: string,
     notificationService: NotificationService,
     drivers: Partial<Record<SigningProvider, SigningDriverInterface>>,
     store: Store & AuthAware<Store>
@@ -28,6 +29,7 @@ export const user = (
         jsonRpcHandler<Methods>({
             controller: userController(
                 kernelInfo,
+                userUrl,
                 store.withAuthContext(req.authContext),
                 notificationService,
                 req.authContext,

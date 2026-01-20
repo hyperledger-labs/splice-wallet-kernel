@@ -3,6 +3,128 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+0.18.0
+------
+
+**Released on November 26th, 2025**
+
+* merge utxos command
+
+*you can now easily perform utxos merging for you by simply calling the method `mergeHoldingUtxos`, this returns a series of commands that each needs to be executed
+individually to merge the assets. It returns a list of utxos commands because: Firstly, it supports multi-assets (so it will merge both CC and non-CC tokens)
+and secondly there is an upper limit of 100 inputs per transaction so to facilitate if more is present then it splices it for the client.*
+
+.. code-block:: javascript
+
+    const [mergeUtxoCommands, mergedDisclosedContracts] =
+        await sdk.tokenStandard!.mergeHoldingUtxos()!
+
+    for (let i = 0; i < mergeUtxoCommands.length; i++) {
+        await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+            mergeUtxoCommands[i],
+            keyPairSender.privateKey,
+            v4(),
+            mergedDisclosedContracts
+        )
+    }
+
+* merge utxos delegation
+
+*instead of manually monitor and act you can set up utxos merge delegation as described at* `merge-delegation <https://docs.dev.sync.global/app_dev/token_standard/index.html#setting-up-mergedelegations>`__
+*using the new functionality like. An example of the complete setup can be found here:* `Wallet SDK example 18 <https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/docs/wallet-integration-guide/examples/scripts/18-merge-delegation-proposal.ts>`__
+
+* create party with preapproval
+
+*creating a party with preapproval is such a common task that we have decided to add is a combined function similar to lots of other cases.*
+
+.. code-block:: javascript
+
+    const receiver =
+        await sdk.userLedger?.signAndAllocateExternalPartyWithPreapproval(
+            keyPairReceiver.privateKey,
+            validatorOperatorParty,
+            instrumentAdminPartyId,
+            'bob'
+        )
+
+* get traffic status
+
+*in previous release we enabled the purchase of traffic using an external party, now we have included an option to fetch the balance so you can check if
+you actually need to top up with an external party. However this does require providing a scanApiBaseUrl to the tokenStandardController.*
+
+.. code-block:: javascript
+
+    const trafficStatus =
+        await sdk.tokenStandard!.getMemberTrafficStatus(participantId!)
+
+* list holdings at offset
+
+*listHoldingsUtxo have been extended with an optional offset parameter, normally it uses the ledgerEnd, but this allow you to define it yourself.
+Do be warned that this is not a performant operation.*
+
+0.17.0
+------
+
+**Released on November 14th, 2025**
+
+* Wallet SDK has been updated to support 0.5.1 & Canton 3.4.7
+
+*previous versions are mostly compatible, however you might run into a previous safeguard against earlier versions of canton 3.4.X where
+external party onboarding was not supported.*
+
+* wallet.localhost changed to localhost
+
+*with newer versions of splice we can now remove the need for adding parameters for /etc/hosts and use localhost directly for the examples.*
+
+* Improved utxo selection when no utxos was provided
+
+*previously when perform a transfer and not providing utxos (as an empty array), then the sdk would automatically select all utxos to perform
+the transfer. This had various problems like adding more than 100 utxos or utxos not having enough funds, this has also been improved with better
+error messaging.*
+
+* Better automation around token metadata
+
+*the token standard controller have two new methods: `getInstrumentById` & `listInstruments`, these uses the transferRegistryUrl provided to fetch
+relevant data from the original source making non-CC token integration more seamless. Likewise in certain cases the instrumentAdmin has been made optional
+since we can use the above to fetch these.*
+
+* test improvements of snippets
+
+*test snippets used as part of the wallet integration guide was previously considered theoretical examples, the entire suite has been upgraded
+and now each snippets have been tested against a running validator to ensure it is correct in its completeness. This means we also had to change
+some of the values from using example naming the actual naming.*
+
+* buy member traffic
+
+*new method added that allows the purchase of traffic for a specific validator using an external party.*
+
+.. code-block:: javascript
+
+
+    const [buyTrafficCommand, buyTrafficDisclosedContracts] =
+        await sdk.tokenStandard!.buyMemberTraffic(
+            sender?.partyId!, // buying party
+            200000, // cc amount to purchase traffic for
+            participantId!, // receiving participants
+            [], // input utxos, if none is provided it will use smart utxo selection
+            0 // migrationID, beware that this will be 0 for localnet,devnet & testnet while mainnet will have 3
+        )
+
+    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+        buyTrafficCommand,
+        keyPairSender.privateKey,
+        v4(),
+        buyTrafficDisclosedContracts
+    )
+
+* made decodeTopologyTransaction static
+
+*toDecodedTopologyTransaction introduced in previous version has been moved as a static method on the ledgerController, this is primarily
+so it can be used in offline mode.*
+
+* supported executeAs individual rights for reading
+
+*executeAs also grants read access, however this was not including in the filtering (this has no impact with executeAsAnyParty).*
 
 0.16.0
 ------

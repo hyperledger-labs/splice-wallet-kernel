@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { Option, Command } from '@commander-js/extra-typings'
@@ -9,32 +9,36 @@ import { initialize } from './init.js'
 import { createCLI } from '@canton-network/core-wallet-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
 
-import { readFileSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
 import pino from 'pino'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const pkg = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8'))
+import z from 'zod'
+import { configSchema } from './config/Config.js'
+import exampleConfig from './example-config.js'
+import { GATEWAY_VERSION } from './version.js'
 
 const program = new Command()
     .name('wallet-gateway')
-    .version(pkg.version)
+    .version(GATEWAY_VERSION)
     .description('Run a remotely hosted Wallet Gateway')
     .option('-c, --config <path>', 'set config path', './config.json')
-    .option('-p, --port [port]', 'set port', '3030')
+    .option('--config-schema', 'output the config schema and exit', false)
+    .option('--config-example', 'output an example config and exit', false)
+    .option('-p, --port [port]', 'set port (overrides config)')
     .addOption(
         new Option('-f, --log-format <format>', 'set log format')
             .choices(['json', 'pretty'])
             .default('pretty')
     )
-    .addOption(
-        new Option('-s, --store-type <type>', 'set store type')
-            .choices(['sqlite', 'postgres'])
-            .default('sqlite')
-    )
     .action((opts) => {
+        if (opts.configSchema) {
+            console.log(JSON.stringify(z.toJSONSchema(configSchema), null, 2))
+            process.exit(0)
+        }
+
+        if (opts.configExample) {
+            console.log(JSON.stringify(exampleConfig, null, 2))
+            process.exit(0)
+        }
+
         // Define project-global logger
         const logger = pino({
             name: 'main',
@@ -57,11 +61,19 @@ const options = program.opts()
 
 export type CliOptions = typeof options
 
-const config = ConfigUtils.loadConfigFile(options.config)
+// Add a documented stub
+let db = new Command('db')
+    .description('Database management commands')
+    .allowUnknownOption(true)
 
-// Add the `db` command now, before final parse
-const cli = createCLI(config.store) as Command
-program.addCommand(cli.name('db'))
+const hasDb = process.argv.slice(2).includes('db')
+
+if (hasDb) {
+    const config = ConfigUtils.loadConfigFile(options.config)
+    db = createCLI(config.store) as Command
+}
+
+program.addCommand(db.name('db'))
 
 // Now parse normally for execution/help
 program.parseAsync(process.argv)

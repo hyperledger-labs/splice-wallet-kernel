@@ -1,9 +1,6 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import crypto from 'node:crypto'
-import { randomUUID } from 'node:crypto'
-import { readFileSync } from 'node:fs'
 import { AllKnownMetaKeys, matchInterfaceIds } from './constants.js'
 import { LedgerClient } from './ledger-client.js'
 import { Holding, TransferInstructionView } from './txparse/types.js'
@@ -21,161 +18,189 @@ type EventFormat = Types['EventFormat']
 type CreatedEvent = Types['CreatedEvent']
 type ExercisedEvent = Types['ExercisedEvent']
 type ArchivedEvent = Types['ArchivedEvent']
-type ExerciseCommand = Types['ExerciseCommand']
 type JsInterfaceView = Types['JsInterfaceView']
-type DisclosedContract = Types['DisclosedContract']
-type PartySignatures = Types['PartySignatures']
-type Command = Types['Command']
-type DeduplicationPeriod2 = Types['DeduplicationPeriod2']
 type Completion = Types['Completion']['value']
+export type JSContractEntry = Types['JsContractEntry']
 export type JsCantonError = Types['JsCantonError']
 
-export function TransactionFilterBySetup(
-    interfaceNames: string[] | string,
-    options: {
-        includeWildcard?: boolean
-        isMasterUser?: boolean
-        partyId?: PartyId | undefined
-    } = { includeWildcard: false, isMasterUser: false }
-): TransactionFilter {
-    const interfaceArrayed = Array.isArray(interfaceNames)
-        ? interfaceNames
-        : [interfaceNames]
-    if (options.isMasterUser)
-        return {
-            filtersByParty: {},
-            filtersForAnyParty:
-                filtersForAnyParty(
-                    interfaceArrayed,
-                    options.includeWildcard ?? false
-                ) ?? {},
-        }
-    else if (!options.partyId || options.partyId === undefined)
-        throw new Error('Party must be provided for non-master users')
-    else
-        return {
-            filtersByParty:
-                filtersByParty(
-                    options.partyId,
-                    interfaceArrayed,
-                    options.includeWildcard ?? false
-                ) ?? {},
-        }
+type BaseFilterOptions = {
+    includeWildcard?: boolean
+    isMasterUser?: boolean
+    partyId?: PartyId | undefined
 }
 
-export function EventFilterBySetup(
-    interfaceNames: string[] | string,
-    options: {
-        verbose?: boolean
-        includeWildcard?: boolean
-        isMasterUser?: boolean
-        partyId?: PartyId | undefined
-    } = { includeWildcard: false, isMasterUser: false }
-): EventFormat {
-    const interfaceArrayed = Array.isArray(interfaceNames)
-        ? interfaceNames
-        : [interfaceNames]
-    if (options.isMasterUser)
+type FilterIdentifiers =
+    | {
+          templateIds: string[] | string
+          interfaceIds?: never
+      }
+    | {
+          interfaceIds: string[] | string
+          templateIds?: never
+      }
+
+type TransactionFilterOptions = BaseFilterOptions & FilterIdentifiers
+
+type EventFilterOptions = TransactionFilterOptions & { verbose?: boolean }
+
+function createIdentiferFilter(type: 'Template' | 'Interface', id: string) {
+    if (type === 'Template') {
+        return {
+            identifierFilter: {
+                TemplateFilter: {
+                    value: {
+                        templateId: id,
+                        includeCreatedEventBlob: true,
+                    },
+                },
+            },
+        }
+    } else {
+        return {
+            identifierFilter: {
+                InterfaceFilter: {
+                    value: {
+                        interfaceId: id,
+                        includeInterfaceView: true,
+                        includeCreatedEventBlob: true,
+                    },
+                },
+            },
+        }
+    }
+}
+
+function createWildcardFilter() {
+    return {
+        identifierFilter: {
+            WildcardFilter: {
+                value: {
+                    includeCreatedEventBlob: true,
+                },
+            },
+        },
+    }
+}
+
+function buildCumulativeFilters(
+    templateIds: string[],
+    interfaceIds: string[],
+    includeWildcard: boolean
+) {
+    if (templateIds.length > 0) {
+        return [
+            ...templateIds.map((templateId) =>
+                createIdentiferFilter('Template', templateId)
+            ),
+            ...(includeWildcard ? [createWildcardFilter()] : []),
+        ]
+    } else {
+        return [
+            ...interfaceIds.map((interfaceId) =>
+                createIdentiferFilter('Interface', interfaceId)
+            ),
+            ...(includeWildcard ? [createWildcardFilter()] : []),
+        ]
+    }
+}
+
+function buildFilter<
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    T extends { filtersByParty?: any; filtersForAnyParty?: any },
+>(
+    templateIds: string[],
+    interfaceIds: string[],
+    options: BaseFilterOptions,
+    additionalProps?: Partial<T>
+): T {
+    const { isMasterUser = false, partyId, includeWildcard = false } = options
+
+    if (isMasterUser) {
         return {
             filtersByParty: {},
-            filtersForAnyParty:
-                filtersForAnyParty(
-                    interfaceArrayed,
-                    options.includeWildcard ?? false
-                ) ?? {},
-            verbose: options.verbose ?? false,
-        }
-    else if (!options.partyId || options.partyId === undefined)
+            filtersForAnyParty: filtersForAnyParty(
+                templateIds,
+                interfaceIds,
+                includeWildcard
+            ),
+            ...additionalProps,
+        } as T
+    }
+
+    if (!partyId) {
         throw new Error('Party must be provided for non-master users')
-    else
-        return {
-            filtersByParty:
-                filtersByParty(
-                    options.partyId,
-                    interfaceArrayed,
-                    options.includeWildcard ?? false
-                ) ?? {},
-            verbose: options.verbose ?? false,
-        }
+    }
+
+    return {
+        filtersByParty: filtersByParty(
+            partyId,
+            templateIds,
+            interfaceIds,
+            includeWildcard
+        ),
+        ...additionalProps,
+    } as T
+}
+
+export function TransactionFilterBySetup(
+    options: TransactionFilterOptions
+): TransactionFilter {
+    const { templateIds, interfaceIds, ...baseOptions } = options
+    return buildFilter<TransactionFilter>(
+        normalizeToArray(templateIds || []),
+        normalizeToArray(interfaceIds || []),
+        baseOptions
+    )
+}
+
+export function EventFilterBySetup(options: EventFilterOptions): EventFormat {
+    const {
+        templateIds,
+        interfaceIds,
+        verbose = false,
+        ...baseOptions
+    } = options
+    return buildFilter<EventFormat>(
+        normalizeToArray(templateIds || []),
+        normalizeToArray(interfaceIds || []),
+        baseOptions,
+        { verbose }
+    )
 }
 
 function filtersByParty(
     party: PartyId,
-    interfaceNames: string[],
+    templateIds: string[],
+    interfaceIds: string[],
     includeWildcard: boolean
 ): TransactionFilter['filtersByParty'] {
-    const wildcardFilter = includeWildcard
-        ? [
-              {
-                  identifierFilter: {
-                      WildcardFilter: {
-                          value: {
-                              includeCreatedEventBlob: true,
-                          },
-                      },
-                  },
-              },
-          ]
-        : []
-
     return {
         [party]: {
-            cumulative: [
-                ...interfaceNames.map((interfaceName) => {
-                    return {
-                        identifierFilter: {
-                            InterfaceFilter: {
-                                value: {
-                                    interfaceId: interfaceName,
-                                    includeInterfaceView: true,
-                                    includeCreatedEventBlob: true,
-                                },
-                            },
-                        },
-                    }
-                }),
-                ...wildcardFilter,
-            ],
+            cumulative: buildCumulativeFilters(
+                templateIds,
+                interfaceIds,
+                includeWildcard
+            ),
         },
     }
 }
 
 function filtersForAnyParty(
     interfaceNames: string[],
+    templateIds: string[],
     includeWildcard: boolean
 ): TransactionFilter['filtersForAnyParty'] {
-    const wildcardFilter = includeWildcard
-        ? [
-              {
-                  identifierFilter: {
-                      WildcardFilter: {
-                          value: {
-                              includeCreatedEventBlob: true,
-                          },
-                      },
-                  },
-              },
-          ]
-        : []
-
     return {
-        cumulative: [
-            ...interfaceNames.map((interfaceName) => {
-                return {
-                    identifierFilter: {
-                        InterfaceFilter: {
-                            value: {
-                                interfaceId: interfaceName,
-                                includeInterfaceView: true,
-                                includeCreatedEventBlob: true,
-                            },
-                        },
-                    },
-                }
-            }),
-            ...wildcardFilter,
-        ],
+        cumulative: buildCumulativeFilters(
+            templateIds,
+            interfaceNames,
+            includeWildcard
+        ),
     }
+}
+
+function normalizeToArray<T>(value: T | T[]): T[] {
+    return Array.isArray(value) ? value : [value]
 }
 
 export function hasInterface(
@@ -307,165 +332,6 @@ export function removeParsedMetaKeys(meta: Meta): Meta {
     }
 }
 
-//TODO: Investigate, this method is not used anywhere ?
-export async function submitExerciseCommand(
-    ledgerClient: LedgerClient,
-    exerciseCommand: ExerciseCommand,
-    disclosedContracts: DisclosedContract[],
-    partyId: PartyId,
-    userId: string,
-    publicKeyPath: string,
-    privateKeyPath: string
-): Promise<Completion> {
-    const submissionId = randomUUID()
-    const commandId = `tscli-${randomUUID()}`
-
-    const command: Command = {
-        ExerciseCommand: exerciseCommand,
-    }
-
-    const synchronizerId =
-        getSynchronizerIdFromDisclosedContracts(disclosedContracts)
-
-    const prepared = await ledgerClient.postWithRetry(
-        '/v2/interactive-submission/prepare',
-        {
-            actAs: [partyId],
-            readAs: [partyId],
-            userId: userId,
-            commandId,
-            synchronizerId,
-            commands: [command],
-            disclosedContracts,
-            verboseHashing: true,
-            packageIdSelectionPreference: [],
-        }
-    )
-
-    const signed = signTransaction(
-        publicKeyPath,
-        privateKeyPath,
-        prepared.preparedTransactionHash
-    )
-    const partySignatures: PartySignatures = {
-        signatures: [
-            {
-                party: partyId,
-                signatures: [
-                    {
-                        signature: signed.signedHash,
-                        signedBy: signed.signedBy,
-                        format: 'SIGNATURE_FORMAT_CONCAT',
-                        signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
-                    },
-                ],
-            },
-        ],
-    }
-
-    const deduplicationPeriod: DeduplicationPeriod2 = {
-        Empty: {},
-    }
-
-    const ledgerEnd = await ledgerClient.getWithRetry('/v2/state/ledger-end')
-
-    await ledgerClient.postWithRetry('/v2/interactive-submission/execute', {
-        userId,
-        submissionId,
-        preparedTransaction: prepared.preparedTransaction!,
-        hashingSchemeVersion: prepared.hashingSchemeVersion,
-        partySignatures,
-        deduplicationPeriod,
-    })
-
-    const completionPromise = awaitCompletion(
-        ledgerClient,
-        ledgerEnd.offset,
-        partyId,
-        userId,
-        commandId
-    )
-    return promiseWithTimeout(
-        completionPromise,
-        45_000 * 2, // 45s
-        `Timed out getting completion for submission with userId=${userId}, commandId=${commandId}, submissionId=${submissionId}.
-    The submission might have succeeded or failed, but it couldn't be determined in time.`
-    )
-}
-
-// The synchronizer id is mandatory, so we derive it from the disclosed contracts,
-// expecting that they'll all be in the same synchronizer
-function getSynchronizerIdFromDisclosedContracts(
-    disclosedContracts: DisclosedContract[]
-): string {
-    const synchronizerId = disclosedContracts[0].synchronizerId
-    const differentSynchronizerId = disclosedContracts.find(
-        (dc) => dc.synchronizerId !== synchronizerId
-    )
-    if (differentSynchronizerId) {
-        throw new Error(
-            `Contract is in a different domain so can't submit to the correct synchronizer: ${JSON.stringify(
-                differentSynchronizerId
-            )}`
-        )
-    }
-    return synchronizerId
-}
-
-interface SignTransactionResult {
-    signedBy: string
-    // base64 encoded
-    signedHash: string
-}
-function signTransaction(
-    publicKeyPath: string,
-    privateKeyPath: string,
-    preparedTransactionHash: string
-): SignTransactionResult {
-    const publicKey = readFileSync(publicKeyPath)
-    const nodePublicKey = crypto.createPublicKey({
-        key: publicKey,
-        format: 'der',
-        type: 'spki', // pycryptodome exports public keys as SPKI
-    })
-
-    const privateKey = readFileSync(privateKeyPath)
-    const nodePrivateKey = crypto.createPrivateKey({
-        key: privateKey,
-        format: 'der',
-        type: 'pkcs8',
-    })
-
-    const keyFingerprint = crypto
-        .createHash('sha256')
-        .update(
-            Buffer.from(
-                `0000000C${nodePublicKey
-                    .export({ format: 'der', type: 'spki' })
-                    // Ed25519 public key is the last 32 bytes of the SPKI DER key
-                    .subarray(-32)
-                    .toString('hex')}`,
-                'hex'
-            )
-        )
-        .digest('hex')
-    const fingerprintPreFix = '1220' // 12 PublicKeyFingerprint, 20 is a special length encoding
-    const signedBy = `${fingerprintPreFix}${keyFingerprint}`
-
-    const hashBuffer = Buffer.from(preparedTransactionHash, 'base64')
-    const signedHash = crypto
-        .sign(null, hashBuffer, {
-            key: nodePrivateKey,
-            dsaEncoding: 'ieee-p1363',
-        })
-        .toString('base64')
-
-    return {
-        signedBy,
-        signedHash,
-    }
-}
-
 const COMPLETIONS_LIMIT = '100'
 const COMPLETIONS_STREAM_IDLE_TIMEOUT_MS = '1000'
 
@@ -498,31 +364,39 @@ export async function awaitCompletion(
     )
 
     const completions = responses.filter(
-        (response) => !!response.completionResponse.Completion
+        (r) => 'Completion' in r.completionResponse
     )
 
-    const wantedCompletion = completions.find((response) => {
-        const completion = response.completionResponse.Completion
-        if (!completion) return false
-        if (completion.value.userId !== userId) return false
-        if (completion.value.commandId === commandIdOrSubmissionId) return true
-        if (completion.value.submissionId === commandIdOrSubmissionId)
-            return true
+    const wantedCompletion = responses.find((r) => {
+        if ('Completion' in r.completionResponse) {
+            const completion = r.completionResponse.Completion.value
+            return (
+                completion.userId === userId &&
+                (completion.commandId === commandIdOrSubmissionId ||
+                    completion.submissionId === commandIdOrSubmissionId)
+            )
+        }
         return false
     })
 
-    if (wantedCompletion) {
-        const completion = wantedCompletion.completionResponse.Completion!
-        const status = completion.value.status
+    if (
+        wantedCompletion &&
+        'Completion' in wantedCompletion.completionResponse
+    ) {
+        const completion = wantedCompletion.completionResponse.Completion.value
+        const status = completion.status
         if (status && status.code !== 0) {
             // status.code is 0 for success
             throw asGrpcError(status)
         }
-        return completion.value
+        return completion
     } else {
         const lastCompletion = completions[completions.length - 1]
         const newLedgerEnd =
-            lastCompletion?.completionResponse.Completion!.value.offset
+            lastCompletion && 'Completion' in lastCompletion.completionResponse
+                ? lastCompletion.completionResponse.Completion.value.offset
+                : undefined
+
         return awaitCompletion(
             ledgerClient,
             newLedgerEnd || ledgerEnd, // !newLedgerEnd implies response was empty
@@ -604,7 +478,11 @@ export async function retryable<T>(
 
 // Helper for differentiating ledger errors from others and satisfying TS when checking error properties
 export const isJsCantonError = (e: unknown): e is JsCantonError =>
-    typeof e === 'object' && e !== null && 'status' in e && 'errorCategory' in e
+    typeof e === 'object' &&
+    e !== null &&
+    'code' in e &&
+    'cause' in e &&
+    'errorCategory' in e
 
 export const asJsCantonError = (e: unknown): JsCantonError => {
     if (isJsCantonError(e)) {

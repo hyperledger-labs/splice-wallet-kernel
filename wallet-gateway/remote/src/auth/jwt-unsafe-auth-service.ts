@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { AuthService } from '@canton-network/core-wallet-auth'
@@ -32,6 +32,12 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
             const sub = decoded.sub
             if (!sub) {
                 logger.warn('JWT does not contain a subject')
+                return undefined
+            }
+
+            const scope = decoded.scope
+            if (!scope) {
+                logger.warn('JWT does not contain a scope')
                 return undefined
             }
 

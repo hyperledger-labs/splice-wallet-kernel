@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
@@ -83,7 +83,7 @@ export class ACSContainer {
         key: ACSKey,
         api: LedgerClient,
         wsSupport?: WSSupport
-    ): Promise<Array<JsGetActiveContractsResponse>> {
+    ): Promise<JsGetActiveContractsResponse[]> {
         if (this.acsSet === null) {
             const acs = await this.readACS(offset, key, api, wsSupport)
             this.acsSet = acs
@@ -168,13 +168,14 @@ export class ACSContainer {
         })
         const createdContracts = acs.initialAcs.concat(addedContracts)
 
-        const result = createdContracts.filter(
-            (contract) =>
-                !removedContractIds.has(
-                    contract.contractEntry.JsActiveContract?.createdEvent
-                        .contractId ?? ''
-                )
-        )
+        const result = createdContracts.filter(({ contractEntry }) => {
+            const id =
+                'JsActiveContract' in contractEntry
+                    ? contractEntry.JsActiveContract.createdEvent.contractId
+                    : ''
+
+            return !removedContractIds.has(id)
+        })
 
         return Promise.resolve(result)
     }

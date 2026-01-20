@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { defineConfig } from 'vite'
@@ -25,9 +25,13 @@ export default defineConfig({
                     'src/web/frontend/callback/index.html'
                 ),
                 login: resolve(__dirname, 'src/web/frontend/login/index.html'),
-                networks: resolve(
+                settings: resolve(
                     __dirname,
-                    'src/web/frontend/networks/index.html'
+                    'src/web/frontend/settings/index.html'
+                ),
+                transactions: resolve(
+                    __dirname,
+                    'src/web/frontend/transactions/index.html'
                 ),
                 wallets: resolve(
                     __dirname,

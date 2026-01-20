@@ -1,8 +1,7 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { z } from 'zod'
-import { v4 as uuidv4 } from 'uuid'
 
 /**
  * Logger
@@ -20,7 +19,9 @@ export type PartyId = z.infer<typeof PartyId>
  */
 export const RequestPayload = z.object({
     method: z.string(),
-    params: z.optional(z.union([z.array(z.unknown()), z.record(z.unknown())])),
+    params: z.optional(
+        z.union([z.array(z.unknown()), z.record(z.string(), z.unknown())])
+    ),
 })
 export type RequestPayload = z.infer<typeof RequestPayload>
 
@@ -78,9 +79,7 @@ export enum WalletEvent {
     SPLICE_WALLET_IDP_AUTH_SUCCESS = 'SPLICE_WALLET_IDP_AUTH_SUCCESS',
 }
 
-export interface SpliceMessageEvent extends MessageEvent {
-    data: SpliceMessage
-}
+export type SpliceMessageEvent = MessageEvent<SpliceMessage>
 
 export const SpliceMessage = z.discriminatedUnion('type', [
     z.object({
@@ -100,6 +99,7 @@ export const SpliceMessage = z.discriminatedUnion('type', [
     z.object({
         type: z.literal(WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS),
         token: z.string(),
+        sessionId: z.string(),
     }),
 ])
 export type SpliceMessage = z.infer<typeof SpliceMessage>
@@ -140,109 +140,3 @@ export const GatewaysConfig = z.object({
 })
 
 export type GatewaysConfig = z.infer<typeof GatewaysConfig>
-
-// TODO(#131) - move this to rpc-transport package
-
-export const jsonRpcRequest = (
-    id: string | number | null,
-    payload: RequestPayload
-): JsonRpcRequest => {
-    return {
-        jsonrpc: '2.0',
-        id, // id should be set based on the request context
-        ...payload,
-    }
-}
-
-export const jsonRpcResponse = (
-    id: string | number | null,
-    payload: ResponsePayload
-): JsonRpcResponse => {
-    return {
-        jsonrpc: '2.0',
-        id, // id should be set based on the request context
-        ...payload,
-    }
-}
-
-export interface RpcTransport {
-    submit: (payload: RequestPayload) => Promise<ResponsePayload>
-}
-
-export class WindowTransport implements RpcTransport {
-    constructor(private win: Window) {}
-
-    submit = async (payload: RequestPayload) => {
-        const message: SpliceMessage = {
-            request: jsonRpcRequest(uuidv4(), payload),
-            type: WalletEvent.SPLICE_WALLET_REQUEST,
-        }
-
-        this.win.postMessage(message, '*')
-
-        return new Promise<SuccessResponse>((resolve, reject) => {
-            const listener = (event: MessageEvent) => {
-                if (
-                    !isSpliceMessageEvent(event) ||
-                    event.data.type !== WalletEvent.SPLICE_WALLET_RESPONSE ||
-                    event.data.response.id !== message.request.id
-                ) {
-                    return
-                }
-
-                window.removeEventListener('message', listener)
-                if ('error' in event.data.response) {
-                    reject(event.data.response.error)
-                } else {
-                    resolve(event.data.response)
-                }
-            }
-
-            window.addEventListener('message', listener)
-        })
-    }
-
-    submitResponse = (id: string | number | null, payload: ResponsePayload) => {
-        const message: SpliceMessage = {
-            response: jsonRpcResponse(id, payload),
-            type: WalletEvent.SPLICE_WALLET_RESPONSE,
-        }
-        this.win.postMessage(message, '*')
-    }
-}
-
-export class HttpTransport implements RpcTransport {
-    constructor(
-        private url: URL,
-        private accessToken?: string
-    ) {}
-
-    async submit(payload: RequestPayload): Promise<ResponsePayload> {
-        const request: JsonRpcRequest = {
-            jsonrpc: '2.0',
-            method: payload.method,
-            params: payload.params,
-            id: uuidv4(),
-        }
-
-        const header = this.accessToken
-            ? { Authorization: `Bearer ${this.accessToken}` }
-            : undefined
-
-        const response = await fetch(this.url.href, {
-            method: 'POST',
-            headers: {
-                ...header,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(request),
-        })
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        const json = await response.json()
-        return ResponsePayload.parse(json)
-    }
-}

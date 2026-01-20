@@ -1,6 +1,5 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
-// Account
 
 import { Idp } from '@canton-network/core-wallet-auth'
 import { Network } from './config/schema'
@@ -28,12 +27,16 @@ export interface WalletFilter {
 }
 
 export interface UpdateWallet {
-    status: string
-    partyId: string
+    status: WalletStatus
+    partyId: PartyId
+    externalTxId: string
 }
+
+export type WalletStatus = 'initialized' | 'allocated'
 
 export interface Wallet {
     primary: boolean
+    status: WalletStatus
     partyId: PartyId
     hint: string
     publicKey: string
@@ -42,13 +45,15 @@ export interface Wallet {
     signingProviderId: string
     externalTxId?: string
     topologyTransactions?: string
-    status?: string
+    disabled?: boolean
+    reason?: string
     // hosted: [network]
 }
 
 // Session management
 
 export interface Session {
+    id: string
     network: string
     accessToken: string
 }
@@ -59,6 +64,9 @@ export interface Transaction {
     preparedTransaction: string
     preparedTransactionHash: string
     payload?: unknown
+    origin: string | null
+    createdAt?: Date
+    signedAt?: Date
 }
 
 // Store interface for managing wallets, sessions, networks, and transactions
@@ -95,4 +103,5 @@ export interface Store {
     // Transaction methods
     setTransaction(tx: Transaction): Promise<void>
     getTransaction(commandId: string): Promise<Transaction | undefined>
+    listTransactions(): Promise<Array<Transaction>>
 }

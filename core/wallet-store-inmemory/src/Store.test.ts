@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeEach, describe, expect, test } from '@jest/globals'
@@ -51,6 +51,7 @@ implementations.forEach(([name, StoreImpl]) => {
             const wallet: Wallet = {
                 primary: false,
                 partyId: 'party1',
+                status: 'allocated',
                 hint: 'hint',
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
@@ -66,6 +67,7 @@ implementations.forEach(([name, StoreImpl]) => {
             const wallet1: Wallet = {
                 primary: false,
                 partyId: 'party1',
+                status: 'allocated',
                 hint: 'hint1',
                 signingProviderId: 'internal1',
                 publicKey: 'publicKey',
@@ -75,6 +77,7 @@ implementations.forEach(([name, StoreImpl]) => {
             const wallet2: Wallet = {
                 primary: false,
                 partyId: 'party2',
+                status: 'allocated',
                 hint: 'hint2',
                 signingProviderId: 'internal2',
                 publicKey: 'publicKey',
@@ -84,6 +87,7 @@ implementations.forEach(([name, StoreImpl]) => {
             const wallet3: Wallet = {
                 primary: false,
                 partyId: 'party3',
+                status: 'allocated',
                 hint: 'hint3',
                 signingProviderId: 'internal2',
                 publicKey: 'publicKey',
@@ -115,6 +119,7 @@ implementations.forEach(([name, StoreImpl]) => {
             const wallet1: Wallet = {
                 primary: false,
                 partyId: 'party1',
+                status: 'allocated',
                 hint: 'hint1',
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',
@@ -124,6 +129,7 @@ implementations.forEach(([name, StoreImpl]) => {
             const wallet2: Wallet = {
                 primary: false,
                 partyId: 'party2',
+                status: 'allocated',
                 hint: 'hint2',
                 signingProviderId: 'internal',
                 publicKey: 'publicKey',

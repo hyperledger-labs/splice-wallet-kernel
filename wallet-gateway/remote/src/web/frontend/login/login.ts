@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { html, css, LitElement } from 'lit'
@@ -9,11 +9,11 @@ import { createUserClient } from '../rpc-client'
 import { Idp, Network } from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
-import { WalletEvent } from '@canton-network/core-types'
 import {
     AuthTokenProviderSelfSigned,
     ClientCredentials,
 } from '@canton-network/core-wallet-auth'
+import { redirectToIntendedOrDefault, addUserSession } from '../index'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
@@ -25,6 +25,9 @@ export class LoginUI extends LitElement {
 
     @state()
     accessor selectedNetwork: Network | null = null
+
+    @state()
+    accessor selectedIdp: Idp | null = null
 
     @state()
     accessor message: string | null = null
@@ -102,6 +105,25 @@ export class LoginUI extends LitElement {
             border-color: #4caf50;
         }
 
+        input[type='text'] {
+            appearance: none;
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-size: 1rem;
+            cursor: pointer;
+            outline: none;
+            transition: border 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        input[type='text']:focus {
+            border-color: #4caf50;
+        }
+
         button {
             padding: 0.7rem;
             border-radius: 8px;
@@ -173,17 +195,25 @@ export class LoginUI extends LitElement {
     private handleChange(e: Event) {
         const index = parseInt((e.target as HTMLSelectElement).value)
         this.selectedNetwork = this.networks[index] ?? null
+        this.selectedIdp =
+            this.idps.find(
+                (idp) => idp.id === this.selectedNetwork?.identityProviderId
+            ) ?? null
         this.message = null
     }
 
     private async loadNetworks() {
-        const userClient = createUserClient(stateManager.accessToken.get())
+        const userClient = await createUserClient(
+            stateManager.accessToken.get()
+        )
         const response = await userClient.request('listNetworks')
         return response.networks
     }
 
     private async loadIdps() {
-        const userClient = createUserClient(stateManager.accessToken.get())
+        const userClient = await createUserClient(
+            stateManager.accessToken.get()
+        )
         const response = await userClient.request('listIdps')
         return response.idps
     }
@@ -203,59 +233,65 @@ export class LoginUI extends LitElement {
             return
         }
 
+        const clientId =
+            (this.renderRoot.querySelector('#client-id') as HTMLInputElement)
+                ?.value || this.selectedNetwork.auth.clientId
+
         stateManager.networkId.set(this.selectedNetwork.id)
-        const redirectUri = `${window.origin}/callback/`
+        const idp = this.idps.find(
+            (idp) => idp.id === this.selectedNetwork?.identityProviderId
+        )
 
-        if (this.selectedNetwork.auth.method === 'authorization_code') {
-            const idp = this.idps.find(
-                (idp) => idp.id === this.selectedNetwork?.identityProviderId
-            )
+        if (!idp) {
+            this.messageType = 'error'
+            this.message = 'Identity provider misconfigured for this network.'
+            return
+        }
 
-            console.log('Found IDP:', idp)
-
-            if (!idp || !idp.configUrl) {
-                this.messageType = 'error'
-                this.message =
-                    'Identity provider misconfigured for this network.'
-                return
-            }
-
-            this.messageType = 'info'
-            this.message = `Redirecting to ${this.selectedNetwork.name}...`
-
-            const auth = this.selectedNetwork.auth
-            const config = await fetch(idp.configUrl).then((res) => res.json())
-
-            const statePayload = {
-                configUrl: idp.configUrl,
-                clientId: auth.clientId,
-                audience: auth.audience,
-            }
-
-            const params = new URLSearchParams({
-                response_type: 'code',
-                client_id: this.selectedNetwork.auth.clientId || '',
-                redirect_uri: redirectUri || '',
-                nonce: crypto.randomUUID(),
-                scope: auth.scope || '',
-                audience: auth.audience || '',
-                state: btoa(JSON.stringify(statePayload)),
-            })
-
-            // small delay to allow message to appear
-            setTimeout(() => {
-                window.location.href = `${config.authorization_endpoint}?${params.toString()}`
-            }, 400)
-        } else if (this.selectedNetwork.auth.method === 'self_signed') {
+        if (idp.type === 'self_signed') {
             await this.selfSign({
-                clientId: this.selectedNetwork.auth.clientId || '',
+                clientId: clientId,
                 clientSecret: this.selectedNetwork.auth.clientSecret || '',
                 scope: this.selectedNetwork.auth.scope,
                 audience: this.selectedNetwork.auth.audience,
             } as ClientCredentials)
-            setTimeout(() => {
-                window.location.replace('/')
-            }, 400)
+            redirectToIntendedOrDefault()
+        } else if (idp.type === 'oauth') {
+            if (this.selectedNetwork.auth.method === 'authorization_code') {
+                const redirectUri = `${window.origin}/callback/`
+                this.messageType = 'info'
+                this.message = `Redirecting to ${this.selectedNetwork.name}...`
+
+                const auth = this.selectedNetwork.auth
+                const config = await fetch(idp.configUrl || '').then((res) =>
+                    res.json()
+                )
+
+                const statePayload = {
+                    configUrl: idp.configUrl,
+                    clientId: auth.clientId,
+                    audience: auth.audience,
+                }
+
+                const params = new URLSearchParams({
+                    response_type: 'code',
+                    client_id: this.selectedNetwork.auth.clientId || '',
+                    redirect_uri: redirectUri || '',
+                    nonce: crypto.randomUUID(),
+                    scope: auth.scope || '',
+                    audience: auth.audience || '',
+                    state: btoa(JSON.stringify(statePayload)),
+                })
+
+                // small delay to allow message to appear
+                setTimeout(() => {
+                    window.location.href = `${config.authorization_endpoint}?${params.toString()}`
+                }, 400)
+            } else {
+                this.messageType = 'error'
+                this.message = 'This authentication method is not valid.'
+                return
+            }
         } else {
             this.messageType = 'error'
             this.message = 'This authentication type is not supported yet.'
@@ -270,26 +306,14 @@ export class LoginUI extends LitElement {
             3600
         )
 
-        if (window.opener && !window.opener.closed) {
-            window.opener.postMessage(
-                {
-                    type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
-                    token: access_token,
-                },
-                '*'
-            )
-        }
-
         const payload = JSON.parse(atob(access_token.split('.')[1]))
-        stateManager.expirationDate.set(new Date(payload.exp * 1000).toString())
-
+        stateManager.expirationDate.set(
+            new Date(payload.exp * 1000).toISOString()
+        )
         stateManager.accessToken.set(access_token)
 
-        const authenticatedUserClient = createUserClient(access_token)
-
-        await authenticatedUserClient.request('addSession', {
-            networkId: stateManager.networkId.get() || '',
-        })
+        const networkId = stateManager.networkId.get() || ''
+        addUserSession(access_token, networkId)
     }
 
     protected render() {
@@ -311,6 +335,17 @@ export class LoginUI extends LitElement {
                     )}
                 </select>
 
+                ${this.selectedIdp?.type === 'self_signed'
+                    ? html`
+                          <input
+                              type="text"
+                              title="client id"
+                              id="client-id"
+                              .value=${this.selectedNetwork?.auth.clientId ||
+                              ''}
+                          />
+                      `
+                    : null}
                 <button @click=${this.handleConnectToIDP}>Connect</button>
 
                 ${this.message

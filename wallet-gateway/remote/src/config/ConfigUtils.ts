@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { readFileSync, existsSync } from 'fs'
@@ -103,4 +103,31 @@ function validateNetworkAuthMethods(
             }
         }
     }
+}
+
+interface Urls {
+    serviceUrl: string
+    publicUrl: string
+    dappApiUrl: string
+    userApiUrl: string
+}
+
+// Strips duplicate slashes from a URL, except for the protocol part (e.g., "http://")
+function stripDuplicateSlashes(path: string): string {
+    return path.replace(/(https?:\/\/)|(\/)+/g, '$1$2')
+}
+
+export const deriveUrls = (config: Config, port?: number): Urls => {
+    const serviceUrl = `http://localhost:${port || config.server.port}`
+    const publicUrl = config.kernel.publicUrl || serviceUrl
+
+    const dappApiUrl = stripDuplicateSlashes(
+        `${publicUrl}/${config.server.dappPath}`
+    )
+
+    const userApiUrl = stripDuplicateSlashes(
+        `${publicUrl}/${config.server.userPath}`
+    )
+
+    return { dappApiUrl, userApiUrl, publicUrl, serviceUrl }
 }

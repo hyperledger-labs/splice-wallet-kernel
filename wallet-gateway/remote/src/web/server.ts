@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import express from 'express'
@@ -6,8 +6,13 @@ import { Server } from 'http'
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import ViteExpress from 'vite-express'
+import { GATEWAY_VERSION } from '../version.js'
 
-export const web = (app: express.Express, server: Server) => {
+export const web = (app: express.Express, server: Server, userPath: string) => {
+    // Expose userPath via well-known configuration endpoint
+    app.get('/.well-known/wallet-gateway-config', (_req, res) => {
+        res.json({ userPath })
+    })
     if (process.env.NODE_ENV === 'development') {
         // Enable live reloading and Vite dev server for frontend in development
         ViteExpress.bind(app, server)
@@ -22,6 +27,11 @@ export const web = (app: express.Express, server: Server) => {
             )
         )
     }
+
+    // Expose gateway version via well-known endpoint
+    app.get('/.well-known/wallet-gateway-version', (_req, res) => {
+        res.json({ version: GATEWAY_VERSION })
+    })
 
     // Middleware to ensure all paths end with a trailing slash
     // This is useful for static file serving and routing consistency

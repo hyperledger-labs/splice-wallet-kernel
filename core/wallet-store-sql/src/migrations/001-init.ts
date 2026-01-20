@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { Kysely } from 'kysely'
@@ -21,7 +21,7 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .ifNotExists()
         .addColumn('id', 'text', (col) => col.primaryKey())
         .addColumn('name', 'text', (col) => col.notNull())
-        .addColumn('synchronizer_id', 'text', (col) => col.notNull())
+        .addColumn('synchronizer_id', 'text')
         .addColumn('description', 'text')
         .addColumn('ledger_api_base_url', 'text', (col) => col.notNull())
         .addColumn('user_id', 'text') // optional/global if null

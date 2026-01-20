@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 /**
@@ -12,15 +12,19 @@ import {
     SUPPORTED_VERSIONS,
     CANTON_PATH,
     downloadAndUnpackTarball,
-    CantonVersionAndHash,
     error,
+    setCantonHash,
+    Network,
+    getNetworkArg,
+    hasFlag,
 } from './lib/utils.js'
 import * as fs from 'fs'
+import crypto from 'crypto'
 
-async function fetchCanton(
-    cantonVersions: CantonVersionAndHash,
-    updateHash: boolean
-) {
+async function main(network: Network) {
+    const updateHash = hasFlag('updateHash')
+    const cantonVersions = SUPPORTED_VERSIONS[network].canton
+    console.debug(`fetching canton for ${network}`)
     const tarfile = path.join(
         CANTON_PATH,
         cantonVersions.version,
@@ -36,35 +40,64 @@ async function fetchCanton(
         updateHash,
     })
 
+    if (updateHash || !SUPPORTED_VERSIONS[network].canton.hash) {
+        const newHash = crypto
+            .createHash('sha256')
+            .update(fs.readFileSync(tarfile))
+            .digest('hex')
+        setCantonHash(network, newHash)
+    }
+
     const CANTON_MAJOR_VERSION = cantonVersions.version.split('-')[0]
     if (!fs.existsSync(cantonDownloadPath)) {
         fs.mkdirSync(cantonDownloadPath, { recursive: true })
     }
 
+    const targetDir = path.join(
+        API_SPECS_PATH,
+        `ledger-api/${CANTON_MAJOR_VERSION}`
+    )
+    if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true })
+    }
     fs.copyFileSync(
         path.join(
             cantonDownloadPath,
-            '/examples/09-json-api/typescript/openapi.yaml'
+            'examples/09-json-api/typescript/openapi.yaml'
         ),
-        path.join(
-            API_SPECS_PATH,
-            `ledger-api/${CANTON_MAJOR_VERSION}/openapi.yaml`
+        path.join(targetDir, 'openapi.yaml')
+    )
+
+    const openApiSpecDir = path.join(
+        cantonDownloadPath,
+        'openapi/json-ledger-api'
+    )
+
+    if (fs.existsSync(openApiSpecDir)) {
+        fs.copyFileSync(
+            path.join(openApiSpecDir, 'openapi.yaml'),
+            path.join(targetDir, 'openapi.yaml')
         )
-    )
+        fs.copyFileSync(
+            path.join(openApiSpecDir, 'asyncapi.yaml'),
+            path.join(targetDir, 'asyncapi.yaml')
+        )
+    } else {
+        /* the 3.3 distributions don't have the openapi directory or the asyncapi.yaml
+        instead they are located under examples/09-json-api/typescript
+         */
+
+        fs.copyFileSync(
+            path.join(
+                cantonDownloadPath,
+                'examples/09-json-api/typescript/openapi.yaml'
+            ),
+            path.join(targetDir, 'openapi.yaml')
+        )
+    }
 }
 
-async function main() {
-    const updateHash = process.argv.includes('--updateHash')
-    await Promise.all(
-        Object.entries(SUPPORTED_VERSIONS).map(async ([env, data]) => {
-            const { version, hash } = data.canton
-            console.debug(`fetching canton for ${env}`)
-            await fetchCanton({ version, hash }, updateHash)
-        })
-    )
-}
-
-main().catch((e) => {
+main(getNetworkArg()).catch((e) => {
     console.error(error(e.message || e))
     process.exit(1)
 })

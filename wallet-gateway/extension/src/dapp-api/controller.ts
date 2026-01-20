@@ -1,7 +1,7 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
-// Disabled unused vars rule to allow for future implementations
 
+// Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import Browser from 'webextension-polyfill'
@@ -25,19 +25,30 @@ export const dappController = (store?: Store) =>
     buildController({
         connect: async () =>
             Promise.resolve({
-                status: {
-                    kernel: kernelInfo,
-                    isConnected: false,
+                kernel: kernelInfo,
+                isConnected: false,
+                isNetworkConnected: false,
+                networkReason: 'Unauthenticated',
+                userUrl: Browser.runtime.getURL('pages/user.html'),
+                network: {
                     networkId: 'default-network-id',
-                    userUrl: Browser.runtime.getURL('pages/user.html'),
+                    ledgerApi: {
+                        baseUrl: 'http://default-ledger-api',
+                    },
                 },
-                sessionToken: 'default-session-token',
+                session: {
+                    accessToken: 'default-access-token',
+                    userId: 'default-user-id',
+                },
             }),
         disconnect: async () => Promise.resolve(null),
         darsAvailable: async () => Promise.resolve({ dars: ['default-dar'] }),
         ledgerApi: async (params: LedgerApiParams) =>
             Promise.resolve({ response: 'default-response' }),
         prepareExecute: async (params: PrepareExecuteParams) => {
+            throw new Error('Function not implemented.')
+        },
+        prepareExecuteAndWait: async (params: PrepareExecuteParams) => {
             throw new Error('Function not implemented.')
         },
         prepareReturn: async (params: PrepareReturnParams) =>

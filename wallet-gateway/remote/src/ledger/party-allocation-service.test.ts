@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { jest } from '@jest/globals'
@@ -12,14 +12,6 @@ type AsyncFn = () => Promise<unknown>
 const mockLedgerGet = jest.fn<AsyncFn>()
 const mockLedgerPost = jest.fn<AsyncFn>()
 const mockLedgerGrantUserRights = jest.fn()
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const MockTopologyWriteService: jest.MockedClass<any> = jest.fn()
-
-// Add static method to the mock class
-MockTopologyWriteService.createFingerprintFromKey = jest
-    .fn()
-    .mockReturnValue('mypublickey')
 
 jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
     Signature: jest.fn(),
@@ -43,11 +35,10 @@ jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
                 .mockResolvedValue({ partyId: 'party2::mypublickey' }),
         }
     }),
-    TopologyWriteService: MockTopologyWriteService,
 }))
 
 describe('PartyAllocationService', () => {
-    const network: Network = {
+    const network: Network & { synchronizerId: string } = {
         name: 'test',
         id: 'network-id',
         synchronizerId: 'sync-id',
@@ -88,16 +79,24 @@ describe('PartyAllocationService', () => {
                 .mockResolvedValue('admin.jwt'),
         }
 
-        service = new pas.PartyAllocationService(
-            network.synchronizerId,
-            mockAccessTokenProvider,
-            network.ledgerApi.baseUrl,
-            mockLogger
+        service = new pas.PartyAllocationService({
+            synchronizerId: network.synchronizerId,
+            accessTokenProvider: mockAccessTokenProvider,
+            httpLedgerUrl: network.ledgerApi.baseUrl,
+            logger: mockLogger,
+        })
+
+        jest.spyOn(service, 'createFingerprintFromKey').mockReturnValue(
+            'mypublickey'
         )
     })
 
+    afterEach(() => jest.restoreAllMocks())
+
     it('allocates an internal party', async () => {
-        mockLedgerGet.mockResolvedValueOnce({ participantId: 'participantid' })
+        mockLedgerGet.mockResolvedValueOnce({
+            participantId: 'participant1::participantid',
+        })
         mockLedgerPost.mockResolvedValueOnce({
             partyDetails: { party: 'party1::participantid' },
         })

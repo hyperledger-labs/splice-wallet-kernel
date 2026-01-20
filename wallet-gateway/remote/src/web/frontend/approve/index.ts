@@ -1,18 +1,21 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { html, css, LitElement } from 'lit'
+import { html, css, LitElement, nothing } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import '@canton-network/core-wallet-ui-components'
+import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
 import { createUserClient } from '../rpc-client'
 import {
     ExecuteParams,
     SignParams,
 } from '@canton-network/core-wallet-user-rpc-client'
-import { decodePreparedTransaction } from '@canton-network/core-tx-visualizer'
 import { stateManager } from '../state-manager'
-import { handleErrorToast } from '../handle-errors'
 import '../index'
+import {
+    parsePreparedTransaction,
+    PreparedTransactionParsed,
+} from '../transactions/decode'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends LitElement {
@@ -21,8 +24,13 @@ export class ApproveUi extends LitElement {
     @state() accessor partyId = ''
     @state() accessor txHash = ''
     @state() accessor tx = ''
+    @state() accessor txParsed: PreparedTransactionParsed | null = null
+    @state() accessor status = ''
     @state() accessor message: string | null = null
     @state() accessor messageType: 'info' | 'error' | null = null
+    @state() accessor createdAt: string | null = null
+    @state() accessor signedAt: string | null = null
+    @state() accessor origin: string | null = null
 
     static styles = css`
         :host {
@@ -103,6 +111,30 @@ export class ApproveUi extends LitElement {
             word-break: break-word;
         }
 
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-color);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--button-bg);
+            border-color: var(--button-bg);
+            color: white;
+        }
+
         button {
             padding: 0.75rem;
             border-radius: 8px;
@@ -159,19 +191,33 @@ export class ApproveUi extends LitElement {
         super.connectedCallback()
         const url = new URL(window.location.href)
         this.commandId = url.searchParams.get('commandId') || ''
-        this.partyId = url.searchParams.get('partyId') || ''
-        this.txHash = decodeURIComponent(url.searchParams.get('txHash') || '')
-        this.tx = decodeURIComponent(url.searchParams.get('tx') || '')
+        this.updateState()
     }
 
-    private decode(tx: string) {
-        const t = decodePreparedTransaction(tx)
-        return JSON.stringify(
-            t,
-            (key, value) =>
-                typeof value === 'bigint' ? value.toString() : value,
-            2
+    private async updateState() {
+        const userClient = await createUserClient(
+            stateManager.accessToken.get()
         )
+        userClient
+            .request('getTransaction', { commandId: this.commandId })
+            .then((result) => {
+                this.txHash = result.preparedTransactionHash
+                this.tx = result.preparedTransaction
+                this.status = result.status
+                this.createdAt = result.createdAt || null
+                this.signedAt = result.signedAt || null
+                this.origin = result.origin || null
+                try {
+                    this.txParsed = parsePreparedTransaction(this.tx)
+                } catch (error) {
+                    console.error('Error parsing prepared transaction:', error)
+                    this.txParsed = null
+                }
+            })
+        userClient.request('listWallets', []).then((wallets) => {
+            this.partyId =
+                wallets.find((w) => w.primary === true)?.partyId || ''
+        })
     }
 
     private async handleExecute() {
@@ -187,7 +233,9 @@ export class ApproveUi extends LitElement {
                 preparedTransaction: this.tx,
             }
 
-            const userClient = createUserClient(stateManager.accessToken.get())
+            const userClient = await createUserClient(
+                stateManager.accessToken.get()
+            )
             const { signature, signedBy } = await userClient.request(
                 'sign',
                 signRequest
@@ -203,6 +251,8 @@ export class ApproveUi extends LitElement {
 
             this.message = 'Transaction executed successfully ✅'
             this.messageType = 'info'
+            // This prevents folks from clicking approve twice
+            this.status = 'executed'
 
             if (window.opener) {
                 setTimeout(() => window.close(), 1000)
@@ -224,22 +274,86 @@ export class ApproveUi extends LitElement {
 
                 <h2>Transaction Details</h2>
 
-                <h3>Transaction Hash</h3>
-                <p>${this.txHash}</p>
-
                 <h3>Command Id</h3>
                 <p>${this.commandId}</p>
 
-                <h3>Base64 Transaction</h3>
+                <h3>Status</h3>
+                <p>${this.status}</p>
+
+                ${this.createdAt
+                    ? html`<h3>Created At</h3>
+                          <p>${this.createdAt}</p>`
+                    : nothing}
+                ${this.signedAt
+                    ? html`<h3>Signed At</h3>
+                          <p>${this.signedAt}</p>`
+                    : nothing}
+                ${this.origin
+                    ? html`<h3>Origin</h3>
+                          <p>${this.origin}</p>`
+                    : nothing}
+
+                <h3>Template</h3>
+                <p>
+                    ${this.txParsed?.packageName || 'N/A'}:${this.txParsed
+                        ?.moduleName || 'N/A'}:${this.txParsed?.entityName ||
+                    'N/A'}
+                </p>
+
+                <h3>Signatories</h3>
+                <ul>
+                    ${this.txParsed?.signatories?.map(
+                        (signatory) => html`<li>${signatory}</li>`
+                    ) || html`<li>N/A</li>`}
+                </ul>
+
+                <h3>Stakeholders</h3>
+                <ul>
+                    ${this.txParsed?.stakeholders?.map(
+                        (stakeholder) => html`<li>${stakeholder}</li>`
+                    ) || html`<li>N/A</li>`}
+                </ul>
+
+                <h3>Transaction Hash</h3>
+                <p>${this.txHash}</p>
+
+                <div class="section-header">
+                    <h3>Base64 Transaction</h3>
+                    <button
+                        class="copy-btn"
+                        @click=${() => this._copyToClipboard(this.tx)}
+                        title="Copy to clipboard"
+                    >
+                        📋 Copy
+                    </button>
+                </div>
                 <div class="tx-box">${this.tx}</div>
 
-                <h3>Decoded Transaction</h3>
-                <div class="tx-box">${this.decode(this.tx)}</div>
+                <div class="section-header">
+                    <h3>Decoded Transaction</h3>
+                    <button
+                        class="copy-btn"
+                        @click=${() =>
+                            this._copyToClipboard(
+                                this.txParsed?.jsonString || ''
+                            )}
+                        title="Copy to clipboard"
+                    >
+                        📋 Copy
+                    </button>
+                </div>
+                <div class="tx-box">${this.txParsed?.jsonString || 'N/A'}</div>
 
-                <button ?disabled=${this.loading} @click=${this.handleExecute}>
-                    ${this.loading ? 'Processing...' : 'Approve'}
-                </button>
-
+                ${this.status === 'executed'
+                    ? nothing
+                    : html`
+                          <button
+                              ?disabled=${this.loading}
+                              @click=${this.handleExecute}
+                          >
+                              ${this.loading ? 'Processing...' : 'Approve'}
+                          </button>
+                      `}
                 ${this.message
                     ? html`<div class="message ${this.messageType}">
                           ${this.message}
@@ -247,5 +361,9 @@ export class ApproveUi extends LitElement {
                     : null}
             </div>
         `
+    }
+
+    private _copyToClipboard(text: string) {
+        navigator.clipboard.writeText(text)
     }
 }

@@ -1,43 +1,63 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    HttpTransport,
     isSpliceMessageEvent,
     RequestPayload,
     WalletEvent,
 } from '@canton-network/core-types'
+import { HttpTransport } from '@canton-network/core-rpc-transport'
+import SpliceWalletJSONRPCDAppAPI from '@canton-network/core-wallet-dapp-rpc-client'
 import { SpliceProviderBase } from './SpliceProvider'
 import { io, Socket } from 'socket.io-client'
-import { popupHref } from '@canton-network/core-wallet-ui-components'
+
+// Maintain a global socket instance in-memory to avoid multiple connections
+// per SpliceProviderHttp instance.
+type GatewaySocket = {
+    socket: Socket
+    url: string
+    token: string
+} | null
+
+let connection: GatewaySocket = null
 
 export class SpliceProviderHttp extends SpliceProviderBase {
     private sessionToken?: string
-    private socket: Socket
-    private transport: HttpTransport
+    private client: SpliceWalletJSONRPCDAppAPI
 
-    private openSocket(url: URL): Socket {
-        // Assumes the RPC URL is on /rpc, and the socket URL is the same but without the /rpc path.
-        const socketUrl = new URL(url.href)
-        socketUrl.pathname = ''
+    private createClient(sessionToken?: string): SpliceWalletJSONRPCDAppAPI {
+        const transport = new HttpTransport(this.url, sessionToken)
+        return new SpliceWalletJSONRPCDAppAPI(transport)
+    }
 
-        if (this.socket) {
-            console.debug('SpliceProviderHttp: closing existing socket')
-            this.socket.disconnect()
+    private openSocket(url: URL, token: string): void {
+        // Assumes the socket URI is accessed directly on the host w/o the API path.
+        const socketUri = url.origin
+
+        // Reconnect if the URL or token has changed
+        if (
+            connection &&
+            (token !== connection.token || socketUri !== connection.url)
+        ) {
+            connection.socket.disconnect()
+            connection = null
         }
 
-        const socket = io(socketUrl.href, {
-            forceNew: true,
-            auth: {
-                token: `Bearer ${this.sessionToken}`,
-            },
-        })
+        if (!connection) {
+            connection = {
+                token,
+                url: socketUri,
+                socket: io(socketUri, {
+                    auth: {
+                        token: `Bearer ${token}`,
+                    },
+                }),
+            }
 
-        socket.onAny((event, ...args) => {
-            this.emit(event, ...args)
-        })
-
-        return socket
+            connection.socket.onAny((event, ...args) => {
+                this.emit(event, ...args)
+            })
+        }
     }
 
     constructor(
@@ -46,10 +66,12 @@ export class SpliceProviderHttp extends SpliceProviderBase {
     ) {
         super()
 
-        if (sessionToken) this.sessionToken = sessionToken
-        this.transport = new HttpTransport(url, sessionToken)
+        if (sessionToken) {
+            this.sessionToken = sessionToken
+            this.openSocket(url, sessionToken)
+        }
 
-        this.socket = this.openSocket(url)
+        this.client = this.createClient(sessionToken)
 
         // Listen for the auth success event sent from the WK UI popup to the SDK running in the parent window.
         window.addEventListener('message', async (event) => {
@@ -59,26 +81,15 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 event.data.type === WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS
             ) {
                 this.sessionToken = event.data.token
-                this.transport = new HttpTransport(url, this.sessionToken)
-                console.log(
-                    `SpliceProviderHttp: setting sessionToken to ${this.sessionToken}`
-                )
-                this.openSocket(this.url)
+                this.client = this.createClient(this.sessionToken)
+                this.openSocket(this.url, event.data.token)
 
                 // We requery the status explicitly here, as it's not guaranteed that the socket will be open & authenticated
                 // before the `onConnected` event is fired from the `addSession` RPC call. The dappApi.StatusResult and
                 // dappApi.OnConnectedEvent are mapped manually to avoid dependency.
                 this.request({ method: 'status' })
                     .then((status) => {
-                        const statusResult = status as {
-                            kernel: unknown
-                            networkId?: unknown
-                        }
-                        this.emit('onConnected', {
-                            kernel: statusResult.kernel,
-                            networkId: statusResult.networkId,
-                            sessionToken: this.sessionToken,
-                        })
+                        this.emit('onConnected', status)
                     })
                     .catch((err) => {
                         console.error(
@@ -91,18 +102,11 @@ export class SpliceProviderHttp extends SpliceProviderBase {
     }
 
     public async request<T>({ method, params }: RequestPayload): Promise<T> {
-        const response = await this.transport.submit({ method, params })
-
-        if ('error' in response) throw new Error(response.error.message)
-
-        const result = response.result as T
-        if (method === 'prepareExecute') {
-            const { userUrl } = result as { userUrl?: string }
-            if (!userUrl) {
-                throw new Error('No userUrl provided in response')
-            }
-            popupHref(userUrl)
-        }
-        return result
+        return (await (
+            this.client.request as (
+                method: string,
+                params?: RequestPayload['params']
+            ) => Promise<unknown>
+        )(method, params)) as T
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Meta, StoryObj } from '@storybook/web-components-vite'
@@ -32,7 +32,16 @@ export const Default: StoryObj = {
 
 export const Popup: StoryObj = {
     render: () =>
-        html`<button class="btn btn-primary" @click=${discover}>
+        html`<button
+            class="btn btn-primary"
+            @click=${() =>
+                discover([
+                    {
+                        name: 'Wallet Gateway',
+                        rpcUrl: 'http://gateway:3030/api/v0/dapp',
+                    },
+                ])}
+        >
             connect
         </button>`,
 }

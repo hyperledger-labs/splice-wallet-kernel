@@ -12,7 +12,7 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "$ref": "#/components/schemas/StatusEvent"
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/StatusEvent"
                 }
             },
             "description": "Returns the current status of the wallet gateway session."
@@ -23,19 +23,7 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "ConnectResult",
-                    "type": "object",
-                    "properties": {
-                        "status": {
-                            "$ref": "#/components/schemas/StatusEvent"
-                        },
-                        "sessionToken": {
-                            "title": "sessionToken",
-                            "type": "string",
-                            "description": "JWT authentication token (if applicable)."
-                        }
-                    },
-                    "required": ["status", "sessionToken"]
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/StatusEvent"
                 }
             },
             "description": "Ensures ledger connectivity and returns the connected network information along with the user access token. Network ID should follow CAIP-2 and represent the synchronizerId."
@@ -46,7 +34,7 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "$ref": "#/components/schemas/Null"
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/Null"
                 }
             },
             "description": "Invoke a disconnect of the wallet gateway session."
@@ -81,13 +69,7 @@
                     "name": "params",
                     "schema": {
                         "title": "prepareReturnParams",
-                        "type": "object",
-                        "properties": {
-                            "commands": {
-                                "$ref": "#/components/schemas/JsCommands"
-                            }
-                        },
-                        "required": ["commands"]
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/JsPrepareSubmissionRequest"
                     }
                 }
             ],
@@ -97,7 +79,7 @@
                     "title": "prepareReturnResult",
                     "properties": {
                         "response": {
-                            "$ref": "#/components/schemas/JsPrepareSubmissionResponse"
+                            "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/JsPrepareSubmissionResponse"
                         }
                     },
                     "required": ["response"]
@@ -112,30 +94,43 @@
                     "name": "params",
                     "schema": {
                         "title": "prepareExecuteParams",
-                        "type": "object",
-                        "properties": {
-                            "commands": {
-                                "$ref": "#/components/schemas/JsCommands"
-                            }
-                        },
-                        "required": ["commands"]
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/JsPrepareSubmissionRequest"
                     }
                 }
             ],
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "prepareExecuteResult",
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/Null"
+                }
+            },
+            "description": "Prepares a transaction for subsequent signing & execution."
+        },
+        {
+            "name": "prepareExecuteAndWait",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "prepareExecuteParams",
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/JsPrepareSubmissionRequest"
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "prepareExecuteAndWaitResult",
                     "type": "object",
                     "properties": {
                         "tx": {
-                            "$ref": "#/components/schemas/TxChangedExecutedEvent"
+                            "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/TxChangedExecutedEvent"
                         }
                     },
                     "required": ["tx"]
                 }
             },
-            "description": "Prepares, signs, and executes a transaction."
+            "description": "Like prepareExecute, but waits for the transaction to be executed on the ledger."
         },
         {
             "name": "ledgerApi",
@@ -144,30 +139,14 @@
                     "name": "params",
                     "schema": {
                         "title": "ledgerApiParams",
-                        "type": "object",
-                        "properties": {
-                            "requestMethod": {
-                                "title": "requestMethod",
-                                "type": "string",
-                                "enum": ["GET", "POST", "PUT", "DELETE"]
-                            },
-                            "resource": {
-                                "title": "resource",
-                                "type": "string"
-                            },
-                            "body": {
-                                "title": "body",
-                                "type": "string"
-                            }
-                        },
-                        "required": ["requestMethod", "resource"]
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/LedgerApiRequest"
                     }
                 }
             ],
             "result": {
                 "name": "result",
                 "schema": {
-                    "$ref": "#/components/schemas/LedgerApiResult"
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/LedgerApiResult"
                 }
             },
             "description": "Proxy for the JSON-API endpoints. Injects authorization headers automatically."
@@ -178,7 +157,7 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "$ref": "#/components/schemas/AccountsChangedEvent"
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/AccountsChangedEvent"
                 }
             }
         },
@@ -188,7 +167,7 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "$ref": "#/components/schemas/RequestAccountsResult"
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/RequestAccountsResult"
                 }
             },
             "description": "Lists the addresses (wallets) with their properties; including which network they are associated to and with signing provider is used."
@@ -199,7 +178,7 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "$ref": "#/components/schemas/TxChangedEvent"
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/TxChangedEvent"
                 }
             }
         }
@@ -233,7 +212,7 @@
                         "description": "The URL of the Wallet Gateway."
                     },
                     "userUrl": {
-                        "$ref": "#/components/schemas/UserUrl"
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/UserUrl"
                     }
                 },
                 "required": ["id", "clientType"]
@@ -256,6 +235,88 @@
                 "format": "uri",
                 "description": "A URL that points to a user interface."
             },
+            "JsPrepareSubmissionRequest": {
+                "title": "JsPrepareSubmissionRequest",
+                "type": "object",
+                "description": "Structure representing the request for prepare and execute calls",
+                "properties": {
+                    "commandId": {
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
+                    },
+                    "commands": {
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/JsCommands"
+                    },
+                    "actAs": {
+                        "title": "actAs",
+                        "type": "array",
+                        "description": "Set of parties on whose behalf the command should be executed, if submitted. If not set, the primary wallet's party is used.",
+                        "items": {
+                            "title": "party",
+                            "type": "string"
+                        }
+                    },
+                    "readAs": {
+                        "title": "readAs",
+                        "type": "array",
+                        "description": "Set of parties that should be granted read access to the command, if submitted. If not set, no additional read parties are granted.",
+                        "items": {
+                            "title": "party",
+                            "type": "string"
+                        }
+                    },
+                    "disclosedContracts": {
+                        "title": "disclosedContracts",
+                        "type": "array",
+                        "description": "List of contract IDs to be disclosed with the command.",
+                        "items": {
+                            "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/DisclosedContract"
+                        }
+                    },
+                    "synchronizerId": {
+                        "title": "synchronizerId",
+                        "type": "string",
+                        "description": "If not set, a suitable synchronizer that this node is connected to will be chosen."
+                    },
+                    "packageIdSelectionPreference": {
+                        "title": "packageIdSelectionPreference",
+                        "type": "array",
+                        "description": "The package-id selection preference of the client for resolving package names and interface instances in command submission and interpretation",
+                        "items": {
+                            "title": "packageId",
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": ["commands"]
+            },
+            "DisclosedContract": {
+                "title": "DisclosedContract",
+                "type": "object",
+                "description": "Structure representing a disclosed contract for transaction execution",
+                "properties": {
+                    "templateId": {
+                        "title": "templateId",
+                        "type": "string",
+                        "description": "The template identifier of the disclosed contract."
+                    },
+                    "contractId": {
+                        "title": "contractId",
+                        "type": "string",
+                        "description": "The unique identifier of the disclosed contract."
+                    },
+                    "createdEventBlob": {
+                        "title": "createdEventBlob",
+                        "type": "string",
+                        "description": "The blob data of the created event for the disclosed contract."
+                    },
+                    "synchronizerId": {
+                        "title": "synchronizerId",
+                        "type": "string",
+                        "description": "The synchronizer identifier associated with the disclosed contract."
+                    }
+                },
+                "required": ["createdEventBlob"]
+            },
             "JsCommands": {
                 "title": "JsCommands",
                 "type": "object",
@@ -277,6 +338,27 @@
                         "description": "The hash of the prepared transaction."
                     }
                 }
+            },
+            "LedgerApiRequest": {
+                "title": "LedgerApiRequest",
+                "type": "object",
+                "description": "Ledger API request structure",
+                "properties": {
+                    "requestMethod": {
+                        "title": "requestMethod",
+                        "type": "string",
+                        "enum": ["GET", "POST", "PUT", "DELETE"]
+                    },
+                    "resource": {
+                        "title": "resource",
+                        "type": "string"
+                    },
+                    "body": {
+                        "title": "body",
+                        "type": "string"
+                    }
+                },
+                "required": ["requestMethod", "resource"]
             },
             "AccountsChangedEvent": {
                 "title": "AccountsChangedEvent",
@@ -312,7 +394,7 @@
                         "description": "The status of the transaction."
                     },
                     "commandId": {
-                        "$ref": "#/components/schemas/CommandId"
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
                     }
                 },
                 "required": ["status", "commandId"]
@@ -354,10 +436,10 @@
                         "description": "The status of the transaction."
                     },
                     "commandId": {
-                        "$ref": "#/components/schemas/CommandId"
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
                     },
                     "payload": {
-                        "$ref": "#/components/schemas/TxChangedSignedPayload"
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/TxChangedSignedPayload"
                     }
                 },
                 "required": ["status", "commandId", "payload"]
@@ -393,10 +475,10 @@
                         "description": "The status of the transaction."
                     },
                     "commandId": {
-                        "$ref": "#/components/schemas/CommandId"
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
                     },
                     "payload": {
-                        "$ref": "#/components/schemas/TxChangedExecutedPayload"
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/TxChangedExecutedPayload"
                     }
                 },
                 "required": ["status", "commandId", "payload"]
@@ -414,7 +496,7 @@
                         "description": "The status of the transaction."
                     },
                     "commandId": {
-                        "$ref": "#/components/schemas/CommandId"
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
                     }
                 },
                 "required": ["status", "commandId"]
@@ -424,16 +506,16 @@
                 "description": "Event emitted when a transaction changes.",
                 "oneOf": [
                     {
-                        "$ref": "#/components/schemas/TxChangedPendingEvent"
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/TxChangedPendingEvent"
                     },
                     {
-                        "$ref": "#/components/schemas/TxChangedSignedEvent"
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/TxChangedSignedEvent"
                     },
                     {
-                        "$ref": "#/components/schemas/TxChangedExecutedEvent"
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/TxChangedExecutedEvent"
                     },
                     {
-                        "$ref": "#/components/schemas/TxChangedFailedEvent"
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/TxChangedFailedEvent"
                     }
                 ]
             },
@@ -442,20 +524,70 @@
                 "type": "object",
                 "properties": {
                     "kernel": {
-                        "$ref": "#/components/schemas/KernelInfo"
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/KernelInfo"
                     },
                     "isConnected": {
                         "title": "isConnected",
                         "type": "boolean",
+                        "description": "Whether or not the user is authenticated with the Wallet."
+                    },
+                    "isNetworkConnected": {
+                        "title": "isNetworkConnected",
+                        "type": "boolean",
                         "description": "Whether or not a connection to a network is established."
                     },
-                    "networkId": {
-                        "title": "networkId",
+                    "networkReason": {
+                        "title": "networkReason",
                         "type": "string",
-                        "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
+                        "description": "If not connected to a network, the reason why."
+                    },
+                    "network": {
+                        "title": "network",
+                        "type": "object",
+                        "description": "Network information, if connected to a network.",
+                        "properties": {
+                            "networkId": {
+                                "title": "networkId",
+                                "type": "string",
+                                "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
+                            },
+                            "ledgerApi": {
+                                "title": "LedgerApiConfig",
+                                "type": "object",
+                                "description": "Ledger API configuration.",
+                                "properties": {
+                                    "baseUrl": {
+                                        "title": "baseUrl",
+                                        "type": "string",
+                                        "format": "uri",
+                                        "description": "The base URL of the ledger API."
+                                    }
+                                },
+                                "required": ["baseUrl"]
+                            }
+                        },
+                        "required": ["networkId"]
+                    },
+                    "session": {
+                        "title": "session",
+                        "type": "object",
+                        "description": "Session information, if authenticated.",
+                        "properties": {
+                            "accessToken": {
+                                "title": "accessToken",
+                                "type": "string",
+                                "description": "JWT authentication token."
+                            },
+                            "userId": {
+                                "title": "userId",
+                                "type": "string",
+                                "description": "The user identifier."
+                            }
+                        },
+                        "required": ["accessToken", "userId"]
                     }
                 },
-                "required": ["kernel", "isConnected"]
+                "required": ["kernel", "isConnected", "isNetworkConnected"]
             }
         }
     }

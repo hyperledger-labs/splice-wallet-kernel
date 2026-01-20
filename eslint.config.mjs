@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import js from '@eslint/js'
@@ -33,7 +33,7 @@ export default defineConfig([
             'core/ledger-client/src/generated-clients',
             'damljs/**',
             'docs/wallet-integration-guide/examples/**',
-            'example/playwright-report/**',
+            'examples/ping/playwright-report/**',
         ],
     },
     {

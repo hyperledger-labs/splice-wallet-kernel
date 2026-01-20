@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs'
@@ -10,25 +10,28 @@ const dir = path.join(
     getRepoRoot(),
     'docs/wallet-integration-guide/examples/scripts'
 )
+// do not run tests from these directory names; full name match
+const EXCEPTIONS_DIR_NAMES = ['stress']
 
 // do not run these tests; exceptions can be full filename or just any length subset of its starting characters
-const exceptions = [
+const EXCEPTIONS_FILE_NAMES = [
     '01-auth.ts',
     '13-auth-tls.ts',
     '05-',
     '01-one-step',
     '02-one-step',
-    '01-party-stress-',
-    '02-active-contracts-stress-test',
 ]
 
 function getScriptsRecursive(currentDir: string): string[] {
     return fs.readdirSync(currentDir).flatMap((f) => {
         const fullPath = path.join(currentDir, f)
         if (fs.statSync(fullPath).isDirectory()) {
+            if (EXCEPTIONS_DIR_NAMES.includes(path.basename(fullPath)))
+                return []
             return getScriptsRecursive(fullPath)
         }
-        return f.endsWith('.ts') && !exceptions.find((e) => f.startsWith(e))
+        return f.endsWith('.ts') &&
+            !EXCEPTIONS_FILE_NAMES.find((e) => f.startsWith(e))
             ? [path.relative(dir, fullPath)]
             : []
     })

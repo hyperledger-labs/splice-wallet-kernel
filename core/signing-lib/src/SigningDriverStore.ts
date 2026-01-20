@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 /**
@@ -13,6 +13,10 @@ export interface SigningDriverStore {
         keyId: string
     ): Promise<SigningKey | undefined>
     getSigningKeyByPublicKey(publicKey: string): Promise<SigningKey | undefined>
+    getSigningKeyByName(
+        userId: string,
+        name: string
+    ): Promise<SigningKey | undefined>
     listSigningTransactionsByTxIdsAndPublicKeys(
         txIds: string[],
         publicKeys: string[]
@@ -82,8 +86,9 @@ export interface SigningTransaction {
     publicKey: string
     status: SigningDriverStatus
     metadata?: Record<string, unknown> // Driver-specific data
-    createdAt: string
-    updatedAt: string
+    createdAt: Date
+    updatedAt: Date
+    signedAt?: Date
 }
 
 /**

@@ -15,7 +15,7 @@ export default async function () {
     const myParty = global.EXISTING_PARTY_1
     const offset = (await sdk.userLedger!.ledgerEnd()!).offset
     //we use holdings as an example here
-    const myTemplateId = '#AdminWorkflows:Canton.Internal.Ping:Ping'
+    const myTemplateId = '#splice-amulet:Splice.Amulet:Amulet'
 
     await sdk.userLedger!.activeContracts({
         offset,

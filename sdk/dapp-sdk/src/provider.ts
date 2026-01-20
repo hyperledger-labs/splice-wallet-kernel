@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -6,13 +6,7 @@ import {
     SpliceProvider,
     EventListener,
 } from '@canton-network/core-splice-provider'
-import {
-    DiscoverResult,
-    RequestPayload,
-    SpliceMessage,
-    WalletEvent,
-} from '@canton-network/core-types'
-import { popupHref } from '@canton-network/core-wallet-ui-components'
+import { DiscoverResult, RequestPayload } from '@canton-network/core-types'
 import {
     SpliceProviderHttp,
     SpliceProviderWindow,
@@ -25,6 +19,8 @@ import {
     PrepareExecuteParams,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { ErrorCode } from './error.js'
+import { Session, StatusEvent } from './dapp-api/rpc-gen/typings'
+import { popup } from '@canton-network/core-wallet-ui-components'
 
 /**
  * The Provider class abstracts over the different types of SpliceProviders (Window and HTTP).
@@ -32,35 +28,28 @@ import { ErrorCode } from './error.js'
  */
 export class Provider implements SpliceProvider {
     private providerType: ProviderType
-    private httpProvider?: SpliceProvider
-    private windowProvider?: SpliceProvider
+    private provider: SpliceProvider
 
-    constructor({ walletType, url }: DiscoverResult, sessionToken?: string) {
+    constructor({ walletType, url }: DiscoverResult, session?: Session) {
         if (walletType == 'extension') {
             this.providerType = ProviderType.WINDOW
-            this.windowProvider = new SpliceProviderWindow()
+            this.provider = new SpliceProviderWindow()
         } else if (walletType == 'remote') {
             this.providerType = ProviderType.HTTP
-            this.httpProvider = new SpliceProviderHttp(
+            this.provider = new SpliceProviderHttp(
                 new URL(url),
-                sessionToken
+                session?.accessToken
             )
         } else {
             throw new Error(`Unsupported wallet type ${walletType}`)
         }
     }
 
-    private getProvider(): SpliceProvider {
-        if (this.providerType === ProviderType.WINDOW)
-            return this.windowProvider!
-        return this.httpProvider!
-    }
-
     request<T>(args: RequestPayload): Promise<T> {
         if (this.providerType === ProviderType.WINDOW)
-            return this.getProvider().request(args)
+            return this.provider.request(args)
 
-        const controller = dappController(this.getProvider())
+        const controller = dappController(this.provider)
         switch (args.method) {
             case 'status':
                 return controller.status() as Promise<T>
@@ -78,6 +67,10 @@ export class Provider implements SpliceProvider {
                 return controller.prepareExecute(
                     args.params as PrepareExecuteParams
                 ) as Promise<T>
+            case 'prepareExecuteAndWait':
+                return controller.prepareExecuteAndWait(
+                    args.params as PrepareExecuteParams
+                ) as Promise<T>
             case 'prepareReturn':
                 return controller.prepareReturn(
                     args.params as dappAPI.PrepareReturnParams
@@ -90,99 +83,67 @@ export class Provider implements SpliceProvider {
     }
 
     on<T>(event: string, listener: EventListener<T>): SpliceProvider {
-        return this.getProvider().on(event, listener)
+        return this.provider.on(event, listener)
     }
 
     emit<T>(event: string, ...args: T[]): boolean {
-        return this.getProvider().emit(event, args)
+        return this.provider.emit(event, args)
     }
 
     removeListener<T>(
         event: string,
         listenerToRemove: EventListener<T>
     ): SpliceProvider {
-        return this.getProvider().removeListener(event, listenerToRemove)
+        return this.provider.removeListener(event, listenerToRemove)
     }
 }
 
-let kernelUiPopup: WindowProxy | null = null
-
-export const openKernelUserUI = (
-    walletType: DiscoverResult['walletType'],
-    userUrl: string
-) => {
-    switch (walletType) {
-        case 'remote':
-            // Focus the existing popup if it's already open
-            if (kernelUiPopup === null || kernelUiPopup.closed) {
-                popupHref(new URL(userUrl)).then((window) => {
-                    kernelUiPopup = window
-                })
-            } else {
-                kernelUiPopup.focus()
-            }
-            break
-        case 'extension': {
-            const msg: SpliceMessage = {
-                type: WalletEvent.SPLICE_WALLET_EXT_OPEN,
-                url: userUrl,
-            }
-            window.postMessage(msg, '*')
-            break
-        }
-    }
-}
-
-export const closeKernelUserUI = () => {
-    if (kernelUiPopup && !kernelUiPopup.closed) {
-        kernelUiPopup.close()
-        kernelUiPopup = null
-    }
-}
-
-const withTimeout = (reject: (reason?: unknown) => void) =>
+const withTimeout = (
+    reject: (reason?: unknown) => void,
+    details: string,
+    timeoutMs: number = 10 * 1000 // default to 10 seconds
+) =>
     setTimeout(() => {
-        console.warn('SDK: Timeout waiting for connection')
+        console.warn(`SDK: ${details}`)
         reject({
             status: 'error',
             error: ErrorCode.Timeout,
-            details: 'Timeout waiting for connection',
+            details,
         })
-    }, 10 * 1000) // 10 seconds
+    }, timeoutMs)
 
 // Remote dApp API Server which wraps the Remote-dApp API Server with promises
 export const dappController = (provider: SpliceProvider) =>
     buildController({
-        connect: async () => {
-            const response =
-                await provider.request<dappRemoteAPI.ConnectResult>({
-                    method: 'connect',
-                })
+        connect: async (): Promise<StatusEvent> => {
+            const response = await provider.request<dappRemoteAPI.StatusEvent>({
+                method: 'connect',
+            })
 
-            if (!response.status.isConnected)
-                openKernelUserUI('remote', response.status.userUrl)
-
-            const promise = new Promise<dappAPI.ConnectResult>(
-                (resolve, reject) => {
-                    const timeout = withTimeout(reject)
-                    provider.on<dappRemoteAPI.OnConnectedEvent>(
-                        'onConnected',
-                        (event) => {
-                            clearTimeout(timeout)
-                            const result: dappAPI.ConnectResult = {
-                                sessionToken: event.sessionToken ?? '',
-                                status: {
-                                    ...event,
-                                    isConnected: true,
-                                },
+            if (response.session) {
+                return response
+            } else {
+                popup.open(response.userUrl ?? '')
+                const promise = new Promise<dappAPI.StatusEvent>(
+                    (resolve, reject) => {
+                        // 5 minutes timeout
+                        const timeout = withTimeout(
+                            reject,
+                            'Timeout waiting for connection',
+                            5 * 60 * 1000
+                        )
+                        provider.on<dappRemoteAPI.StatusEvent>(
+                            'onConnected',
+                            (event) => {
+                                clearTimeout(timeout)
+                                resolve(event)
                             }
-                            resolve(result)
-                        }
-                    )
-                }
-            )
+                        )
+                    }
+                )
 
-            return promise
+                return promise
+            }
         },
         disconnect: async () => {
             return await provider.request<dappRemoteAPI.Null>({
@@ -206,24 +167,51 @@ export const dappController = (provider: SpliceProvider) =>
                     params,
                 })
 
-            if (!response.isConnected)
-                openKernelUserUI('remote', response.userUrl)
+            if (response.userUrl) popup.open(response.userUrl)
 
-            const promise = new Promise<dappAPI.PrepareExecuteResult>(
+            return null
+        },
+        prepareExecuteAndWait: async (
+            params: PrepareExecuteParams
+        ): Promise<dappAPI.PrepareExecuteAndWaitResult> => {
+            const response =
+                await provider.request<dappRemoteAPI.PrepareExecuteResult>({
+                    method: 'prepareExecute',
+                    params,
+                })
+
+            if (response.userUrl) popup.open(response.userUrl)
+
+            const promise = new Promise<dappAPI.PrepareExecuteAndWaitResult>(
                 (resolve, reject) => {
-                    const timeout = withTimeout(reject)
-                    provider.on<dappRemoteAPI.TxChangedEvent>(
-                        'onTxChanged',
-                        (event) => {
-                            console.log('SDK: TxChangedEvent', event)
-                            clearTimeout(timeout)
+                    const timeout = withTimeout(
+                        reject,
+                        'Timed out waiting for transaction approval'
+                    )
 
-                            if (event.status === 'executed') {
-                                resolve({
-                                    tx: event,
-                                })
-                            }
+                    // TODO: ensure that the event corresponds to the correct transaction
+                    const listener = (event: dappRemoteAPI.TxChangedEvent) => {
+                        if (event.status === 'failed') {
+                            provider.removeListener('txChanged', listener)
+                            clearTimeout(timeout)
+                            reject({
+                                status: 'error',
+                                error: ErrorCode.TransactionFailed,
+                                details: `Transaction with commandId ${event.commandId} failed to execute.`,
+                            })
                         }
+                        if (event.status === 'executed') {
+                            provider.removeListener('txChanged', listener)
+                            clearTimeout(timeout)
+                            resolve({
+                                tx: event,
+                            })
+                        }
+                    }
+
+                    provider.on<dappRemoteAPI.TxChangedEvent>(
+                        'txChanged',
+                        listener
                     )
                 }
             )

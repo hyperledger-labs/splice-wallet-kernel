@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { UserId } from '@canton-network/core-wallet-auth'
@@ -36,6 +36,7 @@ export interface SigningTransactionTable {
     metadata: string | null
     createdAt: string
     updatedAt: string
+    signedAt: string | null
 }
 
 export interface SigningDriverConfigTable {
@@ -116,8 +117,9 @@ export const fromSigningTransaction = (
         metadata: transaction.metadata
             ? JSON.stringify(transaction.metadata)
             : null,
-        createdAt: transaction.createdAt,
-        updatedAt: transaction.updatedAt,
+        createdAt: transaction.createdAt.toISOString(),
+        updatedAt: transaction.updatedAt.toISOString(),
+        signedAt: transaction.signedAt?.toISOString() || null,
     }
 }
 
@@ -140,6 +142,7 @@ export const toSigningTransaction = (
             : {}),
         createdAt: table.createdAt,
         updatedAt: table.updatedAt,
+        ...(table.signedAt ? { signedAt: new Date(table.signedAt) } : {}),
     }
 }
 

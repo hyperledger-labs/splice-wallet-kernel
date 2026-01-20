@@ -1,9 +1,8 @@
 {
     "name": "@canton-network/core-splice-provider",
-    "version": "0.10.0",
+    "version": "0.20.1",
     "type": "module",
     "description": "A JavaScript Splice Provider API (EIP-1193 compliant).",
-    "repository": "github:hyperledger-labs/splice-wallet-kernel",
     "license": "Apache-2.0",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
     "packageManager": "yarn@4.9.4",
@@ -25,18 +24,25 @@
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "devDependencies": {
-        "tsup": "^8.5.0",
-        "typescript": "^5.8.3"
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3"
     },
     "dependencies": {
+        "@canton-network/core-rpc-transport": "workspace:^",
         "@canton-network/core-types": "workspace:^",
+        "@canton-network/core-wallet-dapp-rpc-client": "workspace:^",
         "@canton-network/core-wallet-ui-components": "workspace:^",
-        "socket.io-client": "^4.8.1"
+        "socket.io-client": "^4.8.3"
     },
     "files": [
         "dist/**"
     ],
     "publishConfig": {
         "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
+        "directory": "core/splice-provider"
     }
 }
