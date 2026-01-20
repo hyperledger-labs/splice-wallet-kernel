@@ -102,7 +102,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
                         publicKey: params.keyIdentifier.publicKey,
                         createdAt: now.toISOString(),
                         status: 'signed',
-                        updatedAt: now,
+                        updatedAt: now.toISOString(),
                         signedAt: now.toISOString(),
                     }
 

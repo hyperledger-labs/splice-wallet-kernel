@@ -86,9 +86,9 @@ export interface SigningTransaction {
     publicKey: string
     status: SigningDriverStatus
     metadata?: Record<string, unknown> // Driver-specific data
-    createdAt: Date
-    updatedAt: Date
-    signedAt?: Date
+    createdAt: string
+    updatedAt: string
+    signedAt?: string
 }
 
 /**

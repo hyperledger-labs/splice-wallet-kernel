@@ -117,9 +117,9 @@ export const fromSigningTransaction = (
         metadata: transaction.metadata
             ? JSON.stringify(transaction.metadata)
             : null,
-        createdAt: transaction.createdAt.toISOString(),
-        updatedAt: transaction.updatedAt.toISOString(),
-        signedAt: transaction.signedAt?.toISOString() || null,
+        createdAt: transaction.createdAt,
+        updatedAt: transaction.updatedAt,
+        signedAt: transaction.signedAt || null,
     }
 }
 
@@ -142,7 +142,7 @@ export const toSigningTransaction = (
             : {}),
         createdAt: table.createdAt,
         updatedAt: table.updatedAt,
-        ...(table.signedAt ? { signedAt: new Date(table.signedAt) } : {}),
+        ...(table.signedAt ? { signedAt: table.signedAt } : {}),
     }
 }
 
