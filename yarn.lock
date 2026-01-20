@@ -1939,6 +1939,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/core-wallet-test-utils@workspace:^, @canton-network/core-wallet-test-utils@workspace:core/wallet-test-utils":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-wallet-test-utils@workspace:core/wallet-test-utils"
+  dependencies:
+    "@canton-network/core-types": "workspace:^"
+    "@canton-network/wallet-sdk": "workspace:^"
+    "@playwright/test": "npm:^1.57.0"
+    pino: "npm:^10.1.1"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
+    uuid: "npm:^11.1.0"
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/core-wallet-ui-components@workspace:^, @canton-network/core-wallet-ui-components@workspace:core/wallet-ui-components":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-ui-components@workspace:core/wallet-ui-components"
@@ -2000,6 +2014,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/example-ping@workspace:examples/ping"
   dependencies:
+    "@canton-network/core-wallet-test-utils": "workspace:^"
     "@canton-network/dapp-sdk": "workspace:^"
     "@eslint/js": "npm:^9.39.2"
     "@playwright/test": "npm:^1.57.0"
@@ -2011,6 +2026,7 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^7.0.1"
     eslint-plugin-react-refresh: "npm:^0.4.26"
     globals: "npm:^17.0.0"
+    nx: "npm:^22.3.3"
     react: "npm:^19.2.3"
     react-dom: "npm:^19.2.3"
     typescript: "npm:~5.9.3"
@@ -2027,6 +2043,7 @@ __metadata:
     "@canton-network/core-splice-client": "workspace:^"
     "@canton-network/core-token-standard": "workspace:^"
     "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-test-utils": "workspace:^"
     "@canton-network/dapp-sdk": "workspace:^"
     "@canton-network/wallet-sdk": "workspace:^"
     "@emotion/react": "npm:^11.14.0"
