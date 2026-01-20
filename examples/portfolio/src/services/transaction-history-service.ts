@@ -262,11 +262,11 @@ export class TransactionHistoryService {
         this.logger.debug({ request }, 'query')
 
         if (request === null) {
-            this.fetchOlder()
+            await this.fetchOlder()
         } else if ('endInclusive' in request) {
-            this.fetchOlder()
+            await this.fetchOlder()
         } else if ('beginExclusive' in request) {
-            this.fetchMoreRecent()
+            await this.fetchMoreRecent()
         }
 
         if (this.beginExclusive === undefined) {
