@@ -20,7 +20,12 @@
         "db:migrate:up": "tsx ./src/index -c ../test/config.json db up",
         "db:migrate:down": "tsx ./src/index -c ../test/config.json db down",
         "db:migrate:status": "tsx ./src/index -c ../test/config.json db status",
-        "db:migrate:reset": "tsx ./src/index -c ../test/config.json db reset"
+        "db:migrate:reset": "tsx ./src/index -c ../test/config.json db reset",
+        "signing-db:bootstrap": "tsx ./src/index -c ../test/config.json signing-db bootstrap",
+        "signing-db:migrate:up": "tsx ./src/index -c ../test/config.json signing-db up",
+        "signing-db:migrate:down": "tsx ./src/index -c ../test/config.json signing-db down",
+        "signing-db:migrate:status": "tsx ./src/index -c ../test/config.json signing-db status",
+        "signing-db:migrate:reset": "tsx ./src/index -c ../test/config.json signing-db reset"
     },
     "keywords": [],
     "author": "",
