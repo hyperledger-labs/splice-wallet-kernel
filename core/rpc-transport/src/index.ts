@@ -91,24 +91,17 @@ export class HttpTransport implements RpcTransport {
     protected async handleErrorResponse(response: Response): Promise<never> {
         const body = await response.text()
 
-        try {
-            // if the response uses the RPC error format, throw it as is
-            if (ErrorResponse.safeParse(JSON.parse(body)).success) {
-                throw JSON.parse(body)
-            } else {
-                throw new Error(
-                    `HTTP request failed: ${response.status}, text: ${body} `
-                )
-            }
-        } catch (e) {
-            console.error(e)
-            throw {
-                error: {
-                    code: response.status,
-                    message: response.statusText,
-                    data: body,
-                },
-            }
+        // if the response uses the RPC error format, throw it as is
+        if (ErrorResponse.safeParse(JSON.parse(body)).success) {
+            throw JSON.parse(body)
+        }
+
+        throw {
+            error: {
+                code: response.status,
+                message: response.statusText,
+                data: body,
+            },
         }
     }
 
