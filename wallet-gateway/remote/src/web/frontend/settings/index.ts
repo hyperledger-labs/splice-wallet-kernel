@@ -182,7 +182,6 @@ export class UserUiSettings extends LitElement {
         if (!this.client) {
             return html``
         }
-        const client = this.client
 
         return html`
             <div>
@@ -190,7 +189,6 @@ export class UserUiSettings extends LitElement {
             </div>
             <wg-sessions .sessions=${this.sessions}></wg-sessions>
 
-            <wg-wallets-sync .client=${client}></wg-wallets-sync>
             <wg-networks
                 .networks=${this.networks}
                 .activeSessions=${this.sessions}
