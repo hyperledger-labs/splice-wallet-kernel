@@ -798,7 +798,13 @@ export const userController = (
                 //we only want to automatically perform a sync if it is the first time a session is created
                 const wallets = await store.getWallets()
                 if (wallets.length == 0) {
-                    await this.syncWallets()
+                    try {
+                        await this.syncWallets()
+                    } catch (error) {
+                        logger.error(
+                            `Failed to sync wallets on session creation: ${error}`
+                        )
+                    }
                 }
 
                 return Promise.resolve({
