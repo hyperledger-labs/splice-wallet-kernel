@@ -179,8 +179,8 @@ export class WgWalletsSync extends BaseElement {
                     title="${this.isSyncing
                         ? 'Syncing wallets...'
                         : this.isSyncNeeded
-                          ? 'Wallets need sync - click to sync'
-                          : 'Wallets in sync'}"
+                          ? 'need sync'
+                          : 'in sync'}"
                 >
                     ${syncIcon}
                 </button>
