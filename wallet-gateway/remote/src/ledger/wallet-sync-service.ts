@@ -223,27 +223,34 @@ export class WalletSyncService {
 
     async isWalletSyncNeeded(): Promise<boolean> {
         try {
-            const existingWallets = await this.store.getWallets()
+            const network = await this.store.getCurrentNetwork()
 
-            // Check if there are any disabled wallets
+            // Only check wallets in the current network
+            const existingWallets = await this.store.getWallets({
+                networkIds: [network.id],
+            })
+
+            // Check if there are any disabled wallets in the current network
             const hasDisabledWallets = existingWallets.some((w) => w.disabled)
             if (hasDisabledWallets) {
                 return true
             }
 
-            // Check if there are parties on ledger that aren't in store
+            // Check if there are parties on ledger that aren't in store for this network
             const partiesWithRights = await this.getPartiesRightsMap()
 
             // Treat disabled wallets as if they don't exist, so they can be re-synced
             const enabledWallets = existingWallets.filter((w) => !w.disabled)
-            const existingPartyIds = new Set(
-                enabledWallets.map((w) => w.partyId)
+            // Track by (partyId, networkId) combination to handle multi-hosted parties
+            const existingPartyNetworkPairs = new Set(
+                enabledWallets.map((w) => `${w.partyId}:${w.networkId}`)
             )
 
-            // Check if there are parties on ledger that aren't in store
-            return partiesWithRights
-                .keys()
-                .some((party) => !existingPartyIds.has(party))
+            // Check if there are parties on ledger that aren't in store for this network
+            return Array.from(partiesWithRights.keys()).some(
+                (party) =>
+                    !existingPartyNetworkPairs.has(`${party}:${network.id}`)
+            )
         } catch (err) {
             this.logger.error({ err }, 'Error checking if sync is needed')
             // On error, return false to avoid showing sync button unnecessarily
