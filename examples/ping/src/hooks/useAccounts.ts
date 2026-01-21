@@ -10,18 +10,11 @@ export function useAccounts(status?: sdk.dappAPI.StatusEvent) {
 
     const { setErrorMsg } = useContext(ErrorContext)
 
-    const currentNetworkId = status?.network?.networkId
-
     useEffect(() => {
         if (status?.isConnected) {
             sdk.requestAccounts()
                 .then((wallets) => {
-                    const filteredWallets = currentNetworkId
-                        ? wallets.filter(
-                              (wallet) => wallet.networkId === currentNetworkId
-                          )
-                        : wallets
-                    setAccounts(filteredWallets)
+                    setAccounts(wallets)
                 })
                 .catch((err) => {
                     console.error('Error requesting wallets:', err)
@@ -30,18 +23,13 @@ export function useAccounts(status?: sdk.dappAPI.StatusEvent) {
                     )
                 })
         }
-    }, [status, currentNetworkId, setErrorMsg])
+    }, [status, setErrorMsg])
 
     useEffect(() => {
         if (status?.isConnected) {
             const listener = (event: sdk.dappAPI.AccountsChangedEvent) => {
                 console.log('[use-accounts] Accounts changed:', event)
-                const filteredWallets = currentNetworkId
-                    ? event.filter(
-                          (wallet) => wallet.networkId === currentNetworkId
-                      )
-                    : event
-                setAccounts(filteredWallets)
+                setAccounts(event)
             }
 
             sdk.onAccountsChanged(listener)
@@ -50,7 +38,7 @@ export function useAccounts(status?: sdk.dappAPI.StatusEvent) {
                 sdk.removeOnAccountsChanged(listener)
             }
         }
-    }, [status, currentNetworkId, setAccounts])
+    }, [status, setAccounts])
 
     return accounts
 }

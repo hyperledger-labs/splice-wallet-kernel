@@ -214,10 +214,21 @@ export class ApproveUi extends LitElement {
                     this.txParsed = null
                 }
             })
-        userClient.request('listWallets', []).then((wallets) => {
-            this.partyId =
-                wallets.find((w) => w.primary === true)?.partyId || ''
-        })
+
+        const sessions = await userClient
+            .request('listSessions')
+            .catch(() => ({ sessions: [] }))
+        const currentSession = sessions?.sessions?.[0]
+        const networkId =
+            currentSession?.network?.id || stateManager.networkId.get()
+
+        const filter = networkId ? { networkIds: [networkId] } : undefined
+        userClient
+            .request('listWallets', filter ? { filter } : {})
+            .then((wallets) => {
+                this.partyId =
+                    wallets.find((w) => w.primary === true)?.partyId || ''
+            })
     }
 
     private async handleExecute() {
