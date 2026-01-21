@@ -804,8 +804,11 @@ export const userController = (
                 })
 
                 //we only want to automatically perform a sync if it is the first time a session is created
-                const wallets = await store.getWallets()
+                const wallets = await store.getWallets({
+                    networkIds: [network.id],
+                })
                 if (wallets.length == 0) {
+                    console.log('happens')
                     const adminAccessTokenProvider = new AuthTokenProvider(
                         idp,
                         network.auth,
