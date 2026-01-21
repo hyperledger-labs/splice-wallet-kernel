@@ -58,7 +58,10 @@
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
         "@canton-network/wallet-sdk": "workspace:^",
+        "bip39": "^3.1.0",
         "pino": "10.1.1",
+        "tweetnacl": "^1.0.3",
+        "tweetnacl-util": "^0.15.1",
         "uuid": "^11.1.0"
     },
     "nx": {

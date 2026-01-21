@@ -1,86 +1,9 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { pino } from 'pino'
 import { test, expect, Page } from '@playwright/test'
-
-const connectToLocalNet = async (dappPage: Page): Promise<Page> => {
-    const connectButton = dappPage.getByRole('button', {
-        name: 'connect to Wallet Gateway',
-    })
-    await expect(connectButton).toBeVisible()
-
-    const discoverPopupPromise = dappPage.waitForEvent('popup')
-    await connectButton.click()
-
-    const popup = await discoverPopupPromise
-
-    await popup.getByRole('button', { name: 'Connect' }).click()
-
-    const selectNetwork = popup.locator('select#network')
-
-    const localNetOption = await selectNetwork
-        .locator('option')
-        .filter({ hasText: 'LocalNet' })
-        .first()
-        .getAttribute('value')
-    await selectNetwork.selectOption(localNetOption)
-    await popup.getByRole('button', { name: 'Connect' }).click()
-    return popup
-}
-
-const setPrimaryWallet = async (
-    popup: Page,
-    partyId: string
-): Promise<void> => {
-    // Make sure we're on the right page.
-    await popup.getByRole('button', { name: 'Toggle menu' }).click()
-    await popup.getByRole('button', { name: 'Wallets' }).click()
-    await expect(popup.getByText('Loading wallets…')).not.toBeVisible()
-
-    // Check for existing user with that party hint.
-    const wallet = popup
-        .locator('.wallet-card')
-        .filter({ hasText: partyId })
-        .first()
-    await wallet.getByRole('button', { name: 'Set Primary' }).click()
-}
-
-const createWalletIfNotExists = async (
-    popup: Page,
-    partyHint: string
-): Promise<string> => {
-    // Make sure we're on the right page.
-    await popup.getByRole('button', { name: 'Toggle menu' }).click()
-    await popup.getByRole('button', { name: 'Wallets' }).click()
-    await expect(popup.getByText('Loading wallets…')).not.toBeVisible()
-
-    // Check for existing user with that party hint.
-    const pattern = new RegExp(`${partyHint}::[0-9a-f]+`)
-    const wallets = popup.getByText(pattern)
-    const walletsCount = await wallets.count()
-    if (walletsCount > 0) {
-        const partyId = (await wallets.first().innerText()).match(pattern)?.[0]
-        if (partyId === undefined) {
-            throw new Error(`did not find partyID for ${partyHint}`)
-        }
-        return partyId
-    }
-
-    // Create if necessary.
-    await popup.getByRole('button', { name: 'Create New' }).click()
-    await popup.getByRole('textbox', { name: 'Party ID hint:' }).fill(partyHint)
-    await popup.getByLabel('Signing Provider:').selectOption('participant')
-    await popup.getByRole('button', { name: 'Create' }).click()
-    await popup.getByRole('button', { name: 'Close' }).click()
-
-    const partyId = (await popup.getByText(pattern).first().innerText()).match(
-        pattern
-    )?.[0]
-    if (partyId === undefined) {
-        throw new Error(`did not find partyID for ${partyHint}`)
-    }
-    return partyId
-}
+import { WalletGateway, OTCTrade } from '@canton-network/core-wallet-test-utils'
 
 const openTab = (
     page: Page,
@@ -90,6 +13,7 @@ const openTab = (
         | 'Pending Transfers'
         | 'Transaction History'
         | 'Registry Settings'
+        | 'Allocations'
 ): Promise<void> => page.getByRole('tab', { name: tab, exact: true }).click()
 
 const setupRegistry = async (page: Page): Promise<void> => {
@@ -101,38 +25,57 @@ const setupRegistry = async (page: Page): Promise<void> => {
     await expect(page.getByText('DSO::')).toBeVisible()
 }
 
-test('two step transfer', async ({ page: dappPage }) => {
-    await dappPage.goto('http://localhost:8081/old')
-    await expect(dappPage).toHaveTitle(/dApp Portfolio/)
-
-    await setupRegistry(dappPage)
-
-    let popup = await connectToLocalNet(dappPage)
-    const alice = await createWalletIfNotExists(popup, 'alice')
-    console.log('aliceParty', alice)
-    const bob = await createWalletIfNotExists(popup, 'bob')
-    console.log('bobParty', bob)
-
-    // Refresh the popup reference whenever a new popup appears.
-    dappPage.on('popup', (p) => (popup = p))
-
-    await setPrimaryWallet(popup, alice)
+const tap = async (
+    dappPage: Page,
+    wg: WalletGateway,
+    amount: string
+): Promise<void> => {
     await openTab(dappPage, 'Holdings')
     const tapForm = dappPage.locator('form.tap')
     const selectTapInstrument = tapForm.getByRole('combobox')
-    let amtOption = await selectTapInstrument
+    const amtOption = await selectTapInstrument
         .locator('option')
         .filter({ hasText: 'AMT' })
         .first()
         .getAttribute('value')
     selectTapInstrument.selectOption(amtOption)
-    await tapForm.getByRole('spinbutton').fill('1234')
-    await dappPage.getByRole('button', { name: 'TAP' }).click()
+    await tapForm.getByRole('spinbutton').fill(amount)
+    await wg.approveTransaction(() =>
+        dappPage.getByRole('button', { name: 'TAP' }).click()
+    )
+}
 
-    await popup.getByRole('button', { name: 'Approve' }).click()
-    await expect(
-        popup.getByText('Transaction executed successfully')
-    ).toBeVisible()
+test('two step transfer', async ({ page: dappPage }) => {
+    const wg = new WalletGateway({
+        dappPage,
+        openButton: (page) =>
+            page.getByRole('button', {
+                name: 'open Wallet Gateway',
+            }),
+        connectButton: (page) =>
+            page.getByRole('button', {
+                name: 'connect to Wallet Gateway',
+            }),
+    })
+    await dappPage.goto('http://localhost:8081/old')
+    await expect(dappPage).toHaveTitle(/dApp Portfolio/)
+
+    await setupRegistry(dappPage)
+
+    await wg.connect({ network: 'LocalNet' })
+    const alice = await wg.createWalletIfNotExists({
+        partyHint: 'alice',
+        signingProvider: 'participant',
+    })
+    console.log('aliceParty', alice)
+    const bob = await wg.createWalletIfNotExists({
+        partyHint: 'bob',
+        signingProvider: 'participant',
+    })
+    console.log('bobParty', bob)
+
+    await wg.setPrimaryWallet(alice)
+    tap(dappPage, wg, '1234')
     await expect(
         dappPage.locator('li').filter({ hasText: '1234' })
     ).not.toHaveCount(0) // Use not.toHaveCount to help successive tests.
@@ -141,7 +84,7 @@ test('two step transfer', async ({ page: dappPage }) => {
     await openTab(dappPage, 'Transfer')
     const transferForm = dappPage.locator('form')
     const selectInstrument = transferForm.getByRole('combobox')
-    amtOption = await selectInstrument
+    const amtOption = await selectInstrument
         .locator('option')
         .filter({ hasText: 'AMT' })
         .first()
@@ -153,11 +96,9 @@ test('two step transfer', async ({ page: dappPage }) => {
         .fill(bob)
     await transferForm.getByLabel('Message').fill(message)
 
-    await dappPage.getByRole('button', { name: 'Transfer' }).click()
-    await popup.getByRole('button', { name: 'Approve' }).click()
-    await expect(
-        popup.getByText('Transaction executed successfully')
-    ).toBeVisible()
+    await wg.approveTransaction(() =>
+        dappPage.getByRole('button', { name: 'Transfer' }).click()
+    )
     await openTab(dappPage, 'Pending Transfers')
     await expect(dappPage.getByText(message)).not.toHaveCount(0)
     await expect(
@@ -170,13 +111,74 @@ test('two step transfer', async ({ page: dappPage }) => {
     await expect(openButton).toBeVisible()
     await openButton.click()
 
-    await setPrimaryWallet(popup, bob)
-    await dappPage.getByRole('button', { name: 'Accept' }).first().click()
-    await popup.getByRole('button', { name: 'Approve' }).click()
-    await expect(
-        popup.getByText('Transaction executed successfully')
-    ).toBeVisible()
+    await wg.setPrimaryWallet(bob)
+    await wg.approveTransaction(() =>
+        dappPage.getByRole('button', { name: 'Accept' }).first().click()
+    )
     await openTab(dappPage, 'Transaction History')
     await expect(dappPage.getByText('Completed')).not.toHaveCount(0)
     await expect(dappPage.getByText(message)).not.toHaveCount(0)
+})
+
+test('allocation', async ({ page: dappPage }) => {
+    const wg = new WalletGateway({
+        dappPage,
+        openButton: (page) =>
+            page.getByRole('button', {
+                name: 'open Wallet Gateway',
+            }),
+        connectButton: (page) =>
+            page.getByRole('button', {
+                name: 'connect to Wallet Gateway',
+            }),
+    })
+    await dappPage.goto('http://localhost:8081/old')
+    await expect(dappPage).toHaveTitle(/dApp Portfolio/)
+
+    await setupRegistry(dappPage)
+
+    await wg.connect({ network: 'LocalNet' })
+    const venue = await wg.createWalletIfNotExists({
+        partyHint: 'venue',
+        signingProvider: 'participant',
+    })
+    const alice = await wg.createWalletIfNotExists({
+        partyHint: 'alice',
+        signingProvider: 'participant',
+    })
+    const bob = await wg.createWalletIfNotExists({
+        partyHint: 'bob',
+        signingProvider: 'participant',
+    })
+
+    const logger = pino({ name: 'otc-trade', level: 'info' })
+    const otcTrade = new OTCTrade({
+        logger,
+        venue,
+        alice,
+        bob,
+    })
+    const otcTradeDetails = await otcTrade.setup()
+
+    await wg.setPrimaryWallet(alice)
+    await tap(dappPage, wg, '1000')
+    await openTab(dappPage, 'Allocations')
+    await wg.approveTransaction(() =>
+        dappPage
+            .getByRole('button', { name: 'Create Allocation' })
+            .first()
+            .click()
+    )
+
+    await wg.setPrimaryWallet(bob)
+    await tap(dappPage, wg, '1000')
+    await openTab(dappPage, 'Allocations')
+    await wg.approveTransaction(() =>
+        dappPage
+            .getByRole('button', { name: 'Create Allocation' })
+            .first()
+            .click()
+    )
+
+    await otcTrade.settle(otcTradeDetails)
 })
