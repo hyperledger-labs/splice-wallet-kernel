@@ -59,7 +59,7 @@ human-readable sequence of words.
 
 A typescript example of generating an Ed25519 key pair with a BIP-0039 mnemonic phrase using the libraries bip39 and ed25519 as dependencies is shown below:
 
-.. literalinclude:: ../../examples/snippets/create-key-from-mnemonic-phrase.ts
+.. literalinclude:: ../../examples/snippets/create-key-from-mnenomic-phrase.ts
    :language: typescript
    :dedent:
 
