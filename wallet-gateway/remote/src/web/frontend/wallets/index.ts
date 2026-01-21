@@ -170,6 +170,12 @@ export class UserUiWallets extends LitElement {
     `
 
     protected render() {
+        // This prevents race condition between render and this.client being set in connectedCallback asynchronously,
+        // resulting in <wg-wallets-sync> keeping client as null
+        if (!this.client) {
+            return html``
+        }
+
         const shownWallets = {
             verifiedWallets: [] as Wallet[],
             unverifiedWallets: [] as Wallet[],
