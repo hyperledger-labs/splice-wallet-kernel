@@ -20,6 +20,8 @@ exports[`testing doc snippets compute-transaction-hash.ts 1`] = `undefined`;
 
 exports[`testing doc snippets convert-transaction-to-json.ts 1`] = `undefined`;
 
+exports[`testing doc snippets create-key-from-mnenomic-phrase.ts 1`] = `undefined`;
+
 exports[`testing doc snippets create-key-pair.ts 1`] = `undefined`;
 
 exports[`testing doc snippets create-new-user.ts 1`] = `undefined`;
