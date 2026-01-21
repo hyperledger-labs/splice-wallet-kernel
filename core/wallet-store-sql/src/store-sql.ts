@@ -33,7 +33,7 @@ import {
     toTransaction,
     toWallet,
 } from './schema.js'
-import { Pool } from 'pg'
+import pg from 'pg'
 
 export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     authContext: AuthContext | undefined
@@ -474,7 +474,7 @@ export const connection = (config: StoreConfig) => {
         case 'postgres':
             return new Kysely<DB>({
                 dialect: new PostgresDialect({
-                    pool: new Pool({
+                    pool: new pg.Pool({
                         database: config.connection.database,
                         user: config.connection.user,
                         password: config.connection.password,

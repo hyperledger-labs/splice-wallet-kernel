@@ -22,7 +22,7 @@ import {
     sql,
     PostgresDialect,
 } from 'kysely'
-import { Pool } from 'pg'
+import pg from 'pg'
 import Database from 'better-sqlite3'
 import {
     DB,
@@ -349,7 +349,7 @@ export const connection = (config: StoreConfig) => {
         case 'postgres':
             return new Kysely<DB>({
                 dialect: new PostgresDialect({
-                    pool: new Pool({
+                    pool: new pg.Pool({
                         database: config.connection.database,
                         user: config.connection.user,
                         password: config.connection.password,
