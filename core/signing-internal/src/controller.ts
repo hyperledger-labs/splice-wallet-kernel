@@ -100,10 +100,10 @@ export class InternalSigningDriver implements SigningDriverInterface {
                         hash: params.txHash,
                         signature,
                         publicKey: params.keyIdentifier.publicKey,
-                        createdAt: now.toISOString(),
+                        createdAt: now,
                         status: 'signed',
-                        updatedAt: now.toISOString(),
-                        signedAt: now.toISOString(),
+                        updatedAt: now,
+                        signedAt: now,
                     }
 
                     this.store.setSigningTransaction(
@@ -237,13 +237,14 @@ export class InternalSigningDriver implements SigningDriverInterface {
                 const { publicKey, privateKey } = createKeyPair()
                 const id = randomUUID()
 
+                const now = new Date()
                 const internalKey: SigningKey = {
                     id,
                     name: params.name,
                     publicKey,
                     privateKey,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
+                    createdAt: now,
+                    updatedAt: now,
                 }
 
                 await this.store.setSigningKey(_userId, internalKey)

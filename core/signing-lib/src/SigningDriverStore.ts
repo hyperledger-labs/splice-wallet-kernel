@@ -72,8 +72,8 @@ export interface SigningKey {
     publicKey: string
     privateKey?: string // Optional for external providers like Fireblocks
     metadata?: Record<string, unknown> // Driver-specific data (e.g., derivation path)
-    createdAt: string
-    updatedAt: string
+    createdAt: Date
+    updatedAt: Date
 }
 
 /**
@@ -86,9 +86,9 @@ export interface SigningTransaction {
     publicKey: string
     status: SigningDriverStatus
     metadata?: Record<string, unknown> // Driver-specific data
-    createdAt: string
-    updatedAt: string
-    signedAt?: string
+    createdAt: Date
+    updatedAt: Date
+    signedAt?: Date
 }
 
 /**

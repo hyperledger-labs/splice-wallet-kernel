@@ -230,7 +230,11 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
         if (before) {
             const beforeTx = await this.getSigningTransaction(userId, before)
             if (beforeTx) {
-                query = query.where('createdAt', '<', beforeTx.createdAt)
+                query = query.where(
+                    'createdAt',
+                    '<',
+                    beforeTx.createdAt.toISOString()
+                )
             }
         }
 

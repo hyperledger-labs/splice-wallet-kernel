@@ -70,8 +70,8 @@ export const fromSigningKey = (
                 : key.privateKey
             : null,
         metadata: key.metadata ? JSON.stringify(key.metadata) : null,
-        createdAt: key.createdAt,
-        updatedAt: key.updatedAt,
+        createdAt: key.createdAt.toISOString(),
+        updatedAt: key.updatedAt.toISOString(),
     }
 }
 
@@ -90,8 +90,8 @@ export const toSigningKey = (
                       : table.privateKey,
               }
             : {}),
-        createdAt: table.createdAt,
-        updatedAt: table.updatedAt,
+        createdAt: new Date(table.createdAt),
+        updatedAt: new Date(table.updatedAt),
         ...(table.metadata
             ? {
                   metadata:
@@ -117,9 +117,9 @@ export const fromSigningTransaction = (
         metadata: transaction.metadata
             ? JSON.stringify(transaction.metadata)
             : null,
-        createdAt: transaction.createdAt,
-        updatedAt: transaction.updatedAt,
-        signedAt: transaction.signedAt || null,
+        createdAt: transaction.createdAt.toISOString(),
+        updatedAt: transaction.updatedAt.toISOString(),
+        signedAt: transaction.signedAt?.toISOString() || null,
     }
 }
 
@@ -140,9 +140,9 @@ export const toSigningTransaction = (
                           : table.metadata,
               }
             : {}),
-        createdAt: table.createdAt,
-        updatedAt: table.updatedAt,
-        ...(table.signedAt ? { signedAt: table.signedAt } : {}),
+        createdAt: new Date(table.createdAt),
+        updatedAt: new Date(table.updatedAt),
+        ...(table.signedAt ? { signedAt: new Date(table.signedAt) } : {}),
     }
 }
 
