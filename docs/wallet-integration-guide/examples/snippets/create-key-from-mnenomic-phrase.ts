@@ -1,30 +1,30 @@
+import { getPublicKeyFromPrivate } from '@canton-network/core-signing-lib'
+import naclUtil from 'tweetnacl-util'
 import * as bip39 from 'bip39'
-import { ed25519 } from '@noble/curves/ed25519.js'
 import * as fs from 'fs'
 
-async function createCantonKeyFromMnemonic(): Promise<void> {
+export default async function createCantonKeyFromMnemonic() {
     try {
         // 1. Generate a new 24-word BIP-0039 mnemonic
-        const mnemonic: string = bip39.generateMnemonic(256)
+        const mnemonic = bip39.generateMnemonic(256)
         console.log('Generated Mnemonic:', mnemonic)
 
         // 2. Convert mnemonic to a seed
-        const seed: Buffer = await bip39.mnemonicToSeed(mnemonic)
+        const seed = await bip39.mnemonicToSeed(mnemonic)
 
         // 3. Derive a 32-byte Private Key (first 32 bytes of the seed)
-        const privateKey: Uint8Array = new Uint8Array(seed.slice(0, 32))
-        const publicKey: Uint8Array = ed25519.getPublicKey(privateKey)
+        const privateKey = naclUtil.encodeBase64(seed.slice(0, 32))
+        const publicKey = getPublicKeyFromPrivate(privateKey)
 
-        const privHex: string = Buffer.from(privateKey).toString('hex')
-        const pubHex: string = Buffer.from(publicKey).toString('hex')
-
-        console.log('Private Key (Hex):', privHex)
-        console.log('Public Key (Hex):', pubHex)
+        console.log('Private Key (bas64):', privateKey)
+        console.log('Public Key (bas64):', publicKey)
 
         // 4. Save to a file for Canton Import
-        fs.writeFileSync('canton_private_key.hex', privHex)
+        fs.writeFileSync('canton_private_key.base64', privateKey)
 
-        console.log("\nSuccess: Private key saved to 'canton_private_key.hex'")
+        console.log(
+            "\nSuccess: Private key saved to 'canton_private_key.base64'"
+        )
         console.log('Keep your mnemonic phrase safe!')
     } catch (error) {
         console.error('An error occurred:', error)

@@ -5276,26 +5276,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/curves@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "@noble/curves@npm:2.0.1"
-  dependencies:
-    "@noble/hashes": "npm:2.0.1"
-  checksum: 10c0/e0b329eb9229e862d3b7203e0444bd479e9ecf2d5990181908dad416aab69106717ca696fc7b12ad0eb19d710f58c454646b27ce517a4298ab9abc89a9bdb6ee
-  languageName: node
-  linkType: hard
-
 "@noble/hashes@npm:1.4.0, @noble/hashes@npm:~1.4.0":
   version: 1.4.0
   resolution: "@noble/hashes@npm:1.4.0"
   checksum: 10c0/8c3f005ee72e7b8f9cff756dfae1241485187254e3f743873e22073d63906863df5d4f13d441b7530ea614b7a093f0d889309f28b59850f33b66cb26a779a4a5
-  languageName: node
-  linkType: hard
-
-"@noble/hashes@npm:2.0.1":
-  version: 2.0.1
-  resolution: "@noble/hashes@npm:2.0.1"
-  checksum: 10c0/e81769ce21c3b1c80141a3b99bd001f17edea09879aa936692ae39525477386d696101cd573928a304806efb2b9fa751e1dd83241c67d0c84d30091e85c79bdb
   languageName: node
   linkType: hard
 
@@ -11188,7 +11172,6 @@ __metadata:
     "@canton-network/core-wallet-auth": "workspace:^"
     "@canton-network/wallet-sdk": "workspace:^"
     "@jest/globals": "npm:^30.2.0"
-    "@noble/curves": "npm:^2.0.1"
     "@swc/core": "npm:^1.15.8"
     "@swc/jest": "npm:^0.2.39"
     "@types/jest": "npm:^30.0.0"
@@ -11199,6 +11182,8 @@ __metadata:
     pino-pretty: "npm:^13.1.3"
     ts-jest-resolver: "npm:^2.0.1"
     tsx: "npm:^4.21.0"
+    tweetnacl: "npm:^1.0.3"
+    tweetnacl-util: "npm:^0.15.1"
     typescript: "npm:^5.9.3"
     uuid: "npm:^11.1.0"
   languageName: unknown
