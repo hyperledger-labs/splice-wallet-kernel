@@ -58,6 +58,8 @@
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
         "@canton-network/wallet-sdk": "workspace:^",
+        "@noble/curves": "^2.0.1",
+        "bip39": "^3.1.0",
         "pino": "10.1.1",
         "uuid": "^11.1.0"
     },
