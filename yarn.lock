@@ -1624,11 +1624,11 @@ __metadata:
     "@swc/core": "npm:^1.15.8"
     "@types/better-sqlite3": "npm:^7.6.13"
     "@types/pg": "npm:^8"
-    better-sqlite3: "npm:^12.2.0"
-    commander: "npm:^14.0.0"
-    kysely: "npm:^0.28.5"
+    better-sqlite3: "npm:^12.6.0"
+    commander: "npm:^14.0.2"
+    kysely: "npm:^0.28.9"
     pg: "npm:^8.16.3"
-    pino: "npm:^10.0.0"
+    pino: "npm:^10.1.1"
     tsup: "npm:^8.5.1"
     tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.3"
@@ -8724,7 +8724,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:^12.2.0, better-sqlite3@npm:^12.6.0":
+"better-sqlite3@npm:^12.6.0":
   version: 12.6.2
   resolution: "better-sqlite3@npm:12.6.2"
   dependencies:
@@ -9446,7 +9446,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^14.0.0, commander@npm:^14.0.2":
+"commander@npm:^14.0.2":
   version: 14.0.2
   resolution: "commander@npm:14.0.2"
   checksum: 10c0/245abd1349dbad5414cb6517b7b5c584895c02c4f7836ff5395f301192b8566f9796c82d7bd6c92d07eba8775fe4df86602fca5d86d8d10bcc2aded1e21c2aeb
@@ -15577,7 +15577,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino@npm:^10.0.0, pino@npm:^10.1.1":
+"pino@npm:^10.1.1":
   version: 10.2.1
   resolution: "pino@npm:10.2.1"
   dependencies:
