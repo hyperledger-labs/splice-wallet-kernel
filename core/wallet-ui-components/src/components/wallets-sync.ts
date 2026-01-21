@@ -143,6 +143,13 @@ export class WgWalletsSync extends BaseElement {
 
             // Re-check if sync is needed after sync
             await this.checkWalletSyncNeeded()
+            this.dispatchEvent(
+                new CustomEvent('sync-success', {
+                    detail: {},
+                    bubbles: true,
+                    composed: true,
+                })
+            )
         } catch (e) {
             handleErrorToast(e)
         } finally {

@@ -194,6 +194,7 @@ export class UserUiWallets extends LitElement {
                     <wg-wallets-sync
                         .client=${this.client}
                         .wallets=${this.wallets}
+                        @sync-success=${this.updateWallets}
                     ></wg-wallets-sync>
                 </h1>
 
