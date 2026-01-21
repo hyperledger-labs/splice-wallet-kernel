@@ -449,7 +449,9 @@ export const userController = (
                 await store.addWallet(wallet)
             }
 
-            const wallets = await store.getWallets()
+            const wallets = await store.getWallets({
+                networkIds: [network.id],
+            })
             notifier?.emit('accountsChanged', wallets)
 
             return { wallet }
@@ -459,7 +461,12 @@ export const userController = (
             const notifier = authContext?.userId
                 ? notificationService.getNotifier(authContext.userId)
                 : undefined
-            notifier?.emit('accountsChanged', await store.getWallets())
+
+            const network = await store.getCurrentNetwork()
+            const wallets = await store.getWallets({
+                networkIds: [network.id],
+            })
+            notifier?.emit('accountsChanged', wallets)
             return null
         },
         removeWallet: async (params: { partyId: string }) =>
@@ -905,7 +912,9 @@ export const userController = (
                 return result
             }
             const notifier = notificationService.getNotifier(userId)
-            const wallets = await store.getWallets()
+            const wallets = await store.getWallets({
+                networkIds: [network.id],
+            })
             notifier?.emit('accountsChanged', wallets)
             return result
         },
