@@ -16,10 +16,7 @@ function App() {
     const { connect, disconnect, status } = useConnect()
 
     const accounts = useAccounts(status)
-    const currentNetworkId = status?.network?.networkId
-    const primaryParty = accounts?.find(
-        (w) => w.primary && w.networkId === currentNetworkId
-    )?.partyId
+    const primaryParty = accounts?.find((w) => w.primary)?.partyId
 
     const [ledgerApiVersion, setLedgerApiVersion] = useState<string>()
 
