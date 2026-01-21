@@ -798,13 +798,29 @@ export const userController = (
                 //we only want to automatically perform a sync if it is the first time a session is created
                 const wallets = await store.getWallets()
                 if (wallets.length == 0) {
-                    try {
-                        await this.syncWallets()
-                    } catch (error) {
-                        logger.error(
-                            `Failed to sync wallets on session creation: ${error}`
-                        )
-                    }
+                    const adminAccessTokenProvider = new AuthTokenProvider(
+                        idp,
+                        network.auth,
+                        network.adminAuth,
+                        logger
+                    )
+                    const partyAllocator = new PartyAllocationService({
+                        synchronizerId: network.synchronizerId,
+                        accessTokenProvider: adminAccessTokenProvider,
+                        httpLedgerUrl: network.ledgerApi.baseUrl,
+                        logger,
+                    })
+
+                    const service = new WalletSyncService(
+                        store,
+                        ledgerClient,
+                        ledgerClient,
+                        authContext!,
+                        logger,
+                        drivers,
+                        partyAllocator
+                    )
+                    await service.syncWallets()
                 }
 
                 return Promise.resolve({
