@@ -795,6 +795,11 @@ export const userController = (
                     },
                 })
 
+                const wallets = await store.getWallets()
+                if (wallets.length == 0) {
+                    await this.syncWallets()
+                }
+
                 return Promise.resolve({
                     id: newSessionId,
                     accessToken,
