@@ -16,6 +16,7 @@ import {
     WebSocketClient,
     JsGetUpdatesResponse,
     CompletionResponse,
+    PrepareSubmissionResponse,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -728,7 +729,7 @@ export class LedgerController {
         commands: WrappedCommand | WrappedCommand[] | unknown,
         commandId?: string,
         disclosedContracts?: Types['DisclosedContract'][]
-    ): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
+    ): Promise<PrepareSubmissionResponse> {
         const commandArray = Array.isArray(commands) ? commands : [commands]
         const prepareParams: Types['JsPrepareSubmissionRequest'] = {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
