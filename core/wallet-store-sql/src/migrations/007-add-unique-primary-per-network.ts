@@ -20,8 +20,8 @@ export async function up(db: Kysely<DB>): Promise<void> {
 
     // Ensure only one primary wallet per network per user
     await sql`
-        CREATE UNIQUE INDEX IF NOT EXISTS wallets_one_primary_per_network_user 
-        ON wallets(network_id, user_id) 
+        CREATE UNIQUE INDEX IF NOT EXISTS wallets_one_primary_per_network_user
+        ON wallets(network_id, user_id)
         WHERE "primary" = 1
     `.execute(db)
 }

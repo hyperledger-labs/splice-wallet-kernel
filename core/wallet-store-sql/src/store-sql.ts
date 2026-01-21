@@ -102,14 +102,12 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     }
 
     async getPrimaryWallet(): Promise<Wallet | undefined> {
-        // Get primary wallet for current network
         const network = await this.getCurrentNetwork()
         const wallets = await this.getWallets({ networkIds: [network.id] })
         return wallets.find((w) => w.primary === true)
     }
 
     async setPrimaryWallet(partyId: PartyId): Promise<void> {
-        // Set primary wallet for current network only (per-network primary)
         const network = await this.getCurrentNetwork()
         const userId = this.assertConnected()
         const wallets = await this.getWallets({ networkIds: [network.id] })
