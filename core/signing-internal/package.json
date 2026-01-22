@@ -28,17 +28,17 @@
         "@canton-network/core-signing-store-sql": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
         "fs-extra": "^11.3.3",
-        "lodash": "^4.17.21",
-        "pino": "^10.1.1"
+        "lodash": "^4.17.23",
+        "pino": "^10.2.1"
     },
     "devDependencies": {
         "@jest/globals": "^30.2.0",
-        "@swc/core": "^1.15.8",
+        "@swc/core": "^1.15.10",
         "@swc/jest": "^0.2.39",
         "@types/fs-extra": "^11.0.4",
         "@types/jest": "^30.0.0",
         "@types/lodash": "^4.17.23",
-        "@types/node": "^25.0.8",
+        "@types/node": "^25.0.10",
         "jest": "^30.2.0",
         "pino-test": "^1.1.0",
         "ts-jest-resolver": "^2.0.1",
