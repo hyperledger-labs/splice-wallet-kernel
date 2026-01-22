@@ -5,7 +5,7 @@ import { Network } from '@canton-network/core-wallet-store'
 import { html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 
-import { BaseElement } from '../internal/BaseElement.js'
+import { BaseElement } from '../internal/base-element'
 import { Session } from '@canton-network/core-wallet-user-rpc-client'
 
 @customElement('network-table')
