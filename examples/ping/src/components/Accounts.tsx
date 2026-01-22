@@ -3,7 +3,6 @@ import { useAccounts } from '../hooks/useAccounts'
 
 export function Accounts(props: { status?: sdk.dappAPI.StatusEvent }) {
     const accounts = useAccounts(props.status)
-    // Accounts are already filtered by network in useAccounts hook
     const primaryParty = accounts?.find((ac) => ac.primary)
 
     const connected = props.status?.isConnected ?? false
