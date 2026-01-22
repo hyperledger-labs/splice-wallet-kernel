@@ -80,6 +80,11 @@ export type MultiHashSignatures = NonNullable<
     | v3_3.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
     | v3_4.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
 >
+// The 3.3 schema does not contain CostEstimation, but the 3.4 does - so we union them here
+export type PrepareSubmissionResponse =
+    | v3_3.components['schemas']['JsPrepareSubmissionResponse']
+    | v3_4.components['schemas']['JsPrepareSubmissionResponse']
+
 // Any options the client accepts besides body/params
 type ExtraPostOpts = Omit<FetchOptions<paths>, 'body' | 'params'>
 

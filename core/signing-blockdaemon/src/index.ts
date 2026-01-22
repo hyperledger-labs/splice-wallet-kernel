@@ -42,8 +42,7 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
     public partyMode = PartyMode.EXTERNAL
     public signingProvider = SigningProvider.BLOCKDAEMON
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public controller = (_userId: AuthContext['userId'] | undefined) =>
+    public controller = (userId: AuthContext['userId'] | undefined) =>
         buildController({
             signTransaction: async (
                 params: SignTransactionParams
@@ -63,6 +62,7 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                         ...(params.internalTxId !== undefined && {
                             internalTxId: params.internalTxId,
                         }),
+                        userIdentifier: userId,
                     })
                     return {
                         txId: tx.txId,

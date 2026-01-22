@@ -25,7 +25,7 @@
     },
     "devDependencies": {
         "@jest/globals": "^30.2.0",
-        "@swc/core": "^1.15.8",
+        "@swc/core": "^1.15.10",
         "@swc/jest": "^0.2.39",
         "@types/jest": "^30.0.0",
         "globals": "^17.0.0",
@@ -37,7 +37,7 @@
     },
     "dependencies": {
         "@canton-network/core-ledger-proto": "workspace:^",
-        "@types/node": "^25.0.8",
+        "@types/node": "^25.0.10",
         "camelcase-keys": "^10.0.1"
     },
     "files": [
