@@ -1601,7 +1601,13 @@ __metadata:
   dependencies:
     "@canton-network/core-signing-lib": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
+    "@jest/globals": "npm:^30.2.0"
+    "@swc/core": "npm:^1.15.8"
+    "@swc/jest": "npm:^0.2.39"
+    "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:^25.0.8"
+    jest: "npm:^30.2.0"
+    ts-jest-resolver: "npm:^2.0.1"
     tsup: "npm:^8.5.1"
     typescript: "npm:^5.9.3"
   languageName: unknown

@@ -42,6 +42,10 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
     public partyMode = PartyMode.EXTERNAL
     public signingProvider = SigningProvider.BLOCKDAEMON
 
+    public setClient(client: SigningAPIClient) {
+        this.client = client
+    }
+
     public controller = (userId: AuthContext['userId'] | undefined) =>
         buildController({
             signTransaction: async (
