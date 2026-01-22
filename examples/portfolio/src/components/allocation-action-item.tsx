@@ -28,7 +28,7 @@ export const AllocationActionItemCard: React.FC<
         }
 
         if (hasPendingAllocations) {
-            return `${legsPending.length} pending allocation${legsPending.length > 1 ? 's' : ''}`
+            return `${legsPending.length} transfer leg${legsPending.length > 1 ? 's' : ''} requires allocation`
         }
         return `${legsAllocated.length} allocated`
     }
