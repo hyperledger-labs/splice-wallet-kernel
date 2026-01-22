@@ -758,27 +758,27 @@ export class LedgerController {
      * @param submissionId the unique identifier used to track the transaction, must be the same as used in prepareSubmission.
      */
     async executeSubmission(
-        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        prepared: PrepareSubmissionResponse,
         signature: string,
         publicKey: PublicKey,
         submissionId: string
     ): Promise<string>
     /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
     async executeSubmission(
-        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        prepared: PrepareSubmissionResponse,
         signature: string,
         publicKey: SigningPublicKey,
         submissionId: string
     ): Promise<string>
     /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
     async executeSubmission(
-        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        prepared: PrepareSubmissionResponse,
         signature: string,
         publicKey: SigningPublicKey | PublicKey,
         submissionId: string
     ): Promise<string>
     async executeSubmission(
-        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        prepared: PrepareSubmissionResponse,
         signature: string,
         publicKey: SigningPublicKey | PublicKey,
         submissionId: string
@@ -866,7 +866,7 @@ export class LedgerController {
      * @returns The completion value of the command.
      */
     async executeSubmissionAndWaitFor(
-        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        prepared: PrepareSubmissionResponse,
         signature: string,
         publicKey: SigningPublicKey | PublicKey,
         submissionId: string,
