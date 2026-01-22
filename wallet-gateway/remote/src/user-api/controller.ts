@@ -203,6 +203,7 @@ export const userController = (
                             const { signature } = await driver.signTransaction({
                                 tx: '',
                                 txHash: hash,
+                                userIdentifier: userId,
                                 keyIdentifier: {
                                     publicKey: key.publicKey,
                                 },
@@ -284,6 +285,7 @@ export const userController = (
                             await driver.signTransaction({
                                 tx: Buffer.from(txPayload).toString('base64'),
                                 txHash: transactions.multiHash,
+                                userIdentifier: userId,
                                 keyIdentifier: {
                                     publicKey: key.publicKey,
                                 },
@@ -380,6 +382,7 @@ export const userController = (
                                     transactions.multiHash,
                                     'base64'
                                 ).toString('hex'),
+                                userIdentifier: userId,
                                 keyIdentifier: {
                                     publicKey: key.publicKey,
                                 },
@@ -510,6 +513,7 @@ export const userController = (
                     const signature = await driver.signTransaction({
                         tx: preparedTransaction,
                         txHash: preparedTransactionHash,
+                        userIdentifier: userId,
                         keyIdentifier: {
                             publicKey: wallet.publicKey,
                         },
@@ -555,6 +559,7 @@ export const userController = (
                     let result = await driver.signTransaction({
                         tx: preparedTransaction,
                         txHash: preparedTransactionHash,
+                        userIdentifier: userId,
                         keyIdentifier: {
                             publicKey: wallet.publicKey,
                         },
