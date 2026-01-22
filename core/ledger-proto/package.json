@@ -24,8 +24,8 @@
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "devDependencies": {
-        "@swc/core": "^1.15.8",
-        "@types/node": "^25.0.8",
+        "@swc/core": "^1.15.10",
+        "@types/node": "^25.0.10",
         "esbuild-plugin-replace": "^1.4.0",
         "tsup": "^8.5.1",
         "typescript": "^5.9.3"
