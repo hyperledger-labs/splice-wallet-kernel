@@ -24,7 +24,9 @@ describe('BlockdaemonSigningDriver', () => {
         } as unknown as jest.Mocked<SigningAPIClient>
 
         driver = new BlockdaemonSigningDriver(config)
-        driver.setClient(mockClient)
+
+        // test-only escape hatch to inject mock client
+        ;(driver as unknown as { client: SigningAPIClient }).client = mockClient
     })
 
     test('signTransaction calls client.signTransaction with correct params', async () => {
