@@ -225,18 +225,15 @@ export class WalletSyncService {
         try {
             const network = await this.store.getCurrentNetwork()
 
-            // Only check wallets in the current network
             const existingWallets = await this.store.getWallets({
                 networkIds: [network.id],
             })
 
-            // Check if there are any disabled wallets in the current network
             const hasDisabledWallets = existingWallets.some((w) => w.disabled)
             if (hasDisabledWallets) {
                 return true
             }
 
-            // Check if there are parties on ledger that aren't in store for this network
             const partiesWithRights = await this.getPartiesRightsMap()
 
             // Treat disabled wallets as if they don't exist, so they can be re-synced
@@ -399,7 +396,10 @@ export class WalletSyncService {
                 )
             }
 
-            // this.logger.debug(wallets, 'Wallet sync completed.')
+            this.logger.debug(
+                { wallets: newParticipantWallets },
+                'Wallet sync completed.'
+            )
             return {
                 added: newParticipantWallets,
                 removed: [],
