@@ -25,8 +25,6 @@ describe('BlockdaemonSigningDriver', () => {
             getTransactions: jest.fn(),
             getKeys: jest.fn(),
             createKey: jest.fn(),
-            getConfiguration: jest.fn(),
-            setConfiguration: jest.fn(),
         } as unknown as jest.Mocked<SigningAPIClient>
 
         driver = new BlockdaemonSigningDriver(config)
