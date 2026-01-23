@@ -1,3 +1,6 @@
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import React from 'react'
 import {
     Box,
@@ -10,21 +13,21 @@ import {
     CircularProgress,
 } from '@mui/material'
 import { CopyableIdentifier } from './copyable-identifier'
-import type { ActionItem } from './types'
+import type { TransferActionItem } from './types'
 import { getCounterparty, isReceiver } from './utils'
 
-interface ActionRequiredDialogProps {
-    item: ActionItem | null
+interface TransferActionDialogProps {
+    item: TransferActionItem | null
     open: boolean
     isLoading: boolean
     onClose: () => void
-    onAccept: (item: ActionItem) => void
-    onReject: (item: ActionItem) => void
-    onWithdraw: (item: ActionItem) => void
+    onAccept: (item: TransferActionItem) => void
+    onReject: (item: TransferActionItem) => void
+    onWithdraw: (item: TransferActionItem) => void
 }
 
-export const ActionRequiredDialog: React.FC<ActionRequiredDialogProps> = (
-    props: ActionRequiredDialogProps
+export const TransferActionDialog: React.FC<TransferActionDialogProps> = (
+    props
 ) => {
     const { item, open, isLoading, onClose, onAccept, onReject, onWithdraw } =
         props
@@ -45,7 +48,7 @@ export const ActionRequiredDialog: React.FC<ActionRequiredDialogProps> = (
         >
             <DialogTitle sx={{ pb: 1 }}>
                 <Typography variant="h6" component="div" fontWeight="bold">
-                    Action Details
+                    Transfer Details
                 </Typography>
             </DialogTitle>
             <DialogContent sx={{ py: 2 }}>
