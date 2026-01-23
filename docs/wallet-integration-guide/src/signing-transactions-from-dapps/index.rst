@@ -15,8 +15,8 @@ through to the wallet provider for signing.
 Receiving a Transaction
 -----------------------
 
-A dApp would usually call the ``prepareReturn`` endpoint or the ``prepareExecute`` endpoint. In both cases the Wallet Provider
-would prepare and sign the transaction (but for the ``prepareExecute`` it would also submit it to the ledger).
+A dApp would usually call the ``prepareExecute`` endpoint or the ``prepareExecuteAndWait`` endpoint. In both cases the Wallet Provider
+would prepare, sign and submit the transaction to the ledger.
 
 You can prepare the incoming transaction using the Wallet SDK:
 
