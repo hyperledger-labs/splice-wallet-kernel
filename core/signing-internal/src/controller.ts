@@ -186,6 +186,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
                                 convertInternalTransaction({
                                     ...tx,
                                     signature: tx.signature || 'signed',
+                                    createdAt: new Date(tx.createdAt),
                                 })
                         ),
                     })
@@ -236,13 +237,14 @@ export class InternalSigningDriver implements SigningDriverInterface {
                 const { publicKey, privateKey } = createKeyPair()
                 const id = randomUUID()
 
+                const now = new Date()
                 const internalKey: SigningKey = {
                     id,
                     name: params.name,
                     publicKey,
                     privateKey,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
+                    createdAt: now,
+                    updatedAt: now,
                 }
 
                 await this.store.setSigningKey(_userId, internalKey)
