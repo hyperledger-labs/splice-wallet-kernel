@@ -146,3 +146,12 @@ logger.info('Accepted transfer instruction')
     const bobHoldings = await sdk.tokenStandard?.listHoldingTransactions()
     logger.info(bobHoldings, '[BOB] holding transactions')
 }
+
+logger.info(
+    await sdk.userLedger!.activeContracts({
+        offset: (await sdk.userLedger!.ledgerEnd()).offset,
+        parties: [sender!.partyId, receiver!.partyId],
+        filterByParty: true,
+    }),
+    'Active Contracts (without specified templateIds/interfaceIds)'
+)

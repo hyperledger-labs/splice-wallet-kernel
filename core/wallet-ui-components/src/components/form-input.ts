@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { customElement, property } from 'lit/decorators.js'
-import { BaseElement } from '../internal/BaseElement'
+import { BaseElement } from '../internal/base-element'
 import { html } from 'lit'
 import { eyeFillIcon, eyeSlashIcon } from '../icons'
 

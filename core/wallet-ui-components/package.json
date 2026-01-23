@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-ui-components",
-    "version": "0.20.0",
+    "version": "0.21.0",
     "type": "module",
     "description": "Reusable UI components for the Splice wallet",
     "license": "Apache-2.0",
@@ -27,11 +27,11 @@
         "dev": "storybook dev -p 6006"
     },
     "devDependencies": {
-        "@storybook/web-components-vite": "^10.1.11",
+        "@storybook/web-components-vite": "^10.2.0",
         "@types/bootstrap": "^5.2.10",
         "@types/fs-extra": "^11.0.4",
         "fs-extra": "^11.3.3",
-        "storybook": "^10.1.11",
+        "storybook": "^10.2.0",
         "tsx": "^4.21.0",
         "typescript": "^5.9.3",
         "vite": "^7.3.1",

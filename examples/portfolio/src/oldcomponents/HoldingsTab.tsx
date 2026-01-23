@@ -57,29 +57,32 @@ export const HoldingsTab: React.FC = () => {
 
     return (
         <div>
-            <SelectInstrument
-                value={tapInstrument}
-                onChange={(e) => setTapInstrument(e)}
-            />
-            <input
-                type="number"
-                value={tapAmount}
-                onChange={(e) => setTapAmount(Number(e.target.value))}
-            />
-            <button
-                disabled={!sessionToken || !primaryParty || !tapInstrument}
-                onClick={() => {
-                    tap({
-                        registryUrls,
-                        party: primaryParty!,
-                        sessionToken: sessionToken!,
-                        instrumentId: tapInstrument!,
-                        amount: tapAmount,
-                    }).then(() => refreshHoldings())
-                }}
-            >
-                TAP
-            </button>
+            <form onSubmit={(e) => e.preventDefault()} className="tap">
+                <SelectInstrument
+                    value={tapInstrument}
+                    onChange={(e) => setTapInstrument(e)}
+                />
+                <input
+                    type="number"
+                    value={tapAmount}
+                    onChange={(e) => setTapAmount(Number(e.target.value))}
+                />
+                <button
+                    type="submit"
+                    disabled={!sessionToken || !primaryParty || !tapInstrument}
+                    onClick={() => {
+                        tap({
+                            registryUrls,
+                            party: primaryParty!,
+                            sessionToken: sessionToken!,
+                            instrumentId: tapInstrument!,
+                            amount: tapAmount,
+                        }).then(() => refreshHoldings())
+                    }}
+                >
+                    TAP
+                </button>
+            </form>
             <ul>
                 {holdings?.map((h) => {
                     return (

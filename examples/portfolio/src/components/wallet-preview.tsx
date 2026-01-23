@@ -1,8 +1,6 @@
 import { Box, Avatar, Typography, Paper, Skeleton } from '@mui/material'
-import {
-    useAggregatedHoldings,
-    type AggregatedHolding,
-} from '../hooks/useWalletInstruments'
+import { useAggregatedHoldings } from '../hooks/useWalletInstruments'
+import type { AggregatedHolding } from '../utils/aggregate-holdings'
 
 interface WalletPreviewProps {
     partyId: string

@@ -73,6 +73,10 @@ export class Provider implements SpliceProvider {
                 ) as Promise<T>
             case 'listAccounts':
                 return controller.listAccounts() as Promise<T>
+            case 'prepareExecuteAndWait':
+                return controller.prepareExecuteAndWait(
+                    args.params as PrepareExecuteParams
+                ) as Promise<T>
             default:
                 throw new Error('Unsupported method')
         }

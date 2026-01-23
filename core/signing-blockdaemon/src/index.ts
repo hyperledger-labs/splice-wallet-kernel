@@ -42,8 +42,7 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
     public partyMode = PartyMode.EXTERNAL
     public signingProvider = SigningProvider.BLOCKDAEMON
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public controller = (_userId: AuthContext['userId'] | undefined) =>
+    public controller = (userId: AuthContext['userId'] | undefined) =>
         buildController({
             signTransaction: async (
                 params: SignTransactionParams
@@ -63,6 +62,7 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                         ...(params.internalTxId !== undefined && {
                             internalTxId: params.internalTxId,
                         }),
+                        userIdentifier: userId,
                     })
                     return {
                         txId: tx.txId,
@@ -88,6 +88,7 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                 try {
                     const tx = await this.client.getTransaction({
                         txId: params.txId,
+                        userIdentifier: userId,
                     })
                     return {
                         txId: tx.txId,
@@ -115,6 +116,7 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                         const transactions = await this.client.getTransactions({
                             txIds: params.txIds!,
                             publicKeys: params.publicKeys!,
+                            userIdentifier: userId,
                         })
                         return {
                             transactions: transactions.map((tx) => ({
@@ -147,6 +149,7 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                             id: k.id,
                             name: k.name,
                             publicKey: k.publicKey,
+                            userIdentifier: userId,
                         })),
                     }
                 } catch (error) {
@@ -163,6 +166,7 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                 try {
                     const key = await this.client.createKey({
                         name: params.name,
+                        userIdentifier: userId,
                     })
                     return {
                         id: key.id,

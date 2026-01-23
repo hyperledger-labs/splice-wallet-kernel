@@ -80,6 +80,11 @@ export type MultiHashSignatures = NonNullable<
     | v3_3.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
     | v3_4.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
 >
+// The 3.3 schema does not contain CostEstimation, but the 3.4 does - so we union them here
+export type PrepareSubmissionResponse =
+    | v3_3.components['schemas']['JsPrepareSubmissionResponse']
+    | v3_4.components['schemas']['JsPrepareSubmissionResponse']
+
 // Any options the client accepts besides body/params
 type ExtraPostOpts = Omit<FetchOptions<paths>, 'body' | 'params'>
 
@@ -656,21 +661,16 @@ export class LedgerClient {
             options.parties.length > 0
         ) {
             // Filter by party: set filtersByParty for each party
-            if (options?.templateIds && !options?.interfaceIds) {
-                for (const party of options.parties) {
-                    filter.filter!.filtersByParty[party] = {
-                        cumulative: options.templateIds
-                            ? buildTemplateFilter(options.templateIds)
-                            : [],
-                    }
-                }
-            } else if (options?.interfaceIds && !options?.templateIds) {
-                for (const party of options.parties) {
-                    filter.filter!.filtersByParty[party] = {
-                        cumulative: options.interfaceIds
-                            ? buildInterfaceFilter(options.interfaceIds)
-                            : [],
-                    }
+            const cumulativeFilter =
+                options?.templateIds && !options?.interfaceIds
+                    ? buildTemplateFilter(options.templateIds)
+                    : options?.interfaceIds && !options?.templateIds
+                      ? buildInterfaceFilter(options.interfaceIds)
+                      : []
+
+            for (const party of options.parties) {
+                filter.filter!.filtersByParty[party] = {
+                    cumulative: cumulativeFilter,
                 }
             }
         } else if (options?.templateIds) {

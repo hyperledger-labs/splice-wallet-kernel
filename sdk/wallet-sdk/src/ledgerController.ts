@@ -16,6 +16,7 @@ import {
     WebSocketClient,
     JsGetUpdatesResponse,
     CompletionResponse,
+    PrepareSubmissionResponse,
 } from '@canton-network/core-ledger-client'
 import {
     signTransactionHash,
@@ -728,7 +729,7 @@ export class LedgerController {
         commands: WrappedCommand | WrappedCommand[] | unknown,
         commandId?: string,
         disclosedContracts?: Types['DisclosedContract'][]
-    ): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
+    ): Promise<PrepareSubmissionResponse> {
         const commandArray = Array.isArray(commands) ? commands : [commands]
         const prepareParams: Types['JsPrepareSubmissionRequest'] = {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
@@ -757,27 +758,27 @@ export class LedgerController {
      * @param submissionId the unique identifier used to track the transaction, must be the same as used in prepareSubmission.
      */
     async executeSubmission(
-        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        prepared: PrepareSubmissionResponse,
         signature: string,
         publicKey: PublicKey,
         submissionId: string
     ): Promise<string>
     /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
     async executeSubmission(
-        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        prepared: PrepareSubmissionResponse,
         signature: string,
         publicKey: SigningPublicKey,
         submissionId: string
     ): Promise<string>
     /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
     async executeSubmission(
-        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        prepared: PrepareSubmissionResponse,
         signature: string,
         publicKey: SigningPublicKey | PublicKey,
         submissionId: string
     ): Promise<string>
     async executeSubmission(
-        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        prepared: PrepareSubmissionResponse,
         signature: string,
         publicKey: SigningPublicKey | PublicKey,
         submissionId: string
@@ -865,7 +866,7 @@ export class LedgerController {
      * @returns The completion value of the command.
      */
     async executeSubmissionAndWaitFor(
-        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        prepared: PrepareSubmissionResponse,
         signature: string,
         publicKey: SigningPublicKey | PublicKey,
         submissionId: string,

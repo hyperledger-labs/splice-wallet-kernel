@@ -25,7 +25,7 @@ export const useExerciseTransfer = () => {
             }),
         onSuccess: async (_, args) => {
             await queryClient.invalidateQueries({
-                queryKey: queryKeys.listPendingTransfers(args.party),
+                queryKey: queryKeys.listPendingTransfers.forParty(args.party),
             })
         },
     })

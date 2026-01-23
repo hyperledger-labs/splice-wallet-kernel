@@ -6,6 +6,7 @@ import { type AllocationSpecification } from '@canton-network/core-token-standar
 import { type PartyId } from '@canton-network/core-types'
 import { usePortfolio } from '../contexts/PortfolioContext'
 import { useRegistryUrls } from '../contexts/RegistryServiceContext'
+import { queryKeys } from './query-keys'
 
 export const useCreateAllocation = () => {
     const { createAllocation } = usePortfolio()
@@ -13,7 +14,7 @@ export const useCreateAllocation = () => {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: async (args: {
+        mutationFn: (args: {
             party: PartyId
             allocationSpecification: AllocationSpecification
         }) =>
@@ -23,7 +24,7 @@ export const useCreateAllocation = () => {
             }),
         onSuccess: async (_, args) => {
             await queryClient.invalidateQueries({
-                queryKey: ['listAllocations', args.party],
+                queryKey: queryKeys.listAllocations.forParty(args.party),
             })
         },
     })
