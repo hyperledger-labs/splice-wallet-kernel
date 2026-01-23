@@ -77,7 +77,7 @@ test('two step transfer', async ({ page: dappPage }) => {
     await wg.setPrimaryWallet(alice)
     tap(dappPage, wg, '1234')
     await expect(
-        dappPage.locator('.tx-box').filter({ hasText: '1234' })
+        dappPage.locator('li').filter({ hasText: '1234' })
     ).not.toHaveCount(0) // Use not.toHaveCount to help successive tests.
 
     const message = 'here ya go poor sod'
