@@ -4,6 +4,8 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import { Header } from '../components/header'
 import { NetworkBanner } from '../components/network-banner'
+import { RegistryValidationModal } from '../components/registry-validation-modal'
+import { useRegistryValidation } from '../hooks/useRegistryValidation'
 import { Container } from '@mui/material'
 import type { QueryClient } from '@tanstack/react-query'
 
@@ -16,6 +18,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 })
 
 function RootComponent() {
+    const validationStatus = useRegistryValidation()
+
     return (
         <>
             <NetworkBanner />
@@ -37,6 +41,8 @@ function RootComponent() {
                     ]}
                 />
             </Container>
+
+            <RegistryValidationModal validationStatus={validationStatus} />
         </>
     )
 }
