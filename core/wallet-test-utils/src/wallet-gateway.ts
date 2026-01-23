@@ -79,7 +79,7 @@ export class WalletGateway {
         // having popup async allows us to work around that (even if the popup
         // behaviour would change).
         if (!this._popup) {
-            await new Promise((resolve) => setTimeout(resolve, 1000))
+            await new Promise((resolve) => setTimeout(resolve, 5000))
             if (!this._popup) {
                 throw new Error('popup closed: call openPopup() first')
             }
@@ -125,7 +125,9 @@ export class WalletGateway {
 
         // Check for existing user with that party hint.
         const pattern = new RegExp(`${args.partyHint}::[0-9a-f]+`)
-        const wallets = (await this.popup()).getByText(pattern)
+        const wallets = (await this.popup())
+            .locator('.wallet-card')
+            .filter({ hasText: pattern })
         const walletsCount = await wallets.count()
         if (walletsCount > 0) {
             const partyId = (await wallets.first().innerText()).match(
@@ -134,6 +136,14 @@ export class WalletGateway {
             if (partyId === undefined) {
                 throw new Error(`did not find partyID for ${args.partyHint}`)
             }
+
+            if (args.primary) {
+                await wallets
+                    .first()
+                    .getByRole('button', { name: 'Set Primary' })
+                    .click()
+            }
+
             return partyId
         }
 
@@ -178,9 +188,11 @@ export class WalletGateway {
         // turned out not to be necessary, but I think this API is more
         // forward-proof, since we may change how the popup behaves.
         await start()
+        console.log('before pending transaction', this._popup)
         await expect(
             (await this.popup()).getByText(/Pending Transaction Request/)
         ).toBeVisible()
+        console.log('after pending transaction', this._popup)
         const commandId = new URL((await this.popup()).url()).searchParams.get(
             'commandId'
         )
