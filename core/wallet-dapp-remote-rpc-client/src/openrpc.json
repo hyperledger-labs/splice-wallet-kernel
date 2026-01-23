@@ -66,29 +66,6 @@
             "description": "Returns the active network."
         },
         {
-            "name": "darsAvailable",
-            "params": [],
-            "result": {
-                "name": "result",
-                "schema": {
-                    "title": "darsAvailableResult",
-                    "type": "object",
-                    "properties": {
-                        "dars": {
-                            "title": "dars",
-                            "type": "array",
-                            "items": {
-                                "title": "dar",
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "required": ["dars"]
-                }
-            },
-            "description": "Lists DARs currently available on the connected Validator node."
-        },
-        {
             "name": "prepareExecute",
             "params": [
                 {

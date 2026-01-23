@@ -213,8 +213,6 @@ export interface ConnectResult {
     userUrl: UserUrl
     [k: string]: any
 }
-export type Dar = string
-export type Dars = Dar[]
 /**
  *
  * The signature of the transaction.
@@ -444,10 +442,6 @@ export type StatusEventAsync = StatusEvent & ConnectResult
  *
  */
 export type Null = null
-export interface DarsAvailableResult {
-    dars: Dars
-    [k: string]: any
-}
 export interface PrepareExecuteResult {
     userUrl: UserUrl
     [k: string]: any
@@ -502,7 +496,6 @@ export type Status = () => Promise<StatusEvent>
 export type Connect = () => Promise<StatusEventAsync>
 export type Disconnect = () => Promise<Null>
 export type GetActiveNetwork = () => Promise<Network>
-export type DarsAvailable = () => Promise<DarsAvailableResult>
 export type PrepareExecute = (
     params: PrepareExecuteParams
 ) => Promise<PrepareExecuteResult>

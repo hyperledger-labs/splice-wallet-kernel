@@ -93,7 +93,6 @@ export const dappController = (
 
             return null
         },
-        darsAvailable: async () => ({ dars: ['default-dar'] }),
         ledgerApi: async (params: LedgerApiParams) => {
             const network = await store.getCurrentNetwork()
             const ledgerClient = new LedgerClient({
