@@ -55,52 +55,15 @@
             "description": "Invoke a disconnect of the wallet gateway session."
         },
         {
-            "name": "darsAvailable",
+            "name": "getActiveNetwork",
             "params": [],
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "darsAvailableResult",
-                    "type": "object",
-                    "properties": {
-                        "dars": {
-                            "title": "dars",
-                            "type": "array",
-                            "items": {
-                                "title": "dar",
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "required": ["dars"]
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/Network"
                 }
             },
-            "description": "Lists DARs currently available on the connected Validator node."
-        },
-        {
-            "name": "prepareReturn",
-            "params": [
-                {
-                    "name": "params",
-                    "schema": {
-                        "title": "prepareReturnParams",
-                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/JsPrepareSubmissionRequest"
-                    }
-                }
-            ],
-            "result": {
-                "name": "result",
-                "schema": {
-                    "title": "prepareReturnResult",
-                    "properties": {
-                        "response": {
-                            "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/JsPrepareSubmissionResponse"
-                        }
-                    },
-                    "required": ["response"]
-                }
-            },
-            "description": "Processes the prepare step and returns the data to sign."
+            "description": "Returns the active network."
         },
         {
             "name": "prepareExecute",
@@ -129,6 +92,25 @@
             "description": "Prepares, signs, and executes a transaction."
         },
         {
+            "name": "signMessage",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "signMessageParams",
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/SignMessageRequest"
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/SignMessageResult"
+                }
+            },
+            "description": "Signs a message."
+        },
+        {
             "name": "ledgerApi",
             "params": [
                 {
@@ -148,7 +130,7 @@
             "description": "Proxy for the JSON-API endpoints. Injects authorization headers automatically."
         },
         {
-            "name": "onConnected",
+            "name": "connected",
             "params": [],
             "result": {
                 "name": "result",
@@ -169,7 +151,7 @@
             }
         },
         {
-            "name": "onAccountsChanged",
+            "name": "accountsChanged",
             "params": [],
             "result": {
                 "name": "result",
@@ -179,17 +161,28 @@
             }
         },
         {
-            "name": "requestAccounts",
+            "name": "getPrimaryAccount",
             "params": [],
             "result": {
                 "name": "result",
                 "schema": {
-                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/RequestAccountsResult"
+                    "$ref": "api-specs/openrpc-user-api.json#/components/schemas/Wallet"
+                }
+            },
+            "description": "Returns the primary account."
+        },
+        {
+            "name": "listAccounts",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/ListAccountsResult"
                 }
             }
         },
         {
-            "name": "onTxChanged",
+            "name": "txChanged",
             "params": [],
             "result": {
                 "name": "result",

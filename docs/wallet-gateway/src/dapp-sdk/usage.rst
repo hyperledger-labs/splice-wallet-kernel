@@ -43,13 +43,13 @@ The status returns an object containing network connection- and session-related 
       .catch(() => setStatus('disconnected'))
 
 
-**Requesting Accounts**
+**Listing Accounts**
 
-The dApp SDK provides a `requestAccounts` method to request the accounts of the Wallet.
+The dApp SDK provides a `listAccounts` method to list the accounts of the Wallet.
 
 .. code:: typescript
 
-    const accounts = await sdk.requestAccounts()
+    const accounts = await sdk.listAccounts()
     console.log(accounts)
 
 **Executing a Transaction**
@@ -75,7 +75,7 @@ The transaction is returned as an object containing the command ID, update ID an
     })
 
     // Get the primary party the user selected in the Wallet
-    const primaryParty = (await sdk.requestAccounts()).find((w) => w.primary)?.partyId
+    const primaryParty = (await sdk.listAccounts()).find((w) => w.primary)?.partyId
 
     // Request user's signature and execute the transaction
     await sdk.prepareExecute(createPingCommand(primaryParty!))
