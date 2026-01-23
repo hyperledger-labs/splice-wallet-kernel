@@ -9,6 +9,7 @@ import '@canton-network/core-wallet-ui-components'
 import { Wallet } from '@canton-network/core-wallet-store'
 import { createUserClient } from '../rpc-client'
 import { CreateWalletParams } from '@canton-network/core-wallet-user-rpc-client'
+import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 import { SigningProvider } from '@canton-network/core-signing-lib'
 
 import '../index'
@@ -41,6 +42,9 @@ export class UserUiWallets extends LitElement {
 
     @state()
     accessor showCreateCard = false
+
+    @state()
+    accessor client: UserApiClient | null = null
 
     @query('#party-id-hint')
     accessor _partyHintInput: HTMLInputElement | null = null
@@ -179,7 +183,14 @@ export class UserUiWallets extends LitElement {
         })
         return html`
             <div class="header">
-                <h1>Wallets</h1>
+                <h1>
+                    Wallets
+                    <wg-wallets-sync
+                        .client=${this.client}
+                        .wallets=${this.wallets}
+                    ></wg-wallets-sync>
+                </h1>
+
                 <button
                     class="buttons"
                     @click=${() => (this.showCreateCard = !this.showCreateCard)}
@@ -357,8 +368,9 @@ export class UserUiWallets extends LitElement {
         `
     }
 
-    connectedCallback(): void {
+    async connectedCallback(): Promise<void> {
         super.connectedCallback()
+        this.client = await createUserClient(stateManager.accessToken.get())
         this.updateWallets()
     }
 

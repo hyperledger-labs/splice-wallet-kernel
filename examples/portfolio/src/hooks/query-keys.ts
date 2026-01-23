@@ -9,6 +9,7 @@ export const queryKeys = {
             party,
         ],
     },
+
     listPendingTransfers: {
         all: ['listPendingTransfers'],
         forParty: (party: string | undefined) => [
@@ -16,8 +17,22 @@ export const queryKeys = {
             party,
         ],
     },
+
     listHoldings: {
         all: ['holdings'],
         forParty: (party: string | undefined) => ['holdings', party],
+    },
+
+    listAllocationRequests: {
+        all: ['listAllocationRequests'],
+        forParty: (party: string | undefined) => [
+            'listAllocationRequests',
+            party,
+        ],
+    },
+
+    listAllocations: {
+        all: ['listAllocations'],
+        forParty: (party: string | undefined) => ['listAllocations', party],
     },
 }

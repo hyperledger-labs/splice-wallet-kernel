@@ -1,43 +1,67 @@
-import React, { useState } from 'react'
-import {
-    Box,
-    Paper,
-    Typography,
-    Button,
-    Badge,
-    CircularProgress,
-} from '@mui/material'
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+import React, { useState, useMemo } from 'react'
+import { Box, Typography, Badge } from '@mui/material'
 import type { PartyId } from '@canton-network/core-types'
 import { toast } from 'sonner'
-import { CopyableIdentifier } from './copyable-identifier'
 import { useExerciseTransfer } from '../hooks/useExerciseTransfer'
-import { ActionRequiredDialog } from './action-required-dialog'
-import type { ActionItem } from './types'
-import { getCounterparty, isReceiver } from './utils'
+import { useCreateAllocation } from '../hooks/useCreateAllocation'
+import { useWithdrawAllocation } from '../hooks/useWithdrawAllocation'
+import { TransferActionDialog } from './transfer-action-dialog'
+import { TransferActionItemCard } from './transfer-action-item'
+import { AllocationActionItemCard } from './allocation-action-item'
+import { AllocationActionDialog } from './allocation-action-dialog'
+import type {
+    ActionItem,
+    TransferActionItem,
+    AllocationActionItem,
+    TransferLegWithAllocation,
+} from './types'
 
 interface ActionRequiredProps {
     items: ActionItem[]
 }
 
 export const ActionRequired: React.FC<ActionRequiredProps> = ({ items }) => {
-    const [selectedItem, setSelectedItem] = useState<ActionItem | null>(null)
-    const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [selectedTransferItem, setSelectedTransferItem] =
+        useState<TransferActionItem | null>(null)
+    const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false)
+
+    // store only ID, derive item from props to stay in sync
+    const [selectedAllocationItemId, setSelectedAllocationItemId] = useState<
+        string | null
+    >(null)
+    const [isAllocationDialogOpen, setIsAllocationDialogOpen] = useState(false)
+    const [loadingLegId, setLoadingLegId] = useState<string | null>(null)
+
+    // Derive the selected allocation item from props so it stays in sync with query data
+    const selectedAllocationItem = useMemo(() => {
+        if (!selectedAllocationItemId) return null
+        const item = items.find(
+            (i) => i.kind === 'allocation' && i.id === selectedAllocationItemId
+        )
+        return item ? (item as AllocationActionItem) : null
+    }, [items, selectedAllocationItemId])
+
     const [loadingItemId, setLoadingItemId] = useState<string | null>(null)
 
     const exerciseTransferMutation = useExerciseTransfer()
+    const createAllocationMutation = useCreateAllocation()
+    const withdrawAllocationMutation = useWithdrawAllocation()
 
-    const handleCardClick = (item: ActionItem) => {
-        setSelectedItem(item)
-        setIsDialogOpen(true)
+    const handleTransferCardClick = (item: TransferActionItem) => {
+        setSelectedTransferItem(item)
+        setIsTransferDialogOpen(true)
     }
 
-    const handleCloseDialog = () => {
-        setIsDialogOpen(false)
-        setSelectedItem(null)
+    const handleCloseTransferDialog = () => {
+        setIsTransferDialogOpen(false)
+        setSelectedTransferItem(null)
     }
 
-    const handleAction = (
-        item: ActionItem,
+    const handleTransferAction = (
+        item: TransferActionItem,
         action: 'Accept' | 'Reject' | 'Withdraw'
     ) => {
         setLoadingItemId(item.id)
@@ -51,13 +75,83 @@ export const ActionRequired: React.FC<ActionRequiredProps> = ({ items }) => {
             {
                 onSuccess: () => {
                     toast.success(`${action} transfer successful`)
-                    handleCloseDialog()
+                    handleCloseTransferDialog()
                 },
                 onError: (error) =>
                     toast.error(
                         `Failed to ${action.toLowerCase()} transfer: ${error instanceof Error ? error.message : 'Unknown error'}`
                     ),
                 onSettled: () => setLoadingItemId(null),
+            }
+        )
+    }
+
+    const handleAllocationCardClick = (item: AllocationActionItem) => {
+        setSelectedAllocationItemId(item.id)
+        setIsAllocationDialogOpen(true)
+    }
+
+    const handleCloseAllocationDialog = () => {
+        setIsAllocationDialogOpen(false)
+        setSelectedAllocationItemId(null)
+    }
+
+    const handleCreateAllocation = (
+        item: AllocationActionItem,
+        leg: TransferLegWithAllocation
+    ) => {
+        setLoadingItemId(item.id)
+        setLoadingLegId(leg.transferLegId)
+        createAllocationMutation.mutate(
+            {
+                party: item.currentPartyId as PartyId,
+                allocationSpecification: {
+                    settlement: item.settlement,
+                    transferLegId: leg.transferLegId,
+                    transferLeg: leg.transferLeg,
+                },
+            },
+            {
+                onSuccess: () => {
+                    toast.success('Allocation created successfully')
+                },
+                onError: (error) =>
+                    toast.error(
+                        `Failed to create allocation: ${error instanceof Error ? error.message : 'Unknown error'}`
+                    ),
+                onSettled: () => {
+                    setLoadingItemId(null)
+                    setLoadingLegId(null)
+                },
+            }
+        )
+    }
+
+    const handleWithdrawAllocation = (
+        item: AllocationActionItem,
+        leg: TransferLegWithAllocation,
+        allocationContractId: string
+    ) => {
+        setLoadingItemId(item.id)
+        setLoadingLegId(leg.transferLegId)
+        withdrawAllocationMutation.mutate(
+            {
+                party: item.currentPartyId as PartyId,
+                contractId: allocationContractId,
+                instrumentId: leg.transferLeg.instrumentId,
+            },
+            {
+                onSuccess: () => {
+                    toast.success('Allocation withdrawn successfully')
+                },
+                onError: (error) =>
+                    toast.error(
+                        `Failed to withdraw allocation: ${error instanceof Error ? error.message : 'Unknown error'}`
+                    ),
+                onSettled: () => {
+                    setLoadingItemId(null)
+                    setLoadingLegId(null)
+                },
             }
         )
     }
@@ -80,191 +174,74 @@ export const ActionRequired: React.FC<ActionRequiredProps> = ({ items }) => {
                     sx={{ ml: 2 }}
                 />
             </Box>
+
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {items.map((item) => {
                     const isItemLoading = loadingItemId === item.id
 
-                    return (
-                        <Paper
-                            key={item.id}
-                            elevation={1}
-                            variant="elevation"
-                            sx={{
-                                p: 2,
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                borderRadius: 0,
-                                gap: 2,
-                                cursor: isItemLoading ? 'default' : 'pointer',
-                                opacity: isItemLoading ? 0.7 : 1,
-                                '&:hover': {
-                                    backgroundColor: isItemLoading
-                                        ? 'inherit'
-                                        : 'action.hover',
-                                },
-                            }}
-                            onClick={() =>
-                                !isItemLoading && handleCardClick(item)
-                            }
-                        >
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 3,
-                                }}
-                            >
-                                <Box sx={{ minWidth: 120, flexShrink: 0 }}>
-                                    <Typography
-                                        variant="body2"
-                                        color="textSecondary"
-                                    >
-                                        Type
-                                    </Typography>
-                                    <Typography
-                                        variant="body1"
-                                        fontWeight="medium"
-                                    >
-                                        {item.type}
-                                    </Typography>
-                                </Box>
-
-                                <Box sx={{ minWidth: 80, flexShrink: 0 }}>
-                                    <Typography
-                                        variant="body2"
-                                        color="textSecondary"
-                                    >
-                                        Amount
-                                    </Typography>
-                                    <Typography variant="body1">
-                                        {item.amount} {item.instrumentId.id}
-                                    </Typography>
-                                </Box>
-
-                                <Box sx={{ minWidth: 100, flexShrink: 0 }}>
-                                    <Typography
-                                        variant="body2"
-                                        color="textSecondary"
-                                    >
-                                        Expires
-                                    </Typography>
-                                    <Typography variant="body1">
-                                        {item.expiry}
-                                    </Typography>
-                                </Box>
-
-                                <Box sx={{ minWidth: 100, flexShrink: 0 }}>
-                                    <Typography
-                                        variant="body2"
-                                        color="textSecondary"
-                                    >
-                                        {getCounterparty(item).label}
-                                    </Typography>
-                                    <CopyableIdentifier
-                                        value={getCounterparty(item).value}
-                                    />
-                                </Box>
-
-                                <Box sx={{ flex: 1, minWidth: 150 }}>
-                                    <Typography
-                                        variant="body2"
-                                        color="textSecondary"
-                                    >
-                                        Message
-                                    </Typography>
-                                    <Typography
-                                        variant="body1"
-                                        sx={{ wordBreak: 'break-word' }}
-                                    >
-                                        {item.message.slice(0, 30) + '...'}
-                                    </Typography>
-                                </Box>
-                            </Box>
-
-                            <Box sx={{ display: 'flex', gap: 2 }}>
-                                {isReceiver(item) ? (
-                                    <>
-                                        <Button
-                                            variant="contained"
-                                            size="small"
-                                            sx={{ minWidth: 80 }}
-                                            disabled={isItemLoading}
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                handleAction(item, 'Accept')
-                                            }}
-                                        >
-                                            {isItemLoading ? (
-                                                <CircularProgress
-                                                    size={16}
-                                                    color="inherit"
-                                                />
-                                            ) : (
-                                                'Accept'
-                                            )}
-                                        </Button>
-                                        <Button
-                                            variant="outlined"
-                                            size="small"
-                                            sx={{ minWidth: 80 }}
-                                            disabled={isItemLoading}
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                handleAction(item, 'Reject')
-                                            }}
-                                        >
-                                            {isItemLoading ? (
-                                                <CircularProgress
-                                                    size={16}
-                                                    color="inherit"
-                                                />
-                                            ) : (
-                                                'Reject'
-                                            )}
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <Button
-                                        variant="outlined"
-                                        color="warning"
-                                        size="small"
-                                        sx={{ minWidth: 80 }}
-                                        disabled={isItemLoading}
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            handleAction(item, 'Withdraw')
-                                        }}
-                                    >
-                                        {isItemLoading ? (
-                                            <CircularProgress
-                                                size={16}
-                                                color="inherit"
-                                            />
-                                        ) : (
-                                            'Withdraw'
-                                        )}
-                                    </Button>
-                                )}
-                            </Box>
-                        </Paper>
-                    )
+                    switch (item.kind) {
+                        case 'allocation':
+                            return (
+                                <AllocationActionItemCard
+                                    key={item.id}
+                                    item={item}
+                                    isLoading={isItemLoading}
+                                    onClick={() =>
+                                        handleAllocationCardClick(item)
+                                    }
+                                />
+                            )
+                        case 'transfer':
+                            return (
+                                <TransferActionItemCard
+                                    key={item.id}
+                                    item={item}
+                                    isLoading={isItemLoading}
+                                    onClick={() =>
+                                        handleTransferCardClick(item)
+                                    }
+                                    onAccept={() =>
+                                        handleTransferAction(item, 'Accept')
+                                    }
+                                    onReject={() =>
+                                        handleTransferAction(item, 'Reject')
+                                    }
+                                    onWithdraw={() =>
+                                        handleTransferAction(item, 'Withdraw')
+                                    }
+                                />
+                            )
+                    }
                 })}
             </Box>
 
-            <ActionRequiredDialog
-                item={selectedItem}
-                open={isDialogOpen}
+            <TransferActionDialog
+                item={selectedTransferItem}
+                open={isTransferDialogOpen}
                 isLoading={loadingItemId !== null}
-                onClose={handleCloseDialog}
-                onAccept={(selectedItem) =>
-                    handleAction(selectedItem, 'Accept')
+                onClose={handleCloseTransferDialog}
+                onAccept={(item) => handleTransferAction(item, 'Accept')}
+                onReject={(item) => handleTransferAction(item, 'Reject')}
+                onWithdraw={(item) => handleTransferAction(item, 'Withdraw')}
+            />
+
+            <AllocationActionDialog
+                item={selectedAllocationItem}
+                open={isAllocationDialogOpen}
+                isLoading={loadingItemId !== null}
+                loadingLegId={loadingLegId}
+                onClose={handleCloseAllocationDialog}
+                onCreateAllocation={(leg) =>
+                    selectedAllocationItem &&
+                    handleCreateAllocation(selectedAllocationItem, leg)
                 }
-                onReject={(selectedItem) =>
-                    handleAction(selectedItem, 'Reject')
-                }
-                onWithdraw={(selectedItem) =>
-                    handleAction(selectedItem, 'Withdraw')
+                onWithdrawAllocation={(leg, contractId) =>
+                    selectedAllocationItem &&
+                    handleWithdrawAllocation(
+                        selectedAllocationItem,
+                        leg,
+                        contractId
+                    )
                 }
             />
         </Box>

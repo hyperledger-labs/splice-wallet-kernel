@@ -1,7 +1,7 @@
 {
     "name": "@canton-network/core-wallet-test-utils",
     "private": true,
-    "version": "0.0.0",
+    "version": "0.1.0",
     "type": "module",
     "description": "Utilities for writing (E2E) tests for the wallet gateway",
     "main": "dist/index.cjs",
@@ -19,7 +19,7 @@
         "@canton-network/core-types": "workspace:^",
         "@canton-network/wallet-sdk": "workspace:^",
         "@playwright/test": "^1.57.0",
-        "pino": "^10.1.1",
+        "pino": "^10.2.1",
         "uuid": "^11.1.0"
     },
     "devDependencies": {
