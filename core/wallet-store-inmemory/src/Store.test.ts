@@ -160,7 +160,6 @@ implementations.forEach(([name, StoreImpl]) => {
                 namespace: 'namespace',
                 networkId: 'network1',
             }
-            // Set session so getCurrentNetwork() works
             const session: Session = {
                 id: 'sess-123',
                 network: 'network1',
@@ -220,7 +219,6 @@ implementations.forEach(([name, StoreImpl]) => {
             try {
                 await store.addIdp(idp)
             } catch {
-                // IdP already exists, update it instead
                 await store.updateIdp(idp)
             }
             await store.updateNetwork(network)
@@ -366,7 +364,6 @@ implementations.forEach(([name, StoreImpl]) => {
             await store.addNetwork(network1)
             await store.addNetwork(network2)
 
-            // Set session for network1
             const session1: Session = {
                 id: 'sess-1',
                 network: 'network1',
@@ -380,7 +377,6 @@ implementations.forEach(([name, StoreImpl]) => {
             expect(primary1?.partyId).toBe('party2')
             expect(primary1?.networkId).toBe('network1')
 
-            // Switch to network2
             const session2: Session = {
                 id: 'sess-2',
                 network: 'network2',

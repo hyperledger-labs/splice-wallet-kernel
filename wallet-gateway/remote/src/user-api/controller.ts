@@ -808,7 +808,6 @@ export const userController = (
                     networkIds: [network.id],
                 })
                 if (wallets.length == 0) {
-                    console.log('happens')
                     const adminAccessTokenProvider = new AuthTokenProvider(
                         idp,
                         network.auth,

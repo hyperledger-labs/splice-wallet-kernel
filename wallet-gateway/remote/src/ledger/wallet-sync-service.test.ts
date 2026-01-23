@@ -323,7 +323,6 @@ describe('WalletSyncService - multi-network features', () => {
             })
         }
 
-        // Create real PartyAllocationService
         partyAllocator = new PartyAllocationService({
             synchronizerId: 'test-sync-id',
             accessTokenProvider: {
@@ -334,7 +333,6 @@ describe('WalletSyncService - multi-network features', () => {
             logger: mockLogger,
         })
 
-        // Create mocked ledger clients
         const ledgerModule = await import('@canton-network/core-ledger-client')
         mockLedgerClient = new ledgerModule.LedgerClient({
             baseUrl: new URL('http://test'),
@@ -365,10 +363,8 @@ describe('WalletSyncService - multi-network features', () => {
         await store.addNetwork(network1)
         await setSession('network1')
         await store.addWallet(createWallet('party1::namespace', 'network1'))
-        // Add wallet on a different network; should not affect current network
         await store.addWallet(createWallet('party2::namespace', 'network2'))
 
-        // Mock ledger client to return rights for party1
         mockLedgerGet.mockResolvedValueOnce({
             rights: [
                 {
@@ -404,7 +400,6 @@ describe('WalletSyncService - multi-network features', () => {
         await store.addNetwork(network1)
         await setSession('network1')
 
-        // Mock ledger client to return rights for party1 (new party on network1)
         mockLedgerGet.mockResolvedValueOnce({
             rights: [
                 {
@@ -442,7 +437,6 @@ describe('WalletSyncService - multi-network features', () => {
         await store.addWallet(createWallet('party1::namespace', 'network1'))
         const addWalletSpy = jest.spyOn(store, 'addWallet')
 
-        // Mock ledger client to return rights for party1 and party3
         mockLedgerGet
             .mockResolvedValueOnce({
                 rights: [
@@ -459,7 +453,7 @@ describe('WalletSyncService - multi-network features', () => {
                         kind: {
                             CanActAs: {
                                 value: {
-                                    party: 'party3::namespace', // New party
+                                    party: 'party3::namespace',
                                 },
                             },
                         },
@@ -656,32 +650,19 @@ describe('WalletSyncService - multi-network features', () => {
             ],
         })
         // Second mock: resolveSigningProvider calls adminLedgerClient.getWithRetry('/v2/parties/participant-id')
-        // The namespace from party1::namespace is 'namespace', so we need to return
-        // a participantId that has namespace 'namespace' to match
         mockLedgerGet.mockResolvedValueOnce({
             participantId: 'participant1::namespace',
         })
 
-        // Verify mocks are set up correctly
-        expect(mockLedgerGet).toHaveBeenCalledTimes(0) // Before sync
-
+        expect(mockLedgerGet).toHaveBeenCalledTimes(0)
         const syncResult = await service.syncWallets()
 
-        // Verify mocks were called
         expect(mockLedgerGet).toHaveBeenCalledTimes(2) // Once for rights, once for participantId
-        console.log('Sync result:', syncResult)
-        console.log('Mock calls:', mockLedgerGet.mock.calls)
-        console.log(
-            'Wallets after sync:',
-            await store.getWallets({ networkIds: ['network2'] })
-        )
-        // Verify sync result
         expect(syncResult.added.length).toBe(1)
         expect(syncResult.added[0].partyId).toBe('party1::namespace')
         expect(syncResult.added[0].networkId).toBe('network2')
-        expect(syncResult.added[0].disabled).toBe(false) // Should not be disabled since namespace matches
+        expect(syncResult.added[0].disabled).toBe(false)
 
-        // Verify wallet was actually added to store
         const network2Wallets = await store.getWallets({
             networkIds: ['network2'],
         })
@@ -693,6 +674,7 @@ describe('WalletSyncService - multi-network features', () => {
         expect(party1Wallet?.disabled).toBe(false)
     })
 
+    // TODO maybe now that we never block sync button don't consider disabled wallet as sync is needed?
     it('isWalletSyncNeeded should return true when disabled wallets exist', async () => {
         const network1 = createNetwork('network1')
         await store.addNetwork(network1)

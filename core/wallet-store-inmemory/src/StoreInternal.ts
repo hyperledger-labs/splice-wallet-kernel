@@ -199,14 +199,12 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     async getPrimaryWallet(): Promise<Wallet | undefined> {
-        // Get primary wallet for current network
         const network = await this.getCurrentNetwork()
         const wallets = await this.getWallets({ networkIds: [network.id] })
         return wallets.find((w) => w.primary === true)
     }
 
     async setPrimaryWallet(partyId: PartyId): Promise<void> {
-        // Set primary wallet for current network only (per-network primary)
         const network = await this.getCurrentNetwork()
         const storage = this.getStorage()
         const networkWallets = storage.wallets.filter(
@@ -219,7 +217,6 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             )
         }
 
-        // Set primary only for wallets in current network
         const wallets = storage.wallets.map((w) => {
             if (w.networkId === network.id) {
                 if (w.partyId === partyId) {
@@ -236,7 +233,6 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
 
     async addWallet(wallet: Wallet): Promise<void> {
         const storage = this.getStorage()
-        // Check for duplicate by (partyId, networkId) combination
         if (
             storage.wallets.some(
                 (w) =>
@@ -288,7 +284,6 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
     }
 
     async removeWallet(partyId: PartyId): Promise<void> {
-        // Remove wallet from current network only
         const network = await this.getCurrentNetwork()
         const storage = this.getStorage()
         const wallets = storage.wallets.filter(

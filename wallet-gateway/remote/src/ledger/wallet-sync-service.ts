@@ -260,7 +260,6 @@ export class WalletSyncService {
             const network = await this.store.getCurrentNetwork()
             this.logger.info(network, 'Current network')
 
-            // Get existing parties from participant
             const partiesWithRights = await this.getPartiesRightsMap()
 
             // Add new Wallets given the found parties

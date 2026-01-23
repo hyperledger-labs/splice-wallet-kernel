@@ -79,7 +79,7 @@ export class WalletGateway {
         // having popup async allows us to work around that (even if the popup
         // behaviour would change).
         if (!this._popup) {
-            await new Promise((resolve) => setTimeout(resolve, 5000))
+            await new Promise((resolve) => setTimeout(resolve, 1000))
             if (!this._popup) {
                 throw new Error('popup closed: call openPopup() first')
             }
@@ -188,11 +188,9 @@ export class WalletGateway {
         // turned out not to be necessary, but I think this API is more
         // forward-proof, since we may change how the popup behaves.
         await start()
-        console.log('before pending transaction', this._popup)
         await expect(
             (await this.popup()).getByText(/Pending Transaction Request/)
         ).toBeVisible()
-        console.log('after pending transaction', this._popup)
         const commandId = new URL((await this.popup()).url()).searchParams.get(
             'commandId'
         )
