@@ -7,6 +7,7 @@ import { Option, Command } from '@commander-js/extra-typings'
 import { initialize } from './init.js'
 
 import { createCLI } from '@canton-network/core-wallet-store-sql'
+import { createCLI as createSigningCLI } from '@canton-network/core-signing-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
 
 import pino from 'pino'
@@ -66,14 +67,24 @@ let db = new Command('db')
     .description('Database management commands')
     .allowUnknownOption(true)
 
-const hasDb = process.argv.slice(2).includes('db')
+let signingDb = new Command('signing-db')
+    .description('Signing database management commands')
+    .allowUnknownOption(true)
 
+const hasDb = process.argv.slice(2).includes('db')
 if (hasDb) {
     const config = ConfigUtils.loadConfigFile(options.config)
     db = createCLI(config.store) as Command
 }
 
+const hasSigningDb = process.argv.slice(2).includes('signing-db')
+if (hasSigningDb) {
+    const config = ConfigUtils.loadConfigFile(options.config)
+    signingDb = createSigningCLI(config.signingStore) as Command
+}
+
 program.addCommand(db.name('db'))
+program.addCommand(signingDb.name('signing-db'))
 
 // Now parse normally for execution/help
 program.parseAsync(process.argv)

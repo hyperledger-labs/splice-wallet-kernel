@@ -20,7 +20,7 @@ import {
     StoreConfig,
     UpdateWallet,
 } from '@canton-network/core-wallet-store'
-import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely'
+import { CamelCasePlugin, Kysely, PostgresDialect, SqliteDialect } from 'kysely'
 import Database from 'better-sqlite3'
 import {
     DB,
@@ -33,6 +33,7 @@ import {
     toTransaction,
     toWallet,
 } from './schema.js'
+import pg from 'pg'
 
 export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     authContext: AuthContext | undefined
@@ -470,6 +471,19 @@ export const connection = (config: StoreConfig) => {
                 }),
                 plugins: [new CamelCasePlugin()],
             })
+        case 'postgres':
+            return new Kysely<DB>({
+                dialect: new PostgresDialect({
+                    pool: new pg.Pool({
+                        database: config.connection.database,
+                        user: config.connection.user,
+                        password: config.connection.password,
+                        port: config.connection.port,
+                        host: config.connection.host,
+                    }),
+                }),
+                plugins: [new CamelCasePlugin()],
+            })
         case 'memory':
             return new Kysely<DB>({
                 dialect: new SqliteDialect({
@@ -477,9 +491,5 @@ export const connection = (config: StoreConfig) => {
                 }),
                 plugins: [new CamelCasePlugin()],
             })
-        default:
-            throw new Error(
-                `Unsupported database type: ${config.connection.type}`
-            )
     }
 }
