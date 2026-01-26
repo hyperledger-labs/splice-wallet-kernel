@@ -193,4 +193,71 @@ export class WalletGateway {
         ).toBeVisible()
         return { commandId }
     }
+
+    async disconnect(): Promise<void> {
+        const disconnectButton = this.dappPage.getByRole('button', {
+            name: 'disconnect',
+        })
+        await expect(disconnectButton).toBeVisible()
+        await disconnectButton.click()
+        await expect(this.dappPage.getByText('Loading...')).toHaveCount(0)
+    }
+
+    async reconnect(args: {
+        network: 'LocalNet' | 'Local (OAuth IDP)'
+        customURL?: string
+    }): Promise<void> {
+        const connectButton = this.connectButton(this.dappPage)
+        await expect(connectButton).toBeVisible()
+
+        const discoverPopupPromise = this.dappPage.waitForEvent('popup')
+        await connectButton.click()
+        const popup = await discoverPopupPromise
+
+        if (args.customURL !== undefined) {
+            await popup
+                .getByRole('listitem')
+                .filter({ hasText: 'Custom url' })
+                .click()
+            await popup
+                .getByRole('textbox', { name: 'RPC URL' })
+                .fill(args.customURL as string)
+        }
+
+        const allConnectButtons = popup.locator('button').filter({
+            hasText: 'Connect',
+        })
+        const buttonCount = await allConnectButtons.count()
+
+        let clicked = false
+        for (let i = 0; i < buttonCount; i++) {
+            const button = allConnectButtons.nth(i)
+            const hasPreviouslyConnectedAttr =
+                (await button.getAttribute('data-previously-connected')) ===
+                'true'
+            if (!hasPreviouslyConnectedAttr) {
+                await button.click()
+                clicked = true
+                break
+            }
+        }
+
+        if (!clicked) {
+            // Fallback to first Connect button if no main button found
+            await allConnectButtons.first().click()
+        }
+
+        const selectNetwork = popup.locator('select#network')
+        const networkOption = await selectNetwork
+            .locator('option')
+            .filter({ hasText: args.network })
+            .first()
+            .getAttribute('value')
+        await selectNetwork.selectOption(networkOption)
+        const confirmConnectButton = popup.getByRole('button', {
+            name: 'Connect',
+        })
+        await confirmConnectButton.click()
+        await expect(confirmConnectButton).not.toBeVisible()
+    }
 }

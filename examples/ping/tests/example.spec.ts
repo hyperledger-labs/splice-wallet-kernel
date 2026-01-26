@@ -103,12 +103,64 @@ test('connection status handling', async ({ page: dappPage }) => {
     await expect(disconnectButton).toBeVisible()
     await expect(connectButton).not.toBeVisible()
 
-    await disconnectButton.click()
-
-    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+    await wg.disconnect()
 
     await expect(dappPage.getByText(/.*connected: 🔴*/)).toBeVisible()
 
     await expect(connectButton).toBeVisible()
     await expect(disconnectButton).not.toBeVisible()
+})
+
+test('reconnect after disconnect', async ({ page: dappPage }) => {
+    const wg = new WalletGateway({
+        dappPage,
+        openButton: (page) =>
+            page.getByRole('button', {
+                name: 'open Wallet Gateway',
+            }),
+        connectButton: (page) =>
+            page.getByRole('button', {
+                name: 'connect to Wallet Gateway',
+            }),
+    })
+    await dappPage.goto('http://localhost:8080/')
+
+    await expect(dappPage).toHaveTitle(/Example dApp/)
+
+    const connectButton = dappPage.getByRole('button', {
+        name: 'connect to Wallet Gateway',
+    })
+
+    // First connection
+    console.log('connecting...')
+    await wg.connect({
+        customURL: `http://localhost:${dappApiPort}/api/v0/dapp`,
+        network: 'Local (OAuth IDP)',
+    })
+    console.log('connected...')
+
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+    await expect(dappPage.getByText(/.*connected: 🟢*/)).toBeVisible()
+
+    const disconnectButton = dappPage.getByRole('button', {
+        name: 'disconnect',
+    })
+    await expect(disconnectButton).toBeVisible()
+
+    // Disconnect
+    await wg.disconnect()
+    await expect(dappPage.getByText(/.*connected: 🔴*/)).toBeVisible()
+    await expect(connectButton).toBeVisible()
+
+    // Reconnect
+    await wg.reconnect({
+        customURL: `http://localhost:${dappApiPort}/api/v0/dapp`,
+        network: 'Local (OAuth IDP)',
+    })
+
+    // TODO maybe let's also check
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+    await expect(dappPage.getByText(/.*connected: 🟢*/)).toBeVisible()
+    await expect(disconnectButton).toBeVisible()
+    await expect(connectButton).not.toBeVisible()
 })
