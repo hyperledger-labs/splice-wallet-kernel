@@ -84,6 +84,12 @@ export type PackageId = string
  *
  */
 export type PackageIdSelectionPreference = PackageId[]
+/**
+ *
+ * The message to sign.
+ *
+ */
+export type Message = string
 export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
 export type Resource = string
 export type Body = string
@@ -194,30 +200,6 @@ export interface Session {
     userId: UserId
     [k: string]: any
 }
-export type Dar = string
-export type Dars = Dar[]
-/**
- *
- * The prepared transaction data.
- *
- */
-export type PreparedTransaction = string
-/**
- *
- * The hash of the prepared transaction.
- *
- */
-export type PreparedTransactionHash = string
-/**
- *
- * Structure representing the result of a prepareReturn call
- *
- */
-export interface JsPrepareSubmissionResponse {
-    preparedTransaction?: PreparedTransaction
-    preparedTransactionHash?: PreparedTransactionHash
-    [k: string]: any
-}
 /**
  *
  * The status of the transaction.
@@ -250,6 +232,12 @@ export interface TxChangedExecutedEvent {
     commandId: CommandId
     payload: TxChangedExecutedPayload
 }
+/**
+ *
+ * The signature of the transaction.
+ *
+ */
+export type Signature = string
 export type Response = string
 /**
  *
@@ -360,12 +348,6 @@ export interface TxChangedPendingEvent {
 export type StatusSigned = 'signed'
 /**
  *
- * The signature of the transaction.
- *
- */
-export type Signature = string
-/**
- *
  * The identifier of the provider that signed the transaction.
  *
  */
@@ -410,7 +392,7 @@ export interface TxChangedFailedEvent {
  * Structure representing the request for prepare and execute calls
  *
  */
-export interface PrepareReturnParams {
+export interface PrepareExecuteParams {
     commandId?: CommandId
     commands: JsCommands
     actAs?: ActAs
@@ -422,17 +404,11 @@ export interface PrepareReturnParams {
 }
 /**
  *
- * Structure representing the request for prepare and execute calls
+ * Request to sign a message.
  *
  */
-export interface PrepareExecuteParams {
-    commandId?: CommandId
-    commands: JsCommands
-    actAs?: ActAs
-    readAs?: ReadAs
-    disclosedContracts?: DisclosedContracts
-    synchronizerId?: SynchronizerId
-    packageIdSelectionPreference?: PackageIdSelectionPreference
+export interface SignMessageParams {
+    message: Message
     [k: string]: any
 }
 /**
@@ -461,13 +437,17 @@ export interface StatusEvent {
  *
  */
 export type Null = null
-export interface DarsAvailableResult {
-    dars: Dars
-    [k: string]: any
-}
-export type PrepareReturnResult = any
 export interface PrepareExecuteAndWaitResult {
     tx: TxChangedExecutedEvent
+    [k: string]: any
+}
+/**
+ *
+ * Result of signing a message.
+ *
+ */
+export interface SignMessageResult {
+    signature: Signature
     [k: string]: any
 }
 /**
@@ -490,7 +470,7 @@ export type AccountsChangedEvent = Wallet[]
  * An array of accounts that the user has authorized the dapp to access..
  *
  */
-export type RequestAccountsResult = Wallet[]
+export type ListAccountsResult = Wallet[]
 /**
  *
  * Event emitted when a transaction changes.
@@ -510,15 +490,16 @@ export type TxChangedEvent =
 export type Status = () => Promise<StatusEvent>
 export type Connect = () => Promise<StatusEvent>
 export type Disconnect = () => Promise<Null>
-export type DarsAvailable = () => Promise<DarsAvailableResult>
-export type PrepareReturn = (
-    params: PrepareReturnParams
-) => Promise<PrepareReturnResult>
+export type GetActiveNetwork = () => Promise<Network>
 export type PrepareExecute = (params: PrepareExecuteParams) => Promise<Null>
 export type PrepareExecuteAndWait = (
     params: PrepareExecuteParams
 ) => Promise<PrepareExecuteAndWaitResult>
+export type SignMessage = (
+    params: SignMessageParams
+) => Promise<SignMessageResult>
 export type LedgerApi = (params: LedgerApiParams) => Promise<LedgerApiResult>
-export type OnAccountsChanged = () => Promise<AccountsChangedEvent>
-export type RequestAccounts = () => Promise<RequestAccountsResult>
-export type OnTxChanged = () => Promise<TxChangedEvent>
+export type AccountsChanged = () => Promise<AccountsChangedEvent>
+export type GetPrimaryAccount = () => Promise<Wallet>
+export type ListAccounts = () => Promise<ListAccountsResult>
+export type TxChanged = () => Promise<TxChangedEvent>
