@@ -11,7 +11,7 @@ import {
     Box,
     Typography,
 } from '@mui/material'
-import { useAggregatedHoldings } from '../hooks/useWalletInstruments'
+import { useAggregatedHoldings } from '../hooks/useAggregatedHoldings'
 import type { InstrumentId } from '@canton-network/core-token-standard'
 import Decimal from 'decimal.js'
 

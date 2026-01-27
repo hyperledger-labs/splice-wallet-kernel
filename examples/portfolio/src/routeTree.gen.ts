@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as OldRouteImport } from './routes/old'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WalletWalletIdRouteImport } from './routes/wallet.$walletId'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -28,35 +29,44 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WalletWalletIdRoute = WalletWalletIdRouteImport.update({
+  id: '/wallet/$walletId',
+  path: '/wallet/$walletId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/old': typeof OldRoute
   '/settings': typeof SettingsRoute
+  '/wallet/$walletId': typeof WalletWalletIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/old': typeof OldRoute
   '/settings': typeof SettingsRoute
+  '/wallet/$walletId': typeof WalletWalletIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/old': typeof OldRoute
   '/settings': typeof SettingsRoute
+  '/wallet/$walletId': typeof WalletWalletIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/old' | '/settings'
+  fullPaths: '/' | '/old' | '/settings' | '/wallet/$walletId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/old' | '/settings'
-  id: '__root__' | '/' | '/old' | '/settings'
+  to: '/' | '/old' | '/settings' | '/wallet/$walletId'
+  id: '__root__' | '/' | '/old' | '/settings' | '/wallet/$walletId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   OldRoute: typeof OldRoute
   SettingsRoute: typeof SettingsRoute
+  WalletWalletIdRoute: typeof WalletWalletIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/wallet/$walletId': {
+      id: '/wallet/$walletId'
+      path: '/wallet/$walletId'
+      fullPath: '/wallet/$walletId'
+      preLoaderRoute: typeof WalletWalletIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   OldRoute: OldRoute,
   SettingsRoute: SettingsRoute,
+  WalletWalletIdRoute: WalletWalletIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
