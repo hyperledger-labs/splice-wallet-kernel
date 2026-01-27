@@ -229,10 +229,7 @@ export const dappController = (
             throw new Error('Only for events.')
         },
         listAccounts: async () => {
-            const network = await store.getCurrentNetwork()
-            return await store.getWallets({
-                networkIds: [network.id],
-            })
+            return await store.getWallets()
         },
         txChanged: async () => {
             throw new Error('Only for events.')

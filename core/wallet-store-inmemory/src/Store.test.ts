@@ -24,11 +24,6 @@ const authContextMock: AuthContext = {
     accessToken: 'test-access-token',
 }
 
-const storeConfig: StoreInternalConfig = {
-    idps: [],
-    networks: [],
-}
-
 type StoreCtor = new (
     config: StoreInternalConfig,
     logger: Logger,
@@ -44,10 +39,44 @@ implementations.forEach(([name, StoreImpl]) => {
         let store: Store
 
         beforeEach(() => {
+            // Create a fresh config for each test to avoid shared state between tests
+            const storeConfig: StoreInternalConfig = {
+                idps: [],
+                networks: [],
+            }
             store = new StoreImpl(storeConfig, pino(sink()), authContextMock)
         })
 
         test('should add and retrieve wallets', async () => {
+            const idp: Idp = {
+                id: 'idp1',
+                type: 'oauth' as const,
+                issuer: 'http://auth',
+                configUrl: 'http://auth/.well-known/openid-configuration',
+            }
+            const network: Network = {
+                id: 'network1',
+                name: 'testnet',
+                synchronizerId: 'sync1::fingerprint',
+                description: 'Test Network',
+                identityProviderId: 'idp1',
+                ledgerApi: { baseUrl: 'http://api' },
+                auth: {
+                    method: 'authorization_code',
+                    clientId: 'cid',
+                    scope: 'scope',
+                    audience: 'aud',
+                },
+            }
+            const session: Session = {
+                id: 'session1',
+                network: 'network1',
+                accessToken: 'token',
+            }
+            await store.addIdp(idp)
+            await store.addNetwork(network)
+            await store.setSession(session)
+
             const wallet: Wallet = {
                 primary: false,
                 partyId: 'party1',
@@ -64,6 +93,50 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should filter wallets', async () => {
+            const idp: Idp = {
+                id: 'idp1',
+                type: 'oauth' as const,
+                issuer: 'http://auth',
+                configUrl: 'http://auth/.well-known/openid-configuration',
+            }
+            const network1: Network = {
+                id: 'network1',
+                name: 'testnet-1',
+                synchronizerId: 'sync1::fingerprint',
+                description: 'Test Network 1',
+                identityProviderId: 'idp1',
+                ledgerApi: { baseUrl: 'http://api' },
+                auth: {
+                    method: 'authorization_code',
+                    clientId: 'cid',
+                    scope: 'scope',
+                    audience: 'aud',
+                },
+            }
+            const network2: Network = {
+                id: 'network2',
+                name: 'testnet-2',
+                synchronizerId: 'sync2::fingerprint',
+                description: 'Test Network 2',
+                identityProviderId: 'idp1',
+                ledgerApi: { baseUrl: 'http://api' },
+                auth: {
+                    method: 'authorization_code',
+                    clientId: 'cid',
+                    scope: 'scope',
+                    audience: 'aud',
+                },
+            }
+            const session: Session = {
+                id: 'session1',
+                network: 'network1',
+                accessToken: 'token',
+            }
+            await store.addIdp(idp)
+            await store.addNetwork(network1)
+            await store.addNetwork(network2)
+            await store.setSession(session)
+
             const wallet1: Wallet = {
                 primary: false,
                 partyId: 'party1',
@@ -97,19 +170,25 @@ implementations.forEach(([name, StoreImpl]) => {
             await store.addWallet(wallet1)
             await store.addWallet(wallet2)
             await store.addWallet(wallet3)
+
             const getAllWallets = await store.getWallets()
-            const getWalletsByNetworkId = await store.getWallets({
+            const getAllWalletsAcrossNetworks = await store.getAllWallets({
+                networkIds: ['network1', 'network2'],
+            })
+            const getWalletsByNetworkId = await store.getAllWallets({
                 networkIds: ['network1'],
             })
-            const getWalletsBySigningProviderId = await store.getWallets({
+            const getWalletsBySigningProviderId = await store.getAllWallets({
                 signingProviderIds: ['internal2'],
             })
             const getWalletsByNetworkIdAndSigningProviderId =
-                await store.getWallets({
+                await store.getAllWallets({
                     networkIds: ['network1'],
                     signingProviderIds: ['internal2'],
                 })
-            expect(getAllWallets).toHaveLength(3)
+
+            expect(getAllWallets).toHaveLength(2)
+            expect(getAllWalletsAcrossNetworks).toHaveLength(3)
             expect(getWalletsByNetworkId).toHaveLength(2)
             expect(getWalletsBySigningProviderId).toHaveLength(2)
             expect(getWalletsByNetworkIdAndSigningProviderId).toHaveLength(1)
@@ -215,13 +294,8 @@ implementations.forEach(([name, StoreImpl]) => {
                 ledgerApi,
                 auth,
             }
-            // Add IdP if it doesn't exist, otherwise update it
-            try {
-                await store.addIdp(idp)
-            } catch {
-                await store.updateIdp(idp)
-            }
-            await store.updateNetwork(network)
+            await store.addIdp(idp)
+            await store.addNetwork(network)
             const listed = await store.listNetworks()
             expect(listed).toHaveLength(1)
             expect(listed[0].name).toBe('testnet')
@@ -243,6 +317,50 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should allow same party ID across different networks', async () => {
+            const idp: Idp = {
+                id: 'idp1',
+                type: 'oauth' as const,
+                issuer: 'http://auth',
+                configUrl: 'http://auth/.well-known/openid-configuration',
+            }
+            const network1: Network = {
+                id: 'network1',
+                name: 'testnet-1',
+                synchronizerId: 'sync1::fingerprint',
+                description: 'Test Network 1',
+                identityProviderId: 'idp1',
+                ledgerApi: { baseUrl: 'http://api' },
+                auth: {
+                    method: 'authorization_code',
+                    clientId: 'cid',
+                    scope: 'scope',
+                    audience: 'aud',
+                },
+            }
+            const network2: Network = {
+                id: 'network2',
+                name: 'testnet-2',
+                synchronizerId: 'sync2::fingerprint',
+                description: 'Test Network 2',
+                identityProviderId: 'idp1',
+                ledgerApi: { baseUrl: 'http://api' },
+                auth: {
+                    method: 'authorization_code',
+                    clientId: 'cid',
+                    scope: 'scope',
+                    audience: 'aud',
+                },
+            }
+            const session: Session = {
+                id: 'session1',
+                network: 'network1',
+                accessToken: 'token',
+            }
+            await store.addIdp(idp)
+            await store.addNetwork(network1)
+            await store.addNetwork(network2)
+            await store.setSession(session)
+
             const wallet1: Wallet = {
                 primary: false,
                 partyId: 'party1::namespace',
@@ -265,10 +383,15 @@ implementations.forEach(([name, StoreImpl]) => {
             }
             await store.addWallet(wallet1)
             await store.addWallet(wallet2) // Should not throw
+
             const wallets = await store.getWallets()
-            expect(wallets).toHaveLength(2)
+            expect(wallets).toHaveLength(1)
+            const allWallets = await store.getAllWallets({
+                networkIds: ['network1', 'network2'],
+            })
+            expect(allWallets).toHaveLength(2)
             expect(
-                wallets.filter((w) => w.partyId === 'party1::namespace')
+                allWallets.filter((w) => w.partyId === 'party1::namespace')
             ).toHaveLength(2)
         })
 
@@ -306,13 +429,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 ledgerApi,
                 auth,
             }
-            // Add IdP if it doesn't exist, otherwise update it
-            try {
-                await store.addIdp(idp)
-            } catch {
-                // IdP already exists, update it instead
-                await store.updateIdp(idp)
-            }
+            await store.addIdp(idp)
             const wallet1: Wallet = {
                 primary: false,
                 partyId: 'party1',
@@ -354,13 +471,6 @@ implementations.forEach(([name, StoreImpl]) => {
                 networkId: 'network2',
             }
 
-            // Add IdP if it doesn't exist, otherwise update it
-            try {
-                await store.addIdp(idp)
-            } catch {
-                // IdP already exists, update it instead
-                await store.updateIdp(idp)
-            }
             await store.addNetwork(network1)
             await store.addNetwork(network2)
 
@@ -437,7 +547,9 @@ implementations.forEach(([name, StoreImpl]) => {
             await store.setSession(session2)
             await store.addWallet(wallet2) // Should not throw, should create new entry
 
-            const wallets = await store.getWallets()
+            const wallets = await store.getAllWallets({
+                networkIds: ['network1', 'network2'],
+            })
             expect(wallets).toHaveLength(2)
             expect(
                 wallets.filter((w) => w.partyId === 'party1::namespace')

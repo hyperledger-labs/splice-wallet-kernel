@@ -449,9 +449,7 @@ export const userController = (
                 await store.addWallet(wallet)
             }
 
-            const wallets = await store.getWallets({
-                networkIds: [network.id],
-            })
+            const wallets = await store.getWallets()
             notifier?.emit('accountsChanged', wallets)
 
             return { wallet }
@@ -462,10 +460,7 @@ export const userController = (
                 ? notificationService.getNotifier(authContext.userId)
                 : undefined
 
-            const network = await store.getCurrentNetwork()
-            const wallets = await store.getWallets({
-                networkIds: [network.id],
-            })
+            const wallets = await store.getWallets()
             notifier?.emit('accountsChanged', wallets)
             return null
         },
@@ -474,7 +469,7 @@ export const userController = (
         listWallets: async (params: {
             filter?: { networkIds?: string[]; signingProviderIds?: string[] }
         }) => {
-            return await store.getWallets(params.filter)
+            return await store.getAllWallets(params.filter)
         },
         sign: async ({
             preparedTransaction,
@@ -487,9 +482,7 @@ export const userController = (
                 throw new Error('No network session found')
             }
 
-            const wallets = await store.getWallets({
-                networkIds: [network.id],
-            })
+            const wallets = await store.getWallets()
             const wallet = wallets.find((w) => w.partyId === partyId)
 
             if (wallet === undefined) {
@@ -804,9 +797,7 @@ export const userController = (
                 })
 
                 //we only want to automatically perform a sync if it is the first time a session is created
-                const wallets = await store.getWallets({
-                    networkIds: [network.id],
-                })
+                const wallets = await store.getWallets()
                 if (wallets.length == 0) {
                     const adminAccessTokenProvider = new AuthTokenProvider(
                         idp,
@@ -942,9 +933,7 @@ export const userController = (
                 return result
             }
             const notifier = notificationService.getNotifier(userId)
-            const wallets = await store.getWallets({
-                networkIds: [network.id],
-            })
+            const wallets = await store.getWallets()
             notifier?.emit('accountsChanged', wallets)
             return result
         },

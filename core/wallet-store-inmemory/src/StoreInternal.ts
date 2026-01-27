@@ -24,6 +24,7 @@ import {
     LedgerClient,
     defaultRetryableOptions,
 } from '@canton-network/core-ledger-client'
+import { CurrentNetworkWalletFilter } from '@canton-network/core-wallet-store/dist'
 
 interface UserStorage {
     wallets: Array<Wallet>
@@ -130,7 +131,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                 })
 
             // Merge Wallets - check for duplicates by (partyId, networkId)
-            const existingWallets = await this.getWallets({
+            const existingWallets = await this.getAllWallets({
                 networkIds: [network.id],
             })
             const existingPartyNetworkPairs = new Set(
@@ -180,7 +181,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         }
     }
 
-    async getWallets(filter: WalletFilter = {}): Promise<Array<Wallet>> {
+    async getAllWallets(filter: WalletFilter = {}): Promise<Array<Wallet>> {
         const { networkIds, signingProviderIds } = filter
         const networkIdSet = networkIds ? new Set(networkIds) : null
         const signingProviderIdSet = signingProviderIds
@@ -198,9 +199,18 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         })
     }
 
-    async getPrimaryWallet(): Promise<Wallet | undefined> {
+    async getWallets(
+        filter: CurrentNetworkWalletFilter = {}
+    ): Promise<Array<Wallet>> {
         const network = await this.getCurrentNetwork()
-        const wallets = await this.getWallets({ networkIds: [network.id] })
+        return this.getAllWallets({
+            ...filter,
+            networkIds: [network.id],
+        })
+    }
+
+    async getPrimaryWallet(): Promise<Wallet | undefined> {
+        const wallets = await this.getWallets()
         return wallets.find((w) => w.primary === true)
     }
 
@@ -244,7 +254,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                 `Wallet with partyId "${wallet.partyId}" already exists in network "${wallet.networkId}"`
             )
         }
-        const networkWallets = await this.getWallets({
+        const networkWallets = await this.getAllWallets({
             networkIds: [wallet.networkId],
         })
 

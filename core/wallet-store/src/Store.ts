@@ -26,6 +26,8 @@ export interface WalletFilter {
     signingProviderIds?: string[]
 }
 
+export type CurrentNetworkWalletFilter = Omit<WalletFilter, 'networkIds'>
+
 export interface UpdateWallet {
     status: WalletStatus
     partyId: PartyId
@@ -74,7 +76,8 @@ export interface Transaction {
 
 export interface Store {
     // Wallet methods
-    getWallets(filter?: WalletFilter): Promise<Array<Wallet>>
+    getAllWallets(filter?: WalletFilter): Promise<Array<Wallet>>
+    getWallets(filter?: CurrentNetworkWalletFilter): Promise<Array<Wallet>>
     getPrimaryWallet(): Promise<Wallet | undefined>
     setPrimaryWallet(partyId: PartyId): Promise<void>
     addWallet(wallet: Wallet): Promise<void>

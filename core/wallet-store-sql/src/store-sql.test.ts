@@ -101,6 +101,12 @@ implementations.forEach(([name, StoreImpl]) => {
             const store = new StoreImpl(db, pino(sink()), authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
+            const session: Session = {
+                id: 'session1',
+                network: 'network1',
+                accessToken: 'token',
+            }
+            await store.setSession(session)
             await store.addWallet(wallet)
             const wallets = await store.getWallets()
             expect(wallets).toHaveLength(1)
@@ -157,22 +163,33 @@ implementations.forEach(([name, StoreImpl]) => {
             await store.addIdp(idp2)
             await store.addNetwork(network)
             await store.addNetwork(network2)
+            const session: Session = {
+                id: 'session1',
+                network: 'network1',
+                accessToken: 'token',
+            }
+            await store.setSession(session)
             await store.addWallet(wallet1)
             await store.addWallet(wallet2)
             await store.addWallet(wallet3)
+
             const getAllWallets = await store.getWallets()
-            const getWalletsByNetworkId = await store.getWallets({
+            const getAllWalletsAcrossNetworks = await store.getAllWallets({
+                networkIds: ['network1', 'network2'],
+            })
+            const getWalletsByNetworkId = await store.getAllWallets({
                 networkIds: ['network1'],
             })
-            const getWalletsBySigningProviderId = await store.getWallets({
+            const getWalletsBySigningProviderId = await store.getAllWallets({
                 signingProviderIds: ['internal'],
             })
             const getWalletsByNetworkIdAndSigningProviderId =
-                await store.getWallets({
+                await store.getAllWallets({
                     networkIds: ['network1'],
                     signingProviderIds: ['internal'],
                 })
-            expect(getAllWallets).toHaveLength(3)
+            expect(getAllWallets).toHaveLength(2)
+            expect(getAllWalletsAcrossNetworks).toHaveLength(3)
             expect(getWalletsByNetworkId).toHaveLength(2)
             expect(getWalletsBySigningProviderId).toHaveLength(3)
             expect(getWalletsByNetworkIdAndSigningProviderId).toHaveLength(2)
@@ -309,12 +326,23 @@ implementations.forEach(([name, StoreImpl]) => {
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.addNetwork(network2)
+            const session: Session = {
+                id: 'session1',
+                network: 'network1',
+                accessToken: 'token',
+            }
+            await store.setSession(session)
             await store.addWallet(wallet1)
             await store.addWallet(wallet2) // Should not throw
+
             const wallets = await store.getWallets()
-            expect(wallets).toHaveLength(2)
+            expect(wallets).toHaveLength(1)
+            const allWallets = await store.getAllWallets({
+                networkIds: ['network1', 'network2'],
+            })
+            expect(allWallets).toHaveLength(2)
             expect(
-                wallets.filter((w) => w.partyId === 'party1::namespace')
+                allWallets.filter((w) => w.partyId === 'party1::namespace')
             ).toHaveLength(2)
         })
 
@@ -475,15 +503,19 @@ implementations.forEach(([name, StoreImpl]) => {
             await store.addWallet(wallet2) // Should not throw, should create new entry
 
             const wallets = await store.getWallets()
-            expect(wallets).toHaveLength(2)
+            expect(wallets).toHaveLength(1)
+            const allWallets = await store.getAllWallets({
+                networkIds: ['network1', 'network2'],
+            })
+            expect(allWallets).toHaveLength(2)
             expect(
-                wallets.filter((w) => w.partyId === 'party1::namespace')
+                allWallets.filter((w) => w.partyId === 'party1::namespace')
             ).toHaveLength(2)
             expect(
-                wallets.find((w) => w.networkId === 'network1')?.partyId
+                allWallets.find((w) => w.networkId === 'network1')?.partyId
             ).toBe('party1::namespace')
             expect(
-                wallets.find((w) => w.networkId === 'network2')?.partyId
+                allWallets.find((w) => w.networkId === 'network2')?.partyId
             ).toBe('party1::namespace')
         })
 
@@ -515,8 +547,23 @@ implementations.forEach(([name, StoreImpl]) => {
                 userId: 'test-user-id-2',
                 accessToken: 'test-access-token-2',
             }
+            const session2: Session = {
+                id: 'sess-456',
+                network: 'network1',
+                accessToken: 'token',
+            }
             const store2 = new StoreImpl(db, pino(sink()), authContext2)
-            await store2.setSession(session)
+            console.log({
+                store,
+                store2,
+                network,
+                store1Sess: await store.getSession(),
+                store2Sess: await store2.getSession(),
+                store1Sess: await store.getSession(),
+                store2Sess: await store2.getSession(),
+            })
+            await store2.updateNetwork(network)
+            await store2.setSession(session2)
 
             // Add same wallet (same party+network) - should update userId
             await store2.addWallet(wallet1)

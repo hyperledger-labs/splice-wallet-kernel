@@ -477,7 +477,7 @@ describe('WalletSyncService - multi-network features', () => {
         await service.syncWallets()
 
         // Should only add wallet for party3 (party1 already exists)
-        const wallets = await store.getWallets({ networkIds: ['network1'] })
+        const wallets = await store.getAllWallets({ networkIds: ['network1'] })
         expect(wallets.some((w) => w.partyId === 'party3::namespace')).toBe(
             true
         )
@@ -521,7 +521,7 @@ describe('WalletSyncService - multi-network features', () => {
         await service.syncWallets()
 
         // Should add party1 for network1
-        const wallets = await store.getWallets({ networkIds: ['network1'] })
+        const wallets = await store.getAllWallets({ networkIds: ['network1'] })
         expect(wallets.some((w) => w.partyId === 'party1::namespace')).toBe(
             true
         )
@@ -629,7 +629,7 @@ describe('WalletSyncService - multi-network features', () => {
         await setSession('network2')
 
         // Verify no wallets exist for network2 before sync
-        const walletsBeforeSync = await store.getWallets({
+        const walletsBeforeSync = await store.getAllWallets({
             networkIds: ['network2'],
         })
         expect(walletsBeforeSync.length).toBe(0)
@@ -663,7 +663,7 @@ describe('WalletSyncService - multi-network features', () => {
         expect(syncResult.added[0].networkId).toBe('network2')
         expect(syncResult.added[0].disabled).toBe(false)
 
-        const network2Wallets = await store.getWallets({
+        const network2Wallets = await store.getAllWallets({
             networkIds: ['network2'],
         })
         const party1Wallet = network2Wallets.find(

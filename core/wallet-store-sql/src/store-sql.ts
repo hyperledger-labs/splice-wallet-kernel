@@ -19,6 +19,7 @@ import {
     Network,
     StoreConfig,
     UpdateWallet,
+    CurrentNetworkWalletFilter,
 } from '@canton-network/core-wallet-store'
 import { CamelCasePlugin, Kysely, PostgresDialect, SqliteDialect } from 'kysely'
 import Database from 'better-sqlite3'
@@ -57,7 +58,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
 
     // Wallet methods
 
-    async getWallets(filter: WalletFilter = {}): Promise<Array<Wallet>> {
+    async getAllWallets(filter: WalletFilter = {}): Promise<Array<Wallet>> {
         const userId = this.assertConnected()
         const { networkIds, signingProviderIds } = filter
         const networkIdSet = networkIds ? new Set(networkIds) : null
@@ -102,16 +103,25 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             )
     }
 
-    async getPrimaryWallet(): Promise<Wallet | undefined> {
+    async getWallets(
+        filter: CurrentNetworkWalletFilter = {}
+    ): Promise<Array<Wallet>> {
         const network = await this.getCurrentNetwork()
-        const wallets = await this.getWallets({ networkIds: [network.id] })
+        return this.getAllWallets({
+            ...filter,
+            networkIds: [network.id],
+        })
+    }
+
+    async getPrimaryWallet(): Promise<Wallet | undefined> {
+        const wallets = await this.getWallets()
         return wallets.find((w) => w.primary === true)
     }
 
     async setPrimaryWallet(partyId: PartyId): Promise<void> {
         const network = await this.getCurrentNetwork()
         const userId = this.assertConnected()
-        const wallets = await this.getWallets({ networkIds: [network.id] })
+        const wallets = await this.getWallets()
 
         if (!wallets.some((w) => w.partyId === partyId)) {
             throw new Error(
@@ -156,7 +166,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         const userId = this.assertConnected()
 
         // Check if this is the first wallet in this network for this user
-        const wallets = await this.getWallets({
+        const wallets = await this.getAllWallets({
             networkIds: [wallet.networkId],
         })
         const isFirstWallet = wallets.length === 0

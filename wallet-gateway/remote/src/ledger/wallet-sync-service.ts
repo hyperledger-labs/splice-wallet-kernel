@@ -225,9 +225,7 @@ export class WalletSyncService {
         try {
             const network = await this.store.getCurrentNetwork()
 
-            const existingWallets = await this.store.getWallets({
-                networkIds: [network.id],
-            })
+            const existingWallets = await this.store.getWallets()
 
             const hasDisabledWallets = existingWallets.some((w) => w.disabled)
             if (hasDisabledWallets) {
@@ -264,9 +262,7 @@ export class WalletSyncService {
 
             // Add new Wallets given the found parties
             // Only check wallets in the current network
-            const existingWallets = await this.store.getWallets({
-                networkIds: [network.id],
-            })
+            const existingWallets = await this.store.getWallets()
             this.logger.info(existingWallets, 'Existing wallets')
             // Treat disabled wallets as if they don't exist, so they can be re-synced
             const enabledWallets = existingWallets.filter((w) => !w.disabled)
@@ -384,9 +380,7 @@ export class WalletSyncService {
             )
 
             // Set primary wallet if none exists in current network
-            const networkWallets = await this.store.getWallets({
-                networkIds: [network.id],
-            })
+            const networkWallets = await this.store.getWallets()
             const hasPrimary = networkWallets.some((w) => w.primary)
             if (!hasPrimary && networkWallets.length > 0) {
                 this.store.setPrimaryWallet(networkWallets[0].partyId)
