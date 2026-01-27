@@ -13,11 +13,13 @@ import {
     JSContractEntry,
     isJsCantonError,
     components,
+    PrepareSubmissionResponse,
+} from '@canton-network/core-ledger-client'
+import {
     WebSocketClient,
     JsGetUpdatesResponse,
     CompletionResponse,
-    PrepareSubmissionResponse,
-} from '@canton-network/core-ledger-client'
+} from '@canton-network/core-asyncapi-client'
 import {
     signTransactionHash,
     getPublicKeyFromPrivate,
@@ -108,7 +110,6 @@ export class LedgerController {
                 isAdmin,
                 logger: this.logger,
                 accessTokenProvider,
-                wsSupportBackOff: 6000 * 10,
             })
 
             this.webSocketManager = new WebSocketManager({
