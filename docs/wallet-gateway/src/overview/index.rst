@@ -26,7 +26,7 @@ High-Level Architecture
            │                             │  │  User API  │  │
            │      User interactions      │  │  User UI   │  │     ┌─────────────────┐
            └────────────────────────────►│  └────────────┘  │ ◄──►│ Signing Provider│
-                (User UI / User API)      │                  │     │ (Participant,   │
+                (User UI / User API)     │                  │     │ (Participant,   │
                                          └──────────────────┘     │  Fireblocks…)   │
                                                                   └─────────────────┘
 
