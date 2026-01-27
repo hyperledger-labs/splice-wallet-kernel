@@ -23,7 +23,6 @@ export const InstrumentAccordion: React.FC<InstrumentAccordionProps> = ({
     aggregatedHolding,
     holdings,
 }) => {
-    console.log('aggregatedHolding', aggregatedHolding)
     const symbol =
         aggregatedHolding.instrument?.symbol ??
         aggregatedHolding.instrumentId.id

@@ -26,7 +26,6 @@ export const useWalletHoldings = (
     partyId: string | undefined
 ): WalletHoldingsResult => {
     const registryInstruments = useInstruments()
-    console.log('registryInstruments', registryInstruments)
 
     const holdingsQuery = useQuery({
         queryKey: queryKeys.listHoldings.forParty(partyId),
