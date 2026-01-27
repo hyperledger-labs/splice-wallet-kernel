@@ -22,7 +22,8 @@ const setupRegistry = async (page: Page): Promise<void> => {
         .getByRole('textbox', { name: 'url' })
         .fill('http://scan.localhost:4000')
     await page.getByRole('button', { name: 'Add registry' }).click()
-    await expect(page.getByText('DSO::')).toBeVisible()
+    // await expect(page.getByText('DSO::')).toBeVisible()
+    await expect(page.getByRole('cell', { name: /^DSO::/ })).toBeVisible()
 }
 
 const tap = async (
