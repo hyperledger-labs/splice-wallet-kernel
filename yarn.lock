@@ -1430,9 +1430,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-asyncapi-client@workspace:core/asyncapi-client"
   dependencies:
-    "@canton-network/core-ledger-proto": "workspace:^"
-    "@canton-network/core-splice-client": "workspace:^"
-    "@canton-network/core-token-standard": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
     "@jest/globals": "npm:^30.2.0"
@@ -1441,16 +1438,13 @@ __metadata:
     "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:^25.0.10"
     bignumber.js: "npm:^9.3.1"
-    dayjs: "npm:^1.11.19"
     jest: "npm:^30.2.0"
-    openapi-fetch: "npm:^0.15.0"
     openapi-typescript: "npm:^7.10.1"
     pino: "npm:^10.2.1"
     ts-jest: "npm:^29.4.6"
     ts-jest-resolver: "npm:^2.0.1"
     tsup: "npm:^8.5.1"
     typescript: "npm:^5.9.3"
-    typescript-lru-cache: "npm:^2.0.0"
   languageName: unknown
   linkType: soft
 
