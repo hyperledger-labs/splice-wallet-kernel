@@ -542,36 +542,50 @@ implementations.forEach(([name, StoreImpl]) => {
             await store.setSession(session)
             await store.addWallet(wallet1)
 
+            // Verify wallet was created with first user's ID
+            const walletBefore = await db
+                .selectFrom('wallets')
+                .selectAll()
+                .where('party_id', '=', 'party1::namespace')
+                .where('network_id', '=', 'network1')
+                .executeTakeFirst()
+            expect(walletBefore?.userId).toBe('test-user-id')
+
             // Create new store with different user
             const authContext2: AuthContext = {
                 userId: 'test-user-id-2',
                 accessToken: 'test-access-token-2',
             }
+            const store2 = new StoreImpl(db, pino(sink()), authContext2)
             const session2: Session = {
                 id: 'sess-456',
                 network: 'network1',
                 accessToken: 'token',
             }
-            const store2 = new StoreImpl(db, pino(sink()), authContext2)
-            console.log({
-                store,
-                store2,
-                network,
-                store1Sess: await store.getSession(),
-                store2Sess: await store2.getSession(),
-                store1Sess: await store.getSession(),
-                store2Sess: await store2.getSession(),
-            })
-            await store2.updateNetwork(network)
             await store2.setSession(session2)
 
             // Add same wallet (same party+network) - should update userId
             await store2.addWallet(wallet1)
 
-            const wallets = await store2.getWallets()
-            expect(wallets).toHaveLength(1)
-            expect(wallets[0].partyId).toBe('party1::namespace')
-            expect(wallets[0].networkId).toBe('network1')
+            // Verify wallet userId was updated to second user's ID
+            const walletAfter = await db
+                .selectFrom('wallets')
+                .selectAll()
+                .where('party_id', '=', 'party1::namespace')
+                .where('network_id', '=', 'network1')
+                .executeTakeFirst()
+            expect(walletAfter?.userId).toBe('test-user-id-2')
+            expect(walletAfter?.partyId).toBe('party1::namespace')
+            expect(walletAfter?.networkId).toBe('network1')
+
+            // Verify there's still only one wallet (not duplicated)
+            const allWallets = await db
+                .selectFrom('wallets')
+                .selectAll()
+                .where('party_id', '=', 'party1::namespace')
+                .where('network_id', '=', 'network1')
+                .execute()
+            expect(allWallets).toHaveLength(1)
         })
     })
 })
