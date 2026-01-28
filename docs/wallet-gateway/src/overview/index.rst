@@ -34,18 +34,26 @@ High-Level Architecture
 - **User → Wallet Gateway**: Users manage wallets and approve transactions via the **User UI** or programmatically via the **User API** (sessions, networks, IDPs, wallets, sign, execute).
 - **Wallet Gateway → Canton / Signing**: The Gateway authenticates to validator Ledger APIs and forwards signing requests to the configured signing provider.
 
-dApp API vs User API
+dApp API and dApp SDK
+---------------------
+
+The **dApp API** is a JSON-RPC 2.0 interface specified by **CIP-103**.
+You can call it directly (e.g. over HTTP or WebSocket) from your frontend or backend.
+In practice, most developers use the **dApp SDK**, which implements the same protocol and adds a simpler API, multi-transport support (HTTP for remote Gateways, ``postMessage`` for browser-extension wallets), and an EIP-1193–style provider (``window.canton``).
+The dApp API lets your frontend connect to a wallet, list accounts, prepare and execute transactions, and receive real-time updates; all of this requires a valid session (JWT).
+See :ref:`apis` and the :ref:`dapp-sdk` documentation.
+
+User API and User UI
 --------------------
 
-- **dApp API** (``/api/v0/dapp``): For **dApps**. Used by your frontend (via the dApp SDK) to connect to a wallet, list accounts, prepare and execute transactions, and receive real-time updates. Requires a valid session (JWT). See :ref:`apis` and the :ref:`dapp-sdk` documentation.
+The **User API** is for users and automation: sessions, networks, identity providers, wallets, and transaction signing. The **User UI** (served by the Wallet Gateway) is a web interface that uses the User API so users can log in, create and manage wallets, approve dApp transactions, and change settings. For custom integrations or scripts, you can call the User API directly instead of using the User UI. See :ref:`usage` and :ref:`apis`.
 
-- **User API** (``/api/v0/user``): For **users** and **automation**. Used to manage sessions, networks, identity providers, wallets, and transactions (sign, execute, list). The **User UI** is built on the User API. Use it for custom UIs, scripts, or when integrating with your own auth and wallet flows.
 
 Discovery and Connection Flow
 -----------------------------
 
 1. **Discovery**: Your dApp discovers available Wallet Gateway instances (e.g. via well-known URLs or a registry). Each Gateway exposes a base URL and kernel info.
-2. **Connect**: The user chooses a Gateway. Your dApp calls ``connect()`` (dApp SDK). Depending on configuration, the user may be redirected to the Gateway’s Web UI to log in (OAuth or self-signed).
+2. **Connect**: The user chooses a Gateway. Your dApp calls ``connect()`` (dApp SDK). Depending on configuration, the user may be redirected to the Gateway’s User UI to log in (OAuth or self-signed).
 3. **Session**: After login, the Gateway creates a session and returns a JWT. The dApp SDK uses this to call the dApp API (``listAccounts``, ``prepareExecute``, etc.).
 4. **Transactions**: When your dApp calls ``prepareExecute``, the user may need to approve the transaction in the User UI. Once signed and executed, your dApp receives the result and can react to ``TxChanged`` events.
 
