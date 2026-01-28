@@ -5,7 +5,7 @@ import { WalletPreview } from './wallet-preview'
 export const WalletsPreview = () => {
     const wallets = useAccounts()
         .slice()
-        .sort((a, b) => (b.primary ? 1 : 0) - (a.primary ? 1 : 0)) // make primary wallet first in the grid
+        .sort((a, b) => Number(a.primary) - Number(b.primary)) // make primary wallet first in the grid
 
     return (
         <Box sx={{ mt: 1 }}>
