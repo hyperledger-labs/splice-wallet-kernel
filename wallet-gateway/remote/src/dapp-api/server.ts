@@ -10,9 +10,13 @@ import { Methods } from './rpc-gen/index.js'
 import { Store } from '@canton-network/core-wallet-store'
 import { AuthService, AuthAware } from '@canton-network/core-wallet-auth'
 import { Server } from 'http'
-import { Server as SocketIoServer } from 'socket.io'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo, ServerConfig } from '../config/Config.js'
+
+function writeSSE(res: express.Response, event: string, data: unknown): void {
+    res.write(`event: ${event}\n`)
+    res.write(`data: ${JSON.stringify(data)}\n\n`)
+}
 
 export const dapp = (
     route: string,
@@ -32,6 +36,67 @@ export const dapp = (
             origin: serverConfig.allowedOrigins,
         })
     )
+
+    // SSE endpoint for real-time notifications (must be registered before the JSON-RPC route)
+    app.get(`${route}/events`, async (req, res) => {
+        const context = req.authContext
+        if (!context) {
+            res.status(401).json({ error: 'Unauthenticated' })
+            return
+        }
+
+        const newStore = store.withAuthContext(context)
+        const session = await newStore.getSession()
+        const sessionId = session?.id
+
+        if (!sessionId) {
+            res.status(401).json({ error: 'No session' })
+            return
+        }
+
+        logger.debug(
+            `SSE connected for user: ${context.userId} with session ID: ${sessionId}`
+        )
+
+        res.setHeader('Content-Type', 'text/event-stream')
+        res.setHeader('Cache-Control', 'no-cache')
+        res.setHeader('Connection', 'keep-alive')
+        res.setHeader('X-Accel-Buffering', 'no')
+        res.flushHeaders?.()
+
+        const notifier = notificationService.getNotifier(context.userId)
+
+        const onAccountsChanged = (...event: unknown[]) => {
+            writeSSE(res, 'accountsChanged', event)
+        }
+        const onStatusChanged = (...event: unknown[]) => {
+            logger.debug({ sessionId }, 'Emitting statusChanged event via SSE')
+            writeSSE(res, 'statusChanged', event)
+        }
+        const onConnected = (...event: unknown[]) => {
+            writeSSE(res, 'connected', event)
+        }
+        const onTxChanged = (...event: unknown[]) => {
+            writeSSE(res, 'txChanged', event)
+        }
+
+        notifier.on('accountsChanged', onAccountsChanged)
+        notifier.on('connected', onConnected)
+        notifier.on('statusChanged', onStatusChanged)
+        notifier.on('txChanged', onTxChanged)
+
+        const cleanup = () => {
+            logger.debug('SSE client disconnected')
+            notifier.removeListener('accountsChanged', onAccountsChanged)
+            notifier.removeListener('connected', onConnected)
+            notifier.removeListener('statusChanged', onStatusChanged)
+            notifier.removeListener('txChanged', onTxChanged)
+        }
+
+        req.on('close', cleanup)
+        req.on('error', cleanup)
+    })
+
     app.use(route, (req, res, next) => {
         const origin: string | null = req.headers.origin ?? null
 
@@ -48,66 +113,6 @@ export const dapp = (
             ),
             logger,
         })(req, res, next)
-    })
-
-    const io = new SocketIoServer(server, {
-        cors: {
-            origin: serverConfig.allowedOrigins,
-            methods: ['GET', 'POST'],
-        },
-    })
-
-    io.on('connection', async (socket) => {
-        let sessionId = undefined
-        const context = await authService.verifyToken(
-            socket.handshake.auth.token
-        )
-
-        if (context !== undefined) {
-            const newStore = store.withAuthContext(context)
-            const session = await newStore.getSession()
-            sessionId = session?.id
-        }
-
-        if (context && sessionId) {
-            socket.join(sessionId)
-            logger.debug(
-                `Socket.io connected for user: ${context.userId} with session ID: ${sessionId}`
-            )
-
-            const notifier = notificationService.getNotifier(context.userId)
-
-            const onAccountsChanged = (...event: unknown[]) => {
-                io.to(sessionId).emit('accountsChanged', ...event)
-            }
-            const onStatusChanged = (...event: unknown[]) => {
-                logger.debug(
-                    { sessionId },
-                    'Emitting statusChanged event via Socket.io'
-                )
-                io.to(sessionId).emit('statusChanged', ...event)
-            }
-            const onConnected = (...event: unknown[]) => {
-                io.to(sessionId).emit('connected', ...event)
-            }
-            const onTxChanged = (...event: unknown[]) => {
-                io.to(sessionId).emit('txChanged', ...event)
-            }
-
-            notifier.on('accountsChanged', onAccountsChanged)
-            notifier.on('connected', onConnected)
-            notifier.on('statusChanged', onStatusChanged)
-            notifier.on('txChanged', onTxChanged)
-
-            socket.on('disconnect', () => {
-                logger.debug('Socket.io client disconnected')
-
-                notifier.removeListener('accountsChanged', onAccountsChanged)
-                notifier.removeListener('connected', onConnected)
-                notifier.removeListener('statusChanged', onStatusChanged)
-                notifier.removeListener('txChanged', onTxChanged)
-            })
-        }
     })
 
     return server

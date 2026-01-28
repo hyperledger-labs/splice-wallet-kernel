@@ -9,17 +9,16 @@ import {
 import { HttpTransport } from '@canton-network/core-rpc-transport'
 import SpliceWalletJSONRPCDAppAPI from '@canton-network/core-wallet-dapp-rpc-client'
 import { SpliceProviderBase } from './SpliceProvider'
-import { io, Socket } from 'socket.io-client'
 
-// Maintain a global socket instance in-memory to avoid multiple connections
+// Maintain a global SSE connection in-memory to avoid multiple connections
 // per SpliceProviderHttp instance.
-type GatewaySocket = {
-    socket: Socket
+type GatewaySSE = {
     url: string
     token: string
+    eventSource: EventSource
 } | null
 
-let connection: GatewaySocket = null
+let connection: GatewaySSE = null
 
 export class SpliceProviderHttp extends SpliceProviderBase {
     private sessionToken?: string
@@ -30,33 +29,87 @@ export class SpliceProviderHttp extends SpliceProviderBase {
         return new SpliceWalletJSONRPCDAppAPI(transport)
     }
 
-    private openSocket(url: URL, token: string): void {
-        // Assumes the socket URI is accessed directly on the host w/o the API path.
-        const socketUri = url.origin
+    private openSSE(url: URL, token: string): void {
+        const sseUrl = new URL('events', url.toString().replace(/\/?$/, '/'))
+        sseUrl.searchParams.set('token', token)
+        const sseUrlString = sseUrl.toString()
 
         // Reconnect if the URL or token has changed
         if (
             connection &&
-            (token !== connection.token || socketUri !== connection.url)
+            (token !== connection.token || sseUrlString !== connection.url)
         ) {
-            connection.socket.disconnect()
+            connection.eventSource.close()
             connection = null
         }
 
         if (!connection) {
-            connection = {
-                token,
-                url: socketUri,
-                socket: io(socketUri, {
-                    auth: {
-                        token: `Bearer ${token}`,
-                    },
-                }),
+            const eventSource = new EventSource(sseUrlString)
+
+            eventSource.onmessage = (event) => {
+                // Default message event (no event type specified)
+                try {
+                    const data = JSON.parse(event.data)
+                    const args = Array.isArray(data) ? data : [data]
+                    this.emit('message', ...args)
+                } catch {
+                    this.emit('message', event.data)
+                }
             }
 
-            connection.socket.onAny((event, ...args) => {
-                this.emit(event, ...args)
+            // Handle named events (accountsChanged, statusChanged, etc.)
+            eventSource.addEventListener('accountsChanged', (event) => {
+                try {
+                    const data = JSON.parse(event.data)
+                    const args = Array.isArray(data) ? data : [data]
+                    this.emit('accountsChanged', ...args)
+                } catch {
+                    this.emit('accountsChanged', event.data)
+                }
             })
+
+            eventSource.addEventListener('statusChanged', (event) => {
+                try {
+                    const data = JSON.parse(event.data)
+                    const args = Array.isArray(data) ? data : [data]
+                    this.emit('statusChanged', ...args)
+                } catch {
+                    this.emit('statusChanged', event.data)
+                }
+            })
+
+            eventSource.addEventListener('connected', (event) => {
+                try {
+                    const data = JSON.parse(event.data)
+                    const args = Array.isArray(data) ? data : [data]
+                    this.emit('connected', ...args)
+                } catch {
+                    this.emit('connected', event.data)
+                }
+            })
+
+            eventSource.addEventListener('txChanged', (event) => {
+                try {
+                    const data = JSON.parse(event.data)
+                    const args = Array.isArray(data) ? data : [data]
+                    this.emit('txChanged', ...args)
+                } catch {
+                    this.emit('txChanged', event.data)
+                }
+            })
+
+            eventSource.onerror = () => {
+                if (connection?.url === sseUrlString) {
+                    connection.eventSource.close()
+                    connection = null
+                }
+            }
+
+            connection = {
+                eventSource,
+                url: sseUrlString,
+                token,
+            }
         }
     }
 
@@ -68,7 +121,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
 
         if (sessionToken) {
             this.sessionToken = sessionToken
-            this.openSocket(url, sessionToken)
+            this.openSSE(url, sessionToken)
         }
 
         this.client = this.createClient(sessionToken)
@@ -82,9 +135,9 @@ export class SpliceProviderHttp extends SpliceProviderBase {
             ) {
                 this.sessionToken = event.data.token
                 this.client = this.createClient(this.sessionToken)
-                this.openSocket(this.url, event.data.token)
+                this.openSSE(this.url, event.data.token)
 
-                // We requery the status explicitly here, as it's not guaranteed that the socket will be open & authenticated
+                // We requery the status explicitly here, as it's not guaranteed that the SSE connection will be open & authenticated
                 // before the `connected` event is fired from the `addSession` RPC call. The dappApi.StatusResult and
                 // dappApi.ConnectedEvent are mapped manually to avoid dependency.
                 this.request({ method: 'status' })
