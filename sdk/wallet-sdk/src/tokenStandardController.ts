@@ -14,8 +14,8 @@ import {
     Holding,
     ExerciseCommand,
     DisclosedContract,
-    WebSocketClient,
 } from '@canton-network/core-ledger-client'
+import { WebSocketClient } from '@canton-network/core-asyncapi-client'
 import { WebSocketManager } from './webSocketManager.js'
 import { ScanClient, ScanProxyClient } from '@canton-network/core-splice-client'
 
@@ -153,7 +153,6 @@ export class TokenStandardController {
                 isAdmin,
                 logger: this.logger,
                 accessTokenProvider,
-                wsSupportBackOff: 6000 * 10,
             })
 
             this.webSocketManager = new WebSocketManager({
