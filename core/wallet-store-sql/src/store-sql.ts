@@ -19,6 +19,7 @@ import {
     Network,
     StoreConfig,
     UpdateWallet,
+    CurrentNetworkWalletFilter,
 } from '@canton-network/core-wallet-store'
 import { CamelCasePlugin, Kysely, PostgresDialect, SqliteDialect } from 'kysely'
 import Database from 'better-sqlite3'
@@ -57,7 +58,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
 
     // Wallet methods
 
-    async getWallets(filter: WalletFilter = {}): Promise<Array<Wallet>> {
+    async getAllWallets(filter: WalletFilter = {}): Promise<Array<Wallet>> {
         const userId = this.assertConnected()
         const { networkIds, signingProviderIds } = filter
         const networkIdSet = networkIds ? new Set(networkIds) : null
@@ -102,31 +103,60 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             )
     }
 
+    async getWallets(
+        filter: CurrentNetworkWalletFilter = {}
+    ): Promise<Array<Wallet>> {
+        const network = await this.getCurrentNetwork()
+        return this.getAllWallets({
+            ...filter,
+            networkIds: [network.id],
+        })
+    }
+
     async getPrimaryWallet(): Promise<Wallet | undefined> {
         const wallets = await this.getWallets()
         return wallets.find((w) => w.primary === true)
     }
 
     async setPrimaryWallet(partyId: PartyId): Promise<void> {
+        const network = await this.getCurrentNetwork()
+        const userId = this.assertConnected()
         const wallets = await this.getWallets()
+
         if (!wallets.some((w) => w.partyId === partyId)) {
-            throw new Error(`Wallet with partyId "${partyId}" not found`)
+            throw new Error(
+                `Wallet with partyId "${partyId}" not found in network "${network.id}"`
+            )
         }
 
         const primary = wallets.find((w) => w.primary === true)
 
         await this.db.transaction().execute(async (trx) => {
             if (primary) {
+                // Unset primary for current network only
                 await trx
                     .updateTable('wallets')
                     .set({ primary: 0 })
-                    .where('partyId', '=', primary.partyId)
+                    .where((eb) =>
+                        eb.and([
+                            eb('partyId', '=', primary.partyId),
+                            eb('networkId', '=', network.id),
+                            eb('userId', '=', userId),
+                        ])
+                    )
                     .execute()
             }
+            // Set new primary for current network
             await trx
                 .updateTable('wallets')
                 .set({ primary: 1 })
-                .where('partyId', '=', partyId)
+                .where((eb) =>
+                    eb.and([
+                        eb('partyId', '=', partyId),
+                        eb('networkId', '=', network.id),
+                        eb('userId', '=', userId),
+                    ])
+                )
                 .execute()
         })
     }
@@ -135,62 +165,134 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         this.logger.info('Adding wallet')
         const userId = this.assertConnected()
 
-        const wallets = await this.getWallets()
-        if (wallets.some((w) => w.partyId === wallet.partyId)) {
-            throw new Error(
-                `Wallet with partyId "${wallet.partyId}" already exists`
-            )
-        }
-
-        if (wallets.length === 0) {
-            // If this is the first wallet, set it as primary automatically
+        // Check if this is the first wallet in this network for this user
+        const wallets = await this.getAllWallets({
+            networkIds: [wallet.networkId],
+        })
+        const isFirstWallet = wallets.length === 0
+        if (isFirstWallet) {
             wallet.primary = true
         }
 
         await this.db.transaction().execute(async (trx) => {
-            if (wallet.primary) {
-                // If the new wallet is primary, set all others to non-primary
+            // Check if wallet already exists (possibly from a different user)
+            const existingWallet = await trx
+                .selectFrom('wallets')
+                .selectAll()
+                .where((eb) =>
+                    eb.and([
+                        eb('partyId', '=', wallet.partyId),
+                        eb('networkId', '=', wallet.networkId),
+                    ])
+                )
+                .executeTakeFirst()
+
+            if (existingWallet) {
+                // Wallet exists - update it (handles case where network was edited to use different user)
+                this.logger.info(
+                    {
+                        partyId: wallet.partyId,
+                        networkId: wallet.networkId,
+                        oldUserId: existingWallet.userId,
+                        newUserId: userId,
+                    },
+                    'Updating existing wallet (possibly from different user)'
+                )
+
+                if (wallet.primary) {
+                    // If the new wallet is primary, set all others in the same network to non-primary
+                    await trx
+                        .updateTable('wallets')
+                        .set({ primary: 0 })
+                        .where((eb) =>
+                            eb.and([
+                                eb('primary', '=', 1),
+                                eb('networkId', '=', wallet.networkId),
+                                eb('userId', '=', userId),
+                            ])
+                        )
+                        .execute()
+                }
+
+                // Update the existing wallet with new data and user
                 await trx
                     .updateTable('wallets')
-                    .set({ primary: 0 })
+                    .set(fromWallet(wallet, userId))
                     .where((eb) =>
                         eb.and([
-                            eb('primary', '=', 1),
-                            eb('userId', '=', userId),
+                            eb('partyId', '=', wallet.partyId),
+                            eb('networkId', '=', wallet.networkId),
                         ])
                     )
                     .execute()
+            } else {
+                // Wallet doesn't exist - insert it
+                if (wallet.primary) {
+                    // If the new wallet is primary, set all others in the same network to non-primary
+                    await trx
+                        .updateTable('wallets')
+                        .set({ primary: 0 })
+                        .where((eb) =>
+                            eb.and([
+                                eb('primary', '=', 1),
+                                eb('networkId', '=', wallet.networkId),
+                                eb('userId', '=', userId),
+                            ])
+                        )
+                        .execute()
+                }
+                await trx
+                    .insertInto('wallets')
+                    .values(fromWallet(wallet, userId))
+                    .execute()
             }
-            await trx
-                .insertInto('wallets')
-                .values(fromWallet(wallet, userId))
-                .execute()
         })
     }
 
     async updateWallet({
         status,
         partyId,
+        networkId,
         externalTxId,
     }: UpdateWallet): Promise<void> {
         this.logger.info('Updating wallet')
+        const userId = this.assertConnected()
+
+        // Use provided networkId or get current network from session
+        const targetNetworkId = networkId ?? (await this.getCurrentNetwork()).id
 
         await this.db.transaction().execute(async (trx) => {
             await trx
                 .updateTable('wallets')
                 .set({ status, externalTxId })
-                .where('partyId', '=', partyId)
+                .where((eb) =>
+                    eb.and([
+                        eb('partyId', '=', partyId),
+                        eb('networkId', '=', targetNetworkId),
+                        eb('userId', '=', userId),
+                    ])
+                )
                 .execute()
         })
     }
 
     async removeWallet(partyId: PartyId): Promise<void> {
         this.logger.info('Removing wallet')
+        const userId = this.assertConnected()
+
+        // Remove wallet from current network only
+        const network = await this.getCurrentNetwork()
 
         await this.db.transaction().execute(async (trx) => {
             await trx
                 .deleteFrom('wallets')
-                .where('partyId', '=', partyId)
+                .where((eb) =>
+                    eb.and([
+                        eb('partyId', '=', partyId),
+                        eb('networkId', '=', network.id),
+                        eb('userId', '=', userId),
+                    ])
+                )
                 .execute()
         })
     }

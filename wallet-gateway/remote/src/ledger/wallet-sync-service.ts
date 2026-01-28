@@ -223,27 +223,29 @@ export class WalletSyncService {
 
     async isWalletSyncNeeded(): Promise<boolean> {
         try {
+            const network = await this.store.getCurrentNetwork()
+
             const existingWallets = await this.store.getWallets()
 
-            // Check if there are any disabled wallets
             const hasDisabledWallets = existingWallets.some((w) => w.disabled)
             if (hasDisabledWallets) {
                 return true
             }
 
-            // Check if there are parties on ledger that aren't in store
             const partiesWithRights = await this.getPartiesRightsMap()
 
             // Treat disabled wallets as if they don't exist, so they can be re-synced
             const enabledWallets = existingWallets.filter((w) => !w.disabled)
-            const existingPartyIds = new Set(
-                enabledWallets.map((w) => w.partyId)
+            // Track by (partyId, networkId) combination to handle multi-hosted parties
+            const existingPartyNetworkPairs = new Set(
+                enabledWallets.map((w) => `${w.partyId}:${w.networkId}`)
             )
 
-            // Check if there are parties on ledger that aren't in store
-            return partiesWithRights
-                .keys()
-                .some((party) => !existingPartyIds.has(party))
+            // Check if there are parties on ledger that aren't in store for this network
+            return Array.from(partiesWithRights.keys()).some(
+                (party) =>
+                    !existingPartyNetworkPairs.has(`${party}:${network.id}`)
+            )
         } catch (err) {
             this.logger.error({ err }, 'Error checking if sync is needed')
             // On error, return false to avoid showing sync button unnecessarily
@@ -256,25 +258,36 @@ export class WalletSyncService {
             const network = await this.store.getCurrentNetwork()
             this.logger.info(network, 'Current network')
 
-            // Get existing parties from participant
             const partiesWithRights = await this.getPartiesRightsMap()
 
             // Add new Wallets given the found parties
+            // Only check wallets in the current network
             const existingWallets = await this.store.getWallets()
             this.logger.info(existingWallets, 'Existing wallets')
             // Treat disabled wallets as if they don't exist, so they can be re-synced
             const enabledWallets = existingWallets.filter((w) => !w.disabled)
-            const existingPartyIdToSigningProvider = new Map(
-                enabledWallets.map((w) => [w.partyId, w.signingProviderId])
+            // Track by (partyId, networkId) combination
+            const existingPartyNetworkToSigningProvider = new Map(
+                enabledWallets.map((w) => [
+                    `${w.partyId}:${w.networkId}`,
+                    w.signingProviderId,
+                ])
             )
 
-            const disabledPartyIds = new Set(
-                existingWallets.filter((w) => w.disabled).map((w) => w.partyId)
+            // Track disabled wallets by (partyId, networkId) combination
+            const disabledPartyNetworkPairs = new Set(
+                existingWallets
+                    .filter((w) => w.disabled)
+                    .map((w) => `${w.partyId}:${w.networkId}`)
             )
 
             // Resolve signing providers for all new parties
+            // Check if (partyId, networkId) combination already exists
             const newParties = Array.from(partiesWithRights.keys()).filter(
-                (party) => !existingPartyIdToSigningProvider.has(party)
+                (party) =>
+                    !existingPartyNetworkToSigningProvider.has(
+                        `${party}:${network.id}`
+                    )
                 // todo: filter on idp id
             )
 
@@ -330,12 +343,20 @@ export class WalletSyncService {
             )
 
             // Remove disabled wallets that are being re-synced before adding them back
+            // Filter by (partyId, networkId) combination
             await Promise.all(
                 newParticipantWallets
-                    .filter((wallet) => disabledPartyIds.has(wallet.partyId))
+                    .filter((wallet) =>
+                        disabledPartyNetworkPairs.has(
+                            `${wallet.partyId}:${wallet.networkId}`
+                        )
+                    )
                     .map((wallet) => {
                         this.logger.info(
-                            { partyId: wallet.partyId },
+                            {
+                                partyId: wallet.partyId,
+                                networkId: wallet.networkId,
+                            },
                             'Removing disabled wallet for re-sync'
                         )
                         return this.store.removeWallet(wallet.partyId)
@@ -358,15 +379,20 @@ export class WalletSyncService {
                 'Wallet sync summary'
             )
 
-            // Set primary wallet if none exists
-            const wallets = await this.store.getWallets()
-            const hasPrimary = wallets.some((w) => w.primary)
-            if (!hasPrimary && wallets.length > 0) {
-                this.store.setPrimaryWallet(wallets[0].partyId)
-                this.logger.info(`Set ${wallets[0].partyId} as primary wallet`)
+            // Set primary wallet if none exists in current network
+            const networkWallets = await this.store.getWallets()
+            const hasPrimary = networkWallets.some((w) => w.primary)
+            if (!hasPrimary && networkWallets.length > 0) {
+                this.store.setPrimaryWallet(networkWallets[0].partyId)
+                this.logger.info(
+                    `Set ${networkWallets[0].partyId} as primary wallet in network ${network.id}`
+                )
             }
 
-            this.logger.debug(wallets, 'Wallet sync completed.')
+            this.logger.debug(
+                { wallets: newParticipantWallets },
+                'Wallet sync completed.'
+            )
             return {
                 added: newParticipantWallets,
                 removed: [],

@@ -125,7 +125,9 @@ export class WalletGateway {
 
         // Check for existing user with that party hint.
         const pattern = new RegExp(`${args.partyHint}::[0-9a-f]+`)
-        const wallets = (await this.popup()).getByText(pattern)
+        const wallets = (await this.popup())
+            .locator('.wallet-card')
+            .filter({ hasText: pattern })
         const walletsCount = await wallets.count()
         if (walletsCount > 0) {
             const partyId = (await wallets.first().innerText()).match(
@@ -134,6 +136,14 @@ export class WalletGateway {
             if (partyId === undefined) {
                 throw new Error(`did not find partyID for ${args.partyHint}`)
             }
+
+            if (args.primary) {
+                await wallets
+                    .first()
+                    .getByRole('button', { name: 'Set Primary' })
+                    .click()
+            }
+
             return partyId
         }
 

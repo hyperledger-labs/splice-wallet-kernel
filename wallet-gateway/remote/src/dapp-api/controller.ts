@@ -229,8 +229,7 @@ export const dappController = (
             throw new Error('Only for events.')
         },
         listAccounts: async () => {
-            const wallets = await store.getWallets()
-            return wallets
+            return await store.getWallets()
         },
         txChanged: async () => {
             throw new Error('Only for events.')

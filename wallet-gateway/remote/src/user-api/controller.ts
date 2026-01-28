@@ -441,6 +441,7 @@ export const userController = (
             ) {
                 await store.updateWallet({
                     partyId: wallet.partyId,
+                    networkId: wallet.networkId,
                     status: wallet.status,
                     externalTxId: wallet.externalTxId!,
                 })
@@ -458,7 +459,9 @@ export const userController = (
             const notifier = authContext?.userId
                 ? notificationService.getNotifier(authContext.userId)
                 : undefined
-            notifier?.emit('accountsChanged', await store.getWallets())
+
+            const wallets = await store.getWallets()
+            notifier?.emit('accountsChanged', wallets)
             return null
         },
         removeWallet: async (params: { partyId: string }) =>
@@ -466,8 +469,7 @@ export const userController = (
         listWallets: async (params: {
             filter?: { networkIds?: string[]; signingProviderIds?: string[] }
         }) => {
-            // TODO: support filters
-            return await store.getWallets()
+            return await store.getAllWallets(params.filter)
         },
         sign: async ({
             preparedTransaction,
@@ -475,20 +477,19 @@ export const userController = (
             partyId,
             commandId,
         }: SignParams) => {
+            const network = await store.getCurrentNetwork()
+            if (network === undefined) {
+                throw new Error('No network session found')
+            }
+
             const wallets = await store.getWallets()
             const wallet = wallets.find((w) => w.partyId === partyId)
-
-            const network = await store.getCurrentNetwork()
 
             if (wallet === undefined) {
                 throw new Error('No primary wallet found')
             }
 
             const userId = assertConnected(authContext).userId
-
-            if (network === undefined) {
-                throw new Error('No network session found')
-            }
 
             const notifier = notificationService.getNotifier(userId)
             const signingProvider = wallet.signingProviderId as SigningProvider

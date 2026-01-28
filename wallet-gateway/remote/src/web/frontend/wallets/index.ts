@@ -170,6 +170,12 @@ export class UserUiWallets extends LitElement {
     `
 
     protected render() {
+        // This prevents race condition between render and this.client being set in connectedCallback asynchronously,
+        // resulting in <wg-wallets-sync> keeping client as null
+        if (!this.client) {
+            return html``
+        }
+
         const shownWallets = {
             verifiedWallets: [] as Wallet[],
             unverifiedWallets: [] as Wallet[],
@@ -188,6 +194,7 @@ export class UserUiWallets extends LitElement {
                     <wg-wallets-sync
                         .client=${this.client}
                         .wallets=${this.wallets}
+                        @sync-success=${this.updateWallets}
                     ></wg-wallets-sync>
                 </h1>
 
@@ -378,9 +385,20 @@ export class UserUiWallets extends LitElement {
         const userClient = await createUserClient(
             stateManager.accessToken.get()
         )
-        userClient.request('listWallets', []).then((wallets) => {
-            this.wallets = wallets || []
-        })
+
+        const sessions = await userClient
+            .request('listSessions')
+            .catch(() => ({ sessions: [] }))
+        const currentSession = sessions?.sessions?.[0]
+        const networkId =
+            currentSession?.network?.id || stateManager.networkId.get()
+
+        const filter = networkId ? { networkIds: [networkId] } : undefined
+        userClient
+            .request('listWallets', filter ? { filter } : {})
+            .then((wallets) => {
+                this.wallets = wallets || []
+            })
     }
 
     private async _setPrimary(wallet: Wallet) {
