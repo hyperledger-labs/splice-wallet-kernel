@@ -53,7 +53,7 @@ export const serverConfigSchema = z.object({
     requestSizeLimit: z.string().default('1mb').meta({
         description: 'The maximum size of incoming requests. Defaults to 1mb.',
     }),
-    requestRateLimit: z.number().default(100).meta({
+    requestRateLimit: z.number().default(10000).meta({
         description:
             'The maximum number of requests per minute from a single IP address. Defaults to 100.',
     }),
