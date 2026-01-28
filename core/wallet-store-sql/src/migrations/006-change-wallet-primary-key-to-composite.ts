@@ -70,6 +70,7 @@ export async function up(db: Kysely<DB>): Promise<void> {
         // Drop temporary table if it exists
         await db.schema.dropTable('wallets_new').ifExists().execute()
 
+        const hasWallets = await tableExists(db, 'wallets', isPg)
         const hasWalletsNew = await tableExists(db, 'wallets_new', isPg)
 
         if (!hasWallets && hasWalletsNew) {
