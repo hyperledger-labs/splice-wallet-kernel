@@ -78,11 +78,16 @@ export function RegistrySettings() {
                 <Typography variant="h6" component="h2" gutterBottom>
                     Registries
                 </Typography>
+                <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 3 }}
+                >
+                    The API URLs provided by the party managing the token
+                    standard compliant instruments
+                </Typography>
 
                 <Box sx={{ mb: 3 }}>
-                    <Typography variant="subtitle1" gutterBottom>
-                        Add New Registry
-                    </Typography>
                     <form
                         onSubmit={(e) => {
                             e.preventDefault()
