@@ -55,7 +55,7 @@ export const serverConfigSchema = z.object({
     }),
     requestRateLimit: z.number().default(10000).meta({
         description:
-            'The maximum number of requests per minute from a single IP address. Defaults to 100.',
+            'The maximum number of requests per minute from a single IP address. Defaults to 10000.',
     }),
 })
 
