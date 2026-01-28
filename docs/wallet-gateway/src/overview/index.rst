@@ -12,7 +12,7 @@ A typical setup involves:
 - **dApp** — A web or mobile application that lets users view ledger data, create contracts, and submit transactions. Your dApp uses the dApp SDK to connect to a wallet and call the dApp API.
 - **Wallet Gateway** — A server that exposes the dApp API and User API, manages sessions, and talks to Canton validators and signing providers.
 - **Canton Network** — The distributed ledger. Validator nodes expose a Ledger API; the Wallet Gateway connects to them on behalf of authenticated users.
-- **Signing** — Transaction signing is handled by a **signing provider** (e.g. Canton participant, Fireblocks, Blockdaemon, or the Gateway’s internal store). Users create wallets (parties) tied to a network and a signing provider.
+- **Signing** — Transaction signing is handled by a **signing provider** (e.g. Canton participant, Fireblocks or Blockdaemon). Users create wallets (parties) tied to a network and a signing provider. For testing purposes the Gateway allows using it for signing.
 
 High-Level Architecture
 -----------------------
