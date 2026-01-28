@@ -46,7 +46,10 @@ See :ref:`apis` and the :ref:`dapp-sdk` documentation.
 User API and User UI
 --------------------
 
-The **User API** is for users and automation: sessions, networks, identity providers, wallets, and transaction signing. The **User UI** (served by the Wallet Gateway) is a web interface that uses the User API so users can log in, create and manage wallets, approve dApp transactions, and change settings. For custom integrations or scripts, you can call the User API directly instead of using the User UI. See :ref:`usage` and :ref:`apis`.
+The **User API** is for users and automation: sessions, networks, identity providers, wallets, and transaction signing.
+The **User UI** (served by the Wallet Gateway) is a web interface that uses the User API so users can log in, create and manage wallets, approve dApp transactions, and change settings.
+For custom integrations or scripts, you can call the User API directly instead of using the User UI.
+See :ref:`usage` and :ref:`apis`.
 
 
 Discovery and Connection Flow
