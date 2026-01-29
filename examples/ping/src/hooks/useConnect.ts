@@ -36,7 +36,7 @@ export function useConnect(): {
         })
     }
 
-     useEffect(() => {
+    useEffect(() => {
         sdk.status()
             .then(setStatus)
             .catch(() => {

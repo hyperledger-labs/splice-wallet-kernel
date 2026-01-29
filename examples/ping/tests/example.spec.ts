@@ -64,5 +64,5 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
     // Wait for command to have fully executed
     //TODO: we use 2 because we have one in the transaction list and one in the event list
     //TODO: fix this so we check each list properly once
-    await expect(dappPage.getByText("executed")).toHaveCount(2)
+    await expect(dappPage.getByText('executed')).toHaveCount(2)
 })
