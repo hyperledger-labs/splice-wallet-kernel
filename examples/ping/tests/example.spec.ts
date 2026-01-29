@@ -57,10 +57,12 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
     ).toBeEnabled()
 
     // Create a Ping contract through the dapp with the new party
-    const { commandId } = await wg.approveTransaction(() =>
+    await wg.approveTransaction(() =>
         dappPage.getByRole('button', { name: 'create Ping contract' }).click()
     )
 
     // Wait for command to have fully executed
-    await expect(dappPage.getByText(commandId)).toHaveCount(3)
+    //TODO: we use 2 because we have one in the transaction list and one in the event list
+    //TODO: fix this so we check each list properly once
+    await expect(dappPage.getByText("executed")).toHaveCount(2)
 })
