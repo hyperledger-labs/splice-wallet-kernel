@@ -35,14 +35,6 @@ export function useConnect(): {
     }
 
     useEffect(() => {
-        sdk.status()
-            .then(setStatus)
-            .catch(() => {
-                setStatus(undefined)
-            })
-    }, [])
-
-    useEffect(() => {
         if (status?.isConnected) {
             console.debug('[use-connect] Adding status changed listener')
             const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {

@@ -1906,13 +1906,13 @@ __metadata:
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^30.0.0"
     "@types/json-schema": "npm:7.0.15"
-    "@types/lodash": "npm:^4.17.23"
+    "@types/lodash": "npm:^4.17.21"
     "@types/ws": "npm:^8.18.1"
     globals: "npm:^16.5.0"
-    lodash: "npm:^4.17.23"
-    prettier: "npm:^3.8.1"
+    lodash: "npm:^4.17.21"
+    prettier: "npm:^3.7.1"
     tsup: "npm:^8.5.1"
-    typedoc: "npm:^0.28.16"
+    typedoc: "npm:^0.28.14"
     typescript: "npm:^5.9.3"
   languageName: unknown
   linkType: soft
@@ -1935,6 +1935,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/example-ping@workspace:examples/ping"
   dependencies:
+    "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-test-utils": "workspace:^"
     "@canton-network/dapp-sdk": "workspace:^"
     "@eslint/js": "npm:^9.39.2"
@@ -18385,7 +18386,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typedoc@npm:^0.28.14, typedoc@npm:^0.28.16":
+"typedoc@npm:^0.28.14":
   version: 0.28.16
   resolution: "typedoc@npm:0.28.16"
   dependencies:
