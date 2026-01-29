@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react'
 import * as sdk from '@canton-network/dapp-sdk'
 import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
 
-
 /**
  * React hook that manages the connection to the wallet gateway.
  * Uses the dapp-sdk to connect and disconnect, and updates the connection status.
