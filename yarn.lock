@@ -1756,13 +1756,13 @@ __metadata:
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^30.0.0"
     "@types/json-schema": "npm:7.0.15"
-    "@types/lodash": "npm:^4.17.21"
+    "@types/lodash": "npm:^4.17.23"
     "@types/ws": "npm:^8.18.1"
     globals: "npm:^16.5.0"
-    lodash: "npm:^4.17.21"
-    prettier: "npm:^3.7.1"
+    lodash: "npm:^4.17.23"
+    prettier: "npm:^3.8.1"
     tsup: "npm:^8.5.1"
-    typedoc: "npm:^0.28.14"
+    typedoc: "npm:^0.28.16"
     typescript: "npm:^5.9.3"
   languageName: unknown
   linkType: soft
@@ -1776,13 +1776,13 @@ __metadata:
     "@types/isomorphic-fetch": "npm:^0.0.39"
     "@types/jest": "npm:^30.0.0"
     "@types/json-schema": "npm:7.0.15"
-    "@types/lodash": "npm:^4.17.21"
+    "@types/lodash": "npm:^4.17.23"
     "@types/ws": "npm:^8.18.1"
     globals: "npm:^16.5.0"
-    lodash: "npm:^4.17.21"
-    prettier: "npm:^3.7.1"
+    lodash: "npm:^4.17.23"
+    prettier: "npm:^3.8.1"
     tsup: "npm:^8.5.1"
-    typedoc: "npm:^0.28.14"
+    typedoc: "npm:^0.28.16"
     typescript: "npm:^5.9.3"
   languageName: unknown
   linkType: soft
@@ -1935,6 +1935,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/example-ping@workspace:examples/ping"
   dependencies:
+    "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-test-utils": "workspace:^"
     "@canton-network/core-wallet-ui-components": "workspace:^"
     "@canton-network/dapp-sdk": "workspace:^"
@@ -7414,7 +7415,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash@npm:^4.17.20, @types/lodash@npm:^4.17.21, @types/lodash@npm:^4.17.23, @types/lodash@npm:^4.5":
+"@types/lodash@npm:^4.17.20, @types/lodash@npm:^4.17.23, @types/lodash@npm:^4.5":
   version: 4.17.23
   resolution: "@types/lodash@npm:4.17.23"
   checksum: 10c0/9d9cbfb684e064a2b78aab9e220d398c9c2a7d36bc51a07b184ff382fa043a99b3d00c16c7f109b4eb8614118f4869678dbae7d5c6700ed16fb9340e26cc0bf6
@@ -16138,7 +16139,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.5.0, prettier@npm:^3.7.1, prettier@npm:^3.8.1":
+"prettier@npm:^3.5.0, prettier@npm:^3.8.1":
   version: 3.8.1
   resolution: "prettier@npm:3.8.1"
   bin:
@@ -18386,7 +18387,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typedoc@npm:^0.28.14, typedoc@npm:^0.28.16":
+"typedoc@npm:^0.28.16":
   version: 0.28.16
   resolution: "typedoc@npm:0.28.16"
   dependencies:
