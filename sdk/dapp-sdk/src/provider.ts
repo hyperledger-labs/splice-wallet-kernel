@@ -133,10 +133,12 @@ export const dappController = (provider: SpliceProvider) =>
                             5 * 60 * 1000
                         )
                         provider.on<dappRemoteAPI.StatusEvent>(
-                            'connected',
+                            'statusChanged',
                             (event) => {
-                                clearTimeout(timeout)
-                                resolve(event)
+                                if (event.isConnected) {
+                                    clearTimeout(timeout)
+                                    resolve(event)
+                                }
                             }
                         )
                     }

@@ -8,6 +8,8 @@ import { ErrorContext } from './ErrorContext'
 import { LedgerQuery } from './components/LedgerQuery'
 import { LedgerSubmission } from './components/LedgerSubmission'
 import { Accounts } from './components/Accounts'
+import { PostEvents } from './components/PostEvents'
+import { WindowMessages } from './components/WindowMessages'
 
 function App() {
     const { errorMsg, setErrorMsg } = useContext(ErrorContext)
@@ -97,6 +99,10 @@ function App() {
             </div>
 
             <Accounts status={status} />
+
+            <PostEvents />
+
+            <WindowMessages />
 
             <LedgerQuery
                 status={status}

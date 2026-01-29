@@ -57,7 +57,8 @@ export const dappController = (
                 accessToken: context.accessToken,
             })
             const status = await networkStatus(ledgerClient)
-            return {
+            const notifier = notificationService.getNotifier(context.userId)
+            const StatusEvent: StatusEvent = {
                 kernel: kernelInfo,
                 isConnected: true,
                 isNetworkConnected: status.isConnected,
@@ -74,7 +75,9 @@ export const dappController = (
                     userId: context.userId,
                 },
                 userUrl: `${userUrl}/login/`,
-            } as StatusEventAsync
+            }
+            notifier.emit('statusChanged', StatusEvent)
+            return StatusEvent as StatusEventAsync
         },
         disconnect: async () => {
             if (!context) {
@@ -86,7 +89,7 @@ export const dappController = (
                     kernel: kernelInfo,
                     isConnected: false,
                     isNetworkConnected: false,
-                    networkReason: 'Unauthenticated',
+                    networkReason: 'disconnect',
                     userUrl: `${userUrl}/login/`,
                 } as StatusEvent)
             }

@@ -77,6 +77,7 @@ export enum WalletEvent {
     SPLICE_WALLET_EXT_OPEN = 'SPLICE_WALLET_EXT_OPEN', // A request from the dApp to the browser extension to open the wallet UI
     // Auth events
     SPLICE_WALLET_IDP_AUTH_SUCCESS = 'SPLICE_WALLET_IDP_AUTH_SUCCESS',
+    SPLICE_WALLET_LOGOUT = 'SPLICE_WALLET_LOGOUT',
 }
 
 export type SpliceMessageEvent = MessageEvent<SpliceMessage>

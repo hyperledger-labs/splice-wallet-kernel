@@ -775,7 +775,7 @@ export const userController = (
                     accessToken,
                 })
                 const status = await networkStatus(ledgerClient)
-                notifier.emit('connected', {
+                notifier.emit('statusChanged', {
                     kernel: {
                         ...kernelInfo,
                         userUrl: `${userUrl}/login/`,
@@ -847,7 +847,7 @@ export const userController = (
                 kernel: kernelInfo,
                 isConnected: false,
                 isNetworkConnected: false,
-                networkReason: 'Unauthenticated',
+                networkReason: 'removed session',
                 userUrl: `${userUrl}/login/`,
             } as StatusEvent)
 

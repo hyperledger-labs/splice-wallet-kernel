@@ -1,6 +1,6 @@
 import type { InstrumentId } from '@canton-network/core-token-standard'
 import type { AggregatedHolding } from '../utils/aggregate-holdings'
-import { useAggregatedHoldings } from './useWalletInstruments'
+import { useAggregatedHoldings } from './useAggregatedHoldings'
 import { useMemo } from 'react'
 
 export const useInstrumentAvailableBalance = (
