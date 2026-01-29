@@ -3,6 +3,8 @@
 
 import { useEffect, useState } from 'react'
 import * as sdk from '@canton-network/dapp-sdk'
+import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
+
 
 /**
  * React hook that manages the connection to the wallet gateway.
@@ -24,6 +26,7 @@ export function useConnect(): {
             })
             .catch((err) => {
                 console.error('Error connecting to wallet:', err)
+                handleErrorToast(err)
                 throw err
             })
     }
