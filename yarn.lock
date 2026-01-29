@@ -1936,6 +1936,7 @@ __metadata:
   resolution: "@canton-network/example-ping@workspace:examples/ping"
   dependencies:
     "@canton-network/core-wallet-test-utils": "workspace:^"
+    "@canton-network/core-wallet-ui-components": "workspace:^"
     "@canton-network/dapp-sdk": "workspace:^"
     "@eslint/js": "npm:^9.39.2"
     "@playwright/test": "npm:^1.57.0"

@@ -14,6 +14,7 @@ import {
     ClientCredentials,
 } from '@canton-network/core-wallet-auth'
 import { redirectToIntendedOrDefault, addUserSession } from '../index'
+import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {
@@ -220,8 +221,12 @@ export class LoginUI extends LitElement {
 
     async connectedCallback() {
         super.connectedCallback()
-        this.networks = await this.loadNetworks()
-        this.idps = await this.loadIdps()
+        try {
+            this.networks = await this.loadNetworks()
+            this.idps = await this.loadIdps()
+        } catch (e) {
+            handleErrorToast(e)
+        }
     }
 
     private async handleConnectToIDP() {
