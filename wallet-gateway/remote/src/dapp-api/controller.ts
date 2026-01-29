@@ -83,7 +83,6 @@ export const dappController = (
             if (!context) {
                 return null
             } else {
-                console.log('disconnect request')
                 const notifier = notificationService.getNotifier(context.userId)
                 await store.removeSession()
                 notifier.emit('statusChanged', {
