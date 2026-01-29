@@ -61,7 +61,7 @@ export function useAllEvents() {
                 sdk.removeOnAccountsChanged(accountsListener)
             }
         }
-    }, [window.canton])
+    }, [])
 
     return events
 }
