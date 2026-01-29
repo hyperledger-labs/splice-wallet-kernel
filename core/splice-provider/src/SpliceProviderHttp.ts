@@ -20,6 +20,15 @@ type GatewaySSE = {
 
 let connection: GatewaySSE = null
 
+function parseSSEData(data: string): unknown[] {
+    try {
+        const parsed = JSON.parse(data)
+        return Array.isArray(parsed) ? parsed : [parsed]
+    } catch {
+        return [data]
+    }
+}
+
 export class SpliceProviderHttp extends SpliceProviderBase {
     private sessionToken?: string
     private client: SpliceWalletJSONRPCDAppAPI
@@ -46,57 +55,22 @@ export class SpliceProviderHttp extends SpliceProviderBase {
         if (!connection) {
             const eventSource = new EventSource(sseUrlString)
 
-            eventSource.onmessage = (event) => {
-                // Default message event (no event type specified)
-                try {
-                    const data = JSON.parse(event.data)
-                    const args = Array.isArray(data) ? data : [data]
-                    this.emit('message', ...args)
-                } catch {
-                    this.emit('message', event.data)
-                }
-            }
+            eventSource.onmessage = (event) =>
+                this.emit('message', ...parseSSEData(event.data))
 
-            // Handle named events (accountsChanged, statusChanged, etc.)
-            eventSource.addEventListener('accountsChanged', (event) => {
-                try {
-                    const data = JSON.parse(event.data)
-                    const args = Array.isArray(data) ? data : [data]
-                    this.emit('accountsChanged', ...args)
-                } catch {
-                    this.emit('accountsChanged', event.data)
-                }
-            })
+            const emitEvent = (name: string) => (event: MessageEvent) =>
+                this.emit(name, ...parseSSEData(event.data))
 
-            eventSource.addEventListener('statusChanged', (event) => {
-                try {
-                    const data = JSON.parse(event.data)
-                    const args = Array.isArray(data) ? data : [data]
-                    this.emit('statusChanged', ...args)
-                } catch {
-                    this.emit('statusChanged', event.data)
-                }
-            })
-
-            eventSource.addEventListener('connected', (event) => {
-                try {
-                    const data = JSON.parse(event.data)
-                    const args = Array.isArray(data) ? data : [data]
-                    this.emit('connected', ...args)
-                } catch {
-                    this.emit('connected', event.data)
-                }
-            })
-
-            eventSource.addEventListener('txChanged', (event) => {
-                try {
-                    const data = JSON.parse(event.data)
-                    const args = Array.isArray(data) ? data : [data]
-                    this.emit('txChanged', ...args)
-                } catch {
-                    this.emit('txChanged', event.data)
-                }
-            })
+            eventSource.addEventListener(
+                'accountsChanged',
+                emitEvent('accountsChanged')
+            )
+            eventSource.addEventListener(
+                'statusChanged',
+                emitEvent('statusChanged')
+            )
+            eventSource.addEventListener('connected', emitEvent('connected'))
+            eventSource.addEventListener('txChanged', emitEvent('txChanged'))
 
             eventSource.onerror = () => {
                 if (connection?.url === sseUrlString) {
