@@ -92,8 +92,12 @@ export class HttpTransport implements RpcTransport {
         const body = await response.text()
 
         // if the response uses the RPC error format, throw it as is
-        if (ErrorResponse.safeParse(JSON.parse(body)).success) {
-            throw JSON.parse(body)
+        try {
+            if (ErrorResponse.safeParse(JSON.parse(body)).success) {
+                throw JSON.parse(body)
+            }
+        } catch {
+            // ignore JSON parse errors
         }
 
         throw {
