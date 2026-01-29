@@ -4,7 +4,6 @@
 import { html, css } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element'
-import { WalletEvent } from '@canton-network/core-types'
 
 export class LogoutEvent extends Event {
     constructor() {
@@ -188,10 +187,6 @@ export class AppHeader extends BaseElement {
         try {
             console.log('Logging out...')
             this.dispatchEvent(new LogoutEvent())
-            window.opener.postMessage(
-                { type: WalletEvent.SPLICE_WALLET_LOGOUT },
-                '*'
-            )
         } catch (e) {
             console.error('Error during logout:', e)
         }
