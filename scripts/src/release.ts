@@ -25,7 +25,12 @@ async function cmd(command: string): Promise<void> {
     })
 }
 
-const options = ['wallet-sdk', 'dapp-sdk', 'wallet-gateway']
+const options = [
+    'wallet-sdk',
+    'dapp-sdk',
+    'wallet-gateway',
+    'example-portfolio',
+]
 
 program
     .option('--dry-run', 'Perform a dry run (default: true)')
