@@ -5,6 +5,7 @@ package-lock.json
 .husky
 .git
 core/ledger-client/generated-clients/*
+core/asyncapi-client/generated-clients/*
 api-specs/ledger-api/*
 .venv
 core/wallet-user-rpc-client/docs/*

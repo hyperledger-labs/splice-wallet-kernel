@@ -153,7 +153,7 @@ interface AsyncApiFileSpec {
 const specs: AsyncApiFileSpec[] = [
     {
         input: 'api-specs/ledger-api/3.4.7/asyncapi.yaml',
-        output: 'core/ledger-client/src/generated-clients/asyncapi-3.4.7.ts',
+        output: 'core/asyncapi-client/src/generated-clients/asyncapi-3.4.7.ts',
     },
 ]
 
