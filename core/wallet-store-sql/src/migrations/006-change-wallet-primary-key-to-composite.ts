@@ -11,19 +11,18 @@ async function tableExists(
     isPg: boolean
 ): Promise<boolean> {
     if (isPg) {
-        // PostgreSQL
         const result = await sql<{ exists: boolean }>`
             SELECT EXISTS (
                 SELECT FROM information_schema.tables
                 WHERE table_schema = 'public'
                 AND table_name = ${tableName}
-            ) as exists
-        `.execute(db)
+            ) AS exists
+    `.execute(db)
         return result.rows[0]?.exists ?? false
     } else {
-        // SQLite
         const result = await sql<{ name: string }>`
-            SELECT name FROM sqlite_master
+            SELECT name
+            FROM sqlite_master
             WHERE type='table' AND name = ${tableName}
         `.execute(db)
         return result.rows.length > 0
@@ -34,35 +33,86 @@ export async function up(db: Kysely<DB>): Promise<void> {
     const isPg = await isPostgres(db)
 
     if (isPg) {
-        // PostgreSQL: Use ALTER TABLE to change primary key
-        // First, find and drop the existing primary key constraint
-        const constraintResult = await sql<{ constraint_name: string }>`
-            SELECT constraint_name
-            FROM information_schema.table_constraints
-            WHERE table_schema = 'public'
-            AND table_name = 'wallets'
-            AND constraint_type = 'PRIMARY KEY'
-        `.execute(db)
+        // PostgreSQL: idempotent PK change to (party_id, network_id)
+        // Drop current PK if it isn't already the composite (party_id, network_id)
+        await sql`
+            DO $$
+            DECLARE
+              pk_name text;
+              pk_def  text;
+            BEGIN
+              SELECT c.conname, pg_get_constraintdef(c.oid)
+                INTO pk_name, pk_def
+              FROM pg_constraint c
+              WHERE c.conrelid = 'public.wallets'::regclass
+                AND c.contype = 'p';
 
-        if (constraintResult.rows.length > 0) {
-            const constraintName = constraintResult.rows[0].constraint_name
-            // Use raw SQL for dynamic constraint name
-            await sql
-                .raw(`ALTER TABLE wallets DROP CONSTRAINT "${constraintName}"`)
-                .execute(db)
-        }
+              IF pk_name IS NOT NULL
+                 AND pk_def NOT ILIKE 'PRIMARY KEY (party_id, network_id)%' THEN
+                EXECUTE format('ALTER TABLE public.wallets DROP CONSTRAINT %I', pk_name);
+              END IF;
+            END $$;
+      `.execute(db)
+
+        // Ensure network_id has no NULLs and is NOT NULL (required for PK)
+        await sql`
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT 1 FROM public.wallets WHERE network_id IS NULL) THEN
+            RAISE EXCEPTION 'Cannot add composite PK: wallets.network_id has NULLs';
+          END IF;
+        END $$;
+      `.execute(db)
+
+        await sql`
+        ALTER TABLE public.wallets
+          ALTER COLUMN network_id SET NOT NULL
+      `.execute(db)
+
+        // Drop any leftover UNIQUE index that still enforces uniqueness on party_id alone
+        await sql`
+            DO $$
+            DECLARE r record;
+            BEGIN
+              FOR r IN
+                SELECT indexname
+                FROM pg_indexes
+                WHERE schemaname='public'
+                  AND tablename='wallets'
+                  AND indexdef ILIKE 'CREATE UNIQUE INDEX % ON % ("party_id")%'
+              LOOP
+                EXECUTE format('DROP INDEX IF EXISTS %I', r.indexname);
+              END LOOP;
+            END $$;
+      `.execute(db)
 
         // Add the new composite primary key
-        await sql`ALTER TABLE wallets ADD PRIMARY KEY (party_id, network_id)`.execute(
-            db
-        )
+        await sql`
+            DO $$
+            DECLARE
+              has_pk boolean;
+            BEGIN
+              SELECT EXISTS (
+                SELECT 1
+                FROM pg_constraint c
+                WHERE c.conrelid = 'public.wallets'::regclass
+                  AND c.contype = 'p'
+                  AND pg_get_constraintdef(c.oid) ILIKE 'PRIMARY KEY (party_id, network_id)%'
+              ) INTO has_pk;
+
+              IF NOT has_pk THEN
+                EXECUTE 'ALTER TABLE public.wallets
+                    ADD CONSTRAINT wallets_pkey PRIMARY KEY (party_id, network_id)';
+              END IF;
+            END $$;
+      `.execute(db)
     } else {
         // SQLite: Recreate table (SQLite doesn't support altering primary keys)
         // Drop temporary table if it exists
         await db.schema.dropTable('wallets_new').ifExists().execute()
 
-        const hasWallets = await tableExists(db, 'wallets', isPg)
-        const hasWalletsNew = await tableExists(db, 'wallets_new', isPg)
+        const hasWallets = await tableExists(db, 'wallets', false)
+        const hasWalletsNew = await tableExists(db, 'wallets_new', false)
 
         if (!hasWallets && hasWalletsNew) {
             await db.schema
@@ -72,7 +122,6 @@ export async function up(db: Kysely<DB>): Promise<void> {
             return
         }
 
-        // Create new table with composite primary key
         await db.schema
             .createTable('wallets_new')
             .addColumn('party_id', 'text', (col) => col.notNull())
@@ -97,7 +146,6 @@ export async function up(db: Kysely<DB>): Promise<void> {
             .addPrimaryKeyConstraint('wallets_pk', ['party_id', 'network_id'])
             .execute()
 
-        // Copy data from old table to new table
         await sql`
             INSERT INTO wallets_new (
                 party_id, network_id, "primary", hint, public_key, namespace,
@@ -107,11 +155,10 @@ export async function up(db: Kysely<DB>): Promise<void> {
             SELECT
                 party_id, network_id, "primary", hint, public_key, namespace,
                 user_id, signing_provider_id, status, external_tx_id,
-                topology_transactions, COALESCE(disabled, 0) as disabled, reason
+                topology_transactions, COALESCE(disabled, 0) AS disabled, reason
             FROM wallets
         `.execute(db)
 
-        // Drop old table and rename new one
         await db.schema.dropTable('wallets').execute()
         await db.schema.alterTable('wallets_new').renameTo('wallets').execute()
     }
@@ -121,45 +168,50 @@ export async function down(db: Kysely<DB>): Promise<void> {
     const isPg = await isPostgres(db)
 
     if (isPg) {
-        // PostgreSQL: Use ALTER TABLE to revert to single primary key
-        // First, drop the composite primary key
-        const constraintResult = await sql<{ constraint_name: string }>`
-            SELECT constraint_name
-            FROM information_schema.table_constraints
-            WHERE table_schema = 'public'
-            AND table_name = 'wallets'
-            AND constraint_type = 'PRIMARY KEY'
-        `.execute(db)
+        if (!(await tableExists(db, 'wallets', true))) return
 
-        if (constraintResult.rows.length > 0) {
-            const constraintName = constraintResult.rows[0].constraint_name
-            // Use raw SQL for dynamic constraint name
-            await sql
-                .raw(`ALTER TABLE wallets DROP CONSTRAINT "${constraintName}"`)
-                .execute(db)
-        }
+        // PostgreSQL: Use ALTER TABLE to revert to single primary key
+        // drop the composite primary key
+        await sql`
+                DO $$
+                DECLARE
+                  pk_name text;
+                BEGIN
+                  SELECT c.conname
+                    INTO pk_name
+                  FROM pg_constraint c
+                  WHERE c.conrelid = 'public.wallets'::regclass
+                    AND c.contype = 'p';
+
+                  IF pk_name IS NOT NULL THEN
+                    EXECUTE format('ALTER TABLE public.wallets DROP CONSTRAINT %I', pk_name);
+                  END IF;
+                END $$;
+      `.execute(db)
 
         // Keep only one wallet per party_id (data loss if duplicates exist)
         // Use DISTINCT ON to pick first row per party_id
         await sql`
-            DELETE FROM wallets w1
+            DELETE FROM public.wallets w1
             WHERE EXISTS (
-                SELECT 1
-                FROM wallets w2
-                WHERE w2.party_id = w1.party_id
+              SELECT 1
+              FROM public.wallets w2
+              WHERE w2.party_id = w1.party_id
                 AND w2.network_id < w1.network_id
             )
         `.execute(db)
 
-        // Make network_id nullable (it was nullable in the original schema)
-        await sql`ALTER TABLE wallets ALTER COLUMN network_id DROP NOT NULL`
-            .execute(db)
-            .catch(() => {
-                // Ignore if already nullable
-            })
+        // Make network_id nullable again
+        await sql`
+          ALTER TABLE public.wallets
+          ALTER COLUMN network_id DROP NOT NULL
+      `.execute(db)
 
-        // Add back the single primary key on party_id
-        await sql`ALTER TABLE wallets ADD PRIMARY KEY (party_id)`.execute(db)
+        // Add back single-column PK on party_id
+        await sql`
+          ALTER TABLE public.wallets
+          ADD CONSTRAINT wallets_pkey PRIMARY KEY (party_id)
+        `.execute(db)
     } else {
         // SQLite: Recreate table with single primary key
         // Create old table structure with single primary key
@@ -186,8 +238,6 @@ export async function down(db: Kysely<DB>): Promise<void> {
             .addColumn('reason', 'text')
             .execute()
 
-        // Keep only one wallet per party_id (data loss if duplicates exist)
-        // SQLite: Use rowid
         await sql`
             INSERT INTO wallets_new (
                 party_id, network_id, "primary", hint, public_key, namespace,
