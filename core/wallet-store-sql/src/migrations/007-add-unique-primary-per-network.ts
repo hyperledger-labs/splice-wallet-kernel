@@ -3,15 +3,7 @@
 
 import { Kysely, sql } from 'kysely'
 import { DB } from '../schema.js'
-
-async function isPostgres(db: Kysely<DB>): Promise<boolean> {
-    try {
-        await sql`SELECT 1 FROM pg_database LIMIT 1`.execute(db)
-        return true
-    } catch {
-        return false
-    }
-}
+import { isPostgres } from '../utils.js'
 
 export async function up(db: Kysely<DB>): Promise<void> {
     const isPg = await isPostgres(db)

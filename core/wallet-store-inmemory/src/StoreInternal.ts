@@ -24,7 +24,7 @@ import {
     LedgerClient,
     defaultRetryableOptions,
 } from '@canton-network/core-ledger-client'
-import { CurrentNetworkWalletFilter } from '@canton-network/core-wallet-store/dist'
+import { CurrentNetworkWalletFilter } from '@canton-network/core-wallet-store'
 
 interface UserStorage {
     wallets: Array<Wallet>

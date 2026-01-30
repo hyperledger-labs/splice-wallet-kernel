@@ -3,16 +3,7 @@
 
 import { Kysely, sql } from 'kysely'
 import { DB } from '../schema.js'
-
-async function isPostgres(db: Kysely<DB>): Promise<boolean> {
-    try {
-        // Try to query PostgreSQL system catalog
-        await sql`SELECT 1 FROM pg_database LIMIT 1`.execute(db)
-        return true
-    } catch {
-        return false
-    }
-}
+import { isPostgres } from '../utils.js'
 
 async function tableExists(
     db: Kysely<DB>,

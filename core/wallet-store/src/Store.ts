@@ -76,8 +76,8 @@ export interface Transaction {
 
 export interface Store {
     // Wallet methods
-    getAllWallets(filter?: WalletFilter): Promise<Array<Wallet>>
     getWallets(filter?: CurrentNetworkWalletFilter): Promise<Array<Wallet>>
+    getAllWallets(filter?: WalletFilter): Promise<Array<Wallet>>
     getPrimaryWallet(): Promise<Wallet | undefined>
     setPrimaryWallet(partyId: PartyId): Promise<void>
     addWallet(wallet: Wallet): Promise<void>
