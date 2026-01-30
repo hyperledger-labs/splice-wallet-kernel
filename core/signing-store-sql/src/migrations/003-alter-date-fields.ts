@@ -60,17 +60,9 @@ async function dropConstraintIfExists(
 
 async function dropIndexIfExists(
     db: Kysely<DB>,
-    indexName: string,
-    tableName: string,
-    isPg: boolean
+    indexName: string
 ): Promise<void> {
-    if (isPg) {
-        // PostgreSQL: Drop index by name only (no ON clause)
-        await sql.raw(`DROP INDEX IF EXISTS "${indexName}"`).execute(db)
-    } else {
-        // SQLite: Drop index with ON clause
-        await db.schema.dropIndex(indexName).ifExists().on(tableName).execute()
-    }
+    await sql.raw(`DROP INDEX IF EXISTS "${indexName}"`).execute(db)
 }
 
 export async function up(db: Kysely<DB>): Promise<void> {
@@ -169,36 +161,21 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .execute()
 
     // Recreate indexes
-    await dropIndexIfExists(
-        db,
-        'idx_signing_transactions_user_id',
-        'signing_transactions',
-        isPg
-    )
+    await dropIndexIfExists(db, 'idx_signing_transactions_user_id')
     await db.schema
         .createIndex('idx_signing_transactions_user_id')
         .on('signing_transactions')
         .column('user_id')
         .execute()
 
-    await dropIndexIfExists(
-        db,
-        'idx_signing_transactions_status',
-        'signing_transactions',
-        isPg
-    )
+    await dropIndexIfExists(db, 'idx_signing_transactions_status')
     await db.schema
         .createIndex('idx_signing_transactions_status')
         .on('signing_transactions')
         .column('status')
         .execute()
 
-    await dropIndexIfExists(
-        db,
-        'idx_signing_transactions_created_at',
-        'signing_transactions',
-        isPg
-    )
+    await dropIndexIfExists(db, 'idx_signing_transactions_created_at')
     await db.schema
         .createIndex('idx_signing_transactions_created_at')
         .on('signing_transactions')
@@ -248,24 +225,14 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .execute()
 
     // Recreate indexes
-    await dropIndexIfExists(
-        db,
-        'idx_signing_keys_user_id',
-        'signing_keys',
-        isPg
-    )
+    await dropIndexIfExists(db, 'idx_signing_keys_user_id')
     await db.schema
         .createIndex('idx_signing_keys_user_id')
         .on('signing_keys')
         .column('user_id')
         .execute()
 
-    await dropIndexIfExists(
-        db,
-        'idx_signing_keys_public_key',
-        'signing_keys',
-        isPg
-    )
+    await dropIndexIfExists(db, 'idx_signing_keys_public_key')
     await db.schema
         .createIndex('idx_signing_keys_public_key')
         .on('signing_keys')
@@ -368,36 +335,21 @@ export async function down(db: Kysely<DB>): Promise<void> {
         .execute()
 
     // Recreate indexes
-    await dropIndexIfExists(
-        db,
-        'idx_signing_transactions_user_id',
-        'signing_transactions',
-        isPg
-    )
+    await dropIndexIfExists(db, 'idx_signing_transactions_user_id')
     await db.schema
         .createIndex('idx_signing_transactions_user_id')
         .on('signing_transactions')
         .column('user_id')
         .execute()
 
-    await dropIndexIfExists(
-        db,
-        'idx_signing_transactions_status',
-        'signing_transactions',
-        isPg
-    )
+    await dropIndexIfExists(db, 'idx_signing_transactions_status')
     await db.schema
         .createIndex('idx_signing_transactions_status')
         .on('signing_transactions')
         .column('status')
         .execute()
 
-    await dropIndexIfExists(
-        db,
-        'idx_signing_transactions_created_at',
-        'signing_transactions',
-        isPg
-    )
+    await dropIndexIfExists(db, 'idx_signing_transactions_created_at')
     await db.schema
         .createIndex('idx_signing_transactions_created_at')
         .on('signing_transactions')
@@ -447,24 +399,14 @@ export async function down(db: Kysely<DB>): Promise<void> {
         .execute()
 
     // Recreate indexes
-    await dropIndexIfExists(
-        db,
-        'idx_signing_keys_user_id',
-        'signing_keys',
-        isPg
-    )
+    await dropIndexIfExists(db, 'idx_signing_keys_user_id')
     await db.schema
         .createIndex('idx_signing_keys_user_id')
         .on('signing_keys')
         .column('user_id')
         .execute()
 
-    await dropIndexIfExists(
-        db,
-        'idx_signing_keys_public_key',
-        'signing_keys',
-        isPg
-    )
+    await dropIndexIfExists(db, 'idx_signing_keys_public_key')
     await db.schema
         .createIndex('idx_signing_keys_public_key')
         .on('signing_keys')
