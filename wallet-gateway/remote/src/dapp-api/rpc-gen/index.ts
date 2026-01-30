@@ -4,29 +4,31 @@
 import { Status } from './typings.js'
 import { Connect } from './typings.js'
 import { Disconnect } from './typings.js'
-import { DarsAvailable } from './typings.js'
-import { PrepareReturn } from './typings.js'
+import { GetActiveNetwork } from './typings.js'
 import { PrepareExecute } from './typings.js'
+import { SignMessage } from './typings.js'
 import { LedgerApi } from './typings.js'
-import { OnConnected } from './typings.js'
+import { Connected } from './typings.js'
 import { OnStatusChanged } from './typings.js'
-import { OnAccountsChanged } from './typings.js'
-import { RequestAccounts } from './typings.js'
-import { OnTxChanged } from './typings.js'
+import { AccountsChanged } from './typings.js'
+import { GetPrimaryAccount } from './typings.js'
+import { ListAccounts } from './typings.js'
+import { TxChanged } from './typings.js'
 
 export type Methods = {
     status: Status
     connect: Connect
     disconnect: Disconnect
-    darsAvailable: DarsAvailable
-    prepareReturn: PrepareReturn
+    getActiveNetwork: GetActiveNetwork
     prepareExecute: PrepareExecute
+    signMessage: SignMessage
     ledgerApi: LedgerApi
-    onConnected: OnConnected
+    connected: Connected
     onStatusChanged: OnStatusChanged
-    onAccountsChanged: OnAccountsChanged
-    requestAccounts: RequestAccounts
-    onTxChanged: OnTxChanged
+    accountsChanged: AccountsChanged
+    getPrimaryAccount: GetPrimaryAccount
+    listAccounts: ListAccounts
+    txChanged: TxChanged
 }
 
 function buildController(methods: Methods) {
@@ -34,15 +36,16 @@ function buildController(methods: Methods) {
         status: methods.status,
         connect: methods.connect,
         disconnect: methods.disconnect,
-        darsAvailable: methods.darsAvailable,
-        prepareReturn: methods.prepareReturn,
+        getActiveNetwork: methods.getActiveNetwork,
         prepareExecute: methods.prepareExecute,
+        signMessage: methods.signMessage,
         ledgerApi: methods.ledgerApi,
-        onConnected: methods.onConnected,
+        connected: methods.connected,
         onStatusChanged: methods.onStatusChanged,
-        onAccountsChanged: methods.onAccountsChanged,
-        requestAccounts: methods.requestAccounts,
-        onTxChanged: methods.onTxChanged,
+        accountsChanged: methods.accountsChanged,
+        getPrimaryAccount: methods.getPrimaryAccount,
+        listAccounts: methods.listAccounts,
+        txChanged: methods.txChanged,
     }
 }
 

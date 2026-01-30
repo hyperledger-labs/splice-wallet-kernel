@@ -2,5 +2,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export function prettyjson(obj: object): string {
-    return JSON.stringify(obj, Object.keys(obj).sort(), 2)
+    return JSON.stringify(obj, null, 2)
 }

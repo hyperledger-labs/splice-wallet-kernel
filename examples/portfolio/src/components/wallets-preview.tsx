@@ -4,7 +4,8 @@ import { WalletPreview } from './wallet-preview'
 
 export const WalletsPreview = () => {
     const wallets = useAccounts()
-    console.log(wallets)
+        .slice()
+        .sort((a, b) => Number(a.primary) - Number(b.primary)) // make primary wallet first in the grid
 
     return (
         <Box sx={{ mt: 1 }}>
@@ -27,6 +28,7 @@ export const WalletsPreview = () => {
                         key={w.partyId}
                         partyId={w.partyId}
                         walletName={w.hint}
+                        isPrimary={w.primary}
                     />
                 ))}
             </Box>

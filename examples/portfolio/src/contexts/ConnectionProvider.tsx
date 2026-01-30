@@ -64,11 +64,11 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
         if (!provider || !connectionStatus?.isConnected) return
         provider
             .request({
-                method: 'requestAccounts',
+                method: 'listAccounts',
             })
             .then((wallets) => {
                 const requestedAccounts =
-                    wallets as sdk.dappAPI.RequestAccountsResult
+                    wallets as sdk.dappAPI.ListAccountsResult
                 setAccounts(requestedAccounts)
             })
             .catch((err) => {

@@ -92,7 +92,14 @@ export const toSigningKey = (
             : {}),
         createdAt: new Date(table.createdAt),
         updatedAt: new Date(table.updatedAt),
-        ...(table.metadata ? { metadata: JSON.parse(table.metadata) } : {}),
+        ...(table.metadata
+            ? {
+                  metadata:
+                      typeof table.metadata === 'string'
+                          ? JSON.parse(table.metadata)
+                          : table.metadata,
+              }
+            : {}),
     }
 }
 
@@ -125,7 +132,14 @@ export const toSigningTransaction = (
         ...(table.signature ? { signature: table.signature } : {}),
         publicKey: table.publicKey,
         status: table.status as SigningDriverStatus,
-        ...(table.metadata ? { metadata: JSON.parse(table.metadata) } : {}),
+        ...(table.metadata
+            ? {
+                  metadata:
+                      typeof table.metadata === 'string'
+                          ? JSON.parse(table.metadata)
+                          : table.metadata,
+              }
+            : {}),
         createdAt: new Date(table.createdAt),
         updatedAt: new Date(table.updatedAt),
         ...(table.signedAt ? { signedAt: new Date(table.signedAt) } : {}),
@@ -148,7 +162,10 @@ export const toSigningDriverConfig = (
 ): SigningDriverConfig => {
     return {
         driverId: table.driverId,
-        config: JSON.parse(table.config),
+        config:
+            typeof table.config === 'string'
+                ? JSON.parse(table.config)
+                : table.config,
     }
 }
 

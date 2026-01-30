@@ -1,3 +1,5 @@
+.. _dapp-sdk-installation:
+
 Installation
 ============
 

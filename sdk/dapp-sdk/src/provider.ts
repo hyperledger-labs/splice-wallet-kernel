@@ -19,7 +19,13 @@ import {
     PrepareExecuteParams,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { ErrorCode } from './error.js'
-import { Session, StatusEvent } from './dapp-api/rpc-gen/typings'
+import {
+    Network,
+    Session,
+    SignMessageResult,
+    StatusEvent,
+    Wallet,
+} from './dapp-api/rpc-gen/typings'
 import { popup } from '@canton-network/core-wallet-ui-components'
 
 /**
@@ -57,8 +63,6 @@ export class Provider implements SpliceProvider {
                 return controller.connect() as Promise<T>
             case 'disconnect':
                 return controller.disconnect() as Promise<T>
-            case 'darsAvailable':
-                return controller.darsAvailable() as Promise<T>
             case 'ledgerApi':
                 return controller.ledgerApi(
                     args.params as LedgerApiParams
@@ -67,16 +71,12 @@ export class Provider implements SpliceProvider {
                 return controller.prepareExecute(
                     args.params as PrepareExecuteParams
                 ) as Promise<T>
+            case 'listAccounts':
+                return controller.listAccounts() as Promise<T>
             case 'prepareExecuteAndWait':
                 return controller.prepareExecuteAndWait(
                     args.params as PrepareExecuteParams
                 ) as Promise<T>
-            case 'prepareReturn':
-                return controller.prepareReturn(
-                    args.params as dappAPI.PrepareReturnParams
-                ) as Promise<T>
-            case 'requestAccounts':
-                return controller.requestAccounts() as Promise<T>
             default:
                 throw new Error('Unsupported method')
         }
@@ -133,10 +133,12 @@ export const dappController = (provider: SpliceProvider) =>
                             5 * 60 * 1000
                         )
                         provider.on<dappRemoteAPI.StatusEvent>(
-                            'onConnected',
+                            'statusChanged',
                             (event) => {
-                                clearTimeout(timeout)
-                                resolve(event)
+                                if (event.isConnected) {
+                                    clearTimeout(timeout)
+                                    resolve(event)
+                                }
                             }
                         )
                     }
@@ -148,11 +150,6 @@ export const dappController = (provider: SpliceProvider) =>
         disconnect: async () => {
             return await provider.request<dappRemoteAPI.Null>({
                 method: 'disconnect',
-            })
-        },
-        darsAvailable: async () => {
-            return provider.request<dappRemoteAPI.DarsAvailableResult>({
-                method: 'darsAvailable',
             })
         },
         ledgerApi: async (params: LedgerApiParams) =>
@@ -218,22 +215,28 @@ export const dappController = (provider: SpliceProvider) =>
 
             return promise
         },
-        prepareReturn: async (params: dappAPI.PrepareReturnParams) =>
-            provider.request<dappAPI.PrepareReturnResult>({
-                method: 'prepareReturn',
-                params,
-            }),
         status: async () => {
             return provider.request<dappAPI.StatusEvent>({ method: 'status' })
         },
-        requestAccounts: async () =>
-            provider.request<dappRemoteAPI.RequestAccountsResult>({
-                method: 'requestAccounts',
+        listAccounts: async () =>
+            provider.request<dappRemoteAPI.ListAccountsResult>({
+                method: 'listAccounts',
             }),
-        onAccountsChanged: async () => {
+        accountsChanged: async () => {
             throw new Error('Only for events.')
         },
-        onTxChanged: async () => {
+        txChanged: async () => {
             throw new Error('Only for events.')
+        },
+        getActiveNetwork: function (): Promise<Network> {
+            throw new Error('Function not implemented.')
+        },
+        signMessage: function (): Promise<SignMessageResult> {
+            throw new Error('Function not implemented.')
+        },
+        getPrimaryAccount: function (): Promise<Wallet> {
+            return provider.request<dappRemoteAPI.Wallet>({
+                method: 'getPrimaryAccount',
+            })
         },
     })

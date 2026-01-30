@@ -1,3 +1,5 @@
+.. _dapp-sdk:
+
 dApp SDK
 ========
 
