@@ -214,7 +214,8 @@ export class ApproveUi extends LitElement {
                     this.txParsed = null
                 }
             })
-        userClient.request('listWallets', []).then((wallets) => {
+
+        userClient.request('listWallets', {}).then((wallets) => {
             this.partyId =
                 wallets.find((w) => w.primary === true)?.partyId || ''
         })
