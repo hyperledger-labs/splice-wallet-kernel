@@ -213,6 +213,18 @@ export async function down(db: Kysely<DB>): Promise<void> {
                 AND w2.network_id < w1.network_id
             )
         `.execute(db)
+
+        // Make network_id nullable again
+        await sql`
+          ALTER TABLE public.wallets
+          ALTER COLUMN network_id DROP NOT NULL
+      `.execute(db)
+
+        // Add back single-column PK on party_id
+        await sql`
+          ALTER TABLE public.wallets
+          ADD CONSTRAINT wallets_pkey PRIMARY KEY (party_id)
+        `.execute(db)
     } else {
         // SQLite: Recreate table with single primary key
         // Create old table structure with single primary key
