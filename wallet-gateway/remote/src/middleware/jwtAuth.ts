@@ -7,7 +7,10 @@ import { Logger } from 'pino'
 
 export function jwtAuth(authService: AuthService, logger: Logger) {
     return async (req: Request, res: Response, next: NextFunction) => {
-        const authHeader = req.headers.authorization
+        // Support both Authorization header and token query parameter (for EventSource)
+        const authHeader =
+            req.headers.authorization ||
+            (req.query.token ? `Bearer ${req.query.token}` : undefined)
 
         try {
             const context = await authService.verifyToken(authHeader)
