@@ -1,15 +1,18 @@
-import { Box, Avatar, Typography, Paper, Skeleton } from '@mui/material'
-import { useAggregatedHoldings } from '../hooks/useWalletInstruments'
+import { Box, Avatar, Typography, Paper, Skeleton, Chip } from '@mui/material'
+import { Link } from '@tanstack/react-router'
+import { useAggregatedHoldings } from '../hooks/useAggregatedHoldings'
 import type { AggregatedHolding } from '../utils/aggregate-holdings'
 
 interface WalletPreviewProps {
     partyId: string
     walletName: string
+    isPrimary?: boolean
 }
 
 export const WalletPreview: React.FC<WalletPreviewProps> = ({
     partyId,
     walletName,
+    isPrimary,
 }) => {
     const { instruments, isLoading } = useAggregatedHoldings(partyId)
     const hasInstruments = instruments.length > 0
@@ -48,47 +51,63 @@ export const WalletPreview: React.FC<WalletPreviewProps> = ({
     ))
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Box
-                sx={{
-                    mb: 1,
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                }}
-            >
-                <Typography
+        <Link
+            to="/wallet/$walletId"
+            params={{ walletId: partyId }}
+            style={{ textDecoration: 'none', color: 'inherit' }}
+        >
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                <Box
                     sx={{
-                        textOverflow: 'ellipsis',
-                        overflow: 'hidden',
-                        whiteSpace: 'nowrap',
-                        maxWidth: '200px',
+                        mb: 1,
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 1,
                     }}
-                    fontWeight="bold"
-                    color="secondary"
                 >
-                    {walletName}
-                </Typography>
+                    <Typography
+                        sx={{
+                            textOverflow: 'ellipsis',
+                            overflow: 'hidden',
+                            whiteSpace: 'nowrap',
+                            maxWidth: '200px',
+                        }}
+                        fontWeight="bold"
+                        color="secondary"
+                    >
+                        {walletName}
+                    </Typography>
+                    {isPrimary && (
+                        <Chip label="Primary" size="small" color="primary" />
+                    )}
+                </Box>
+                <Box
+                    component={Paper}
+                    variant="outlined"
+                    sx={{
+                        background: (t) =>
+                            t.palette.mode === 'dark'
+                                ? undefined
+                                : t.palette.grey[100],
+                        display: 'flex',
+                        flexDirection: 'column',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease-in-out',
+                        '&:hover': {
+                            borderColor: 'primary.main',
+                            boxShadow: 1,
+                        },
+                    }}
+                >
+                    {isLoading
+                        ? loadingState
+                        : hasInstruments
+                          ? renderedAssets
+                          : noInstruments}
+                </Box>
             </Box>
-            <Box
-                component={Paper}
-                variant="outlined"
-                sx={{
-                    background: (t) =>
-                        t.palette.mode === 'dark'
-                            ? undefined
-                            : t.palette.grey[100],
-                    display: 'flex',
-                    flexDirection: 'column',
-                }}
-            >
-                {isLoading
-                    ? loadingState
-                    : hasInstruments
-                      ? renderedAssets
-                      : noInstruments}
-            </Box>
-        </Box>
+        </Link>
     )
 }
 

@@ -111,12 +111,12 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 this.client = this.createClient(this.sessionToken)
                 this.openSSE(this.url, event.data.token)
 
-                // We requery the status explicitly here, as it's not guaranteed that the SSE connection will be open & authenticated
-                // before the `connected` event is fired from the `addSession` RPC call. The dappApi.StatusResult and
-                // dappApi.ConnectedEvent are mapped manually to avoid dependency.
+                // We requery the status explicitly here, as it's not guaranteed that the socket will be open & authenticated
+                // before the `statusChanged` event is fired from the `addSession` RPC call. The dappApi.StatusResult and
+                // dappApi.StatusEvent are mapped manually to avoid dependency.
                 this.request({ method: 'status' })
                     .then((status) => {
-                        this.emit('connected', status)
+                        this.emit('statusChanged', status)
                     })
                     .catch((err) => {
                         console.error(

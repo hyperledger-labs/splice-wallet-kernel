@@ -39,16 +39,34 @@ The User API enables users to manage their wallets, configure networks, manage i
 
 **Key Methods:**
 
+**Sessions:**
+- ``addSession()`` - Create a new session (unauthenticated, used for initial connection)
+- ``removeSession()`` - End the current session
+- ``listSessions()`` - List sessions for the current user
+
+**Networks:**
 - ``listNetworks()`` - List all configured networks
 - ``addNetwork()`` - Add a new network configuration
 - ``removeNetwork()`` - Remove a network configuration
+
+**Identity providers:**
 - ``listIdps()`` - List all identity providers
 - ``addIdp()`` - Add a new identity provider
 - ``removeIdp()`` - Remove an identity provider
-- ``addSession()`` - Create a new session (unauthenticated, used for initial connection)
-- ``createParty()`` - Create a new party on a network
-- ``listParties()`` - List all parties for the current user
-- ``listWallets()`` - List all wallets
+
+**Wallets:**
+- ``createWallet()`` - Create a new wallet (party) on a network
+- ``listWallets()`` - List all wallets for the current user
+- ``setPrimaryWallet()`` - Set the primary wallet
+- ``removeWallet()`` - Remove a wallet
+- ``syncWallets()`` - Sync wallets with the ledger
+- ``isWalletSyncNeeded()`` - Check if wallet sync is needed
+
+**Transactions:**
+- ``sign()`` - Sign a transaction
+- ``execute()`` - Execute a signed transaction
+- ``getTransaction()`` - Get a transaction by ID
+- ``listTransactions()`` - List transactions
 
 **Authentication:**
 

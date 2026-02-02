@@ -14,7 +14,7 @@ export default {
         userPath: '/api/v0/user',
         allowedOrigins: '*',
         requestSizeLimit: '5mb',
-        requestRateLimit: 100,
+        requestRateLimit: 10000,
     },
     signingStore: {
         connection: {

@@ -1,3 +1,5 @@
+.. _dapp-sdk-usage:
+
 dApp SDK Usage
 ==============
 
