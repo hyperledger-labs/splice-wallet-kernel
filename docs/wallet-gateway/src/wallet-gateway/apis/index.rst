@@ -80,23 +80,26 @@ Most User API methods require authentication via JWT token. However, the followi
 
 The complete OpenRPC specification can be found in the codebase at ``api-specs/openrpc-user-api.json``.
 
-WebSocket Support
------------------
+Server-Sent Events (SSE) Support
+--------------------------------
 
-The dApp API also supports WebSocket connections for real-time notifications. When using WebSocket, authenticate by providing the JWT token in the connection handshake:
+The dApp API supports Server-Sent Events (SSE) for real-time notifications. Connect to the ``/events`` path relative to the dApp API base URL (e.g. ``/api/v0/dapp/events``). Authenticate by passing the JWT token as the ``token`` query parameter (the ``Authorization: Bearer`` header is also supported):
 
 .. code-block:: javascript
 
-    const socket = io(apiUrl, {
-        auth: {
-            token: 'your-jwt-token'
-        }
-    })
+    const eventsUrl = new URL('events', dappApiUrl + '/')
+    eventsUrl.searchParams.set('token', jwtToken)
+    const eventSource = new EventSource(eventsUrl.toString())
 
-WebSocket connections receive real-time updates about:
-- Transaction status changes
-- Contract updates
-- Session state changes
+    eventSource.addEventListener('accountsChanged', (e) => { /* ... */ })
+    eventSource.addEventListener('statusChanged', (e) => { /* ... */ })
+    eventSource.addEventListener('connected', (e) => { /* ... */ })
+    eventSource.addEventListener('txChanged', (e) => { /* ... */ })
+
+SSE connections receive real-time updates about:
+- Transaction status changes (``txChanged``)
+- Account changes (``accountsChanged``)
+- Session/connection state (``connected``, ``statusChanged``)
 
 Rate Limiting
 -------------
