@@ -33,8 +33,8 @@ export async function up(db: Kysely<DB>): Promise<void> {
     const isPg = await isPostgres(db)
 
     if (isPg) {
-        // PostgreSQL: idempotent PK change to (party_id, network_id)
-        // Drop current PK if it isn't already the composite (party_id, network_id)
+        // PostgreSQL: idempotent PK change to (party_id, network_id, user_id)
+        // Drop current PK if it isn't already the composite (party_id, network_id, user_id)
         await sql`
             DO $$
             DECLARE
@@ -48,18 +48,21 @@ export async function up(db: Kysely<DB>): Promise<void> {
                 AND c.contype = 'p';
 
               IF pk_name IS NOT NULL
-                 AND pk_def NOT ILIKE 'PRIMARY KEY (party_id, network_id)%' THEN
+                 AND pk_def NOT ILIKE 'PRIMARY KEY (party_id, network_id, user_id)%' THEN
                 EXECUTE format('ALTER TABLE public.wallets DROP CONSTRAINT %I', pk_name);
               END IF;
             END $$;
       `.execute(db)
 
-        // Ensure network_id has no NULLs and is NOT NULL (required for PK)
+        // Ensure network_id and user_id have no NULLs and are NOT NULL (required for PK)
         await sql`
         DO $$
         BEGIN
           IF EXISTS (SELECT 1 FROM public.wallets WHERE network_id IS NULL) THEN
             RAISE EXCEPTION 'Cannot add composite PK: wallets.network_id has NULLs';
+          END IF;
+          IF EXISTS (SELECT 1 FROM public.wallets WHERE user_id IS NULL) THEN
+            RAISE EXCEPTION 'Cannot add composite PK: wallets.user_id has NULLs';
           END IF;
         END $$;
       `.execute(db)
@@ -67,6 +70,11 @@ export async function up(db: Kysely<DB>): Promise<void> {
         await sql`
         ALTER TABLE public.wallets
           ALTER COLUMN network_id SET NOT NULL
+      `.execute(db)
+
+        await sql`
+        ALTER TABLE public.wallets
+          ALTER COLUMN user_id SET NOT NULL
       `.execute(db)
 
         // Drop any leftover UNIQUE index that still enforces uniqueness on party_id alone
@@ -97,12 +105,12 @@ export async function up(db: Kysely<DB>): Promise<void> {
                 FROM pg_constraint c
                 WHERE c.conrelid = 'public.wallets'::regclass
                   AND c.contype = 'p'
-                  AND pg_get_constraintdef(c.oid) ILIKE 'PRIMARY KEY (party_id, network_id)%'
+                  AND pg_get_constraintdef(c.oid) ILIKE 'PRIMARY KEY (party_id, network_id, user_id)%'
               ) INTO has_pk;
 
               IF NOT has_pk THEN
                 EXECUTE 'ALTER TABLE public.wallets
-                    ADD CONSTRAINT wallets_pkey PRIMARY KEY (party_id, network_id)';
+                    ADD CONSTRAINT wallets_pkey PRIMARY KEY (party_id, network_id, user_id)';
               END IF;
             END $$;
       `.execute(db)
@@ -143,7 +151,11 @@ export async function up(db: Kysely<DB>): Promise<void> {
                 col.notNull().defaultTo(0)
             )
             .addColumn('reason', 'text')
-            .addPrimaryKeyConstraint('wallets_pk', ['party_id', 'network_id'])
+            .addPrimaryKeyConstraint('wallets_pk', [
+                'party_id',
+                'network_id',
+                'user_id',
+            ])
             .execute()
 
         await sql`
@@ -190,13 +202,14 @@ export async function down(db: Kysely<DB>): Promise<void> {
       `.execute(db)
 
         // Keep only one wallet per party_id (data loss if duplicates exist)
-        // Use DISTINCT ON to pick first row per party_id
+        // Pick the wallet with the smallest user_id, then network_id as tie-breaker
         await sql`
             DELETE FROM public.wallets w1
             WHERE EXISTS (
               SELECT 1
               FROM public.wallets w2
               WHERE w2.party_id = w1.party_id
+                AND w2.user_id = w1.user_id
                 AND w2.network_id < w1.network_id
             )
         `.execute(db)
