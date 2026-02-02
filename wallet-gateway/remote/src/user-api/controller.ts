@@ -467,9 +467,9 @@ export const userController = (
         removeWallet: async (params: { partyId: string }) =>
             Promise.resolve({}),
         listWallets: async (params: {
-            filter?: { networkIds?: string[]; signingProviderIds?: string[] }
+            filter?: { signingProviderIds?: string[] }
         }) => {
-            return await store.getAllWallets(params.filter)
+            return await store.getWallets(params.filter)
         },
         sign: async ({
             preparedTransaction,

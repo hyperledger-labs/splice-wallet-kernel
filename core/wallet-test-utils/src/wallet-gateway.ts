@@ -165,6 +165,9 @@ export class WalletGateway {
         await (await this.popup())
             .getByRole('button', { name: 'Create' })
             .click()
+        await expect(
+            (await this.popup()).getByRole('button', { name: 'Create' })
+        ).toBeEnabled()
         await (await this.popup())
             .getByRole('button', { name: 'Close' })
             .click()
