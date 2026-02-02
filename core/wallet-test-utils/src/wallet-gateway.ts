@@ -273,4 +273,37 @@ export class WalletGateway {
         await confirmConnectButton.click()
         await expect(confirmConnectButton).not.toBeVisible()
     }
+
+    async logoutFromPopup(): Promise<void> {
+        const popup = await this.popup()
+        await popup.getByRole('button', { name: 'Toggle menu' }).click()
+        await popup.locator('button').filter({ hasText: 'Logout' }).click()
+        await popup.waitForEvent('close', { timeout: 5000 })
+        this._popup = undefined
+    }
+
+    async closePopup(): Promise<void> {
+        const popup = await this.popup()
+        await popup.close()
+        this._popup = undefined
+    }
+
+    async isPopupOpen(): Promise<boolean> {
+        if (!this._popup) {
+            return false
+        }
+        try {
+            return !this._popup.isClosed()
+        } catch {
+            // If we can't check, assume it's closed
+            return false
+        }
+    }
+
+    async waitForPopupClosed(): Promise<void> {
+        if (this._popup) {
+            await this._popup.waitForEvent('close', { timeout: 5000 })
+            this._popup = undefined
+        }
+    }
 }
