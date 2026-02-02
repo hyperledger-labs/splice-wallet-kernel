@@ -49,6 +49,10 @@ export class UserApp extends LitElement {
         stateManager.clearAuthState()
 
         if (window.opener && !window.opener.closed) {
+            window.opener.postMessage(
+                { type: WalletEvent.SPLICE_WALLET_LOGOUT },
+                '*'
+            )
             // close the gateway UI automatically if we are within a popup
             window.close()
         } else {

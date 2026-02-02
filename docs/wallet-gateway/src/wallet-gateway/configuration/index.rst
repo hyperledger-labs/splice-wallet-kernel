@@ -87,6 +87,7 @@ The **server** section configures network binding, ports, and API paths.
     - *userPath* (optional, default: ``'/api/v0/user'``): The API path for user JSON-RPC requests. This is used by the web UI and user-facing applications.
     - *allowedOrigins* (optional, default: ``['*']``): CORS allowed origins. For production, specify exact origins instead of ``'*'`` for better security. Example: ``["https://my-dapp.com", "https://another-dapp.com"]``.
     - *requestSizeLimit* (optional, default: ``'1mb'``): Maximum request body size the server will accept. Use standard size notation (e.g., ``'1mb'``, ``'10mb'``, ``'50kb'``).
+    - *requestRateLimit* (optional, default: ``10000``): Maximum number of requests per minute from a single IP address (this excludes health endpoints).
 
 **Example:**
 
@@ -98,7 +99,8 @@ The **server** section configures network binding, ports, and API paths.
             "dAppPath": "/api/v0/dapp",
             "userPath": "/api/v0/user",
             "allowedOrigins": ["https://my-dapp.example.com"],
-            "requestSizeLimit": "10mb"
+            "requestSizeLimit": "10mb",
+            "requestRateLimit": 10000
         }
     }
 
