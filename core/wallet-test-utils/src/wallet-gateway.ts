@@ -289,13 +289,10 @@ export class WalletGateway {
     }
 
     async isPopupOpen(): Promise<boolean> {
-        if (!this._popup) {
-            return false
-        }
         try {
-            return !this._popup.isClosed()
+            const popup = await this.popup()
+            return popup && !popup.isClosed()
         } catch {
-            // If we can't check, assume it's closed
             return false
         }
     }
