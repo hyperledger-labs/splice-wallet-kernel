@@ -50,6 +50,8 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
 
     const accounts = dappPage.getByTestId('accounts')
     const postEvents = dappPage.getByTestId('post-events')
+    const ledgerSubmissions = dappPage.getByTestId('ledger-submission')
+
     await expect(accounts.getByText(new RegExp(`${party2}::.*`))).toBeVisible()
     await expect(postEvents.getByText(new RegExp(`${party2}::.*`))).toBeVisible()
     await expect(
@@ -62,11 +64,9 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
     )
 
     // Wait for command to have fully executed
-    //TODO: we use 2 because we have one in the transaction list and one in the event list
-    //TODO: fix this so we check each list properly once
-    await expect(dappPage.getByText('executed')).toHaveCount(2)
+    await expect(ledgerSubmissions.getByText('executed')).toBeVisible()
+    await expect(postEvents.getByText('executed')).toBeVisible()
 })
-
 test('connection status handling', async ({ page: dappPage }) => {
     const wg = new WalletGateway({
         dappPage,
