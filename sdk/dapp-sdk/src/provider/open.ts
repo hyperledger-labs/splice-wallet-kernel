@@ -16,8 +16,10 @@ export async function open(): Promise<void> {
         throw new Error('No previous session found')
     }
 
-    const userUrl = session.userUrl ?? ''
-
+    const userUrl = session.userUrl ?? session.kernel.userUrl
+    if (!userUrl) {
+        throw new Error('User URL not found in session')
+    }
     if (discovery.walletType === 'remote') {
         popup.open(userUrl)
     } else if (discovery.walletType === 'extension') {
