@@ -33,6 +33,11 @@ import { defaultRetryableOptions } from '@canton-network/core-ledger-client'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { decodeTopologyTransaction } from '@canton-network/core-tx-visualizer'
 
+export type InvolvedParties = Array<{
+    partyId: PartyId
+    privateKey: PrivateKey
+}>
+
 export type UpdatesResponse = JsGetUpdatesResponse
 
 export type RawCommandMap = {
@@ -288,12 +293,13 @@ export class LedgerController {
      */
     async prepareSignAndExecuteTransaction(
         commands: WrappedCommand | WrappedCommand[] | unknown,
-        privateKey: PrivateKey,
+        involvedParties: InvolvedParties,
         commandId: string,
         disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<string> {
         const prepared = await this.prepareSubmission(
             commands,
+            involvedParties.map(({ partyId }) => partyId),
             commandId,
             disclosedContracts
         )
@@ -307,13 +313,17 @@ export class LedgerController {
                 `Calculated tx hash ${calculatedTxHash}, got ${prepared.preparedTransactionHash} from ledger api`
             )
         }
-        const signature = signTransactionHash(
-            prepared.preparedTransactionHash,
-            privateKey
-        )
-        const publicKey = getPublicKeyFromPrivate(privateKey)
 
-        return this.executeSubmission(prepared, signature, publicKey, commandId)
+        const signatures = involvedParties.map(({ partyId, privateKey }) => ({
+            partyId,
+            signature: signTransactionHash(
+                prepared.preparedTransactionHash,
+                privateKey
+            ),
+            publicKey: getPublicKeyFromPrivate(privateKey),
+        }))
+
+        return this.executeSubmission(prepared, signatures, commandId)
     }
 
     /**
@@ -327,7 +337,7 @@ export class LedgerController {
      */
     async prepareSignExecuteAndWaitFor(
         commands: WrappedCommand | WrappedCommand[] | unknown,
-        privateKey: PrivateKey,
+        involvedParties: InvolvedParties,
         commandId: string,
         disclosedContracts?: Types['DisclosedContract'][],
         timeoutMs: number = 15000
@@ -336,7 +346,7 @@ export class LedgerController {
 
         await this.prepareSignAndExecuteTransaction(
             commands,
-            privateKey,
+            involvedParties,
             commandId,
             disclosedContracts
         )
@@ -566,7 +576,12 @@ export class LedgerController {
 
         await this.prepareSignExecuteAndWaitFor(
             [transferPreApprovalProposal],
-            privateKey,
+            [
+                {
+                    partyId: providerParty,
+                    privateKey,
+                },
+            ],
             v4()
         )
 
@@ -700,6 +715,7 @@ export class LedgerController {
      */
     async prepareSubmission(
         commands: WrappedCommand | WrappedCommand[] | unknown,
+        actAs?: string[],
         commandId?: string,
         disclosedContracts?: Types['DisclosedContract'][]
     ): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
@@ -709,7 +725,7 @@ export class LedgerController {
             commands: commandArray as any,
             commandId: commandId || v4(),
             userId: this.userId,
-            actAs: [this.getPartyId()],
+            actAs: actAs ?? [this.getPartyId()],
             readAs: [],
             disclosedContracts: disclosedContracts || [],
             synchronizerId: this.getSynchronizerId(),
@@ -732,28 +748,40 @@ export class LedgerController {
      */
     async executeSubmission(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
-        signature: string,
-        publicKey: PublicKey,
+        signatures: Array<{
+            partyId: PartyId
+            signature: string
+            publicKey: PublicKey
+        }>,
         submissionId: string
     ): Promise<string>
     /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
     async executeSubmission(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
-        signature: string,
-        publicKey: SigningPublicKey,
+        signatures: Array<{
+            partyId: PartyId
+            signature: string
+            publicKey: SigningPublicKey
+        }>,
         submissionId: string
     ): Promise<string>
     /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
     async executeSubmission(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
-        signature: string,
-        publicKey: SigningPublicKey | PublicKey,
+        signatures: Array<{
+            partyId: PartyId
+            signature: string
+            publicKey: PublicKey | SigningPublicKey
+        }>,
         submissionId: string
     ): Promise<string>
     async executeSubmission(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
-        signature: string,
-        publicKey: SigningPublicKey | PublicKey,
+        signatures: Array<{
+            partyId: PartyId
+            signature: string
+            publicKey: PublicKey | SigningPublicKey
+        }>,
         submissionId: string
     ): Promise<string> {
         if (prepared.preparedTransaction === undefined) {
@@ -762,10 +790,13 @@ export class LedgerController {
         const transaction: string = prepared.preparedTransaction
         let replaceableSubmissionId = submissionId
         if (
-            !this.verifyTxHash(
-                prepared.preparedTransactionHash,
-                publicKey,
-                signature
+            signatures.some(
+                (sig) =>
+                    !this.verifyTxHash(
+                        prepared.preparedTransactionHash,
+                        sig.publicKey,
+                        sig.signature
+                    )
             )
         ) {
             throw new Error('BAD SIGNATURE')
@@ -780,23 +811,21 @@ export class LedgerController {
                 Empty: {},
             },
             partySignatures: {
-                signatures: [
-                    {
-                        party: this.getPartyId(),
-                        signatures: [
-                            {
-                                signature,
-                                signedBy:
-                                    TopologyController.createFingerprintFromPublicKey(
-                                        publicKey
-                                    ),
-                                format: 'SIGNATURE_FORMAT_CONCAT',
-                                signingAlgorithmSpec:
-                                    'SIGNING_ALGORITHM_SPEC_ED25519',
-                            },
-                        ],
-                    },
-                ],
+                signatures: signatures.map((sig) => ({
+                    party: sig.partyId,
+                    signatures: [
+                        {
+                            signature: sig.signature,
+                            signedBy:
+                                TopologyController.createFingerprintFromPublicKey(
+                                    sig.publicKey
+                                ),
+                            format: 'SIGNATURE_FORMAT_CONCAT',
+                            signingAlgorithmSpec:
+                                'SIGNING_ALGORITHM_SPEC_ED25519',
+                        },
+                    ],
+                })),
             },
         }
 
@@ -840,16 +869,18 @@ export class LedgerController {
      */
     async executeSubmissionAndWaitFor(
         prepared: PostResponse<'/v2/interactive-submission/prepare'>,
-        signature: string,
-        publicKey: SigningPublicKey | PublicKey,
+        signatures: Array<{
+            partyId: PartyId
+            signature: string
+            publicKey: SigningPublicKey | PublicKey
+        }>,
         submissionId: string,
         timeoutMs: number = 15000
     ): Promise<Types['Completion']['value']> {
         const ledgerEnd = await this.ledgerEnd()
         const returnedSubmissionId = await this.executeSubmission(
             prepared,
-            signature,
-            publicKey,
+            signatures,
             submissionId
         )
 
