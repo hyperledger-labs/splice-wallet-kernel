@@ -165,87 +165,43 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         this.logger.info('Adding wallet')
         const userId = this.assertConnected()
 
-        // Check if this is the first wallet in this network for this user
-        const wallets = await this.getAllWallets({
-            networkIds: [wallet.networkId],
-        })
-        const isFirstWallet = wallets.length === 0
-        if (isFirstWallet) {
+        const wallets = await this.getWallets()
+        if (
+            wallets.some(
+                (w) =>
+                    w.partyId === wallet.partyId &&
+                    w.networkId === wallet.networkId
+            )
+        ) {
+            throw new Error(
+                `Wallet with partyId "${wallet.partyId}" networkId "${wallet.networkId}" userId "${userId}" already exists`
+            )
+        }
+
+        if (wallets.length === 0) {
+            // If this is the first wallet, set it as primary automatically
             wallet.primary = true
         }
 
         await this.db.transaction().execute(async (trx) => {
-            // Check if wallet already exists (possibly from a different user)
-            const existingWallet = await trx
-                .selectFrom('wallets')
-                .selectAll()
-                .where((eb) =>
-                    eb.and([
-                        eb('partyId', '=', wallet.partyId),
-                        eb('networkId', '=', wallet.networkId),
-                    ])
-                )
-                .executeTakeFirst()
-
-            if (existingWallet) {
-                // Wallet exists - update it (handles case where network was edited to use different user)
-                this.logger.info(
-                    {
-                        partyId: wallet.partyId,
-                        networkId: wallet.networkId,
-                        oldUserId: existingWallet.userId,
-                        newUserId: userId,
-                    },
-                    'Updating existing wallet (possibly from different user)'
-                )
-
-                if (wallet.primary) {
-                    // If the new wallet is primary, set all others in the same network to non-primary
-                    await trx
-                        .updateTable('wallets')
-                        .set({ primary: 0 })
-                        .where((eb) =>
-                            eb.and([
-                                eb('primary', '=', 1),
-                                eb('networkId', '=', wallet.networkId),
-                                eb('userId', '=', userId),
-                            ])
-                        )
-                        .execute()
-                }
-
-                // Update the existing wallet with new data and user
+            if (wallet.primary) {
+                // If the new wallet is primary, set all others in the same network and for this user to non-primary
                 await trx
                     .updateTable('wallets')
-                    .set(fromWallet(wallet, userId))
+                    .set({ primary: 0 })
                     .where((eb) =>
                         eb.and([
-                            eb('partyId', '=', wallet.partyId),
+                            eb('primary', '=', 1),
                             eb('networkId', '=', wallet.networkId),
+                            eb('userId', '=', userId),
                         ])
                     )
                     .execute()
-            } else {
-                // Wallet doesn't exist - insert it
-                if (wallet.primary) {
-                    // If the new wallet is primary, set all others in the same network to non-primary
-                    await trx
-                        .updateTable('wallets')
-                        .set({ primary: 0 })
-                        .where((eb) =>
-                            eb.and([
-                                eb('primary', '=', 1),
-                                eb('networkId', '=', wallet.networkId),
-                                eb('userId', '=', userId),
-                            ])
-                        )
-                        .execute()
-                }
-                await trx
-                    .insertInto('wallets')
-                    .values(fromWallet(wallet, userId))
-                    .execute()
             }
+            await trx
+                .insertInto('wallets')
+                .values(fromWallet(wallet, userId))
+                .execute()
         })
     }
 
