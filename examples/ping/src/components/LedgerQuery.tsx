@@ -15,7 +15,7 @@ export function LedgerQuery(props: {
 
     return (
         connected && (
-            <div className="card">
+            <div className="card" data-testid="ledger-query">
                 <h2>Ledger Querying</h2>
                 <button
                     disabled={!props.primaryParty}

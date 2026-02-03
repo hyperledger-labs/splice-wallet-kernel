@@ -9,7 +9,7 @@ export function Accounts(props: { status?: sdk.dappAPI.StatusEvent }) {
 
     return (
         connected && (
-            <div>
+            <div data-testid="accounts">
                 <h2>Accounts</h2>
                 <h4>⭐ Primary Party ⭐</h4>
                 {primaryParty ? (

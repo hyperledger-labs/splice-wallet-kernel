@@ -100,7 +100,7 @@ function App() {
 
             <Accounts status={status} />
 
-            <PostEvents />
+            <PostEvents status={status}/>
 
             <WindowMessages />
 

@@ -3,9 +3,12 @@
 
 import { useAllEvents } from '../hooks/useAllEvents'
 import { prettyjson } from '../utils'
+import * as sdk from '@canton-network/dapp-sdk'
 
-export function PostEvents() {
-    const events = useAllEvents()
+export function PostEvents(props: {
+    status?: sdk.dappAPI.StatusEvent
+}) {
+    const events = useAllEvents(props.status)
     const providerAvailable = window.canton
 
     const getEventColor = (type: string) => {
@@ -23,7 +26,7 @@ export function PostEvents() {
 
     return (
         providerAvailable && (
-            <div>
+            <div data-testid="post-events">
                 <h2>Post Events</h2>
                 {events.length === 0 ? (
                     <i>No post events received yet.</i>

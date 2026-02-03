@@ -5,7 +5,7 @@ export function Status(props: {
     status?: sdk.dappAPI.StatusEvent
 }) {
     return (
-        <div>
+        <div data-testid="status">
             <h2>Status</h2>
             <b>connected:</b> <i>{props.status?.isConnected ? '🟢' : '🔴'}</i>
             <br />

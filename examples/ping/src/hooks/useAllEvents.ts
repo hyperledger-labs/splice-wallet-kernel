@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as sdk from '@canton-network/dapp-sdk'
 
 export type AllEvents =
@@ -17,12 +17,15 @@ export type AllEvents =
           timestamp: Date
       }
 
-export function useAllEvents() {
+export function useAllEvents(status?: sdk.dappAPI.StatusEvent) {
     const [events, setEvents] = useState<AllEvents[]>([])
+    const isListening = useRef<boolean>(false)
 
     useEffect(() => {
+        if (isListening.current) return;
         //we use window.canton here since we want to capture the initial login event as well
-        if (window.canton) {
+        if (status?.isConnected && window.canton) {
+            isListening.current = true
             const txListener = (event: sdk.dappAPI.TxChangedEvent) => {
                 console.debug('[use-all-events] Adding tx changed listener')
                 setEvents((prev) => [
@@ -61,7 +64,7 @@ export function useAllEvents() {
                 sdk.removeOnAccountsChanged(accountsListener)
             }
         }
-    }, [])
+    }, [status?.isConnected])
 
     return events
 }

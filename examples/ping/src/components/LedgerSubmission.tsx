@@ -38,7 +38,7 @@ export function LedgerSubmission(props: {
 
     return (
         connected && (
-            <div className="card">
+            <div className="card" data-testid="ledger-submission">
                 <h2>Ledger Submission</h2>
                 <button
                     disabled={!props.primaryParty || loading}

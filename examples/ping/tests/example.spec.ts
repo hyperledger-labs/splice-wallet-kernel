@@ -48,10 +48,10 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
         primary: true,
     })
 
-    //TODO: figure out why we need to reload the page
-    await dappPage.reload()
-
-    await expect(dappPage.getByText(new RegExp(`${party2}::.*`))).toBeVisible()
+    const accounts = dappPage.getByTestId('accounts')
+    const postEvents = dappPage.getByTestId('post-events')
+    await expect(accounts.getByText(new RegExp(`${party2}::.*`))).toBeVisible()
+    await expect(postEvents.getByText(new RegExp(`${party2}::.*`))).toBeVisible()
     await expect(
         dappPage.getByRole('button', { name: 'create Ping contract' })
     ).toBeEnabled()
