@@ -72,55 +72,11 @@ export const userController = (
     _logger: Logger
 ) => {
     const logger = _logger.child({ component: 'user-controller' })
-
-    const statusEvent = async () => {
-        const context = assertConnected(authContext)
-        const network = await store.getCurrentNetwork()
-        if (network === undefined) {
-            throw new Error('No network session found')
-        }
-        const idp = await store.getIdp(network.identityProviderId)
-        const tokenProvider = new AuthTokenProvider(
-            idp,
-            network.auth,
-            network.adminAuth,
-            logger
-        )
-        const ledgerClient = new LedgerClient({
-            baseUrl: new URL(network.ledgerApi.baseUrl),
-            logger,
-            accessTokenProvider: tokenProvider,
-        })
-        const status = await networkStatus(ledgerClient)
-        const session = await store.getSession()
-
-        const provider = {
-            id: kernelInfo.id,
-            version: 'TODO',
-            providerType: kernelInfo.clientType,
-            userUrl: `${userUrl}/login/`,
-        }
-        const connection = {
-            isConnected: true,
-            reason: 'OK',
-            isNetworkConnected: status.isConnected,
-            networkReason: status.reason ? status.reason : 'OK',
-        }
-        return {
-            provider: provider,
-            connection: connection,
-            network: {
-                networkId: network.id,
-                ledgerApi: network.ledgerApi.baseUrl,
-                accessToken: context.accessToken,
-            },
-            session: {
-                id: session?.id,
-                accessToken: context.accessToken,
-                userId: context.userId,
-            },
-            userUrl: `${userUrl}/login/`,
-        }
+    const provider = {
+        id: kernelInfo.id,
+        version: 'TODO',
+        providerType: kernelInfo.clientType,
+        userUrl: `${userUrl}/login/`,
     }
 
     return buildController({
@@ -825,10 +781,25 @@ export const userController = (
                     accessToken,
                 })
                 const status = await networkStatus(ledgerClient)
-                notifier.emit(
-                    'statusChanged',
-                    (await statusEvent()) as StatusEvent
-                )
+                notifier.emit('statusChanged', {
+                    provider: provider,
+                    connection: {
+                        isConnected: status.isConnected,
+                        reason: status.reason ? status.reason : 'OK',
+                        isNetworkConnected: status.isConnected,
+                        networkReason: status.reason ? status.reason : 'OK',
+                    },
+                    network: {
+                        networkId: network.id,
+                        ledgerApi: network.ledgerApi.baseUrl,
+                        accessToken: accessToken,
+                    },
+                    session: {
+                        id: newSessionId,
+                        accessToken: accessToken,
+                        userId: userId,
+                    },
+                })
 
                 //we only want to automatically perform a sync if it is the first time a session is created
                 const wallets = await store.getWallets()
@@ -877,7 +848,18 @@ export const userController = (
             const notifier = notificationService.getNotifier(userId)
             await store.removeSession()
 
-            notifier.emit('statusChanged', (await statusEvent()) as StatusEvent)
+            notifier.emit('statusChanged', {
+                provider: provider,
+                connection: {
+                    isConnected: false,
+                    reason: 'disconnect',
+                    isNetworkConnected: false,
+                    networkReason: 'removed session',
+                },
+                network: undefined,
+                session: undefined,
+                userUrl: `${userUrl}/login/`,
+            })
 
             return null
         },
