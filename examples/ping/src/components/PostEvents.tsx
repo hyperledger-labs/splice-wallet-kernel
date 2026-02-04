@@ -3,9 +3,10 @@
 
 import { useAllEvents } from '../hooks/useAllEvents'
 import { prettyjson } from '../utils'
+import * as sdk from '@canton-network/dapp-sdk'
 
-export function PostEvents() {
-    const events = useAllEvents()
+export function PostEvents(props: { status?: sdk.dappAPI.StatusEvent }) {
+    const events = useAllEvents(props.status)
     const providerAvailable = window.canton
 
     const getEventColor = (type: string) => {
@@ -30,31 +31,10 @@ export function PostEvents() {
                 ) : (
                     <div>
                         <p>Total events received: {events.length}</p>
-                        <div
-                            style={{
-                                marginTop: '16px',
-                                width: '100%',
-                                maxHeight: '400px',
-                                overflow: 'auto',
-                                backgroundColor: '#000',
-                                color: '#0f0',
-                                padding: '12px',
-                                borderRadius: '4px',
-                            }}
-                        >
-                            <pre style={{ textAlign: 'left', margin: 0 }}>
+                        <div className="terminal-display">
+                            <pre>
                                 {events.map((item, index) => (
-                                    <div
-                                        key={index}
-                                        style={{
-                                            marginBottom: '16px',
-                                            borderBottom:
-                                                index < events.length - 1
-                                                    ? '1px solid #0a0'
-                                                    : 'none',
-                                            paddingBottom: '16px',
-                                        }}
-                                    >
+                                    <div key={index} className="terminal-item">
                                         <div
                                             style={{
                                                 color: getEventColor(item.type),

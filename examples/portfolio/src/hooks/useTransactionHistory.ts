@@ -14,19 +14,17 @@ import { usePrimaryAccount } from '../hooks/useAccounts'
 import type { TransactionHistoryResponse } from '../services/transaction-history-service'
 import { queryKeys } from './query-keys'
 
-export const useTransactionHistory = (): UseInfiniteQueryResult<
-    InfiniteData<TransactionHistoryResponse>,
-    Error
-> => {
-    const primaryParty = usePrimaryAccount()?.partyId
+export const useTransactionHistoryForParty = (
+    partyId: string | undefined
+): UseInfiniteQueryResult<InfiniteData<TransactionHistoryResponse>, Error> => {
     const { getTransactionHistory } = usePortfolio()
     return useInfiniteQuery({
         initialPageParam: null,
-        queryKey: queryKeys.getTransactionHistory.forParty(primaryParty),
+        queryKey: queryKeys.getTransactionHistory.forParty(partyId),
         queryFn: ({ pageParam }) =>
-            primaryParty
+            partyId
                 ? getTransactionHistory({
-                      party: primaryParty,
+                      party: partyId,
                       request: pageParam,
                   })
                 : skipToken,
@@ -41,11 +39,21 @@ export const useTransactionHistory = (): UseInfiniteQueryResult<
     })
 }
 
+export const useTransactionHistory = (): UseInfiniteQueryResult<
+    InfiniteData<TransactionHistoryResponse>,
+    Error
+> => {
+    const primaryParty = usePrimaryAccount()?.partyId
+    return useTransactionHistoryForParty(primaryParty)
+}
+
 /** Deduplicate transactions.  We don't have stable pagination, this concerns
  *  in particular the the first page, for which the cursor doesn't have any
  *  offset or limit info. */
-export const useDeduplicatedTransactionHistory = (): Transaction[] => {
-    const { data } = useTransactionHistory()
+export const useDeduplicatedTransactionHistoryForParty = (
+    partyId: string | undefined
+): Transaction[] => {
+    const { data } = useTransactionHistoryForParty(partyId)
 
     return useMemo(() => {
         const ids = new Set<number>()
@@ -62,4 +70,9 @@ export const useDeduplicatedTransactionHistory = (): Transaction[] => {
         }
         return transactions
     }, [data])
+}
+
+export const useDeduplicatedTransactionHistory = (): Transaction[] => {
+    const primaryParty = usePrimaryAccount()?.partyId
+    return useDeduplicatedTransactionHistoryForParty(primaryParty)
 }

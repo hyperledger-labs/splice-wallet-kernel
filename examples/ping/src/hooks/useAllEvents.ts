@@ -17,14 +17,12 @@ export type AllEvents =
           timestamp: Date
       }
 
-export function useAllEvents() {
+export function useAllEvents(status?: sdk.dappAPI.StatusEvent) {
     const [events, setEvents] = useState<AllEvents[]>([])
 
     useEffect(() => {
-        //we use window.canton here since we want to capture the initial login event as well
-        if (window.canton) {
+        if (status?.isConnected) {
             const txListener = (event: sdk.dappAPI.TxChangedEvent) => {
-                console.debug('[use-all-events] Adding tx changed listener')
                 setEvents((prev) => [
                     { type: 'TxChanged', event, timestamp: new Date() },
                     ...prev,
@@ -32,7 +30,6 @@ export function useAllEvents() {
             }
 
             const statusListener = (event: sdk.dappAPI.StatusEvent) => {
-                console.debug('[use-all-events] Adding status changed listener')
                 setEvents((prev) => [
                     { type: 'StatusChanged', event, timestamp: new Date() },
                     ...prev,
@@ -42,9 +39,6 @@ export function useAllEvents() {
             const accountsListener = (
                 event: sdk.dappAPI.AccountsChangedEvent
             ) => {
-                console.debug(
-                    '[use-all-events] Adding accounts changed listener'
-                )
                 setEvents((prev) => [
                     { type: 'AccountsChanged', event, timestamp: new Date() },
                     ...prev,
@@ -61,7 +55,7 @@ export function useAllEvents() {
                 sdk.removeOnAccountsChanged(accountsListener)
             }
         }
-    }, [])
+    }, [status])
 
     return events
 }

@@ -6,8 +6,13 @@ import { Box, Typography, Paper, Skeleton, Button } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { useAccounts } from '../hooks/useAccounts'
 import { useWalletHoldings } from '../hooks/useWalletHoldings'
+import {
+    useTransactionHistoryForParty,
+    useDeduplicatedTransactionHistoryForParty,
+} from '../hooks/useTransactionHistory'
 import { CopyableIdentifier } from '../components/copyable-identifier'
 import { InstrumentAccordion } from '../components/instrument-accordion'
+import { TransactionTable } from '../components/TransactionTable'
 
 export const Route = createFileRoute('/wallet/$walletId')({
     component: WalletDetailPage,
@@ -21,6 +26,15 @@ function WalletDetailPage() {
 
     const { instruments, holdings, isLoading, isError } =
         useWalletHoldings(walletId)
+
+    const {
+        status: txStatus,
+        fetchNextPage,
+        isFetchingNextPage,
+        hasNextPage,
+    } = useTransactionHistoryForParty(walletId)
+
+    const transactions = useDeduplicatedTransactionHistoryForParty(walletId)
 
     const getHoldingsForInstrument = (instrumentId: {
         admin: string
@@ -94,6 +108,23 @@ function WalletDetailPage() {
                     ))
                 )}
             </Paper>
+
+            <Typography
+                variant="h6"
+                sx={{ mb: 2, mt: 4, textTransform: 'uppercase' }}
+                fontWeight="bold"
+            >
+                Transaction History
+            </Typography>
+
+            <TransactionTable
+                transactions={transactions}
+                walletId={walletId}
+                hasNextPage={hasNextPage}
+                isFetching={txStatus === 'pending'}
+                isFetchingNextPage={isFetchingNextPage}
+                onLoadMore={fetchNextPage}
+            />
         </Box>
     )
 }
