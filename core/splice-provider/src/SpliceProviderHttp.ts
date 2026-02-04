@@ -7,7 +7,10 @@ import {
     WalletEvent,
 } from '@canton-network/core-types'
 import { HttpTransport } from '@canton-network/core-rpc-transport'
-import SpliceWalletJSONRPCDAppAPI from '@canton-network/core-wallet-dapp-rpc-client'
+import SpliceWalletJSONRPCDAppAPI, {
+    Session,
+    StatusEvent,
+} from '@canton-network/core-wallet-dapp-rpc-client'
 import { SpliceProviderBase } from './SpliceProvider'
 
 // Maintain a global SSE connection in-memory to avoid multiple connections
@@ -32,6 +35,7 @@ function parseSSEData(data: string): unknown[] {
 export class SpliceProviderHttp extends SpliceProviderBase {
     private sessionToken?: string
     private client: SpliceWalletJSONRPCDAppAPI
+    private status?: Session | undefined
 
     private createClient(sessionToken?: string): SpliceWalletJSONRPCDAppAPI {
         const transport = new HttpTransport(this.url, sessionToken)
@@ -114,9 +118,16 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 // We requery the status explicitly here, as it's not guaranteed that the socket will be open & authenticated
                 // before the `statusChanged` event is fired from the `addSession` RPC call. The dappApi.StatusResult and
                 // dappApi.StatusEvent are mapped manually to avoid dependency.
-                this.request({ method: 'status' })
+                this.request<StatusEvent>({ method: 'status' })
                     .then((status) => {
-                        this.emit('statusChanged', status)
+                        //for some reason comparing the objects directly dosent work as intended
+                        if (
+                            JSON.stringify(status.session) !==
+                            JSON.stringify(this.status)
+                        ) {
+                            this.emit('statusChanged', status)
+                            this.status = status.session
+                        }
                     })
                     .catch((err) => {
                         console.error(

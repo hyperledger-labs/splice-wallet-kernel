@@ -14,6 +14,7 @@ import { WindowMessages } from './components/WindowMessages'
 function App() {
     const { errorMsg, setErrorMsg } = useContext(ErrorContext)
     const [loading, setLoading] = useState(false)
+    const [activeTab, setActiveTab] = useState<string>('accounts')
 
     const { connect, disconnect, status } = useConnect()
 
@@ -98,23 +99,74 @@ function App() {
                 <br />
             </div>
 
-            <Accounts status={status} />
+            <div className="tabs">
+                <div className="tab-buttons">
+                    {status?.isConnected && (
+                        <button
+                            className={activeTab === 'accounts' ? 'active' : ''}
+                            onClick={() => setActiveTab('accounts')}
+                        >
+                            Accounts
+                        </button>
+                    )}
+                    {window.canton && (
+                        <button
+                            className={activeTab === 'postEvents' ? 'active' : ''}
+                            onClick={() => setActiveTab('postEvents')}
+                        >
+                            Post Events
+                        </button>
+                    )}
+                    <button
+                        className={activeTab === 'windowMessages' ? 'active' : ''}
+                        onClick={() => setActiveTab('windowMessages')}
+                    >
+                        Window Messages
+                    </button>
+                    {status?.isConnected && (
+                        <button
+                            className={activeTab === 'ledgerQuery' ? 'active' : ''}
+                            onClick={() => setActiveTab('ledgerQuery')}
+                        >
+                            Ledger Query
+                        </button>
+                    )}
+                    {status?.isConnected && (
+                        <button
+                            className={activeTab === 'ledgerSubmission' ? 'active' : ''}
+                            onClick={() => setActiveTab('ledgerSubmission')}
+                        >
+                            Ledger Submission
+                        </button>
+                    )}
+                </div>
 
-            <PostEvents />
-
-            <WindowMessages />
-
-            <LedgerQuery
-                status={status}
-                primaryParty={primaryParty}
-                ledgerApiVersion={ledgerApiVersion}
-            />
-
-            <LedgerSubmission
-                status={status}
-                primaryParty={primaryParty}
-                ledgerApiVersion={ledgerApiVersion}
-            />
+                <div className="tab-content">
+                    <div style={{ display: activeTab === 'accounts' ? 'block' : 'none' }}>
+                        <Accounts status={status} />
+                    </div>
+                    <div style={{ display: activeTab === 'postEvents' ? 'block' : 'none' }}>
+                        <PostEvents status={status} />
+                    </div>
+                    <div style={{ display: activeTab === 'windowMessages' ? 'block' : 'none' }}>
+                        <WindowMessages />
+                    </div>
+                    <div style={{ display: activeTab === 'ledgerQuery' ? 'block' : 'none' }}>
+                        <LedgerQuery
+                            status={status}
+                            primaryParty={primaryParty}
+                            ledgerApiVersion={ledgerApiVersion}
+                        />
+                    </div>
+                    <div style={{ display: activeTab === 'ledgerSubmission' ? 'block' : 'none' }}>
+                        <LedgerSubmission
+                            status={status}
+                            primaryParty={primaryParty}
+                            ledgerApiVersion={ledgerApiVersion}
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }
