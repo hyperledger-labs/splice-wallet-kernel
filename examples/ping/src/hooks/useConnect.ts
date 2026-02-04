@@ -20,9 +20,8 @@ export function useConnect(): {
 
     async function connect() {
         sdk.connect()
-            .then((status) => {
-                setStatus(status)
-            })
+            .then(() => sdk.status())
+            .then(setStatus)
             .catch((err) => {
                 console.error('Error connecting to wallet:', err)
                 handleErrorToast(err)
