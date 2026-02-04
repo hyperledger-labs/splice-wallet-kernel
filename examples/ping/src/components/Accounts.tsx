@@ -8,10 +8,10 @@ export function Accounts(props: { status?: sdk.dappAPI.StatusEvent }) {
 
     const getAccountColor = (account: sdk.dappAPI.Wallet) => {
         if (account.disabled) {
-            return '#888' 
+            return '#888'
         }
         if (account.primary) {
-            return '#0ff' 
+            return '#0ff'
         }
         return '#ff0'
     }
@@ -19,10 +19,10 @@ export function Accounts(props: { status?: sdk.dappAPI.StatusEvent }) {
     const sortedAccounts = accounts?.slice().sort((a, b) => {
         if (a.primary && !b.primary) return -1
         if (!a.primary && b.primary) return 1
-        
+
         if (a.disabled && !b.disabled) return 1
         if (!a.disabled && b.disabled) return -1
-        
+
         return 0
     })
 
@@ -32,7 +32,10 @@ export function Accounts(props: { status?: sdk.dappAPI.StatusEvent }) {
                 <h2>Accounts</h2>
                 <p>Total accounts: {sortedAccounts?.length ?? 0}</p>
                 <div className="terminal-display">
-                    <div className="terminal-item" style={{ borderBottom: 'none' }}>
+                    <div
+                        className="terminal-item"
+                        style={{ borderBottom: 'none' }}
+                    >
                         <ul style={{ listStyle: 'none', padding: 0 }}>
                             {sortedAccounts?.map((account) => (
                                 <li

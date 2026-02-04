@@ -47,9 +47,9 @@ export function LedgerQuery(props: {
                 >
                     query preferred package version
                 </button>
-                
+
                 {loading && <p>Loading...</p>}
-                
+
                 {queryResponses.length > 0 && (
                     <div>
                         <p>Total queries: {queryResponses.length}</p>
@@ -63,8 +63,10 @@ export function LedgerQuery(props: {
                                                 marginBottom: '4px',
                                             }}
                                         >
-                                            Query #{queryResponses.length - index} (
-                                            {item.timestamp.toLocaleTimeString()})
+                                            Query #
+                                            {queryResponses.length - index} (
+                                            {item.timestamp.toLocaleTimeString()}
+                                            )
                                         </div>
                                         {prettyjson(item.data)}
                                     </div>

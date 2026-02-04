@@ -111,21 +111,27 @@ function App() {
                     )}
                     {window.canton && (
                         <button
-                            className={activeTab === 'postEvents' ? 'active' : ''}
+                            className={
+                                activeTab === 'postEvents' ? 'active' : ''
+                            }
                             onClick={() => setActiveTab('postEvents')}
                         >
                             Post Events
                         </button>
                     )}
                     <button
-                        className={activeTab === 'windowMessages' ? 'active' : ''}
+                        className={
+                            activeTab === 'windowMessages' ? 'active' : ''
+                        }
                         onClick={() => setActiveTab('windowMessages')}
                     >
                         Window Messages
                     </button>
                     {status?.isConnected && (
                         <button
-                            className={activeTab === 'ledgerQuery' ? 'active' : ''}
+                            className={
+                                activeTab === 'ledgerQuery' ? 'active' : ''
+                            }
                             onClick={() => setActiveTab('ledgerQuery')}
                         >
                             Ledger Query
@@ -133,7 +139,9 @@ function App() {
                     )}
                     {status?.isConnected && (
                         <button
-                            className={activeTab === 'ledgerSubmission' ? 'active' : ''}
+                            className={
+                                activeTab === 'ledgerSubmission' ? 'active' : ''
+                            }
                             onClick={() => setActiveTab('ledgerSubmission')}
                         >
                             Ledger Submission
@@ -142,23 +150,52 @@ function App() {
                 </div>
 
                 <div className="tab-content">
-                    <div style={{ display: activeTab === 'accounts' ? 'block' : 'none' }}>
+                    <div
+                        style={{
+                            display:
+                                activeTab === 'accounts' ? 'block' : 'none',
+                        }}
+                    >
                         <Accounts status={status} />
                     </div>
-                    <div style={{ display: activeTab === 'postEvents' ? 'block' : 'none' }}>
+                    <div
+                        style={{
+                            display:
+                                activeTab === 'postEvents' ? 'block' : 'none',
+                        }}
+                    >
                         <PostEvents status={status} />
                     </div>
-                    <div style={{ display: activeTab === 'windowMessages' ? 'block' : 'none' }}>
+                    <div
+                        style={{
+                            display:
+                                activeTab === 'windowMessages'
+                                    ? 'block'
+                                    : 'none',
+                        }}
+                    >
                         <WindowMessages />
                     </div>
-                    <div style={{ display: activeTab === 'ledgerQuery' ? 'block' : 'none' }}>
+                    <div
+                        style={{
+                            display:
+                                activeTab === 'ledgerQuery' ? 'block' : 'none',
+                        }}
+                    >
                         <LedgerQuery
                             status={status}
                             primaryParty={primaryParty}
                             ledgerApiVersion={ledgerApiVersion}
                         />
                     </div>
-                    <div style={{ display: activeTab === 'ledgerSubmission' ? 'block' : 'none' }}>
+                    <div
+                        style={{
+                            display:
+                                activeTab === 'ledgerSubmission'
+                                    ? 'block'
+                                    : 'none',
+                        }}
+                    >
                         <LedgerSubmission
                             status={status}
                             primaryParty={primaryParty}
