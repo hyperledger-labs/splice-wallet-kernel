@@ -1,12 +1,19 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { test, expect } from '@playwright/test'
-import { WalletGateway } from '@canton-network/core-wallet-test-utils'
-
+import {
+    test,
+    expect,
+    WalletGateway,
+} from '@canton-network/core-wallet-test-utils'
+import { Page } from '@playwright/test'
 const dappApiPort = 3030
 
-test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
+test('dApp: execute externally signed tx', async ({
+    page: dappPage,
+}: {
+    page: Page
+}) => {
     const wg = new WalletGateway({
         dappPage,
         openButton: (page) =>
@@ -32,7 +39,7 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
 
     await expect(dappPage.getByText('Loading...')).toHaveCount(0)
 
-    await expect(dappPage.getByText(/.*connected: 🟢*/)).toBeVisible()
+    await expect(dappPage.getByText(/.*gateway: remote-da*/)).toBeVisible()
 
     const party1 = `test-${Date.now()}`
     const party2 = `test-${Date.now() + 1}`
@@ -48,26 +55,38 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
         primary: true,
     })
 
-    const accounts = dappPage.getByTestId('accounts')
-    const postEvents = dappPage.getByTestId('post-events')
-    const ledgerSubmissions = dappPage.getByTestId('ledger-submission')
+    //press accounts tab
+    await dappPage.getByRole('button', { name: 'Accounts' }).click()
 
-    await expect(accounts.getByText(new RegExp(`${party2}::.*`))).toBeVisible()
-    await expect(
-        postEvents.getByText(new RegExp(`${party2}::.*`))
-    ).toBeVisible()
+    await expect(dappPage.getByText(`${party2}::`)).toBeDefined()
+
+    //press ledger submission
+    await dappPage.getByRole('button', { name: 'Ledger Submission' }).click()
+
     await expect(
         dappPage.getByRole('button', { name: 'create Ping contract' })
     ).toBeEnabled()
 
     // Create a Ping contract through the dapp with the new party
-    await wg.approveTransaction(() =>
+    const commandId = await wg.approveTransaction(() =>
         dappPage.getByRole('button', { name: 'create Ping contract' }).click()
     )
 
-    // Wait for command to have fully executed
-    await expect(ledgerSubmissions.getByText('executed')).toBeVisible()
-    await expect(postEvents.getByText('executed')).toBeVisible()
+    await expect(
+        dappPage.getByRole('paragraph').filter({
+            hasText: `{ "status": "pending", "commandId": "${commandId.commandId}" }`,
+        })
+    ).toHaveCount(1)
+    await expect(
+        dappPage.getByRole('paragraph').filter({
+            hasText: `{ "commandId": "${commandId.commandId}", "status": "signed", "`,
+        })
+    ).toHaveCount(1)
+    await expect(
+        dappPage.getByRole('paragraph').filter({
+            hasText: `{ "commandId": "${commandId.commandId}", "status": "executed", "`,
+        })
+    ).toHaveCount(1)
 })
 
 test('connection status handling edge cases', async ({ page: dappPage }) => {

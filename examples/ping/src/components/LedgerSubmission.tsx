@@ -47,21 +47,15 @@ export function LedgerSubmission(props: {
                     create Ping contract
                 </button>
                 {transactions.length > 0 && (
-                    <div
-                        style={{
-                            marginTop: '16px',
-                            width: '100%',
-                            maxHeight: '300px',
-                            overflow: 'auto',
-                            backgroundColor: '#000',
-                            color: '#0f0',
-                        }}
-                    >
-                        <pre style={{ textAlign: 'left' }}>
-                            {transactions.map(prettyjson).map((msg) => (
-                                <p key={msg}>{msg}</p>
-                            ))}
-                        </pre>
+                    <div>
+                        <p>Total transactions: {transactions.length}</p>
+                        <div className="terminal-display">
+                            <pre>
+                                {transactions.map(prettyjson).map((msg) => (
+                                    <p key={msg}>{msg}</p>
+                                ))}
+                            </pre>
+                        </div>
                     </div>
                 )}{' '}
             </div>
