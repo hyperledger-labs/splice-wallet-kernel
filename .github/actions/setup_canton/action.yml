@@ -1,0 +1,88 @@
+name: 'Setup Canton/Localnet'
+description: 'Cache, download and prepare Canton or Localnet environment'
+inputs:
+    network:
+        description: 'Network type: canton, devnet, or mainnet'
+        required: false
+        default: 'devnet'
+runs:
+    using: 'composite'
+    steps:
+        - name: Create cache directory
+          shell: bash
+          run: mkdir -p /tmp/docker-images
+
+        - name: Determine cache key prefix
+          shell: bash
+          id: cache-prefix
+          run: |
+              if [ "${{ inputs.network }}" = "canton" ]; then
+                echo "prefix=${{ runner.os }}-docker-canton" >> $GITHUB_OUTPUT
+              else
+                echo "prefix=${{ runner.os }}-docker-localnet-${{ inputs.network }}" >> $GITHUB_OUTPUT
+              fi
+
+        - name: Cache Docker images
+          uses: actions/cache@v4
+          id: docker-cache
+          with:
+              path: /tmp/docker-images
+              key: ${{ steps.cache-prefix.outputs.prefix }}-${{ hashFiles('scripts/src/lib/version-config.json') }}
+              restore-keys: |
+                  ${{ steps.cache-prefix.outputs.prefix }}-
+
+        - name: Load cached Docker images
+          if: steps.docker-cache.outputs.cache-hit == 'true'
+          shell: bash
+          run: |
+              if [ -f /tmp/docker-images/images.tar ]; then
+                docker load -i /tmp/docker-images/images.tar
+              fi
+
+        - name: Download Canton
+          if: steps.docker-cache.outputs.cache-hit != 'true' && inputs.network == 'canton'
+          shell: bash
+          run: yarn script:fetch:canton
+
+        - name: Download Localnet
+          if: steps.docker-cache.outputs.cache-hit != 'true' && inputs.network != 'canton'
+          shell: bash
+          run: yarn script:fetch:localnet -- --network=${{ inputs.network }}
+
+        - name: Start Canton
+          if: inputs.network == 'canton'
+          shell: bash
+          run: |
+              set -e
+              timeout 5m bash -c '
+                LOGFILE=canton_start.log
+                yarn start:canton > "$LOGFILE" 2>&1 &
+                pid=$!
+                for i in {1..60}; do
+                  if grep -q "Bootstrap script successfully executed." "$LOGFILE"; then
+                    echo "Canton started successfully."
+                    exit 0
+                  fi
+                  if ! kill -0 $pid 2>/dev/null; then
+                    echo "Canton process exited unexpectedly."
+                    cat "$LOGFILE"
+                    exit 1
+                  fi
+                  sleep 5
+                done
+                echo "Timeout: '"'"'Bootstrap script successfully executed.'"'"' not found in 5 minutes."
+                cat "$LOGFILE"
+                exit 1
+              '
+
+        - name: Start Localnet
+          if: inputs.network != 'canton'
+          shell: bash
+          run: yarn start:localnet -- --network=${{ inputs.network }}
+
+        - name: Save Docker images to cache
+          if: steps.docker-cache.outputs.cache-hit != 'true'
+          shell: bash
+          run: |
+              mkdir -p /tmp/docker-images
+              docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" | xargs -r docker save -o /tmp/docker-images/images.tar
