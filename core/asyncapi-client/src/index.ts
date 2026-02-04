@@ -2,8 +2,3 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './websocket-client.js'
-export {
-    GetUpdatesRequest,
-    JsGetUpdatesResponse,
-    CompletionResponse,
-} from '@canton-network/core-ledger-client-types'

@@ -1,10 +1,8 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    JsGetUpdatesResponse,
-    WebSocketClient,
-} from '@canton-network/core-asyncapi-client'
+import { WebSocketClient } from '@canton-network/core-asyncapi-client'
+import { JsGetUpdatesResponse } from '@canton-network/core-ledger-client-types'
 import { PartyId } from '@canton-network/core-types'
 import { Logger } from 'pino'
 
