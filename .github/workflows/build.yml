@@ -114,17 +114,21 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
-
-            - name: Cache Docker layers
+            - name: Cache Docker images
               uses: actions/cache@v4
+              id: docker-cache
               with:
-                  path: /tmp/.buildx-cache
-                  key: ${{ runner.os }}-buildx-canton-${{ hashFiles('scripts/src/lib/version-config.json') }}
+                  path: /tmp/docker-images
+                  key: ${{ runner.os }}-docker-canton-${{ hashFiles('scripts/src/lib/version-config.json') }}
                   restore-keys: |
-                      ${{ runner.os }}-buildx-canton-
-                      ${{ runner.os }}-buildx-
+                      ${{ runner.os }}-docker-canton-
+
+            - name: Load cached Docker images
+              if: steps.docker-cache.outputs.cache-hit == 'true'
+              run: |
+                  if [ -f /tmp/docker-images/images.tar ]; then
+                    docker load -i /tmp/docker-images/images.tar
+                  fi
 
             - name: Download Canton
               run: yarn script:fetch:canton
@@ -187,23 +191,33 @@ jobs:
               uses: actions/checkout@v4
             - uses: ./.github/actions/setup_yarn
 
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
-
-            - name: Cache Docker layers
+            - name: Cache Docker images
               uses: actions/cache@v4
+              id: docker-cache
               with:
-                  path: /tmp/.buildx-cache
-                  key: ${{ runner.os }}-buildx-localnet-${{ hashFiles('scripts/src/lib/version-config.json') }}
+                  path: /tmp/docker-images
+                  key: ${{ runner.os }}-docker-localnet-${{ hashFiles('scripts/src/lib/version-config.json') }}
                   restore-keys: |
-                      ${{ runner.os }}-buildx-localnet-
-                      ${{ runner.os }}-buildx-
+                      ${{ runner.os }}-docker-localnet-
+
+            - name: Load cached Docker images
+              if: steps.docker-cache.outputs.cache-hit == 'true'
+              run: |
+                  if [ -f /tmp/docker-images/images.tar ]; then
+                    docker load -i /tmp/docker-images/images.tar
+                  fi
 
             - name: Download Canton
               run: yarn script:fetch:localnet
 
             - name: Start LocalNet
               run: yarn start:localnet
+
+            - name: Save Docker images to cache
+              if: steps.docker-cache.outputs.cache-hit != 'true'
+              run: |
+                  mkdir -p /tmp/docker-images
+                  docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "digitalasset-canton-network-node|cn-node" | xargs -r docker save -o /tmp/docker-images/images.tar || true
 
             - name: Start remote WK
               run: yarn nx run @canton-network/wallet-gateway-remote:start > "wallet-gateway-remote.log" 2>&1 &
@@ -246,24 +260,34 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
-
-            - name: Cache Docker layers
+            - name: Cache Docker images
               uses: actions/cache@v4
+              id: docker-cache
               with:
-                  path: /tmp/.buildx-cache
-                  key: ${{ runner.os }}-buildx-localnet-${{ matrix.network }}-${{ hashFiles('scripts/src/lib/version-config.json') }}
+                  path: /tmp/docker-images
+                  key: ${{ runner.os }}-docker-localnet-${{ matrix.network }}-${{ hashFiles('scripts/src/lib/version-config.json') }}
                   restore-keys: |
-                      ${{ runner.os }}-buildx-localnet-${{ matrix.network }}-
-                      ${{ runner.os }}-buildx-localnet-
-                      ${{ runner.os }}-buildx-
+                      ${{ runner.os }}-docker-localnet-${{ matrix.network }}-
+                      ${{ runner.os }}-docker-localnet-
+
+            - name: Load cached Docker images
+              if: steps.docker-cache.outputs.cache-hit == 'true'
+              run: |
+                  if [ -f /tmp/docker-images/images.tar ]; then
+                    docker load -i /tmp/docker-images/images.tar
+                  fi
 
             - name: Download localnet (${{ matrix.network }})
               run: yarn script:fetch:localnet -- --network=${{ matrix.network }}
 
             - name: Start Localnet (${{ matrix.network }})
               run: yarn start:localnet -- --network=${{ matrix.network }}
+
+            - name: Save Docker images to cache
+              if: steps.docker-cache.outputs.cache-hit != 'true'
+              run: |
+                  mkdir -p /tmp/docker-images
+                  docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "digitalasset-canton-network-node|cn-node" | xargs -r docker save -o /tmp/docker-images/images.tar || true
 
             - uses: ./.github/actions/check_resources
 

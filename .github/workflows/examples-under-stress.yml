@@ -48,24 +48,34 @@ jobs:
             - name: Build project
               run: yarn build:all
 
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
-
-            - name: Cache Docker layers
+            - name: Cache Docker images
               uses: actions/cache@v4
+              id: docker-cache
               with:
-                  path: /tmp/.buildx-cache
-                  key: ${{ runner.os }}-buildx-localnet-${{ github.event.inputs.network || 'devnet' }}-${{ hashFiles('scripts/src/lib/version-config.json') }}
+                  path: /tmp/docker-images
+                  key: ${{ runner.os }}-docker-localnet-${{ github.event.inputs.network || 'devnet' }}-${{ hashFiles('scripts/src/lib/version-config.json') }}
                   restore-keys: |
-                      ${{ runner.os }}-buildx-localnet-${{ github.event.inputs.network || 'devnet' }}-
-                      ${{ runner.os }}-buildx-localnet-
-                      ${{ runner.os }}-buildx-
+                      ${{ runner.os }}-docker-localnet-${{ github.event.inputs.network || 'devnet' }}-
+                      ${{ runner.os }}-docker-localnet-
+
+            - name: Load cached Docker images
+              if: steps.docker-cache.outputs.cache-hit == 'true'
+              run: |
+                  if [ -f /tmp/docker-images/images.tar ]; then
+                    docker load -i /tmp/docker-images/images.tar
+                  fi
 
             - name: Download localnet (${{ github.event.inputs.network || 'devnet' }})
               run: yarn script:fetch:localnet -- --network=${{ github.event.inputs.network || 'devnet' }}
 
             - name: Start localnet (${{ github.event.inputs.network || 'devnet' }})
               run: yarn start:localnet -- --network=${{ github.event.inputs.network || 'devnet' }}
+
+            - name: Save Docker images to cache
+              if: steps.docker-cache.outputs.cache-hit != 'true'
+              run: |
+                  mkdir -p /tmp/docker-images
+                  docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "digitalasset-canton-network-node|cn-node" | xargs -r docker save -o /tmp/docker-images/images.tar || true
 
             - uses: ./.github/actions/check_resources
 
