@@ -21,9 +21,7 @@ export function Status(props: {
                                 <>
                                     <br />
                                     <b>ledger API:</b>{' '}
-                                    <i>
-                                        {props.status.network.ledgerApi}
-                                    </i>
+                                    <i>{props.status.network.ledgerApi}</i>
                                 </>
                             )}
                         </span>
