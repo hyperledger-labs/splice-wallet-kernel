@@ -35,7 +35,6 @@ export const dappSDKController = (provider: DappRemoteProvider) =>
         connect: async (): Promise<StatusEvent> => {
             const response = await provider.request({
                 method: 'connect',
-                params: {},
             })
 
             if (response.session) {
@@ -66,7 +65,6 @@ export const dappSDKController = (provider: DappRemoteProvider) =>
         disconnect: async () => {
             return await provider.request({
                 method: 'disconnect',
-                params: null,
             })
         },
         ledgerApi: async (params: LedgerApiParams) =>
@@ -131,12 +129,11 @@ export const dappSDKController = (provider: DappRemoteProvider) =>
             return promise
         },
         status: async () => {
-            return provider.request({ method: 'status', params: null })
+            return provider.request({ method: 'status' })
         },
         listAccounts: async () =>
             provider.request({
                 method: 'listAccounts',
-                params: null,
             }),
         accountsChanged: async () => {
             throw new Error('Only for events.')
@@ -153,7 +150,6 @@ export const dappSDKController = (provider: DappRemoteProvider) =>
         getPrimaryAccount: function (): Promise<Wallet> {
             return provider.request({
                 method: 'getPrimaryAccount',
-                params: null,
             })
         },
     })

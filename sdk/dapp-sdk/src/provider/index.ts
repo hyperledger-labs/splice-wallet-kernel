@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { DiscoverResult } from '@canton-network/core-types'
-import { Provider } from '../provider'
-import { injectSpliceProvider } from '@canton-network/core-splice-provider'
+import { injectProvider as ip } from '@canton-network/core-splice-provider'
 import * as storage from '../storage'
+import { DappSDKProvider } from '../sdk-provider'
 
 export const injectProvider = (discovery: DiscoverResult) => {
-    return injectSpliceProvider(
-        new Provider(discovery, storage.getKernelSession()?.session)
+    return ip(
+        new DappSDKProvider(discovery, storage.getKernelSession()?.session)
     )
 }
 

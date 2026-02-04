@@ -5,15 +5,13 @@ import {
     DappProvider,
     DappRemoteProvider,
     ProviderType,
-    ProviderV2,
+    Provider,
     EventListener,
 } from '@canton-network/core-splice-provider'
-import { DiscoverResult } from '@canton-network/core-types'
+import { DiscoverResult, RequestArgsV2 } from '@canton-network/core-types'
 import {
     RpcTypes as DappRpcTypes,
     Session,
-    LedgerApiParams,
-    PrepareExecuteParams,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 
 import { dappSDKController } from './sdk-controller'
@@ -28,7 +26,7 @@ type ProviderClient =
           instance: DappProvider
       }
 
-export class DappSDKProvider implements ProviderV2<DappRpcTypes> {
+export class DappSDKProvider implements Provider<DappRpcTypes> {
     private provider: ProviderClient
 
     constructor({ walletType, url }: DiscoverResult, session?: Session) {
@@ -50,10 +48,9 @@ export class DappSDKProvider implements ProviderV2<DappRpcTypes> {
         }
     }
 
-    request<M extends keyof DappRpcTypes>(args: {
-        method: M
-        params: DappRpcTypes[M]['params']
-    }): Promise<DappRpcTypes[M]['result']> {
+    request<M extends keyof DappRpcTypes>(
+        args: RequestArgsV2<DappRpcTypes, M>
+    ): Promise<DappRpcTypes[M]['result']> {
         if (this.provider.type === ProviderType.WINDOW)
             return this.provider.instance.request(args)
 
@@ -66,27 +63,23 @@ export class DappSDKProvider implements ProviderV2<DappRpcTypes> {
             case 'disconnect':
                 return controller.disconnect()
             case 'ledgerApi':
-                return controller.ledgerApi(args.params as LedgerApiParams)
+                return controller.ledgerApi(args.params)
             case 'prepareExecute':
-                return controller.prepareExecute(
-                    args.params as PrepareExecuteParams
-                )
+                return controller.prepareExecute(args.params)
             case 'listAccounts':
                 return controller.listAccounts()
             case 'prepareExecuteAndWait':
-                return controller.prepareExecuteAndWait(
-                    args.params as PrepareExecuteParams
-                )
+                return controller.prepareExecuteAndWait(args.params)
             default:
                 throw new Error('Unsupported method')
         }
     }
 
-    on<E>(event: string, listener: EventListener<E>): ProviderV2<DappRpcTypes> {
+    on<E>(event: string, listener: EventListener<E>): Provider<DappRpcTypes> {
         return this.provider.instance.on(
             event,
             listener
-        ) as ProviderV2<DappRpcTypes>
+        ) as Provider<DappRpcTypes>
     }
 
     emit<E>(event: string, ...args: E[]): boolean {
@@ -96,10 +89,10 @@ export class DappSDKProvider implements ProviderV2<DappRpcTypes> {
     removeListener<E>(
         event: string,
         listenerToRemove: EventListener<E>
-    ): ProviderV2<DappRpcTypes> {
+    ): Provider<DappRpcTypes> {
         return this.provider.instance.removeListener(
             event,
             listenerToRemove
-        ) as ProviderV2<DappRpcTypes>
+        ) as Provider<DappRpcTypes>
     }
 }

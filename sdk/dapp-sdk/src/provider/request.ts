@@ -34,7 +34,7 @@ export async function connect(
             storage.setKernelDiscovery(result)
             const provider = injectProvider(result)
 
-            const response = await provider.request<dappAPI.StatusEvent>({
+            const response = await provider.request({
                 method: 'connect',
             })
 

@@ -511,7 +511,11 @@ export type GetPrimaryAccount = () => Promise<Wallet>
 export type ListAccounts = () => Promise<ListAccountsResult>
 export type TxChanged = () => Promise<TxChangedEvent>
 
-type Params<T> = T extends (param: infer P, ...args: any[]) => any ? P : never
+type Params<T> = T extends (...args: infer A) => any
+    ? A extends []
+        ? never
+        : A[0]
+    : never
 type Result<T> = T extends (...args: any[]) => Promise<infer R> ? R : never
 
 export type RpcTypes = {

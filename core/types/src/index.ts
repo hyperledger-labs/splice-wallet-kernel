@@ -151,15 +151,11 @@ export type UnknownRpcTypes = {
     }
 }
 
-// FANCY VERSION: (doesnt work yet)
-// export type RequestArgsV2<
-//     T extends UnknownRpcTypes,
-//     M extends keyof T,
-// > = T[M]['params'] extends never
-//     ? { method: M }
-//     : { method: M; params: T[M]['params'] }
-
-export type RequestArgsV2<T extends UnknownRpcTypes, M extends keyof T> = {
-    method: M
-    params: T[M]['params']
-}
+export type RequestArgsV2<
+    T extends UnknownRpcTypes,
+    M extends keyof T,
+> = M extends keyof T
+    ? T[M]['params'] extends never
+        ? { method: M }
+        : { method: M; params: T[M]['params'] }
+    : never

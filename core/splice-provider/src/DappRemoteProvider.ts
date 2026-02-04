@@ -5,7 +5,7 @@ import SpliceWalletJSONRPCRemoteDAppAPI, {
     RpcTypes as DappRemoteRpcTypes,
     Session,
 } from '@canton-network/core-wallet-dapp-remote-rpc-client'
-import { AbstractProviderV2 } from './SpliceProvider'
+import { AbstractProvider } from './provider'
 import { HttpTransport } from '@canton-network/core-rpc-transport'
 import {
     isSpliceMessageEvent,
@@ -14,7 +14,7 @@ import {
 } from '@canton-network/core-types'
 
 // Maintain a global SSE connection in-memory to avoid multiple connections
-// per SpliceProviderHttp instance.
+// per DappRemoteProvider instance.
 type GatewaySSE = {
     url: string
     token: string
@@ -32,7 +32,7 @@ function parseSSEData(data: string): unknown[] {
     }
 }
 
-export class DappRemoteProvider extends AbstractProviderV2<DappRemoteRpcTypes> {
+export class DappRemoteProvider extends AbstractProvider<DappRemoteRpcTypes> {
     private sessionToken?: string
     private client: SpliceWalletJSONRPCRemoteDAppAPI
     private status?: Session | undefined
@@ -120,7 +120,7 @@ export class DappRemoteProvider extends AbstractProviderV2<DappRemoteRpcTypes> {
                 // We requery the status explicitly here, as it's not guaranteed that the socket will be open & authenticated
                 // before the `statusChanged` event is fired from the `addSession` RPC call. The dappApi.StatusResult and
                 // dappApi.StatusEvent are mapped manually to avoid dependency.
-                this.request({ method: 'status', params: null })
+                this.request({ method: 'status' })
                     .then((status) => {
                         //for some reason comparing the objects directly dosent work as intended
                         if (
