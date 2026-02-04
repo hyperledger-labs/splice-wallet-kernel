@@ -17,7 +17,8 @@ export function useStatus(): {
     const [statusEvent, setStatusEvent] = useState<sdk.dappAPI.StatusEvent>()
 
     async function status() {
-        sdk.status()
+        await sdk
+            .status()
             .then(setStatusEvent)
             .catch(() => {
                 setStatusEvent(undefined)
@@ -25,19 +26,15 @@ export function useStatus(): {
     }
 
     useEffect(() => {
-        sdk.status()
-            .then(status => setStatusEvent(status))
-            .catch(() => {
-                setStatusEvent(undefined)
-            })
+        status()
     }, [])
 
     useEffect(() => {
         if (statusEvent?.connection.isConnected) {
-            console.debug('[use-connect] Adding status changed listener')
+            console.debug('[use-status] Adding status changed listener')
             const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
                 console.debug(
-                    '[use-connect] Received status changed event:',
+                    '[use-status] Received status changed event:',
                     status
                 )
                 setStatusEvent(status)
@@ -46,7 +43,7 @@ export function useStatus(): {
             sdk.onStatusChanged(onStatusChanged)
 
             return () => {
-                console.debug('[use-connect] Removing status changed listener')
+                console.debug('[use-status] Removing status changed listener')
                 sdk.removeOnStatusChanged(onStatusChanged)
             }
         }

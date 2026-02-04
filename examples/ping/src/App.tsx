@@ -18,7 +18,7 @@ function App() {
     const [activeTab, setActiveTab] = useState<string>('accounts')
 
     const { connect, disconnect, connectResult } = useConnect()
-    const { statusEvent } = useStatus()
+    const { status, statusEvent } = useStatus()
 
     const accounts = useAccounts(connectResult)
     const primaryParty = accounts?.find((w) => w.primary)?.partyId
@@ -70,6 +70,7 @@ function App() {
                                     .then(() => {
                                         setLoading(false)
                                         setErrorMsg('')
+                                        status()
                                     })
                                     .catch((err) => {
                                         console.log(err)
@@ -97,7 +98,10 @@ function App() {
                         <b>Error:</b> <i>{errorMsg}</i>
                     </p>
                 )}
-                <Status status={statusEvent} ledgerApiVersion={ledgerApiVersion} />
+                <Status
+                    status={statusEvent}
+                    ledgerApiVersion={ledgerApiVersion}
+                />
                 <br />
             </div>
 

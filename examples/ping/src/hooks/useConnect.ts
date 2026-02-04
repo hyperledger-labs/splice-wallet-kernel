@@ -16,10 +16,12 @@ export function useConnect(): {
     disconnect: () => Promise<void>
     connectResult?: sdk.dappAPI.ConnectResult
 } {
-    const [connectResult, setConnectResult] = useState<sdk.dappAPI.ConnectResult>()
+    const [connectResult, setConnectResult] =
+        useState<sdk.dappAPI.ConnectResult>()
 
     async function connect() {
-        sdk.connect()
+        await sdk
+            .connect()
             .then(setConnectResult)
             .catch((err) => {
                 console.error('Error connecting to wallet:', err)
@@ -29,14 +31,13 @@ export function useConnect(): {
     }
 
     async function disconnect() {
-        sdk.disconnect().then(() => {
-            setConnectResult(undefined)
-        })
+        await sdk.disconnect()
+        setConnectResult(undefined)
     }
 
     useEffect(() => {
         sdk.status()
-            .then(status => setConnectResult(status.connection))
+            .then((status) => setConnectResult(status.connection))
             .catch(() => {
                 setConnectResult(undefined)
             })
@@ -56,7 +57,7 @@ export function useConnect(): {
             sdk.onStatusChanged(onStatusChanged)
 
             return () => {
-                console.debug('[use-connect] Removing status changed listener')
+                console.debug('[use-connect] Removing connect changed listener')
                 sdk.removeOnStatusChanged(onStatusChanged)
             }
         }
