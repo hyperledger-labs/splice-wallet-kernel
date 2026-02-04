@@ -304,8 +304,9 @@ export class WalletGateway {
         }
     }
 
-    async getPopupUrl(): Promise<string> {
+    async waitForPopupUrl(expectedUrl: string | RegExp): Promise<void> {
         const popup = await this.popup()
-        return popup.url()
+
+        return popup.waitForURL(expectedUrl, { timeout: 5000 })
     }
 }

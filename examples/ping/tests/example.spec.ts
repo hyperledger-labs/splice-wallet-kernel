@@ -208,7 +208,5 @@ test('popup opens with correct userUrl after reconnect', async ({
     // 4. Open wallet gateway and verify it opens with proper userUrl (not dApp URL)
     await wg.closePopup()
     await wg.openPopup()
-    const popupUrl = await wg.getPopupUrl()
-
-    expect(popupUrl).toContain(`localhost:${dappApiPort}`)
+    await wg.waitForPopupUrl(new RegExp(`localhost:${dappApiPort}`))
 })
