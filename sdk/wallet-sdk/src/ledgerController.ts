@@ -13,11 +13,12 @@ import {
     JSContractEntry,
     isJsCantonError,
     UserSchema,
-    WebSocketClient,
     JsGetUpdatesResponse,
     CompletionResponse,
     PrepareSubmissionResponse,
+    defaultRetryableOptions,
 } from '@canton-network/core-ledger-client'
+import { WebSocketClient } from '@canton-network/core-asyncapi-client'
 import {
     signTransactionHash,
     getPublicKeyFromPrivate,
@@ -31,7 +32,6 @@ import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-proto'
 import { TopologyController } from './topologyController.js'
 import { PartyId } from '@canton-network/core-types'
-import { defaultRetryableOptions } from '@canton-network/core-ledger-client'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { decodeTopologyTransaction } from '@canton-network/core-tx-visualizer'
 
@@ -108,7 +108,6 @@ export class LedgerController {
                 isAdmin,
                 logger: this.logger,
                 accessTokenProvider,
-                wsSupportBackOff: 6000 * 10,
             })
 
             this.webSocketManager = new WebSocketManager({

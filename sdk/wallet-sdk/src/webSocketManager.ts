@@ -4,7 +4,7 @@
 import {
     JsGetUpdatesResponse,
     WebSocketClient,
-} from '@canton-network/core-ledger-client'
+} from '@canton-network/core-asyncapi-client'
 import { PartyId } from '@canton-network/core-types'
 import { Logger } from 'pino'
 

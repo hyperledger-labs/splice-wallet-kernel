@@ -42,5 +42,4 @@ export {
     defaultRetryableOptions,
 } from './ledger-api-utils.js'
 
-export * from './web-socket-client.js'
 export * from '@canton-network/core-ledger-client-types'
