@@ -7,10 +7,8 @@ import { TransactionParser } from './parser.js'
 import type { PrettyTransactions, Transaction } from './types.js'
 import eventsByContractIdResponses from './test-data/mock/eventsByContractIdResponses.js'
 import type { LedgerClient } from '../ledger-client'
-// import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT.js'
 import {
     v3_3,
-    // v3_4,
     JsGetUpdatesResponse,
 } from '@canton-network/core-ledger-client-types'
 import * as fs from 'fs'
@@ -20,11 +18,10 @@ import { CoreService } from '../token-standard-service.js'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
+//TODO: should this be updated to use the v3_4 types as well?
 type JsTransaction = v3_3.components['schemas']['JsTransaction']
-// | v3_4.components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =
     v3_3.components['schemas']['JsGetEventsByContractIdResponse']
-// | v3_4.components['schemas']['JsGetEventsByContractIdResponse']
 
 type CreatedEvent = v3_3.components['schemas']['CreatedEvent']
 
