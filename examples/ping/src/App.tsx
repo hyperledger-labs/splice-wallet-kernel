@@ -10,21 +10,23 @@ import { LedgerSubmission } from './components/LedgerSubmission'
 import { Accounts } from './components/Accounts'
 import { PostEvents } from './components/PostEvents'
 import { WindowMessages } from './components/WindowMessages'
+import { useStatus } from './hooks/useStatus'
 
 function App() {
     const { errorMsg, setErrorMsg } = useContext(ErrorContext)
     const [loading, setLoading] = useState(false)
     const [activeTab, setActiveTab] = useState<string>('accounts')
 
-    const { connect, disconnect, status } = useConnect()
+    const { connect, disconnect, connectResult } = useConnect()
+    const { statusEvent } = useStatus()
 
-    const accounts = useAccounts(status)
+    const accounts = useAccounts(connectResult)
     const primaryParty = accounts?.find((w) => w.primary)?.partyId
 
     const [ledgerApiVersion, setLedgerApiVersion] = useState<string>()
 
     useEffect(() => {
-        if (status?.isNetworkConnected) {
+        if (connectResult?.isNetworkConnected) {
             sdk.ledgerApi({
                 requestMethod: 'GET',
                 resource: '/v2/version',
@@ -33,7 +35,7 @@ function App() {
                 setLedgerApiVersion(version)
             })
         }
-    }, [status])
+    }, [connectResult])
 
     return (
         <div>
@@ -46,7 +48,7 @@ function App() {
                         justifyContent: 'center',
                     }}
                 >
-                    {status?.isConnected ? (
+                    {connectResult?.isConnected ? (
                         <button
                             disabled={loading}
                             onClick={() => {
@@ -80,7 +82,7 @@ function App() {
                         </button>
                     )}
                     <button
-                        disabled={!status?.isConnected || loading}
+                        disabled={!connectResult?.isConnected || loading}
                         onClick={() => {
                             console.log('Opening to Wallet Gateway...')
                             sdk.open()
@@ -95,13 +97,13 @@ function App() {
                         <b>Error:</b> <i>{errorMsg}</i>
                     </p>
                 )}
-                <Status status={status} ledgerApiVersion={ledgerApiVersion} />
+                <Status status={statusEvent} ledgerApiVersion={ledgerApiVersion} />
                 <br />
             </div>
 
             <div className="tabs">
                 <div className="tab-buttons">
-                    {status?.isConnected && (
+                    {connectResult?.isConnected && (
                         <button
                             className={activeTab === 'accounts' ? 'active' : ''}
                             onClick={() => setActiveTab('accounts')}
@@ -127,7 +129,7 @@ function App() {
                     >
                         Window Messages
                     </button>
-                    {status?.isConnected && (
+                    {connectResult?.isConnected && (
                         <button
                             className={
                                 activeTab === 'ledgerQuery' ? 'active' : ''
@@ -137,7 +139,7 @@ function App() {
                             Ledger Query
                         </button>
                     )}
-                    {status?.isConnected && (
+                    {connectResult?.isConnected && (
                         <button
                             className={
                                 activeTab === 'ledgerSubmission' ? 'active' : ''
@@ -156,7 +158,7 @@ function App() {
                                 activeTab === 'accounts' ? 'block' : 'none',
                         }}
                     >
-                        <Accounts status={status} />
+                        <Accounts connectResult={connectResult} />
                     </div>
                     <div
                         style={{
@@ -164,7 +166,7 @@ function App() {
                                 activeTab === 'postEvents' ? 'block' : 'none',
                         }}
                     >
-                        <PostEvents status={status} />
+                        <PostEvents connectResult={connectResult} />
                     </div>
                     <div
                         style={{
@@ -183,7 +185,7 @@ function App() {
                         }}
                     >
                         <LedgerQuery
-                            status={status}
+                            connectResult={connectResult}
                             primaryParty={primaryParty}
                             ledgerApiVersion={ledgerApiVersion}
                         />
@@ -197,7 +199,7 @@ function App() {
                         }}
                     >
                         <LedgerSubmission
-                            status={status}
+                            connectResult={connectResult}
                             primaryParty={primaryParty}
                             ledgerApiVersion={ledgerApiVersion}
                         />

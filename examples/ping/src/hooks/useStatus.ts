@@ -3,54 +3,44 @@
 
 import { useEffect, useState } from 'react'
 import * as sdk from '@canton-network/dapp-sdk'
-import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
 
 /**
  * React hook that manages the connection to the wallet gateway.
  * Uses the dapp-sdk to connect and disconnect, and updates the connection status.
  *
- * @returns { connect, disconnect, connectResult }
+ * @returns { status, statusEvent }
  */
-export function useConnect(): {
-    connect: () => Promise<void>
-    disconnect: () => Promise<void>
-    connectResult?: sdk.dappAPI.ConnectResult
+export function useStatus(): {
+    status: () => Promise<void>
+    statusEvent?: sdk.dappAPI.StatusEvent
 } {
-    const [connectResult, setConnectResult] = useState<sdk.dappAPI.ConnectResult>()
+    const [statusEvent, setStatusEvent] = useState<sdk.dappAPI.StatusEvent>()
 
-    async function connect() {
-        sdk.connect()
-            .then(setConnectResult)
-            .catch((err) => {
-                console.error('Error connecting to wallet:', err)
-                handleErrorToast(err)
-                throw err
+    async function status() {
+        sdk.status()
+            .then(setStatusEvent)
+            .catch(() => {
+                setStatusEvent(undefined)
             })
-    }
-
-    async function disconnect() {
-        sdk.disconnect().then(() => {
-            setConnectResult(undefined)
-        })
     }
 
     useEffect(() => {
         sdk.status()
-            .then(status => setConnectResult(status.connection))
+            .then(status => setStatusEvent(status))
             .catch(() => {
-                setConnectResult(undefined)
+                setStatusEvent(undefined)
             })
     }, [])
 
     useEffect(() => {
-        if (connectResult?.isConnected) {
+        if (statusEvent?.connection.isConnected) {
             console.debug('[use-connect] Adding status changed listener')
             const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
                 console.debug(
                     '[use-connect] Received status changed event:',
                     status
                 )
-                setConnectResult(status.connection)
+                setStatusEvent(status)
             }
 
             sdk.onStatusChanged(onStatusChanged)
@@ -60,11 +50,10 @@ export function useConnect(): {
                 sdk.removeOnStatusChanged(onStatusChanged)
             }
         }
-    }, [connectResult])
+    }, [statusEvent])
 
     return {
-        connect,
-        disconnect,
-        connectResult,
+        status,
+        statusEvent,
     }
 }

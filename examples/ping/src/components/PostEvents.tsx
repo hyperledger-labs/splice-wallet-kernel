@@ -5,8 +5,8 @@ import { useAllEvents } from '../hooks/useAllEvents'
 import { prettyjson } from '../utils'
 import * as sdk from '@canton-network/dapp-sdk'
 
-export function PostEvents(props: { status?: sdk.dappAPI.StatusEvent }) {
-    const events = useAllEvents(props.status)
+export function PostEvents(props: { connectResult?: sdk.dappAPI.ConnectResult }) {
+    const events = useAllEvents(props.connectResult)
     const providerAvailable = window.canton
 
     const getEventColor = (type: string) => {

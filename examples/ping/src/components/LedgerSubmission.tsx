@@ -9,13 +9,13 @@ import { prettyjson } from '../utils'
 export function LedgerSubmission(props: {
     primaryParty?: string
     ledgerApiVersion?: string
-    status?: sdk.dappAPI.StatusEvent
+    connectResult?: sdk.dappAPI.ConnectResult
 }) {
     const { setErrorMsg } = useContext(ErrorContext)
     const [loading, setLoading] = useState(false)
 
-    const transactions = useTransactions(props.status)
-    const connected = props.status?.isConnected ?? false
+    const transactions = useTransactions(props.connectResult)
+    const connected = props.connectResult?.isConnected ?? false
 
     function createPingContract() {
         setErrorMsg('')

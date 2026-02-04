@@ -17,11 +17,11 @@ export type AllEvents =
           timestamp: Date
       }
 
-export function useAllEvents(status?: sdk.dappAPI.StatusEvent) {
+export function useAllEvents(connectResult?: sdk.dappAPI.ConnectResult) {
     const [events, setEvents] = useState<AllEvents[]>([])
 
     useEffect(() => {
-        if (status?.isConnected) {
+        if (connectResult?.isConnected) {
             const txListener = (event: sdk.dappAPI.TxChangedEvent) => {
                 setEvents((prev) => [
                     { type: 'TxChanged', event, timestamp: new Date() },
@@ -55,7 +55,7 @@ export function useAllEvents(status?: sdk.dappAPI.StatusEvent) {
                 sdk.removeOnAccountsChanged(accountsListener)
             }
         }
-    }, [status])
+    }, [connectResult])
 
     return events
 }
