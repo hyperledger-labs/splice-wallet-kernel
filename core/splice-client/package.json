@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-splice-client",
-    "version": "0.21.0",
+    "version": "0.21.1",
     "type": "module",
     "description": "Typescript Client for the multiple Canton Network APIs",
     "license": "Apache-2.0",
