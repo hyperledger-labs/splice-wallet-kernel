@@ -59,7 +59,7 @@ jobs:
               if: steps.docker-cache.outputs.cache-hit != 'true'
               run: |
                   mkdir -p /tmp/docker-images
-                  docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "digitalasset-canton-network-node|cn-node" | xargs -r docker save -o /tmp/docker-images/images.tar || true
+                  docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" | xargs -r docker save -o /tmp/docker-images/images.tar
 
             - uses: ./.github/actions/check_resources
 

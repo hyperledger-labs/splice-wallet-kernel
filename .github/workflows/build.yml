@@ -7,6 +7,10 @@ on:
 permissions:
     contents: read
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -217,7 +221,7 @@ jobs:
               if: steps.docker-cache.outputs.cache-hit != 'true'
               run: |
                   mkdir -p /tmp/docker-images
-                  docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "digitalasset-canton-network-node|cn-node" | xargs -r docker save -o /tmp/docker-images/images.tar || true
+                  docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" | xargs -r docker save -o /tmp/docker-images/images.tar
 
             - name: Start remote WK
               run: yarn nx run @canton-network/wallet-gateway-remote:start > "wallet-gateway-remote.log" 2>&1 &
@@ -287,7 +291,7 @@ jobs:
               if: steps.docker-cache.outputs.cache-hit != 'true'
               run: |
                   mkdir -p /tmp/docker-images
-                  docker images --format "{{.Repository}}:{{.Tag}}" | grep -E "digitalasset-canton-network-node|cn-node" | xargs -r docker save -o /tmp/docker-images/images.tar || true
+                  docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" | xargs -r docker save -o /tmp/docker-images/images.tar
 
             - uses: ./.github/actions/check_resources
 
