@@ -53,7 +53,9 @@ test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
     const ledgerSubmissions = dappPage.getByTestId('ledger-submission')
 
     await expect(accounts.getByText(new RegExp(`${party2}::.*`))).toBeVisible()
-    await expect(postEvents.getByText(new RegExp(`${party2}::.*`))).toBeVisible()
+    await expect(
+        postEvents.getByText(new RegExp(`${party2}::.*`))
+    ).toBeVisible()
     await expect(
         dappPage.getByRole('button', { name: 'create Ping contract' })
     ).toBeEnabled()

@@ -22,7 +22,7 @@ export function useAllEvents(status?: sdk.dappAPI.StatusEvent) {
     const isListening = useRef<boolean>(false)
 
     useEffect(() => {
-        if (isListening.current) return;
+        if (isListening.current) return
         //we use window.canton here since we want to capture the initial login event as well
         if (status?.isConnected && window.canton) {
             isListening.current = true
