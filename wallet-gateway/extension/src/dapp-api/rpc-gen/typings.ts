@@ -95,19 +95,25 @@ export type Resource = string
 export type Body = string
 /**
  *
- * The unique identifier of the Wallet Gateway.
+ * The unique identifier of the Provider.
  *
  */
 export type Id = string
 /**
  *
- * The type of client that implements the Wallet Gateway.
+ * The version of the Provider.
  *
  */
-export type ClientType = 'browser' | 'desktop' | 'mobile' | 'remote'
+export type Version = string
 /**
  *
- * The URL of the Wallet Gateway.
+ * The type of client that implements the Provider.
+ *
+ */
+export type ProviderType = 'browser' | 'desktop' | 'mobile' | 'remote'
+/**
+ *
+ * The URL of the Wallet Provider.
  *
  */
 export type Url = string
@@ -119,12 +125,13 @@ export type Url = string
 export type UserUrl = string
 /**
  *
- * Represents a Wallet Gateway.
+ * Represents a Provider.
  *
  */
-export interface KernelInfo {
+export interface Provider {
     id: Id
-    clientType: ClientType
+    version?: Version
+    providerType?: ProviderType
     url?: Url
     userUrl?: UserUrl
     [k: string]: any
@@ -137,6 +144,12 @@ export interface KernelInfo {
 export type IsConnected = boolean
 /**
  *
+ * Reason for the wallet state, e.g., 'no signing provider matched'.
+ *
+ */
+export type Reason = string
+/**
+ *
  * Whether or not a connection to a network is established.
  *
  */
@@ -147,6 +160,13 @@ export type IsNetworkConnected = boolean
  *
  */
 export type NetworkReason = string
+export interface ConnectResult {
+    isConnected: IsConnected
+    reason?: Reason
+    isNetworkConnected: IsNetworkConnected
+    networkReason?: NetworkReason
+    [k: string]: any
+}
 /**
  *
  * The network ID the wallet corresponds to.
@@ -158,16 +178,13 @@ export type NetworkId = string
  * The base URL of the ledger API.
  *
  */
-export type BaseUrl = string
+export type LedgerApiUrl = string
 /**
  *
- * Ledger API configuration.
+ * JWT authentication token.
  *
  */
-export interface LedgerApiConfig {
-    baseUrl: BaseUrl
-    [k: string]: any
-}
+export type AccessToken = string
 /**
  *
  * Network information, if connected to a network.
@@ -175,15 +192,10 @@ export interface LedgerApiConfig {
  */
 export interface Network {
     networkId: NetworkId
-    ledgerApi?: LedgerApiConfig
+    ledgerApi?: LedgerApiUrl
+    accessToken?: AccessToken
     [k: string]: any
 }
-/**
- *
- * JWT authentication token.
- *
- */
-export type AccessToken = string
 /**
  *
  * The user identifier.
@@ -299,12 +311,6 @@ export type TopologyTransactions = string
  *
  */
 export type Disabled = boolean
-/**
- *
- * Reason for the wallet state, e.g., 'no signing provider matched'.
- *
- */
-export type Reason = string
 /**
  *
  * Structure representing a wallet
@@ -423,10 +429,8 @@ export interface LedgerApiParams {
     [k: string]: any
 }
 export interface StatusEvent {
-    kernel: KernelInfo
-    isConnected: IsConnected
-    isNetworkConnected: IsNetworkConnected
-    networkReason?: NetworkReason
+    provider: Provider
+    connection: ConnectResult
     network?: Network
     session?: Session
     [k: string]: any
@@ -488,7 +492,7 @@ export type TxChangedEvent =
  */
 
 export type Status = () => Promise<StatusEvent>
-export type Connect = () => Promise<StatusEvent>
+export type Connect = () => Promise<ConnectResult>
 export type Disconnect = () => Promise<Null>
 export type GetActiveNetwork = () => Promise<Network>
 export type PrepareExecute = (params: PrepareExecuteParams) => Promise<Null>

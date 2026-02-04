@@ -3,7 +3,7 @@
     "info": {
         "title": "Splice Wallet JSON-RPC dApp API",
         "version": "0.5.0",
-        "description": "An OpenRPC specification for the dapp to interact with a Wallet Gateway."
+        "description": "An OpenRPC specification for the dapp to interact with a Wallet Provider."
     },
     "methods": [
         {
@@ -15,7 +15,7 @@
                     "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/StatusEvent"
                 }
             },
-            "description": "Returns the current status of the wallet gateway session."
+            "description": "Returns the current status of the wallet provider session."
         },
         {
             "name": "connect",
@@ -23,10 +23,10 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/StatusEvent"
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/ConnectResult"
                 }
             },
-            "description": "Ensures ledger connectivity and returns the connected network information along with the user access token. Network ID should follow CAIP-2 and represent the synchronizerId."
+            "description": "Ensures ledger connectivity and returns the connected network information along with the session information."
         },
         {
             "name": "disconnect",
@@ -37,7 +37,7 @@
                     "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/Null"
                 }
             },
-            "description": "Invoke a disconnect of the wallet gateway session."
+            "description": "Invoke a disconnect of the wallet provider session."
         },
         {
             "name": "getActiveNetwork",
@@ -183,26 +183,31 @@
                 "type": "null",
                 "description": "Represents a null value, used in responses where no data is returned."
             },
-            "KernelInfo": {
-                "title": "KernelInfo",
+            "Provider": {
+                "title": "Provider",
                 "type": "object",
-                "description": "Represents a Wallet Gateway.",
+                "description": "Represents a Provider.",
                 "properties": {
                     "id": {
                         "title": "id",
                         "type": "string",
-                        "description": "The unique identifier of the Wallet Gateway."
+                        "description": "The unique identifier of the Provider."
                     },
-                    "clientType": {
-                        "title": "clientType",
+                    "version": {
+                        "title": "version",
+                        "type": "string",
+                        "description": "The version of the Provider."
+                    },
+                    "providerType": {
+                        "title": "providerType",
                         "type": "string",
                         "enum": ["browser", "desktop", "mobile", "remote"],
-                        "description": "The type of client that implements the Wallet Gateway."
+                        "description": "The type of client that implements the Provider."
                     },
                     "url": {
                         "title": "url",
                         "type": "string",
-                        "description": "The URL of the Wallet Gateway."
+                        "description": "The URL of the Wallet Provider."
                     },
                     "userUrl": {
                         "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/UserUrl"
@@ -512,17 +517,19 @@
                     }
                 ]
             },
-            "StatusEvent": {
-                "title": "StatusEvent",
+            "ConnectResult": {
+                "title": "ConnectResult",
                 "type": "object",
                 "properties": {
-                    "kernel": {
-                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/KernelInfo"
-                    },
                     "isConnected": {
                         "title": "isConnected",
                         "type": "boolean",
                         "description": "Whether or not the user is authenticated with the Wallet."
+                    },
+                    "reason": {
+                        "title": "reason",
+                        "type": "string",
+                        "description": "The reason why the user is not connected to the Wallet."
                     },
                     "isNetworkConnected": {
                         "title": "isNetworkConnected",
@@ -533,30 +540,28 @@
                         "title": "networkReason",
                         "type": "string",
                         "description": "If not connected to a network, the reason why."
+                    }
+                },
+                "required": ["isConnected", "isNetworkConnected"]
+            },
+            "StatusEvent": {
+                "title": "StatusEvent",
+                "type": "object",
+                "properties": {
+                    "provider": {
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/Provider"
+                    },
+                    "connection": {
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/ConnectResult"
                     },
                     "network": {
                         "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/Network"
                     },
                     "session": {
-                        "title": "session",
-                        "type": "object",
-                        "description": "Session information, if authenticated.",
-                        "properties": {
-                            "accessToken": {
-                                "title": "accessToken",
-                                "type": "string",
-                                "description": "JWT authentication token."
-                            },
-                            "userId": {
-                                "title": "userId",
-                                "type": "string",
-                                "description": "The user identifier."
-                            }
-                        },
-                        "required": ["accessToken", "userId"]
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/Session"
                     }
                 },
-                "required": ["kernel", "isConnected", "isNetworkConnected"]
+                "required": ["provider", "connection"]
             },
             "SignMessageRequest": {
                 "title": "SignMessageRequest",
@@ -595,21 +600,37 @@
                         "description": "A CAIP-2 compliant chain ID, e.g. 'canton:da-mainnet'."
                     },
                     "ledgerApi": {
-                        "title": "LedgerApiConfig",
-                        "type": "object",
-                        "description": "Ledger API configuration.",
-                        "properties": {
-                            "baseUrl": {
-                                "title": "baseUrl",
-                                "type": "string",
-                                "format": "uri",
-                                "description": "The base URL of the ledger API."
-                            }
-                        },
-                        "required": ["baseUrl"]
+                        "title": "ledgerApiUrl",
+                        "type": "string",
+                        "description": "The base URL of the ledger API.",
+                        "format": "uri"
+                    },
+                    "accessToken": {
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/AccessToken"
                     }
                 },
                 "required": ["networkId"]
+            },
+            "AccessToken": {
+                "title": "accessToken",
+                "type": "string",
+                "description": "JWT authentication token."
+            },
+            "Session": {
+                "title": "session",
+                "type": "object",
+                "description": "Session information, if authenticated.",
+                "properties": {
+                    "accessToken": {
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/AccessToken"
+                    },
+                    "userId": {
+                        "title": "userId",
+                        "type": "string",
+                        "description": "The user identifier."
+                    }
+                },
+                "required": ["accessToken", "userId"]
             }
         }
     }
