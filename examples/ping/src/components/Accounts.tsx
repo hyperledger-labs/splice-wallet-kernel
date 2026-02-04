@@ -28,7 +28,7 @@ export function Accounts(props: { status?: sdk.dappAPI.StatusEvent }) {
 
     return (
         connected && (
-            <div data-testid="accounts">
+            <div>
                 <h2>Accounts</h2>
                 <p>Total accounts: {sortedAccounts?.length ?? 0}</p>
                 <div className="terminal-display">

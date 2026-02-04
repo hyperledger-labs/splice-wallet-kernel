@@ -24,7 +24,7 @@ export function PostEvents(props: { status?: sdk.dappAPI.StatusEvent }) {
 
     return (
         providerAvailable && (
-            <div data-testid="post-events">
+            <div>
                 <h2>Post Events</h2>
                 {events.length === 0 ? (
                     <i>No post events received yet.</i>

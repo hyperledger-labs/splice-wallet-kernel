@@ -30,7 +30,7 @@ export function WindowMessages() {
     }
 
     return (
-        <div data-testid="window-messages">
+        <div>
             <h2>Window Messages (postMessage)</h2>
             {messages.length === 0 ? (
                 <i>No window messages received yet.</i>
