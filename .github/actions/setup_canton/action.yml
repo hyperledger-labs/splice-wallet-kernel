@@ -21,6 +21,14 @@ runs:
           shell: bash
           run: mkdir -p /tmp/docker-images
 
+        - name: Cache Localnet
+          if: inputs.network != 'canton'
+          uses: actions/cache@v4
+          id: localnet-cache
+          with:
+              path: .localnet
+              key: ${{ runner.os }}-localnet-${{ inputs.network }}-${{ hashFiles('scripts/src/lib/version-config.json') }}
+
         - name: Cache Docker images
           if: inputs.network != 'canton'
           uses: actions/cache@v4
@@ -45,7 +53,7 @@ runs:
           run: yarn script:fetch:canton
 
         - name: Download Localnet
-          if: inputs.network != 'canton' && steps.docker-cache.outputs.cache-hit != 'true'
+          if: inputs.network != 'canton' && (steps.localnet-cache.outputs.cache-hit != 'true' || steps.docker-cache.outputs.cache-hit != 'true')
           shell: bash
           run: yarn script:fetch:localnet -- --network=${{ inputs.network }}
 
