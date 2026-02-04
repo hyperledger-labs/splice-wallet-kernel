@@ -7,7 +7,8 @@ export function Status(props: {
     return (
         <div>
             <h2>Status</h2>
-            <b>connected:</b> <i>{props.status?.connection.isConnected ? '🟢' : '🔴'}</i>
+            <b>connected:</b>{' '}
+            <i>{props.status?.connection.isConnected ? '🟢' : '🔴'}</i>
             <br />
             {props.status && (
                 <div>
