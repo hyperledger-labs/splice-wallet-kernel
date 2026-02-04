@@ -3,3 +3,4 @@
 
 export { OTCTrade } from './otc-trade.js'
 export { WalletGateway } from './wallet-gateway.js'
+export { test, expect } from './fixtures.js'

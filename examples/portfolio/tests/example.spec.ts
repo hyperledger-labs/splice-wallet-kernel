@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { pino } from 'pino'
-import { test, expect, Page } from '@playwright/test'
+import { test, expect } from '@canton-network/core-wallet-test-utils'
+import { Page } from '@playwright/test'
 import { WalletGateway, OTCTrade } from '@canton-network/core-wallet-test-utils'
 
 const openTab = (
