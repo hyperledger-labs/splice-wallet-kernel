@@ -303,4 +303,9 @@ export class WalletGateway {
             this._popup = undefined
         }
     }
+
+    async getPopupUrl(): Promise<string> {
+        const popup = await this.popup()
+        return popup.url()
+    }
 }
