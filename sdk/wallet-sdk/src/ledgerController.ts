@@ -12,7 +12,7 @@ import {
     AllocateExternalPartyResponse,
     JSContractEntry,
     isJsCantonError,
-    components,
+    UserSchema,
     WebSocketClient,
     JsGetUpdatesResponse,
     CompletionResponse,
@@ -1309,7 +1309,7 @@ export class LedgerController {
     public async createUser(
         userId: string,
         primaryParty: PartyId
-    ): Promise<components['schemas']['User']> {
+    ): Promise<UserSchema> {
         if (!this.isAdmin) {
             throw new Error('Use adminLedger to call createUser')
         }

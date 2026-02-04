@@ -4,7 +4,6 @@
 export * from './token-standard-service.js'
 export { AmuletService } from './amulet-service.js'
 export * from './ledger-client.js'
-export * from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 export * from './acs/acs-container.js'
 export * from './acs/ws-support.js'
 export type {
@@ -44,8 +43,4 @@ export {
 } from './ledger-api-utils.js'
 
 export * from './web-socket-client.js'
-export {
-    GetUpdatesRequest,
-    JsGetUpdatesResponse,
-    CompletionResponse,
-} from './generated-clients/asyncapi-3.4.11.js'
+export * from '@canton-network/core-ledger-client-types'

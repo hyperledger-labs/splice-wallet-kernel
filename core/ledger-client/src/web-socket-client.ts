@@ -5,9 +5,9 @@ import { PartyId } from '@canton-network/core-types'
 import {
     CHANNELS,
     JsGetUpdatesResponse,
-} from './generated-clients/asyncapi-3.4.11.js'
+} from '@canton-network/core-ledger-client-types'
 import { Logger } from 'pino'
-import { TransactionFilterBySetup } from './ledger-api-utils.js'
+import { TransactionFilterBySetup } from '@canton-network/core-ledger-client-types'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 type UpdateSubscriptionOptions = {
