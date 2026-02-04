@@ -48,4 +48,4 @@ export {
     GetUpdatesRequest,
     JsGetUpdatesResponse,
     CompletionResponse,
-} from './generated-clients/asyncapi-3.4.7.js'
+} from './generated-clients/asyncapi-3.4.11.js'
