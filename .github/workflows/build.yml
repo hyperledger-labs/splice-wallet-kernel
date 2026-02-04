@@ -158,6 +158,10 @@ jobs:
 
             - uses: ./.github/actions/setup_canton
 
+              # for some reason it breaks if we don't have a build here...
+            - name: Build project
+              run: yarn build:all
+
             - name: Start remote WK
               run: yarn nx run @canton-network/wallet-gateway-remote:start > "wallet-gateway-remote.log" 2>&1 &
 
