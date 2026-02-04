@@ -1128,5 +1128,5 @@ export const CHANNELS = {
 // API Info
 export const API_INFO = {
     title: 'JSON Ledger API WebSocket endpoints',
-    version: '3.4.7',
+    version: '3.4.11-SNAPSHOT',
 } as const

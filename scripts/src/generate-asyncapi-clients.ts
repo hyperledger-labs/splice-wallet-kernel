@@ -3,7 +3,14 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { getRepoRoot, info, error } from './lib/utils.js'
+import {
+    getRepoRoot,
+    info,
+    error,
+    Network,
+    SUPPORTED_VERSIONS,
+    getNetworkArg,
+} from './lib/utils.js'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as yaml from 'js-yaml'
@@ -150,10 +157,10 @@ interface AsyncApiFileSpec {
     output: string
 }
 
-const specs: AsyncApiFileSpec[] = [
+const specs = (cantonVersion: string): AsyncApiFileSpec[] => [
     {
-        input: 'api-specs/ledger-api/3.4.7/asyncapi.yaml',
-        output: 'core/ledger-client/src/generated-clients/asyncapi-3.4.7.ts',
+        input: `api-specs/ledger-api/${cantonVersion}/asyncapi.yaml`,
+        output: `core/ledger-client/src/generated-clients/asyncapi-${cantonVersion}.ts`,
     },
 ]
 
@@ -296,12 +303,17 @@ async function generateAsyncApiClient(
     }
 }
 
-async function main(specs: AsyncApiFileSpec[], root: string = process.cwd()) {
+async function main(network: Network = 'devnet', root: string = process.cwd()) {
+    const cantonVersion =
+        SUPPORTED_VERSIONS[network].canton.version.split('-')[0]
+
     await Promise.all(
-        specs.map((spec) => generateAsyncApiClient(spec, root))
+        specs(cantonVersion).map((spec) => generateAsyncApiClient(spec, root))
     ).then(() =>
         console.log('Generated typescript clients for all async api specs')
     )
 }
 
-main(specs).catch((error) => console.log(error(`Fatal error: ${error}`)))
+main(getNetworkArg()).catch((error) =>
+    console.log(error(`Fatal error: ${error}`))
+)

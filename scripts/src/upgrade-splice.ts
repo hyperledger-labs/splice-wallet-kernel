@@ -117,6 +117,7 @@ const scripts = [
     'fetch-localnet.ts',
     'fetch-canton.ts',
     'generate-openapi-clients.ts',
+    'generate-asyncapi-clients.ts',
 ]
 for (const script of scripts) {
     try {

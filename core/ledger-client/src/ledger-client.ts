@@ -3,7 +3,7 @@
 
 import * as v3_3 from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
 
-import * as v3_4 from './generated-clients/openapi-3.4.7.js'
+import * as v3_4 from './generated-clients/openapi-3.4.11.js'
 import createClient, { Client, FetchOptions } from 'openapi-fetch'
 import { Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
