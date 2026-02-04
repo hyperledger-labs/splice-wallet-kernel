@@ -195,6 +195,26 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    '/v0/scan-proxy/holdings/summary': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * @description Returns the summary of active amulet contracts for a given migration id and record time, for the given parties.
+         *     This is an aggregate of `/v0/holdings/state` by owner party ID with better performance than client-side computation.
+         */
+        post: operations['getHoldingsSummaryAt']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
 }
 export type webhooks = Record<string, never>
 export interface components {
@@ -394,10 +414,107 @@ export interface components {
         LookupTransferCommandStatusResponse: {
             transfer_commands_by_contract_id: components['schemas']['TransferCommandMap']
         }
+        HoldingsSummaryRequest: {
+            /**
+             * Format: int64
+             * @description The migration id for which to return the summary.
+             */
+            migration_id: number
+            /**
+             * Format: date-time
+             * @description The timestamp at which the contract set was active.
+             *     This needs to be an exact timestamp, i.e.,
+             *     needs to correspond to a timestamp reported by `/v0/state/acs/snapshot-timestamp` if `record_time_match` is set to `exact` (which is the default).
+             *     If `record_time_match` is set to `at_or_before`, this can be any timestamp, and the most recent snapshot at or before the given `record_time` will be returned.
+             */
+            record_time: string
+            /**
+             * @description How to match the record_time. "exact" requires the record_time to match exactly.
+             *     "at_or_before" finds the most recent snapshot at or before the given record_time.
+             * @default exact
+             * @enum {string}
+             */
+            record_time_match: 'exact' | 'at_or_before'
+            /** @description The owners for which to compute the summary. */
+            owner_party_ids: string[]
+            /**
+             * Format: int64
+             * @description Compute holding fees as of this round. Defaults to the earliest open mining round.
+             */
+            as_of_round?: number
+        }
+        /** @description Aggregate Amulet totals for a particular owner party ID. */
+        HoldingsSummary: {
+            /** @description Owner party ID of the amulet. Guaranteed to be unique among `summaries`. */
+            party_id: string
+            /**
+             * @description Sum of unlocked amulet at time of reception, not counting holding
+             *     fees deducted since.
+             */
+            total_unlocked_coin: string
+            /**
+             * @description Sum of locked amulet at time of original amulet reception, not
+             *     counting holding fees deducted since.
+             */
+            total_locked_coin: string
+            /** @description `total_unlocked_coin` + `total_locked_coin`. */
+            total_coin_holdings: string
+            /**
+             * @description Sum of holding fees as of `computed_as_of_round` that apply to
+             *     unlocked amulet.
+             */
+            accumulated_holding_fees_unlocked: string
+            /**
+             * @description Sum of holding fees as of `computed_as_of_round` that apply to
+             *     locked amulet, including fees applied since the amulet's creation
+             *     round.
+             */
+            accumulated_holding_fees_locked: string
+            /** @description Same as `accumulated_holding_fees_unlocked` + `accumulated_holding_fees_locked`. */
+            accumulated_holding_fees_total: string
+            /** @description Same as `total_unlocked_coin` - `accumulated_holding_fees_unlocked`. */
+            total_available_coin: string
+        }
+        HoldingsSummaryResponse: {
+            /**
+             * Format: date-time
+             * @description The same `record_time` as in the request.
+             */
+            record_time: string
+            /**
+             * Format: int64
+             * @description The same `migration_id` as in the request.
+             */
+            migration_id: number
+            /**
+             * Format: int64
+             * @description The same `as_of_round` as in the request, with the same default.
+             */
+            computed_as_of_round: number
+            summaries: components['schemas']['HoldingsSummary'][]
+        }
     }
     responses: {
+        /** @description bad request */
+        400: {
+            headers: {
+                [name: string]: unknown
+            }
+            content: {
+                'application/json': components['schemas']['ErrorResponse']
+            }
+        }
         /** @description not found */
         404: {
+            headers: {
+                [name: string]: unknown
+            }
+            content: {
+                'application/json': components['schemas']['ErrorResponse']
+            }
+        }
+        /** @description internal server error */
+        500: {
             headers: {
                 [name: string]: unknown
             }
@@ -678,6 +795,33 @@ export interface operations {
             }
             /** @description No TransferCommand exists with this contract id within the last 24h */
             404: components['responses']['404']
+        }
+    }
+    getHoldingsSummaryAt: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['HoldingsSummaryRequest']
+            }
+        }
+        responses: {
+            /** @description ok */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['HoldingsSummaryResponse']
+                }
+            }
+            400: components['responses']['400']
+            404: components['responses']['404']
+            500: components['responses']['500']
         }
     }
 }
