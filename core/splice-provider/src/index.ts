@@ -28,3 +28,5 @@ export function injectSpliceProvider(provider: SpliceProvider): SpliceProvider {
 export * from './SpliceProvider'
 export * from './SpliceProviderHttp'
 export * from './SpliceProviderWindow'
+export * from './DappProvider'
+export * from './DappRemoteProvider'

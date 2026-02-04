@@ -1,0 +1,159 @@
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+import { DappRemoteProvider } from '@canton-network/core-splice-provider'
+import buildController from './dapp-api/rpc-gen'
+import {
+    LedgerApiParams,
+    Network,
+    PrepareExecuteAndWaitResult,
+    PrepareExecuteParams,
+    SignMessageResult,
+    StatusEvent,
+    Wallet,
+} from './dapp-api/rpc-gen/typings'
+import { ErrorCode } from './error'
+import { popup } from '@canton-network/core-wallet-ui-components'
+import * as dappRemoteAPI from '@canton-network/core-wallet-dapp-remote-rpc-client'
+
+const withTimeout = (
+    reject: (reason?: unknown) => void,
+    details: string,
+    timeoutMs: number = 10 * 1000 // default to 10 seconds
+) =>
+    setTimeout(() => {
+        console.warn(`SDK: ${details}`)
+        reject({
+            status: 'error',
+            error: ErrorCode.Timeout,
+            details,
+        })
+    }, timeoutMs)
+
+export const dappSDKController = (provider: DappRemoteProvider) =>
+    buildController({
+        connect: async (): Promise<StatusEvent> => {
+            const response = await provider.request({
+                method: 'connect',
+                params: {},
+            })
+
+            if (response.session) {
+                return response
+            } else {
+                popup.open(response.userUrl ?? '')
+                const promise = new Promise<StatusEvent>((resolve, reject) => {
+                    // 5 minutes timeout
+                    const timeout = withTimeout(
+                        reject,
+                        'Timeout waiting for connection',
+                        5 * 60 * 1000
+                    )
+                    provider.on<dappRemoteAPI.StatusEvent>(
+                        'statusChanged',
+                        (event) => {
+                            if (event.isConnected) {
+                                clearTimeout(timeout)
+                                resolve(event)
+                            }
+                        }
+                    )
+                })
+
+                return promise
+            }
+        },
+        disconnect: async () => {
+            return await provider.request({
+                method: 'disconnect',
+                params: null,
+            })
+        },
+        ledgerApi: async (params: LedgerApiParams) =>
+            provider.request({
+                method: 'ledgerApi',
+                params,
+            }),
+        prepareExecute: async (params: PrepareExecuteParams) => {
+            const response = await provider.request({
+                method: 'prepareExecute',
+                params,
+            })
+
+            if (response.userUrl) popup.open(response.userUrl)
+
+            return null
+        },
+        prepareExecuteAndWait: async (
+            params: PrepareExecuteParams
+        ): Promise<PrepareExecuteAndWaitResult> => {
+            const response = await provider.request({
+                method: 'prepareExecute',
+                params,
+            })
+
+            if (response.userUrl) popup.open(response.userUrl)
+
+            const promise = new Promise<PrepareExecuteAndWaitResult>(
+                (resolve, reject) => {
+                    const timeout = withTimeout(
+                        reject,
+                        'Timed out waiting for transaction approval'
+                    )
+
+                    // TODO: ensure that the event corresponds to the correct transaction
+                    const listener = (event: dappRemoteAPI.TxChangedEvent) => {
+                        if (event.status === 'failed') {
+                            provider.removeListener('txChanged', listener)
+                            clearTimeout(timeout)
+                            reject({
+                                status: 'error',
+                                error: ErrorCode.TransactionFailed,
+                                details: `Transaction with commandId ${event.commandId} failed to execute.`,
+                            })
+                        }
+                        if (event.status === 'executed') {
+                            provider.removeListener('txChanged', listener)
+                            clearTimeout(timeout)
+                            resolve({
+                                tx: event,
+                            })
+                        }
+                    }
+
+                    provider.on<dappRemoteAPI.TxChangedEvent>(
+                        'txChanged',
+                        listener
+                    )
+                }
+            )
+
+            return promise
+        },
+        status: async () => {
+            return provider.request({ method: 'status', params: null })
+        },
+        listAccounts: async () =>
+            provider.request({
+                method: 'listAccounts',
+                params: null,
+            }),
+        accountsChanged: async () => {
+            throw new Error('Only for events.')
+        },
+        txChanged: async () => {
+            throw new Error('Only for events.')
+        },
+        getActiveNetwork: function (): Promise<Network> {
+            throw new Error('Function not implemented.')
+        },
+        signMessage: function (): Promise<SignMessageResult> {
+            throw new Error('Function not implemented.')
+        },
+        getPrimaryAccount: function (): Promise<Wallet> {
+            return provider.request({
+                method: 'getPrimaryAccount',
+                params: null,
+            })
+        },
+    })

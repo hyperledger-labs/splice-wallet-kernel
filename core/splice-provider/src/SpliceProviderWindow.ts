@@ -6,6 +6,7 @@ import { WindowTransport } from '@canton-network/core-rpc-transport'
 import SpliceWalletJSONRPCDAppAPI from '@canton-network/core-wallet-dapp-rpc-client'
 import { SpliceProviderBase } from './SpliceProvider.js'
 
+// TODO: remove this in favor of DappProvider
 export class SpliceProviderWindow extends SpliceProviderBase {
     private client: SpliceWalletJSONRPCDAppAPI
 

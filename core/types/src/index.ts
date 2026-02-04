@@ -141,3 +141,25 @@ export const GatewaysConfig = z.object({
 })
 
 export type GatewaysConfig = z.infer<typeof GatewaysConfig>
+
+//
+
+export type UnknownRpcTypes = {
+    [method: string]: {
+        params: unknown
+        result: unknown
+    }
+}
+
+// FANCY VERSION: (doesnt work yet)
+// export type RequestArgsV2<
+//     T extends UnknownRpcTypes,
+//     M extends keyof T,
+// > = T[M]['params'] extends never
+//     ? { method: M }
+//     : { method: M; params: T[M]['params'] }
+
+export type RequestArgsV2<T extends UnknownRpcTypes, M extends keyof T> = {
+    method: M
+    params: T[M]['params']
+}

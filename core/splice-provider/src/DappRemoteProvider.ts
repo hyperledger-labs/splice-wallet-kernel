@@ -1,17 +1,17 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import SpliceWalletJSONRPCRemoteDAppAPI, {
+    RpcTypes as DappRemoteRpcTypes,
+    Session,
+} from '@canton-network/core-wallet-dapp-remote-rpc-client'
+import { AbstractProviderV2 } from './SpliceProvider'
+import { HttpTransport } from '@canton-network/core-rpc-transport'
 import {
     isSpliceMessageEvent,
-    RequestPayload,
+    RequestArgsV2,
     WalletEvent,
 } from '@canton-network/core-types'
-import { HttpTransport } from '@canton-network/core-rpc-transport'
-import SpliceWalletJSONRPCDAppAPI, {
-    Session,
-    StatusEvent,
-} from '@canton-network/core-wallet-dapp-rpc-client'
-import { SpliceProviderBase } from './SpliceProvider'
 
 // Maintain a global SSE connection in-memory to avoid multiple connections
 // per SpliceProviderHttp instance.
@@ -32,15 +32,16 @@ function parseSSEData(data: string): unknown[] {
     }
 }
 
-// TODO: remove this in favor of DappRemoteProvider
-export class SpliceProviderHttp extends SpliceProviderBase {
+export class DappRemoteProvider extends AbstractProviderV2<DappRemoteRpcTypes> {
     private sessionToken?: string
-    private client: SpliceWalletJSONRPCDAppAPI
+    private client: SpliceWalletJSONRPCRemoteDAppAPI
     private status?: Session | undefined
 
-    private createClient(sessionToken?: string): SpliceWalletJSONRPCDAppAPI {
+    private createClient(
+        sessionToken?: string
+    ): SpliceWalletJSONRPCRemoteDAppAPI {
         const transport = new HttpTransport(this.url, sessionToken)
-        return new SpliceWalletJSONRPCDAppAPI(transport)
+        return new SpliceWalletJSONRPCRemoteDAppAPI(transport)
     }
 
     private openSSE(url: URL, token: string): void {
@@ -119,7 +120,7 @@ export class SpliceProviderHttp extends SpliceProviderBase {
                 // We requery the status explicitly here, as it's not guaranteed that the socket will be open & authenticated
                 // before the `statusChanged` event is fired from the `addSession` RPC call. The dappApi.StatusResult and
                 // dappApi.StatusEvent are mapped manually to avoid dependency.
-                this.request<StatusEvent>({ method: 'status' })
+                this.request({ method: 'status', params: null })
                     .then((status) => {
                         //for some reason comparing the objects directly dosent work as intended
                         if (
@@ -140,12 +141,9 @@ export class SpliceProviderHttp extends SpliceProviderBase {
         })
     }
 
-    public async request<T>({ method, params }: RequestPayload): Promise<T> {
-        return (await (
-            this.client.request as (
-                method: string,
-                params?: RequestPayload['params']
-            ) => Promise<unknown>
-        )(method, params)) as T
+    public async request<M extends keyof DappRemoteRpcTypes>(
+        args: RequestArgsV2<DappRemoteRpcTypes, M>
+    ): Promise<DappRemoteRpcTypes[M]['result']> {
+        return await this.client.requestV2<M>(args)
     }
 }
