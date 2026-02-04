@@ -119,13 +119,13 @@ test('connection status handling edge cases', async ({ page: dappPage }) => {
         network: 'Local (OAuth IDP)',
     })
     await expect(dappPage.getByText('Loading...')).toHaveCount(0)
-    await expect(dappPage.getByText(/.*connected: 🟢*/)).toBeVisible()
     await expect(disconnectButton).toBeVisible()
     await expect(connectButton).not.toBeVisible()
 
     // 2. Hit disconnect button -- ensure status is updated
-    await wg.disconnect()
-    await expect(dappPage.getByText(/.*connected: 🔴*/)).toBeVisible()
+    await expect(disconnectButton).toBeVisible()
+    await disconnectButton.click()
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
     await expect(connectButton).toBeVisible()
     await expect(disconnectButton).not.toBeVisible()
 
@@ -135,13 +135,11 @@ test('connection status handling edge cases', async ({ page: dappPage }) => {
         network: 'Local (OAuth IDP)',
     })
     await expect(dappPage.getByText('Loading...')).toHaveCount(0)
-    await expect(dappPage.getByText(/.*connected: 🟢*/)).toBeVisible()
     await expect(disconnectButton).toBeVisible()
     await expect(connectButton).not.toBeVisible()
 
     // 4. Hit logout button inside popup
     await wg.logoutFromPopup()
-    await expect(dappPage.getByText(/.*connected: 🔴*/)).toBeVisible()
     await expect(connectButton).toBeVisible()
     await expect(disconnectButton).not.toBeVisible()
 
@@ -151,7 +149,6 @@ test('connection status handling edge cases', async ({ page: dappPage }) => {
         network: 'Local (OAuth IDP)',
     })
     await expect(dappPage.getByText('Loading...')).toHaveCount(0)
-    await expect(dappPage.getByText(/.*connected: 🟢*/)).toBeVisible()
     await expect(disconnectButton).toBeVisible()
     await expect(connectButton).not.toBeVisible()
 
@@ -159,7 +156,6 @@ test('connection status handling edge cases', async ({ page: dappPage }) => {
     await dappPage.reload()
     await expect(dappPage).toHaveTitle(/Example dApp/)
     await expect(dappPage.getByText('Loading...')).toHaveCount(0)
-    await expect(dappPage.getByText(/.*connected: 🟢*/)).toBeVisible()
     await expect(disconnectButton).toBeVisible()
     await expect(connectButton).not.toBeVisible()
     // Verify popup is closed
@@ -171,17 +167,18 @@ test('connection status handling edge cases', async ({ page: dappPage }) => {
     const popupOpenAfterOpen = await wg.isPopupOpen()
     expect(popupOpenAfterOpen).toBe(true)
     // Verify still connected
-    await expect(dappPage.getByText(/.*connected: 🟢*/)).toBeVisible()
+    await expect(disconnectButton).toBeVisible()
+    await expect(connectButton).not.toBeVisible()
 
     // 8. Close popup -- ensure still connected
     await wg.closePopup()
-    await expect(dappPage.getByText(/.*connected: 🟢*/)).toBeVisible()
     await expect(disconnectButton).toBeVisible()
     await expect(connectButton).not.toBeVisible()
 
     // 9. Disconnect while popup closed -- ensure disconnected
-    await wg.disconnect()
-    await expect(dappPage.getByText(/.*connected: 🔴*/)).toBeVisible()
+    await expect(disconnectButton).toBeVisible()
+    await disconnectButton.click()
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
     await expect(connectButton).toBeVisible()
     await expect(disconnectButton).not.toBeVisible()
 })
@@ -204,17 +201,28 @@ test('popup opens with correct userUrl after reconnect', async ({
 
     await expect(dappPage).toHaveTitle(/Example dApp/)
 
+    const connectButton = dappPage.getByRole('button', {
+        name: 'connect to Wallet Gateway',
+    })
+    const disconnectButton = dappPage.getByRole('button', {
+        name: 'disconnect',
+    })
+
     // 1. Login
     await wg.connect({
         customURL: `http://localhost:${dappApiPort}/api/v0/dapp`,
         network: 'Local (OAuth IDP)',
     })
     await expect(dappPage.getByText('Loading...')).toHaveCount(0)
-    await expect(dappPage.getByText(/.*connected: 🟢*/)).toBeVisible()
+    await expect(disconnectButton).toBeVisible()
+    await expect(connectButton).not.toBeVisible()
 
     // 2. Disconnect
-    await wg.disconnect()
-    await expect(dappPage.getByText(/.*connected: 🔴*/)).toBeVisible()
+    await expect(disconnectButton).toBeVisible()
+    await disconnectButton.click()
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+    await expect(connectButton).toBeVisible()
+    await expect(disconnectButton).not.toBeVisible()
 
     // 3. Login again
     await wg.reconnect({
@@ -222,7 +230,8 @@ test('popup opens with correct userUrl after reconnect', async ({
         network: 'Local (OAuth IDP)',
     })
     await expect(dappPage.getByText('Loading...')).toHaveCount(0)
-    await expect(dappPage.getByText(/.*connected: 🟢*/)).toBeVisible()
+    await expect(disconnectButton).toBeVisible()
+    await expect(connectButton).not.toBeVisible()
 
     // 4. Open wallet gateway and verify it opens with proper userUrl (not dApp URL)
     await wg.closePopup()

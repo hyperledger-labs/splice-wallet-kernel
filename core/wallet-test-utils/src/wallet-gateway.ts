@@ -207,15 +207,6 @@ export class WalletGateway {
         return { commandId }
     }
 
-    async disconnect(): Promise<void> {
-        const disconnectButton = this.dappPage.getByRole('button', {
-            name: 'disconnect',
-        })
-        await expect(disconnectButton).toBeVisible()
-        await disconnectButton.click()
-        await expect(this.dappPage.getByText('Loading...')).toHaveCount(0)
-    }
-
     async reconnect(args: {
         network: 'LocalNet' | 'Local (OAuth IDP)'
         customURL?: string
