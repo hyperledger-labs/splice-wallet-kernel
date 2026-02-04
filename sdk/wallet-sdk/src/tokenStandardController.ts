@@ -44,10 +44,11 @@ import {
     allocationInstructionRegistryTypes,
     Beneficiaries,
 } from '@canton-network/core-token-standard'
-import { PartyId } from '@canton-network/core-types'
+import { PartyId, type PaginationArguments } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { localNetStaticConfig } from './config'
+import { paginationPage } from './utils/paginate.js'
 
 export {
     ALLOCATION_FACTORY_INTERFACE_ID,
@@ -332,6 +333,7 @@ export class TokenStandardController {
      * @param limit optional limit for number of UTXOs to return.
      * @param offset optional offset to list utxos from, default is latest.
      * @param party optional party to list utxos
+     * @param pagination optional pagination arguments to paginate the results after filtering.
      * @returns A promise that resolves to an array of holding UTXOs.
      */
 
@@ -339,7 +341,8 @@ export class TokenStandardController {
         includeLocked: boolean = true,
         limit?: number,
         offset?: number,
-        party?: PartyId
+        party?: PartyId,
+        pagination?: PaginationArguments
     ): Promise<PrettyContract<Holding>[]> {
         const utxos = await this.service.listContractsByInterface<Holding>(
             HOLDING_INTERFACE_ID,
@@ -349,17 +352,20 @@ export class TokenStandardController {
         )
         const currentTime = new Date()
 
-        if (includeLocked) {
-            return utxos
-        } else {
-            return utxos.filter(
-                (utxo) =>
-                    !TokenStandardService.isHoldingLocked(
-                        utxo.interfaceViewValue,
-                        currentTime
-                    )
-            )
+        const filteredUtxos = includeLocked
+            ? utxos
+            : utxos.filter(
+                  (utxo) =>
+                      !TokenStandardService.isHoldingLocked(
+                          utxo.interfaceViewValue,
+                          currentTime
+                      )
+              )
+
+        if (pagination) {
+            return paginationPage(filteredUtxos, pagination)
         }
+        return filteredUtxos
     }
 
     /**
@@ -667,7 +673,8 @@ export class TokenStandardController {
     async useMergeDelegations(
         walletParty: PartyId,
         nodeLimit: number = 200,
-        inputUtxos?: PrettyContract<Holding>[]
+        inputUtxos?: PrettyContract<Holding>[],
+        pagination?: PaginationArguments
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -675,9 +682,21 @@ export class TokenStandardController {
 
         const ledgerEnd = await this.client.get('/v2/state/ledger-end')
 
-        const utxos = inputUtxos?.length
-            ? inputUtxos
-            : await this.listHoldingUtxos(true, 100, undefined, walletParty)
+        if (pagination && pagination.itemsPerPage < 10) {
+            throw new Error(
+                `Cannot have less than 10 items per page. Found ${pagination.itemsPerPage} as pagination.itemsPerPage`
+            )
+        }
+
+        const utxos =
+            inputUtxos ??
+            (await this.listHoldingUtxos(
+                true,
+                100,
+                undefined,
+                walletParty,
+                pagination
+            ))
 
         if (utxos.length < 10) {
             throw new Error(`Utxos are less than 10, found ${utxos.length}`)

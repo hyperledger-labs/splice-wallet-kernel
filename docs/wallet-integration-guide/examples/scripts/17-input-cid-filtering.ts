@@ -265,6 +265,27 @@ for (let i = 0; i < 10; i++) {
 const utxosAlice = await sdk.tokenStandard?.listHoldingUtxos(false)
 logger.info(`number of unlocked utxos for alice ${utxosAlice?.length}`)
 
+const paginatedUtxosAlice = await sdk.tokenStandard?.listHoldingUtxos(
+    false,
+    undefined,
+    undefined,
+    undefined,
+    {
+        itemsPerPage: 3,
+        page: 1,
+    }
+)
+
+logger.info(
+    {
+        paginatedLength: paginatedUtxosAlice?.length,
+        isEqual:
+            JSON.stringify(paginatedUtxosAlice) ===
+            JSON.stringify(utxosAlice?.slice(3, 6)),
+    },
+    'Is paginated utxos equal to a given portion of previously calculated utxos:'
+)
+
 const [mergeUtxoCommands, mergedDisclosedContracts] =
     await sdk.tokenStandard?.mergeHoldingUtxos()!
 

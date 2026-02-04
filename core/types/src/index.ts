@@ -141,3 +141,13 @@ export const GatewaysConfig = z.object({
 })
 
 export type GatewaysConfig = z.infer<typeof GatewaysConfig>
+
+/**
+ * Pagination
+ */
+export const PaginationArguments = z.object({
+    page: z.number().nonnegative(),
+    itemsPerPage: z.number().positive(),
+})
+
+export type PaginationArguments = z.infer<typeof PaginationArguments>
