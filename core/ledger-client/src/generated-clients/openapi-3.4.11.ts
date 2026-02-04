@@ -850,6 +850,28 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    '/v2/contracts/contract-by-id': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * @description Looking up contract data by contract ID.
+         *     This endpoint is experimental / alpha, therefore no backwards compatibility is guaranteed.
+         *     This endpoint must not be used to look up contracts which entered the participant via party replication
+         *     or repair service.
+         */
+        post: operations['postV2ContractsContract-by-id']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
 }
 export type webhooks = Record<string, never>
 export interface components {
@@ -2076,6 +2098,40 @@ export interface components {
         /** GetConnectedSynchronizersResponse */
         GetConnectedSynchronizersResponse: {
             connectedSynchronizers?: components['schemas']['ConnectedSynchronizer'][]
+        }
+        /** GetContractRequest */
+        GetContractRequest: {
+            /**
+             * @description The ID of the contract.
+             *     Must be a valid LedgerString (as described in ``value.proto``).
+             *     Required
+             */
+            contractId: string
+            /**
+             * @description The list of querying parties
+             *     The stakeholders of the referenced contract must have an intersection with any of these parties
+             *     to return the result.
+             *     Optional, if no querying_parties specified, all possible contracts could be returned.
+             */
+            queryingParties?: string[]
+        }
+        /** GetContractResponse */
+        GetContractResponse: {
+            /**
+             * @description The representative_package_id will be always set to the contract package ID, therefore this endpoint should
+             *     not be used to lookup contract which entered the participant via party replication or repair service.
+             *     The witnesses field will contain only the querying_parties which are also stakeholders of the contract as well.
+             *     The following fields of the created event cannot be populated, so those should not be used / parsed:
+             *
+             *     - offset
+             *     - node_id
+             *     - created_event_blob
+             *     - interface_views
+             *     - acs_delta
+             *
+             *     Required
+             */
+            createdEvent?: components['schemas']['CreatedEvent']
         }
         /** GetEventsByContractIdRequest */
         GetEventsByContractIdRequest: {
@@ -5588,6 +5644,8 @@ export interface operations {
     getV2Parties: {
         parameters: {
             query?: {
+                'identity-provider-id'?: string
+                'filter-party'?: string
                 /** @description maximum number of elements in a returned page */
                 pageSize?: number
                 /** @description token - to continue results from a given page, leave empty to start from the beginning of the list, obtain token from the result of previous page */
@@ -5607,7 +5665,7 @@ export interface operations {
                     'application/json': components['schemas']['ListKnownPartiesResponse']
                 }
             }
-            /** @description Invalid value for: query parameter pageSize, Invalid value for: query parameter pageToken, Invalid value for: headers */
+            /** @description Invalid value for: query parameter identity-provider-id, Invalid value for: query parameter filter-party, Invalid value for: query parameter pageSize, Invalid value for: query parameter pageToken, Invalid value for: headers */
             400: {
                 headers: {
                     [name: string]: unknown
@@ -7214,6 +7272,46 @@ export interface operations {
                 }
                 content: {
                     'application/json': components['schemas']['GetPreferredPackagesResponse']
+                }
+            }
+            /** @description Invalid value for: body, Invalid value for: headers */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    'postV2ContractsContract-by-id': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['GetContractRequest']
+            }
+        }
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['GetContractResponse']
                 }
             }
             /** @description Invalid value for: body, Invalid value for: headers */
