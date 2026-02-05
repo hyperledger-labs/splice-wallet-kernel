@@ -1,3 +1,4 @@
+import { Holding, PrettyContract } from '@canton-network/core-ledger-client'
 import {
     WalletSDKImpl,
     localNetAuthDefault,
@@ -15,6 +16,9 @@ const logger = pino({
     level: 'info',
 })
 
+const originalTap = 200000
+const transferAmount = 100
+
 // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
 const sdk = new WalletSDKImpl().configure({
     logger,
@@ -24,43 +28,44 @@ const sdk = new WalletSDKImpl().configure({
     tokenStandardFactory: localNetTokenStandardDefault,
 })
 
-type UtxoLockedCounts = {
-    locked: 0
-    unlocked: 0
+type AllHoldings = {
+    locked: PrettyContract<Holding>[]
+    unlocked: PrettyContract<Holding>[]
 }
 
-const getHoldingUtxosCountGroupedByLock =
-    async (): Promise<UtxoLockedCounts> => {
-        const utxosUnlocked = await sdk.tokenStandard?.listHoldingUtxos(false)
-        const utxosAll = await sdk.tokenStandard?.listHoldingUtxos(true)
-        const utxosUnlockedCids = utxosUnlocked!.map((utxo) => utxo.contractId)
+const getHoldingUtxosCountGroupedByLock = async (): Promise<AllHoldings> => {
+    const utxosUnlocked = await sdk.tokenStandard?.listHoldingUtxos(false)
+    const utxosAll = await sdk.tokenStandard?.listHoldingUtxos(true)
 
-        return utxosAll!.reduce(
-            (accumulator, utxo) => {
-                const isUnlocked = utxosUnlockedCids.includes(utxo.contractId)
-                if (isUnlocked) {
-                    accumulator.unlocked++
-                } else {
-                    accumulator.locked++
-                }
-                return accumulator
-            },
-            {
-                locked: 0,
-                unlocked: 0,
-            }
-        )
+    return {
+        locked:
+            utxosAll?.filter(
+                (utxo) =>
+                    !utxosUnlocked?.some(
+                        (unlocked) => unlocked.contractId === utxo.contractId
+                    )
+            ) || [],
+        unlocked: utxosUnlocked || [],
     }
+}
 
 const assertLockedAmount = (
-    utxoLockedCounts: UtxoLockedCounts,
-    expectedLocked: number,
-    expectedUnlocked: number | null
+    utxoLockedCounts: AllHoldings,
+    expectedLockedAmount: number,
+    expectedUnlockedAmount: number
 ): void => {
+    const lockedSum = utxoLockedCounts.locked.reduce(
+        (sum, holding) => sum + Number(holding.interfaceViewValue.amount),
+        0
+    )
+    const unlockedSum = utxoLockedCounts.unlocked.reduce(
+        (sum, holding) => sum + Number(holding.interfaceViewValue.amount),
+        0
+    )
+
     if (
-        utxoLockedCounts.locked === expectedLocked &&
-        (expectedUnlocked === null ||
-            utxoLockedCounts.unlocked === expectedUnlocked)
+        lockedSum === expectedLockedAmount &&
+        unlockedSum === expectedUnlockedAmount
     ) {
         return
     }
@@ -68,12 +73,14 @@ const assertLockedAmount = (
     logger.error(
         {
             utxoLockedCounts,
-            expectedLocked,
-            expectedUnlocked,
+            lockedSum: lockedSum.toString(),
+            unlockedSum: unlockedSum.toString(),
+            expectedLockedAmount,
+            expectedUnlockedAmount,
         },
-        'Unexpected count of locked/unlocked Holding UTXOs'
+        'Unexpected sum of locked/unlocked Holding amounts'
     )
-    throw new Error('Unexpected count of locked/unlocked Holding UTXOs')
+    throw new Error('Unexpected sum of locked/unlocked Holding amounts')
 }
 
 logger.info('SDK initialized')
@@ -103,15 +110,6 @@ const receiver = await sdk.userLedger?.signAndAllocateExternalParty(
 )
 logger.info(`Created party: ${receiver!.partyId}`)
 
-await sdk.userLedger
-    ?.listWallets()
-    .then((wallets) => {
-        logger.info(wallets, 'Wallets:')
-    })
-    .catch((error) => {
-        logger.error({ error }, 'Error listing wallets')
-    })
-
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(
     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
 )
@@ -121,7 +119,7 @@ const instrumentAdminPartyId =
 // mint holdings for Alice
 const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
     sender!.partyId,
-    '2000000',
+    originalTap.toString(),
     {
         instrumentId: 'Amulet',
         instrumentAdmin: instrumentAdminPartyId,
@@ -141,7 +139,7 @@ const [transferCommandToReject, disclosedContracts2] =
     await sdk.tokenStandard!.createTransfer(
         sender!.partyId,
         receiver!.partyId,
-        '100',
+        transferAmount.toString(),
         {
             instrumentId: 'Amulet',
             instrumentAdmin: instrumentAdminPartyId,
@@ -160,7 +158,11 @@ logger.info('Submitted transfer transaction (reject)')
 
 const senderUtxosBeforeRejected = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosBeforeRejected })
-assertLockedAmount(senderUtxosBeforeRejected, 1, null)
+assertLockedAmount(
+    senderUtxosBeforeRejected,
+    transferAmount,
+    originalTap - transferAmount
+)
 
 // Bob rejects the transfer
 await sdk.setPartyId(receiver!.partyId)
@@ -188,11 +190,7 @@ logger.info('Rejected transfer instruction')
 await sdk.setPartyId(sender!.partyId)
 const senderUtxosAfterRejected = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosAfterRejected })
-assertLockedAmount(
-    senderUtxosAfterRejected,
-    0,
-    senderUtxosBeforeRejected.unlocked + 1
-)
+assertLockedAmount(senderUtxosAfterRejected, 0, originalTap)
 
 const EXPIRATION_MS = 10_000
 const expiryDate = new Date(Date.now() + EXPIRATION_MS)
@@ -202,7 +200,7 @@ const [transferCommandToExpire, disclosedContracts4] =
     await sdk.tokenStandard!.createTransfer(
         sender!.partyId,
         receiver!.partyId,
-        '100',
+        transferAmount.toString(),
         {
             instrumentId: 'Amulet',
             instrumentAdmin: instrumentAdminPartyId,
@@ -222,7 +220,11 @@ logger.info('Submitted transfer transaction (expire)')
 
 const senderUtxosBeforeExpired = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosBeforeExpired })
-assertLockedAmount(senderUtxosBeforeExpired, 1, null)
+assertLockedAmount(
+    senderUtxosBeforeExpired,
+    transferAmount,
+    originalTap - transferAmount
+)
 
 const pendingInstructions2 =
     await sdk.tokenStandard?.fetchPendingTransferInstructionView()
@@ -234,11 +236,7 @@ await new Promise((res) => setTimeout(res, EXPIRATION_MS + 5_000))
 
 const senderUtxosAfterExpired = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosAfterExpired })
-assertLockedAmount(
-    senderUtxosAfterExpired,
-    0,
-    senderUtxosBeforeExpired.unlocked + 1
-)
+assertLockedAmount(senderUtxosAfterExpired, 0, originalTap)
 
 // Alice creates transfer that will be withdrawn
 logger.info('Creating transfer transaction (withdraw)')
@@ -246,7 +244,7 @@ const [transferCommandToWithdraw, disclosedContracts5] =
     await sdk.tokenStandard!.createTransfer(
         sender!.partyId,
         receiver!.partyId,
-        '100',
+        transferAmount.toString(),
         {
             instrumentId: 'Amulet',
             instrumentAdmin: instrumentAdminPartyId,
@@ -265,7 +263,11 @@ logger.info('Submitted transfer transaction (withdraw)')
 
 const senderUtxosBeforeWithdraw = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosBeforeWithdraw })
-assertLockedAmount(senderUtxosBeforeWithdraw, 1, null)
+assertLockedAmount(
+    senderUtxosBeforeWithdraw,
+    transferAmount,
+    originalTap - transferAmount
+)
 
 const pendingInstructions3 =
     await sdk.tokenStandard?.fetchPendingTransferInstructionView()
@@ -295,18 +297,14 @@ logger.info('Withdrawn transfer instruction')
 
 const senderUtxosAfterWithdraw = await getHoldingUtxosCountGroupedByLock()
 logger.info({ senderUtxosAfterWithdraw })
-assertLockedAmount(
-    senderUtxosAfterWithdraw,
-    0,
-    senderUtxosBeforeWithdraw.unlocked + 1
-)
+assertLockedAmount(senderUtxosAfterWithdraw, 0, originalTap)
 
 // Alice creates transfer to Bob to accept using reclaimed holdings
 const [transferCommandToAccept, disclosedContracts7] =
     await sdk.tokenStandard!.createTransfer(
         sender!.partyId,
         receiver!.partyId,
-        '100',
+        transferAmount.toString(),
         {
             instrumentId: 'Amulet',
             instrumentAdmin: instrumentAdminPartyId,
