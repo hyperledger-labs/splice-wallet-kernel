@@ -5,7 +5,7 @@ import SpliceWalletJSONRPCDAppAPI, {
     RpcTypes as DappRpcTypes,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { AbstractProvider } from './provider'
-import { RequestArgsV2 } from '@canton-network/core-types'
+import { RequestArgs } from '@canton-network/core-types'
 import {
     RpcTransport,
     WindowTransport,
@@ -22,8 +22,8 @@ export class DappProvider extends AbstractProvider<DappRpcTypes> {
     }
 
     public async request<M extends keyof DappRpcTypes>(
-        args: RequestArgsV2<DappRpcTypes, M>
+        args: RequestArgs<DappRpcTypes, M>
     ): Promise<DappRpcTypes[M]['result']> {
-        return await this.client.requestV2<M>(args)
+        return await this.client.request<M>(args)
     }
 }

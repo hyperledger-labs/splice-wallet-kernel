@@ -8,7 +8,7 @@ import {
     Provider,
     EventListener,
 } from '@canton-network/core-splice-provider'
-import { DiscoverResult, RequestArgsV2 } from '@canton-network/core-types'
+import { DiscoverResult, RequestArgs } from '@canton-network/core-types'
 import {
     RpcTypes as DappRpcTypes,
     Session,
@@ -49,7 +49,7 @@ export class DappSDKProvider implements Provider<DappRpcTypes> {
     }
 
     request<M extends keyof DappRpcTypes>(
-        args: RequestArgsV2<DappRpcTypes, M>
+        args: RequestArgs<DappRpcTypes, M>
     ): Promise<DappRpcTypes[M]['result']> {
         if (this.provider.type === ProviderType.WINDOW)
             return this.provider.instance.request(args)

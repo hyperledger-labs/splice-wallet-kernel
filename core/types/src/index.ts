@@ -151,7 +151,9 @@ export type UnknownRpcTypes = {
     }
 }
 
-export type RequestArgsV2<
+// RequestPayload is used at the transport layer, and encompasses wider types
+// RequestArgs is used at the provider/client layer, and is more strictly typed based on the RpcTypes of the client
+export type RequestArgs<
     T extends UnknownRpcTypes,
     M extends keyof T,
 > = M extends keyof T

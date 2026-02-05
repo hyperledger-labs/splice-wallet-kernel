@@ -9,7 +9,7 @@ import { AbstractProvider } from './provider'
 import { HttpTransport } from '@canton-network/core-rpc-transport'
 import {
     isSpliceMessageEvent,
-    RequestArgsV2,
+    RequestArgs,
     WalletEvent,
 } from '@canton-network/core-types'
 
@@ -142,8 +142,8 @@ export class DappRemoteProvider extends AbstractProvider<DappRemoteRpcTypes> {
     }
 
     public async request<M extends keyof DappRemoteRpcTypes>(
-        args: RequestArgsV2<DappRemoteRpcTypes, M>
+        args: RequestArgs<DappRemoteRpcTypes, M>
     ): Promise<DappRemoteRpcTypes[M]['result']> {
-        return await this.client.requestV2<M>(args)
+        return await this.client.request<M>(args)
     }
 }

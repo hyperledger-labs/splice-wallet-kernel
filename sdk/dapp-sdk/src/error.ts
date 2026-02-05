@@ -26,5 +26,5 @@ export const assertProvider = (): DappProvider => {
                 'Canton provider not found. Please install the Splice Wallet.',
         } as ConnectError
     }
-    return window.canton as unknown as DappProvider
+    return window.canton as DappProvider
 }

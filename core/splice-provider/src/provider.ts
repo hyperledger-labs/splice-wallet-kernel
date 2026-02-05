@@ -1,14 +1,12 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { RequestArgsV2, UnknownRpcTypes } from '@canton-network/core-types'
+import { RequestArgs, UnknownRpcTypes } from '@canton-network/core-types'
 
 export type EventListener<T> = (...args: T[]) => void
 
 export interface Provider<T extends UnknownRpcTypes> {
-    request<M extends keyof T>(
-        args: RequestArgsV2<T, M>
-    ): Promise<T[M]['result']>
+    request<M extends keyof T>(args: RequestArgs<T, M>): Promise<T[M]['result']>
 
     on<E>(event: string, listener: EventListener<E>): Provider<T>
     emit<E>(event: string, ...args: E[]): boolean
@@ -28,7 +26,7 @@ export abstract class AbstractProvider<
     }
 
     abstract request<M extends keyof T>(
-        args: RequestArgsV2<T, M>
+        args: RequestArgs<T, M>
     ): Promise<T[M]['result']>
 
     // Event handling
