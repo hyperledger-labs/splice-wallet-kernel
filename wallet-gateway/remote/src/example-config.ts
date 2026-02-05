@@ -56,14 +56,6 @@ export default {
                     clientId: '<REPLACE_CLIENT_ID>',
                     clientSecret: 'unsafe',
                 },
-                adminAuth: {
-                    method: 'self_signed',
-                    issuer: 'self-signed',
-                    scope: 'daml_ledger_api',
-                    audience: '<REPLACE_PARTICIPANT_AUDIENCE>',
-                    clientId: '<REPLACE_ADMIN_CLIENT_ID>',
-                    clientSecret: 'unsafe',
-                },
                 ledgerApi: {
                     baseUrl: 'http://127.0.0.1:2975',
                 },
@@ -79,13 +71,6 @@ export default {
                     clientId: '<REPLACE_USER_CLIENT_ID>',
                     scope: 'openid daml_ledger_api offline_access',
                     audience: '<REPLACE_PARTICIPANT_AUDIENCE>',
-                },
-                adminAuth: {
-                    method: 'client_credentials',
-                    scope: 'daml_ledger_api',
-                    audience: '<REPLACE_PARTICIPANT_AUDIENCE>',
-                    clientId: '<REPLACE_ADMIN_CLIENT_ID>',
-                    clientSecret: '<REPLACE_ADMIN_CLIENT_SECRET>',
                 },
                 ledgerApi: {
                     baseUrl: 'http://127.0.0.1:2975',

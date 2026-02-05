@@ -194,10 +194,18 @@ export class WalletGateway {
         const commandId = new URL((await this.popup()).url()).searchParams.get(
             'commandId'
         )
+        await (await this.popup()).getByRole('button', { name: 'Approve' })
+
         if (!commandId) throw new Error('Approve popup has no commandId in URL')
-        await (await this.popup())
-            .getByRole('button', { name: 'Approve' })
-            .click()
+
+        const isExecuted = await (await this.popup())
+            .getByText('Transaction executed successfully')
+            .count()
+        if (isExecuted === 0) {
+            await (await this.popup())
+                .getByRole('button', { name: 'Approve' })
+                .click()
+        }
         await expect(
             (await this.popup()).getByText('Transaction executed successfully')
         ).toBeVisible()

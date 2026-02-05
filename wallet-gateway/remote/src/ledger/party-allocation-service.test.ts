@@ -53,13 +53,6 @@ describe('PartyAllocationService', () => {
             scope: 'scope',
             clientId: 'cid',
         },
-        adminAuth: {
-            method: 'client_credentials',
-            audience: 'aud',
-            scope: 'scope',
-            clientId: 'cid',
-            clientSecret: 'secret',
-        },
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -30,9 +30,7 @@ interface NetworkTable {
     ledgerApiBaseUrl: string
     identityProviderId: string
     userId: UserId | undefined // global if undefined
-
     auth: string // json stringified
-    adminAuth: string | undefined // json stringified
 }
 
 interface WalletTable {
@@ -132,13 +130,6 @@ export const toNetwork = (table: NetworkTable): Network => {
         auth: authSchema.parse(
             typeof table.auth === 'string' ? JSON.parse(table.auth) : table.auth
         ),
-        adminAuth: table.adminAuth
-            ? authSchema.parse(
-                  typeof table.adminAuth === 'string'
-                      ? JSON.parse(table.adminAuth)
-                      : table.adminAuth
-              )
-            : undefined,
     }
 }
 
@@ -155,9 +146,6 @@ export const fromNetwork = (
         userId: userId,
         identityProviderId: network.identityProviderId,
         auth: JSON.stringify(network.auth),
-        adminAuth: network.adminAuth
-            ? JSON.stringify(network.adminAuth)
-            : undefined,
     }
 }
 

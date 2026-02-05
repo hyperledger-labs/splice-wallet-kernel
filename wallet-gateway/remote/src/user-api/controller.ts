@@ -82,9 +82,6 @@ export const userController = (
             }
 
             const auth = authSchema.parse(network.auth)
-            const adminAuth = network.adminAuth
-                ? authSchema.parse(network.adminAuth)
-                : undefined
 
             const newNetwork: Network = {
                 name: network.name,
@@ -93,7 +90,6 @@ export const userController = (
                 synchronizerId: network.synchronizerId,
                 identityProviderId: network.identityProviderId,
                 auth,
-                adminAuth,
                 ledgerApi,
             }
 
@@ -156,7 +152,6 @@ export const userController = (
             const tokenProvider = new AuthTokenProvider(
                 idp,
                 network.auth,
-                network.adminAuth,
                 logger
             )
             const partyAllocator = new PartyAllocationService({
@@ -802,7 +797,6 @@ export const userController = (
                     const adminAccessTokenProvider = new AuthTokenProvider(
                         idp,
                         network.auth,
-                        network.adminAuth,
                         logger
                     )
                     const partyAllocator = new PartyAllocationService({
@@ -895,7 +889,6 @@ export const userController = (
             const adminAccessTokenProvider = new AuthTokenProvider(
                 idp,
                 network.auth,
-                network.adminAuth,
                 logger
             )
 
@@ -950,7 +943,6 @@ export const userController = (
             const adminAccessTokenProvider = new AuthTokenProvider(
                 idp,
                 network.auth,
-                network.adminAuth,
                 logger
             )
 

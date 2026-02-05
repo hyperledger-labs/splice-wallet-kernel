@@ -100,15 +100,6 @@ export class UserUiSettings extends LitElement {
         e.preventDefault()
 
         const auth = this.toApiAuth(e.network.auth)
-        const adminAuth = e.network.adminAuth
-            ? this.toApiAuth(e.network.adminAuth)
-            : {
-                  method: 'client_credentials',
-                  audience: '',
-                  scope: '',
-                  clientId: '',
-                  clientSecret: '',
-              }
 
         const network: Network = {
             id: e.network.id,
@@ -120,7 +111,6 @@ export class UserUiSettings extends LitElement {
             }),
             ledgerApi: e.network.ledgerApi.baseUrl,
             auth,
-            adminAuth,
         }
 
         try {
