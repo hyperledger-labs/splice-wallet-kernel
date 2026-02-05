@@ -543,7 +543,7 @@ export class LedgerClient {
     }
 
     /*
-    if limit is provided, this function performs a one-time query
+    if limit is provided, this function performs a one-time query. Limits above 200 are automatically split into multiple `/v2/updates` calls.
     if limit is omitted, results may be served from the ACS cache
     current cache design doesn't support limiting queries because updates/deltas for the acs at offset x will be incorrect
     TODO: expose query mode vs subscribe mode to call queryActiveContracts vs subscribeActiveContracts
@@ -608,6 +608,14 @@ export class LedgerClient {
         )
     }
 
+    /**
+     * Fetches active contracts by splitting requests into multiple `/v2/updates` calls.
+     * Should only be used when the number of contracts exceeds ACTIVE_CONTRACTS_MAX_LIMIT (200).
+     * For limits at or below 200, use a single `/v2/state/active-contracts` call instead.
+     * @param activeContractsArgs The request parameters for active contracts query
+     * @returns A promise that resolves to an array of active contract responses
+     * @private
+     */
     private async fetchActiveContractsUntilComplete(
         activeContractsArgs: PostRequest<'/v2/state/active-contracts'>
     ): Promise<Array<Types['JsGetActiveContractsResponse']>> {
