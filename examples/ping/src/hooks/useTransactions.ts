@@ -4,13 +4,13 @@
 import { useEffect, useState } from 'react'
 import * as sdk from '@canton-network/dapp-sdk'
 
-export function useTransactions(status?: sdk.dappAPI.StatusEvent) {
+export function useTransactions(connectResult?: sdk.dappAPI.ConnectResult) {
     const [transactions, setTransactions] = useState<
         sdk.dappAPI.TxChangedEvent[]
     >([])
 
     useEffect(() => {
-        if (status?.isConnected) {
+        if (connectResult?.isConnected) {
             const listener = (event: sdk.dappAPI.TxChangedEvent) => {
                 setTransactions((prevTxs) => [event, ...prevTxs])
             }
@@ -20,7 +20,7 @@ export function useTransactions(status?: sdk.dappAPI.StatusEvent) {
                 sdk.removeOnTxChanged(listener)
             }
         }
-    }, [status, setTransactions])
+    }, [connectResult, setTransactions])
 
     return transactions
 }

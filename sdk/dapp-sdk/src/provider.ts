@@ -23,7 +23,6 @@ import {
     Network,
     Session,
     SignMessageResult,
-    StatusEvent,
     Wallet,
 } from './dapp-api/rpc-gen/typings'
 import { popup } from '@canton-network/core-wallet-ui-components'
@@ -115,16 +114,17 @@ const withTimeout = (
 // Remote dApp API Server which wraps the Remote-dApp API Server with promises
 export const dappController = (provider: SpliceProvider) =>
     buildController({
-        connect: async (): Promise<StatusEvent> => {
-            const response = await provider.request<dappRemoteAPI.StatusEvent>({
-                method: 'connect',
-            })
+        connect: async (): Promise<dappAPI.ConnectResult> => {
+            const response =
+                await provider.request<dappRemoteAPI.ConnectResult>({
+                    method: 'connect',
+                })
 
             if (response.session) {
                 return response
             } else {
                 popup.open(response.userUrl ?? '')
-                const promise = new Promise<dappAPI.StatusEvent>(
+                const promise = new Promise<dappAPI.ConnectResult>(
                     (resolve, reject) => {
                         // 5 minutes timeout
                         const timeout = withTimeout(
@@ -135,15 +135,14 @@ export const dappController = (provider: SpliceProvider) =>
                         provider.on<dappRemoteAPI.StatusEvent>(
                             'statusChanged',
                             (event) => {
-                                if (event.isConnected) {
+                                if (event.connection.isConnected) {
                                     clearTimeout(timeout)
-                                    resolve(event)
+                                    resolve(event.connection)
                                 }
                             }
                         )
                     }
                 )
-
                 return promise
             }
         },
