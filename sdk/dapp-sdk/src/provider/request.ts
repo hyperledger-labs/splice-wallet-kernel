@@ -17,7 +17,7 @@ interface ConnectOptions {
 
 export async function connect(
     options?: ConnectOptions
-): Promise<dappAPI.StatusEvent> {
+): Promise<dappAPI.ConnectResult> {
     const { defaultGateways = gateways, additionalGateways = [] } =
         options || {}
 
@@ -34,17 +34,20 @@ export async function connect(
             storage.setKernelDiscovery(result)
             const provider = injectSdkProvider(result)
 
-            const response = await provider.request({
-                method: 'connect',
+            // Store token once connect fires a statusChanged event
+            provider.on<dappAPI.StatusEvent>('statusChanged', (event) => {
+                if (event.connection.isConnected) {
+                    if (event.session) {
+                        storage.setKernelSession(event)
+                    } else {
+                        console.warn('SDK: Connected without session', event)
+                    }
+                }
             })
 
-            if (response.session) {
-                storage.setKernelSession(response)
-            } else {
-                console.warn('SDK: Connected without session', response)
-            }
-
-            return response
+            return await provider.request({
+                method: 'connect',
+            })
         })
         .catch((err) => {
             let details = ''

@@ -124,7 +124,7 @@ const getSpecs = (
     // Canton JSON Ledger API
     {
         input: `api-specs/ledger-api/${cantonVersion}/openapi.yaml`,
-        output: `core/ledger-client/src/generated-clients/openapi-${cantonVersion}.ts`,
+        output: `core/ledger-client-types/src/generated-clients/openapi-${cantonVersion}.ts`,
     },
     // Splice Scan API
     {

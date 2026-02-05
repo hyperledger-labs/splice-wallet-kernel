@@ -6,14 +6,14 @@ import { prettyjson } from '../utils'
 export function LedgerQuery(props: {
     primaryParty?: string
     ledgerApiVersion?: string
-    status?: sdk.dappAPI.StatusEvent
+    connectResult?: sdk.dappAPI.ConnectResult
 }) {
     const [loading, setLoading] = useState(false)
     const [queryResponses, setQueryResponses] = useState<
         Array<{ timestamp: Date; data: object }>
     >([])
 
-    const connected = props.status?.isConnected ?? false
+    const connected = props.connectResult?.isConnected ?? false
 
     return (
         connected && (

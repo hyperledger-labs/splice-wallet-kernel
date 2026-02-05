@@ -4,12 +4,12 @@
 import { DappRemoteProvider } from '@canton-network/core-splice-provider'
 import buildController from './dapp-api/rpc-gen'
 import {
+    ConnectResult,
     LedgerApiParams,
     Network,
     PrepareExecuteAndWaitResult,
     PrepareExecuteParams,
     SignMessageResult,
-    StatusEvent,
     Wallet,
 } from './dapp-api/rpc-gen/typings'
 import { ErrorCode } from './error'
@@ -32,7 +32,7 @@ const withTimeout = (
 
 export const dappSDKController = (provider: DappRemoteProvider) =>
     buildController({
-        connect: async (): Promise<StatusEvent> => {
+        connect: async (): Promise<ConnectResult> => {
             const response = await provider.request({
                 method: 'connect',
             })
@@ -41,23 +41,25 @@ export const dappSDKController = (provider: DappRemoteProvider) =>
                 return response
             } else {
                 popup.open(response.userUrl ?? '')
-                const promise = new Promise<StatusEvent>((resolve, reject) => {
-                    // 5 minutes timeout
-                    const timeout = withTimeout(
-                        reject,
-                        'Timeout waiting for connection',
-                        5 * 60 * 1000
-                    )
-                    provider.on<dappRemoteAPI.StatusEvent>(
-                        'statusChanged',
-                        (event) => {
-                            if (event.isConnected) {
-                                clearTimeout(timeout)
-                                resolve(event)
+                const promise = new Promise<ConnectResult>(
+                    (resolve, reject) => {
+                        // 5 minutes timeout
+                        const timeout = withTimeout(
+                            reject,
+                            'Timeout waiting for connection',
+                            5 * 60 * 1000
+                        )
+                        provider.on<dappRemoteAPI.StatusEvent>(
+                            'statusChanged',
+                            (event) => {
+                                if (event.connection.isConnected) {
+                                    clearTimeout(timeout)
+                                    resolve(event.connection)
+                                }
                             }
-                        }
-                    )
-                })
+                        )
+                    }
+                )
 
                 return promise
             }

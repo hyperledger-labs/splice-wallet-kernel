@@ -24,7 +24,9 @@
         "test": "echo \"Warning: no test specified\""
     },
     "dependencies": {
+        "@canton-network/core-asyncapi-client": "workspace:^",
         "@canton-network/core-ledger-client": "workspace:^",
+        "@canton-network/core-ledger-client-types": "workspace:^",
         "@canton-network/core-ledger-proto": "workspace:^",
         "@canton-network/core-signing-lib": "workspace:^",
         "@canton-network/core-splice-client": "workspace:^",

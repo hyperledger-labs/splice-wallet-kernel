@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
+import { v3_3 } from '@canton-network/core-ledger-client-types'
 import { Metadata } from '@canton-network/core-token-standard'
 
-export type ViewValue = components['schemas']['JsInterfaceView']['viewValue'] // unknown | undefined
-export type JsActiveContract = components['schemas']['JsActiveContract']
-
+export type ViewValue =
+    v3_3.components['schemas']['JsInterfaceView']['viewValue'] // unknown | undefined
+export type JsActiveContract = v3_3.components['schemas']['JsActiveContract']
 export interface Transaction {
     updateId: string
     offset: number

@@ -10,7 +10,6 @@ import {
     hasInterface,
     mergeMetas,
     removeParsedMetaKeys,
-    EventFilterBySetup,
 } from '../ledger-api-utils.js'
 import {
     BurnedMetaKey,
@@ -33,7 +32,10 @@ import {
 } from './types.js'
 import { InstrumentMap } from './instrumentmap.js'
 
-import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT'
+import {
+    v3_3,
+    EventFilterBySetup,
+} from '@canton-network/core-ledger-client-types'
 import { LedgerClient } from '../ledger-client'
 import BigNumber from 'bignumber.js'
 import { PartyId } from '@canton-network/core-types'
@@ -42,13 +44,13 @@ import {
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 
-type ArchivedEvent = components['schemas']['ArchivedEvent']
-type CreatedEvent = components['schemas']['CreatedEvent']
-type ExercisedEvent = components['schemas']['ExercisedEvent']
-type Event = components['schemas']['Event']
-type JsTransaction = components['schemas']['JsTransaction']
+type ArchivedEvent = v3_3.components['schemas']['ArchivedEvent']
+type CreatedEvent = v3_3.components['schemas']['CreatedEvent']
+type ExercisedEvent = v3_3.components['schemas']['ExercisedEvent']
+type Event = v3_3.components['schemas']['Event']
+type JsTransaction = v3_3.components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =
-    components['schemas']['JsGetEventsByContractIdResponse']
+    v3_3.components['schemas']['JsGetEventsByContractIdResponse']
 
 function currentStatusFromChoiceOrResult(
     choice?: string | undefined,

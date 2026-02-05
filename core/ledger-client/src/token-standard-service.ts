@@ -23,13 +23,11 @@ import {
     ContractId,
     Beneficiaries,
 } from '@canton-network/core-token-standard'
+import { EventFilterBySetup } from '@canton-network/core-ledger-client-types'
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
 import { TokenStandardTransactionInterfaces } from './constants.js'
-import {
-    ensureInterfaceViewIsPresent,
-    EventFilterBySetup,
-} from './ledger-api-utils.js'
+import { ensureInterfaceViewIsPresent } from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
 import {
     PrettyContract,
@@ -49,7 +47,7 @@ export type DisclosedContract = Types['DisclosedContract']
 const EMPTY_META: Metadata = { values: {} }
 
 type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
-export type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
+type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
 type JsGetTransactionResponse = Types['JsGetTransactionResponse']
 type OffsetCheckpoint2 = Types['OffsetCheckpoint2']
 type JsTransaction = Types['JsTransaction']

@@ -60,10 +60,6 @@ test('call connect rpc', async () => {
         id: 0,
         jsonrpc: '2.0',
         result: {
-            kernel: {
-                id: 'remote-da',
-                clientType: 'remote',
-            },
             isConnected: false,
             isNetworkConnected: false,
             networkReason: 'Unauthenticated',
