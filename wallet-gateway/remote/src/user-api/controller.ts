@@ -152,6 +152,7 @@ export const userController = (
             const tokenProvider = new AuthTokenProvider(
                 idp,
                 network.auth,
+                network.auth,
                 logger
             )
             const partyAllocator = new PartyAllocationService({
@@ -797,6 +798,7 @@ export const userController = (
                     const adminAccessTokenProvider = new AuthTokenProvider(
                         idp,
                         network.auth,
+                        network.auth,
                         logger
                     )
                     const partyAllocator = new PartyAllocationService({
@@ -889,6 +891,7 @@ export const userController = (
             const adminAccessTokenProvider = new AuthTokenProvider(
                 idp,
                 network.auth,
+                network.auth,
                 logger
             )
 
@@ -942,6 +945,7 @@ export const userController = (
             const idp = await store.getIdp(network.identityProviderId)
             const adminAccessTokenProvider = new AuthTokenProvider(
                 idp,
+                network.auth,
                 network.auth,
                 logger
             )
