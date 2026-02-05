@@ -269,11 +269,7 @@ const paginatedUtxosAlice = await sdk.tokenStandard?.listHoldingUtxos(
     false,
     undefined,
     undefined,
-    undefined,
-    {
-        itemsPerPage: 3,
-        page: 1,
-    }
+    undefined
 )
 
 logger.info(

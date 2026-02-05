@@ -32,7 +32,7 @@ export type SuccessResponse = z.infer<typeof SuccessResponse>
 
 export const ErrorResponse = z.object({
     error: z.object({
-        code: z.number(),
+        code: z.union([z.number(), z.string()]),
         message: z.string(),
         data: z.optional(
             z
@@ -141,13 +141,3 @@ export const GatewaysConfig = z.object({
 })
 
 export type GatewaysConfig = z.infer<typeof GatewaysConfig>
-
-/**
- * Pagination
- */
-export const PaginationArguments = z.object({
-    page: z.number().nonnegative(),
-    itemsPerPage: z.number().positive(),
-})
-
-export type PaginationArguments = z.infer<typeof PaginationArguments>

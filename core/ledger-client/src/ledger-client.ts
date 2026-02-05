@@ -88,6 +88,8 @@ export type PrepareSubmissionResponse =
 // Any options the client accepts besides body/params
 type ExtraPostOpts = Omit<FetchOptions<paths>, 'body' | 'params'>
 
+const ACTIVE_CONTRACTS_MAX_LIMIT = 200
+
 export class LedgerClient {
     // privately manage the active connected version and associated client codegen
     private readonly clients: Record<SupportedVersions, Client<paths>>
@@ -562,14 +564,16 @@ export class LedgerClient {
 
         if (hasLimit) {
             const filter = this.buildActiveContractFilter(options)
-            return await this.postWithRetry(
-                '/v2/state/active-contracts',
-                filter,
-                defaultRetryableOptions,
-                {
-                    query: limit ? { limit: limit.toString() } : {},
-                }
-            )
+            return limit <= ACTIVE_CONTRACTS_MAX_LIMIT
+                ? await this.postWithRetry(
+                      '/v2/state/active-contracts',
+                      filter,
+                      defaultRetryableOptions,
+                      {
+                          query: limit ? { limit: limit.toString() } : {},
+                      }
+                  )
+                : await this.fetchActiveContractsUntilComplete(filter)
         }
 
         this.logger.debug(options, 'options for active contracts')
@@ -602,6 +606,70 @@ export class LedgerClient {
             filter,
             defaultRetryableOptions
         )
+    }
+
+    private async fetchActiveContractsUntilComplete(
+        activeContractsArgs: PostRequest<'/v2/state/active-contracts'>
+    ): Promise<Array<Types['JsGetActiveContractsResponse']>> {
+        const result = []
+
+        const offset = activeContractsArgs.activeAtOffset
+        const bodyRequest: PostRequest<'/v2/updates'> = {
+            beginExclusive: 0,
+            endInclusive: ACTIVE_CONTRACTS_MAX_LIMIT,
+            verbose: false,
+        }
+        if (activeContractsArgs.filter)
+            bodyRequest.filter = activeContractsArgs.filter
+        for (let i = 0; i <= offset; i += ACTIVE_CONTRACTS_MAX_LIMIT) {
+            bodyRequest.beginExclusive = i
+            bodyRequest.endInclusive = Math.min(
+                i + ACTIVE_CONTRACTS_MAX_LIMIT,
+                offset
+            )
+            const newResults: Array<Types['JsGetActiveContractsResponse']> = (
+                await this.postWithRetry(
+                    '/v2/updates',
+                    bodyRequest,
+                    defaultRetryableOptions,
+                    {
+                        query: { limit: ACTIVE_CONTRACTS_MAX_LIMIT.toString() },
+                    }
+                )
+            )
+                .filter(({ update }) => 'Transaction' in update)
+                .map(({ update }) => {
+                    if ('Transaction' in update) {
+                        return update.Transaction.value
+                    }
+                    throw new Error('Expected Transaction update')
+                })
+                .map((data) => {
+                    const createdEvent = data.events?.find(
+                        (event: unknown) =>
+                            typeof event === 'object' &&
+                            event !== null &&
+                            'CreatedEvent' in event
+                    )
+                    if (!createdEvent || !('CreatedEvent' in createdEvent)) {
+                        throw new Error(
+                            'CreatedEvent not found in transaction events'
+                        )
+                    }
+                    return {
+                        workflowId: data.workflowId,
+                        contractEntry: {
+                            JsActiveContract: {
+                                synchronizerId: data.synchronizerId,
+                                createdEvent: createdEvent.CreatedEvent,
+                                reassignmentCounter: data.offset,
+                            },
+                        },
+                    }
+                })
+            result.push(...newResults)
+        }
+        return result
     }
 
     private buildActiveContractFilter(options: {
