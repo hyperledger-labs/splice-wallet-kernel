@@ -1,9 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import * as v3_3 from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
-
-import * as v3_4 from './generated-clients/openapi-3.4.11.js'
+import { v3_3, v3_4 } from '@canton-network/core-ledger-client-types'
 import createClient, { Client, FetchOptions } from 'openapi-fetch'
 import { Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
@@ -17,6 +15,10 @@ import {
 import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
 import { SharedACSCache } from './acs/acs-shared-cache.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+
+export type UserSchema =
+    | v3_3.components['schemas']['User']
+    | v3_4.components['schemas']['User']
 export const supportedVersions = ['3.3', '3.4'] as const
 
 export type SupportedVersions = (typeof supportedVersions)[number]

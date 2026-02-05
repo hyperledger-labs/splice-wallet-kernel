@@ -160,7 +160,7 @@ interface AsyncApiFileSpec {
 const specs = (cantonVersion: string): AsyncApiFileSpec[] => [
     {
         input: `api-specs/ledger-api/${cantonVersion}/asyncapi.yaml`,
-        output: `core/ledger-client/src/generated-clients/asyncapi-${cantonVersion}.ts`,
+        output: `core/ledger-client-types/src/generated-clients/asyncapi-${cantonVersion}.ts`,
     },
 ]
 
