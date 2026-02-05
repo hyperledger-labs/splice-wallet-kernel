@@ -45,7 +45,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
         const provider = window.canton
         if (!provider) return
         provider
-            .request<sdk.dappAPI.StatusEvent>({ method: 'status' })
+            .request({ method: 'status' })
             .then((status) => setConnectionStatus(status))
             .catch((reason) => setError(`failed to get status: ${reason}`))
 
