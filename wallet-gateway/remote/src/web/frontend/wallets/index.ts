@@ -8,7 +8,6 @@ import '@canton-network/core-wallet-ui-components'
 
 import { Wallet } from '@canton-network/core-wallet-store'
 import { createUserClient } from '../rpc-client'
-import { CreateWalletParams } from '@canton-network/core-wallet-user-rpc-client'
 import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 import { SigningProvider } from '@canton-network/core-signing-lib'
 
@@ -387,7 +386,7 @@ export class UserUiWallets extends LitElement {
         )
 
         const sessions = await userClient
-            .request('listSessions')
+            .request({ method: 'listSessions' })
             .catch(() => ({ sessions: [] }))
         const currentSession = sessions?.sessions?.[0]
         const networkId =
@@ -395,7 +394,10 @@ export class UserUiWallets extends LitElement {
 
         const filter = networkId ? { networkIds: [networkId] } : undefined
         userClient
-            .request('listWallets', filter ? { filter } : {})
+            .request({
+                method: 'listWallets',
+                params: filter ? { filter } : {},
+            })
             .then((wallets) => {
                 this.wallets = wallets || []
             })
@@ -405,8 +407,11 @@ export class UserUiWallets extends LitElement {
         const userClient = await createUserClient(
             stateManager.accessToken.get()
         )
-        await userClient.request('setPrimaryWallet', {
-            partyId: wallet.partyId,
+        await userClient.request({
+            method: 'setPrimaryWallet',
+            params: {
+                partyId: wallet.partyId,
+            },
         })
         this.updateWallets()
     }
@@ -425,17 +430,18 @@ export class UserUiWallets extends LitElement {
         const networkId = this._networkSelect?.value || ''
 
         try {
-            const body: CreateWalletParams = {
-                primary,
-                partyHint,
-                networkId,
-                signingProviderId,
-            }
-
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            await userClient.request('createWallet', body)
+            await userClient.request({
+                method: 'createWallet',
+                params: {
+                    primary,
+                    partyHint,
+                    networkId,
+                    signingProviderId,
+                },
+            })
         } catch (e) {
             handleErrorToast(e)
         }
@@ -454,16 +460,19 @@ export class UserUiWallets extends LitElement {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            await userClient.request('createWallet', {
-                primary: wallet.primary,
-                partyHint: wallet.hint,
-                networkId: wallet.networkId,
-                signingProviderId: wallet.signingProviderId,
-                signingProviderContext: {
-                    partyId: wallet.partyId,
-                    externalTxId: wallet.externalTxId || '',
-                    topologyTransactions: wallet.topologyTransactions || '',
-                    namespace: wallet.namespace,
+            await userClient.request({
+                method: 'createWallet',
+                params: {
+                    primary: wallet.primary,
+                    partyHint: wallet.hint,
+                    networkId: wallet.networkId,
+                    signingProviderId: wallet.signingProviderId,
+                    signingProviderContext: {
+                        partyId: wallet.partyId,
+                        externalTxId: wallet.externalTxId || '',
+                        topologyTransactions: wallet.topologyTransactions || '',
+                        namespace: wallet.namespace,
+                    },
                 },
             })
         } catch (e) {
