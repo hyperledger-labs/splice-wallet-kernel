@@ -911,7 +911,7 @@ export const userController = (
             const adminLedger = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                isAdmin: true,
+                isAdmin: false,
                 accessTokenProvider: adminAccessTokenProvider,
             })
 
@@ -966,7 +966,7 @@ export const userController = (
             const adminLedger = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                isAdmin: true,
+                isAdmin: false,
                 accessTokenProvider: adminAccessTokenProvider,
             })
 
