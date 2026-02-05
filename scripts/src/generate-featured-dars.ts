@@ -32,6 +32,7 @@ const FEATURED_APP_PROXIES_CONFIG = {
     ],
 }
 
+// TODO: this is a work in progress and should not currently be used
 async function main() {
     await installDPM()
 
