@@ -7,7 +7,7 @@ import {
     ExerciseCommand,
     DisclosedContract,
     TokenStandardService,
-} from './token-standard-service.js'
+} from '@canton-network/core-token-standard-service'
 
 // TODO: This appears in a couple of places, either move it somewhere more
 // central, or as part of the Service class hierarchy

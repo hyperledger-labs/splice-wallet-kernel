@@ -25,19 +25,19 @@ import {
 } from '@canton-network/core-token-standard'
 import { EventFilterBySetup } from '@canton-network/core-ledger-client-types'
 import { Logger, PartyId } from '@canton-network/core-types'
-import { LedgerClient } from './ledger-client.js'
-import { TokenStandardTransactionInterfaces } from './constants.js'
-import { ensureInterfaceViewIsPresent } from './ledger-api-utils.js'
-import { TransactionParser } from './txparse/parser.js'
+import { LedgerClient, Types } from '@canton-network/core-ledger-client'
+
 import {
+    TokenStandardTransactionInterfaces,
+    ensureInterfaceViewIsPresent,
+    TransactionParser,
     PrettyContract,
     renderTransaction,
     ViewValue,
     Holding as TxParseHolding,
-} from './txparse/types.js'
-
-import type { PrettyTransactions, Transaction } from './txparse/types.js'
-import { Types } from './ledger-client.js'
+    PrettyTransactions,
+    Transaction,
+} from '@canton-network/core-tx-parser'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 const REQUESTED_AT_SKEW_MS = 60_000

@@ -10,7 +10,7 @@ import {
     defaultRetryableOptions,
     retryable,
     retryableOptions,
-} from './ledger-api-utils.js'
+} from './ledger-api-utils'
 
 import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
 import { SharedACSCache } from './acs/acs-shared-cache.js'
