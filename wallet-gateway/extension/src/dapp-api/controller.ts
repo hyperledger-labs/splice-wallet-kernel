@@ -7,7 +7,6 @@
 import Browser from 'webextension-polyfill'
 import buildController from './rpc-gen'
 import {
-    KernelInfo,
     LedgerApiParams,
     Network,
     PrepareExecuteParams,
@@ -18,31 +17,15 @@ import {
 
 import { Store } from '@canton-network/core-wallet-store'
 
-const kernelInfo: KernelInfo = {
-    id: 'default-kernel-id',
-    clientType: 'browser',
-}
-
 // TODO: Make store required
 export const dappController = (store?: Store) =>
     buildController({
         connect: async () =>
             Promise.resolve({
-                kernel: kernelInfo,
-                isConnected: false,
-                isNetworkConnected: false,
-                networkReason: 'Unauthenticated',
-                userUrl: Browser.runtime.getURL('pages/user.html'),
-                network: {
-                    networkId: 'default-network-id',
-                    ledgerApi: {
-                        baseUrl: 'http://default-ledger-api',
-                    },
-                },
-                session: {
-                    accessToken: 'default-access-token',
-                    userId: 'default-user-id',
-                },
+                isConnected: true,
+                reason: 'OK',
+                isNetworkConnected: true,
+                networkReason: 'OK',
             }),
         disconnect: async () => Promise.resolve(null),
         ledgerApi: async (params: LedgerApiParams) =>

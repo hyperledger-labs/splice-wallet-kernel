@@ -31,6 +31,7 @@ export default defineConfig([
             'core/wallet-dapp-remote-rpc-client',
             'core/wallet-user-rpc-client',
             'core/ledger-client/src/generated-clients',
+            'core/ledger-client-types/src/generated-clients',
             'damljs/**',
             'docs/wallet-integration-guide/examples/**',
             'examples/ping/playwright-report/**',

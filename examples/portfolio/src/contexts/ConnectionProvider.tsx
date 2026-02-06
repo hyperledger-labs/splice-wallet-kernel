@@ -19,6 +19,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const connect = useCallback(() => {
         sdk.connect()
+            .then(() => sdk.status())
             .then((status) => {
                 setConnectionStatus(status)
                 setAccounts([])

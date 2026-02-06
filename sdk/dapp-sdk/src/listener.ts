@@ -8,7 +8,7 @@ import { WalletEvent } from '@canton-network/core-types'
 if (window.canton) {
     // Clean up session on disconnect
     onStatusChanged(async (event) => {
-        if (!event.isConnected) {
+        if (!event.connection.isConnected) {
             clearAllLocalState({ closePopup: true })
         }
     })

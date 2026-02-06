@@ -72,6 +72,12 @@ export const userController = (
     _logger: Logger
 ) => {
     const logger = _logger.child({ component: 'user-controller' })
+    const provider = {
+        id: kernelInfo.id,
+        version: 'TODO',
+        providerType: kernelInfo.clientType,
+        userUrl: `${userUrl}/login/`,
+    }
 
     return buildController({
         addNetwork: async (params: AddNetworkParams) => {
@@ -467,9 +473,9 @@ export const userController = (
         removeWallet: async (params: { partyId: string }) =>
             Promise.resolve({}),
         listWallets: async (params: {
-            filter?: { networkIds?: string[]; signingProviderIds?: string[] }
+            filter?: { signingProviderIds?: string[] }
         }) => {
-            return await store.getAllWallets(params.filter)
+            return await store.getWallets(params.filter)
         },
         sign: async ({
             preparedTransaction,
@@ -776,18 +782,17 @@ export const userController = (
                 })
                 const status = await networkStatus(ledgerClient)
                 notifier.emit('statusChanged', {
-                    kernel: {
-                        ...kernelInfo,
-                        userUrl: `${userUrl}/login/`,
+                    provider: provider,
+                    connection: {
+                        isConnected: status.isConnected,
+                        reason: status.reason ? status.reason : 'OK',
+                        isNetworkConnected: status.isConnected,
+                        networkReason: status.reason ? status.reason : 'OK',
                     },
-                    isConnected: true,
-                    isNetworkConnected: status.isConnected,
-                    networkReason: status.reason ? status.reason : 'OK',
                     network: {
                         networkId: network.id,
-                        ledgerApi: {
-                            baseUrl: network.ledgerApi.baseUrl,
-                        },
+                        ledgerApi: network.ledgerApi.baseUrl,
+                        accessToken: accessToken,
                     },
                     session: {
                         id: newSessionId,
@@ -844,12 +849,17 @@ export const userController = (
             await store.removeSession()
 
             notifier.emit('statusChanged', {
-                kernel: kernelInfo,
-                isConnected: false,
-                isNetworkConnected: false,
-                networkReason: 'removed session',
+                provider: provider,
+                connection: {
+                    isConnected: false,
+                    reason: 'disconnect',
+                    isNetworkConnected: false,
+                    networkReason: 'removed session',
+                },
+                network: undefined,
+                session: undefined,
                 userUrl: `${userUrl}/login/`,
-            } as StatusEvent)
+            })
 
             return null
         },

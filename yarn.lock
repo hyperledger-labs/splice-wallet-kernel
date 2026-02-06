@@ -1426,10 +1426,57 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/core-asyncapi-client@workspace:^, @canton-network/core-asyncapi-client@workspace:core/asyncapi-client":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-asyncapi-client@workspace:core/asyncapi-client"
+  dependencies:
+    "@canton-network/core-ledger-client-types": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
+    "@jest/globals": "npm:^30.2.0"
+    "@swc/core": "npm:^1.15.10"
+    "@swc/jest": "npm:^0.2.39"
+    "@types/jest": "npm:^30.0.0"
+    "@types/node": "npm:^25.0.10"
+    bignumber.js: "npm:^9.3.1"
+    jest: "npm:^30.2.0"
+    openapi-typescript: "npm:^7.10.1"
+    pino: "npm:^10.2.1"
+    ts-jest: "npm:^29.4.6"
+    ts-jest-resolver: "npm:^2.0.1"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
+  languageName: unknown
+  linkType: soft
+
+"@canton-network/core-ledger-client-types@workspace:^, @canton-network/core-ledger-client-types@workspace:core/ledger-client-types":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-ledger-client-types@workspace:core/ledger-client-types"
+  dependencies:
+    "@canton-network/core-types": "workspace:^"
+    "@jest/globals": "npm:^30.2.0"
+    "@swc/core": "npm:^1.15.10"
+    "@swc/jest": "npm:^0.2.39"
+    "@types/jest": "npm:^30.0.0"
+    "@types/node": "npm:^25.0.10"
+    bignumber.js: "npm:^9.3.1"
+    dayjs: "npm:^1.11.19"
+    jest: "npm:^30.2.0"
+    openapi-fetch: "npm:^0.15.0"
+    openapi-typescript: "npm:^7.10.1"
+    pino: "npm:^10.2.1"
+    ts-jest: "npm:^29.4.6"
+    ts-jest-resolver: "npm:^2.0.1"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/core-ledger-client@workspace:^, @canton-network/core-ledger-client@workspace:core/ledger-client":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-ledger-client@workspace:core/ledger-client"
   dependencies:
+    "@canton-network/core-ledger-client-types": "workspace:^"
     "@canton-network/core-ledger-proto": "workspace:^"
     "@canton-network/core-splice-client": "workspace:^"
     "@canton-network/core-token-standard": "workspace:^"
@@ -2129,7 +2176,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/wallet-sdk@workspace:sdk/wallet-sdk"
   dependencies:
+    "@canton-network/core-asyncapi-client": "workspace:^"
     "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-ledger-client-types": "workspace:^"
     "@canton-network/core-ledger-proto": "workspace:^"
     "@canton-network/core-signing-lib": "workspace:^"
     "@canton-network/core-splice-client": "workspace:^"
@@ -2446,11 +2495,11 @@ __metadata:
   linkType: soft
 
 "@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@file:../daml-stdlib-DA-NonEmpty-Types-1.0.0::locator=%40daml.js%2Fdaml-stdlib-DA-Validation-Types-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Fdaml-stdlib-DA-Validation-Types-1.0.0":
-  version: 3.3.0-snapshot.20250603.0
-  resolution: "@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@file:../daml-stdlib-DA-NonEmpty-Types-1.0.0#../daml-stdlib-DA-NonEmpty-Types-1.0.0::hash=e228ad&locator=%40daml.js%2Fdaml-stdlib-DA-Validation-Types-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Fdaml-stdlib-DA-Validation-Types-1.0.0"
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0@file:../daml-stdlib-DA-NonEmpty-Types-1.0.0#../daml-stdlib-DA-NonEmpty-Types-1.0.0::hash=0e2878&locator=%40daml.js%2Fdaml-stdlib-DA-Validation-Types-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Fdaml-stdlib-DA-Validation-Types-1.0.0"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
-  checksum: 10c0/70832804e00c22bafddc61fe78393f3d8b913d3049e86974a2867dd3203b92d2c0fd5406e935159eefe9cd8700323066005294bae8b44f2e5efe1377a4ad92fa
+  checksum: 10c0/5ec3212e808b698fcc97cf8f5ef223f71507e1f37822b381f5353804ac4c4a432339974cd932543df08b1b6573d9a2724ff88b9eab923731f3bfd2669da935f2
   languageName: node
   linkType: hard
 
@@ -2495,11 +2544,11 @@ __metadata:
   linkType: soft
 
 "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0":
-  version: 3.3.0-snapshot.20250603.0
-  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=b18027&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0"
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=22072f&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
-  checksum: 10c0/37954ae3ea035396517d5b430dc22f3c586f3c89451e5255aae6b6749cf7312adb41838df5cf0d1b0971c2ad4066d07fc7f7cd1e7ea1258aff9a197ff7e3c70a
+  checksum: 10c0/b9eb91452e776de9fcbd0f0bfd81b499953f9eb515ecf50a66f0073baea68ecbd4c96e96653a9de3e7e3f26c39039f7af84f097c77cf3622516fbbbd30119f65
   languageName: node
   linkType: hard
 
@@ -2521,11 +2570,11 @@ __metadata:
   linkType: soft
 
 "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0":
-  version: 3.3.0-snapshot.20250603.0
-  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=ec37e7&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0"
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=0340c7&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0"
   dependencies:
     "@mojotech/json-type-validation": "npm:^3.1.0"
-  checksum: 10c0/f4b9f18936186607a4de048664bf1127df8ba9c5cbc5c8aa6e44292a46ecaea139a04b12e6cfa0596c3b6ef9d9d2707403d19554bf61de0a92c28f425f72504c
+  checksum: 10c0/5b8293bd19de7b3367bb5642d2273f947122be36be6974636f60388b0a117709833451bfe50be12caf3b071d8eb5d1e2b07a9a5ea24457085a080070facbacad
   languageName: node
   linkType: hard
 

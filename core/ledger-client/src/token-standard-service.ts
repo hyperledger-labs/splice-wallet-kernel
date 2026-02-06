@@ -23,13 +23,11 @@ import {
     ContractId,
     Beneficiaries,
 } from '@canton-network/core-token-standard'
+import { EventFilterBySetup } from '@canton-network/core-ledger-client-types'
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient } from './ledger-client.js'
 import { TokenStandardTransactionInterfaces } from './constants.js'
-import {
-    ensureInterfaceViewIsPresent,
-    EventFilterBySetup,
-} from './ledger-api-utils.js'
+import { ensureInterfaceViewIsPresent } from './ledger-api-utils.js'
 import { TransactionParser } from './txparse/parser.js'
 import {
     PrettyContract,
@@ -49,7 +47,7 @@ export type DisclosedContract = Types['DisclosedContract']
 const EMPTY_META: Metadata = { values: {} }
 
 type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
-export type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
+type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
 type JsGetTransactionResponse = Types['JsGetTransactionResponse']
 type OffsetCheckpoint2 = Types['OffsetCheckpoint2']
 type JsTransaction = Types['JsTransaction']
@@ -204,7 +202,8 @@ export class CoreService {
         interfaceId: string,
         partyId?: PartyId,
         limit?: number,
-        offset?: number
+        offset?: number,
+        continueUntilCompletion?: boolean
     ): Promise<PrettyContract<T>[]> {
         try {
             const ledgerEnd =
@@ -212,17 +211,14 @@ export class CoreService {
                 (await this.ledgerClient.getWithRetry('/v2/state/ledger-end'))
                     .offset
 
-            const options: {
-                offset: number
-                interfaceIds: string[]
-                parties: PartyId[]
-                filterByParty: boolean
-                limit?: number
-            } = {
+            const options: Parameters<
+                typeof this.ledgerClient.activeContracts
+            >[0] = {
                 offset: ledgerEnd,
                 interfaceIds: [interfaceId],
                 parties: [partyId!],
                 filterByParty: true,
+                continueUntilCompletion: Boolean(continueUntilCompletion),
             }
 
             if (limit !== undefined) {
@@ -1331,13 +1327,15 @@ export class TokenStandardService {
         interfaceId: string,
         partyId?: PartyId,
         limit?: number,
-        offset?: number
+        offset?: number,
+        continueUntilCompletion?: boolean
     ): Promise<PrettyContract<T>[]> {
         return this.core.listContractsByInterface<T>(
             interfaceId,
             partyId,
             limit,
-            offset
+            offset,
+            continueUntilCompletion
         )
     }
 

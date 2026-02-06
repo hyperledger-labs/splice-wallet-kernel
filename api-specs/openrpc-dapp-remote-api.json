@@ -3,7 +3,7 @@
     "info": {
         "title": "Splice Wallet JSON-RPC Remote dApp API",
         "version": "0.1.0",
-        "description": "An OpenRPC specification for remotely hosted Wallet Gateways. Due to the remote nature, an implementing provider must bridge certain functionality on the client-side to satisfy the general dApp API spec."
+        "description": "An OpenRPC specification for remotely hosted Wallet Providers. Due to the remote nature, an implementing provider must bridge certain functionality on the client-side to satisfy the general dApp API spec."
     },
     "methods": [
         {
@@ -15,7 +15,7 @@
                     "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/StatusEvent"
                 }
             },
-            "description": "Returns the current status of the wallet gateway session."
+            "description": "Returns the current status of the wallet provider session."
         },
         {
             "name": "connect",
@@ -23,25 +23,10 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "StatusEventAsync",
-                    "allOf": [
-                        {
-                            "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/StatusEvent"
-                        },
-                        {
-                            "type": "object",
-                            "title": "ConnectResult",
-                            "properties": {
-                                "userUrl": {
-                                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/UserUrl"
-                                }
-                            },
-                            "required": ["userUrl"]
-                        }
-                    ]
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/ConnectResult"
                 }
             },
-            "description": "Ensures ledger connectivity and returns the connected network information along with the user access token. NetworkId should follow CAIP-2 and represent the synchronizerId."
+            "description": "Ensures ledger connectivity and returns the connected network information."
         },
         {
             "name": "disconnect",

@@ -9,7 +9,6 @@ import {
     PrepareExecuteParams,
     SignMessageResult,
     StatusEvent,
-    StatusEventAsync,
     Wallet,
 } from './rpc-gen/typings.js'
 import { Store, Transaction } from '@canton-network/core-wallet-store'
@@ -40,7 +39,6 @@ export const dappController = (
         connect: async () => {
             if (!context || !(await store.getSession())) {
                 return {
-                    kernel: kernelInfo,
                     isConnected: false,
                     isNetworkConnected: false,
                     networkReason: 'Unauthenticated',
@@ -58,16 +56,26 @@ export const dappController = (
             })
             const status = await networkStatus(ledgerClient)
             const notifier = notificationService.getNotifier(context.userId)
-            const StatusEvent: StatusEvent = {
-                kernel: kernelInfo,
+            const provider = {
+                id: kernelInfo.id,
+                version: 'TODO',
+                providerType: kernelInfo.clientType,
+                url: dappUrl,
+                userUrl: `${userUrl}/login/`,
+            }
+            const connection = {
                 isConnected: true,
+                reason: 'OK',
                 isNetworkConnected: status.isConnected,
                 networkReason: status.reason ? status.reason : 'OK',
+            }
+            const statusEvent = {
+                provider: provider,
+                connection: connection,
                 network: {
                     networkId: network.id,
-                    ledgerApi: {
-                        baseUrl: network.ledgerApi.baseUrl,
-                    },
+                    ledgerApi: network.ledgerApi.baseUrl,
+                    accessToken: context.accessToken,
                 },
                 session: {
                     id: session?.id,
@@ -76,8 +84,8 @@ export const dappController = (
                 },
                 userUrl: `${userUrl}/login/`,
             }
-            notifier.emit('statusChanged', StatusEvent)
-            return StatusEvent as StatusEventAsync
+            notifier.emit('statusChanged', statusEvent as StatusEvent)
+            return connection
         },
         disconnect: async () => {
             if (!context) {
@@ -86,11 +94,18 @@ export const dappController = (
                 const notifier = notificationService.getNotifier(context.userId)
                 await store.removeSession()
                 notifier.emit('statusChanged', {
-                    kernel: kernelInfo,
-                    isConnected: false,
-                    isNetworkConnected: false,
-                    networkReason: 'disconnect',
-                    userUrl: `${userUrl}/login/`,
+                    provider: {
+                        id: kernelInfo.id,
+                        providerType: kernelInfo.clientType,
+                        url: dappUrl,
+                        userUrl: `${userUrl}/login/`,
+                    },
+                    connection: {
+                        isConnected: false,
+                        reason: 'disconnect',
+                        isNetworkConnected: false,
+                        networkReason: 'disconnect',
+                    },
                 } as StatusEvent)
             }
 
@@ -185,12 +200,22 @@ export const dappController = (
             }
         },
         status: async () => {
+            const provider = {
+                id: kernelInfo.id,
+                version: 'TODO',
+                providerType: kernelInfo.clientType,
+                url: dappUrl,
+                userUrl: `${userUrl}/login/`,
+            }
             if (!context || !(await store.getSession())) {
                 return {
-                    kernel: kernelInfo,
-                    isConnected: false,
-                    isNetworkConnected: false,
-                    networkReason: 'Unauthenticated',
+                    provider: provider,
+                    connection: {
+                        isConnected: false,
+                        reason: 'Unauthenticated',
+                        isNetworkConnected: false,
+                        networkReason: 'Unauthenticated',
+                    },
                 }
             }
 
@@ -203,16 +228,19 @@ export const dappController = (
                 accessToken: context.accessToken,
             })
             const status = await networkStatus(ledgerClient)
+
             return {
-                kernel: kernelInfo,
-                isConnected: true,
-                isNetworkConnected: status.isConnected,
-                networkReason: status.reason ? status.reason : 'OK',
+                provider: provider,
+                connection: {
+                    isConnected: true,
+                    reason: 'OK',
+                    isNetworkConnected: status.isConnected,
+                    networkReason: status.reason ? status.reason : 'OK',
+                },
                 network: {
                     networkId: network.id,
-                    ledgerApi: {
-                        baseUrl: network.ledgerApi.baseUrl,
-                    },
+                    ledgerApi: network.ledgerApi.baseUrl,
+                    accessToken: context.accessToken,
                 },
                 session: {
                     id: session?.id,
@@ -220,7 +248,7 @@ export const dappController = (
                     userId: context.userId,
                 },
                 userUrl: `${userUrl}/login/`,
-            } as StatusEventAsync
+            }
         },
         connected: async () => {
             throw new Error('Only for events.')

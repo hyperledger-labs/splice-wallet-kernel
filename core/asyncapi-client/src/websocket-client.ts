@@ -5,9 +5,9 @@ import { PartyId } from '@canton-network/core-types'
 import {
     CHANNELS,
     JsGetUpdatesResponse,
-} from './generated-clients/asyncapi-3.4.7.js'
+    TransactionFilterBySetup,
+} from '@canton-network/core-ledger-client-types'
 import { Logger } from 'pino'
-import { TransactionFilterBySetup } from './ledger-api-utils.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 type UpdateSubscriptionOptions = {
@@ -27,13 +27,11 @@ type CommandsCompletionsOptions = {
 }
 
 export class WebSocketClient {
-    private ws: WebSocket | null = null
     private baseUrl: string
     private token: string = ''
     private isAdmin: boolean
     private protocol: string[] = []
     private readonly logger: Logger
-    private wsSupportBackOff: number
     private accessTokenProvider: AccessTokenProvider
 
     constructor({
@@ -41,17 +39,14 @@ export class WebSocketClient {
         isAdmin,
         accessTokenProvider,
         logger,
-        wsSupportBackOff,
     }: {
         baseUrl: string
         isAdmin?: boolean
         accessTokenProvider: AccessTokenProvider
         logger: Logger
-        wsSupportBackOff: number
     }) {
         this.logger = logger.child({ component: 'WebSocketClient' })
         this.baseUrl = baseUrl
-        this.wsSupportBackOff = wsSupportBackOff
         this.accessTokenProvider = accessTokenProvider
         this.isAdmin = isAdmin ?? false
     }

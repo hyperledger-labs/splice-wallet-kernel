@@ -1,9 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import * as v3_3 from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
-
-import * as v3_4 from './generated-clients/openapi-3.4.7.js'
+import { v3_3, v3_4 } from '@canton-network/core-ledger-client-types'
 import createClient, { Client, FetchOptions } from 'openapi-fetch'
 import { Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
@@ -17,6 +15,10 @@ import {
 import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
 import { SharedACSCache } from './acs/acs-shared-cache.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+
+export type UserSchema =
+    | v3_3.components['schemas']['User']
+    | v3_4.components['schemas']['User']
 export const supportedVersions = ['3.3', '3.4'] as const
 
 export type SupportedVersions = (typeof supportedVersions)[number]
@@ -541,7 +543,7 @@ export class LedgerClient {
     }
 
     /*
-    if limit is provided, this function performs a one-time query
+    if limit is provided, this function performs a one-time query. Automatically splits into multiple `/v2/updates` calls with `continueUntilCompletion` on.
     if limit is omitted, results may be served from the ACS cache
     current cache design doesn't support limiting queries because updates/deltas for the acs at offset x will be incorrect
     TODO: expose query mode vs subscribe mode to call queryActiveContracts vs subscribeActiveContracts
@@ -553,8 +555,16 @@ export class LedgerClient {
         filterByParty?: boolean
         interfaceIds?: string[]
         limit?: number
+        continueUntilCompletion?: boolean
     }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
-        const { offset, templateIds, parties, interfaceIds, limit } = options
+        const {
+            offset,
+            templateIds,
+            parties,
+            interfaceIds,
+            limit,
+            continueUntilCompletion,
+        } = options
 
         const hasLimit = typeof limit === 'number'
 
@@ -562,13 +572,16 @@ export class LedgerClient {
 
         if (hasLimit) {
             const filter = this.buildActiveContractFilter(options)
+            if (continueUntilCompletion)
+                return await this.fetchActiveContractsUntilComplete(
+                    filter,
+                    limit
+                )
             return await this.postWithRetry(
                 '/v2/state/active-contracts',
                 filter,
                 defaultRetryableOptions,
-                {
-                    query: limit ? { limit: limit.toString() } : {},
-                }
+                { query: { limit: limit.toString() } }
             )
         }
 
@@ -602,6 +615,79 @@ export class LedgerClient {
             filter,
             defaultRetryableOptions
         )
+    }
+
+    /**
+     * Fetches active contracts by splitting requests into multiple `/v2/updates` calls.
+     * Should only be used when the number of contracts exceeds http-list-max-elements-limit (200 by default).
+     * For limits at or below http-list-max-elements-limit, use a single `/v2/state/active-contracts` call instead.
+     * @param activeContractsArgs The request parameters for active contracts query
+     * @returns A promise that resolves to an array of active contract responses
+     * @private
+     */
+    private async fetchActiveContractsUntilComplete(
+        activeContractsArgs: PostRequest<'/v2/state/active-contracts'>,
+        limit: number
+    ): Promise<Array<Types['JsGetActiveContractsResponse']>> {
+        const result = []
+        const ledgerEnd = await this.getWithRetry('/v2/state/ledger-end')
+
+        const bodyRequest: PostRequest<'/v2/updates'> = {
+            beginExclusive: 0,
+            endInclusive: ledgerEnd.offset,
+            verbose: false,
+        }
+        if (activeContractsArgs.filter)
+            bodyRequest.filter = activeContractsArgs.filter
+        let currentOffset = 0
+        while (currentOffset < ledgerEnd.offset) {
+            bodyRequest.beginExclusive = currentOffset
+            const newResults: Array<Types['JsGetActiveContractsResponse']> = (
+                await this.postWithRetry(
+                    '/v2/updates',
+                    bodyRequest,
+                    defaultRetryableOptions,
+                    {
+                        query: { limit: limit.toString() },
+                    }
+                )
+            )
+                .filter(({ update }) => 'Transaction' in update)
+                .map(({ update }) => {
+                    if ('Transaction' in update) {
+                        return update.Transaction.value
+                    }
+                    throw new Error('Expected Transaction update')
+                })
+                .map((data) => {
+                    const createdEvent = data.events?.find(
+                        (event: unknown) =>
+                            typeof event === 'object' &&
+                            event !== null &&
+                            'CreatedEvent' in event
+                    )
+                    if (!createdEvent || !('CreatedEvent' in createdEvent)) {
+                        throw new Error(
+                            'CreatedEvent not found in transaction events'
+                        )
+                    }
+                    currentOffset = Math.max(currentOffset, data.offset)
+                    return {
+                        workflowId: data.workflowId,
+                        contractEntry: {
+                            JsActiveContract: {
+                                synchronizerId: data.synchronizerId,
+                                createdEvent: createdEvent.CreatedEvent,
+                                reassignmentCounter: data.offset,
+                            },
+                        },
+                    }
+                })
+
+            result.push(...newResults)
+            if (!newResults.length) currentOffset++
+        }
+        return result
     }
 
     private buildActiveContractFilter(options: {

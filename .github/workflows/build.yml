@@ -7,6 +7,10 @@ on:
 permissions:
     contents: read
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -111,40 +115,15 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
+
             - uses: ./.github/actions/setup_yarn
 
-            - name: Download Canton
-              run: yarn script:fetch:canton
-
-            - name: Build project
-              run: yarn build:all
+            - uses: ./.github/actions/setup_canton
+              with:
+                  network: canton
 
             - name: Start remote WK
               run: yarn nx run @canton-network/wallet-gateway-remote:start &
-
-            - name: Start Canton
-              run: |
-                  set -e
-                  timeout 5m bash -c '
-                    LOGFILE=canton_start.log
-                    yarn start:canton > "$LOGFILE" 2>&1 &
-                    pid=$!
-                    for i in {1..60}; do
-                      if grep -q "Bootstrap script successfully executed." "$LOGFILE"; then
-                        echo "Canton started successfully."
-                        exit 0
-                      fi
-                      if ! kill -0 $pid 2>/dev/null; then
-                        echo "Canton process exited unexpectedly."
-                        cat "$LOGFILE"
-                        exit 1
-                      fi
-                      sleep 5
-                    done
-                    echo "Timeout: 'Bootstrap script successfully executed.' not found in 5 minutes."
-                    cat "$LOGFILE"
-                    exit 1
-                  '
 
             - run: yarn nx run @canton-network/example-ping:dev > "example-ping.log" 2>&1 &
 
@@ -177,19 +156,11 @@ jobs:
               uses: actions/checkout@v4
             - uses: ./.github/actions/setup_yarn
 
-            - name: Download Canton
-              run: yarn script:fetch:localnet
+            - uses: ./.github/actions/setup_canton
 
-            - name: Start LocalNet
-              run: yarn start:localnet
-
+              # for some reason it breaks if we don't have a build here...
             - name: Build project
               run: yarn build:all
-
-            - name: Increase rate limit in wallet gateway config
-              run: |
-                  jq '.server.requestRateLimit = 10000' wallet-gateway/test/config.json >/tmp/e2e-wk-config.json
-                  mv /tmp/e2e-wk-config.json wallet-gateway/test/config.json
 
             - name: Start remote WK
               run: yarn nx run @canton-network/wallet-gateway-remote:start > "wallet-gateway-remote.log" 2>&1 &
@@ -232,11 +203,9 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
-            - name: Download localnet (${{ matrix.network }})
-              run: yarn script:fetch:localnet -- --network=${{ matrix.network }}
-
-            - name: Start Localnet (${{ matrix.network }})
-              run: yarn start:localnet -- --network=${{ matrix.network }}
+            - uses: ./.github/actions/setup_canton
+              with:
+                  network: ${{ matrix.network }}
 
             - uses: ./.github/actions/check_resources
 
