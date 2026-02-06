@@ -1,6 +1,6 @@
 .. _dapp-sdk-usage:
 
-dApp SDK Usage
+Usage
 ==============
 
 This section will help you use the dApp SDK in your project.
