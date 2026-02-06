@@ -15,7 +15,7 @@ import {
     TableRow,
     Typography,
 } from '@mui/material'
-import { type Transaction } from '@canton-network/core-ledger-client'
+import { type Transaction } from '@canton-network/core-tx-parser'
 import { CopyableIdentifier } from './copyable-identifier'
 
 interface TransactionTableProps {

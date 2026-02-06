@@ -10,7 +10,7 @@ import {
     Typography,
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import type { Holding } from '@canton-network/core-ledger-client'
+import type { Holding } from '@canton-network/core-tx-parser'
 import type { AggregatedHolding } from '../utils/aggregate-holdings'
 import { HoldingRow } from './holding-row'
 

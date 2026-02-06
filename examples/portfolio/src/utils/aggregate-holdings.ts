@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import Decimal from 'decimal.js'
-import {
-    TokenStandardService,
-    type Holding,
-} from '@canton-network/core-ledger-client'
+import { TokenStandardService } from '@canton-network/core-token-standard-service'
+import { type Holding } from '@canton-network/core-tx-parser'
 import type { Instruments } from '../services/registry-service'
 
 export interface AggregatedHolding {
