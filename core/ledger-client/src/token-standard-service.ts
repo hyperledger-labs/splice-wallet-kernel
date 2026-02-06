@@ -212,13 +212,9 @@ export class CoreService {
                 (await this.ledgerClient.getWithRetry('/v2/state/ledger-end'))
                     .offset
 
-            const options: {
-                offset: number
-                interfaceIds: string[]
-                parties: PartyId[]
-                filterByParty: boolean
-                limit?: number
-            } = {
+            const options: Parameters<
+                typeof this.ledgerClient.activeContracts
+            >[0] = {
                 offset: ledgerEnd,
                 interfaceIds: [interfaceId],
                 parties: [partyId!],

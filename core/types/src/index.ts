@@ -32,7 +32,7 @@ export type SuccessResponse = z.infer<typeof SuccessResponse>
 
 export const ErrorResponse = z.object({
     error: z.object({
-        code: z.union([z.number(), z.string()]),
+        code: z.number(),
         message: z.string(),
         data: z.optional(
             z

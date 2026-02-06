@@ -88,8 +88,6 @@ export type PrepareSubmissionResponse =
 // Any options the client accepts besides body/params
 type ExtraPostOpts = Omit<FetchOptions<paths>, 'body' | 'params'>
 
-const ACTIVE_CONTRACTS_MAX_LIMIT = 200
-
 export class LedgerClient {
     // privately manage the active connected version and associated client codegen
     private readonly clients: Record<SupportedVersions, Client<paths>>
@@ -543,7 +541,7 @@ export class LedgerClient {
     }
 
     /*
-    if limit is provided, this function performs a one-time query. Limits above 200 are automatically split into multiple `/v2/updates` calls.
+    if limit is provided, this function performs a one-time query. Automatically splits into multiple `/v2/updates` calls with `loopMode` on.
     if limit is omitted, results may be served from the ACS cache
     current cache design doesn't support limiting queries because updates/deltas for the acs at offset x will be incorrect
     TODO: expose query mode vs subscribe mode to call queryActiveContracts vs subscribeActiveContracts
@@ -564,16 +562,7 @@ export class LedgerClient {
 
         if (hasLimit) {
             const filter = this.buildActiveContractFilter(options)
-            return limit <= ACTIVE_CONTRACTS_MAX_LIMIT
-                ? await this.postWithRetry(
-                      '/v2/state/active-contracts',
-                      filter,
-                      defaultRetryableOptions,
-                      {
-                          query: limit ? { limit: limit.toString() } : {},
-                      }
-                  )
-                : await this.fetchActiveContractsUntilComplete(filter)
+            return await this.fetchActiveContractsUntilComplete(filter, limit)
         }
 
         this.logger.debug(options, 'options for active contracts')
@@ -610,38 +599,37 @@ export class LedgerClient {
 
     /**
      * Fetches active contracts by splitting requests into multiple `/v2/updates` calls.
-     * Should only be used when the number of contracts exceeds ACTIVE_CONTRACTS_MAX_LIMIT (200).
-     * For limits at or below 200, use a single `/v2/state/active-contracts` call instead.
+     * Should only be used when the number of contracts exceeds http-list-max-elements-limit (200 by default).
+     * For limits at or below http-list-max-elements-limit, use a single `/v2/state/active-contracts` call instead.
      * @param activeContractsArgs The request parameters for active contracts query
      * @returns A promise that resolves to an array of active contract responses
      * @private
      */
     private async fetchActiveContractsUntilComplete(
-        activeContractsArgs: PostRequest<'/v2/state/active-contracts'>
+        activeContractsArgs: PostRequest<'/v2/state/active-contracts'>,
+        limit: number
     ): Promise<Array<Types['JsGetActiveContractsResponse']>> {
         const result = []
+        const ledgerEnd = await this.getWithRetry('/v2/state/ledger-end')
 
-        const offset = activeContractsArgs.activeAtOffset
         const bodyRequest: PostRequest<'/v2/updates'> = {
             beginExclusive: 0,
-            endInclusive: ACTIVE_CONTRACTS_MAX_LIMIT,
+            endInclusive: ledgerEnd.offset,
             verbose: false,
         }
         if (activeContractsArgs.filter)
             bodyRequest.filter = activeContractsArgs.filter
-        for (let i = 0; i <= offset; i += ACTIVE_CONTRACTS_MAX_LIMIT) {
-            bodyRequest.beginExclusive = i
-            bodyRequest.endInclusive = Math.min(
-                i + ACTIVE_CONTRACTS_MAX_LIMIT,
-                offset
-            )
+        let currentOffset = 0
+        while (currentOffset < ledgerEnd.offset) {
+            bodyRequest.beginExclusive = currentOffset
+            const offsets: number[] = []
             const newResults: Array<Types['JsGetActiveContractsResponse']> = (
                 await this.postWithRetry(
                     '/v2/updates',
                     bodyRequest,
                     defaultRetryableOptions,
                     {
-                        query: { limit: ACTIVE_CONTRACTS_MAX_LIMIT.toString() },
+                        query: { limit: limit.toString() },
                     }
                 )
             )
@@ -664,6 +652,7 @@ export class LedgerClient {
                             'CreatedEvent not found in transaction events'
                         )
                     }
+                    offsets.push(data.offset)
                     return {
                         workflowId: data.workflowId,
                         contractEntry: {
@@ -675,7 +664,14 @@ export class LedgerClient {
                         },
                     }
                 })
+
             result.push(...newResults)
+            if (offsets.length) {
+                currentOffset = offsets.reduce(
+                    (acc, val) => Math.max(acc, val),
+                    0
+                )
+            } else break
         }
         return result
     }

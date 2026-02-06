@@ -329,7 +329,7 @@ export class TokenStandardController {
     /**
      * Lists all holding UTXOs for the current party.
      * @param includeLocked defaulted to true, this will include locked UTXOs.
-     * @param limit optional limit for number of UTXOs to return. Limits above 200 are automatically split into multiple `/v2/updates` calls.
+     * @param limit optional limit for number of UTXOs to return.
      * @param offset optional offset to list utxos from, default is latest.
      * @param party optional party to list utxos
      * @returns A promise that resolves to an array of holding UTXOs.

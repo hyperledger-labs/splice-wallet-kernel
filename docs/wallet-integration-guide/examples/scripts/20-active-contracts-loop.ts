@@ -82,9 +82,9 @@ logger.info('transfer pre approval proposal is created')
 
 await sdk.setPartyId(sender?.partyId!)
 
-// create more than 200 contracts for pagination test
-const UTXOS_AMOUNT = 500
-const batchSize = 10
+// create more than node limit (200 by default) contracts for pagination test
+const UTXOS_AMOUNT = 250
+const batchSize = 20
 for (let batchStart = 0; batchStart < UTXOS_AMOUNT; batchStart += batchSize) {
     const batchPromises = Array.from(
         { length: Math.min(batchSize, UTXOS_AMOUNT - batchStart) },
@@ -144,9 +144,27 @@ for (let batchStart = 0; batchStart < UTXOS_AMOUNT; batchStart += batchSize) {
 
     await Promise.all(batchPromises)
     logger.info(
-        `Created ${Math.min(batchStart + batchSize, 205)} TAP operations`
+        `Created ${Math.min(batchStart + batchSize, UTXOS_AMOUNT)} TAP operations`
     )
 }
 
-const utxosAlice = await sdk.tokenStandard?.listHoldingUtxos(false, 1000)
+const utxosAlice = await sdk.tokenStandard?.listHoldingUtxos(false, 200) // 200 is the http-list-max-elements-limit default
 logger.info(`number of unlocked utxos for alice ${utxosAlice?.length}`)
+
+const sumAmountFromAliceUtxos = utxosAlice?.reduce(
+    (acc, value) => acc + +value.interfaceViewValue.amount,
+    0
+)
+
+logger.info({
+    totalAmount: UTXOS_AMOUNT,
+    sumAmountFromAliceUtxos,
+})
+
+if (sumAmountFromAliceUtxos !== UTXOS_AMOUNT) {
+    throw new Error(
+        `sumAmountFromAliceUtxos (${sumAmountFromAliceUtxos}) should be equal to totalAmount (${UTXOS_AMOUNT})`
+    )
+}
+
+logger.info('Test successful!')
