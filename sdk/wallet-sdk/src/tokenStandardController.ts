@@ -332,6 +332,7 @@ export class TokenStandardController {
      * @param limit optional limit for number of UTXOs to return.
      * @param offset optional offset to list utxos from, default is latest.
      * @param party optional party to list utxos
+     * @param continueUntilCompletion optional search the whole ledger for active contracts. Use only when the amount of contracts exceeds the limit defined in http-list-max-elements-limit
      * @returns A promise that resolves to an array of holding UTXOs.
      */
 
@@ -339,13 +340,15 @@ export class TokenStandardController {
         includeLocked: boolean = true,
         limit?: number,
         offset?: number,
-        party?: PartyId
+        party?: PartyId,
+        continueUntilCompletion?: boolean
     ): Promise<PrettyContract<Holding>[]> {
         const utxos = await this.service.listContractsByInterface<Holding>(
             HOLDING_INTERFACE_ID,
             party ?? this.getPartyId(),
             limit,
-            offset
+            offset,
+            continueUntilCompletion
         )
         const currentTime = new Date()
 

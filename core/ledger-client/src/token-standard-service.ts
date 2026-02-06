@@ -204,7 +204,8 @@ export class CoreService {
         interfaceId: string,
         partyId?: PartyId,
         limit?: number,
-        offset?: number
+        offset?: number,
+        continueUntilCompletion?: boolean
     ): Promise<PrettyContract<T>[]> {
         try {
             const ledgerEnd =
@@ -219,6 +220,7 @@ export class CoreService {
                 interfaceIds: [interfaceId],
                 parties: [partyId!],
                 filterByParty: true,
+                continueUntilCompletion: Boolean(continueUntilCompletion),
             }
 
             if (limit !== undefined) {
@@ -1327,13 +1329,15 @@ export class TokenStandardService {
         interfaceId: string,
         partyId?: PartyId,
         limit?: number,
-        offset?: number
+        offset?: number,
+        continueUntilCompletion?: boolean
     ): Promise<PrettyContract<T>[]> {
         return this.core.listContractsByInterface<T>(
             interfaceId,
             partyId,
             limit,
-            offset
+            offset,
+            continueUntilCompletion
         )
     }
 

@@ -541,7 +541,7 @@ export class LedgerClient {
     }
 
     /*
-    if limit is provided, this function performs a one-time query. Automatically splits into multiple `/v2/updates` calls with `loopMode` on.
+    if limit is provided, this function performs a one-time query. Automatically splits into multiple `/v2/updates` calls with `continueUntilCompletion` on.
     if limit is omitted, results may be served from the ACS cache
     current cache design doesn't support limiting queries because updates/deltas for the acs at offset x will be incorrect
     TODO: expose query mode vs subscribe mode to call queryActiveContracts vs subscribeActiveContracts
@@ -553,8 +553,16 @@ export class LedgerClient {
         filterByParty?: boolean
         interfaceIds?: string[]
         limit?: number
+        continueUntilCompletion?: boolean
     }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
-        const { offset, templateIds, parties, interfaceIds, limit } = options
+        const {
+            offset,
+            templateIds,
+            parties,
+            interfaceIds,
+            limit,
+            continueUntilCompletion,
+        } = options
 
         const hasLimit = typeof limit === 'number'
 
@@ -562,7 +570,17 @@ export class LedgerClient {
 
         if (hasLimit) {
             const filter = this.buildActiveContractFilter(options)
-            return await this.fetchActiveContractsUntilComplete(filter, limit)
+            if (continueUntilCompletion)
+                return await this.fetchActiveContractsUntilComplete(
+                    filter,
+                    limit
+                )
+            return await this.postWithRetry(
+                '/v2/state/active-contracts',
+                filter,
+                defaultRetryableOptions,
+                { query: { limit: limit.toString() } }
+            )
         }
 
         this.logger.debug(options, 'options for active contracts')
@@ -622,7 +640,6 @@ export class LedgerClient {
         let currentOffset = 0
         while (currentOffset < ledgerEnd.offset) {
             bodyRequest.beginExclusive = currentOffset
-            const offsets: number[] = []
             const newResults: Array<Types['JsGetActiveContractsResponse']> = (
                 await this.postWithRetry(
                     '/v2/updates',
@@ -652,7 +669,7 @@ export class LedgerClient {
                             'CreatedEvent not found in transaction events'
                         )
                     }
-                    offsets.push(data.offset)
+                    currentOffset = Math.max(currentOffset, data.offset)
                     return {
                         workflowId: data.workflowId,
                         contractEntry: {
@@ -666,12 +683,7 @@ export class LedgerClient {
                 })
 
             result.push(...newResults)
-            if (offsets.length) {
-                currentOffset = offsets.reduce(
-                    (acc, val) => Math.max(acc, val),
-                    0
-                )
-            } else break
+            if (!newResults.length) currentOffset++
         }
         return result
     }
