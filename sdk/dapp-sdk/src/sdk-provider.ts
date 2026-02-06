@@ -3,7 +3,7 @@
 
 import {
     DappProvider,
-    DappRemoteProvider,
+    DappAsyncProvider,
     ProviderType,
     Provider,
     EventListener,
@@ -19,7 +19,7 @@ import { dappSDKController } from './sdk-controller'
 type ProviderClient =
     | {
           type: ProviderType.HTTP
-          instance: DappRemoteProvider
+          instance: DappAsyncProvider
       }
     | {
           type: ProviderType.WINDOW
@@ -38,7 +38,7 @@ export class DappSDKProvider implements Provider<DappRpcTypes> {
         } else if (walletType == 'remote') {
             this.provider = {
                 type: ProviderType.HTTP,
-                instance: new DappRemoteProvider(
+                instance: new DappAsyncProvider(
                     new URL(url),
                     session?.accessToken
                 ),

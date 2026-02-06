@@ -33,4 +33,4 @@ export function injectProvider(
 
 export * from './provider'
 export * from './DappProvider'
-export * from './DappRemoteProvider'
+export * from './DappAsyncProvider'

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import SpliceWalletJSONRPCRemoteDAppAPI, {
-    RpcTypes as DappRemoteRpcTypes,
+    RpcTypes as DappAsyncRpcTypes,
     Session,
 } from '@canton-network/core-wallet-dapp-remote-rpc-client'
 import { AbstractProvider } from './provider'
@@ -14,7 +14,7 @@ import {
 } from '@canton-network/core-types'
 
 // Maintain a global SSE connection in-memory to avoid multiple connections
-// per DappRemoteProvider instance.
+// per DappAsyncProvider instance.
 type GatewaySSE = {
     url: string
     token: string
@@ -32,7 +32,7 @@ function parseSSEData(data: string): unknown[] {
     }
 }
 
-export class DappRemoteProvider extends AbstractProvider<DappRemoteRpcTypes> {
+export class DappAsyncProvider extends AbstractProvider<DappAsyncRpcTypes> {
     private sessionToken?: string
     private client: SpliceWalletJSONRPCRemoteDAppAPI
     private status?: Session | undefined
@@ -141,9 +141,9 @@ export class DappRemoteProvider extends AbstractProvider<DappRemoteRpcTypes> {
         })
     }
 
-    public async request<M extends keyof DappRemoteRpcTypes>(
-        args: RequestArgs<DappRemoteRpcTypes, M>
-    ): Promise<DappRemoteRpcTypes[M]['result']> {
+    public async request<M extends keyof DappAsyncRpcTypes>(
+        args: RequestArgs<DappAsyncRpcTypes, M>
+    ): Promise<DappAsyncRpcTypes[M]['result']> {
         return await this.client.request<M>(args)
     }
 }

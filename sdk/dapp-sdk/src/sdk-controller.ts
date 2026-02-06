@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { DappRemoteProvider } from '@canton-network/core-splice-provider'
+import { DappAsyncProvider } from '@canton-network/core-splice-provider'
 import buildController from './dapp-api/rpc-gen'
 import {
     ConnectResult,
@@ -14,7 +14,7 @@ import {
 } from './dapp-api/rpc-gen/typings'
 import { ErrorCode } from './error'
 import { popup } from '@canton-network/core-wallet-ui-components'
-import * as dappRemoteAPI from '@canton-network/core-wallet-dapp-remote-rpc-client'
+import * as dappAsyncAPI from '@canton-network/core-wallet-dapp-remote-rpc-client'
 
 const withTimeout = (
     reject: (reason?: unknown) => void,
@@ -30,7 +30,7 @@ const withTimeout = (
         })
     }, timeoutMs)
 
-export const dappSDKController = (provider: DappRemoteProvider) =>
+export const dappSDKController = (provider: DappAsyncProvider) =>
     buildController({
         connect: async (): Promise<ConnectResult> => {
             const response = await provider.request({
@@ -49,7 +49,7 @@ export const dappSDKController = (provider: DappRemoteProvider) =>
                             'Timeout waiting for connection',
                             5 * 60 * 1000
                         )
-                        provider.on<dappRemoteAPI.StatusEvent>(
+                        provider.on<dappAsyncAPI.StatusEvent>(
                             'statusChanged',
                             (event) => {
                                 if (event.connection.isConnected) {
@@ -102,7 +102,7 @@ export const dappSDKController = (provider: DappRemoteProvider) =>
                     )
 
                     // TODO: ensure that the event corresponds to the correct transaction
-                    const listener = (event: dappRemoteAPI.TxChangedEvent) => {
+                    const listener = (event: dappAsyncAPI.TxChangedEvent) => {
                         if (event.status === 'failed') {
                             provider.removeListener('txChanged', listener)
                             clearTimeout(timeout)
@@ -121,7 +121,7 @@ export const dappSDKController = (provider: DappRemoteProvider) =>
                         }
                     }
 
-                    provider.on<dappRemoteAPI.TxChangedEvent>(
+                    provider.on<dappAsyncAPI.TxChangedEvent>(
                         'txChanged',
                         listener
                     )
