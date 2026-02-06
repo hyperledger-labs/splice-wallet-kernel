@@ -7,19 +7,23 @@ import { TransactionParser } from './parser.js'
 import type { PrettyTransactions, Transaction } from './types.js'
 import eventsByContractIdResponses from './test-data/mock/eventsByContractIdResponses.js'
 import type { LedgerClient } from '../ledger-client'
-import { components } from '../generated-clients/openapi-3.3.0-SNAPSHOT.js'
+import {
+    v3_3,
+    JsGetUpdatesResponse,
+} from '@canton-network/core-ledger-client-types'
 import * as fs from 'fs'
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { CoreService, JsGetUpdatesResponse } from '../token-standard-service.js'
+import { CoreService } from '../token-standard-service.js'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
-type JsTransaction = components['schemas']['JsTransaction']
+//TODO: should this be updated to use the v3_4 types as well?
+type JsTransaction = v3_3.components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =
-    components['schemas']['JsGetEventsByContractIdResponse']
+    v3_3.components['schemas']['JsGetEventsByContractIdResponse']
 
-type CreatedEvent = components['schemas']['CreatedEvent']
+type CreatedEvent = v3_3.components['schemas']['CreatedEvent']
 
 const EVENTS_BY_CID_PATH = '/v2/events/events-by-contract-id' as const
 

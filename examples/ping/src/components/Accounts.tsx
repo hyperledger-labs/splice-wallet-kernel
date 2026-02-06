@@ -1,10 +1,10 @@
 import * as sdk from '@canton-network/dapp-sdk'
 import { useAccounts } from '../hooks/useAccounts'
 
-export function Accounts(props: { status?: sdk.dappAPI.StatusEvent }) {
-    const accounts = useAccounts(props.status)
+export function Accounts(props: { connectResult?: sdk.dappAPI.ConnectResult }) {
+    const accounts = useAccounts(props.connectResult)
 
-    const connected = props.status?.isConnected ?? false
+    const connected = props.connectResult?.isConnected ?? false
 
     const getAccountColor = (account: sdk.dappAPI.Wallet) => {
         if (account.disabled) {
