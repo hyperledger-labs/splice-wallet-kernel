@@ -30,6 +30,7 @@
         "run-17": "tsx ./scripts/17-input-cid-filtering.ts | pino-pretty",
         "run-18": "tsx ./scripts/18-merge-delegation-proposal.ts | pino-pretty",
         "run-19": "tsx ./scripts/19-create-party-with-preapproval.ts | pino-pretty",
+        "run-20": "tsx ./scripts/20-active-contracts-loop.ts | pino-pretty",
         "run-exch-01": "tsx ./scripts/exchange-integration/01-one-step-deposit.ts | pino-pretty",
         "run-exch-02": "tsx ./scripts/exchange-integration/02-one-step-withdrawal.ts | pino-pretty",
         "run-exch-03": "tsx ./scripts/exchange-integration/03-multi-step-deposit.ts | pino-pretty",

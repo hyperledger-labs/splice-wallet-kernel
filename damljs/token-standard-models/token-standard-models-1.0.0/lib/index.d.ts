@@ -1,4 +1,4 @@
 import * as Splice from './Splice'
 export { Splice }
 export declare const packageId =
-    'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c'
+    '3c373f302ebb5531459ceca3b6f0409365d119767ffe2026a04e6bd750dae10d'

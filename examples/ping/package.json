@@ -7,6 +7,7 @@
         "dev": "vite",
         "build": "tsc -b && vite build",
         "e2e": "nx playwright:e2e --ui",
+        "e2e2": "nx playwright:e2e",
         "preview": "vite preview"
     },
     "dependencies": {
