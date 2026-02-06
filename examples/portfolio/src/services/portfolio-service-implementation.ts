@@ -7,7 +7,7 @@ import {
     type Holding,
     type TransferInstructionView,
     type PrettyContract,
-} from '@canton-network/core-ledger-client'
+} from '@canton-network/core-tx-parser'
 import {
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
     ALLOCATION_INTERFACE_ID,

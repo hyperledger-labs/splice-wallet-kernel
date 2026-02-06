@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React from 'react'
-import { type HoldingsChangeSummary } from '@canton-network/core-ledger-client'
+import { type HoldingsChangeSummary } from '@canton-network/core-tx-parser'
 import { AssetCard } from './AssetCard'
 
 interface HoldingsChangeSummaryCardProps {
