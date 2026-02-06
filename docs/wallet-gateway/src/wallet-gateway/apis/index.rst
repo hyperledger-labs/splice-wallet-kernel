@@ -13,8 +13,8 @@ API Endpoints
 
 Both APIs follow the JSON-RPC 2.0 specification and use JWT-based authentication for secure access.
 
-dApp API
---------
+dApp API Reference
+------------------
 
 The dApp API enables decentralized applications to connect to wallets, query ledger state, prepare transactions, and submit commands. This API is designed for programmatic access from web or mobile applications.
 
@@ -29,44 +29,80 @@ The dApp API requires a valid JWT token in the ``Authorization`` header:
 
 **Full API Specification:**
 
-The complete OpenRPC specification can be found in the codebase at ``api-specs/openrpc-dapp-api.json``.
+The complete OpenRPC specification is available at `openrpc-dapp-api.json <https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/api-specs/openrpc-dapp-api.json>`_.
 
 
-User API
---------
+User API Reference
+------------------
 
 The User API enables users to manage their wallets, configure networks, manage identity providers, create parties, and interact with their wallet through the web UI.
 
-**Key Methods:**
+**Methods:**
 
-**Sessions:**
-- ``addSession()`` - Create a new session (unauthenticated, used for initial connection)
-- ``removeSession()`` - End the current session
-- ``listSessions()`` - List sessions for the current user
+.. list-table::
+   :header-rows: 1
+   :widths: 20 25 55
 
-**Networks:**
-- ``listNetworks()`` - List all configured networks
-- ``addNetwork()`` - Add a new network configuration
-- ``removeNetwork()`` - Remove a network configuration
-
-**Identity providers:**
-- ``listIdps()`` - List all identity providers
-- ``addIdp()`` - Add a new identity provider
-- ``removeIdp()`` - Remove an identity provider
-
-**Wallets:**
-- ``createWallet()`` - Create a new wallet (party) on a network
-- ``listWallets()`` - List all wallets for the current user
-- ``setPrimaryWallet()`` - Set the primary wallet
-- ``removeWallet()`` - Remove a wallet
-- ``syncWallets()`` - Sync wallets with the ledger
-- ``isWalletSyncNeeded()`` - Check if wallet sync is needed
-
-**Transactions:**
-- ``sign()`` - Sign a transaction
-- ``execute()`` - Execute a signed transaction
-- ``getTransaction()`` - Get a transaction by ID
-- ``listTransactions()`` - List transactions
+   * - Category
+     - Method
+     - Description
+   * - Sessions
+     - ``addSession()``
+     - Create a new session (unauthenticated, used for initial connection)
+   * -
+     - ``removeSession()``
+     - End the current session
+   * -
+     - ``listSessions()``
+     - List sessions for the current user
+   * - Networks
+     - ``listNetworks()``
+     - List all configured networks
+   * -
+     - ``addNetwork()``
+     - Add a new network configuration
+   * -
+     - ``removeNetwork()``
+     - Remove a network configuration
+   * - Identity Providers
+     - ``listIdps()``
+     - List all identity providers
+   * -
+     - ``addIdp()``
+     - Add a new identity provider
+   * -
+     - ``removeIdp()``
+     - Remove an identity provider
+   * - Wallets
+     - ``createWallet()``
+     - Create a new wallet (party) on a network
+   * -
+     - ``listWallets()``
+     - List all wallets for the current user
+   * -
+     - ``setPrimaryWallet()``
+     - Set the primary wallet
+   * -
+     - ``removeWallet()``
+     - Remove a wallet
+   * -
+     - ``syncWallets()``
+     - Sync wallets with the ledger
+   * -
+     - ``isWalletSyncNeeded()``
+     - Check if wallet sync is needed
+   * - Transactions
+     - ``sign()``
+     - Sign a transaction
+   * -
+     - ``execute()``
+     - Execute a signed transaction
+   * -
+     - ``getTransaction()``
+     - Get a transaction by ID
+   * -
+     - ``listTransactions()``
+     - List transactions
 
 **Authentication:**
 
@@ -78,7 +114,7 @@ Most User API methods require authentication via JWT token. However, the followi
 
 **Full API Specification:**
 
-The complete OpenRPC specification can be found in the codebase at ``api-specs/openrpc-user-api.json``.
+The complete OpenRPC specification is available at `openrpc-user-api.json <https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/api-specs/openrpc-user-api.json>`_.
 
 Server-Sent Events (SSE) Support
 --------------------------------
