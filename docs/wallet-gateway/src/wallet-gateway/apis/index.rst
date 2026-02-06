@@ -23,7 +23,7 @@ The dApp API enables decentralized applications to connect to wallets, query led
 
 The dApp API requires a valid JWT token in the ``Authorization`` header:
 
-.. code-block:: http
+.. code-block:: text
 
     Authorization: Bearer <jwt-token>
 
