@@ -7,18 +7,18 @@ The Wallet Gateway is a JavaScript/TypeScript-based server that facilitates secu
 
    This guide is under active development, not all sections are complete and sections will be added and adjusted over time.
 
-**What is Wallet Gateway?**
+.. rubric:: What is Wallet Gateway?
 
 The Wallet Gateway enables transparent interaction between a dApp, Validator Node, and a Wallet Provider. Unlike public permissionless blockchains where a total state is shared amongst all nodes, Canton's unique approach to security and privacy results in fractured states shared amongst selected Validator nodes. Simply showing ownership of an associated private key does not reveal your entire financial data to a counter-party (such as a dApp).
 
-**Wallet Gateway aims to:**
+.. rubric:: Wallet Gateway aims to
 
 - Maintain the high-level of security and trust inherent in the Canton Protocol
 - Enable seamless communication between a dApp, Validator Node, and Signature Provider, similar in experience to other blockchains
 - Provide transparency against malicious dApps, Validator Nodes, or Signature Providers
 - Create a standardized communication framework that allows anybody to extend or integrate with the Wallet Gateway
 
-**Key Features**
+.. rubric:: Key Features
 
 - **JSON-RPC APIs**: Two distinct APIs for dApp and user interactions
 - **Multiple Signing Providers**: Support for participant-based signing, internal signing, Fireblocks, and Blockdaemon
