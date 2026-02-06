@@ -165,6 +165,9 @@ export class WalletGateway {
         await (await this.popup())
             .getByRole('button', { name: 'Create' })
             .click()
+        await expect(
+            (await this.popup()).getByRole('button', { name: 'Create' })
+        ).toBeEnabled()
         await (await this.popup())
             .getByRole('button', { name: 'Close' })
             .click()
@@ -202,5 +205,99 @@ export class WalletGateway {
             (await this.popup()).getByText('Transaction executed successfully')
         ).toBeVisible()
         return { commandId }
+    }
+
+    async reconnect(args: {
+        network: 'LocalNet' | 'Local (OAuth IDP)'
+        customURL?: string
+    }): Promise<void> {
+        const connectButton = this.connectButton(this.dappPage)
+        await expect(connectButton).toBeVisible()
+
+        const discoverPopupPromise = this.dappPage.waitForEvent('popup')
+        await connectButton.click()
+        const popup = await discoverPopupPromise
+
+        if (args.customURL !== undefined) {
+            await popup
+                .getByRole('listitem')
+                .filter({ hasText: 'Custom url' })
+                .click()
+            await popup
+                .getByRole('textbox', { name: 'RPC URL' })
+                .fill(args.customURL as string)
+        }
+
+        const allConnectButtons = popup.locator('button').filter({
+            hasText: 'Connect',
+        })
+        const buttonCount = await allConnectButtons.count()
+
+        let clicked = false
+        for (let i = 0; i < buttonCount; i++) {
+            const button = allConnectButtons.nth(i)
+            const hasPreviouslyConnectedAttr =
+                (await button.getAttribute('data-previously-connected')) ===
+                'true'
+            if (!hasPreviouslyConnectedAttr) {
+                await button.click()
+                clicked = true
+                break
+            }
+        }
+
+        if (!clicked) {
+            // Fallback to first Connect button if no main button found
+            await allConnectButtons.first().click()
+        }
+
+        const selectNetwork = popup.locator('select#network')
+        const networkOption = await selectNetwork
+            .locator('option')
+            .filter({ hasText: args.network })
+            .first()
+            .getAttribute('value')
+        await selectNetwork.selectOption(networkOption)
+        const confirmConnectButton = popup.getByRole('button', {
+            name: 'Connect',
+        })
+        await confirmConnectButton.click()
+        await expect(confirmConnectButton).not.toBeVisible()
+    }
+
+    async logoutFromPopup(): Promise<void> {
+        const popup = await this.popup()
+        await popup.getByRole('button', { name: 'Toggle menu' }).click()
+        await popup.locator('button').filter({ hasText: 'Logout' }).click()
+        await popup.waitForEvent('close', { timeout: 5000 })
+        this._popup = undefined
+    }
+
+    async closePopup(): Promise<void> {
+        const popup = await this.popup()
+        await popup.close()
+        this._popup = undefined
+    }
+
+    async isPopupOpen(): Promise<boolean> {
+        try {
+            const popup = await this.popup()
+            return popup && !popup.isClosed()
+        } catch {
+            return false
+        }
+    }
+
+    async waitForPopupClosed(): Promise<void> {
+        if (this._popup) {
+            await this._popup.waitForEvent('close', { timeout: 5000 })
+            this._popup = undefined
+        }
+    }
+
+    async waitForPopupUrl(expectedUrl: string | RegExp): Promise<void> {
+        const popup = await this.popup()
+
+        return popup.waitForURL(expectedUrl, { timeout: 5000 })
     }
 }

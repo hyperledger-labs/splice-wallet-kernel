@@ -33,13 +33,17 @@ class PopupInstance {
     }
 
     constructor() {
-        window.addEventListener('beforeunload', () => {
+        // Use multiple event listeners for better cross-browser compatibility
+        const closePopupOnUnload = () => {
             if (globalPopupInstance) {
                 console.log('[PopupInstance] Closing popup instance on unload')
                 globalPopupInstance.close()
                 globalPopupInstance = undefined
             }
-        })
+        }
+
+        window.addEventListener('beforeunload', closePopupOnUnload)
+        window.addEventListener('unload', closePopupOnUnload)
     }
 
     open(url: string | URL): WindowProxy

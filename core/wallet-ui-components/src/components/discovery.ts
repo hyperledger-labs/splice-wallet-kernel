@@ -211,7 +211,8 @@ export class Discovery extends HTMLElement {
 
     private renderKernelOption(
         kernel: KernelType,
-        onClear: undefined | (() => void) = undefined
+        onClear: undefined | (() => void) = undefined,
+        isPreviouslyConnected: boolean = false
     ) {
         const div = this.mkElement('div', '', {
             class: 'kernel d-flex justify-content-space-between align-items-center flex-wrap mb-3',
@@ -221,6 +222,9 @@ export class Discovery extends HTMLElement {
             class: 'btn btn-primary',
             type: 'button',
             ['data-tooltip']: kernel.rpcUrl,
+            ['data-previously-connected']: isPreviouslyConnected
+                ? 'true'
+                : 'false',
         })
 
         const nameWrapper = this.mkElement('div', '', {
@@ -300,11 +304,15 @@ export class Discovery extends HTMLElement {
         cardHeader.appendChild(header)
 
         const cardBody = this.mkElement('div', '', { class: 'card-body' })
-        const k = this.renderKernelOption(this.lastUsed, () => {
-            localStorage.removeItem(this.DISCOVERY_LAST_USED_KEY)
-            this.lastUsed = undefined
-            this.render()
-        })
+        const k = this.renderKernelOption(
+            this.lastUsed,
+            () => {
+                localStorage.removeItem(this.DISCOVERY_LAST_USED_KEY)
+                this.lastUsed = undefined
+                this.render()
+            },
+            true
+        )
         cardBody.appendChild(k)
 
         card.append(cardHeader, cardBody)
