@@ -31,14 +31,6 @@ const networks: Network[] = [
             scope: 'openid',
             clientId: 'wk-service-account',
         },
-        adminAuth: {
-            method: 'client_credentials',
-            audience:
-                'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424',
-            scope: 'daml_ledger_api',
-            clientId: 'participant_admin',
-            clientSecret: 'admin-client-secret',
-        },
     },
 ]
 

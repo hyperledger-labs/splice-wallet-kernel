@@ -67,7 +67,7 @@ export class NetworkForm extends BaseElement {
     renderAuthForm(authObj: Network['auth']) {
         if (typeof authObj.method === 'undefined') {
             // Use Object.assign to ensure that we are modifying the same object reference in memory,
-            // so that changes are reflected in the parent `this.network.auth` (or `this.network.adminAuth`)
+            // so that changes are reflected in the parent `this.network.auth`
             Object.assign(authObj, {
                 method: 'authorization_code',
                 clientId: '',
@@ -267,42 +267,6 @@ export class NetworkForm extends BaseElement {
                     </h2>
                     <div class="form-control mb-3">
                         ${this.renderAuthForm(this.network.auth)}
-                    </div>
-                </div>
-
-                <div>
-                    <h2 class="form-text mb-4 fw-bold">
-                        🔐 Configure Admin Auth (optional)
-                    </h2>
-                    <div class="form-control mb-3">
-                        ${typeof this.network.adminAuth === 'undefined'
-                            ? html`<button
-                                  class="btn btn-sm btn-primary mb-2"
-                                  type="button"
-                                  @click=${() => {
-                                      this.network.adminAuth = {
-                                          method: 'client_credentials',
-                                          clientId: '',
-                                          audience: '',
-                                          scope: '',
-                                          clientSecret: '',
-                                      }
-                                      this.requestUpdate()
-                                  }}
-                              >
-                                  +
-                              </button>`
-                            : html`<button
-                                      class="btn btn-sm btn-secondary mb-2"
-                                      type="button"
-                                      @click=${() => {
-                                          this.network.adminAuth = undefined
-                                          this.requestUpdate()
-                                      }}
-                                  >
-                                      clear
-                                  </button>
-                                  ${this.renderAuthForm(this.network.adminAuth)}`}
                     </div>
                 </div>
 

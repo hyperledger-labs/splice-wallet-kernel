@@ -345,7 +345,7 @@ describe('WalletSyncService - multi-network features', () => {
         mockAdminLedgerClient = new ledgerModule.LedgerClient({
             baseUrl: new URL('http://test'),
             logger: mockLogger,
-            isAdmin: true,
+            isAdmin: false,
             accessTokenProvider: {
                 getUserAccessToken: async () => 'token',
                 getAdminAccessToken: async () => 'token',
