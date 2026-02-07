@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { PartyId } from '@canton-network/core-types'
-import { type PrettyContract } from '@canton-network/core-ledger-client'
+import { type PrettyContract } from '@canton-network/core-tx-parser'
 import {
     type AllocationRequestView,
     type AllocationView,

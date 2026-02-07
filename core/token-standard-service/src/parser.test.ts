@@ -3,10 +3,14 @@
 
 import { jest, describe, it, expect, beforeEach } from '@jest/globals'
 
-import { TransactionParser } from './parser.js'
-import type { PrettyTransactions, Transaction } from './types.js'
+import {
+    TransactionParser,
+    type PrettyTransactions,
+    Transaction,
+} from '@canton-network/core-tx-parser'
+
 import eventsByContractIdResponses from './test-data/mock/eventsByContractIdResponses.js'
-import type { LedgerClient } from '../ledger-client'
+import type { LedgerClient } from '@canton-network/core-ledger-client'
 import {
     v3_3,
     JsGetUpdatesResponse,
@@ -14,7 +18,7 @@ import {
 import * as fs from 'fs'
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { CoreService } from '../token-standard-service.js'
+import { CoreService } from './token-standard-service.js'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 

@@ -1,18 +1,99 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerClient } from './ledger-client.js'
-
-import { Types } from './ledger-client.js'
+import { AllKnownMetaKeys, matchInterfaceIds } from './constants.js'
+import { LedgerClient, Types } from '@canton-network/core-ledger-client'
+import { Holding, TransferInstructionView } from './types.js'
 import { PartyId } from '@canton-network/core-types'
-
+import {
+    HOLDING_INTERFACE_ID,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+} from '@canton-network/core-token-standard'
 import { Logger } from '@canton-network/core-types'
 import { ErrorInfo, RetryInfo } from '@canton-network/core-ledger-proto'
 
+type CreatedEvent = Types['CreatedEvent']
 type ExercisedEvent = Types['ExercisedEvent']
+type ArchivedEvent = Types['ArchivedEvent']
+type JsInterfaceView = Types['JsInterfaceView']
 type Completion = Types['Completion']['value']
 export type JSContractEntry = Types['JsContractEntry']
 export type JsCantonError = Types['JsCantonError']
+
+export function hasInterface(
+    interfaceId: string,
+    event: ExercisedEvent | ArchivedEvent
+): boolean {
+    return (event.implementedInterfaces || []).some((id) =>
+        matchInterfaceIds(id, interfaceId)
+    )
+}
+
+export function getInterfaceView(
+    createdEvent: CreatedEvent
+): JsInterfaceView | null {
+    const interfaceViews = createdEvent.interfaceViews || null
+    return (interfaceViews && interfaceViews[0]) || null
+}
+
+export type KnownInterfaceView =
+    | { type: 'Holding'; viewValue: Holding }
+    | { type: 'TransferInstruction'; viewValue: TransferInstructionView }
+
+export function getKnownInterfaceView(
+    createdEvent: CreatedEvent
+): KnownInterfaceView | null {
+    const interfaceView = getInterfaceView(createdEvent)
+    if (!interfaceView) {
+        return null
+    } else if (
+        matchInterfaceIds(HOLDING_INTERFACE_ID, interfaceView.interfaceId)
+    ) {
+        return {
+            type: 'Holding',
+            viewValue: interfaceView.viewValue as Holding,
+        }
+    } else if (
+        matchInterfaceIds(
+            TRANSFER_INSTRUCTION_INTERFACE_ID,
+            interfaceView.interfaceId
+        )
+    ) {
+        return {
+            type: 'TransferInstruction',
+            viewValue: interfaceView.viewValue as TransferInstructionView,
+        }
+    } else {
+        return null
+    }
+}
+
+// TODO (#563): handle allocations in such a way that any callers have to handle them too
+/**
+ * Use this when `createdEvent` is guaranteed to have an interface view because the ledger api filters
+ * include it, and thus is guaranteed to be returned by the API.
+ */
+export function ensureInterfaceViewIsPresent(
+    createdEvent: CreatedEvent,
+    interfaceId: string
+): JsInterfaceView {
+    const interfaceView = getInterfaceView(createdEvent)
+    if (!interfaceView) {
+        throw new Error(
+            `Expected to have interface views, but didn't: ${JSON.stringify(
+                createdEvent
+            )}`
+        )
+    }
+    if (!matchInterfaceIds(interfaceId, interfaceView.interfaceId)) {
+        throw new Error(
+            `Not a ${interfaceId} but a ${
+                interfaceView.interfaceId
+            }: ${JSON.stringify(createdEvent)}`
+        )
+    }
+    return interfaceView
+}
 
 type Meta = { values: { [key: string]: string } } | undefined
 
@@ -58,15 +139,15 @@ export function getMetaKeyValue(key: string, meta: Meta): string | null {
  * we remove all metadata fields that were fully parsed, and whose content is reflected in the TypeScript structure.
  * Otherwise, the display code has to do so, overloading the user with superfluous metadata entries.
  */
-// export function removeParsedMetaKeys(meta: Meta): Meta {
-//     return {
-//         values: Object.fromEntries(
-//             Object.entries(meta?.values || {}).filter(
-//                 ([k]) => !AllKnownMetaKeys.includes(k)
-//             )
-//         ),
-//     }
-// }
+export function removeParsedMetaKeys(meta: Meta): Meta {
+    return {
+        values: Object.fromEntries(
+            Object.entries(meta?.values || {}).filter(
+                ([k]) => !AllKnownMetaKeys.includes(k)
+            )
+        ),
+    }
+}
 
 const COMPLETIONS_LIMIT = '100'
 const COMPLETIONS_STREAM_IDLE_TIMEOUT_MS = '1000'

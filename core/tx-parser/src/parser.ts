@@ -10,14 +10,14 @@ import {
     hasInterface,
     mergeMetas,
     removeParsedMetaKeys,
-} from '../ledger-api-utils.js'
+} from './ledger-api-utils.js'
 import {
     BurnedMetaKey,
     matchInterfaceIds,
     ReasonMetaKey,
     SenderMetaKey,
     TxKindMetaKey,
-} from '../constants.js'
+} from './constants.js'
 import {
     Holding,
     HoldingsChangeSummary,
@@ -36,7 +36,7 @@ import {
     v3_3,
     EventFilterBySetup,
 } from '@canton-network/core-ledger-client-types'
-import { LedgerClient } from '../ledger-client'
+import { LedgerClient } from '@canton-network/core-ledger-client'
 import BigNumber from 'bignumber.js'
 import { PartyId } from '@canton-network/core-types'
 import {

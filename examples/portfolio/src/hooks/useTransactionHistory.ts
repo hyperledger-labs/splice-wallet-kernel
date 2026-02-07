@@ -8,7 +8,7 @@ import {
     type UseInfiniteQueryResult,
     type InfiniteData,
 } from '@tanstack/react-query'
-import { type Transaction } from '@canton-network/core-ledger-client'
+import { type Transaction } from '@canton-network/core-tx-parser'
 import { usePortfolio } from '../contexts/PortfolioContext'
 import { usePrimaryAccount } from '../hooks/useAccounts'
 import type { TransactionHistoryResponse } from '../services/transaction-history-service'

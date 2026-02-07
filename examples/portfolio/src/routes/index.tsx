@@ -1,10 +1,8 @@
 import { useMemo, useCallback } from 'react'
 import { Box, Typography } from '@mui/material'
 import { createFileRoute } from '@tanstack/react-router'
-import {
-    TokenStandardService,
-    type PrettyContract,
-} from '@canton-network/core-ledger-client'
+import { type PrettyContract } from '@canton-network/core-tx-parser'
+import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import type {
     AllocationView,
     SettlementInfo,

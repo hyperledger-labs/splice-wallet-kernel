@@ -7,10 +7,13 @@ import {
     defaultRetryableOptions,
     LedgerClient,
     type Types,
+} from '@canton-network/core-ledger-client'
+
+import {
     TransactionParser,
     TokenStandardTransactionInterfaces,
-    type Transaction,
-} from '@canton-network/core-ledger-client'
+} from '@canton-network/core-tx-parser'
+import { type Transaction } from '@canton-network/core-tx-parser'
 
 type FiltersByParty = Types['Map_Filters']
 
