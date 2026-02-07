@@ -6,10 +6,6 @@ import { customElement, state } from 'lit/decorators.js'
 import '@canton-network/core-wallet-ui-components'
 import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
 import { createUserClient } from '../rpc-client'
-import {
-    ExecuteParams,
-    SignParams,
-} from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
 import {
@@ -199,7 +195,10 @@ export class ApproveUi extends LitElement {
             stateManager.accessToken.get()
         )
         userClient
-            .request('getTransaction', { commandId: this.commandId })
+            .request({
+                method: 'getTransaction',
+                params: { commandId: this.commandId },
+            })
             .then((result) => {
                 this.txHash = result.preparedTransactionHash
                 this.tx = result.preparedTransaction
@@ -215,10 +214,12 @@ export class ApproveUi extends LitElement {
                 }
             })
 
-        userClient.request('listWallets', {}).then((wallets) => {
-            this.partyId =
-                wallets.find((w) => w.primary === true)?.partyId || ''
-        })
+        userClient
+            .request({ method: 'listWallets', params: {} })
+            .then((wallets) => {
+                this.partyId =
+                    wallets.find((w) => w.primary === true)?.partyId || ''
+            })
     }
 
     private async handleExecute() {
@@ -227,28 +228,28 @@ export class ApproveUi extends LitElement {
         this.messageType = 'info'
 
         try {
-            const signRequest: SignParams = {
-                commandId: this.commandId,
-                partyId: this.partyId,
-                preparedTransactionHash: this.txHash,
-                preparedTransaction: this.tx,
-            }
-
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            const { signature, signedBy } = await userClient.request(
-                'sign',
-                signRequest
-            )
+            const { signature, signedBy } = await userClient.request({
+                method: 'sign',
+                params: {
+                    commandId: this.commandId,
+                    partyId: this.partyId,
+                    preparedTransactionHash: this.txHash,
+                    preparedTransaction: this.tx,
+                },
+            })
 
-            const executeRequest: ExecuteParams = {
-                signature,
-                signedBy,
-                commandId: this.commandId,
-                partyId: this.partyId,
-            }
-            await userClient.request('execute', executeRequest)
+            await userClient.request({
+                method: 'execute',
+                params: {
+                    signature,
+                    signedBy,
+                    commandId: this.commandId,
+                    partyId: this.partyId,
+                },
+            })
 
             this.message = 'Transaction executed successfully ✅'
             this.messageType = 'info'

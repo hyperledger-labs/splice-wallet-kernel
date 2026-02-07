@@ -122,6 +122,9 @@ jobs:
               with:
                   network: canton
 
+            - name: Build project
+              run: yarn build:all:serial
+
             - name: Start remote WK
               run: yarn nx run @canton-network/wallet-gateway-remote:start &
 

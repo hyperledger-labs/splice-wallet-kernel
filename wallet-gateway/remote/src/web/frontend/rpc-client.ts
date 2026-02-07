@@ -39,7 +39,7 @@ export const attemptRemoveSession = async (
         const userApiClient = new UserApiClient(
             new HttpTransport(userApiPath, accessToken)
         )
-        await userApiClient.request('removeSession')
+        await userApiClient.request({ method: 'removeSession' })
     } catch (error) {
         // If removeSession fails that's okay
         // We still want to clear local state

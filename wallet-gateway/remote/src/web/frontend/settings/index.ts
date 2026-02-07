@@ -14,7 +14,6 @@ import { LitElement, html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import {
     Network,
-    RemoveNetworkParams,
     Session,
     Idp,
     Auth as ApiAuth,
@@ -65,7 +64,7 @@ export class UserUiSettings extends LitElement {
         const userClient = await createUserClient(
             stateManager.accessToken.get()
         )
-        const response = await userClient.request('listNetworks')
+        const response = await userClient.request({ method: 'listNetworks' })
         this.networks = response.networks
     }
 
@@ -73,7 +72,7 @@ export class UserUiSettings extends LitElement {
         const userClient = await createUserClient(
             stateManager.accessToken.get()
         )
-        const response = await userClient.request('listSessions')
+        const response = await userClient.request({ method: 'listSessions' })
         this.sessions = response.sessions
     }
 
@@ -81,7 +80,7 @@ export class UserUiSettings extends LitElement {
         const userClient = await createUserClient(
             stateManager.accessToken.get()
         )
-        const response = await userClient.request('listIdps')
+        const response = await userClient.request({ method: 'listIdps' })
         this.idps = response.idps
     }
 
@@ -110,24 +109,27 @@ export class UserUiSettings extends LitElement {
                   clientSecret: '',
               }
 
-        const network: Network = {
-            id: e.network.id,
-            name: e.network.name,
-            description: e.network.description,
-            identityProviderId: e.network.identityProviderId,
-            ...(e.network.synchronizerId && {
-                synchronizerId: e.network.synchronizerId as string,
-            }),
-            ledgerApi: e.network.ledgerApi.baseUrl,
-            auth,
-            adminAuth,
-        }
-
         try {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            await userClient.request('addNetwork', { network })
+            await userClient.request({
+                method: 'addNetwork',
+                params: {
+                    network: {
+                        id: e.network.id,
+                        name: e.network.name,
+                        description: e.network.description,
+                        identityProviderId: e.network.identityProviderId,
+                        ...(e.network.synchronizerId && {
+                            synchronizerId: e.network.synchronizerId as string,
+                        }),
+                        ledgerApi: e.network.ledgerApi.baseUrl,
+                        auth,
+                        adminAuth,
+                    },
+                },
+            })
             await this.listNetworks()
         } catch (e) {
             handleErrorToast(e)
@@ -137,13 +139,15 @@ export class UserUiSettings extends LitElement {
     private async handleNetworkDelete(e: NetworkCardDeleteEvent) {
         if (!confirm(`Delete network "${e.network.name}"?`)) return
         try {
-            const params: RemoveNetworkParams = {
-                networkName: e.network.id,
-            }
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            await userClient.request('removeNetwork', params)
+            await userClient.request({
+                method: 'removeNetwork',
+                params: {
+                    networkName: e.network.id,
+                },
+            })
             await this.listNetworks()
         } catch (e) {
             handleErrorToast(e)
@@ -156,7 +160,12 @@ export class UserUiSettings extends LitElement {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            await userClient.request('addIdp', { idp: ev.idp })
+            await userClient.request({
+                method: 'addIdp',
+                params: {
+                    idp: ev.idp,
+                },
+            })
             await this.listIdps()
         } catch (e) {
             handleErrorToast(e)
@@ -169,8 +178,11 @@ export class UserUiSettings extends LitElement {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            await userClient.request('removeIdp', {
-                identityProviderId: ev.idp.id,
+            await userClient.request({
+                method: 'removeIdp',
+                params: {
+                    identityProviderId: ev.idp.id,
+                },
             })
             await this.listIdps()
         } catch (e) {

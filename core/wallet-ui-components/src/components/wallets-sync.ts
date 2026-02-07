@@ -106,7 +106,9 @@ export class WgWalletsSync extends BaseElement {
         if (!this.client) return
 
         try {
-            const result = await this.client.request('isWalletSyncNeeded')
+            const result = await this.client.request({
+                method: 'isWalletSyncNeeded',
+            })
             this.isSyncNeeded = result?.walletSyncNeeded === true
         } catch {
             // Check failed, assume we need sync and render button to allow state recovery
@@ -119,7 +121,7 @@ export class WgWalletsSync extends BaseElement {
 
         this.isSyncing = true
         try {
-            const result = await this.client.request('syncWallets')
+            const result = await this.client.request({ method: 'syncWallets' })
             const added = result?.added || []
             const removed = result?.removed || []
             const disabledAdded = added.filter((w) => w.disabled === true)

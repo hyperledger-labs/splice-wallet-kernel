@@ -207,7 +207,7 @@ export class LoginUI extends LitElement {
         const userClient = await createUserClient(
             stateManager.accessToken.get()
         )
-        const response = await userClient.request('listNetworks')
+        const response = await userClient.request({ method: 'listNetworks' })
         return response.networks
     }
 
@@ -215,7 +215,7 @@ export class LoginUI extends LitElement {
         const userClient = await createUserClient(
             stateManager.accessToken.get()
         )
-        const response = await userClient.request('listIdps')
+        const response = await userClient.request({ method: 'listIdps' })
         return response.idps
     }
 
