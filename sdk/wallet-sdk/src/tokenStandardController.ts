@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Types, LedgerClient } from '@canton-network/core-ledger-client'
-//TODO: this should probably be in the types
+//TODO: this should probably be in the core-ledger-client types
 import {
     ExerciseCommand,
     DisclosedContract,
