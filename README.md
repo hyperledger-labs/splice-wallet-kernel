@@ -49,10 +49,10 @@ See the [Wallet SDK README](sdk/wallet-sdk) and the [integration guide](https://
 
 Two implementations of the Wallet Gateway, both exposing the same dApp API and User API:
 
-| Package                                    | Path                                                   | Description                                                                                                                 |
-| ------------------------------------------ | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `@canton-network/wallet-gateway-remote`    | [`wallet-gateway/remote`](wallet-gateway/remote)       | Server-side implementation over HTTP (Express.js). Connects to SQL stores and external signing providers.                   |
-| `@canton-network/wallet-gateway-extension` | [`wallet-gateway/extension`](wallet-gateway/extension) | Client-side implementation as a Manifest V3 browser extension. Uses browser storage for persistence and in-browser signing. |
+| Package                                    | Path                                                   | Description                                                                                                                                       |
+| ------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@canton-network/wallet-gateway-remote`    | [`wallet-gateway/remote`](wallet-gateway/remote)       | Server-side implementation over HTTP (Express.js). Connects to SQL stores and external signing providers.                                         |
+| `@canton-network/wallet-gateway-extension` | [`wallet-gateway/extension`](wallet-gateway/extension) | [NOT IMPLEMENTED YET] Client-side implementation as a Manifest V3 browser extension. Uses browser storage for persistence and in-browser signing. |
 
 ### SDKs
 
@@ -65,38 +65,36 @@ Two implementations of the Wallet Gateway, both exposing the same dApp API and U
 
 Shared libraries used by the Wallet Gateway, SDKs, and signing providers:
 
-| Package                        | Path                                                           | Description                                                             |
-| ------------------------------ | -------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| **Store**                      |                                                                |                                                                         |
-| `core-wallet-store`            | [`core/wallet-store`](core/wallet-store)                       | Store interface for wallets, sessions, networks, IDPs, and transactions |
-| `core-wallet-store-sql`        | [`core/wallet-store-sql`](core/wallet-store-sql)               | SQL implementation (SQLite / PostgreSQL) via Kysely                     |
-| `core-wallet-store-inmemory`   | [`core/wallet-store-inmemory`](core/wallet-store-inmemory)     | In-memory implementation for testing and development                    |
-| `core-wallet-store-extension`  | [`core/wallet-store-extension`](core/wallet-store-extension)   | Browser extension storage implementation (`browser.storage.local`)      |
-| **Signing**                    |                                                                |                                                                         |
-| `core-signing-lib`             | [`core/signing-lib`](core/signing-lib)                         | Core library and interfaces for signing driver implementations          |
-| `core-signing-store-sql`       | [`core/signing-store-sql`](core/signing-store-sql)             | SQL persistence for signing keys and transactions                       |
-| `core-signing-store-extension` | [`core/signing-store-extension`](core/signing-store-extension) | Browser extension storage persistence for signing keys and transactions |
-| `core-signing-internal`        | [`core/signing-internal`](core/signing-internal)               | Internal (wallet-kernel) signing driver using Ed25519                   |
-| `core-signing-participant`     | [`core/signing-participant`](core/signing-participant)         | Canton participant-managed signing driver                               |
-| `core-signing-fireblocks`      | [`core/signing-fireblocks`](core/signing-fireblocks)           | Fireblocks signing driver integration                                   |
-| `core-signing-blockdaemon`     | [`core/signing-blockdaemon`](core/signing-blockdaemon)         | Blockdaemon signing driver integration                                  |
-| **RPC & Transport**            |                                                                |                                                                         |
-| `core-types`                   | [`core/types`](core/types)                                     | Shared types and transport-agnostic parsers                             |
-| `core-rpc-transport`           | [`core/rpc-transport`](core/rpc-transport)                     | RPC transport implementations                                           |
-| `core-rpc-errors`              | [`core/rpc-errors`](core/rpc-errors)                           | Standardized JSON-RPC error types                                       |
-| `core-rpc-generator`           | [`core/rpc-generator`](core/rpc-generator)                     | Code generator for JSON-RPC interfaces                                  |
-| **Auth & Ledger**              |                                                                |                                                                         |
-| `core-wallet-auth`             | [`core/wallet-auth`](core/wallet-auth)                         | Authentication middleware and user management (JWT, OAuth)              |
-| `core-ledger-client`           | [`core/ledger-client`](core/ledger-client)                     | TypeScript Canton Ledger API client (generated from OpenAPI)            |
-| `core-ledger-client-types`     | [`core/ledger-client-types`](core/ledger-client-types)         | Type definitions for the Ledger API client                              |
-| **UI & Clients**               |                                                                |                                                                         |
-| `core-wallet-ui-components`    | [`core/wallet-ui-components`](core/wallet-ui-components)       | Reusable Lit web components for wallet UIs                              |
-| `core-wallet-user-rpc-client`  | [`core/wallet-user-rpc-client`](core/wallet-user-rpc-client)   | Generated RPC client for the User API                                   |
-| `core-wallet-dapp-rpc-client`  | [`core/wallet-dapp-rpc-client`](core/wallet-dapp-rpc-client)   | Generated RPC client for the dApp API                                   |
-| **Splice**                     |                                                                |                                                                         |
-| `core-splice-client`           | [`core/splice-client`](core/splice-client)                     | Client for Splice network services                                      |
-| `core-splice-provider`         | [`core/splice-provider`](core/splice-provider)                 | Splice network provider integration                                     |
-| `core-token-standard`          | [`core/token-standard`](core/token-standard)                   | Canton Token Standard implementation                                    |
+| Package                       | Path                                                         | Description                                                             |
+| ----------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| **Store**                     |                                                              |                                                                         |
+| `core-wallet-store`           | [`core/wallet-store`](core/wallet-store)                     | Store interface for wallets, sessions, networks, IDPs, and transactions |
+| `core-wallet-store-sql`       | [`core/wallet-store-sql`](core/wallet-store-sql)             | SQL implementation (SQLite / PostgreSQL) via Kysely                     |
+| `core-wallet-store-inmemory`  | [`core/wallet-store-inmemory`](core/wallet-store-inmemory)   | In-memory implementation for testing and development                    |
+| **Signing**                   |                                                              |                                                                         |
+| `core-signing-lib`            | [`core/signing-lib`](core/signing-lib)                       | Core library and interfaces for signing driver implementations          |
+| `core-signing-store-sql`      | [`core/signing-store-sql`](core/signing-store-sql)           | SQL persistence for signing keys and transactions                       |
+| `core-signing-internal`       | [`core/signing-internal`](core/signing-internal)             | Internal (wallet-kernel) signing driver using Ed25519                   |
+| `core-signing-participant`    | [`core/signing-participant`](core/signing-participant)       | Canton participant-managed signing driver                               |
+| `core-signing-fireblocks`     | [`core/signing-fireblocks`](core/signing-fireblocks)         | Fireblocks signing driver integration                                   |
+| `core-signing-blockdaemon`    | [`core/signing-blockdaemon`](core/signing-blockdaemon)       | Blockdaemon signing driver integration                                  |
+| **RPC & Transport**           |                                                              |                                                                         |
+| `core-types`                  | [`core/types`](core/types)                                   | Shared types and transport-agnostic parsers                             |
+| `core-rpc-transport`          | [`core/rpc-transport`](core/rpc-transport)                   | RPC transport implementations                                           |
+| `core-rpc-errors`             | [`core/rpc-errors`](core/rpc-errors)                         | Standardized JSON-RPC error types                                       |
+| `core-rpc-generator`          | [`core/rpc-generator`](core/rpc-generator)                   | Code generator for JSON-RPC interfaces                                  |
+| **Auth & Ledger**             |                                                              |                                                                         |
+| `core-wallet-auth`            | [`core/wallet-auth`](core/wallet-auth)                       | Authentication middleware and user management (JWT, OAuth)              |
+| `core-ledger-client`          | [`core/ledger-client`](core/ledger-client)                   | TypeScript Canton Ledger API client (generated from OpenAPI)            |
+| `core-ledger-client-types`    | [`core/ledger-client-types`](core/ledger-client-types)       | Type definitions for the Ledger API client                              |
+| **UI & Clients**              |                                                              |                                                                         |
+| `core-wallet-ui-components`   | [`core/wallet-ui-components`](core/wallet-ui-components)     | Reusable Lit web components for wallet UIs                              |
+| `core-wallet-user-rpc-client` | [`core/wallet-user-rpc-client`](core/wallet-user-rpc-client) | Generated RPC client for the User API                                   |
+| `core-wallet-dapp-rpc-client` | [`core/wallet-dapp-rpc-client`](core/wallet-dapp-rpc-client) | Generated RPC client for the dApp API                                   |
+| **Splice**                    |                                                              |                                                                         |
+| `core-splice-client`          | [`core/splice-client`](core/splice-client)                   | Client for Splice network services                                      |
+| `core-splice-provider`        | [`core/splice-provider`](core/splice-provider)               | Splice network provider integration                                     |
+| `core-token-standard`         | [`core/token-standard`](core/token-standard)                 | Canton Token Standard implementation                                    |
 
 ### Examples
 
