@@ -1,1 +1,1 @@
-# ledger-client
+# amulet-service
