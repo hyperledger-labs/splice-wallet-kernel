@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { DiscoverResult } from '@canton-network/core-types'
-import * as dappRemoteAPI from '@canton-network/core-wallet-dapp-remote-rpc-client'
+import * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'
 
 enum LOCAL_STORAGE {
     KERNEL_DISCOVERY = 'splice_wallet_kernel_discovery',
@@ -32,13 +32,11 @@ export const removeKernelDiscovery = (): void => {
     localStorage.removeItem(LOCAL_STORAGE.KERNEL_DISCOVERY)
 }
 
-export const getKernelSession = ():
-    | dappRemoteAPI.StatusEventAsync
-    | undefined => {
+export const getKernelSession = (): dappAPI.StatusEvent | undefined => {
     const session = localStorage.getItem(LOCAL_STORAGE.KERNEL_SESSION)
     if (session) {
         try {
-            return JSON.parse(session) as dappRemoteAPI.StatusEventAsync
+            return JSON.parse(session) as dappAPI.StatusEvent
         } catch (e) {
             console.error('Failed to parse stored kernel session:', e)
         }
@@ -46,9 +44,7 @@ export const getKernelSession = ():
     return undefined
 }
 
-export const setKernelSession = (
-    session: dappRemoteAPI.StatusEventAsync
-): void => {
+export const setKernelSession = (session: dappAPI.StatusEvent): void => {
     localStorage.setItem(LOCAL_STORAGE.KERNEL_SESSION, JSON.stringify(session))
 }
 

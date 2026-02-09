@@ -165,6 +165,7 @@ export interface ConnectResult {
     reason?: Reason
     isNetworkConnected: IsNetworkConnected
     networkReason?: NetworkReason
+    userUrl?: UserUrl
 }
 /**
  *
@@ -208,7 +209,6 @@ export type UserId = string
 export interface Session {
     accessToken: AccessToken
     userId: UserId
-    [k: string]: any
 }
 /**
  *
@@ -428,7 +428,6 @@ export interface StatusEvent {
     connection: ConnectResult
     network?: Network
     session?: Session
-    [k: string]: any
 }
 /**
  *

@@ -549,6 +549,9 @@
                         "title": "networkReason",
                         "type": "string",
                         "description": "If not connected to a network, the reason why."
+                    },
+                    "userUrl": {
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/UserUrl"
                     }
                 },
                 "required": ["isConnected", "isNetworkConnected"]
@@ -556,6 +559,7 @@
             "StatusEvent": {
                 "title": "StatusEvent",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                     "provider": {
                         "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/Provider"
@@ -632,6 +636,7 @@
                 "title": "session",
                 "type": "object",
                 "description": "Session information, if authenticated.",
+                "additionalProperties": false,
                 "properties": {
                     "accessToken": {
                         "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/AccessToken"
