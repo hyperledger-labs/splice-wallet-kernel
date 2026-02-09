@@ -10,7 +10,7 @@ import {
     hasInterface,
     mergeMetas,
     removeParsedMetaKeys,
-} from './ledger-api-utils.js'
+} from './utils.js'
 import {
     BurnedMetaKey,
     matchInterfaceIds,
