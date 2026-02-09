@@ -30,7 +30,7 @@ export const Header = () => {
     const menuOpen = Boolean(anchorEl)
     const { isDarkMode, toggleTheme } = useTheme()
     const { status, connect, open: openGateway, disconnect } = useConnection()
-    const connected = status?.isConnected
+    const connected = status?.connection?.isConnected
 
     const action = connected ? disconnect : connect
 

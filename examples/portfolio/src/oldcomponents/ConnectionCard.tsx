@@ -6,7 +6,7 @@ import { usePrimaryAccount } from '../hooks/useAccounts'
 
 export const ConnectionCard: React.FC = () => {
     const { error, status, connect, open, disconnect } = useConnection()
-    const connected = status?.isConnected
+    const connected = status?.connection?.isConnected
     const primaryParty = usePrimaryAccount()?.partyId
 
     return (
