@@ -203,7 +203,7 @@ export class UserUiTransactions extends LitElement {
         const userClient = await createUserClient(
             stateManager.accessToken.get()
         )
-        userClient.request('listTransactions').then((result) => {
+        userClient.request({ method: 'listTransactions' }).then((result) => {
             this.transactions = result.transactions || []
             for (const tx of this.transactions) {
                 try {

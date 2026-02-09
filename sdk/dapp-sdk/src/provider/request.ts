@@ -5,7 +5,7 @@ import * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'
 import { discover } from '@canton-network/core-wallet-ui-components'
 import { assertProvider, ConnectError, ErrorCode } from '../error.js'
 import * as storage from '../storage'
-import { injectProvider } from './index'
+import { injectSdkProvider } from './index'
 import { GatewaysConfig } from '@canton-network/core-types'
 import gateways from '../gateways.json'
 import { clearAllLocalState } from '../util'
@@ -32,7 +32,7 @@ export async function connect(
             clearAllLocalState()
 
             storage.setKernelDiscovery(result)
-            const provider = injectProvider(result)
+            const provider = injectSdkProvider(result)
 
             // Store token once connect fires a statusChanged event
             provider.on<dappAPI.StatusEvent>('statusChanged', (event) => {
@@ -45,7 +45,7 @@ export async function connect(
                 }
             })
 
-            return await provider.request<dappAPI.ConnectResult>({
+            return await provider.request({
                 method: 'connect',
             })
         })
@@ -75,7 +75,7 @@ export async function connect(
 export async function disconnect(): Promise<dappAPI.Null> {
     try {
         const provider = assertProvider()
-        await provider.request<dappAPI.Null>({
+        await provider.request({
             method: 'disconnect',
         })
     } finally {
@@ -86,13 +86,13 @@ export async function disconnect(): Promise<dappAPI.Null> {
 }
 
 export async function status(): Promise<dappAPI.StatusEvent> {
-    return await assertProvider().request<dappAPI.StatusEvent>({
+    return await assertProvider().request({
         method: 'status',
     })
 }
 
 export async function listAccounts(): Promise<dappAPI.ListAccountsResult> {
-    return await assertProvider().request<dappAPI.ListAccountsResult>({
+    return await assertProvider().request({
         method: 'listAccounts',
     })
 }
@@ -109,7 +109,7 @@ export async function prepareExecute(
 export async function prepareExecuteAndWait(
     params: dappAPI.PrepareExecuteParams
 ): Promise<dappAPI.PrepareExecuteAndWaitResult> {
-    return await assertProvider().request<dappAPI.PrepareExecuteAndWaitResult>({
+    return await assertProvider().request({
         method: 'prepareExecuteAndWait',
         params,
     })
@@ -118,7 +118,7 @@ export async function prepareExecuteAndWait(
 export async function ledgerApi(
     params: dappAPI.LedgerApiParams
 ): Promise<dappAPI.LedgerApiResult> {
-    return await assertProvider().request<dappAPI.LedgerApiResult>({
+    return await assertProvider().request({
         method: 'ledgerApi',
         params,
     })
