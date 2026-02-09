@@ -28,9 +28,6 @@ export class UserUiWallets extends LitElement {
     accessor signingProviders: string[] = Object.values(SigningProvider)
 
     @state()
-    accessor networks: string[] = []
-
-    @state()
     accessor wallets: Wallet[] | undefined = undefined
 
     @state()
@@ -50,9 +47,6 @@ export class UserUiWallets extends LitElement {
 
     @query('#signing-provider-id')
     accessor _signingProviderSelect: HTMLSelectElement | null = null
-
-    @query('#network-id')
-    accessor _networkSelect: HTMLSelectElement | null = null
 
     @query('#primary')
     accessor _primaryCheckbox: HTMLInputElement | null = null
@@ -290,8 +284,6 @@ export class UserUiWallets extends LitElement {
                             <div class="wallet-meta">
                                 <strong>Party ID:</strong>
                                 ${wallet.partyId}<br />
-                                <strong>Network:</strong>
-                                ${wallet.networkId}<br />
                                 <strong>Signing Provider:</strong>
                                 ${wallet.signingProviderId}
                                 ${wallet.disabled
@@ -427,7 +419,6 @@ export class UserUiWallets extends LitElement {
         const partyHint = this._partyHintInput?.value || ''
         const primary = this._primaryCheckbox?.checked || false
         const signingProviderId = this._signingProviderSelect?.value || ''
-        const networkId = this._networkSelect?.value || ''
 
         try {
             const userClient = await createUserClient(
@@ -438,7 +429,6 @@ export class UserUiWallets extends LitElement {
                 params: {
                     primary,
                     partyHint,
-                    networkId,
                     signingProviderId,
                 },
             })
@@ -465,7 +455,6 @@ export class UserUiWallets extends LitElement {
                 params: {
                     primary: wallet.primary,
                     partyHint: wallet.hint,
-                    networkId: wallet.networkId,
                     signingProviderId: wallet.signingProviderId,
                     signingProviderContext: {
                         partyId: wallet.partyId,

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
  *
@@ -160,7 +161,6 @@ export interface SigningProviderContext {
     externalTxId: ExternalTxId
     topologyTransactions: TopologyTransactions
     namespace: Namespace
-    [k: string]: any
 }
 /**
  *
@@ -182,7 +182,6 @@ export type SigningProviderIds = SigningProviderId[]
 export interface WalletFilter {
     networkIds?: NetworkIds
     signingProviderIds?: SigningProviderIds
-    [k: string]: any
 }
 /**
  *
@@ -254,8 +253,8 @@ export interface Wallet {
     topologyTransactions?: TopologyTransactions
     disabled?: Disabled
     reason?: Reason
-    [k: string]: any
 }
+type AlwaysTrue = any
 export type Added = Wallet[]
 export type Removed = Wallet[]
 /**
@@ -292,6 +291,18 @@ export interface Session {
 export type Sessions = Session[]
 /**
  *
+ * The timestamp when the transaction was created.
+ *
+ */
+export type CreatedAt = string
+/**
+ *
+ * The timestamp when the transaction was signed.
+ *
+ */
+export type SignedAt = string
+/**
+ *
  * Optional payload associated with the transaction.
  *
  */
@@ -305,69 +316,58 @@ export type Origin = string
 export interface Transaction {
     commandId: CommandId
     status: Status
+    createdAt?: CreatedAt
+    signedAt?: SignedAt
     preparedTransaction: PreparedTransaction
     preparedTransactionHash: PreparedTransactionHash
     payload?: Payload
     origin?: Origin
-    [k: string]: any
 }
 export type Transactions = Transaction[]
 export interface AddNetworkParams {
     network: Network
-    [k: string]: any
 }
 export interface RemoveNetworkParams {
     networkName: NetworkName
-    [k: string]: any
 }
 export interface AddIdpParams {
     idp: Idp
-    [k: string]: any
 }
 export interface RemoveIdpParams {
     identityProviderId: IdentityProviderId
-    [k: string]: any
 }
 export interface CreateWalletParams {
     primary?: Primary
     partyHint: PartyHint
     signingProviderId: SigningProviderId
     signingProviderContext?: SigningProviderContext
-    [k: string]: any
 }
 export interface SetPrimaryWalletParams {
     partyId: PartyId
-    [k: string]: any
 }
 export interface RemoveWalletParams {
     partyId: PartyId
-    [k: string]: any
 }
 export interface ListWalletsParams {
     filter?: WalletFilter
-    [k: string]: any
 }
 export interface SignParams {
     preparedTransaction: PreparedTransaction
     preparedTransactionHash: PreparedTransactionHash
     commandId: CommandId
     partyId: PartyId
-    [k: string]: any
 }
 export interface ExecuteParams {
     signature: Signature
     partyId: PartyId
     commandId: CommandId
     signedBy: SignedBy
-    [k: string]: any
 }
 export interface AddSessionParams {
     networkId: NetworkId
-    [k: string]: any
 }
 export interface GetTransactionParams {
     commandId: CommandId
-    [k: string]: any
 }
 /**
  *
@@ -377,11 +377,9 @@ export interface GetTransactionParams {
 export type Null = null
 export interface ListNetworksResult {
     networks: Networks
-    [k: string]: any
 }
 export interface ListIdpsResult {
     idps: Idps
-    [k: string]: any
 }
 export interface CreateWalletResult {
     wallet: Wallet
@@ -404,17 +402,14 @@ export type ListWalletsResult = Wallet[]
 export interface SyncWalletsResult {
     added: Added
     removed: Removed
-    [k: string]: any
 }
 export interface IsWalletSyncNeededResult {
     walletSyncNeeded: WalletSyncNeeded
-    [k: string]: any
 }
 export interface SignResult {
     signature: Signature
     partyId: PartyId
     signedBy: SignedBy
-    [k: string]: any
 }
 export interface ExecuteResult {
     [key: string]: any
@@ -434,20 +429,19 @@ export interface AddSessionResult {
 }
 export interface ListSessionsResult {
     sessions: Sessions
-    [k: string]: any
 }
 export interface GetTransactionResult {
     commandId: CommandId
     status: Status
+    createdAt?: CreatedAt
+    signedAt?: SignedAt
     preparedTransaction: PreparedTransaction
     preparedTransactionHash: PreparedTransactionHash
     payload?: Payload
     origin?: Origin
-    [k: string]: any
 }
 export interface ListTransactionsResult {
     transactions: Transactions
-    [k: string]: any
 }
 /**
  *

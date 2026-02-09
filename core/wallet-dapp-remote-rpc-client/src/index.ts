@@ -296,7 +296,6 @@ export interface Wallet {
     topologyTransactions?: TopologyTransactions
     disabled?: Disabled
     reason?: Reason
-    [k: string]: any
 }
 /**
  *
