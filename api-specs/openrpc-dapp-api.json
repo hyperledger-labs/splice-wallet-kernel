@@ -85,6 +85,7 @@
                 "schema": {
                     "title": "prepareExecuteAndWaitResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "tx": {
                             "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/TxChangedExecutedEvent"
@@ -187,6 +188,7 @@
                 "title": "Provider",
                 "type": "object",
                 "description": "Represents a Provider.",
+                "additionalProperties": false,
                 "properties": {
                     "id": {
                         "title": "id",
@@ -219,6 +221,7 @@
                 "title": "LedgerApiResult",
                 "type": "object",
                 "description": "Ledger Api configuration options",
+                "additionalProperties": false,
                 "properties": {
                     "response": {
                         "title": "response",
@@ -237,6 +240,7 @@
                 "title": "JsPrepareSubmissionRequest",
                 "type": "object",
                 "description": "Structure representing the request for prepare and execute calls",
+                "additionalProperties": false,
                 "properties": {
                     "commandId": {
                         "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
@@ -291,6 +295,7 @@
                 "title": "DisclosedContract",
                 "type": "object",
                 "description": "Structure representing a disclosed contract for transaction execution",
+                "additionalProperties": false,
                 "properties": {
                     "templateId": {
                         "title": "templateId",
@@ -318,12 +323,14 @@
             "JsCommands": {
                 "title": "JsCommands",
                 "type": "object",
-                "description": "Structure representing JS commands for transaction execution"
+                "description": "Structure representing JS commands for transaction execution",
+                "additionalProperties": true
             },
             "JsPrepareSubmissionResponse": {
                 "title": "JsPrepareSubmissionResponse",
                 "type": "object",
                 "description": "Structure representing the result of a prepareReturn call",
+                "additionalProperties": false,
                 "properties": {
                     "preparedTransaction": {
                         "title": "preparedTransaction",
@@ -341,6 +348,7 @@
                 "title": "LedgerApiRequest",
                 "type": "object",
                 "description": "Ledger API request structure",
+                "additionalProperties": false,
                 "properties": {
                     "requestMethod": {
                         "title": "requestMethod",
@@ -520,6 +528,7 @@
             "ConnectResult": {
                 "title": "ConnectResult",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                     "isConnected": {
                         "title": "isConnected",
@@ -567,6 +576,7 @@
                 "title": "SignMessageRequest",
                 "type": "object",
                 "description": "Request to sign a message.",
+                "additionalProperties": false,
                 "properties": {
                     "message": {
                         "title": "message",
@@ -579,6 +589,7 @@
             "SignMessageResult": {
                 "title": "SignMessageResult",
                 "type": "object",
+                "additionalProperties": false,
                 "description": "Result of signing a message.",
                 "properties": {
                     "signature": {
@@ -593,6 +604,7 @@
                 "title": "network",
                 "type": "object",
                 "description": "Network information, if connected to a network.",
+                "additionalProperties": false,
                 "properties": {
                     "networkId": {
                         "title": "networkId",

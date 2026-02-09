@@ -38,7 +38,6 @@ export interface PrepareParams {
     readAs?: string[]
     disclosedContracts?: DisclosedContracts
     packageIdSelectionPreference?: PackageIdSelectionPreference
-    [k: string]: unknown
 }
 
 export function ledgerPrepareParams(
