@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+    defaultRetryableOptions,
     GenerateTransactionResponse,
     LedgerClient,
 } from '@canton-network/core-ledger-client'
@@ -266,10 +267,40 @@ export class PartyAllocationService {
             ]
         )
 
-        await this.ledgerClient.waitForPartyAndGrantUserRights(
-            userId,
-            res.partyId
-        )
+        const canOmitPerPartyRights = await this.hasWildcardRights(userId)
+
+        if (canOmitPerPartyRights) {
+            await this.ledgerClient.waitForParty(userId, res.partyId)
+        } else {
+            await this.ledgerClient.waitForPartyAndGrantUserRights(
+                userId,
+                res.partyId
+            )
+        }
+
         return { hint, partyId: res.partyId, namespace }
+    }
+
+    private async hasWildcardRights(userId: string): Promise<boolean> {
+        const rightsResponse = await this.ledgerClient.getWithRetry(
+            '/v2/users/{user-id}/rights',
+            defaultRetryableOptions,
+            {
+                path: {
+                    'user-id': userId,
+                },
+            }
+        )
+
+        if (!Array.isArray(rightsResponse.rights)) return false
+
+        const hasExecuteAsAnyParty = rightsResponse.rights.some(
+            (r) => 'CanExecuteAsAnyParty' in r.kind
+        )
+        const hasReadAsAnyParty = rightsResponse.rights.some(
+            (r) => 'CanReadAsAnyParty' in r.kind
+        )
+
+        return hasExecuteAsAnyParty && hasReadAsAnyParty
     }
 }

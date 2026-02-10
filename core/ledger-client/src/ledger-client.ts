@@ -323,20 +323,18 @@ export class LedgerClient {
     }
 
     /**
-     * Grants a user the right to act as a party, while ensuring the party exists.
+     * Ensures the party exists.
      *
-     * @param userId The ID of the user to grant rights to.
      * @param partyId The ID of the party to grant rights for.
      * @param maxTries Optional max number of retries with default 30. May be increased if expecting heavy load.
      * @param retryIntervalMs Optional interval between retries to verify that party exists with default 2000ms. May be increased if expecting heavy load.
-     * @returns A promise that resolves when the rights have been granted.
+     * @returns A promise that resolves when party appears on ledger
      */
-    public async waitForPartyAndGrantUserRights(
-        userId: string,
+    private async waitForPartyToExist(
         partyId: PartyId,
         maxTries: number = 30,
         retryIntervalMs: number = 2000
-    ) {
+    ): Promise<void> {
         await this.init()
         // Wait for party to appear on participant
         let partyFound = false
@@ -354,6 +352,26 @@ export class LedgerClient {
                 `timed out waiting for new party to appear after ${maxTries} tries`
             )
         }
+    }
+
+    /**
+     * Grants a user the right to act as a party, while ensuring the party exists.
+     *
+     * @param userId The ID of the user to grant rights to.
+     * @param partyId The ID of the party to grant rights for.
+     * @param maxTries Optional max number of retries with default 30. May be increased if expecting heavy load.
+     * @param retryIntervalMs Optional interval between retries to verify that party exists with default 2000ms. May be increased if expecting heavy load.
+     * @returns A promise that resolves when the rights have been granted.
+     */
+    public async waitForPartyAndGrantUserRights(
+        userId: string,
+        partyId: PartyId,
+        maxTries: number = 30,
+        retryIntervalMs: number = 2000
+    ) {
+        await this.init()
+        // Wait for party to appear on participant
+        await this.waitForPartyToExist(partyId, maxTries, retryIntervalMs)
 
         const result = await this.grantRights(userId, {
             actAs: [partyId],
