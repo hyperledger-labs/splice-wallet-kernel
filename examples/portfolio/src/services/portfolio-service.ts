@@ -75,6 +75,9 @@ export interface PortfolioService {
         request: TransactionHistoryRequest
     }) => Promise<TransactionHistoryResponse>
 
+    // Network info
+    isDevNet: (_: { sessionToken: string }) => Promise<boolean>
+
     // Tap
     tap: (_: {
         registryUrls: ReadonlyMap<PartyId, string>

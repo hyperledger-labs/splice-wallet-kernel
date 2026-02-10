@@ -319,4 +319,8 @@ export class AmuletService {
             disclosedContracts,
         ]
     }
+
+    async isDevNet(): Promise<boolean> {
+        return await this.scanProxyClient.isDevNet()
+    }
 }
