@@ -46,6 +46,27 @@ export class WalletSyncService {
         }
     }
 
+    private async getParticipantNamespace(): Promise<string | undefined> {
+        try {
+            const { participantId } = await this.adminLedgerClient.getWithRetry(
+                '/v2/parties/participant-id',
+                defaultRetryableOptions
+            )
+            // Extract the namespace part from participantId
+            // Format is hint::namespace
+            const [, extractedNamespace] = participantId.split('::')
+            if (!extractedNamespace) {
+                this.logger.warn(
+                    { participantId },
+                    `Invalid participantId format: expected "hint::namespace", got "${participantId}"`
+                )
+            }
+            return extractedNamespace
+        } catch (err) {
+            this.logger.warn({ err }, 'Failed to get participant namespace')
+        }
+    }
+
     protected async resolveSigningProvider(namespace: string): Promise<
         | {
               signingProviderId: SigningProvider.PARTICIPANT
@@ -63,27 +84,7 @@ export class WalletSyncService {
         try {
             // Check if namespace matches participant namespace first
             // (participant parties have namespace === participantId's namespace)
-            let participantNamespace: string | undefined
-            try {
-                const { participantId } =
-                    await this.adminLedgerClient.getWithRetry(
-                        '/v2/parties/participant-id',
-                        defaultRetryableOptions
-                    )
-                // Extract the namespace part from participantId
-                // Format is hint::namespace
-                const [, extractedNamespace] = participantId.split('::')
-                if (extractedNamespace) {
-                    participantNamespace = extractedNamespace
-                } else {
-                    this.logger.warn(
-                        { participantId },
-                        `Invalid participantId format: expected "hint::namespace", got "${participantId}"`
-                    )
-                }
-            } catch (err) {
-                this.logger.warn({ err }, 'Failed to get participant namespace')
-            }
+            const participantNamespace = await this.getParticipantNamespace()
 
             if (participantNamespace && namespace === participantNamespace) {
                 return {
@@ -184,7 +185,7 @@ export class WalletSyncService {
         }
     }
 
-    private async getPartiesRightsMap(): Promise<Map<string, string>> {
+    private async getPartiesWithRights(): Promise<string[]> {
         const rights = await this.ledgerClient.getWithRetry(
             '/v2/users/{user-id}/rights',
             defaultRetryableOptions,
@@ -195,30 +196,69 @@ export class WalletSyncService {
             }
         )
 
-        const partiesWithRights = new Map<string, string>()
+        const parties = new Set<string>()
 
+        // Collect all parties from per-party rights
         rights.rights?.forEach((right) => {
             let party: string | undefined
-            let rightType: string | undefined
             if ('CanActAs' in right.kind) {
                 party = right.kind.CanActAs.value.party
-                rightType = 'CanActAs'
             } else if ('CanExecuteAs' in right.kind) {
                 party = right.kind.CanExecuteAs.value.party
-                rightType = 'CanExecuteAs'
             } else if ('CanReadAs' in right.kind) {
                 party = right.kind.CanReadAs.value.party
-                rightType = 'CanReadAs'
             }
-            if (
-                party !== undefined &&
-                rightType !== undefined &&
-                !partiesWithRights.has(party)
-            )
-                partiesWithRights.set(party, rightType)
+            if (party !== undefined) {
+                parties.add(party)
+            }
         })
+        this.logger.debug(
+            { parties: [...parties] },
+            'getPartiesWithRights before wildcard'
+        )
+        // Check if user has wildcard rights
+        const hasExecuteAsAnyParty = rights.rights?.some(
+            (r) => 'CanExecuteAsAnyParty' in r.kind
+        )
+        const hasReadAsAnyParty = rights.rights?.some(
+            (r) => 'CanReadAsAnyParty' in r.kind
+        )
 
-        return partiesWithRights
+        // If wildcard rights exist, fetch all parties and add external ones (omit internal)
+        if (hasExecuteAsAnyParty || hasReadAsAnyParty) {
+            const partiesResponse = await this.adminLedgerClient.getWithRetry(
+                '/v2/parties',
+                defaultRetryableOptions
+            )
+
+            this.logger.debug(
+                { parties: partiesResponse },
+                'getPartiesWithRights parties response'
+            )
+
+            const participantNamespace = await this.getParticipantNamespace()
+
+            partiesResponse.partyDetails?.forEach((partyDetail) => {
+                if (!partyDetail.party) return
+
+                const partyId = partyDetail.party
+                const [, namespace] = partyId.split('::')
+
+                const isInternal =
+                    participantNamespace !== undefined &&
+                    namespace === participantNamespace
+
+                // Only add external parties (internal parties need per-party rights)
+                if (!isInternal && !parties.has(partyId)) {
+                    parties.add(partyId)
+                }
+            })
+        }
+        this.logger.debug(
+            { parties: [...parties] },
+            'getPartiesWithRights after wildcard'
+        )
+        return Array.from(parties)
     }
 
     async isWalletSyncNeeded(): Promise<boolean> {
@@ -232,8 +272,9 @@ export class WalletSyncService {
                 return true
             }
 
-            const partiesWithRights = await this.getPartiesRightsMap()
+            const partiesWithRights = await this.getPartiesWithRights()
 
+            // TODO I don't think it makes sense here any more
             // Treat disabled wallets as if they don't exist, so they can be re-synced
             const enabledWallets = existingWallets.filter((w) => !w.disabled)
             // Track by (partyId, networkId) combination to handle multi-hosted parties
@@ -242,7 +283,7 @@ export class WalletSyncService {
             )
 
             // Check if there are parties on ledger that aren't in store for this network
-            return Array.from(partiesWithRights.keys()).some(
+            return partiesWithRights.some(
                 (party) =>
                     !existingPartyNetworkPairs.has(`${party}:${network.id}`)
             )
@@ -258,7 +299,7 @@ export class WalletSyncService {
             const network = await this.store.getCurrentNetwork()
             this.logger.info(network, 'Current network')
 
-            const partiesWithRights = await this.getPartiesRightsMap()
+            const partiesWithRights = await this.getPartiesWithRights()
 
             // Add new Wallets given the found parties
             // Only check wallets in the current network
@@ -283,7 +324,7 @@ export class WalletSyncService {
 
             // Resolve signing providers for all new parties
             // Check if (partyId, networkId) combination already exists
-            const newParties = Array.from(partiesWithRights.keys()).filter(
+            const newParties = partiesWithRights.filter(
                 (party) =>
                     !existingPartyNetworkToSigningProvider.has(
                         `${party}:${network.id}`

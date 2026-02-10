@@ -270,7 +270,7 @@ export class PartyAllocationService {
         const canOmitPerPartyRights = await this.hasWildcardRights(userId)
 
         if (canOmitPerPartyRights) {
-            await this.ledgerClient.waitForParty(userId, res.partyId)
+            await this.ledgerClient.waitForPartyToExist(res.partyId)
         } else {
             await this.ledgerClient.waitForPartyAndGrantUserRights(
                 userId,

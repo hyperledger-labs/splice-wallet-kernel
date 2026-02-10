@@ -330,7 +330,7 @@ export class LedgerClient {
      * @param retryIntervalMs Optional interval between retries to verify that party exists with default 2000ms. May be increased if expecting heavy load.
      * @returns A promise that resolves when party appears on ledger
      */
-    private async waitForPartyToExist(
+    public async waitForPartyToExist(
         partyId: PartyId,
         maxTries: number = 30,
         retryIntervalMs: number = 2000
