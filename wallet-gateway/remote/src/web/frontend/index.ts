@@ -6,8 +6,6 @@ import { customElement } from 'lit/decorators.js'
 import { createUserClient, attemptRemoveSession } from './rpc-client'
 
 import '@canton-network/core-wallet-ui-components'
-import '@canton-network/core-wallet-ui-components/dist/index.css'
-import '/index.css'
 import { stateManager } from './state-manager'
 import { WalletEvent } from '@canton-network/core-types'
 import {
