@@ -4,6 +4,7 @@
 import { assertConnected, AuthContext } from '@canton-network/core-wallet-auth'
 import buildController from './rpc-gen/index.js'
 import {
+    ConnectResult,
     LedgerApiParams,
     Network,
     PrepareExecuteParams,
@@ -43,10 +44,10 @@ export const dappController = (
                     isNetworkConnected: false,
                     networkReason: 'Unauthenticated',
                     userUrl: `${userUrl}/login/`,
-                }
+                } satisfies ConnectResult
             }
 
-            const session = await store.getSession()
+            // const session = await store.getSession()
             const network = await store.getCurrentNetwork()
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
@@ -68,23 +69,22 @@ export const dappController = (
                 reason: 'OK',
                 isNetworkConnected: status.isConnected,
                 networkReason: status.reason ? status.reason : 'OK',
+                userUrl: `${userUrl}/login/`,
             }
-            const statusEvent = {
-                provider: provider,
-                connection: connection,
+            const statusEvent: StatusEvent = {
+                provider,
+                connection,
                 network: {
                     networkId: network.id,
                     ledgerApi: network.ledgerApi.baseUrl,
                     accessToken: context.accessToken,
                 },
                 session: {
-                    id: session?.id,
                     accessToken: context.accessToken,
                     userId: context.userId,
                 },
-                userUrl: `${userUrl}/login/`,
             }
-            notifier.emit('statusChanged', statusEvent as StatusEvent)
+            notifier.emit('statusChanged', statusEvent)
             return connection
         },
         disconnect: async () => {
