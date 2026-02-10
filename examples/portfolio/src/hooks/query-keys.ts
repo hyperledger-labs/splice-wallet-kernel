@@ -35,4 +35,12 @@ export const queryKeys = {
         all: ['listAllocations'],
         forParty: (party: string | undefined) => ['listAllocations', party],
     },
+
+    isDevNet: {
+        all: ['isDevNet'],
+        forSession: (sessionToken: string | undefined) => [
+            'isDevNet',
+            sessionToken,
+        ],
+    },
 }

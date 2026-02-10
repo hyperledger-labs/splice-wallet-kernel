@@ -1,6 +1,6 @@
 To preview the docs:
 
-Run this once from the `docs/wallet-gateway` directory:
+Run this once from the `docs/dapp-building` directory:
 
 ```sh
 poetry install

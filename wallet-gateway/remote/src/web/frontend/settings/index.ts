@@ -3,6 +3,7 @@
 
 import '@canton-network/core-wallet-ui-components'
 import {
+    BaseElement,
     handleErrorToast,
     IdpAddEvent,
     IdpCardDeleteEvent,
@@ -10,7 +11,7 @@ import {
     NetworkEditSaveEvent,
 } from '@canton-network/core-wallet-ui-components'
 
-import { LitElement, html, css } from 'lit'
+import { html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import {
     Network,
@@ -21,24 +22,23 @@ import {
 import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 
 import '../index'
-import '/index.css'
 import { stateManager } from '../state-manager'
 import { createUserClient } from '../rpc-client'
 
 import { Auth } from '@canton-network/core-wallet-auth'
 
 @customElement('user-ui-settings')
-export class UserUiSettings extends LitElement {
-    static styles = css`
-        :host {
-            display: block;
-            box-sizing: border-box;
-            padding: 0rem;
-            max-width: 900px;
-            margin: 0 auto;
-            font-family: var(--wg-theme-font-family, Arial, sans-serif);
-        }
-    `
+export class UserUiSettings extends BaseElement {
+    static styles = [
+        BaseElement.styles,
+        css`
+            :host {
+                display: block;
+                max-width: 900px;
+                margin: 0 auto;
+            }
+        `,
+    ]
 
     @state() accessor networks: Network[] = []
     @state() accessor sessions: Session[] = []
