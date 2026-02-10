@@ -9,64 +9,9 @@ import { PartyId } from '@canton-network/core-types'
 import { Logger } from '@canton-network/core-types'
 import { ErrorInfo, RetryInfo } from '@canton-network/core-ledger-proto'
 
-type ExercisedEvent = Types['ExercisedEvent']
 type Completion = Types['Completion']['value']
 export type JSContractEntry = Types['JsContractEntry']
 export type JsCantonError = Types['JsCantonError']
-
-type Meta = { values: { [key: string]: string } } | undefined
-
-export function mergeMetas(event: ExercisedEvent, extra?: Meta): Meta {
-    // Add a type assertion to help TypeScript understand the shape of choiceArgument
-    const choiceArgument = event.choiceArgument as
-        | {
-              transfer?: { meta?: Meta }
-              extraArgs?: { meta?: Meta }
-              meta?: Meta
-          }
-        | undefined
-
-    const lastWriteWins = [
-        choiceArgument?.transfer?.meta,
-        choiceArgument?.extraArgs?.meta,
-        choiceArgument?.meta,
-        extra,
-        (event.exerciseResult as { meta?: Meta } | undefined)?.meta,
-    ]
-    const result: { [key: string]: string } = {}
-    lastWriteWins.forEach((meta) => {
-        const values: { [key: string]: string } = meta?.values || {}
-        Object.entries(values).forEach(([k, v]) => {
-            result[k] = v
-        })
-    })
-    if (Object.keys(result).length === 0) {
-        return undefined
-    }
-    // order of keys doesn't matter, but we return it consistent for test purposes (and it's nicer)
-    else {
-        return { values: result }
-    }
-}
-
-export function getMetaKeyValue(key: string, meta: Meta): string | null {
-    return (meta?.values || {})[key] || null
-}
-
-/**
- * From the view of making it easy to build the display for the wallet,
- * we remove all metadata fields that were fully parsed, and whose content is reflected in the TypeScript structure.
- * Otherwise, the display code has to do so, overloading the user with superfluous metadata entries.
- */
-// export function removeParsedMetaKeys(meta: Meta): Meta {
-//     return {
-//         values: Object.fromEntries(
-//             Object.entries(meta?.values || {}).filter(
-//                 ([k]) => !AllKnownMetaKeys.includes(k)
-//             )
-//         ),
-//     }
-// }
 
 const COMPLETIONS_LIMIT = '100'
 const COMPLETIONS_STREAM_IDLE_TIMEOUT_MS = '1000'
