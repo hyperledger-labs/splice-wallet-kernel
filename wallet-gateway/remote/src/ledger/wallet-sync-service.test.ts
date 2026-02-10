@@ -154,6 +154,12 @@ describe('WalletSyncService - resolveSigningProvider', () => {
         const controller = internalDriver.controller(authContext.userId)
         const key = await controller.createKey({ name: 'test-key' })
 
+        if ('error' in key) {
+            throw new Error(
+                `Failed to create key in test: ${key.error_description}`
+            )
+        }
+
         const namespace = partyAllocator.createFingerprintFromKey(key.publicKey)
 
         mockLedgerGet.mockResolvedValueOnce({
