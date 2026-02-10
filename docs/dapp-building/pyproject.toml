@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "wallet-gateway"
+name = "dapp-building"
 version = "0.1.0"
-description = "A guide for developing dapps against a wallet gateway"
+description = "A guide for developing dapps using the dApp SDK and Wallet Gateway"
 authors = ["Phillip Olesen <phillipolesen@digitalasset.com>"]
 readme = "README.md"
 license = "Apache-2.0"
