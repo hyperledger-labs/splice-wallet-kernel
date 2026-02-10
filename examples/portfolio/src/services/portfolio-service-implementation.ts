@@ -346,3 +346,12 @@ export const tap = async ({
         params: request,
     })
 }
+
+export const isDevNet = async ({
+    sessionToken,
+}: {
+    sessionToken: string
+}): Promise<boolean> => {
+    const amuletService = await resolveAmuletService({ sessionToken })
+    return await amuletService.isDevNet()
+}
