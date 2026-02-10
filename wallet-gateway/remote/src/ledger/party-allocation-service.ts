@@ -267,7 +267,8 @@ export class PartyAllocationService {
             ]
         )
 
-        const canOmitPerPartyRights = await this.hasWildcardRights(userId)
+        const canOmitPerPartyRights =
+            await this.hasCanExecuteAsAnyPartyRights(userId)
 
         if (canOmitPerPartyRights) {
             await this.ledgerClient.waitForPartyToExist(res.partyId)
@@ -281,7 +282,9 @@ export class PartyAllocationService {
         return { hint, partyId: res.partyId, namespace }
     }
 
-    private async hasWildcardRights(userId: string): Promise<boolean> {
+    private async hasCanExecuteAsAnyPartyRights(
+        userId: string
+    ): Promise<boolean> {
         const rightsResponse = await this.ledgerClient.getWithRetry(
             '/v2/users/{user-id}/rights',
             defaultRetryableOptions,
@@ -294,13 +297,8 @@ export class PartyAllocationService {
 
         if (!Array.isArray(rightsResponse.rights)) return false
 
-        const hasExecuteAsAnyParty = rightsResponse.rights.some(
+        return rightsResponse.rights.some(
             (r) => 'CanExecuteAsAnyParty' in r.kind
         )
-        const hasReadAsAnyParty = rightsResponse.rights.some(
-            (r) => 'CanReadAsAnyParty' in r.kind
-        )
-
-        return hasExecuteAsAnyParty && hasReadAsAnyParty
     }
 }
