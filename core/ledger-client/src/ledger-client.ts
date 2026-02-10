@@ -11,7 +11,6 @@ import {
     retryable,
     retryableOptions,
 } from './ledger-api-utils.js'
-
 import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
 import { SharedACSCache } from './acs/acs-shared-cache.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'

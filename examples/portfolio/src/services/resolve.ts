@@ -2,11 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type Logger, pino } from 'pino'
-import {
-    LedgerClient,
-    TokenStandardService,
-    AmuletService,
-} from '@canton-network/core-ledger-client'
+import { LedgerClient } from '@canton-network/core-ledger-client'
+import { TokenStandardService } from '@canton-network/core-token-standard-service'
+import { AmuletService } from '@canton-network/core-amulet-service'
 import * as sdk from '@canton-network/dapp-sdk'
 import { TokenStandardClient } from '@canton-network/core-token-standard'
 import { ScanProxyClient } from '@canton-network/core-splice-client'

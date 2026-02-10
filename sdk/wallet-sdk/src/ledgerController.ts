@@ -13,11 +13,13 @@ import {
     JSContractEntry,
     isJsCantonError,
     UserSchema,
-    JsGetUpdatesResponse,
-    CompletionResponse,
     PrepareSubmissionResponse,
     defaultRetryableOptions,
 } from '@canton-network/core-ledger-client'
+import {
+    JsGetUpdatesResponse,
+    CompletionResponse,
+} from '@canton-network/core-ledger-client-types'
 import { WebSocketClient } from '@canton-network/core-asyncapi-client'
 import {
     signTransactionHash,
