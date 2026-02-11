@@ -69,6 +69,11 @@ describe('PartyAllocationService', () => {
     let service: any
 
     beforeEach(async () => {
+        mockLedgerGet.mockClear()
+        mockLedgerPost.mockClear()
+        mockLedgerGrantUserRights.mockClear()
+        mockWaitForPartyToExist.mockClear()
+
         const mockLogger = pino(sink())
         const pas = await import('./party-allocation-service.js')
 
