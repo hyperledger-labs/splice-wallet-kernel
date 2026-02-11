@@ -6,6 +6,10 @@ import { createKeyPair } from '@canton-network/core-signing-lib'
 export class KeysClient {
     constructor() {}
 
+    /**
+     *
+     * @returns A base64 encoded public/private key pair
+     */
     generate() {
         return createKeyPair()
     }
