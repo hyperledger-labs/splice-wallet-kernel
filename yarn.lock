@@ -1426,6 +1426,34 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/core-amulet-service@workspace:^, @canton-network/core-amulet-service@workspace:core/amulet-service":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-amulet-service@workspace:core/amulet-service"
+  dependencies:
+    "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-ledger-client-types": "workspace:^"
+    "@canton-network/core-splice-client": "workspace:^"
+    "@canton-network/core-token-standard-service": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
+    "@jest/globals": "npm:^30.2.0"
+    "@swc/core": "npm:^1.15.10"
+    "@swc/jest": "npm:^0.2.39"
+    "@types/jest": "npm:^30.0.0"
+    "@types/node": "npm:^25.0.10"
+    bignumber.js: "npm:^9.3.1"
+    dayjs: "npm:^1.11.19"
+    jest: "npm:^30.2.0"
+    openapi-fetch: "npm:^0.15.0"
+    openapi-typescript: "npm:^7.10.1"
+    pino: "npm:^10.2.1"
+    ts-jest: "npm:^29.4.6"
+    ts-jest-resolver: "npm:^2.0.1"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/core-asyncapi-client@workspace:^, @canton-network/core-asyncapi-client@workspace:core/asyncapi-client":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-asyncapi-client@workspace:core/asyncapi-client"
@@ -1718,6 +1746,36 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/core-token-standard-service@workspace:^, @canton-network/core-token-standard-service@workspace:core/token-standard-service":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-token-standard-service@workspace:core/token-standard-service"
+  dependencies:
+    "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-ledger-client-types": "workspace:^"
+    "@canton-network/core-splice-client": "workspace:^"
+    "@canton-network/core-token-standard": "workspace:^"
+    "@canton-network/core-tx-parser": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
+    "@jest/globals": "npm:^30.2.0"
+    "@swc/core": "npm:^1.15.10"
+    "@swc/jest": "npm:^0.2.39"
+    "@types/jest": "npm:^30.0.0"
+    "@types/node": "npm:^25.0.10"
+    bignumber.js: "npm:^9.3.1"
+    dayjs: "npm:^1.11.19"
+    jest: "npm:^30.2.0"
+    openapi-fetch: "npm:^0.15.0"
+    openapi-typescript: "npm:^7.10.1"
+    pino: "npm:^10.2.1"
+    ts-jest: "npm:^29.4.6"
+    ts-jest-resolver: "npm:^2.0.1"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
+    typescript-lru-cache: "npm:^2.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/core-token-standard@workspace:^, @canton-network/core-token-standard@workspace:core/token-standard":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-token-standard@workspace:core/token-standard"
@@ -1740,6 +1798,35 @@ __metadata:
     typescript: "npm:^5.9.3"
     uuid: "npm:^11.1.0"
     zod: "npm:^4.3.5"
+  languageName: unknown
+  linkType: soft
+
+"@canton-network/core-tx-parser@workspace:^, @canton-network/core-tx-parser@workspace:core/tx-parser":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-tx-parser@workspace:core/tx-parser"
+  dependencies:
+    "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-ledger-client-types": "workspace:^"
+    "@canton-network/core-ledger-proto": "workspace:^"
+    "@canton-network/core-splice-client": "workspace:^"
+    "@canton-network/core-token-standard": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
+    "@jest/globals": "npm:^30.2.0"
+    "@swc/core": "npm:^1.15.10"
+    "@swc/jest": "npm:^0.2.39"
+    "@types/jest": "npm:^30.0.0"
+    "@types/node": "npm:^25.0.10"
+    bignumber.js: "npm:^9.3.1"
+    dayjs: "npm:^1.11.19"
+    jest: "npm:^30.2.0"
+    openapi-fetch: "npm:^0.15.0"
+    openapi-typescript: "npm:^7.10.1"
+    pino: "npm:^10.2.1"
+    ts-jest: "npm:^29.4.6"
+    ts-jest-resolver: "npm:^2.0.1"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
   languageName: unknown
   linkType: soft
 
@@ -2009,9 +2096,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/example-portfolio@workspace:examples/portfolio"
   dependencies:
+    "@canton-network/core-amulet-service": "workspace:^"
     "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-splice-client": "workspace:^"
     "@canton-network/core-token-standard": "workspace:^"
+    "@canton-network/core-token-standard-service": "workspace:^"
+    "@canton-network/core-tx-parser": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-test-utils": "workspace:^"
     "@canton-network/dapp-sdk": "workspace:^"
@@ -2177,6 +2267,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/wallet-sdk@workspace:sdk/wallet-sdk"
   dependencies:
+    "@canton-network/core-amulet-service": "workspace:^"
     "@canton-network/core-asyncapi-client": "workspace:^"
     "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-ledger-client-types": "workspace:^"
@@ -2184,6 +2275,8 @@ __metadata:
     "@canton-network/core-signing-lib": "workspace:^"
     "@canton-network/core-splice-client": "workspace:^"
     "@canton-network/core-token-standard": "workspace:^"
+    "@canton-network/core-token-standard-service": "workspace:^"
+    "@canton-network/core-tx-parser": "workspace:^"
     "@canton-network/core-tx-visualizer": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
@@ -10436,6 +10529,7 @@ __metadata:
     "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-ledger-proto": "workspace:^"
     "@canton-network/core-signing-lib": "workspace:^"
+    "@canton-network/core-tx-parser": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
     "@canton-network/wallet-sdk": "workspace:^"

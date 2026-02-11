@@ -7,7 +7,7 @@ import {
     type Holding,
     type TransferInstructionView,
     type PrettyContract,
-} from '@canton-network/core-ledger-client'
+} from '@canton-network/core-tx-parser'
 import {
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
     ALLOCATION_INTERFACE_ID,
@@ -345,4 +345,13 @@ export const tap = async ({
         method: 'prepareExecuteAndWait',
         params: request,
     })
+}
+
+export const isDevNet = async ({
+    sessionToken,
+}: {
+    sessionToken: string
+}): Promise<boolean> => {
+    const amuletService = await resolveAmuletService({ sessionToken })
+    return await amuletService.isDevNet()
 }

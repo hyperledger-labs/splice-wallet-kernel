@@ -37,32 +37,26 @@ export const dappSDKController = (provider: DappAsyncProvider) =>
                 method: 'connect',
             })
 
-            if (response.session) {
-                return response
-            } else {
-                popup.open(response.userUrl ?? '')
-                const promise = new Promise<ConnectResult>(
-                    (resolve, reject) => {
-                        // 5 minutes timeout
-                        const timeout = withTimeout(
-                            reject,
-                            'Timeout waiting for connection',
-                            5 * 60 * 1000
-                        )
-                        provider.on<dappAsyncAPI.StatusEvent>(
-                            'statusChanged',
-                            (event) => {
-                                if (event.connection.isConnected) {
-                                    clearTimeout(timeout)
-                                    resolve(event.connection)
-                                }
-                            }
-                        )
+            popup.open(response.userUrl ?? '')
+            const promise = new Promise<ConnectResult>((resolve, reject) => {
+                // 5 minutes timeout
+                const timeout = withTimeout(
+                    reject,
+                    'Timeout waiting for connection',
+                    5 * 60 * 1000
+                )
+                provider.on<dappAsyncAPI.StatusEvent>(
+                    'statusChanged',
+                    (event) => {
+                        if (event.connection.isConnected) {
+                            clearTimeout(timeout)
+                            resolve(event.connection)
+                        }
                     }
                 )
+            })
 
-                return promise
-            }
+            return promise
         },
         disconnect: async () => {
             return await provider.request({

@@ -3,7 +3,7 @@
 
 import { describe, it, expect } from '@jest/globals'
 import { CoreService } from './token-standard-service.js'
-import { PrettyContract } from './txparse/types.js'
+import { PrettyContract } from '@canton-network/core-tx-parser'
 import { HoldingView } from '@canton-network/core-token-standard'
 
 describe('getInputHoldingsCidsForAmount', () => {

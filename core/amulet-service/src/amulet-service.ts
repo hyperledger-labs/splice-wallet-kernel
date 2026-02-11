@@ -7,7 +7,7 @@ import {
     ExerciseCommand,
     DisclosedContract,
     TokenStandardService,
-} from './token-standard-service.js'
+} from '@canton-network/core-token-standard-service'
 
 // TODO: This appears in a couple of places, either move it somewhere more
 // central, or as part of the Service class hierarchy
@@ -318,5 +318,9 @@ export class AmuletService {
             },
             disclosedContracts,
         ]
+    }
+
+    async isDevNet(): Promise<boolean> {
+        return await this.scanProxyClient.isDevNet()
     }
 }
