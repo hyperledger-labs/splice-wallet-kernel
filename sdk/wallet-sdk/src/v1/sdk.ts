@@ -51,7 +51,7 @@ export class Sdk {
             new URL(options.validatorUrl),
             options.logger,
             options.isAdmin ?? false,
-            undefined,
+            undefined, // as part of v1 we want to remove string typed access token (#803). we should modify the ScanProxyClient constructor to use named parameters and the ScanClient to accept accessTokenProvider
             options.authTokenProvider
         )
         this.tokenStandardService = new TokenStandardService(
