@@ -10,9 +10,8 @@ import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import { Logger } from 'pino'
 import { KeysClient } from './keys'
 
- 
 export type WalletSdkOptions = {
-    readonly logger: Logger // TODO: client should be able to provide a logger, but we should also provide a default one if they don't
+    readonly logger: Logger // TODO: client should be able to provide a logger (#1286)
     authTokenProvider: AuthTokenProvider
     ledgerClientUrl: URL
     tokenStandardUrl: URL
@@ -24,7 +23,7 @@ export type WalletSdkOptions = {
 }
 
 export class Sdk {
-    private ledgerClient: LedgerClient
+    private ledgerClient: LedgerClient //TODO: Switch to LedgerProvider when available (#1284)
     private asyncClient: WebSocketClient
     private scanProxyClient: ScanProxyClient
     private tokenStandardService: TokenStandardService
@@ -75,7 +74,7 @@ export class Sdk {
         return new KeysClient()
     }
 
-    //TODO: implement other namespaces
+    //TODO: implement other namespaces (#1270)
 
     // public get ledger() {}
 

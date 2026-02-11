@@ -4,9 +4,7 @@
 import { createKeyPair } from '@canton-network/core-signing-lib'
 
 export class KeysClient {
-    constructor() {
-        //TODO
-    }
+    constructor() {}
 
     generate() {
         return createKeyPair()
