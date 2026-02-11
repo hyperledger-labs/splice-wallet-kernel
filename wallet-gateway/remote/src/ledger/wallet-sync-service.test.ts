@@ -33,9 +33,17 @@ import { PartyAllocationService } from './party-allocation-service.js'
 type AsyncFn = () => Promise<unknown>
 
 const mockLedgerGet = jest.fn<AsyncFn>()
+const mockAdminLedgerGet = jest.fn<AsyncFn>()
 
 jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
-    LedgerClient: jest.fn().mockImplementation(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    LedgerClient: jest.fn().mockImplementation((config?: any) => {
+        // Use separate mock for admin client
+        if (config?.isAdmin) {
+            return {
+                getWithRetry: mockAdminLedgerGet,
+            }
+        }
         return {
             getWithRetry: mockLedgerGet,
         }
@@ -107,11 +115,22 @@ describe('WalletSyncService - resolveSigningProvider', () => {
             },
         })
 
+        // Create admin ledger client for getParticipantNamespace
+        const adminLedgerClient = new ledgerModule.LedgerClient({
+            baseUrl: new URL('http://test'),
+            logger: mockLogger,
+            isAdmin: true,
+            accessTokenProvider: {
+                getUserAccessToken: async () => 'token',
+                getAdminAccessToken: async () => 'token',
+            },
+        })
+
         // Create service with real drivers
         service = new TestableWalletSyncService(
             store,
             ledgerClient,
-            ledgerClient,
+            adminLedgerClient,
             authContext,
             mockLogger,
             {
@@ -125,12 +144,13 @@ describe('WalletSyncService - resolveSigningProvider', () => {
     afterEach(() => {
         jest.restoreAllMocks()
         mockLedgerGet.mockClear()
+        mockAdminLedgerGet.mockClear()
     })
 
     it('resolves participant when namespace matches participant namespace', async () => {
         const participantNamespace = 'participant-namespace-123'
         const participantId = `participant1::${participantNamespace}`
-        mockLedgerGet.mockResolvedValueOnce({
+        mockAdminLedgerGet.mockResolvedValueOnce({
             participantId,
         })
 
@@ -156,7 +176,7 @@ describe('WalletSyncService - resolveSigningProvider', () => {
 
         const namespace = partyAllocator.createFingerprintFromKey(key.publicKey)
 
-        mockLedgerGet.mockResolvedValueOnce({
+        mockAdminLedgerGet.mockResolvedValueOnce({
             participantId: 'participant1::different-participant-namespace',
         })
 
@@ -201,10 +221,22 @@ describe('WalletSyncService - resolveSigningProvider', () => {
             signingProvider: SigningProvider.FIREBLOCKS,
         } as unknown as SigningDriverInterface
 
+        // Create admin ledger client for getParticipantNamespace
+        const ledgerModule = await import('@canton-network/core-ledger-client')
+        const adminLedgerClient = new ledgerModule.LedgerClient({
+            baseUrl: new URL('http://test'),
+            logger: mockLogger,
+            isAdmin: true,
+            accessTokenProvider: {
+                getUserAccessToken: async () => 'token',
+                getAdminAccessToken: async () => 'token',
+            },
+        })
+
         const serviceWithFireblocks = new TestableWalletSyncService(
             store,
             ledgerClient,
-            ledgerClient,
+            adminLedgerClient,
             authContext,
             mockLogger,
             {
@@ -213,7 +245,7 @@ describe('WalletSyncService - resolveSigningProvider', () => {
             partyAllocator
         )
 
-        mockLedgerGet.mockResolvedValueOnce({
+        mockAdminLedgerGet.mockResolvedValueOnce({
             participantId: 'participant1::different-participant-namespace',
         })
 
@@ -231,7 +263,7 @@ describe('WalletSyncService - resolveSigningProvider', () => {
 
     it('returns unmatched na defaults ot participant when no signing provider match is found', async () => {
         const unknownNamespace = 'unknown-namespace-123'
-        mockLedgerGet.mockResolvedValueOnce({
+        mockAdminLedgerGet.mockResolvedValueOnce({
             participantId: 'participant1::different-participant-namespace',
         })
 
@@ -356,6 +388,7 @@ describe('WalletSyncService - multi-network features', () => {
     afterEach(() => {
         jest.restoreAllMocks()
         mockLedgerGet.mockClear()
+        mockAdminLedgerGet.mockClear()
     })
 
     it('isWalletSyncNeeded should filter by current network', async () => {
@@ -437,32 +470,32 @@ describe('WalletSyncService - multi-network features', () => {
         await store.addWallet(createWallet('party1::namespace', 'network1'))
         const addWalletSpy = jest.spyOn(store, 'addWallet')
 
-        mockLedgerGet
-            .mockResolvedValueOnce({
-                rights: [
-                    {
-                        kind: {
-                            CanActAs: {
-                                value: {
-                                    party: 'party1::namespace',
-                                },
+        mockLedgerGet.mockResolvedValueOnce({
+            rights: [
+                {
+                    kind: {
+                        CanActAs: {
+                            value: {
+                                party: 'party1::namespace',
                             },
                         },
                     },
-                    {
-                        kind: {
-                            CanActAs: {
-                                value: {
-                                    party: 'party3::namespace',
-                                },
+                },
+                {
+                    kind: {
+                        CanActAs: {
+                            value: {
+                                party: 'party3::namespace',
                             },
                         },
                     },
-                ],
-            })
-            .mockResolvedValueOnce({
-                participantId: 'participant1::namespace',
-            })
+                },
+            ],
+        })
+        // Mock adminLedgerClient for getParticipantNamespace call
+        mockAdminLedgerGet.mockResolvedValueOnce({
+            participantId: 'participant1::namespace',
+        })
 
         const service = new WalletSyncService(
             store,
@@ -490,23 +523,23 @@ describe('WalletSyncService - multi-network features', () => {
         await setSession('network1')
 
         // Mock ledger client to return rights for party1
-        mockLedgerGet
-            .mockResolvedValueOnce({
-                rights: [
-                    {
-                        kind: {
-                            CanActAs: {
-                                value: {
-                                    party: 'party1::namespace',
-                                },
+        mockLedgerGet.mockResolvedValueOnce({
+            rights: [
+                {
+                    kind: {
+                        CanActAs: {
+                            value: {
+                                party: 'party1::namespace',
                             },
                         },
                     },
-                ],
-            })
-            .mockResolvedValueOnce({
-                participantId: 'participant1::namespace',
-            })
+                },
+            ],
+        })
+        // Mock adminLedgerClient for getParticipantNamespace call
+        mockAdminLedgerGet.mockResolvedValueOnce({
+            participantId: 'participant1::namespace',
+        })
 
         const service = new WalletSyncService(
             store,
@@ -635,7 +668,8 @@ describe('WalletSyncService - multi-network features', () => {
         expect(walletsBeforeSync.length).toBe(0)
 
         mockLedgerGet.mockClear()
-        // First mock: getPartiesRightsMap calls ledgerClient.getWithRetry('/v2/users/{user-id}/rights')
+        mockAdminLedgerGet.mockClear()
+        // First mock: getPartiesWithRights calls ledgerClient.getWithRetry('/v2/users/{user-id}/rights')
         mockLedgerGet.mockResolvedValueOnce({
             rights: [
                 {
@@ -650,14 +684,16 @@ describe('WalletSyncService - multi-network features', () => {
             ],
         })
         // Second mock: resolveSigningProvider calls adminLedgerClient.getWithRetry('/v2/parties/participant-id')
-        mockLedgerGet.mockResolvedValueOnce({
+        mockAdminLedgerGet.mockResolvedValueOnce({
             participantId: 'participant1::namespace',
         })
 
         expect(mockLedgerGet).toHaveBeenCalledTimes(0)
+        expect(mockAdminLedgerGet).toHaveBeenCalledTimes(0)
         const syncResult = await service.syncWallets()
 
-        expect(mockLedgerGet).toHaveBeenCalledTimes(2) // Once for rights, once for participantId
+        expect(mockLedgerGet).toHaveBeenCalledTimes(1) // Once for rights
+        expect(mockAdminLedgerGet).toHaveBeenCalledTimes(1) // Once for participantId
         expect(syncResult.added.length).toBe(1)
         expect(syncResult.added[0].partyId).toBe('party1::namespace')
         expect(syncResult.added[0].networkId).toBe('network2')

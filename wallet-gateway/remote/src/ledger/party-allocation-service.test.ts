@@ -19,6 +19,7 @@ jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
     SigningAlgorithmSpec: jest.fn(),
     MultiTransactionSignatures: jest.fn(),
     SignedTopologyTransaction: jest.fn(),
+    defaultRetryableOptions: {},
     LedgerClient: jest.fn().mockImplementation(() => {
         return {
             getWithRetry: mockLedgerGet,
@@ -111,6 +112,9 @@ describe('PartyAllocationService', () => {
 
     it('allocates an external party', async () => {
         const publicKey = 'mypublickey'
+
+        // Mock /v2/users/{user-id}/rights for hasCanExecuteAsAnyPartyRights
+        mockLedgerGet.mockResolvedValueOnce({ rights: [] })
 
         await expect(
             service.allocateParty(
