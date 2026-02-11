@@ -740,4 +740,145 @@ describe('WalletSyncService - multi-network features', () => {
         // Should return true because there's a disabled wallet
         expect(syncNeeded).toBe(true)
     })
+
+    it('getPartiesWithRights should handle wildcard rights', async () => {
+        const network1 = createNetwork('network1')
+        await store.addNetwork(network1)
+        await setSession('network1')
+
+        // Mock rights response with wildcard rights
+        mockLedgerGet.mockResolvedValueOnce({
+            rights: [
+                {
+                    kind: {
+                        CanExecuteAsAnyParty: {
+                            value: {},
+                        },
+                    },
+                },
+                {
+                    kind: {
+                        CanReadAsAnyParty: {
+                            value: {},
+                        },
+                    },
+                },
+                // include a per-party right for an internal party
+                {
+                    kind: {
+                        CanActAs: {
+                            value: {
+                                party: 'internal-party::participant-namespace',
+                            },
+                        },
+                    },
+                },
+            ],
+        })
+
+        mockAdminLedgerGet
+            .mockResolvedValueOnce({
+                partyDetails: [
+                    {
+                        party: 'internal-party::participant-namespace',
+                        isLocal: true,
+                    },
+                    {
+                        party: 'external-party::external-namespace',
+                        isLocal: false,
+                    },
+                    {
+                        party: 'another-external::another-namespace',
+                        isLocal: false,
+                    },
+                ],
+            })
+            // Mock getParticipantNamespace call
+            .mockResolvedValueOnce({
+                participantId: 'participant1::participant-namespace',
+            })
+
+        const service = new WalletSyncService(
+            store,
+            mockLedgerClient,
+            mockAdminLedgerClient,
+            authContext,
+            mockLogger,
+            {},
+            partyAllocator
+        )
+
+        // Workaround to access private method
+        const parties = await (
+            service as unknown as { getPartiesWithRights: () => string[] }
+        ).getPartiesWithRights()
+
+        expect(parties).toContain('internal-party::participant-namespace')
+        expect(parties).toContain('external-party::external-namespace')
+        expect(parties).toContain('another-external::another-namespace')
+        // Should only appear once (from per-party rights, not from wildcard)
+        expect(
+            parties.filter(
+                (p: string) => p === 'internal-party::participant-namespace'
+            ).length
+        ).toBe(1)
+    })
+
+    it('getPartiesWithRights should handle per-party rights without wildcard', async () => {
+        const network1 = createNetwork('network1')
+        await store.addNetwork(network1)
+        await setSession('network1')
+
+        // Mock rights response with only per-party rights (no wildcard)
+        mockLedgerGet.mockResolvedValueOnce({
+            rights: [
+                {
+                    kind: {
+                        CanActAs: {
+                            value: {
+                                party: 'party1::namespace',
+                            },
+                        },
+                    },
+                },
+                {
+                    kind: {
+                        CanExecuteAs: {
+                            value: {
+                                party: 'party2::namespace',
+                            },
+                        },
+                    },
+                },
+                {
+                    kind: {
+                        CanReadAs: {
+                            value: {
+                                party: 'party3::namespace',
+                            },
+                        },
+                    },
+                },
+            ],
+        })
+
+        const service = new WalletSyncService(
+            store,
+            mockLedgerClient,
+            mockAdminLedgerClient,
+            authContext,
+            mockLogger,
+            {},
+            partyAllocator
+        )
+
+        const parties = await (
+            service as unknown as { getPartiesWithRights: () => string[] }
+        ).getPartiesWithRights()
+
+        expect(parties).toContain('party1::namespace')
+        expect(parties).toContain('party2::namespace')
+        expect(parties).toContain('party3::namespace')
+        expect(parties.length).toBe(3)
+    })
 })
