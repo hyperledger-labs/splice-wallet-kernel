@@ -26,7 +26,7 @@ const authService: AuthService = {
 const configPath = '../test/config.json'
 const config = ConfigUtils.loadConfigFile(configPath)
 
-const store = new StoreInternal(config.store, pino(sink()))
+const store = new StoreInternal(config.bootstrap, pino(sink()))
 
 const notificationService = new NotificationService(pino(sink()))
 
