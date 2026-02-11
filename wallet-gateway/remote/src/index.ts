@@ -74,7 +74,7 @@ let signingDb = new Command('signing-db')
 const hasDb = process.argv.slice(2).includes('db')
 if (hasDb) {
     const config = ConfigUtils.loadConfigFile(options.config)
-    db = createCLI(config.store) as Command
+    db = createCLI(config.store, config.bootstrap) as Command
 }
 
 const hasSigningDb = process.argv.slice(2).includes('signing-db')
