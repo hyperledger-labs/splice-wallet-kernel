@@ -46,7 +46,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
         const provider = window.canton
         if (!provider) return
         provider
-            .request<sdk.dappAPI.StatusEvent>({ method: 'status' })
+            .request({ method: 'status' })
             .then((status) => setConnectionStatus(status))
             .catch((reason) => setError(`failed to get status: ${reason}`))
 
@@ -62,7 +62,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
     // Second effect: request accounts only when connected
     useEffect(() => {
         const provider = window.canton
-        if (!provider || !connectionStatus?.isConnected) return
+        if (!provider || !connectionStatus?.connection?.isConnected) return
         provider
             .request({
                 method: 'listAccounts',
@@ -100,7 +100,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
             provider.removeListener('txChanged', messageListener)
             provider.removeListener('accountsChanged', onAccountsChanged)
         }
-    }, [connectionStatus?.isConnected, queryClient])
+    }, [connectionStatus?.connection?.isConnected, queryClient])
 
     return (
         <ConnectionContext.Provider

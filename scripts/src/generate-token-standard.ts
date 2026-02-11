@@ -2,68 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as path from 'path'
-import { execSync } from 'child_process'
-import {
-    getRepoRoot,
-    info,
-    warn,
-    error,
-    getAllFilesWithExtension,
-    ensureDir,
-    copyFileRecursive,
-} from './lib/utils.js'
-import { installDamlSDK } from './install-daml-sdk.js'
+import { getRepoRoot } from './lib/utils.js'
+import { installDPM } from './install-dpm.js'
+import { generateDamlJsBindings } from './lib/daml-codegen.js'
 
 const repoRoot = getRepoRoot()
-const SRC_DIR = path.join(repoRoot, '.splice/token-standard')
-const DEST_DIR = path.join(repoRoot, 'damljs/token-standard-models')
+
+const TOKEN_STANDARD_CONFIG = {
+    sourceDir: path.join(repoRoot, '.splice/token-standard'),
+    destDir: path.join(repoRoot, 'damljs/token-standard-models'),
+    packageName: 'token-standard-models',
+    version: '1.0.0',
+}
 
 async function main() {
-    console.log(info('Finding .daml files...'))
-    const damlFiles = getAllFilesWithExtension(SRC_DIR, '.daml')
-
-    if (damlFiles.length === 0) {
-        console.log(warn('No .daml files found.'))
-        return
-    }
-
-    await installDamlSDK()
-
-    await ensureDir(DEST_DIR)
-
-    console.log(
-        info(`Copying ${damlFiles.length} .daml files to ${DEST_DIR}...`)
-    )
-    const copiedFiles: string[] = []
-    for (const file of damlFiles) {
-        if (file.includes('test')) continue // Skip test files
-        const relativePath = path.relative(SRC_DIR, file)
-        const parts = relativePath.split(path.sep)
-        const newRelativePath =
-            parts.length > 1 ? path.join(...parts.slice(1)) : relativePath
-        const destPath = path.join(DEST_DIR, newRelativePath)
-        await ensureDir(path.dirname(destPath))
-        await copyFileRecursive(file, destPath)
-        copiedFiles.push(destPath)
-    }
-
-    console.log(info('Running "daml build"...'))
-    execSync('exec daml build', {
-        cwd: DEST_DIR,
-        stdio: 'inherit',
-    })
-
-    console.log(info('Running "daml codegen js"...'))
-    try {
-        console.log(info(`exec daml codegen js`))
-        execSync(
-            `exec daml codegen js .daml/dist/token-standard-models-1.0.0.dar -o .`,
-            { cwd: DEST_DIR, stdio: 'inherit' }
-        )
-        console.log(info('Codegen completed.'))
-    } catch (err) {
-        console.error(error(`Error running daml codegen js: ${err}`))
-    }
+    await installDPM()
+    await generateDamlJsBindings(TOKEN_STANDARD_CONFIG)
 }
 
 main()

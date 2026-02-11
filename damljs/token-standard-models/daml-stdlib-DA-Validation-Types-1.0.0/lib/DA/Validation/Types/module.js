@@ -9,8 +9,6 @@ Object.defineProperty(exports, '__esModule', { value: true })
 var jtv = require('@mojotech/json-type-validation')
 /* eslint-disable-next-line no-unused-vars */
 var damlTypes = require('@daml/types')
-/* eslint-disable-next-line no-unused-vars */
-var damlLedger = require('@daml/ledger')
 
 var pkgbde4bd30749e99603e5afa354706608601029e225d4983324d617825b634253a = require('@daml.js/daml-stdlib-DA-NonEmpty-Types-1.0.0')
 

@@ -1,48 +1,161 @@
-# Wallet Gateway
+# Splice Wallet Kernel
 
-## Project
+A TypeScript framework for building wallet integrations on the [Canton Network](https://www.canton.network/). It provides the **Wallet Gateway** (server and browser extension), the **dApp SDK**, the **Wallet SDK**, and a set of shared core modules.
 
-### Short Description
+## Architecture
 
-The Wallet Gateway repo contains two major components to help developers and integrators:
+```
+┌─────────────┐      dApp API (CIP-103)    ┌──────────────────┐     Ledger API      ┌──────────────────┐
+│   Your dApp │ ◄────────────────────────► │  Wallet Gateway  │ ◄─────────────────► │ Canton Validator │
+│ (dApp SDK)  │    (HTTP / postMessage)    │                  │                     │                  │
+└─────────────┘                            │  ┌────────────┐  │     Signing         └──────────────────┘
+       │                                   │  │  User API  │  │
+       │      User interactions            │  │  User UI   │  │     ┌──────────────────┐
+       └──────────────────────────────────►│  └────────────┘  │ ◄──►│ Signing Provider │
+              (User UI / User API)         │                  │     │ (Participant,    │
+                                           └──────────────────┘     │  Fireblocks, …)  │
+                                                                    └──────────────────┘
+```
 
-**Wallet Gateway:** Primary component of this repo, it is a javascript & typescript based library that help facilitate communication between a Validator node, a canton developed dApp and a Wallet Provider.
+- **dApp → Wallet Gateway**: dApps use the dApp SDK to call the **dApp API**.
+- **User → Wallet Gateway**: Users manage wallets and approve transactions via the **User UI**.
+- **Wallet Gateway → Canton / Signing**: The Gateway authenticates to validator Ledger APIs and forwards signing requests to the configured signing provider.
 
-**Wallet SDK:** A Set of functionality to help Wallet Providers and Exchanges to quickly developed their workflows directly against ledger api.
+## dApp API (CIP-103)
 
-### Dependent Projects
+The **dApp API** is a JSON-RPC 2.0 interface specified by [CIP-103](https://github.com/hyperledger-labs/splice/blob/main/cips/CIP-103/CIP-103.md). It defines how dApps communicate with wallet providers on the Canton Network. Key methods include:
 
-Wallet Gateway is part of the Splice Ecosystem, that have grown out of the Daml blockchain ecosystem and its Canton protocol.
+The dApp SDK (`@canton-network/dapp-sdk`) implements this protocol and adds a higher-level API, multi-transport support, and an [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193)-style provider (`window.canton`).
 
-### Motivation
+## Wallet SDK
 
-Wallet Gateway aims to enable a transparent interaction between a dApp, Validator Node and a Wallet Provider. On public permissionless blockchains, a total state is shared amongst all nodes and as such, once a public key is shared the given counter-party has full knowledge of your holdings, transactions history etc. Canton's unique approach to security and privacy result in fractured states shared amongst selected Validator nodes, and as such simply showing ownership of the associated private key does not present your entire financial data to a counter-party (in this example a dApp).
+The **Wallet SDK** (`@canton-network/wallet-sdk`) is a TypeScript SDK for wallet providers and exchanges integrating directly with the Canton Network.
+Unlike the dApp SDK (which talks to a Wallet Gateway), the Wallet SDK operates at a lower level — authenticating to synchronizers, allocating parties with external keypairs, reading active contracts, and signing and submitting transactions.
 
-**Wallet Gateway aims to:**
+Key capabilities:
 
-- Maintain the high-level of security and trust that lies in the Canton Protocol.
-- Enable seamless communication between a dApp, Validator Node and Signature Provider, similar in experience to other blockchains.
-- Provide transparency against malicious dApps, Validator Nodes or Signature Providers.
-- Create a standardized communication framework, that allows anybody to extend or integrate with the Wallet Gateway.
+- Authenticate and connect to a Canton synchronizer
+- Allocate parties with an external keypair
+- Read active contracts on the ledger
+- Decode and validate prepared transactions
+- Sign and submit transactions via the Ledger API
+- Integrate with the Splice Token Standard
 
-**Wallet SDK aims to:**
+See the [Wallet SDK README](sdk/wallet-sdk) and the [integration guide](https://docs.digitalasset.com/integrate/devnet/index.html) for usage details.
 
-- Make onboarding of multi-hosted external parties easy and efficient.
-- Enable easy integration with Token Standard.
-- Make integrating with Splice seamless, easy and efficient.
+## Project Structure
 
-### Status
+### Wallet Gateway
 
-**The project is currently (1st of October, 2025) in active early development.**
+Two implementations of the Wallet Gateway, both exposing the same dApp API and User API:
 
-Wallet Gateway is undergoing its final round of design before being built towards a finalized MVP.
+| Package                                    | Path                                                   | Description                                                                                                                                       |
+| ------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@canton-network/wallet-gateway-remote`    | [`wallet-gateway/remote`](wallet-gateway/remote)       | Server-side implementation over HTTP (Express.js). Connects to SQL stores and external signing providers.                                         |
+| `@canton-network/wallet-gateway-extension` | [`wallet-gateway/extension`](wallet-gateway/extension) | [NOT IMPLEMENTED YET] Client-side implementation as a Manifest V3 browser extension. Uses browser storage for persistence and in-browser signing. |
 
-Wallet SDK is building functionality to be feature complete and then bump to version 1.0.0.
+### SDKs
+
+| Package                      | Path                               | Description                                                                                                           |
+| ---------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `@canton-network/dapp-sdk`   | [`sdk/dapp-sdk`](sdk/dapp-sdk)     | Browser SDK for dApp development. Implements the CIP-103 dApp API with multi-transport support (HTTP, `postMessage`). |
+| `@canton-network/wallet-sdk` | [`sdk/wallet-sdk`](sdk/wallet-sdk) | SDK for wallet providers and exchanges to integrate with Canton and the Splice Token Standard.                        |
+
+### Core Modules
+
+Shared libraries used by the Wallet Gateway, SDKs, and signing providers:
+
+| Package                       | Path                                                         | Description                                                             |
+| ----------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| **Store**                     |                                                              |                                                                         |
+| `core-wallet-store`           | [`core/wallet-store`](core/wallet-store)                     | Store interface for wallets, sessions, networks, IDPs, and transactions |
+| `core-wallet-store-sql`       | [`core/wallet-store-sql`](core/wallet-store-sql)             | SQL implementation (SQLite / PostgreSQL) via Kysely                     |
+| `core-wallet-store-inmemory`  | [`core/wallet-store-inmemory`](core/wallet-store-inmemory)   | In-memory implementation for testing and development                    |
+| **Signing**                   |                                                              |                                                                         |
+| `core-signing-lib`            | [`core/signing-lib`](core/signing-lib)                       | Core library and interfaces for signing driver implementations          |
+| `core-signing-store-sql`      | [`core/signing-store-sql`](core/signing-store-sql)           | SQL persistence for signing keys and transactions                       |
+| `core-signing-internal`       | [`core/signing-internal`](core/signing-internal)             | Internal (wallet-kernel) signing driver using Ed25519                   |
+| `core-signing-participant`    | [`core/signing-participant`](core/signing-participant)       | Canton participant-managed signing driver                               |
+| `core-signing-fireblocks`     | [`core/signing-fireblocks`](core/signing-fireblocks)         | Fireblocks signing driver integration                                   |
+| `core-signing-blockdaemon`    | [`core/signing-blockdaemon`](core/signing-blockdaemon)       | Blockdaemon signing driver integration                                  |
+| **RPC & Transport**           |                                                              |                                                                         |
+| `core-types`                  | [`core/types`](core/types)                                   | Shared types and transport-agnostic parsers                             |
+| `core-rpc-transport`          | [`core/rpc-transport`](core/rpc-transport)                   | RPC transport implementations                                           |
+| `core-rpc-errors`             | [`core/rpc-errors`](core/rpc-errors)                         | Standardized JSON-RPC error types                                       |
+| `core-rpc-generator`          | [`core/rpc-generator`](core/rpc-generator)                   | Code generator for JSON-RPC interfaces                                  |
+| **Auth & Ledger**             |                                                              |                                                                         |
+| `core-wallet-auth`            | [`core/wallet-auth`](core/wallet-auth)                       | Authentication middleware and user management (JWT, OAuth)              |
+| `core-ledger-client`          | [`core/ledger-client`](core/ledger-client)                   | TypeScript Canton Ledger API client (generated from OpenAPI)            |
+| `core-ledger-client-types`    | [`core/ledger-client-types`](core/ledger-client-types)       | Type definitions for the Ledger API client                              |
+| **UI & Clients**              |                                                              |                                                                         |
+| `core-wallet-ui-components`   | [`core/wallet-ui-components`](core/wallet-ui-components)     | Reusable Lit web components for wallet UIs                              |
+| `core-wallet-user-rpc-client` | [`core/wallet-user-rpc-client`](core/wallet-user-rpc-client) | Generated RPC client for the User API                                   |
+| `core-wallet-dapp-rpc-client` | [`core/wallet-dapp-rpc-client`](core/wallet-dapp-rpc-client) | Generated RPC client for the dApp API                                   |
+| **Splice**                    |                                                              |                                                                         |
+| `core-splice-client`          | [`core/splice-client`](core/splice-client)                   | Client for Splice network services                                      |
+| `core-splice-provider`        | [`core/splice-provider`](core/splice-provider)               | Splice network provider integration                                     |
+| `core-token-standard`         | [`core/token-standard`](core/token-standard)                 | Canton Token Standard implementation                                    |
+
+### Examples
+
+| Path                                       | Description                                                       |
+| ------------------------------------------ | ----------------------------------------------------------------- |
+| [`examples/ping`](examples/ping)           | Minimal dApp demonstrating connect, prepare, and execute flows    |
+| [`examples/portfolio`](examples/portfolio) | Portfolio dApp showcasing account listing and transaction history |
+
+### Documentation
+
+| Path                                                             | Description                                       |
+| ---------------------------------------------------------------- | ------------------------------------------------- |
+| [`docs/wallet-gateway`](docs/wallet-gateway)                     | Wallet Gateway developer guide (Sphinx)           |
+| [`docs/wallet-integration-guide`](docs/wallet-integration-guide) | Step-by-step integration guide with code examples |
+| [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md)                   | Contribution guidelines                           |
+| [`docs/GLOSSARY.md`](docs/GLOSSARY.md)                           | Terminology reference                             |
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 20+
+- Yarn 4 (Corepack)
+- A running Canton participant node (or use the included local setup)
+
+### Quick Start
+
+```bash
+# Install dependencies
+yarn install
+
+# Build everything
+yarn build:all
+
+# Start all services (Wallet Gateway, mock OAuth, Example dApps, etc.)
+yarn start:all
+
+# Start a local Canton Participant Node
+yarn start:canton
+```
+
+Active processes can be monitored with:
+
+```bash
+yarn pm2 list
+```
+
+To stop everything:
+
+```bash
+yarn stop:all
+```
+
+### Running the Browser Extension
+
+TBD
 
 ## Contributing
 
-For information about contributing to the repo, please refer to the [Contributing Guide](docs/CONTRIBUTING.md).
+For information about contributing, please refer to the [Contributing Guide](docs/CONTRIBUTING.md).
 
-## Testing
+## License
 
-TODO: Make Testing guide.
+Apache-2.0

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './error'
-export * from './provider'
+export { DappSDKProvider } from './sdk-provider'
 export * from './provider/index'
 export * from './provider/request'
 export * from './provider/events'

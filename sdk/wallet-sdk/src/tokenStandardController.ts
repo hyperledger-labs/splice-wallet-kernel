@@ -1,20 +1,22 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { Types, LedgerClient } from '@canton-network/core-ledger-client'
+//TODO: this should probably be in the core-ledger-client types
 import {
-    Types,
-    LedgerClient,
+    ExerciseCommand,
+    DisclosedContract,
+    TokenStandardService,
+} from '@canton-network/core-token-standard-service'
+import { AmuletService } from '@canton-network/core-amulet-service'
+import {
     PrettyTransactions,
     PrettyContract,
     ViewValue,
-    TokenStandardService,
-    AmuletService,
-    Transaction,
     TransferInstructionView,
     Holding,
-    ExerciseCommand,
-    DisclosedContract,
-} from '@canton-network/core-ledger-client'
+    Transaction,
+} from '@canton-network/core-tx-parser'
 import { WebSocketClient } from '@canton-network/core-asyncapi-client'
 import { WebSocketManager } from './webSocketManager.js'
 import { ScanClient, ScanProxyClient } from '@canton-network/core-splice-client'
@@ -331,6 +333,7 @@ export class TokenStandardController {
      * @param limit optional limit for number of UTXOs to return.
      * @param offset optional offset to list utxos from, default is latest.
      * @param party optional party to list utxos
+     * @param continueUntilCompletion optional search the whole ledger for active contracts. Use only when the amount of contracts exceeds the limit defined in http-list-max-elements-limit
      * @returns A promise that resolves to an array of holding UTXOs.
      */
 
@@ -338,27 +341,29 @@ export class TokenStandardController {
         includeLocked: boolean = true,
         limit?: number,
         offset?: number,
-        party?: PartyId
+        party?: PartyId,
+        continueUntilCompletion?: boolean
     ): Promise<PrettyContract<Holding>[]> {
         const utxos = await this.service.listContractsByInterface<Holding>(
             HOLDING_INTERFACE_ID,
             party ?? this.getPartyId(),
             limit,
-            offset
+            offset,
+            continueUntilCompletion
         )
         const currentTime = new Date()
 
-        if (includeLocked) {
-            return utxos
-        } else {
-            return utxos.filter(
-                (utxo) =>
-                    !TokenStandardService.isHoldingLocked(
-                        utxo.interfaceViewValue,
-                        currentTime
-                    )
-            )
-        }
+        const filteredUtxos = includeLocked
+            ? utxos
+            : utxos.filter(
+                  (utxo) =>
+                      !TokenStandardService.isHoldingLocked(
+                          utxo.interfaceViewValue,
+                          currentTime
+                      )
+              )
+
+        return filteredUtxos
     }
 
     /**
@@ -674,9 +679,9 @@ export class TokenStandardController {
 
         const ledgerEnd = await this.client.get('/v2/state/ledger-end')
 
-        const utxos = inputUtxos?.length
-            ? inputUtxos
-            : await this.listHoldingUtxos(true, 100, undefined, walletParty)
+        const utxos =
+            inputUtxos ??
+            (await this.listHoldingUtxos(true, 100, undefined, walletParty))
 
         if (utxos.length < 10) {
             throw new Error(`Utxos are less than 10, found ${utxos.length}`)

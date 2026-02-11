@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { PartyId } from '@canton-network/core-types'
-import {
-    type TransferInstructionView,
-    TokenStandardService,
-} from '@canton-network/core-ledger-client'
+import { type TransferInstructionView } from '@canton-network/core-tx-parser'
+import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { useRegistryUrls } from '../contexts/RegistryServiceContext'
 import { usePortfolio } from '../contexts/PortfolioContext'
 import { AssetCard } from './AssetCard'

@@ -2,35 +2,26 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import '@canton-network/core-wallet-ui-components'
-import { html, css, LitElement } from 'lit'
+import { BaseElement } from '@canton-network/core-wallet-ui-components'
+import { html, css } from 'lit'
 import { customElement } from 'lit/decorators.js'
-import '/index.css'
 import '../index'
 
 @customElement('user-ui-404')
-export class ApproveUi extends LitElement {
-    static styles = css`
-        :host {
-            display: block;
-            box-sizing: border-box;
-            padding: 0rem;
-            max-width: 900px;
-            margin: 20% auto;
-            font-family: var(--swk-font, Arial, sans-serif);
-            color: var(--text-color, #222);
-            padding: 20px;
-        }
-    `
-
-    connectedCallback(): void {
-        super.connectedCallback()
-    }
+export class NotFoundUi extends BaseElement {
+    static styles = [
+        BaseElement.styles,
+        css`
+            :host {
+                display: block;
+                max-width: 900px;
+                margin: 20% auto;
+                padding: 20px;
+            }
+        `,
+    ]
 
     protected render() {
-        return html`
-            <div class="wrapper">
-                <not-found href="/"></not-found>
-            </div>
-        `
+        return html`<not-found href="/"></not-found>`
     }
 }

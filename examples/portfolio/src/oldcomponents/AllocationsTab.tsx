@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useMemo, useCallback, useEffect } from 'react'
-import { type PrettyContract } from '@canton-network/core-ledger-client'
+import { type PrettyContract } from '@canton-network/core-tx-parser'
 import {
     type SettlementInfo,
     type AllocationView,
