@@ -30,9 +30,6 @@ export class UserUiWallets extends BaseElement {
     accessor signingProviders: string[] = Object.values(SigningProvider)
 
     @state()
-    accessor networks: string[] = []
-
-    @state()
     accessor wallets: Wallet[] | undefined = undefined
 
     @state()
@@ -52,9 +49,6 @@ export class UserUiWallets extends BaseElement {
 
     @query('#signing-provider-id')
     accessor _signingProviderSelect: HTMLSelectElement | null = null
-
-    @query('#network-id')
-    accessor _networkSelect: HTMLSelectElement | null = null
 
     @query('#primary')
     accessor _primaryCheckbox: HTMLInputElement | null = null
@@ -372,7 +366,6 @@ export class UserUiWallets extends BaseElement {
         const partyHint = this._partyHintInput?.value || ''
         const primary = this._primaryCheckbox?.checked || false
         const signingProviderId = this._signingProviderSelect?.value || ''
-        const networkId = this._networkSelect?.value || ''
 
         try {
             const userClient = await createUserClient(
@@ -383,7 +376,6 @@ export class UserUiWallets extends BaseElement {
                 params: {
                     primary,
                     partyHint,
-                    networkId,
                     signingProviderId,
                 },
             })
@@ -410,7 +402,6 @@ export class UserUiWallets extends BaseElement {
                 params: {
                     primary: wallet.primary,
                     partyHint: wallet.hint,
-                    networkId: wallet.networkId,
                     signingProviderId: wallet.signingProviderId,
                     signingProviderContext: {
                         partyId: wallet.partyId,

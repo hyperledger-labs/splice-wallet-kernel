@@ -16,7 +16,7 @@ export async function open(): Promise<void> {
         throw new Error('No previous session found')
     }
 
-    const userUrl = session.userUrl ?? session.kernel.userUrl
+    const userUrl = session.provider.userUrl
     if (!userUrl) {
         throw new Error('User URL not found in session')
     }

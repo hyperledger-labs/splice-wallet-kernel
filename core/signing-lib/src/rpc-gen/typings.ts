@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
  *
@@ -35,7 +36,6 @@ export type Id = string
 export interface KeyIdentifierWithPublicKey {
     publicKey: PublicKey
     id?: Id
-    [k: string]: any
 }
 /**
  *
@@ -45,7 +45,6 @@ export interface KeyIdentifierWithPublicKey {
 export interface KeyIdentifierWithId {
     publicKey?: PublicKey
     id: Id
-    [k: string]: any
 }
 /**
  *
@@ -59,6 +58,7 @@ export type KeyIdentifier = KeyIdentifierWithPublicKey | KeyIdentifierWithId
  *
  */
 export type InternalTxId = string
+type AlwaysTrue = any
 /**
  *
  * Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway.
@@ -98,7 +98,6 @@ export type ErrorDescription = string
 export interface Error {
     error: ErrorCode
     error_description: ErrorDescription
-    [k: string]: any
 }
 /**
  *
@@ -126,7 +125,6 @@ export interface Transaction {
     signature?: Signature
     publicKey?: PublicKey
     metadata?: Metadata
-    [k: string]: any
 }
 /**
  *
@@ -136,20 +134,21 @@ export interface Transaction {
 export type Transactions = Transaction[]
 export interface TransactionsResult {
     transactions?: Transactions
-    [k: string]: any
 }
 export interface Key {
     id: Id
     name: Name
     publicKey: PublicKey
-    [k: string]: any
 }
 /**
  *
  * List of keys availabile at the Wallet Provider
  *
  */
-export type Keys = Key[]
+export type KeysList = Key[]
+export interface Keys {
+    keys: KeysList
+}
 export interface SignTransactionParams {
     tx: Tx
     txHash: TxHash
@@ -180,15 +179,11 @@ export interface SetConfigurationParams {
 }
 export interface SubscribeTransactionsParams {
     txIds: TxIds
-    [k: string]: any
 }
 export type SignTransactionResult = Error | Transaction
 export type GetTransactionResult = Error | Transaction
 export type GetTransactionsResult = Error | TransactionsResult
-export interface GetKeysResult {
-    keys?: Keys
-    [k: string]: any
-}
+export type GetKeysResult = Error | Keys
 export type CreateKeyResult = Error | Key
 export interface GetConfigurationResult {
     [key: string]: any
@@ -202,7 +197,6 @@ export interface SubscribeTransactionsResult {
     signature?: Signature
     publicKey?: PublicKey
     metadata?: Metadata
-    [k: string]: any
 }
 /**
  *

@@ -4,5 +4,5 @@
         "rootDir": "./src/web/frontend",
         "outDir": "./src/web/frontend/dist"
     },
-    "include": ["./src/web/frontend"]
+    "include": ["./src/web/frontend/**/*"]
 }
