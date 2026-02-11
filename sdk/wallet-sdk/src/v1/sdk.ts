@@ -70,9 +70,7 @@ export class Sdk {
         this.registries = options.registries
     }
 
-    public get keys() {
-        return new KeysClient()
-    }
+    public keys = new KeysClient()
 
     //TODO: implement other namespaces (#1270)
 
