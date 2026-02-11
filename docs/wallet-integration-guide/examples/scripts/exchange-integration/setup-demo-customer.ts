@@ -63,7 +63,12 @@ export async function setupDemoCustomer(options?: {
 
         await customerSdk.userLedger?.prepareSignExecuteAndWaitFor(
             cmd,
-            customerKeyPair.privateKey,
+            [
+                {
+                    partyId: customerParty,
+                    privateKey: customerKeyPair.privateKey,
+                },
+            ],
             v4(),
             []
         )

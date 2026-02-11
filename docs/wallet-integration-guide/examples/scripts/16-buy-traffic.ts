@@ -80,7 +80,12 @@ const transferPreApprovalProposal =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     [transferPreApprovalProposal],
-    keyPairReceiver.privateKey,
+    [
+        {
+            partyId: receiver!.partyId,
+            privateKey: keyPairReceiver.privateKey,
+        },
+    ],
     v4()
 )
 
@@ -105,7 +110,12 @@ logger.info(tapCommand)
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts
 )
@@ -127,7 +137,12 @@ logger.info(buyTrafficCommand)
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     buyTrafficCommand,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     buyTrafficDisclosedContracts
 )
@@ -171,7 +186,12 @@ const [transferCommand, disclosedContracts2] =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     transferCommand,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts2
 )

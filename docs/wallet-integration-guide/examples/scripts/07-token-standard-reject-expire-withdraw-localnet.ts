@@ -130,7 +130,12 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts
 )
@@ -152,7 +157,12 @@ const [transferCommandToReject, disclosedContracts2] =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     transferCommandToReject,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts2
 )
@@ -177,7 +187,12 @@ const [rejectTransferCommand, disclosedContracts3] =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     rejectTransferCommand,
-    keyPairReceiver.privateKey,
+    [
+        {
+            partyId: receiver!.partyId,
+            privateKey: keyPairReceiver.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts3
 )
@@ -214,7 +229,12 @@ const [transferCommandToExpire, disclosedContracts4] =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     transferCommandToExpire,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts4
 )
@@ -257,7 +277,12 @@ const [transferCommandToWithdraw, disclosedContracts5] =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     transferCommandToWithdraw,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts5
 )
@@ -286,7 +311,12 @@ const [withdrawTransferCommand, disclosedContracts6] =
 
 const withdrawCommandId = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     withdrawTransferCommand,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts6
 )
@@ -317,7 +347,12 @@ const [transferCommandToAccept, disclosedContracts7] =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     transferCommandToAccept,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts7
 )
@@ -342,7 +377,12 @@ const [acceptTransferCommand, disclosedContracts8] =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     acceptTransferCommand,
-    keyPairReceiver.privateKey,
+    [
+        {
+            partyId: receiver!.partyId,
+            privateKey: keyPairReceiver.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts8
 )

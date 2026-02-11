@@ -41,7 +41,12 @@ const [customerTransferCommand, customerTransferDisclosedContracts] =
 
 await customerSdk.userLedger?.prepareSignExecuteAndWaitFor(
     customerTransferCommand,
-    customerKeyPair.privateKey,
+    [
+        {
+            partyId: customerParty,
+            privateKey: customerKeyPair.privateKey,
+        },
+    ],
     depositUUID,
     customerTransferDisclosedContracts
 )

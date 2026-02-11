@@ -47,7 +47,12 @@ const [withdrawalTransferCommand, withdrawalTransferDisclosedContracts] =
 
 await exchangeSdk.userLedger?.prepareSignExecuteAndWaitFor(
     withdrawalTransferCommand,
-    treasuryKeyPair.privateKey,
+    [
+        {
+            partyId: treasuryParty,
+            privateKey: treasuryKeyPair.privateKey,
+        },
+    ],
     v4(),
     withdrawalTransferDisclosedContracts
 )
@@ -74,7 +79,12 @@ if (pendingOffers?.length !== 1) {
 
     await customerSdk.userLedger?.prepareSignExecuteAndWaitFor(
         acceptTransferCommand,
-        customerKeyPair.privateKey,
+        [
+            {
+                partyId: customerParty,
+                privateKey: customerKeyPair.privateKey,
+            },
+        ],
         v4(),
         disclosedContracts
     )

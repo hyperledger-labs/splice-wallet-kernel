@@ -78,7 +78,12 @@ const transferPreApprovalProposal =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     [transferPreApprovalProposal],
-    keyPairReceiver.privateKey,
+    [
+        {
+            partyId: receiver!.partyId,
+            privateKey: keyPairReceiver.privateKey,
+        },
+    ],
     v4()
 )
 
@@ -97,7 +102,12 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts
 )
@@ -129,7 +139,12 @@ try {
 
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         transferCommand,
-        keyPairSender.privateKey,
+        [
+            {
+                partyId: sender!.partyId,
+                privateKey: keyPairSender.privateKey,
+            },
+        ],
         v4(),
         disclosedContracts
     )
@@ -155,7 +170,12 @@ for (let i = 0; i < 10; i++) {
 
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         tapCommand2,
-        keyPairSender.privateKey,
+        [
+            {
+                partyId: sender!.partyId,
+                privateKey: keyPairSender.privateKey,
+            },
+        ],
         v4(),
         disclosedContracts2
     )
@@ -178,7 +198,12 @@ const [transferCommand2, disclosedContracts2] =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     transferCommand2,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts2
 )
@@ -219,7 +244,12 @@ const [transferCommand3, disclosedContracts3] =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     transferCommand3,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts3
 )
@@ -256,7 +286,12 @@ for (let i = 0; i < 10; i++) {
 
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         tapCommand2,
-        keyPairSender.privateKey,
+        [
+            {
+                partyId: sender!.partyId,
+                privateKey: keyPairSender.privateKey,
+            },
+        ],
         v4(),
         disclosedContracts2
     )
@@ -271,7 +306,12 @@ const [mergeUtxoCommands, mergedDisclosedContracts] =
 for (let i = 0; i < mergeUtxoCommands.length; i++) {
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         mergeUtxoCommands[i],
-        keyPairSender.privateKey,
+        [
+            {
+                partyId: sender!.partyId,
+                privateKey: keyPairSender.privateKey,
+            },
+        ],
         v4(),
         mergedDisclosedContracts
     )

@@ -78,7 +78,12 @@ let offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts
 )
@@ -118,13 +123,23 @@ offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? offsetLatest
 
 const firstSpendCommandId = sdk.userLedger?.prepareSignAndExecuteTransaction(
     firstSpendCommand,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts2
 )
 const secondSpendCommandId = sdk.userLedger?.prepareSignAndExecuteTransaction(
     secondSpendCommand,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts3
 )
@@ -175,8 +190,13 @@ for (let i = 0; i < 10; i++) {
     const promise = sdk.userLedger
         ?.executeSubmissionAndWaitFor(
             prepareResponse!,
-            signedCommandHash,
-            keyPairSender.publicKey,
+            [
+                {
+                    partyId: sender!.partyId,
+                    publicKey: keyPairSender.publicKey,
+                    signature: signedCommandHash,
+                },
+            ],
             v4()
         )
         .then((response) => {

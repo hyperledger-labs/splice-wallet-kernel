@@ -60,7 +60,12 @@ const [withdrawalTransferCommand, withdrawalTransferDisclosedContracts] =
 
 await exchangeSdk.userLedger?.prepareSignExecuteAndWaitFor(
     withdrawalTransferCommand,
-    treasuryKeyPair.privateKey,
+    [
+        {
+            partyId: treasuryParty,
+            privateKey: treasuryKeyPair.privateKey,
+        },
+    ],
     v4(),
     withdrawalTransferDisclosedContracts
 )

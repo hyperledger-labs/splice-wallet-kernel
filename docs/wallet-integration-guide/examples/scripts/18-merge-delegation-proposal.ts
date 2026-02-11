@@ -110,7 +110,12 @@ for (let i = 0; i < 13; i++) {
 
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         tapCommand2,
-        keyPairAlice.privateKey,
+        [
+            {
+                partyId: alice!.partyId,
+                privateKey: keyPairAlice.privateKey,
+            },
+        ],
         v4(),
         disclosedContracts2
     )
@@ -143,7 +148,12 @@ const createMergeDelegationProposal =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     createMergeDelegationProposal,
-    keyPairAlice.privateKey,
+    [
+        {
+            partyId: alice!.partyId,
+            privateKey: keyPairAlice.privateKey,
+        },
+    ],
     v4(),
     []
 )

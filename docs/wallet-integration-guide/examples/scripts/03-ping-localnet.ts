@@ -45,6 +45,11 @@ const createPingCommand = sdk.userLedger?.createPingCommand(
 logger.info('Prepare command submission for ping create command')
 const prepareResponse = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     createPingCommand,
-    keyPair.privateKey,
+    [
+        {
+            partyId: allocatedParty!.partyId,
+            privateKey: keyPair.privateKey,
+        },
+    ],
     v4()
 )

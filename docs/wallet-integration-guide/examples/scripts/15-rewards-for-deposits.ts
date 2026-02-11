@@ -65,7 +65,7 @@ await sdk.setPartyId(alice!.partyId)
 
 const synchronizers = await sdk.userLedger?.listSynchronizers()
 
-const synchonizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
+const synchronizerId = synchronizers!.connectedSynchronizers![0].synchronizerId
 
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
@@ -79,7 +79,12 @@ const transferPreApprovalProposal =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     [transferPreApprovalProposal],
-    aliceKeyPair.privateKey,
+    [
+        {
+            partyId: alice!.partyId,
+            privateKey: aliceKeyPair.privateKey,
+        },
+    ],
     v4()
 )
 
@@ -118,7 +123,7 @@ if (!isDarUploaded) {
 
 logger.info(synchronizers, `synchronizer id`)
 //featured exchange party is just the validator operator party
-await sdk.setPartyId(exchangeParty!, synchonizerId)
+await sdk.setPartyId(exchangeParty!, synchronizerId)
 await sdk.tokenStandard?.createAndSubmitTapInternal(
     exchangeParty!,
     '20000000',
@@ -152,7 +157,12 @@ const [tapCommand1, disclosedContracts] = await sdk.tokenStandard!.createTap(
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand1,
-    treasuryKeyPair.privateKey,
+    [
+        {
+            partyId: treasuryParty!.partyId,
+            privateKey: treasuryKeyPair.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts
 )
@@ -190,7 +200,12 @@ const [tapCommand2, disclosedContracts2] = await sdk.tokenStandard!.createTap(
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand2,
-    aliceKeyPair.privateKey,
+    [
+        {
+            partyId: alice!.partyId,
+            privateKey: aliceKeyPair.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts2
 )
@@ -212,7 +227,12 @@ const [transferCommand, disclosedContracts3] =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     transferCommand,
-    aliceKeyPair.privateKey,
+    [
+        {
+            partyId: alice!.partyId,
+            privateKey: aliceKeyPair.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts3
 )
@@ -263,7 +283,12 @@ const [acceptCommand, disclosedContracts4] =
 try {
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         acceptCommand,
-        treasuryKeyPair.privateKey,
+        [
+            {
+                partyId: treasuryParty!.partyId,
+                privateKey: treasuryKeyPair.privateKey,
+            },
+        ],
         v4(),
         disclosedContracts4
     )

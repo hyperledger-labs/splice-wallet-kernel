@@ -81,6 +81,7 @@ async function beforeEachSetup() {
     {
         global.PREPARED_TRANSACTION = await sdk.userLedger!.prepareSubmission(
             global.PREPARED_COMMAND,
+            undefined,
             v4()
         )
     }
@@ -125,7 +126,13 @@ async function beforeEachSetup() {
 
         await sdk.userLedger!.prepareSignExecuteAndWaitFor(
             [transferPreApprovalProposal],
-            global.EXISTING_PARTY_WITH_PREAPPROVAL_KEYS.privateKey,
+            [
+                {
+                    partyId: global.EXISTING_PARTY_WITH_PREAPPROVAL,
+                    privateKey:
+                        global.EXISTING_PARTY_WITH_PREAPPROVAL_KEYS.privateKey,
+                },
+            ],
             v4()
         )
         await sdk.tokenStandard!.waitForPreapprovalFromScanProxy(
@@ -149,7 +156,12 @@ async function beforeEachSetup() {
 
         await sdk.userLedger!.prepareSignExecuteAndWaitFor(
             tapCommand,
-            global.EXISTING_PARTY_1_KEYS.privateKey,
+            [
+                {
+                    partyId: global.EXISTING_PARTY_1,
+                    privateKey: global.EXISTING_PARTY_1_KEYS.privateKey,
+                },
+            ],
             v4(),
             disclosedContracts
         )
@@ -169,7 +181,12 @@ async function beforeEachSetup() {
 
         await sdk.userLedger!.prepareSignExecuteAndWaitFor(
             transferCommand,
-            global.EXISTING_PARTY_1_KEYS.privateKey,
+            [
+                {
+                    partyId: global.EXISTING_PARTY_1,
+                    privateKey: global.EXISTING_PARTY_1_KEYS.privateKey,
+                },
+            ],
             v4(),
             disclosedContracts2
         )

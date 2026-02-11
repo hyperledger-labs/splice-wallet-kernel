@@ -71,7 +71,12 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts
 )
@@ -109,7 +114,12 @@ const [transferCommand, disclosedContracts2] =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     transferCommand,
-    keyPairSender.privateKey,
+    [
+        {
+            partyId: sender!.partyId,
+            privateKey: keyPairSender.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts2
 )
@@ -130,7 +140,12 @@ const [acceptTransferCommand, disclosedContracts3] =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     acceptTransferCommand,
-    keyPairReceiver.privateKey,
+    [
+        {
+            partyId: receiver!.partyId,
+            privateKey: keyPairReceiver.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts3
 )

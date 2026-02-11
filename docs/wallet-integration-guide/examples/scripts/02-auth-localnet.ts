@@ -73,10 +73,17 @@ const signedCommandHash = signTransactionHash(
 
 logger.info('Submit command')
 
+const signatures = [
+    {
+        partyId: allocatedParty!.partyId!,
+        signature: signedCommandHash,
+        publicKey: keyPair.publicKey,
+    },
+]
+
 const response = await sdk.userLedger?.executeSubmissionAndWaitFor(
     prepareResponse!,
-    signedCommandHash,
-    keyPair.publicKey,
+    signatures,
     v4()
 )
 

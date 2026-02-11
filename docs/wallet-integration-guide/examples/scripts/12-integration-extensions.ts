@@ -135,7 +135,12 @@ const [tapCommand1, disclosedContracts3] = await sdk.tokenStandard!.createTap(
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand1,
-    keyPairTreasury.privateKey,
+    [
+        {
+            partyId: treasuryParty!.partyId,
+            privateKey: keyPairTreasury.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts3
 )
@@ -149,7 +154,12 @@ const transferPreApprovalProposal =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     [transferPreApprovalProposal],
-    keyPairTreasury.privateKey,
+    [
+        {
+            partyId: treasuryParty!.partyId,
+            privateKey: keyPairTreasury.privateKey,
+        },
+    ],
     v4()
 )
 
@@ -207,7 +217,12 @@ const transferPreApprovalProposalReceiver =
 
 const bobPreapproval = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     [transferPreApprovalProposalReceiver],
-    receiverPartyKeyPair.privateKey,
+    [
+        {
+            partyId: receiverParty!.partyId,
+            privateKey: receiverPartyKeyPair.privateKey,
+        },
+    ],
     v4()
 )
 logger.info(bobPreapproval, 'created pre approval for bob')
@@ -248,7 +263,12 @@ logger.debug(transferCommand, `created delegate exercise command`)
 
 const result = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     transferCommand,
-    keyPairTreasury.privateKey,
+    [
+        {
+            partyId: treasuryParty!.partyId,
+            privateKey: keyPairTreasury.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts2
 )
