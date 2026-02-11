@@ -5,7 +5,7 @@ import {
     error,
     ensureDir,
     downloadAndUnpackTarball,
-    Network,
+    type Network,
     SUPPORTED_VERSIONS,
     getNetworkArg,
     hasFlag,
