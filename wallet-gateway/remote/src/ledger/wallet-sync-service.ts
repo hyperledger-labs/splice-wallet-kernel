@@ -195,7 +195,7 @@ export class WalletSyncService {
                 },
             }
         )
-
+        this.logger.debug({ rights }, 'RIGHTS HERE£')
         const parties = new Set<string>()
 
         // Collect all parties from per-party rights
@@ -212,10 +212,7 @@ export class WalletSyncService {
                 parties.add(party)
             }
         })
-        this.logger.debug(
-            { parties: [...parties] },
-            'getPartiesWithRights before wildcard'
-        )
+
         // Check if user has wildcard rights
         const hasExecuteAsAnyParty = rights.rights?.some(
             (r) => 'CanExecuteAsAnyParty' in r.kind
@@ -231,33 +228,12 @@ export class WalletSyncService {
                 defaultRetryableOptions
             )
 
-            this.logger.debug(
-                { parties: partiesResponse },
-                'getPartiesWithRights parties response'
-            )
-
-            const participantNamespace = await this.getParticipantNamespace()
-
             partiesResponse.partyDetails?.forEach((partyDetail) => {
-                if (!partyDetail.party) return
-
                 const partyId = partyDetail.party
-                const [, namespace] = partyId.split('::')
-
-                const isInternal =
-                    participantNamespace !== undefined &&
-                    namespace === participantNamespace
-
-                // Only add external parties (internal parties need per-party rights)
-                if (!isInternal && !parties.has(partyId)) {
-                    parties.add(partyId)
-                }
+                parties.add(partyId)
             })
         }
-        this.logger.debug(
-            { parties: [...parties] },
-            'getPartiesWithRights after wildcard'
-        )
+
         return Array.from(parties)
     }
 
@@ -294,6 +270,14 @@ export class WalletSyncService {
         }
     }
     async syncWallets(): Promise<WalletSyncReport> {
+        // await this.adminLedgerClient.grantRights(this.authContext?.userId, {
+        //     // canReadAsAnyParty: true,
+        //     canExecuteAsAnyParty: true,
+        // })
+        // await this.adminLedgerClient.revokeRights(this.authContext?.userId, {
+        //     canReadAsAnyParty: true,
+        //     // canExecuteAsAnyParty: true,
+        // })
         this.logger.info('Starting wallet sync...')
         try {
             const network = await this.store.getCurrentNetwork()
