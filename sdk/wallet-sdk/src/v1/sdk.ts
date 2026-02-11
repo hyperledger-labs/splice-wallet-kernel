@@ -8,7 +8,7 @@ import { TokenStandardService } from '@canton-network/core-token-standard-servic
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import { Logger } from 'pino'
-import { KeysClient } from './keys'
+import { KeysClient } from './keys/index.js'
 
 export type WalletSdkOptions = {
     readonly logger: Logger // TODO: client should be able to provide a logger (#1286)
