@@ -85,12 +85,16 @@ const processCreateTap = async () => {
 
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         tapCommand2,
-        keyPairAlice.privateKey,
+        [
+            {
+                partyId: alice!.partyId,
+                privateKey: keyPairAlice.privateKey,
+            },
+        ],
         v4(),
         disclosedContracts2
     )
 }
-
 // Function to process the iterations in batches with retry logic
 const processTapInBatches = async (totalIterations: number) => {
     let results: any[] = []
@@ -132,7 +136,12 @@ const [commands, mergedDisclosedContracts] =
 for (let i = 0; i < commands.length; i++) {
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         commands[i],
-        keyPairAlice.privateKey,
+        [
+            {
+                partyId: alice!.partyId,
+                privateKey: keyPairAlice.privateKey,
+            },
+        ],
         v4(),
         mergedDisclosedContracts
     )

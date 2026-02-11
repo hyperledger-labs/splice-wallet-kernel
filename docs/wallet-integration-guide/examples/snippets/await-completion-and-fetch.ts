@@ -43,7 +43,12 @@ export default async function () {
     //we use the AndWaitFor to get a completion result
     const completionResult = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         transferCommand,
-        senderKey,
+        [
+            {
+                partyId: sender,
+                privateKey: senderKey,
+            },
+        ],
         v4(),
         disclosedContracts2
     )

@@ -68,7 +68,12 @@ async function setUpParty(parties: partyDefinition[], sdk: WalletSDK) {
     const pingCommandResponse =
         await sdk.userLedger?.prepareSignExecuteAndWaitFor(
             createPingCommand,
-            keyPair.privateKey,
+            [
+                {
+                    partyId: allocatedParty!.partyId,
+                    privateKey: keyPair.privateKey,
+                },
+            ],
             v4()
         )
     logger.debug(pingCommandResponse, 'ping command response')

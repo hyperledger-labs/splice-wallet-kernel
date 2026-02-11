@@ -69,7 +69,12 @@ async function buyTraffic(amount: number = 200000) {
 
         await sdk.userLedger?.prepareSignExecuteAndWaitFor(
             tapCommand,
-            trafficBuyerKeyPair.privateKey,
+            [
+                {
+                    partyId: trafficBuyer!.partyId,
+                    privateKey: trafficBuyerKeyPair.privateKey,
+                },
+            ],
             v4(),
             disclosedContracts
         )
@@ -85,7 +90,12 @@ async function buyTraffic(amount: number = 200000) {
 
         await sdk.userLedger?.prepareSignExecuteAndWaitFor(
             buyTrafficCommand,
-            trafficBuyerKeyPair.privateKey,
+            [
+                {
+                    partyId: trafficBuyer!.partyId,
+                    privateKey: trafficBuyerKeyPair.privateKey,
+                },
+            ],
             v4(),
             buyTrafficDisclosedContracts
         )
@@ -141,7 +151,12 @@ async function tapAndTransfer(fromParty: partyDefinition, count: number) {
             transferSdk.userLedger
                 ?.prepareSignExecuteAndWaitFor(
                     tapCommand,
-                    fromParty.keyPair.privateKey,
+                    [
+                        {
+                            partyId: fromParty.partyId,
+                            privateKey: fromParty.keyPair.privateKey,
+                        },
+                    ],
                     v4(),
                     disclosedContracts
                 )
@@ -159,7 +174,12 @@ async function tapAndTransfer(fromParty: partyDefinition, count: number) {
                     allTransferCommandIds.push(id)
                     await transferSdk.userLedger?.prepareSignAndExecuteTransaction(
                         command,
-                        fromParty.keyPair.privateKey,
+                        [
+                            {
+                                partyId: fromParty.partyId,
+                                privateKey: fromParty.keyPair.privateKey,
+                            },
+                        ],
                         id,
                         dc
                     )

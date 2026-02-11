@@ -41,7 +41,12 @@ const [customerTransferCommand, customerTransferDisclosedContracts] =
 
 await customerSdk.userLedger?.prepareSignExecuteAndWaitFor(
     customerTransferCommand,
-    customerKeyPair.privateKey,
+    [
+        {
+            partyId: customerParty,
+            privateKey: customerKeyPair.privateKey,
+        },
+    ],
     depositUUID,
     customerTransferDisclosedContracts
 )
@@ -68,7 +73,12 @@ if (pendingOffers?.length !== 1) {
 
     await exchangeSdk.userLedger?.prepareSignExecuteAndWaitFor(
         acceptTransferCommand,
-        treasuryKeyPair.privateKey,
+        [
+            {
+                partyId: treasuryParty,
+                privateKey: treasuryKeyPair.privateKey,
+            },
+        ],
         v4(),
         disclosedContracts
     )

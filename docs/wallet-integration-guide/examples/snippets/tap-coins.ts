@@ -36,7 +36,12 @@ export default async function () {
 
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         tapCommand,
-        myPrivateKey,
+        [
+            {
+                partyId: myParty,
+                privateKey: myPrivateKey,
+            },
+        ],
         v4(),
         disclosedContracts
     )

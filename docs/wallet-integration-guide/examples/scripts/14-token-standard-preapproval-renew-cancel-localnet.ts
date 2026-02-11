@@ -80,7 +80,12 @@ const createProposalCmd =
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     [createProposalCmd!],
-    keyPairReceiver.privateKey,
+    [
+        {
+            partyId: receiver!.partyId,
+            privateKey: keyPairReceiver.privateKey,
+        },
+    ],
     v4()
 )
 logger.info('Transfer preapproval proposal created')
@@ -156,7 +161,12 @@ const [cancelCmd, disclosedContractsCancel] =
     )
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     [cancelCmd!],
-    keyPairReceiver.privateKey,
+    [
+        {
+            partyId: receiver!.partyId,
+            privateKey: keyPairReceiver.privateKey,
+        },
+    ],
     v4(),
     disclosedContractsCancel
 )

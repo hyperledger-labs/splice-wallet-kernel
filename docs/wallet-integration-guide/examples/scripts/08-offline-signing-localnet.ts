@@ -166,6 +166,7 @@ const [tapCommand, disclosedContracts] =
 
 const preparedTap = await onlineSDK.userLedger?.prepareSubmission(
     tapCommand,
+    undefined,
     v4(),
     disclosedContracts
 )
@@ -198,10 +199,16 @@ offlineLogger.info(`Signed tap hash: ${signedTapHash}`)
 await new Promise((resolve) => setTimeout(resolve, 100))
 onlineLogger.info('===================== SUBMITTING TAP =====================')
 
+const tapSignatures = [
+    {
+        partyId: senderParty!.partyId,
+        signature: signedTapHash,
+        publicKey: keyPairSender.publicKey,
+    },
+]
 await onlineSDK.userLedger?.executeSubmissionAndWaitFor(
     preparedTap!,
-    signedTapHash,
-    keyPairSender.publicKey,
+    tapSignatures,
     v4()
 )
 
@@ -228,6 +235,7 @@ const [transferCommand, disclosedContracts2] =
 
 const preparedTransfer = await onlineSDK.userLedger?.prepareSubmission(
     transferCommand,
+    undefined,
     v4(),
     disclosedContracts2
 )
@@ -266,10 +274,16 @@ onlineLogger.info(
     '====================== SUBMITTING TRANSFER ====================='
 )
 
+const transferSignatures = [
+    {
+        partyId: senderParty!.partyId,
+        signature: signedTransferHash,
+        publicKey: keyPairSender.publicKey,
+    },
+]
 await onlineSDK.userLedger?.executeSubmissionAndWaitFor(
     preparedTransfer!,
-    signedTransferHash,
-    keyPairSender.publicKey,
+    transferSignatures,
     v4()
 )
 
@@ -302,6 +316,7 @@ const [acceptTransferCommand, disclosedContracts3] =
 
 const preparedAccept = await onlineSDK.userLedger?.prepareSubmission(
     acceptTransferCommand,
+    undefined,
     v4(),
     disclosedContracts3
 )
@@ -339,10 +354,16 @@ onlineLogger.info(
     '===================== SUBMITTING ACCEPT ====================='
 )
 
+const acceptSignatures = [
+    {
+        partyId: receiverParty!.partyId,
+        signature: signedAcceptHash,
+        publicKey: keyPairReceiver.publicKey,
+    },
+]
 await onlineSDK.userLedger?.executeSubmissionAndWaitFor(
     preparedAccept!,
-    signedAcceptHash,
-    keyPairReceiver.publicKey,
+    acceptSignatures,
     v4()
 )
 

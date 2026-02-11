@@ -114,7 +114,12 @@ const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     tapCommand,
-    keyPairAlice.privateKey,
+    [
+        {
+            partyId: alice!.partyId,
+            privateKey: keyPairAlice.privateKey,
+        },
+    ],
     v4(),
     disclosedContracts
 )
@@ -128,7 +133,12 @@ const [tapCmdBob, tapDiscBob] = await sdk.tokenStandard!.createTap(
 )
 await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     tapCmdBob,
-    keyPairBob.privateKey,
+    [
+        {
+            partyId: bob!.partyId,
+            privateKey: keyPairBob.privateKey,
+        },
+    ],
     v4(),
     tapDiscBob
 )
@@ -169,7 +179,12 @@ const createProposal = {
 
 await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     createProposal,
-    keyPairAlice.privateKey,
+    [
+        {
+            partyId: alice!.partyId,
+            privateKey: keyPairAlice.privateKey,
+        },
+    ],
     v4()
 )
 
@@ -206,7 +221,12 @@ const acceptCmd = [
 ]
 await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     acceptCmd,
-    keyPairBob.privateKey,
+    [
+        {
+            partyId: bob!.partyId,
+            privateKey: keyPairBob.privateKey,
+        },
+    ],
     v4()
 )
 
@@ -245,7 +265,12 @@ const initiateSettlementCmd = [
 
 await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     initiateSettlementCmd,
-    keyPairVenue.privateKey,
+    [
+        {
+            partyId: venue!.partyId,
+            privateKey: keyPairVenue.privateKey,
+        },
+    ],
     v4()
 )
 
@@ -297,7 +322,12 @@ const [allocateCmdAlice, allocateDisclosedAlice] =
 
 await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     allocateCmdAlice,
-    keyPairAlice.privateKey,
+    [
+        {
+            partyId: alice!.partyId,
+            privateKey: keyPairAlice.privateKey,
+        },
+    ],
     v4(),
     allocateDisclosedAlice
 )
@@ -335,7 +365,12 @@ const [allocateCmdBob, AllocateDisclosedABob] =
 
 await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     allocateCmdBob,
-    keyPairBob.privateKey,
+    [
+        {
+            partyId: bob!.partyId,
+            privateKey: keyPairBob.privateKey,
+        },
+    ],
     v4(),
     AllocateDisclosedABob
 )
@@ -404,7 +439,12 @@ const settleCmd = [
 
 await sdk.userLedger!.prepareSignExecuteAndWaitFor(
     settleCmd,
-    keyPairVenue.privateKey,
+    [
+        {
+            partyId: venue!.partyId,
+            privateKey: keyPairVenue.privateKey,
+        },
+    ],
     v4(),
     uniqueDisclosedContracts
 )

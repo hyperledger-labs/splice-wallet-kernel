@@ -84,7 +84,12 @@ export async function setupExchange(options?: {
 
         await exchangeSdk.userLedger?.prepareSignExecuteAndWaitFor(
             cmd,
-            treasuryKeyPair.privateKey,
+            [
+                {
+                    partyId: treasuryParty,
+                    privateKey: treasuryKeyPair.privateKey,
+                },
+            ],
             v4(),
             []
         )

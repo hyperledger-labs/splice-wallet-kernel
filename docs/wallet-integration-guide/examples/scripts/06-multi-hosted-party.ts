@@ -102,11 +102,15 @@ logger.info('Prepare command submission for ping create command')
 
 const pingCommandResponse = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     createPingCommand,
-    multiHostedPartyKeyPair.privateKey,
+    [
+        {
+            partyId: multiHostedParty!.partyId,
+            privateKey: multiHostedPartyKeyPair.privateKey,
+        },
+    ],
     v4()
 )
 logger.info(pingCommandResponse, 'ping command response')
-
 const multiHostedPartyWithObservingParticipant =
     await sdk.userLedger?.signAndAllocateExternalParty(
         multiHostedKeyPairWithObserverParticipant.privateKey,
@@ -154,7 +158,12 @@ const createPingCommand2 = sdk.userLedger?.createPingCommand(
 
 const pingCommandResponse2 = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     createPingCommand2,
-    multiHostedKeyPairWithObserverParticipant.privateKey,
+    [
+        {
+            partyId: multiHostedPartyWithObservingParticipant!.partyId,
+            privateKey: multiHostedKeyPairWithObserverParticipant.privateKey,
+        },
+    ],
     v4()
 )
 logger.info(pingCommandResponse2, 'ping command response')
