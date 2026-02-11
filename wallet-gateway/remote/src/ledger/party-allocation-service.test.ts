@@ -12,6 +12,7 @@ type AsyncFn = () => Promise<unknown>
 const mockLedgerGet = jest.fn<AsyncFn>()
 const mockLedgerPost = jest.fn<AsyncFn>()
 const mockLedgerGrantUserRights = jest.fn()
+const mockWaitForPartyToExist = jest.fn<AsyncFn>()
 
 jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
     Signature: jest.fn(),
@@ -25,6 +26,7 @@ jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
             getWithRetry: mockLedgerGet,
             postWithRetry: mockLedgerPost,
             waitForPartyAndGrantUserRights: mockLedgerGrantUserRights,
+            waitForPartyToExist: mockWaitForPartyToExist,
             generateTopology: jest.fn<AsyncFn>().mockResolvedValue({
                 partyId: 'party2::mypublickey',
                 publicKeyFingerprint: 'mypublickey',
@@ -128,5 +130,104 @@ describe('PartyAllocationService', () => {
             partyId: `party2::${publicKey}`,
             namespace: publicKey,
         })
+    })
+
+    it('internal party, no wildcard rights - grants user rights', async () => {
+        mockLedgerGet.mockResolvedValueOnce({
+            participantId: 'participant1::participantid',
+        })
+        mockLedgerPost.mockResolvedValueOnce({
+            partyDetails: { party: 'party1::participantid' },
+        })
+        const result = await service.allocateParty('user1', 'party1')
+
+        expect(result).toStrictEqual({
+            hint: 'party1',
+            partyId: 'party1::participantid',
+            namespace: 'participantid',
+        })
+        expect(mockLedgerGrantUserRights).toHaveBeenCalledWith(
+            'user1',
+            'party1::participantid'
+        )
+        expect(mockWaitForPartyToExist).not.toHaveBeenCalled()
+    })
+
+    it('internal party, with wildcard rights - grants user rights', async () => {
+        mockLedgerGet.mockResolvedValueOnce({
+            participantId: 'participant1::participantid',
+        })
+        mockLedgerPost.mockResolvedValueOnce({
+            partyDetails: { party: 'party1::participantid' },
+        })
+        const result = await service.allocateParty('user1', 'party1')
+
+        expect(result).toStrictEqual({
+            hint: 'party1',
+            partyId: 'party1::participantid',
+            namespace: 'participantid',
+        })
+        // Internal always grants (needs per-party rights)
+        expect(mockLedgerGrantUserRights).toHaveBeenCalledWith(
+            'user1',
+            'party1::participantid'
+        )
+    })
+
+    it('external party, no wildcard rights - grants user rights', async () => {
+        const publicKey = 'mypublickey'
+
+        mockLedgerGet.mockResolvedValueOnce({
+            rights: [],
+        })
+
+        const result = await service.allocateParty(
+            'user1',
+            'party2',
+            publicKey,
+            async () => 'mysignedhash'
+        )
+
+        expect(result).toStrictEqual({
+            hint: 'party2',
+            partyId: 'party2::mypublickey',
+            namespace: publicKey,
+        })
+        expect(mockLedgerGrantUserRights).toHaveBeenCalledWith(
+            'user1',
+            'party2::mypublickey'
+        )
+    })
+
+    it('external party, with wildcard rights - omits granting user rights', async () => {
+        const publicKey = 'mypublickey'
+
+        mockLedgerGet.mockResolvedValueOnce({
+            rights: [
+                {
+                    kind: {
+                        CanExecuteAsAnyParty: { value: {} },
+                    },
+                },
+            ],
+        })
+        mockWaitForPartyToExist.mockResolvedValueOnce(undefined)
+
+        const result = await service.allocateParty(
+            'user1',
+            'party2',
+            publicKey,
+            async () => 'mysignedhash'
+        )
+
+        expect(result).toStrictEqual({
+            hint: 'party2',
+            partyId: 'party2::mypublickey',
+            namespace: publicKey,
+        })
+        expect(mockLedgerGrantUserRights).not.toHaveBeenCalled()
+        expect(mockWaitForPartyToExist).toHaveBeenCalledWith(
+            'party2::mypublickey'
+        )
     })
 })
