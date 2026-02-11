@@ -74,15 +74,15 @@ export class Sdk {
 
     //TODO: implement other namespaces (#1270)
 
-    // public get ledger() {}
+    // public ledger()
 
-    // public get token() {}
+    // public token()
 
-    // public get amulet() {}
+    // public amulet() {}
 
-    // public get party() {}
+    // public party() {}
 
-    // public get registries() {}
+    // public registries() {}
 
-    // public get events() {}
+    // public events() {}
 }
