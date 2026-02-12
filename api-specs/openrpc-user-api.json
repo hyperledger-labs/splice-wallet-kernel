@@ -598,6 +598,32 @@
                 }
             },
             "description": "Deletes a pending transaction. Only transactions with status 'pending' can be deleted."
+        },
+        {
+            "name": "getUser",
+            "description": "Returns information about the current user, including whether they are an admin.",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "GetUserResult",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "userId": {
+                            "title": "userIdentifier",
+                            "type": "string",
+                            "description": "The unique identifier of the current user."
+                        },
+                        "isAdmin": {
+                            "title": "isAdminFlag",
+                            "type": "boolean",
+                            "description": "Whether the current user is an admin."
+                        }
+                    },
+                    "required": ["userId", "isAdmin"]
+                }
+            }
         }
     ],
     "components": {

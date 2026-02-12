@@ -325,6 +325,18 @@ export interface Transaction {
     origin?: Origin
 }
 export type Transactions = Transaction[]
+/**
+ *
+ * The unique identifier of the current user.
+ *
+ */
+export type UserIdentifier = string
+/**
+ *
+ * Whether the current user is an admin.
+ *
+ */
+export type IsAdminFlag = boolean
 export interface AddNetworkParams {
     network: Network
 }
@@ -447,6 +459,10 @@ export interface GetTransactionResult {
 export interface ListTransactionsResult {
     transactions: Transactions
 }
+export interface GetUserResult {
+    userId: UserIdentifier
+    isAdmin: IsAdminFlag
+}
 /**
  *
  * Generated! Represents an alias to any of the provided schemas
@@ -483,6 +499,7 @@ export type ListTransactions = () => Promise<ListTransactionsResult>
 export type DeleteTransaction = (
     params: DeleteTransactionParams
 ) => Promise<Null>
+export type GetUser = () => Promise<GetUserResult>
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 type Params<T> = T extends (...args: infer A) => any
@@ -591,6 +608,11 @@ export type RpcTypes = {
     deleteTransaction: {
         params: Params<DeleteTransaction>
         result: Result<DeleteTransaction>
+    }
+
+    getUser: {
+        params: Params<GetUser>
+        result: Result<GetUser>
     }
 }
 
