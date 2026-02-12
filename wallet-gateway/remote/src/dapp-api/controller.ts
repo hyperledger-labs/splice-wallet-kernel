@@ -196,7 +196,8 @@ export const dappController = (
             store.setTransaction(transaction)
 
             return {
-                userUrl: `${userUrl}/approve/index.html?commandId=${commandId}`,
+                // closeafteraction query param flag makes approving or deleting tx close the popup
+                userUrl: `${userUrl}/approve/index.html?commandId=${commandId}&closeafteraction`,
             }
         },
         status: async () => {

@@ -58,6 +58,20 @@ export class ApproveUi extends BaseElement {
         this.updateState()
     }
 
+    private closeOrGoToList() {
+        const params = new URLSearchParams(window.location.search)
+        // if tx approve view was triggered via dApp, close it after approve or delete
+        // otherwise go back to tx list
+        const shouldClose = params.has('closeafteraction')
+        setTimeout(() => {
+            if (shouldClose && window.opener) {
+                window.close()
+            } else {
+                window.location.href = '/transactions/index.html'
+            }
+        }, 1000)
+    }
+
     private async updateState() {
         const userClient = await createUserClient(
             stateManager.accessToken.get()
@@ -88,6 +102,31 @@ export class ApproveUi extends BaseElement {
                 this.partyId =
                     wallets.find((w) => w.primary === true)?.partyId || ''
             })
+    }
+
+    private async handleDelete() {
+        if (!confirm(`Delete pending transaction "${this.commandId}"?`)) return
+        this.loading = true
+        try {
+            const userClient = await createUserClient(
+                stateManager.accessToken.get()
+            )
+            await userClient.request({
+                method: 'deleteTransaction',
+                params: { commandId: this.commandId },
+            })
+
+            this.message = 'Transaction deleted successfully ✅'
+            this.messageType = 'info'
+            // This prevents folks from clicking delete twice
+            this.status = ''
+
+            this.closeOrGoToList()
+        } catch (e) {
+            handleErrorToast(e)
+        } finally {
+            this.loading = false
+        }
     }
 
     private async handleExecute() {
@@ -124,9 +163,7 @@ export class ApproveUi extends BaseElement {
             // This prevents folks from clicking approve twice
             this.status = 'executed'
 
-            if (window.opener) {
-                setTimeout(() => window.close(), 1000)
-            }
+            this.closeOrGoToList()
         } catch (err) {
             console.error(err)
             this.message = null
@@ -221,16 +258,29 @@ export class ApproveUi extends BaseElement {
                         ${this.txParsed?.jsonString || 'N/A'}
                     </div>
 
-                    ${this.status === 'executed'
+                    ${this.status !== 'pending'
                         ? nothing
                         : html`
-                              <button
-                                  class="btn btn-primary w-100 mt-3"
-                                  ?disabled=${this.loading}
-                                  @click=${this.handleExecute}
-                              >
-                                  ${this.loading ? 'Processing...' : 'Approve'}
-                              </button>
+                              <div class="d-flex gap-2 mt-3">
+                                  <button
+                                      class="btn btn-primary flex-grow-1"
+                                      ?disabled=${this.loading}
+                                      @click=${this.handleExecute}
+                                  >
+                                      ${this.loading
+                                          ? 'Processing...'
+                                          : 'Approve'}
+                                  </button>
+                                  ${this.status === 'pending'
+                                      ? html`<button
+                                            class="btn btn-outline-danger"
+                                            ?disabled=${this.loading}
+                                            @click=${this.handleDelete}
+                                        >
+                                            Delete
+                                        </button>`
+                                      : nothing}
+                              </div>
                           `}
                     ${this.message
                         ? html`<div
