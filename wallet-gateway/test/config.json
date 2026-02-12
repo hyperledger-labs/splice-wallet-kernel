@@ -10,7 +10,7 @@
         "dappPath": "/api/v0/dapp",
         "userPath": "/api/v0/user",
         "allowedOrigins": ["http://localhost:8080", "http://localhost:8081"],
-        "admin": "sub"
+        "admin": "operator"
     },
     "store": {
         "connection": {
