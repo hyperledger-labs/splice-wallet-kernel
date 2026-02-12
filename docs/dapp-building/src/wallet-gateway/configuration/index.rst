@@ -11,10 +11,9 @@ Overview
 The Wallet Gateway configuration is a JSON file that defines:
 
 - **Kernel Settings**: Identity and client type information
-- **Server Settings**: Network binding, ports, and API paths
+- **Server Settings**: Network binding, ports, API paths, and admin user
 - **Store Configuration**: Database connection and persistence settings
-- **Identity Providers**: Authentication providers for JWT token generation
-- **Network Definitions**: Canton validator networks and their settings
+- **Bootstrap Configuration**: Initial identity providers and network definitions seeded on first run
 - **Signing Store**: Optional database for key storage (when using internal signing)
 
 Default Configuration Example
@@ -44,8 +43,9 @@ Configuration Structure
 The configuration file has the following main sections:
 
 - **kernel**: Basic information about the Wallet Gateway identity
-- **server**: Network binding, ports, and API endpoint configuration
-- **store**: Database connection, identity providers, and network definitions
+- **server**: Network binding, ports, API endpoint configuration, and admin user designation
+- **store**: Database connection and persistence settings
+- **bootstrap**: Initial identity providers and network definitions seeded when the database is first created
 - **signingStore**: (optional) Secondary database for key storage when using internal signing
 
 Configuring Kernel Settings
@@ -88,6 +88,7 @@ The **server** section configures network binding, ports, and API paths.
     - *allowedOrigins* (optional, default: ``['*']``): CORS allowed origins. For production, specify exact origins instead of ``'*'`` for better security. Example: ``["https://my-dapp.com", "https://another-dapp.com"]``.
     - *requestSizeLimit* (optional, default: ``'1mb'``): Maximum request body size the server will accept. Use standard size notation (e.g., ``'1mb'``, ``'10mb'``, ``'50kb'``).
     - *requestRateLimit* (optional, default: ``10000``): Maximum number of requests per minute from a single IP address (this excludes health endpoints).
+    - *admin* (optional): The user ID (JWT ``sub`` claim) of the admin user. When set, the matching user is granted admin privileges, allowing them to manage networks and identity providers through the User API and web UI. Other users can only view these settings. If omitted, no user has admin privileges and network/IDP management is restricted to the bootstrap configuration.
 
 **Example:**
 
@@ -100,14 +101,17 @@ The **server** section configures network binding, ports, and API paths.
             "userPath": "/api/v0/user",
             "allowedOrigins": ["https://my-dapp.example.com"],
             "requestSizeLimit": "10mb",
-            "requestRateLimit": 10000
+            "requestRateLimit": 10000,
+            "admin": "operator"
         }
     }
 
 **store:**
     - *connection:* Configures the database connection. See :ref:`configuring-store` for details.
-    - *idps:* Configures all identity providers (IDPs) used by the Wallet Gateway. See :ref:`configuring-idps` for details.
-    - *networks:* Configures all networks used by the Wallet Gateway. See :ref:`configuring-networks` for details.
+
+**bootstrap:**
+    - *idps:* Configures the initial identity providers (IDPs) seeded when the database is first created. See :ref:`configuring-idps` for details.
+    - *networks:* Configures the initial networks seeded when the database is first created. See :ref:`configuring-networks` for details.
 
 
 
@@ -116,7 +120,7 @@ The **server** section configures network binding, ports, and API paths.
 Configuring Store
 -----------------
 
-The store connection determines where the Wallet Gateway persists its data, including sessions, wallet configurations, networks, and identity providers.
+The store connection determines where the Wallet Gateway persists its data, including sessions, wallet configurations, networks, identity providers, and transactions.
 
 **Available Storage Options:**
 
@@ -211,16 +215,15 @@ For production and sensitive environments, regular database backups are **strong
 
 The store database contains:
 - User sessions and authentication state
-- Custom networks and identity providers added by users
+- Networks and identity providers (seeded from bootstrap configuration on first run, manageable by admin at runtime)
 - Wallet configurations and party mappings
 - In-flight transactions (pending signing or signed but not yet submitted)
-- User preferences and settings
 
 **What Happens Without Backups:**
 
 If the database is lost and cannot be restored:
 - All user sessions will be invalidated (users must log in again)
-- Custom networks and IDPs added by users will be lost
+- Networks and IDPs will be re-seeded from the bootstrap configuration, but any runtime modifications made by the admin will be lost
 - In-flight transactions will be lost (may require manual intervention)
 - Wallet configurations referencing lost networks may need to be reconfigured
 
@@ -244,6 +247,8 @@ Configuring Identity Providers
 
 Identity Providers (IDPs) are used for generating JWT tokens that authenticate against Canton validator networks. Each network must reference an IDP that provides or generates the required authentication tokens.
 
+IDPs are defined in the ``bootstrap`` section of the configuration and are seeded into the database when it is first created. After initial setup, IDPs can be managed at runtime through the User API or web UI by the admin user (see ``server.admin``).
+
 **Supported IDP Types:**
 
 The Wallet Gateway supports two types of identity providers: **self_signed** and **oauth**.
@@ -266,7 +271,7 @@ Self-signed IDPs generate JWT tokens locally using a secret key. This is conveni
 .. code-block:: json
 
     {
-        "store": {
+        "bootstrap": {
             "idps": [
                 {
                     "id": "idp-self-signed",
@@ -292,7 +297,7 @@ OAuth IDPs integrate with external OAuth 2.0 / OpenID Connect providers to obtai
 .. code-block:: json
 
     {
-        "store": {
+        "bootstrap": {
             "idps": [
                 {
                     "id": "idp-production",
@@ -310,7 +315,8 @@ OAuth IDPs integrate with external OAuth 2.0 / OpenID Connect providers to obtai
 Configuring Networks
 --------------------
 
-Networks represent different Canton validator nodes that clients can connect to through the Wallet Gateway. Networks defined in the configuration are the default networks available to all users. Users can also add additional networks themselves through the User API or web UI.
+Networks represent different Canton validator nodes that clients can connect to through the Wallet Gateway. 
+Networks defined in the ``bootstrap`` section are seeded into the database when it is first created and serve as the default networks available to all users. After initial setup, networks can be managed at runtime through the User API or web UI by the admin user (see ``server.admin``).
 
 **Network Configuration:**
 
@@ -416,7 +422,7 @@ Used for development and testing. The Gateway generates and signs JWT tokens loc
 .. code-block:: json
 
     {
-        "store": {
+        "bootstrap": {
             "networks": [
                 {
                     "id": "canton:localnet",
@@ -508,7 +514,7 @@ It is recommended to maintain separate configuration files for each environment 
    .. code-block:: json
 
        {
-           "store": {
+           "bootstrap": {
                "networks": [{
                    "auth": {
                        "clientSecret": "${OAUTH_CLIENT_SECRET}"

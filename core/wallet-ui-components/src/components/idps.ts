@@ -3,7 +3,7 @@
 
 import { html } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import { Idp, Session } from '@canton-network/core-wallet-user-rpc-client'
+import { Idp } from '@canton-network/core-wallet-user-rpc-client'
 
 import { BaseElement } from '../internal/base-element'
 import { modalStyles } from '../styles/modal'
@@ -21,7 +21,7 @@ export class WgIdps extends BaseElement {
     static styles = [BaseElement.styles, modalStyles]
 
     @property({ type: Array }) accessor idps: Idp[] = []
-    @property({ type: Array }) activeSessions: Session[] = []
+    @property({ type: Boolean }) accessor readonly = false
 
     @state() accessor isModalOpen = false
     @state() accessor modalIdp: Idp = {
@@ -56,27 +56,30 @@ export class WgIdps extends BaseElement {
                     <h1>Identity Providers</h1>
                 </div>
 
-                <button class="btn btn-primary" @click=${this.openAddModal}>
-                    Add Identity Provider
-                </button>
+                ${this.readonly
+                    ? ''
+                    : html`<button
+                          class="btn btn-primary"
+                          @click=${this.openAddModal}
+                      >
+                          Add Identity Provider
+                      </button>`}
 
                 <div class="mt-4">
-                    ${this.idps.map((idp) => {
-                        const isActive = this.activeSessions.some(
-                            (session) => session.idp.id === idp.id
-                        )
-                        return html`<div class="mb-2">
-                            <idp-card
-                                .idp=${idp}
-                                .activeSession=${isActive}
-                                @update=${(e: Event) => {
-                                    this.modalIdp = idp
-                                    this.isModalOpen = true
-                                    e.stopPropagation()
-                                }}
-                            ></idp-card>
-                        </div>`
-                    })}
+                    ${this.idps.map(
+                        (idp) =>
+                            html`<div class="mb-2">
+                                <idp-card
+                                    .idp=${idp}
+                                    .readonly=${this.readonly}
+                                    @update=${(e: Event) => {
+                                        this.modalIdp = idp
+                                        this.isModalOpen = true
+                                        e.stopPropagation()
+                                    }}
+                                ></idp-card>
+                            </div>`
+                    )}
                 </div>
 
                 ${this.isModalOpen

@@ -239,7 +239,12 @@ export async function initialize(opts: CliOptions, logger: Logger) {
 
     const allowedPaths = {
         [config.server.dappPath]: ['*'],
-        [config.server.userPath]: ['addSession', 'listNetworks', 'listIdps'],
+        [config.server.userPath]: [
+            'addSession',
+            'listNetworks',
+            'listIdps',
+            'getUser',
+        ],
     }
 
     app.use('/api/*splat', express.json())
@@ -282,7 +287,8 @@ export async function initialize(opts: CliOptions, logger: Logger) {
         publicUrl,
         notificationService,
         drivers,
-        store
+        store,
+        config.server.admin
     )
 
     // register web handler
