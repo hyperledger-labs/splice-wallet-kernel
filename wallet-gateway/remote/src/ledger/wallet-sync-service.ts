@@ -270,14 +270,6 @@ export class WalletSyncService {
         }
     }
     async syncWallets(): Promise<WalletSyncReport> {
-        // await this.adminLedgerClient.grantRights(this.authContext?.userId, {
-        //     // canReadAsAnyParty: true,
-        //     canExecuteAsAnyParty: true,
-        // })
-        // await this.adminLedgerClient.revokeRights(this.authContext?.userId, {
-        //     canReadAsAnyParty: true,
-        //     // canExecuteAsAnyParty: true,
-        // })
         this.logger.info('Starting wallet sync...')
         try {
             const network = await this.store.getCurrentNetwork()
