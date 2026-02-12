@@ -23,6 +23,7 @@ import {
     GetTransactionParams,
     Null,
     ListTransactionsResult,
+    GetUserResult,
 } from './rpc-gen/typings.js'
 import {
     Store,
@@ -69,7 +70,8 @@ export const userController = (
     notificationService: NotificationService,
     authContext: AuthContext | undefined,
     drivers: AvailableSigningDrivers,
-    _logger: Logger
+    _logger: Logger,
+    adminUserId?: string
 ) => {
     const logger = _logger.child({ component: 'user-controller' })
     const provider = {
@@ -77,6 +79,15 @@ export const userController = (
         version: 'TODO',
         providerType: kernelInfo.clientType,
         userUrl: `${userUrl}/login/`,
+    }
+
+    function assertAdmin(): void {
+        const userId = assertConnected(authContext).userId
+        if (!adminUserId || userId !== adminUserId) {
+            throw new Error(
+                'Unauthorized: only the admin user can perform this operation'
+            )
+        }
     }
 
     function handleSigningError<T extends object>(result: SigningError | T): T {
@@ -89,7 +100,15 @@ export const userController = (
     }
 
     return buildController({
+        getUser: async (): Promise<GetUserResult> => {
+            const userId = assertConnected(authContext).userId
+            return {
+                userId,
+                isAdmin: !!adminUserId && userId === adminUserId,
+            }
+        },
         addNetwork: async (params: AddNetworkParams) => {
+            assertAdmin()
             const { network } = params
 
             const ledgerApi = {
@@ -115,33 +134,41 @@ export const userController = (
             // TODO: Add an explicit updateNetwork method to the User API spec and controller
             const existingNetworks = await store.listNetworks()
             if (existingNetworks.find((n) => n.id === newNetwork.id)) {
+                logger.info(`Updating network ${newNetwork.id}`)
                 await store.updateNetwork(newNetwork)
             } else {
+                logger.info(`Adding network ${newNetwork.id}`)
                 await store.addNetwork(newNetwork)
             }
 
             return null
         },
         removeNetwork: async (params: RemoveNetworkParams) => {
+            assertAdmin()
             await store.removeNetwork(params.networkName)
             return null
         },
         listNetworks: async () =>
             Promise.resolve({ networks: await store.listNetworks() }),
         addIdp: async (params: AddIdpParams) => {
+            assertAdmin()
             const validatedIdp = idpSchema.parse(params.idp)
 
             // TODO: Add an explicit updateIdp method to the User API spec and controller
             const existingIdps = await store.listIdps()
             if (existingIdps.find((n) => n.id === validatedIdp.id)) {
+                logger.info(`Updating IDP ${validatedIdp.id}`)
                 await store.updateIdp(validatedIdp)
             } else {
+                logger.info(`Adding IDP ${validatedIdp.id}`)
                 await store.addIdp(validatedIdp)
             }
 
             return null
         },
         removeIdp: async (params: RemoveIdpParams) => {
+            assertAdmin()
+            logger.info(`Removing IDP ${params.identityProviderId}`)
             await store.removeIdp(params.identityProviderId)
             return null
         },
