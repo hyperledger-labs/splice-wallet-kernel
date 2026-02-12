@@ -11,10 +11,12 @@ const logger = pino({ name: 'v1-initialization', level: 'info' })
 const sdk = await Sdk.create({
     logger,
     authTokenProvider: new AuthTokenProvider(localNetAuthDefault(logger)),
-    ledgerClientUrl: new URL('http://127.0.0.1:2975'),
-    validatorUrl: new URL('http://wallet.localhost:2000/api/validator'),
-    tokenStandardUrl: new URL('http://127.0.0.1:5003'),
-    registries: [new URL(localNetStaticConfig.LOCALNET_REGISTRY_API_URL)],
+    ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
+    tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
+    registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
 })
 
 sdk.keys.generate()
+
+//TODO: add external party creation
