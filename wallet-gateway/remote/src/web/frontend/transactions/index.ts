@@ -4,7 +4,10 @@
 import { css, html, nothing } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 
-import { BaseElement } from '@canton-network/core-wallet-ui-components'
+import {
+    BaseElement,
+    handleErrorToast,
+} from '@canton-network/core-wallet-ui-components'
 
 import { createUserClient } from '../rpc-client'
 
@@ -103,6 +106,15 @@ export class UserUiTransactions extends BaseElement {
                                         >
                                             Review
                                         </button>
+                                        ${tx.status === 'pending'
+                                            ? html`<button
+                                                  class="btn btn-sm btn-outline-danger"
+                                                  @click=${() =>
+                                                      this.handleDelete(tx)}
+                                              >
+                                                  Delete
+                                              </button>`
+                                            : nothing}
                                     </div>
                                 </div>
                             </div>
@@ -135,5 +147,21 @@ export class UserUiTransactions extends BaseElement {
                 }
             }
         })
+    }
+
+    private async handleDelete(tx: Transaction) {
+        if (!confirm(`Delete pending transaction "${tx.commandId}"?`)) return
+        try {
+            const userClient = await createUserClient(
+                stateManager.accessToken.get()
+            )
+            await userClient.request({
+                method: 'deleteTransaction',
+                params: { commandId: tx.commandId },
+            })
+            await this.updateTransactions()
+        } catch (e) {
+            handleErrorToast(e)
+        }
     }
 }
