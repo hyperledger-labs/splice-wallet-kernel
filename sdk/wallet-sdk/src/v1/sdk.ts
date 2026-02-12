@@ -9,6 +9,8 @@ import { AmuletService } from '@canton-network/core-amulet-service'
 import { AuthTokenProvider } from '../authTokenProvider.js'
 import { Logger } from 'pino'
 import { KeysClient } from './keys/index.js'
+import ExternalPartyClient from './party/externalClient.js'
+import InternalPartyClient from './party/internalClient.js'
 
 export type WalletSdkOptions = {
     readonly logger: Logger // TODO: client should be able to provide a logger (#1286)
@@ -34,6 +36,10 @@ export type WalletSdkContext = {
 
 export class Sdk {
     public readonly keys: KeysClient
+    public readonly party: {
+        external: ExternalPartyClient
+        internal: InternalPartyClient
+    }
 
     private constructor(private readonly ctx: WalletSdkContext) {
         this.keys = new KeysClient()
@@ -46,7 +52,10 @@ export class Sdk {
 
         // public amulet() {}
 
-        // public party() {}
+        this.party = {
+            external: new ExternalPartyClient(),
+            internal: new InternalPartyClient(),
+        }
 
         // public registries() {}
 
