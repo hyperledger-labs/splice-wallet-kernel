@@ -495,7 +495,7 @@ export type GetTransaction = (
     params: GetTransactionParams
 ) => Promise<GetTransactionResult>
 export type ListTransactions = () => Promise<ListTransactionsResult>
-export type GetUser = () => Promise<GetUserResult>
 export type DeleteTransaction = (
     params: DeleteTransactionParams
 ) => Promise<Null>
+export type GetUser = () => Promise<GetUserResult>
