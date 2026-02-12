@@ -572,6 +572,32 @@
                     "required": ["transactions"]
                 }
             }
+        },
+        {
+            "name": "deleteTransaction",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "DeleteTransactionParams",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "commandId": {
+                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
+                            }
+                        },
+                        "required": ["commandId"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/Null"
+                }
+            },
+            "description": "Deletes a pending transaction. Only transactions with status 'pending' can be deleted."
         }
     ],
     "components": {

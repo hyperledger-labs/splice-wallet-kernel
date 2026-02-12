@@ -370,6 +370,9 @@ export interface AddSessionParams {
 export interface GetTransactionParams {
     commandId: CommandId
 }
+export interface DeleteTransactionParams {
+    commandId: CommandId
+}
 /**
  *
  * Represents a null value, used in responses where no data is returned.
@@ -477,6 +480,9 @@ export type GetTransaction = (
     params: GetTransactionParams
 ) => Promise<GetTransactionResult>
 export type ListTransactions = () => Promise<ListTransactionsResult>
+export type DeleteTransaction = (
+    params: DeleteTransactionParams
+) => Promise<Null>
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 type Params<T> = T extends (...args: infer A) => any
@@ -580,6 +586,11 @@ export type RpcTypes = {
     listTransactions: {
         params: Params<ListTransactions>
         result: Result<ListTransactions>
+    }
+
+    deleteTransaction: {
+        params: Params<DeleteTransaction>
+        result: Result<DeleteTransaction>
     }
 }
 
