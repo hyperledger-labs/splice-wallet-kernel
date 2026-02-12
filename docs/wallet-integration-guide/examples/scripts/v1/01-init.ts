@@ -19,4 +19,4 @@ const sdk = await Sdk.create({
 
 sdk.keys.generate()
 
-//TODO: add external party creation
+//TODO: add external party creation (#1294)
