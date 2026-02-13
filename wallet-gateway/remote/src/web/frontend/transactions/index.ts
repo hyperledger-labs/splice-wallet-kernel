@@ -1,10 +1,14 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { css, html, nothing } from 'lit'
+import { css, html } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 
-import { BaseElement } from '@canton-network/core-wallet-ui-components'
+import {
+    BaseElement,
+    TransactionReviewEvent,
+} from '@canton-network/core-wallet-ui-components'
+import type { ParsedTransactionInfo } from '@canton-network/core-wallet-ui-components'
 
 import { createUserClient } from '../rpc-client'
 
@@ -14,7 +18,7 @@ import {
     CommandId,
     Transaction,
 } from '@canton-network/core-wallet-user-rpc-client'
-import { parsePreparedTransaction, PreparedTransactionParsed } from './decode'
+import { parsePreparedTransaction } from './decode'
 
 @customElement('user-ui-transactions')
 export class UserUiTransactions extends BaseElement {
@@ -22,7 +26,7 @@ export class UserUiTransactions extends BaseElement {
     accessor transactions: Transaction[] = []
 
     @state()
-    accessor parsedTransactions: Map<CommandId, PreparedTransactionParsed> =
+    accessor parsedTransactions: Map<CommandId, ParsedTransactionInfo> =
         new Map()
 
     @state()
@@ -47,65 +51,17 @@ export class UserUiTransactions extends BaseElement {
                 ${this.transactions.map(
                     (tx) => html`
                         <div class="col-md-6 col-lg-4">
-                            <div class="card shadow-sm">
-                                <div class="card-body">
-                                    <h5
-                                        class="card-title text-primary fw-semibold text-break"
-                                    >
-                                        ${tx.commandId}
-                                    </h5>
-                                    <p class="card-text text-muted text-break">
-                                        <strong>Status:</strong>
-                                        <span class="text-success">
-                                            ${tx.status}
-                                        </span>
-                                        <br />
-                                        <strong>Template:</strong>
-                                        ${this.parsedTransactions.get(
-                                            tx.commandId
-                                        )?.packageName ||
-                                        'N/A'}:${this.parsedTransactions.get(
-                                            tx.commandId
-                                        )?.moduleName ||
-                                        'N/A'}:${this.parsedTransactions.get(
-                                            tx.commandId
-                                        )?.entityName || 'N/A'}
-                                        <br />
-                                        <strong>Signatories:</strong>
-                                    </p>
-                                    <ul>
-                                        ${this.parsedTransactions
-                                            .get(tx.commandId)
-                                            ?.signatories?.map(
-                                                (signatory) =>
-                                                    html`<li>${signatory}</li>`
-                                            ) || html`<li>N/A</li>`}
-                                    </ul>
-                                    <p class="card-text text-muted text-break">
-                                        ${tx.createdAt
-                                            ? html`<strong>Created At:</strong>
-                                                  ${tx.createdAt}<br />`
-                                            : nothing}
-                                        ${tx.signedAt
-                                            ? html`<strong>Signed At:</strong>
-                                                  ${tx.signedAt}<br />`
-                                            : nothing}
-                                        ${tx.origin
-                                            ? html`<strong>Origin:</strong>
-                                                  ${tx.origin}`
-                                            : nothing}
-                                    </p>
-                                    <div class="d-flex gap-2 mt-2">
-                                        <button
-                                            class="btn btn-sm btn-outline-secondary"
-                                            @click=${() =>
-                                                (window.location.href = `/approve/index.html?commandId=${tx.commandId}`)}
-                                        >
-                                            Review
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                            <wg-transaction-card
+                                .commandId=${tx.commandId}
+                                .status=${tx.status}
+                                .parsed=${this.parsedTransactions.get(
+                                    tx.commandId
+                                ) || null}
+                                .createdAt=${tx.createdAt ?? null}
+                                .signedAt=${tx.signedAt ?? null}
+                                .origin=${tx.origin ?? null}
+                                @transaction-review=${this._onReview}
+                            ></wg-transaction-card>
                         </div>
                     `
                 )}
@@ -116,6 +72,10 @@ export class UserUiTransactions extends BaseElement {
     connectedCallback(): void {
         super.connectedCallback()
         this.updateTransactions()
+    }
+
+    private _onReview(e: TransactionReviewEvent) {
+        window.location.href = `/approve/index.html?commandId=${e.commandId}`
     }
 
     private async updateTransactions() {
