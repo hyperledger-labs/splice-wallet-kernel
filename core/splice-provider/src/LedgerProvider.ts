@@ -1,9 +1,9 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { AbstractProvider } from '../provider'
+import { AbstractProvider } from './provider'
 import { RequestArgs } from '@canton-network/core-types'
-import { LedgerTypes } from './3.4.11/ledger-api-types'
+import { LedgerTypes } from '@canton-network/core-ledger-client-types'
 
 export class LedgerProvider extends AbstractProvider<LedgerTypes> {
     constructor() {
