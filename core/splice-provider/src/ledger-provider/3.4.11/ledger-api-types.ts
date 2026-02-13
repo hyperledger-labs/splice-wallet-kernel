@@ -23,8 +23,8 @@ interface components {
             partyDetails?: components['schemas']['PartyDetails']
         }
         ArchivedEvent: {
-            offset: unknown
-            nodeId: unknown
+            offset: number | string
+            nodeId: number | string
             contractId: string
             templateId: string
             witnessParties?: Array<string>
@@ -44,15 +44,26 @@ interface components {
         CanExecuteAsAnyParty: {
             value: components['schemas']['CanExecuteAsAnyParty1']
         }
-        CanExecuteAsAnyParty1: unknown
+        CanExecuteAsAnyParty1: object
         CanReadAs: { value: components['schemas']['CanReadAs1'] }
         CanReadAs1: { party: string }
         CanReadAsAnyParty: {
             value: components['schemas']['CanReadAsAnyParty1']
         }
-        CanReadAsAnyParty1: unknown
-        Command: unknown
-        Command1: unknown
+        CanReadAsAnyParty1: object
+        Command:
+            | {
+                  CreateAndExerciseCommand: components['schemas']['CreateAndExerciseCommand']
+              }
+            | { CreateCommand: components['schemas']['CreateCommand'] }
+            | {
+                  ExerciseByKeyCommand: components['schemas']['ExerciseByKeyCommand']
+              }
+            | { ExerciseCommand: components['schemas']['ExerciseCommand'] }
+        Command1:
+            | { AssignCommand: components['schemas']['AssignCommand'] }
+            | { Empty: components['schemas']['Empty2'] }
+            | { UnassignCommand: components['schemas']['UnassignCommand'] }
         Completion: { value: components['schemas']['Completion1'] }
         Completion1: {
             commandId: string
@@ -63,14 +74,17 @@ interface components {
             submissionId: string
             deduplicationPeriod: components['schemas']['DeduplicationPeriod1']
             traceContext?: components['schemas']['TraceContext']
-            offset: unknown
+            offset: number | string
             synchronizerTime?: components['schemas']['SynchronizerTime']
         }
-        CompletionResponse: unknown
+        CompletionResponse:
+            | { Completion: components['schemas']['Completion'] }
+            | { Empty: components['schemas']['Empty4'] }
+            | { OffsetCheckpoint: components['schemas']['OffsetCheckpoint'] }
         CompletionStreamRequest: {
             userId: string
             parties?: Array<string>
-            beginExclusive: unknown
+            beginExclusive: number | string
         }
         CompletionStreamResponse: {
             completionResponse: components['schemas']['CompletionResponse']
@@ -82,9 +96,9 @@ interface components {
         }
         CostEstimation: {
             estimationTimestamp?: string
-            confirmationRequestTrafficCostEstimation: unknown
-            confirmationResponseTrafficCostEstimation: unknown
-            totalTrafficCostEstimation: unknown
+            confirmationRequestTrafficCostEstimation: number | string
+            confirmationResponseTrafficCostEstimation: number | string
+            totalTrafficCostEstimation: number | string
         }
         CostEstimationHints: {
             disabled: boolean
@@ -109,8 +123,8 @@ interface components {
         }
         CreateUserResponse: { user?: components['schemas']['User'] }
         CreatedEvent: {
-            offset: unknown
-            nodeId: unknown
+            offset: number | string
+            nodeId: number | string
             contractId: string
             templateId: string
             contractKey?: unknown
@@ -132,13 +146,34 @@ interface components {
         DeduplicationDuration: { value: components['schemas']['Duration'] }
         DeduplicationDuration1: { value: components['schemas']['Duration'] }
         DeduplicationDuration2: { value: components['schemas']['Duration'] }
-        DeduplicationOffset: { value: unknown }
-        DeduplicationOffset1: { value: unknown }
-        DeduplicationOffset2: { value: unknown }
-        DeduplicationPeriod: unknown
-        DeduplicationPeriod1: unknown
-        DeduplicationPeriod2: unknown
-        DeleteIdentityProviderConfigResponse: unknown
+        DeduplicationOffset: { value: number | string }
+        DeduplicationOffset1: { value: number | string }
+        DeduplicationOffset2: { value: number | string }
+        DeduplicationPeriod:
+            | {
+                  DeduplicationDuration: components['schemas']['DeduplicationDuration']
+              }
+            | {
+                  DeduplicationOffset: components['schemas']['DeduplicationOffset']
+              }
+            | { Empty: components['schemas']['Empty'] }
+        DeduplicationPeriod1:
+            | {
+                  DeduplicationDuration: components['schemas']['DeduplicationDuration1']
+              }
+            | {
+                  DeduplicationOffset: components['schemas']['DeduplicationOffset1']
+              }
+            | { Empty: components['schemas']['Empty3'] }
+        DeduplicationPeriod2:
+            | {
+                  DeduplicationDuration: components['schemas']['DeduplicationDuration2']
+              }
+            | {
+                  DeduplicationOffset: components['schemas']['DeduplicationOffset2']
+              }
+            | { Empty: components['schemas']['Empty10'] }
+        DeleteIdentityProviderConfigResponse: object
         DisclosedContract: {
             templateId?: string
             contractId: string
@@ -146,22 +181,25 @@ interface components {
             synchronizerId: string
         }
         Duration: {
-            seconds: unknown
-            nanos: unknown
+            seconds: number | string
+            nanos: number | string
             unknownFields?: components['schemas']['UnknownFieldSet']
         }
-        Empty: unknown
-        Empty1: unknown
-        Empty10: unknown
-        Empty2: unknown
-        Empty3: unknown
-        Empty4: unknown
-        Empty5: unknown
-        Empty6: unknown
-        Empty7: unknown
-        Empty8: unknown
-        Empty9: unknown
-        Event: unknown
+        Empty: object
+        Empty1: object
+        Empty10: object
+        Empty2: object
+        Empty3: object
+        Empty4: object
+        Empty5: object
+        Empty6: object
+        Empty7: object
+        Empty8: object
+        Empty9: object
+        Event:
+            | { ArchivedEvent: components['schemas']['ArchivedEvent'] }
+            | { CreatedEvent: components['schemas']['CreatedEvent'] }
+            | { ExercisedEvent: components['schemas']['ExercisedEvent'] }
         EventFormat: {
             filtersByParty: components['schemas']['Map_Filters']
             filtersForAnyParty?: components['schemas']['Filters']
@@ -169,9 +207,9 @@ interface components {
         }
         ExecuteSubmissionAndWaitResponse: {
             updateId: string
-            completionOffset: unknown
+            completionOffset: number | string
         }
-        ExecuteSubmissionResponse: unknown
+        ExecuteSubmissionResponse: object
         ExerciseByKeyCommand: {
             templateId: string
             contractKey: unknown
@@ -185,8 +223,8 @@ interface components {
             choiceArgument: unknown
         }
         ExercisedEvent: {
-            offset: unknown
-            nodeId: unknown
+            offset: number | string
+            nodeId: number | string
             contractId: string
             templateId: string
             interfaceId?: string
@@ -195,7 +233,7 @@ interface components {
             actingParties?: Array<string>
             consuming: boolean
             witnessParties?: Array<string>
-            lastDescendantNodeId: unknown
+            lastDescendantNodeId: number | string
             exerciseResult: unknown
             packageName: string
             implementedInterfaces?: Array<string>
@@ -216,9 +254,9 @@ interface components {
             packageFeature?: components['schemas']['PackageFeature']
         }
         Field: {
-            varint?: Array<unknown>
-            fixed64?: Array<unknown>
-            fixed32?: Array<unknown>
+            varint?: Array<number | string>
+            fixed64?: Array<number | string>
+            fixed32?: Array<number | string>
             lengthDelimited?: Array<string>
         }
         FieldMask: {
@@ -234,7 +272,7 @@ interface components {
             publicKey?: components['schemas']['SigningPublicKey']
             localParticipantObservationOnly: boolean
             otherConfirmingParticipantUids?: Array<string>
-            confirmationThreshold: unknown
+            confirmationThreshold: number | string
             observingParticipantUids?: Array<string>
         }
         GenerateExternalPartyTopologyResponse: {
@@ -246,7 +284,7 @@ interface components {
         GetActiveContractsRequest: {
             filter?: components['schemas']['TransactionFilter']
             verbose: boolean
-            activeAtOffset: unknown
+            activeAtOffset: number | string
             eventFormat?: components['schemas']['EventFormat']
         }
         GetConnectedSynchronizersResponse: {
@@ -269,14 +307,14 @@ interface components {
             identityProviderConfig?: components['schemas']['IdentityProviderConfig']
         }
         GetLatestPrunedOffsetsResponse: {
-            participantPrunedUpToInclusive: unknown
-            allDivulgedContractsPrunedUpToInclusive: unknown
+            participantPrunedUpToInclusive: number | string
+            allDivulgedContractsPrunedUpToInclusive: number | string
         }
         GetLedgerApiVersionResponse: {
             version: string
             features?: components['schemas']['FeaturesDescriptor']
         }
-        GetLedgerEndResponse: { offset: unknown }
+        GetLedgerEndResponse: { offset: number | string }
         GetPackageStatusResponse: { packageStatus: string }
         GetParticipantIdResponse: { participantId: string }
         GetPartiesResponse: {
@@ -302,7 +340,7 @@ interface components {
             transactionFormat?: components['schemas']['TransactionFormat']
         }
         GetTransactionByOffsetRequest: {
-            offset: unknown
+            offset: number | string
             requestingParties?: Array<string>
             transactionFormat?: components['schemas']['TransactionFormat']
         }
@@ -311,12 +349,12 @@ interface components {
             updateFormat?: components['schemas']['UpdateFormat']
         }
         GetUpdateByOffsetRequest: {
-            offset: unknown
+            offset: number | string
             updateFormat?: components['schemas']['UpdateFormat']
         }
         GetUpdatesRequest: {
-            beginExclusive: unknown
-            endInclusive?: unknown
+            beginExclusive: number | string
+            endInclusive?: number | string
             filter?: components['schemas']['TransactionFilter']
             verbose: boolean
             updateFormat?: components['schemas']['UpdateFormat']
@@ -335,11 +373,15 @@ interface components {
             moduleName: string
             entityName: string
         }
-        IdentifierFilter: unknown
+        IdentifierFilter:
+            | { Empty: components['schemas']['Empty1'] }
+            | { InterfaceFilter: components['schemas']['InterfaceFilter'] }
+            | { TemplateFilter: components['schemas']['TemplateFilter'] }
+            | { WildcardFilter: components['schemas']['WildcardFilter'] }
         IdentityProviderAdmin: {
             value: components['schemas']['IdentityProviderAdmin1']
         }
-        IdentityProviderAdmin1: unknown
+        IdentityProviderAdmin1: object
         IdentityProviderConfig: {
             identityProviderId: string
             isDeactivated: boolean
@@ -356,7 +398,7 @@ interface components {
         JsActiveContract: {
             createdEvent: components['schemas']['CreatedEvent']
             synchronizerId: string
-            reassignmentCounter: unknown
+            reassignmentCounter: number | string
         }
         JsArchived: {
             archivedEvent: components['schemas']['ArchivedEvent']
@@ -367,7 +409,7 @@ interface components {
             target: string
             reassignmentId: string
             submitter: string
-            reassignmentCounter: unknown
+            reassignmentCounter: number | string
             createdEvent: components['schemas']['CreatedEvent']
         }
         JsAssignmentEvent: {
@@ -375,7 +417,7 @@ interface components {
             target: string
             reassignmentId: string
             submitter: string
-            reassignmentCounter: unknown
+            reassignmentCounter: number | string
             createdEvent: components['schemas']['CreatedEvent']
         }
         JsCantonError: {
@@ -385,8 +427,8 @@ interface components {
             traceId?: string
             context: components['schemas']['Map_String']
             resources?: Array<components['schemas']['Tuple2_String_String']>
-            errorCategory: unknown
-            grpcCodeValue?: unknown
+            errorCategory: number | string
+            grpcCodeValue?: number | string
             retryInfo?: string
             definiteAnswer?: boolean
         }
@@ -410,12 +452,20 @@ interface components {
                 components['schemas']['PrefetchContractKey']
             >
         }
-        JsContractEntry: unknown
+        JsContractEntry:
+            | { JsActiveContract: components['schemas']['JsActiveContract'] }
+            | { JsEmpty: components['schemas']['JsEmpty'] }
+            | {
+                  JsIncompleteAssigned: components['schemas']['JsIncompleteAssigned']
+              }
+            | {
+                  JsIncompleteUnassigned: components['schemas']['JsIncompleteUnassigned']
+              }
         JsCreated: {
             createdEvent: components['schemas']['CreatedEvent']
             synchronizerId: string
         }
-        JsEmpty: unknown
+        JsEmpty: object
         JsExecuteSubmissionAndWaitForTransactionRequest: {
             preparedTransaction?: string
             partySignatures?: components['schemas']['PartySignatures']
@@ -506,15 +556,17 @@ interface components {
             updateId: string
             commandId: string
             workflowId: string
-            offset: unknown
+            offset: number | string
             events?: Array<components['schemas']['JsReassignmentEvent']>
             traceContext?: components['schemas']['TraceContext']
             recordTime: string
             synchronizerId: string
         }
-        JsReassignmentEvent: unknown
+        JsReassignmentEvent:
+            | { JsAssignmentEvent: components['schemas']['JsAssignmentEvent'] }
+            | { JsUnassignedEvent: components['schemas']['JsUnassignedEvent'] }
         JsStatus: {
-            code: unknown
+            code: number | string
             message: string
             details?: Array<components['schemas']['ProtoAny']>
         }
@@ -533,7 +585,7 @@ interface components {
         }
         JsTopologyTransaction: {
             updateId: string
-            offset: unknown
+            offset: number | string
             synchronizerId: string
             recordTime?: string
             events?: Array<components['schemas']['TopologyEvent']>
@@ -545,7 +597,7 @@ interface components {
             workflowId: string
             effectiveAt: string
             events?: Array<components['schemas']['Event']>
-            offset: unknown
+            offset: number | string
             synchronizerId: string
             traceContext?: components['schemas']['TraceContext']
             recordTime: string
@@ -556,14 +608,26 @@ interface components {
             commandId: string
             workflowId: string
             effectiveAt?: string
-            offset: unknown
+            offset: number | string
             eventsById: components['schemas']['Map_Int_TreeEvent']
             synchronizerId: string
             traceContext?: components['schemas']['TraceContext']
             recordTime: string
         }
         JsUnassignedEvent: { value: components['schemas']['UnassignedEvent'] }
-        Kind: unknown
+        Kind:
+            | { CanActAs: components['schemas']['CanActAs'] }
+            | { CanExecuteAs: components['schemas']['CanExecuteAs'] }
+            | {
+                  CanExecuteAsAnyParty: components['schemas']['CanExecuteAsAnyParty']
+              }
+            | { CanReadAs: components['schemas']['CanReadAs'] }
+            | { CanReadAsAnyParty: components['schemas']['CanReadAsAnyParty'] }
+            | { Empty: components['schemas']['Empty8'] }
+            | {
+                  IdentityProviderAdmin: components['schemas']['IdentityProviderAdmin']
+              }
+            | { ParticipantAdmin: components['schemas']['ParticipantAdmin'] }
         ListIdentityProviderConfigsResponse: {
             identityProviderConfigs?: Array<
                 components['schemas']['IdentityProviderConfig']
@@ -585,27 +649,33 @@ interface components {
             packageMetadataFilter?: components['schemas']['PackageMetadataFilter']
             topologyStateFilter?: components['schemas']['TopologyStateFilter']
             pageToken: string
-            pageSize: unknown
+            pageSize: number | string
         }
         ListVettedPackagesResponse: {
             vettedPackages?: Array<components['schemas']['VettedPackages']>
             nextPageToken: string
         }
-        Map_Filters: unknown
-        Map_Int_Field: unknown
-        Map_Int_TreeEvent: unknown
-        Map_String: unknown
+        Map_Filters: object & {
+            [key: string]: components['schemas']['Filters']
+        }
+        Map_Int_Field: object & {
+            [key: string]: components['schemas']['Field']
+        }
+        Map_Int_TreeEvent: object & {
+            [key: string]: components['schemas']['TreeEvent']
+        }
+        Map_String: object & { [key: string]: string }
         MinLedgerTime: { time: components['schemas']['Time'] }
         MinLedgerTimeAbs: { value: string }
         MinLedgerTimeRel: { value: components['schemas']['Duration'] }
-        NoPrior: unknown
+        NoPrior: object
         ObjectMeta: {
             resourceVersion: string
             annotations: components['schemas']['Map_String']
         }
         OffsetCheckpoint: { value: components['schemas']['OffsetCheckpoint1'] }
         OffsetCheckpoint1: {
-            offset: unknown
+            offset: number | string
             synchronizerTimes?: Array<components['schemas']['SynchronizerTime']>
         }
         OffsetCheckpoint2: { value: components['schemas']['OffsetCheckpoint1'] }
@@ -613,8 +683,11 @@ interface components {
         OffsetCheckpointFeature: {
             maxOffsetCheckpointEmissionDelay?: components['schemas']['Duration']
         }
-        Operation: unknown
-        PackageFeature: { maxVettedPackagesPageSize: unknown }
+        Operation:
+            | { Empty: components['schemas']['Empty5'] }
+            | { Unvet: components['schemas']['Unvet'] }
+            | { Vet: components['schemas']['Vet'] }
+        PackageFeature: { maxVettedPackagesPageSize: number | string }
         PackageMetadataFilter: {
             packageIds?: Array<string>
             packageNamePrefixes?: Array<string>
@@ -633,7 +706,7 @@ interface components {
             packageName: string
         }
         ParticipantAdmin: { value: components['schemas']['ParticipantAdmin1'] }
-        ParticipantAdmin1: unknown
+        ParticipantAdmin1: object
         ParticipantAuthorizationAdded: {
             value: components['schemas']['ParticipantAuthorizationAdded1']
         }
@@ -664,12 +737,12 @@ interface components {
             localMetadata?: components['schemas']['ObjectMeta']
             identityProviderId: string
         }
-        PartyManagementFeature: { maxPartiesPageSize: unknown }
+        PartyManagementFeature: { maxPartiesPageSize: number | string }
         PartySignatures: {
             signatures?: Array<components['schemas']['SinglePartySignatures']>
         }
         PrefetchContractKey: { templateId?: string; contractKey: unknown }
-        Prior: { value: unknown }
+        Prior: { value: number | string }
         PriorTopologySerial: { serial: components['schemas']['Serial'] }
         ProtoAny: {
             typeUrl: string
@@ -697,7 +770,10 @@ interface components {
             newlyRevokedRights?: Array<components['schemas']['Right']>
         }
         Right: { kind: components['schemas']['Kind'] }
-        Serial: unknown
+        Serial:
+            | { Empty: components['schemas']['Empty6'] }
+            | { NoPrior: components['schemas']['NoPrior'] }
+            | { Prior: components['schemas']['Prior'] }
         Signature: {
             format: string
             signature: string
@@ -717,21 +793,37 @@ interface components {
             reassignmentCommands?: components['schemas']['ReassignmentCommands']
             eventFormat?: components['schemas']['EventFormat']
         }
-        SubmitAndWaitResponse: { updateId: string; completionOffset: unknown }
+        SubmitAndWaitResponse: {
+            updateId: string
+            completionOffset: number | string
+        }
         SubmitReassignmentRequest: {
             reassignmentCommands?: components['schemas']['ReassignmentCommands']
         }
-        SubmitReassignmentResponse: unknown
-        SubmitResponse: unknown
+        SubmitReassignmentResponse: object
+        SubmitResponse: object
         SynchronizerTime: { synchronizerId: string; recordTime?: string }
         TemplateFilter: { value: components['schemas']['TemplateFilter1'] }
         TemplateFilter1: {
             templateId?: string
             includeCreatedEventBlob: boolean
         }
-        Time: unknown
+        Time:
+            | { Empty: components['schemas']['Empty9'] }
+            | { MinLedgerTimeAbs: components['schemas']['MinLedgerTimeAbs'] }
+            | { MinLedgerTimeRel: components['schemas']['MinLedgerTimeRel'] }
         TopologyEvent: { event: components['schemas']['TopologyEventEvent'] }
-        TopologyEventEvent: unknown
+        TopologyEventEvent:
+            | { Empty: components['schemas']['Empty7'] }
+            | {
+                  ParticipantAuthorizationAdded: components['schemas']['ParticipantAuthorizationAdded']
+              }
+            | {
+                  ParticipantAuthorizationChanged: components['schemas']['ParticipantAuthorizationChanged']
+              }
+            | {
+                  ParticipantAuthorizationRevoked: components['schemas']['ParticipantAuthorizationRevoked']
+              }
         TopologyFormat: {
             includeParticipantAuthorizationEvents?: components['schemas']['ParticipantAuthorizationTopologyFormat']
         }
@@ -753,7 +845,11 @@ interface components {
             transactionShape: string
         }
         TransactionTree: { value: components['schemas']['JsTransactionTree'] }
-        TreeEvent: unknown
+        TreeEvent:
+            | { CreatedTreeEvent: components['schemas']['CreatedTreeEvent'] }
+            | {
+                  ExercisedTreeEvent: components['schemas']['ExercisedTreeEvent']
+              }
         Tuple2_String_String: Array<string>
         UnassignCommand: { value: components['schemas']['UnassignCommand1'] }
         UnassignCommand1: { contractId: string; source: string; target: string }
@@ -764,18 +860,27 @@ interface components {
             source: string
             target: string
             submitter: string
-            reassignmentCounter: unknown
+            reassignmentCounter: number | string
             assignmentExclusivity?: string
             witnessParties?: Array<string>
             packageName: string
-            offset: unknown
-            nodeId: unknown
+            offset: number | string
+            nodeId: number | string
         }
         UnknownFieldSet: { fields: components['schemas']['Map_Int_Field'] }
         Unvet: { value: components['schemas']['Unvet1'] }
         Unvet1: { packages?: Array<components['schemas']['VettedPackagesRef']> }
-        Update: unknown
-        Update1: unknown
+        Update:
+            | { OffsetCheckpoint: components['schemas']['OffsetCheckpoint2'] }
+            | { Reassignment: components['schemas']['Reassignment'] }
+            | {
+                  TopologyTransaction: components['schemas']['TopologyTransaction']
+              }
+            | { Transaction: components['schemas']['Transaction'] }
+        Update1:
+            | { OffsetCheckpoint: components['schemas']['OffsetCheckpoint3'] }
+            | { Reassignment: components['schemas']['Reassignment1'] }
+            | { TransactionTree: components['schemas']['TransactionTree'] }
         UpdateFormat: {
             includeTransactions?: components['schemas']['TransactionFormat']
             includeReassignments?: components['schemas']['EventFormat']
@@ -800,7 +905,7 @@ interface components {
             sourceIdentityProviderId: string
             targetIdentityProviderId: string
         }
-        UpdateUserIdentityProviderIdResponse: unknown
+        UpdateUserIdentityProviderIdResponse: object
         UpdateUserRequest: {
             user?: components['schemas']['User']
             updateMask?: components['schemas']['FieldMask']
@@ -817,7 +922,7 @@ interface components {
             pastVettedPackages?: components['schemas']['VettedPackages']
             newVettedPackages?: components['schemas']['VettedPackages']
         }
-        UploadDarFileResponse: unknown
+        UploadDarFileResponse: object
         User: {
             id: string
             primaryParty: string
@@ -827,8 +932,8 @@ interface components {
         }
         UserManagementFeature: {
             supported: boolean
-            maxRightsPerUser: unknown
-            maxUsersPageSize: unknown
+            maxRightsPerUser: number | string
+            maxUsersPageSize: number | string
         }
         Vet: { value: components['schemas']['Vet1'] }
         Vet1: {
@@ -847,7 +952,7 @@ interface components {
             packages?: Array<components['schemas']['VettedPackage']>
             participantId: string
             synchronizerId: string
-            topologySerial: unknown
+            topologySerial: number | string
         }
         VettedPackagesChange: { operation: components['schemas']['Operation'] }
         VettedPackagesRef: {
@@ -926,6 +1031,10 @@ export type PostV2CommandsCompletions = {
             resource: '/v2/commands/completions'
             requestMethod: 'post'
             body: components['schemas']['CompletionStreamRequest']
+            query: {
+                limit?: number | string
+                stream_idle_timeout_ms?: number | string
+            }
         }
         result: Array<components['schemas']['CompletionStreamResponse']>
     }
@@ -954,7 +1063,9 @@ export type PostV2DarsValidate = {
         params: {
             resource: '/v2/dars/validate'
             requestMethod: 'post'
-            body: unknown
+            query: {
+                synchronizerId?: string
+            }
         }
         result: unknown
     }
@@ -964,7 +1075,10 @@ export type PostV2Dars = {
         params: {
             resource: '/v2/dars'
             requestMethod: 'post'
-            body: unknown
+            query: {
+                vetAllPackages?: boolean
+                synchronizerId?: string
+            }
         }
         result: components['schemas']['UploadDarFileResponse']
     }
@@ -983,7 +1097,10 @@ export type PostV2Packages = {
         params: {
             resource: '/v2/packages'
             requestMethod: 'post'
-            body: unknown
+            query: {
+                vetAllPackages?: boolean
+                synchronizerId?: string
+            }
         }
         result: components['schemas']['UploadDarFileResponse']
     }
@@ -993,6 +1110,9 @@ export type GetV2PackagesPackageId = {
         params: {
             resource: '/v2/packages/{package-id}'
             requestMethod: 'get'
+            path: {
+                'package-id': string
+            }
         }
         result: unknown
     }
@@ -1002,6 +1122,9 @@ export type GetV2PackagesPackageIdStatus = {
         params: {
             resource: '/v2/packages/{package-id}/status'
             requestMethod: 'get'
+            path: {
+                'package-id': string
+            }
         }
         result: components['schemas']['GetPackageStatusResponse']
     }
@@ -1031,6 +1154,12 @@ export type GetV2Parties = {
         params: {
             resource: '/v2/parties'
             requestMethod: 'get'
+            query: {
+                'identity-provider-id'?: string
+                'filter-party'?: string
+                pageSize?: number | string
+                pageToken?: string
+            }
         }
         result: components['schemas']['ListKnownPartiesResponse']
     }
@@ -1069,6 +1198,14 @@ export type GetV2PartiesParty = {
         params: {
             resource: '/v2/parties/{party}'
             requestMethod: 'get'
+            path: {
+                party: string
+            }
+
+            query: {
+                'identity-provider-id'?: string
+                parties?: Array<string>
+            }
         }
         result: components['schemas']['GetPartiesResponse']
     }
@@ -1079,6 +1216,9 @@ export type PatchV2PartiesParty = {
             resource: '/v2/parties/{party}'
             requestMethod: 'patch'
             body: components['schemas']['UpdatePartyDetailsRequest']
+            path: {
+                party: string
+            }
         }
         result: components['schemas']['UpdatePartyDetailsResponse']
     }
@@ -1099,6 +1239,10 @@ export type PostV2StateActiveContracts = {
             resource: '/v2/state/active-contracts'
             requestMethod: 'post'
             body: components['schemas']['GetActiveContractsRequest']
+            query: {
+                limit?: number | string
+                stream_idle_timeout_ms?: number | string
+            }
         }
         result: Array<components['schemas']['JsGetActiveContractsResponse']>
     }
@@ -1108,6 +1252,11 @@ export type GetV2StateConnectedSynchronizers = {
         params: {
             resource: '/v2/state/connected-synchronizers'
             requestMethod: 'get'
+            query: {
+                party?: string
+                participantId?: string
+                identityProviderId?: string
+            }
         }
         result: components['schemas']['GetConnectedSynchronizersResponse']
     }
@@ -1136,6 +1285,10 @@ export type PostV2Updates = {
             resource: '/v2/updates'
             requestMethod: 'post'
             body: components['schemas']['GetUpdatesRequest']
+            query: {
+                limit?: number | string
+                stream_idle_timeout_ms?: number | string
+            }
         }
         result: Array<components['schemas']['JsGetUpdatesResponse']>
     }
@@ -1146,6 +1299,10 @@ export type PostV2UpdatesFlats = {
             resource: '/v2/updates/flats'
             requestMethod: 'post'
             body: components['schemas']['GetUpdatesRequest']
+            query: {
+                limit?: number | string
+                stream_idle_timeout_ms?: number | string
+            }
         }
         result: Array<components['schemas']['JsGetUpdatesResponse']>
     }
@@ -1156,6 +1313,10 @@ export type PostV2UpdatesTrees = {
             resource: '/v2/updates/trees'
             requestMethod: 'post'
             body: components['schemas']['GetUpdatesRequest']
+            query: {
+                limit?: number | string
+                stream_idle_timeout_ms?: number | string
+            }
         }
         result: Array<components['schemas']['JsGetUpdateTreesResponse']>
     }
@@ -1165,6 +1326,13 @@ export type GetV2UpdatesTransactionTreeByOffsetOffset = {
         params: {
             resource: '/v2/updates/transaction-tree-by-offset/{offset}'
             requestMethod: 'get'
+            path: {
+                offset: number | string
+            }
+
+            query: {
+                parties?: Array<string>
+            }
         }
         result: components['schemas']['JsGetTransactionTreeResponse']
     }
@@ -1214,6 +1382,13 @@ export type GetV2UpdatesTransactionTreeByIdUpdateId = {
         params: {
             resource: '/v2/updates/transaction-tree-by-id/{update-id}'
             requestMethod: 'get'
+            path: {
+                'update-id': string
+            }
+
+            query: {
+                parties?: Array<string>
+            }
         }
         result: components['schemas']['JsGetTransactionTreeResponse']
     }
@@ -1223,6 +1398,10 @@ export type GetV2Users = {
         params: {
             resource: '/v2/users'
             requestMethod: 'get'
+            query: {
+                pageSize?: number | string
+                pageToken?: string
+            }
         }
         result: components['schemas']['ListUsersResponse']
     }
@@ -1242,6 +1421,13 @@ export type GetV2UsersUserId = {
         params: {
             resource: '/v2/users/{user-id}'
             requestMethod: 'get'
+            path: {
+                'user-id': string
+            }
+
+            query: {
+                'identity-provider-id'?: string
+            }
         }
         result: components['schemas']['GetUserResponse']
     }
@@ -1251,8 +1437,11 @@ export type DeleteV2UsersUserId = {
         params: {
             resource: '/v2/users/{user-id}'
             requestMethod: 'delete'
+            path: {
+                'user-id': string
+            }
         }
-        result: unknown
+        result: object
     }
 }
 export type PatchV2UsersUserId = {
@@ -1261,6 +1450,9 @@ export type PatchV2UsersUserId = {
             resource: '/v2/users/{user-id}'
             requestMethod: 'patch'
             body: components['schemas']['UpdateUserRequest']
+            path: {
+                'user-id': string
+            }
         }
         result: components['schemas']['UpdateUserResponse']
     }
@@ -1270,6 +1462,9 @@ export type GetV2AuthenticatedUser = {
         params: {
             resource: '/v2/authenticated-user'
             requestMethod: 'get'
+            query: {
+                'identity-provider-id'?: string
+            }
         }
         result: components['schemas']['GetUserResponse']
     }
@@ -1279,6 +1474,9 @@ export type GetV2UsersUserIdRights = {
         params: {
             resource: '/v2/users/{user-id}/rights'
             requestMethod: 'get'
+            path: {
+                'user-id': string
+            }
         }
         result: components['schemas']['ListUserRightsResponse']
     }
@@ -1289,6 +1487,9 @@ export type PostV2UsersUserIdRights = {
             resource: '/v2/users/{user-id}/rights'
             requestMethod: 'post'
             body: components['schemas']['GrantUserRightsRequest']
+            path: {
+                'user-id': string
+            }
         }
         result: components['schemas']['GrantUserRightsResponse']
     }
@@ -1299,6 +1500,9 @@ export type PatchV2UsersUserIdRights = {
             resource: '/v2/users/{user-id}/rights'
             requestMethod: 'patch'
             body: components['schemas']['RevokeUserRightsRequest']
+            path: {
+                'user-id': string
+            }
         }
         result: components['schemas']['RevokeUserRightsResponse']
     }
@@ -1309,6 +1513,9 @@ export type PatchV2UsersUserIdIdentityProviderId = {
             resource: '/v2/users/{user-id}/identity-provider-id'
             requestMethod: 'patch'
             body: components['schemas']['UpdateUserIdentityProviderIdRequest']
+            path: {
+                'user-id': string
+            }
         }
         result: components['schemas']['UpdateUserIdentityProviderIdResponse']
     }
@@ -1337,6 +1544,9 @@ export type GetV2IdpsIdpId = {
         params: {
             resource: '/v2/idps/{idp-id}'
             requestMethod: 'get'
+            path: {
+                'idp-id': string
+            }
         }
         result: components['schemas']['GetIdentityProviderConfigResponse']
     }
@@ -1346,6 +1556,9 @@ export type DeleteV2IdpsIdpId = {
         params: {
             resource: '/v2/idps/{idp-id}'
             requestMethod: 'delete'
+            path: {
+                'idp-id': string
+            }
         }
         result: components['schemas']['DeleteIdentityProviderConfigResponse']
     }
@@ -1356,6 +1569,9 @@ export type PatchV2IdpsIdpId = {
             resource: '/v2/idps/{idp-id}'
             requestMethod: 'patch'
             body: components['schemas']['UpdateIdentityProviderConfigRequest']
+            path: {
+                'idp-id': string
+            }
         }
         result: components['schemas']['UpdateIdentityProviderConfigResponse']
     }
@@ -1405,6 +1621,12 @@ export type GetV2InteractiveSubmissionPreferredPackageVersion = {
         params: {
             resource: '/v2/interactive-submission/preferred-package-version'
             requestMethod: 'get'
+            query: {
+                parties?: Array<string>
+                'package-name': string
+                vetting_valid_at?: string
+                'synchronizer-id'?: string
+            }
         }
         result: components['schemas']['GetPreferredPackageVersionResponse']
     }

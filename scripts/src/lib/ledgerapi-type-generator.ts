@@ -22,7 +22,7 @@ function toPascalCase(method: string, path: string) {
 
 type OpenAPISchema =
     | {
-          type: 'string' | 'number' | 'boolean'
+          type: 'string' | 'number' | 'integer' | 'boolean'
           title?: string
       }
     | {
@@ -40,6 +40,23 @@ type OpenAPISchema =
     | {
           $ref: string
       }
+    | {
+          oneOf: OpenAPISchema[]
+      }
+
+type ParamSchema = {
+    required?: boolean
+    schema: OpenAPISchema
+}
+
+type OpenApiParameters = {
+    path?: {
+        [k: string]: ParamSchema
+    }
+    query?: {
+        [k: string]: ParamSchema
+    }
+}
 
 export class LedgerApiTypeGenerator {
     constructor(private spec: OpenAPI.Document) {}
@@ -80,6 +97,30 @@ export class LedgerApiTypeGenerator {
                     op.requestBody?.content?.['application/json']?.schema ||
                     null
 
+                const parameters = op.parameters?.reduce<OpenApiParameters>(
+                    (acc, param) => {
+                        if (param.in === 'path') {
+                            if (!acc.path) {
+                                acc.path = {}
+                            }
+                            acc.path[param.name] = {
+                                required: param.required,
+                                schema: param.schema,
+                            }
+                        } else if (param.in === 'query') {
+                            if (!acc.query) {
+                                acc.query = {}
+                            }
+                            acc.query[param.name] = {
+                                required: param.required,
+                                schema: param.schema,
+                            }
+                        }
+                        return acc
+                    },
+                    {}
+                )
+
                 const result =
                     op.responses?.['200']?.content?.['application/json']
                         ?.schema || null
@@ -89,8 +130,14 @@ export class LedgerApiTypeGenerator {
                 content += `          params: {\n`
                 content += `            resource: '${path}'\n`
                 content += `            requestMethod: '${method}'\n`
-                if (op.requestBody) {
+                if (body) {
                     content += `            body: ${this.generateSchema(body)}\n`
+                }
+                if (parameters?.path) {
+                    content += `            path: ${this.generateParamSchemas(parameters.path)}\n`
+                }
+                if (parameters?.query) {
+                    content += `            query: ${this.generateParamSchemas(parameters.query)}\n`
                 }
                 content += `          }\n`
                 content += `        result: ${this.generateSchema(result)}\n`
@@ -120,8 +167,20 @@ export class LedgerApiTypeGenerator {
             this.generateSchemaPrimitive(schema) ||
             this.generateSchemaArray(schema) ||
             this.generateSchemaObject(schema) ||
+            this.generateSchemaOneOf(schema) ||
             'unknown'
         )
+    }
+
+    private generateParamSchemas(params: Record<string, ParamSchema>): string {
+        let content = '{\n'
+        Object.entries(params).forEach(([key, param]) => {
+            content += param.required
+                ? `'${key}': ${this.generateSchema(param.schema)};\n`
+                : `'${key}'?: ${this.generateSchema(param.schema)};\n`
+        })
+        content += '}\n'
+        return content
     }
 
     private generateSchemaRef(schema: OpenAPISchema): string | undefined {
@@ -145,11 +204,11 @@ export class LedgerApiTypeGenerator {
 
     private generateSchemaPrimitive(schema: OpenAPISchema): string | undefined {
         if ('type' in schema) {
-            if (
-                schema.type === 'string' ||
-                schema.type === 'number' ||
-                schema.type === 'boolean'
-            ) {
+            if (schema.type === 'integer' || schema.type === 'number') {
+                return 'number | string' // Ledger API often uses strings for numeric values to avoid precision issues
+            }
+
+            if (schema.type === 'string' || schema.type === 'boolean') {
                 return schema.type
             }
         }
@@ -163,6 +222,19 @@ export class LedgerApiTypeGenerator {
 
     private generateSchemaObject(schema: OpenAPISchema): string | undefined {
         if ('type' in schema && schema.type === 'object') {
+            const additionalProperties = schema.additionalProperties
+            let generatedAdditionalProperties = undefined
+
+            if (typeof additionalProperties === 'object') {
+                generatedAdditionalProperties = `{ [key: string]: ${this.generateSchema(additionalProperties)} }`
+            }
+            if (
+                typeof additionalProperties === 'boolean' &&
+                additionalProperties
+            ) {
+                generatedAdditionalProperties = `{ [key: string]: unknown }`
+            }
+
             const required = schema.required || []
             const properties = schema.properties
                 ? `{` +
@@ -174,8 +246,17 @@ export class LedgerApiTypeGenerator {
                       })
                       .join('; ') +
                   `}`
-                : 'unknown'
-            return properties
+                : 'object'
+
+            return generatedAdditionalProperties
+                ? `${properties} & ${generatedAdditionalProperties}`
+                : properties
+        }
+    }
+
+    private generateSchemaOneOf(schema: OpenAPISchema): string | undefined {
+        if ('oneOf' in schema) {
+            return schema.oneOf.map((s) => this.generateSchema(s)).join(' | ')
         }
     }
 }
