@@ -20,12 +20,14 @@ const sdk = await Sdk.create({
 const aliceKeys = sdk.keys.generate()
 
 // TODO: pass synchronizerId as arg
-const alice = await sdk.party.external
-    .create(aliceKeys.publicKey, '', {
-        partyHint: 'Alice in Wonderland',
-    })
-    .sign(aliceKeys.privateKey)
-    // TODO: pass userid
-    .execute('aliceUserId')
+const alice = (
+    await sdk.party.external
+        .create(aliceKeys.publicKey, '', {
+            partyHint: 'Alice in Wonderland',
+        })
+        .sign(aliceKeys.privateKey)
+        // TODO: pass userid
+        .execute('aliceUserId')
+).party
 
 logger.info({ alice }, 'Alice party representation:')

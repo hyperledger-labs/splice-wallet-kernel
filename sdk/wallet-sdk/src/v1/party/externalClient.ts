@@ -54,6 +54,13 @@ export default class ExternalPartyClient extends PartyClient {
         super()
     }
 
+    /**
+     * Initiates party creation with the given public key.
+     * @param publicKey - The public key for the party
+     * @param synchronizerId - The synchronizer ID
+     * @param options - Optional configuration (party hint, participant endpoints, thresholds)
+     * @returns this for method chaining
+     */
     public create(
         publicKey: PublicKey,
         synchronizerId: string,
@@ -95,6 +102,11 @@ export default class ExternalPartyClient extends PartyClient {
         return this
     }
 
+    /**
+     * Signs the prepared party creation with the private key.
+     * @param privateKey - The private key to sign with
+     * @returns this for method chaining
+     */
     public sign(privateKey: PrivateKey) {
         assertPreparedParty(this.allocation.preparedParty)
 
@@ -105,6 +117,12 @@ export default class ExternalPartyClient extends PartyClient {
         return this
     }
 
+    /**
+     * Executes the party allocation and optional post-allocation steps.
+     * @param userId - The user ID for granting rights
+     * @param options - Optional flags (expectHeavyLoad, grantUserRights)
+     * @returns this for method chaining
+     */
     public async execute(
         userId: string,
         options?: Partial<{
@@ -156,10 +174,19 @@ export default class ExternalPartyClient extends PartyClient {
         return this
     }
 
+    /**
+     * Returns the prepared party object.
+     */
     public get party() {
         return this.allocation.preparedParty
     }
 
+    /**
+     * Retrieves participant IDs from the given endpoints.
+     * @param hostingParticipantConfigs - Participant endpoint configurations
+     * @param isAdmin - Whether to use admin credentials
+     * @returns Promise resolving to array of participant IDs
+     */
     private async getParticipantUids(
         hostingParticipantConfigs: ParticipantEndpointConfig[],
         isAdmin = false
@@ -184,11 +211,19 @@ export default class ExternalPartyClient extends PartyClient {
         )
     }
 
+    /**
+     * Resets internal allocation state.
+     */
     private resetAllocationData() {
         this.allocation = EMPTY_ALLOCATION_DATA
         this.preparePartyPromise = null
     }
 
+    /**
+     * Allocates the party to additional participant nodes.
+     * @param endpointConfig - Participant endpoints to allocate to
+     * @param isAdmin - Whether to use admin credentials
+     */
     private async allocateExternalPartyForAdditionalParticipants(
         endpointConfig: ParticipantEndpointConfig[],
         isAdmin = false
@@ -206,6 +241,11 @@ export default class ExternalPartyClient extends PartyClient {
         }
     }
 
+    /**
+     * Performs the actual party allocation on a ledger client.
+     * @param ledgerClient - The ledger client to allocate with
+     * @param options - Optional execution options (withErrorHandling, expectHeavyLoad)
+     */
     private async executeAllocateParty(
         ledgerClient: LedgerClient,
         options?: Partial<{
