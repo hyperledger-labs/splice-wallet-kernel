@@ -53,7 +53,7 @@ export class Sdk {
         // public amulet() {}
 
         this.party = {
-            external: new ExternalPartyClient(),
+            external: new ExternalPartyClient(ctx.ledgerClient),
             internal: new InternalPartyClient(),
         }
 

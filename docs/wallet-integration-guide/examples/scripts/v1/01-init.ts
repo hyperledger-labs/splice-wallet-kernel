@@ -17,6 +17,15 @@ const sdk = await Sdk.create({
     registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
 })
 
-sdk.keys.generate()
+const aliceKeys = sdk.keys.generate()
 
-//TODO: add external party creation (#1294)
+// TODO: pass synchronizerId as arg
+const alice = await sdk.party.external
+    .create(aliceKeys.publicKey, '', {
+        partyHint: 'Alice in Wonderland',
+    })
+    .sign(aliceKeys.privateKey)
+    // TODO: pass userid
+    .execute('aliceUserId')
+
+logger.info({ alice }, 'Alice party representation:')
