@@ -2,11 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { css, html } from 'lit'
-import { customElement, query, state } from 'lit/decorators.js'
+import { customElement, state } from 'lit/decorators.js'
 
 import {
     BaseElement,
     handleErrorToast,
+    WalletCreateEvent,
+    WalletSetPrimaryEvent,
+    WalletCopyPartyIdEvent,
+    WalletAllocateEvent,
+    WgWalletCreateForm,
 } from '@canton-network/core-wallet-ui-components'
 
 import { Wallet } from '@canton-network/core-wallet-store'
@@ -17,13 +22,6 @@ import { SigningProvider } from '@canton-network/core-signing-lib'
 import '../index'
 import { stateManager } from '../state-manager'
 
-export interface ToastElement extends HTMLElement {
-    title: string
-    message: string
-    type: string
-    buttonText: string
-}
-
 @customElement('user-ui-wallets')
 export class UserUiWallets extends BaseElement {
     @state()
@@ -33,9 +31,6 @@ export class UserUiWallets extends BaseElement {
     accessor wallets: Wallet[] | undefined = undefined
 
     @state()
-    accessor createdParty = undefined
-
-    @state()
     accessor loading = false
 
     @state()
@@ -43,15 +38,6 @@ export class UserUiWallets extends BaseElement {
 
     @state()
     accessor client: UserApiClient | null = null
-
-    @query('#party-id-hint')
-    accessor _partyHintInput: HTMLInputElement | null = null
-
-    @query('#signing-provider-id')
-    accessor _signingProviderSelect: HTMLSelectElement | null = null
-
-    @query('#primary')
-    accessor _primaryCheckbox: HTMLInputElement | null = null
 
     static styles = [
         BaseElement.styles,
@@ -101,90 +87,17 @@ export class UserUiWallets extends BaseElement {
                 </button>
             </div>
 
-            ${this.wallets === undefined ? 'Loading wallets…' : ''}
+            ${this.wallets === undefined ? 'Loading wallets\u2026' : ''}
 
             <div class="row g-3 my-3">
                 ${this.showCreateCard
                     ? html`
                           <div class="col-md-6 col-lg-4">
-                              <div class="card shadow-sm">
-                                  <div class="card-body">
-                                      <form
-                                          id="create-wallet-form"
-                                          @submit=${this._onCreateWalletSubmit}
-                                      >
-                                          <div class="mb-3">
-                                              <label
-                                                  for="party-id-hint"
-                                                  class="form-label"
-                                                  >Party ID Hint:</label
-                                              >
-                                              <input
-                                                  ?disabled=${this.loading}
-                                                  class="form-control"
-                                                  id="party-id-hint"
-                                                  type="text"
-                                                  placeholder="Enter party ID hint"
-                                                  required
-                                              />
-                                          </div>
-
-                                          <div class="mb-3">
-                                              <label
-                                                  for="signing-provider-id"
-                                                  class="form-label"
-                                                  >Signing Provider:</label
-                                              >
-                                              <select
-                                                  class="form-select"
-                                                  id="signing-provider-id"
-                                              >
-                                                  <option disabled value="">
-                                                      Signing provider for
-                                                      wallet
-                                                  </option>
-                                                  ${this.signingProviders.map(
-                                                      (providerId) =>
-                                                          html`<option
-                                                              value=${providerId}
-                                                          >
-                                                              ${providerId}
-                                                          </option>`
-                                                  )}
-                                              </select>
-                                          </div>
-
-                                          <div
-                                              class="mb-3 form-check d-flex align-items-center gap-2"
-                                          >
-                                              <input
-                                                  id="primary"
-                                                  type="checkbox"
-                                                  class="form-check-input"
-                                              />
-                                              <label
-                                                  for="primary"
-                                                  class="form-check-label"
-                                                  >Set as primary wallet</label
-                                              >
-                                          </div>
-
-                                          <button
-                                              class="btn btn-primary"
-                                              ?disabled=${this.loading}
-                                              type="submit"
-                                          >
-                                              Create
-                                          </button>
-                                      </form>
-                                      ${this.createdParty
-                                          ? html`<p class="mt-2">
-                                                Created party ID:
-                                                ${this.createdParty}
-                                            </p>`
-                                          : ''}
-                                  </div>
-                              </div>
+                              <wg-wallet-create-form
+                                  .signingProviders=${this.signingProviders}
+                                  ?loading=${this.loading}
+                                  @wallet-create=${this._onCreateWallet}
+                              ></wg-wallet-create-form>
                           </div>
                       `
                     : ''}
@@ -193,54 +106,11 @@ export class UserUiWallets extends BaseElement {
                 ${shownWallets.unverifiedWallets.map(
                     (wallet) => html`
                         <div class="col-md-6 col-lg-4">
-                            <div class="card shadow-sm">
-                                <div class="card-body">
-                                    <h5
-                                        class="card-title text-primary fw-semibold text-break"
-                                    >
-                                        ${wallet.hint || wallet.partyId}
-                                        ${wallet.primary
-                                            ? html`<span class="text-success"
-                                                  >(Primary)</span
-                                              >`
-                                            : ''}
-                                        ${wallet.disabled
-                                            ? html`<span class="text-danger"
-                                                  >(Disabled)</span
-                                              >`
-                                            : ''}
-                                    </h5>
-                                    <p class="card-text text-muted text-break">
-                                        <strong>Party ID:</strong>
-                                        ${wallet.partyId}<br />
-                                        <strong>Network:</strong>
-                                        ${wallet.networkId}<br />
-                                        <strong>Signing Provider:</strong>
-                                        ${wallet.signingProviderId}
-                                        ${wallet.disabled
-                                            ? html`<br /><strong
-                                                      >Disabled:</strong
-                                                  >
-                                                  Yes`
-                                            : ''}
-                                        ${wallet.reason
-                                            ? html`<br />
-                                                  <strong>Reason:</strong>
-                                                  ${wallet.reason}`
-                                            : ''}
-                                    </p>
-                                    <div class="d-flex gap-2 mt-2">
-                                        <button
-                                            class="btn btn-sm btn-outline-secondary"
-                                            ?disabled=${this.loading}
-                                            @click=${() =>
-                                                this._allocateParty(wallet)}
-                                        >
-                                            Allocate party
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                            <wg-wallet-card
+                                .wallet=${wallet}
+                                ?loading=${this.loading}
+                                @wallet-allocate=${this._onAllocateParty}
+                            ></wg-wallet-card>
                         </div>
                     `
                 )}
@@ -249,63 +119,13 @@ export class UserUiWallets extends BaseElement {
                 ${shownWallets.verifiedWallets.map(
                     (wallet) => html`
                         <div class="col-md-6 col-lg-4">
-                            <div class="card shadow-sm">
-                                <div class="card-body">
-                                    <h5
-                                        class="card-title text-primary fw-semibold text-break"
-                                    >
-                                        ${wallet.hint || wallet.partyId}
-                                        ${wallet.primary
-                                            ? html`<span class="text-success"
-                                                  >(Primary)</span
-                                              >`
-                                            : ''}
-                                        ${wallet.disabled
-                                            ? html`<span class="text-danger"
-                                                  >(Disabled)</span
-                                              >`
-                                            : ''}
-                                    </h5>
-                                    <p class="card-text text-muted text-break">
-                                        <strong>Party ID:</strong>
-                                        ${wallet.partyId}<br />
-                                        <strong>Network:</strong>
-                                        ${wallet.networkId}<br />
-                                        <strong>Signing Provider:</strong>
-                                        ${wallet.signingProviderId}
-                                        ${wallet.disabled
-                                            ? html`<br /><strong
-                                                      >Disabled:</strong
-                                                  >
-                                                  Yes`
-                                            : ''}
-                                        ${wallet.reason
-                                            ? html`<br />
-                                                  <strong>Reason:</strong>
-                                                  ${wallet.reason}`
-                                            : ''}
-                                    </p>
-                                    <div class="d-flex gap-2 mt-2">
-                                        <button
-                                            class="btn btn-sm btn-outline-secondary"
-                                            ?disabled=${wallet.disabled}
-                                            @click=${() =>
-                                                this._setPrimary(wallet)}
-                                        >
-                                            Set Primary
-                                        </button>
-                                        <button
-                                            class="btn btn-sm btn-outline-secondary"
-                                            @click=${() =>
-                                                this._copyPartyId(
-                                                    wallet.partyId
-                                                )}
-                                        >
-                                            Copy Party ID
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                            <wg-wallet-card
+                                .wallet=${wallet}
+                                verified
+                                ?loading=${this.loading}
+                                @wallet-set-primary=${this._onSetPrimary}
+                                @wallet-copy-party-id=${this._onCopyPartyId}
+                            ></wg-wallet-card>
                         </div>
                     `
                 )}
@@ -342,30 +162,29 @@ export class UserUiWallets extends BaseElement {
             })
     }
 
-    private async _setPrimary(wallet: Wallet) {
+    private async _onSetPrimary(e: WalletSetPrimaryEvent) {
         const userClient = await createUserClient(
             stateManager.accessToken.get()
         )
         await userClient.request({
             method: 'setPrimaryWallet',
             params: {
-                partyId: wallet.partyId,
+                partyId: e.wallet.partyId,
             },
         })
         this.updateWallets()
     }
 
-    private _copyPartyId(partyId: string) {
-        navigator.clipboard.writeText(partyId)
+    private _onCopyPartyId(e: WalletCopyPartyIdEvent) {
+        navigator.clipboard.writeText(e.partyId)
     }
 
-    private async _onCreateWalletSubmit(e: Event) {
-        e.preventDefault()
+    private async _onCreateWallet(e: WalletCreateEvent) {
         this.loading = true
 
-        const partyHint = this._partyHintInput?.value || ''
-        const primary = this._primaryCheckbox?.checked || false
-        const signingProviderId = this._signingProviderSelect?.value || ''
+        const partyHint = e.partyHint
+        const primary = e.primary
+        const signingProviderId = e.signingProviderId
 
         try {
             const userClient = await createUserClient(
@@ -379,20 +198,22 @@ export class UserUiWallets extends BaseElement {
                     signingProviderId,
                 },
             })
-        } catch (e) {
-            handleErrorToast(e)
+        } catch (err) {
+            handleErrorToast(err)
         }
 
         this.loading = false
-        if (this._partyHintInput) {
-            this._partyHintInput.value = ''
-        }
+        const form = this.renderRoot.querySelector<WgWalletCreateForm>(
+            'wg-wallet-create-form'
+        )
+        form?.reset()
 
         this.updateWallets()
     }
 
-    private async _allocateParty(wallet: Wallet) {
+    private async _onAllocateParty(e: WalletAllocateEvent) {
         this.loading = true
+        const wallet = e.wallet
         try {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
@@ -411,8 +232,8 @@ export class UserUiWallets extends BaseElement {
                     },
                 },
             })
-        } catch (e) {
-            handleErrorToast(e)
+        } catch (err) {
+            handleErrorToast(err)
         }
 
         this.loading = false

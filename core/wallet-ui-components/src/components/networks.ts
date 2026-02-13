@@ -25,8 +25,9 @@ export class WgNetworks extends BaseElement {
         `,
     ]
 
-    @property({ type: Array }) accessor activeSessions: Session[] = []
     @property({ type: Array }) accessor networks: Network[] = []
+    @property({ type: Array }) accessor activeSessions: Session[] = []
+    @property({ type: Boolean }) accessor readonly = false
     @state() accessor isModalOpen = false
     @state() accessor editingNetwork: Network | null = null
     @state() accessor authType: string =
@@ -52,14 +53,20 @@ export class WgNetworks extends BaseElement {
                     <h1>Networks</h1>
                 </div>
 
-                <button class="btn btn-primary" @click=${this.openAddModal}>
-                    Add Network
-                </button>
+                ${this.readonly
+                    ? ''
+                    : html`<button
+                          class="btn btn-primary"
+                          @click=${this.openAddModal}
+                      >
+                          Add Network
+                      </button>`}
 
                 <div class="mt-2">
                     <network-table
                         .networks=${this.networks}
                         .activeSessions=${this.activeSessions}
+                        .readonly=${this.readonly}
                     ></network-table>
                 </div>
 
