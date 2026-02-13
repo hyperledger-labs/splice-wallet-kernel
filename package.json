@@ -27,6 +27,7 @@
         "script:generate:protobufs": "tsx ./scripts/src/generate-protobufs.ts",
         "script:generate:tokenstandard": "tsx ./scripts/src/generate-token-standard.ts",
         "script:generate:featured-dars": "tsx ./scripts/src/generate-featured-dars.ts",
+        "script:generate:ledgerapi": "tsx ./scripts/src/generate-ledgerapi-types.ts",
         "script:fetch:canton": "tsx ./scripts/src/fetch-canton.ts",
         "script:fetch:splice": "tsx ./scripts/src/fetch-splice.ts",
         "script:fetch:localnet": "tsx ./scripts/src/fetch-localnet.ts",

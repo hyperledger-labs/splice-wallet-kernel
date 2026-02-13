@@ -361,7 +361,8 @@
                     },
                     "body": {
                         "title": "body",
-                        "type": "string"
+                        "type": "object",
+                        "additionalProperties": true
                     }
                 },
                 "required": ["requestMethod", "resource"]
