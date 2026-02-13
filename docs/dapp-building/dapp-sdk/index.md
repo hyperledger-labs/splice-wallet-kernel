@@ -1,5 +1,3 @@
-(dapp-sdk)=
-
 # dApp SDK
 
 The dApp SDK is a TypeScript library for building decentralized applications on the Canton Network. It provides a high-level interface for connecting to Canton wallets, managing accounts, signing messages, and executing transactions.
@@ -39,12 +37,9 @@ The SDK automatically handles the transport layer, allowing your dApp to work wi
 
 When using browser extension wallets, the SDK exposes an EIP-1193-compatible provider at `window.canton`, following the pattern established by Ethereum wallets. This enables wallet discovery and connection in browser environments.
 
-```{toctree}
-:maxdepth: 2
-:caption: Contents:
+## Contents
 
-installation
-usage
-api-reference
-best-practices
-```
+- [Installation](installation.md)
+- [Usage](usage.md)
+- [API Reference](api-reference.md)
+- [Best Practices](best-practices.md)

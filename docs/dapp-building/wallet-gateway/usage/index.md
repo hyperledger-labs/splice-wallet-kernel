@@ -1,5 +1,3 @@
-(usage)=
-
 # Using the Wallet Gateway
 
 You can use the Wallet Gateway in two ways:
@@ -7,7 +5,7 @@ You can use the Wallet Gateway in two ways:
 - mainly through the **User UI** (Web UI) for end users
 - or through the **User API** (for automation, custom UIs, or integration with your own systems).
 
-The **dApp API** is used by your dApp via the dApp SDK when users connect their wallet. See the {ref}`dApp SDK <dapp-sdk>` for more details.
+The **dApp API** is used by your dApp via the dApp SDK when users connect their wallet. See the [dApp SDK](../../dapp-sdk/index.md) for more details.
 
 This section describes typical workflows, the User UI, session handling, and when to use which interface.
 
@@ -40,7 +38,7 @@ Users **log out** via the layout logout control. Logout calls `removeSession`, c
     - Build a custom wallet UI (e.g. embedded in your app) instead of the default User UI.
     - Automate session, network, IDP, or wallet operations.
 
-- **dApp API** (via dApp SDK): Use from your **dApp** frontend. The SDK calls the dApp API to connect, list accounts, and prepare/execute transactions. Users approve via the Web UI or browser extension. See {ref}`dApp SDK usage <dapp-sdk-usage>` and {ref}`apis` for details.
+- **dApp API** (via dApp SDK): Use from your **dApp** frontend. The SDK calls the dApp API to connect, list accounts, and prepare/execute transactions. Users approve via the Web UI or browser extension. See [dApp SDK usage](../../dapp-sdk/usage.md) and [APIs](../apis/index.md) for details.
 
 ## Typical flows
 
@@ -71,7 +69,7 @@ Users **log out** via the layout logout control. Logout calls `removeSession`, c
 
 ## Next steps
 
-- Configure the Gateway: {ref}`configuring-wallet-gateway`
-- Explore User API and dApp API: {ref}`apis`
-- Set up signing: {ref}`signing-providers`
-- Run and operate the Gateway: {ref}`getting-started`, {ref}`troubleshooting`
+- Configure the Gateway: [Configuration](../configuration/index.md)
+- Explore User API and dApp API: [APIs](../apis/index.md)
+- Set up signing: [Signing Providers](../signing-providers/index.md)
+- Run and operate the Gateway: [Getting Started](../getting-started/index.md), [Troubleshooting](../troubleshooting/index.md)

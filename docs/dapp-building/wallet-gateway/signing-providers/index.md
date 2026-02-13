@@ -1,5 +1,3 @@
-(signing-providers)=
-
 # Signing Providers
 
 The Wallet Gateway supports multiple signing providers that handle cryptographic key management and transaction signing. Each provider has different use cases and security characteristics.
@@ -22,9 +20,8 @@ This provider is automatically available when a `signingStore` is configured in 
 
 **Security Considerations:**
 
-```{important}
-Private keys are stored in the database. If the database is compromised, all keys are at risk. Use only in non-production environments.
-```
+> [!IMPORTANT]
+> Private keys are stored in the database. If the database is compromised, all keys are at risk. Use only in non-production environments.
 
 ## Participant-Based Signing
 

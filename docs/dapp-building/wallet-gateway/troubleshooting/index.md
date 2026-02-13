@@ -1,5 +1,3 @@
-(troubleshooting)=
-
 # Troubleshooting
 
 This section covers common issues and their solutions when working with the Wallet Gateway.
