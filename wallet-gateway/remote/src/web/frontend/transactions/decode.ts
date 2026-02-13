@@ -2,15 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { decodePreparedTransaction } from '@canton-network/core-tx-visualizer'
-
-export interface PreparedTransactionParsed {
-    jsonString: string
-    signatories?: string[]
-    stakeholders?: string[]
-    packageName?: string
-    moduleName?: string
-    entityName?: string
-}
+import type { ParsedTransactionInfo } from '@canton-network/core-wallet-ui-components'
 
 function decodePreparedTransactionToJsonString(txBase64: string): string {
     const t = decodePreparedTransaction(txBase64)
@@ -23,11 +15,11 @@ function decodePreparedTransactionToJsonString(txBase64: string): string {
 
 export function parsePreparedTransaction(
     txBase64: string
-): PreparedTransactionParsed {
+): ParsedTransactionInfo {
     const jsonString = decodePreparedTransactionToJsonString(txBase64)
     const obj = JSON.parse(jsonString)
 
-    const result: PreparedTransactionParsed = { jsonString }
+    const result: ParsedTransactionInfo = { jsonString }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function deepSearch(value: any) {
