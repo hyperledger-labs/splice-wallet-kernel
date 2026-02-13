@@ -1,12 +1,10 @@
 # Examples
 
-The following example dApps demonstrate how to use the dApp SDK and Wallet Gateway.
-You can find them in the [`/examples`](https://github.com/hyperledger-labs/splice-wallet-kernel/tree/main/examples) directory of the repository.
+The following example dApps demonstrate how to use the dApp SDK and Wallet Gateway. You can find them in the [`/examples`](https://github.com/hyperledger-labs/splice-wallet-kernel/tree/main/examples) directory of the repository.
 
 ## Ping
 
-A minimal example dApp that imports the dApp SDK and communicates with a Wallet Gateway.
-Built with React + TypeScript using the Vite template, this is the best starting point for understanding the basics of dApp SDK integration.
+A minimal example dApp that imports the dApp SDK and communicates with a Wallet Gateway. Built with React + TypeScript using the Vite template, this is the best starting point for understanding the basics of dApp SDK integration.
 
 **Running:**
 
@@ -20,8 +18,6 @@ yarn dev
 ## Portfolio
 
 A more complete example dApp that showcases a minimal but functional portfolio application using the dApp SDK and Wallet Gateway. Built with React + TypeScript using Vite, it demonstrates real-world patterns including holdings, allocations, transactions, and transfer workflows.
-
-_Public link is coming soon!_
 
 **Building and running:**
 

@@ -1,5 +1,3 @@
-(configuring-wallet-gateway)=
-
 # Configuring a Remote Wallet Gateway
 
 This section covers the different ways the Wallet Gateway can be configured to support a variety of use cases and deployment scenarios.
@@ -18,9 +16,71 @@ The Wallet Gateway configuration is a JSON file that defines:
 
 Here is a minimalistic configuration example that can be used against a Splice localnet using SQLite storage and a mock OAuth setup. The mock OAuth configuration showcases how an IDP configuration would look.
 
-```{literalinclude} ../../../examples/json/default-config.json
-:language: json
-:dedent:
+```json
+{
+    "kernel": {
+        "id": "remote-da",
+        "clientType": "remote"
+    },
+    "server": {
+        "host": "localhost",
+        "port": 3030,
+        "tls": false,
+        "dappPath": "/api/v0/dapp",
+        "userPath": "/api/v0/user",
+        "allowedOrigins": ["http://localhost:8080", "http://localhost:8081"],
+        "admin": "operator"
+    },
+    "store": {
+        "connection": {
+            "type": "sqlite",
+            "database": "store.sqlite"
+        }
+    },
+    "signingStore": {
+        "connection": {
+            "type": "sqlite",
+            "database": "signingStore.sqlite"
+        }
+    },
+    "bootstrap": {
+        "idps": [
+            {
+                "id": "idp-mock-oauth",
+                "type": "oauth",
+                "issuer": "http://127.0.0.1:8889",
+                "configUrl": "http://127.0.0.1:8889/.well-known/openid-configuration"
+            }
+        ],
+        "networks": [
+            {
+                "id": "canton:localnet",
+                "name": "LocalNet",
+                "description": "LocalNet configuration",
+                "identityProviderId": "idp-self-signed",
+                "auth": {
+                    "method": "self_signed",
+                    "issuer": "self-signed",
+                    "audience": "https://canton.network.global",
+                    "scope": "openid daml_ledger_api offline_access",
+                    "clientId": "ledger-api-user",
+                    "clientSecret": "unsafe"
+                },
+                "adminAuth": {
+                    "method": "self_signed",
+                    "issuer": "self-signed",
+                    "scope": "openid daml_ledger_api offline_access",
+                    "audience": "https://canton.network.global",
+                    "clientId": "ledger-api-user",
+                    "clientSecret": "unsafe"
+                },
+                "ledgerApi": {
+                    "baseUrl": "http://localhost:2975"
+                }
+            }
+        ]
+    }
+}
 ```
 
 You can easily create a similar configuration file by running:
@@ -71,9 +131,8 @@ The **kernel** section contains information that is served to dApps and used to 
 
 The **server** section configures network binding, ports, and API paths.
 
-```{important}
-If you're running the Gateway outside of your local machine (e.g., in Docker, Kubernetes, or on a remote server), you should set `host` to `"0.0.0.0"` to allow external connections. By default, using `"localhost"` will only allow connections from the same machine.
-```
+> [!IMPORTANT]
+> If you're running the Gateway outside of your local machine (e.g., in Docker, Kubernetes, or on a remote server), you should set `host` to `"0.0.0.0"` to allow external connections. By default, using `"localhost"` will only allow connections from the same machine.
 
 **server:**
 
@@ -105,14 +164,12 @@ If you're running the Gateway outside of your local machine (e.g., in Docker, Ku
 
 **store:**
 
-- _connection:_ Configures the database connection. See {ref}`configuring-store` for details.
+- _connection:_ Configures the database connection. See [Configuring Store](#configuring-store) for details.
 
 **bootstrap:**
 
-- _idps:_ Configures the initial identity providers (IDPs) seeded when the database is first created. See {ref}`configuring-idps` for details.
-- _networks:_ Configures the initial networks seeded when the database is first created. See {ref}`configuring-networks` for details.
-
-(configuring-store)=
+- _idps:_ Configures the initial identity providers (IDPs) seeded when the database is first created. See [Configuring Identity Providers](#configuring-identity-providers) for details.
+- _networks:_ Configures the initial networks seeded when the database is first created. See [Configuring Networks](#configuring-networks) for details.
 
 ## Configuring Store
 
@@ -128,9 +185,8 @@ Three storage backends are available: **memory**, **sqlite**, and **postgres**.
 - **Local Development**: Use **sqlite** for simplicity and persistence across restarts
 - **Quick Testing**: Use **memory** for temporary setups (all data is lost on restart)
 
-```{important}
-If using Docker or Kubernetes with the memory store, all data will be lost when the container/pod is recreated. SQLite will persist only if the database file is stored on a persistent volume.
-```
+> [!IMPORTANT]
+> If using Docker or Kubernetes with the memory store, all data will be lost when the container/pod is recreated. SQLite will persist only if the database file is stored on a persistent volume.
 
 **PostgreSQL Configuration:**
 
@@ -233,12 +289,9 @@ If the database is lost and cannot be restored:
 - Set up automated daily backups with retention policies
 - Test restore procedures regularly
 
-```{important}
-If the wallet gateway is used as signing provider then clients private keys will be lost! It is therefor highly recommended
-to not use wallet gateway as signing provider in any important system.
-```
-
-(configuring-idps)=
+> [!IMPORTANT]
+> If the wallet gateway is used as signing provider then clients private keys will be lost! It is therefor highly recommended
+> to not use wallet gateway as signing provider in any important system.
 
 ## Configuring Identity Providers
 
@@ -250,9 +303,8 @@ IDPs are defined in the `bootstrap` section of the configuration and are seeded 
 
 The Wallet Gateway supports two types of identity providers: **self_signed** and **oauth**.
 
-```{important}
-For production environments, it is **highly recommended** to use an **oauth** IDP provider. Self-signed tokens should only be used for development and testing.
-```
+> [!IMPORTANT]
+> For production environments, it is **highly recommended** to use an **oauth** IDP provider. Self-signed tokens should only be used for development and testing.
 
 **Self-Signed IDP:**
 
@@ -307,8 +359,6 @@ OAuth IDPs integrate with external OAuth 2.0 / OpenID Connect providers to obtai
     }
 }
 ```
-
-(configuring-networks)=
 
 ## Configuring Networks
 
@@ -452,13 +502,12 @@ Used for development and testing. The Gateway generates and signs JWT tokens loc
 
 The signing store is an optional secondary database used for storing private keys when the Wallet Gateway is configured to act as a signing provider (using the `wallet-kernel` signing provider).
 
-```{important}
-If you use the Wallet Gateway as a signing provider, private keys will be stored in the signing store database. This is **not recommended** for production environments with valuable assets. Use external signing providers (Fireblocks, Blockdaemon, or Participant-based) for production.
-```
+> [!IMPORTANT]
+> If you use the Wallet Gateway as a signing provider, private keys will be stored in the signing store database. This is **not recommended** for production environments with valuable assets. Use external signing providers (Fireblocks, Blockdaemon, or Participant-based) for production.
 
 **Configuration:**
 
-The signing store uses the same connection configuration options as the main store. See {ref}`configuring-store` for available options (memory, sqlite, postgres).
+The signing store uses the same connection configuration options as the main store. See [Configuring Store](#configuring-store) for available options (memory, sqlite, postgres).
 
 **When is Signing Store Required?**
 
