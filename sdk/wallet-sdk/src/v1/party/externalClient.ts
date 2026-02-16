@@ -33,6 +33,12 @@ type ExecuteOptions = {
 export default class ExternalPartyClient {
     constructor(private readonly ctx: WalletSdkContext) {}
 
+    /**
+     * Initiates party creation with the given public key.
+     * @param publicKey - The public key for the party
+     * @param options - Optional configuration (party hint, participant endpoints, thresholds)
+     * @returns PreparedPartyCreation builder for chaining sign() and execute()
+     */
     public create(publicKey: PublicKey, options?: CreatePartyOptions) {
         const partyCreationPromise = Promise.all([
             this.getParticipantUids(
@@ -69,10 +75,10 @@ export default class ExternalPartyClient {
     }
 
     /**
-     * Retrieves participant IDs from the given endpoints.
-     * @param hostingParticipantConfigs - Participant endpoint configurations
-     * @param isAdmin - Whether to use admin credentials
-     * @returns Promise resolving to array of participant IDs
+     * Retrieves participant IDs from the given endpoints by querying their ledger API.
+     * @param hostingParticipantConfigs - Participant endpoint configurations to query
+     * @param isAdmin - Whether to use admin credentials for the request
+     * @returns Array of participant IDs from the endpoints
      */
     private async getParticipantUids(
         hostingParticipantConfigs: ParticipantEndpointConfig[],
@@ -99,6 +105,10 @@ export default class ExternalPartyClient {
     }
 }
 
+/**
+ * Represents a prepared (but unsigned) party creation transaction.
+ * The actual topology transaction is generated asynchronously but not yet signed.
+ */
 export class PreparedPartyCreation {
     constructor(
         private readonly ctx: WalletSdkContext,
@@ -108,6 +118,11 @@ export class PreparedPartyCreation {
         logger.info('Created party successfully.')
     }
 
+    /**
+     * Signs the prepared party creation with the private key.
+     * @param privateKey - The private key used to sign the topology transaction
+     * @returns SignedPartyCreation builder for chaining execute()
+     */
     public sign(privateKey: PrivateKey) {
         const signedPartyPromise = this.partyCreationPromise.then(
             (transactionResponse) => ({
@@ -126,6 +141,10 @@ export class PreparedPartyCreation {
     }
 }
 
+/**
+ * Represents a signed party creation, ready to be allocated on the ledger.
+ * Contains both the prepared topology transaction and its cryptographic signature.
+ */
 export class SignedPartyCreation {
     constructor(
         private readonly ctx: WalletSdkContext,
@@ -138,6 +157,13 @@ export class SignedPartyCreation {
         logger.info('Signed party successfully.')
     }
 
+    /**
+     * Executes the party allocation on the ledger and optionally grants user rights.
+     * Handles synchronizer lookup, party allocation, and additional participant synchronization.
+     * @param userId - The user ID to grant rights to
+     * @param options - Optional execution flags (expectHeavyLoad for timeout handling, grantUserRights to add user permissions)
+     * @returns The confirmed GenerateTransactionResponse containing party details
+     */
     public async execute(
         userId: string,
         options?: Partial<{
@@ -200,9 +226,9 @@ export class SignedPartyCreation {
     }
 
     /**
-     * Allocates the party to additional participant nodes.
-     * @param endpointConfig - Participant endpoints to allocate to
-     * @param isAdmin - Whether to use admin credentials
+     * Allocates the prepared party to additional participant nodes.
+     * Ensures the party topology is synchronized across confirming and observing participants.
+     * @param options - Execution options including endpoints, transaction response, signed hash, and optional admin flag
      */
     private async allocateExternalPartyForAdditionalParticipants(
         options: {
@@ -234,9 +260,9 @@ export class SignedPartyCreation {
     }
 
     /**
-     * Performs the actual party allocation on a ledger client.
-     * @param ledgerClient - The ledger client to allocate with
-     * @param options - Optional execution options (withErrorHandling, expectHeavyLoad)
+     * Performs the actual party allocation transaction on a ledger client.
+     * Includes error handling for timeout scenarios when heavy load is expected.
+     * @param options - Allocation options including transaction data, ledger client, and optional error handling flags
      */
     private async executeAllocateParty(
         options: {
