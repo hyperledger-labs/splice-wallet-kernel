@@ -11,9 +11,9 @@ import {
     signTransactionHash,
 } from '@canton-network/core-signing-lib'
 import pino from 'pino'
-import { ParticipantEndpointConfig } from 'src/ledgerController'
 import { v4 } from 'uuid'
 import { WalletSdkContext } from '../sdk'
+import { ParticipantEndpointConfig } from '../../ledgerController'
 
 const logger = pino({ name: 'ExternalPartyClient', level: 'info' })
 
